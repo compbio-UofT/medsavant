@@ -32,6 +32,7 @@ import java.util.Vector;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JToolBar;
@@ -42,6 +43,7 @@ import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.model.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
+import org.ut.biolab.medsavant.view.gadget.CollapsibleFrameGadget;
 
 /**
  *
@@ -99,8 +101,6 @@ public class ChartPanel extends JPanel {
 
         CategoryRange<String> categories = new CategoryRange<String>();
         int max = Integer.MIN_VALUE;
-
-        
 
         for (String key : chartMap.keySet()) {
             ChartCategory cat = new ChartCategory<String>(key);
@@ -211,6 +211,10 @@ public class ChartPanel extends JPanel {
 
         bar.add(Box.createHorizontalStrut(5));
 
+        bar.add(new JLabel("Quantitative categories:"));
+
+        bar.add(Box.createHorizontalStrut(5));
+
         numberModel = new SpinnerNumberModel();
         numberModel.setStepSize(2);
         numberModel.setMinimum(1);
@@ -284,6 +288,7 @@ public class ChartPanel extends JPanel {
         } else {
             for (VariantRecord r : ResultController.getVariantRecords()) {
                 String key = (String) getValueOfFieldAtIndex(fieldIndex, r);
+                if (key == null) { key = "."; }
                 if (chartMap.containsKey(key)) {
                     chartMap.put(key, chartMap.get(key) + 1);
                 } else {

@@ -5,8 +5,6 @@
 
 package org.ut.biolab.medsavant.view;
 
-import org.ut.biolab.medsavant.view.gadget.MedSavantGadgetFactory;
-import com.jidesoft.dashboard.Dashboard;
 import com.jidesoft.dashboard.Gadget;
 import com.jidesoft.dashboard.GadgetManager;
 import com.jidesoft.dashboard.SingleDashboardHolder;
@@ -17,15 +15,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import fiume.table.SearchableTablePanel;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import org.ut.biolab.medsavant.util.Util;
-import java.util.Vector;
-import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.model.VariantRecordModel;
-import org.ut.biolab.medsavant.view.gadget.chart.ChartGadget;
-import org.ut.biolab.medsavant.view.gadget.table.TableGadget;
+import javax.swing.BorderFactory;
+import org.ut.biolab.medsavant.view.gadget.GadgetFactory;
 
 /**
  *
@@ -43,8 +35,6 @@ public class View extends JPanel {
 
     private void init() {
         initDashboard();
-        //initFilters();
-        //initTable();
     }
 
     private void initFilters() {
@@ -67,11 +57,6 @@ public class View extends JPanel {
         });
     }
 
-    private void initTable() {
-        Vector records = Util.getVariantRecordsVector(ResultController.getVariantRecords());
-        this.add(new SearchableTablePanel(records, VariantRecordModel.getFieldNames(), VariantRecordModel.getFieldClasses()));
-    }
-
     private void initDashboard() {
 
         this.setLayout(new BorderLayout());
@@ -80,9 +65,10 @@ public class View extends JPanel {
         m.setAllowMultipleGadgetInstances(true);
 
         SingleDashboardHolder sdh = new SingleDashboardHolder(m);
+        sdh.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         sdh.setColumnCount(2);
 
-        sdh.setBackground(Color.white);
+        sdh.setBackground(Color.darkGray);
         sdh.setColumnResizable(true);
         sdh.setRowResizable(true);
 
@@ -91,15 +77,15 @@ public class View extends JPanel {
         sdh.showPalette();
 
         Gadget g;
-        g = new TableGadget();
+        g = GadgetFactory.createFilterGadget();
         m.addGadget(g);
         m.showGadget(g);
-        g = new ChartGadget();
+        g = GadgetFactory.createResultsGadget();
         m.addGadget(g);
         m.showGadget(g);
-        //g = new RedGadget();
-        //m.addGadget(g);
-        //m.showGadget(g);
+        g = GadgetFactory.createChartGadget();
+        m.addGadget(g);
+        m.showGadget(g);
 
     }
 }
