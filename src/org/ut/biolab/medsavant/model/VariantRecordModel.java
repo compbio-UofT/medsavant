@@ -211,6 +211,10 @@ public class VariantRecordModel {
         return getFieldNames().indexOf(fieldName);
     }
 
+    public static Class getFieldClass(int index) {
+        return (Class) getFieldClasses().get(index);
+    }
+
     /*
     private static final Class sc = String.class;
     private static final Class ic = Integer.class;

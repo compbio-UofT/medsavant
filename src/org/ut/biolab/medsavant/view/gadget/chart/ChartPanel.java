@@ -22,8 +22,10 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -31,7 +33,12 @@ import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
 import javax.swing.JToolBar;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.model.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
@@ -42,40 +49,34 @@ import org.ut.biolab.medsavant.util.Util;
  */
 public class ChartPanel extends JPanel {
 
+
+
     private int currentKeyIndex = VariantRecordModel.INDEX_OF_REF;
-    private Map<String, Integer> chartMap;
-    private DefaultChartModel chartModel;
-    private Chart chart;
+    //private Map<String, Integer> chartMap;
+   // private DefaultChartModel chartModel;
+   // private Chart chart;
     private JToolBar bar;
     private boolean isPie = false;
     private boolean isSorted = false;
     private JCheckBox isPieCB;
     private JCheckBox isSortedCB;
+    private SpinnerNumberModel numberModel;
+    private static final int DEFAULT_NUM_QUANTITATIVE_CATEGORIES = 5;
 
     public ChartPanel() {
         this.setLayout(new BorderLayout());
-        initDropDown();
+        initToolBar();
         updateChartMap();
     }
 
     private void updateChartMap() {
-        chart = null;
-        chartModel = null;
-        chartMap = new HashMap<String, Integer>();
 
-        for (VariantRecord r : ResultController.getVariantRecords()) {
-            String key = getKey(r);
-            if (chartMap.containsKey(key)) {
-                chartMap.put(key, chartMap.get(key) + 1);
-            } else {
-                chartMap.put(key, 1);
-            }
-        }
+        Map<String,Integer> chartMap = getChartMap(currentKeyIndex, isSorted);
 
         printHist(chartMap);
 
-        chartModel = new DefaultChartModel("Sample Model");
-        chart = new Chart(new Dimension(200, 200));
+        DefaultChartModel chartModel = new DefaultChartModel("Sample Model");
+        Chart chart = new Chart(new Dimension(200, 200));
 
         ChartStyle s = new ChartStyle();
         s.setBarsVisible(true);
@@ -99,15 +100,9 @@ public class ChartPanel extends JPanel {
         CategoryRange<String> categories = new CategoryRange<String>();
         int max = Integer.MIN_VALUE;
 
-        Map<String,Integer> m = chartMap;
+        
 
-        if (isSorted) {
-            ValueComparator bvc =  new ValueComparator(chartMap);
-            m = new TreeMap<String,Integer>(bvc);
-            m.putAll(chartMap);
-        }
-
-        for (String key : m.keySet()) {
+        for (String key : chartMap.keySet()) {
             ChartCategory cat = new ChartCategory<String>(key);
             categories.add(cat);
             Highlight h = new Highlight(key);
@@ -127,8 +122,8 @@ public class ChartPanel extends JPanel {
         this.add(chart, BorderLayout.CENTER);
     }
 
-    private String getKey(VariantRecord r) {
-        switch (currentKeyIndex) {
+    private static Object getValueOfFieldAtIndex(int keyIndex, VariantRecord r) {
+        switch (keyIndex) {
             case VariantRecordModel.INDEX_OF_ALT:
                 return r.getAlt();
             case VariantRecordModel.INDEX_OF_CALLDETAILS:
@@ -141,10 +136,10 @@ public class ChartPanel extends JPanel {
                 return r.getFormat();
             case VariantRecordModel.INDEX_OF_ID:
                 return r.getId();
-            //case VariantRecordModel.INDEX_OF_POS:
-            //    return (String) r.getPos();
-            //case VariantRecordModel.INDEX_OF_QUAL:
-            //    return r.getQual();
+            case VariantRecordModel.INDEX_OF_POS:
+                return r.getPos();
+            case VariantRecordModel.INDEX_OF_QUAL:
+                return r.getQual();
             case VariantRecordModel.INDEX_OF_REF:
                 return r.getRef();
             case VariantRecordModel.INDEX_OF_SAMPLEID:
@@ -164,7 +159,7 @@ public class ChartPanel extends JPanel {
         }
     }
 
-    private void initDropDown() {
+    private void initToolBar() {
         bar = new JToolBar();
         JComboBox b = new JComboBox();
 
@@ -201,6 +196,8 @@ public class ChartPanel extends JPanel {
         });
         bar.add(isPieCB);
 
+        bar.add(Box.createHorizontalStrut(5));
+
         isSortedCB = new JCheckBox("Sort by frequency");
         isSortedCB.setSelected(isSorted);
         isSortedCB.addActionListener(new ActionListener() {
@@ -211,6 +208,23 @@ public class ChartPanel extends JPanel {
             }
         });
         bar.add(isSortedCB);
+
+        bar.add(Box.createHorizontalStrut(5));
+
+        numberModel = new SpinnerNumberModel();
+        numberModel.setStepSize(2);
+        numberModel.setMinimum(1);
+        numberModel.setMaximum(100);
+        numberModel.setValue(DEFAULT_NUM_QUANTITATIVE_CATEGORIES);
+        JSpinner numberSpinner = new JSpinner(numberModel);
+        numberModel.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                updateChartMap();
+            }
+
+        });
+        bar.add(numberSpinner);
 
         this.add(bar, BorderLayout.NORTH);
     }
@@ -227,7 +241,68 @@ public class ChartPanel extends JPanel {
         this.currentKeyIndex = currentKeyIndex;
     }
 
-    class ValueComparator implements Comparator {
+    private static boolean isQuantatitiveClass(Class c) {
+        if (c == Integer.class || c == Long.class || c == Short.class || c == Double.class || c == Float.class) { return true; }
+        return false;
+    }
+
+    private int getNumberOfQuantitativeCategories() {
+        return (Integer) numberModel.getValue();
+    }
+
+    private Map<String, Integer> getChartMap(int fieldIndex, boolean isSorted) {
+
+        Map<String,Integer> chartMap = new TreeMap<String,Integer>();
+
+        Class c = VariantRecordModel.getFieldClass(fieldIndex);
+        if (isQuantatitiveClass(c)) {
+            int numBins = getNumberOfQuantitativeCategories();
+            List<Double> numbers = new ArrayList<Double>();
+            Double min = Double.MAX_VALUE;
+            Double max = Double.MIN_VALUE;
+            for (VariantRecord r : ResultController.getVariantRecords()) {
+                Object numericvalue = getValueOfFieldAtIndex(fieldIndex, r);
+                Double v = Double.parseDouble(numericvalue.toString());
+                min = Math.min(min, v);
+                max = Math.max(max, v);
+                numbers.add(v);
+            }
+
+            max = max+1;
+            Double step = (max-min)/numBins;
+            int[] bins = new int[numBins];
+
+            for (Double d : numbers) {
+                int binnumber = (int) ((d - min) / step);
+                bins[binnumber]++;
+            }
+            
+            for (int i = 0; i < numBins; i++) {
+                chartMap.put(((int)(min+i*step)) + " - " + ((int)(min+(i+1)*step)), bins[i]);
+            }
+
+        } else {
+            for (VariantRecord r : ResultController.getVariantRecords()) {
+                String key = (String) getValueOfFieldAtIndex(fieldIndex, r);
+                if (chartMap.containsKey(key)) {
+                    chartMap.put(key, chartMap.get(key) + 1);
+                } else {
+                    chartMap.put(key, 1);
+                }
+            }
+        }
+
+        if (isSorted) {
+            ValueComparator bvc =  new ValueComparator(chartMap);
+            Map m = new TreeMap<String,Integer>(bvc);
+            m.putAll(chartMap);
+            chartMap = m;
+        }
+
+        return chartMap;
+    }
+
+    static class ValueComparator implements Comparator {
 
         Map base;
 
