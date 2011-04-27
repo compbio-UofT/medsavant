@@ -8,11 +8,15 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.pane.CollapsiblePane;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -43,7 +47,10 @@ public class FilterPanel extends JPanel {
     private void initGUI() {
         
         contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel,BoxLayout.Y_AXIS));
+        contentPanel.setBackground(Color.white);
+        contentPanel.setLayout(new GridBagLayout(0,1));
+        contentPanel.add(Box.createGlue());
+        //contentPanel.setLayout(new BoxLayout(contentPanel,BoxLayout.Y_AXIS));
         this.add(contentPanel,BorderLayout.CENTER);
 
         List<FilterView> fv = getPatientFilterViews();

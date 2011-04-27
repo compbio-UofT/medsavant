@@ -92,8 +92,6 @@ public class VariantPage implements Page {
         };
         sdh.setColumnCount(2);
 
-
-
         sdh.setBackground(Color.darkGray);
         sdh.setColumnResizable(true);
         sdh.setRowResizable(true);
