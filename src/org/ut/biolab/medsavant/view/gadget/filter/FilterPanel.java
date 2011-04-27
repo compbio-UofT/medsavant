@@ -48,8 +48,8 @@ public class FilterPanel extends JPanel {
         
         contentPanel = new JPanel();
         contentPanel.setBackground(Color.white);
-        contentPanel.setLayout(new GridBagLayout(0,1));
-        contentPanel.add(Box.createGlue());
+        //contentPanel.setLayout(new GridBagLayout(0,1));
+        //contentPanel.add(Box.createGlue());
         //contentPanel.setLayout(new BoxLayout(contentPanel,BoxLayout.Y_AXIS));
         this.add(contentPanel,BorderLayout.CENTER);
 
