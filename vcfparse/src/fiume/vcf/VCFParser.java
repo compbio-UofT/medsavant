@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package vcfparse;
+package fiume.vcf;
 
 import au.com.bytecode.opencsv.CSVReader;
 import java.io.File;
@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author mfiume
  */
-class VCFParser {
+public class VCFParser {
     private static char defaultDelimiter = '\t';
     private static String headerChars = "#";
     private static String commentSplitter = "=";
@@ -94,7 +94,7 @@ class VCFParser {
         return result;
     }
 
-    static VariantSet parseVariants(File vcffile) throws IOException {
+    public static VariantSet parseVariants(File vcffile) throws IOException {
         return parseVariants(vcffile,defaultDelimiter);
     }
 

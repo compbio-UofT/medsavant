@@ -2,25 +2,27 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package vcfparse;
+package fiume.vcf;
 
 import java.io.Serializable;
+import java.util.Vector;
 
 /**
  *
  * @author mfiume
  */
-class VariantRecord implements Serializable {
+public class VariantRecord implements Serializable {
 
-    public static final int INDEX_OF_CHROM = 0;
-    public static final int INDEX_OF_POS = INDEX_OF_CHROM + 1;
-    public static final int INDEX_OF_ID = INDEX_OF_POS + 1;
-    public static final int INDEX_OF_REF = INDEX_OF_ID + 1;
-    public static final int INDEX_OF_ALT = INDEX_OF_REF + 1;
-    public static final int INDEX_OF_QUAL = INDEX_OF_ALT + 1;
-    public static final int INDEX_OF_FILTER = INDEX_OF_QUAL + 1;
-    public static final int INDEX_OF_INFO = INDEX_OF_FILTER + 1;
-    public static final int INDEX_OF_FORMAT = INDEX_OF_INFO + 1;
+    
+    private static final int FILE_INDEX_OF_CHROM = 0;
+    private static final int FILE_INDEX_OF_POS = FILE_INDEX_OF_CHROM + 1;
+    private static final int FILE_INDEX_OF_ID = FILE_INDEX_OF_POS + 1;
+    private static final int FILE_INDEX_OF_REF = FILE_INDEX_OF_ID + 1;
+    private static final int FILE_INDEX_OF_ALT = FILE_INDEX_OF_REF + 1;
+    private static final int FILE_INDEX_OF_QUAL = FILE_INDEX_OF_ALT + 1;
+    private static final int FILE_INDEX_OF_FILTER = FILE_INDEX_OF_QUAL + 1;
+    private static final int FILE_INDEX_OF_INFO = FILE_INDEX_OF_FILTER + 1;
+    private static final int FILE_INDEX_OF_FORMAT = FILE_INDEX_OF_INFO + 1;
     public static final Class CLASS_OF_CHROM = String.class;
     public static final Class CLASS_OF_POS = Long.class;
     public static final Class CLASS_OF_ID = String.class;
@@ -47,16 +49,16 @@ class VariantRecord implements Serializable {
     public VariantRecord(String[] line) {
         sampleID =  null;
         callDetails = null;
-        chrom =     (String)    parse(CLASS_OF_CHROM, line[INDEX_OF_CHROM]);
-        pos =       (Long)      parse(CLASS_OF_POS, line[INDEX_OF_POS]);
-        id =        (String)    parse(CLASS_OF_ID, line[INDEX_OF_ID]);
-        ref =       (String)    parse(CLASS_OF_REF, line[INDEX_OF_REF]);
-        alt =       (String)    parse(CLASS_OF_ALT, line[INDEX_OF_ALT]);
-        qual =      (Float)      parse(CLASS_OF_QUAL, line[INDEX_OF_QUAL]);
-        filter =    (String)    parse(CLASS_OF_FILTER, line[INDEX_OF_FILTER]);
-        info =      (String)    parse(CLASS_OF_INFO, line[INDEX_OF_INFO]);
-        if (line.length > INDEX_OF_FORMAT) { // if the line has a format field
-            format = (String)   parse(CLASS_OF_FORMAT, line[INDEX_OF_FORMAT]);
+        chrom =     (String)    parse(CLASS_OF_CHROM, line[FILE_INDEX_OF_CHROM]);
+        pos =       (Long)      parse(CLASS_OF_POS, line[FILE_INDEX_OF_POS]);
+        id =        (String)    parse(CLASS_OF_ID, line[FILE_INDEX_OF_ID]);
+        ref =       (String)    parse(CLASS_OF_REF, line[FILE_INDEX_OF_REF]);
+        alt =       (String)    parse(CLASS_OF_ALT, line[FILE_INDEX_OF_ALT]);
+        qual =      (Float)      parse(CLASS_OF_QUAL, line[FILE_INDEX_OF_QUAL]);
+        filter =    (String)    parse(CLASS_OF_FILTER, line[FILE_INDEX_OF_FILTER]);
+        info =      (String)    parse(CLASS_OF_INFO, line[FILE_INDEX_OF_INFO]);
+        if (line.length > FILE_INDEX_OF_FORMAT) { // if the line has a format field
+            format = (String)   parse(CLASS_OF_FORMAT, line[FILE_INDEX_OF_FORMAT]);
         }
     }
 
@@ -202,4 +204,5 @@ class VariantRecord implements Serializable {
     public String toString() {
         return "VariantRecord{" + "sampleID=" + sampleID + "callDetails=" + callDetails + "chrom=" + chrom + "pos=" + pos + "id=" + id + "ref=" + ref + "alt=" + alt + "qual=" + qual + "filter=" + filter + "info=" + info + "format=" + format + '}';
     }
+
 }

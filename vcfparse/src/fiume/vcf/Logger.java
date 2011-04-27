@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package vcfparse;
+package fiume.vcf;
 
 import java.util.Date;
 

@@ -3,13 +3,13 @@
  * and open the template in the editor.
  */
 
-package vcfparse;
+package fiume.vcf;
 
 /**
  *
  * @author mfiume
  */
-class VCFProperty {
+public class VCFProperty {
     private final String key;
     private final Object value;
 

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package vcfparse;
+package fiume.vcf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author mfiume
  */
-class VCFHeader {
+public class VCFHeader {
 
     private static final int NUM_MANDATORY_FIELDS = 8;
     

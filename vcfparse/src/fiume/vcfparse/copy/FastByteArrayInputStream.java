@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package vcfparse.copy;
+package fiume.vcfparse.copy;
 
 import java.io.InputStream;
 import java.io.IOException;
