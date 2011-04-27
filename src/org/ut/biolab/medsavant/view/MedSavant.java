@@ -43,7 +43,6 @@ public class MedSavant extends JFrame {
         JMenuItem closeItem = new JMenuItem("Close");
         final MedSavant instance = this;
         closeItem.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 instance.requestClose();
             }

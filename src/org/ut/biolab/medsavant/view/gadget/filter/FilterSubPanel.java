@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.view;
+package org.ut.biolab.medsavant.view.gadget.filter;
 
 import com.jidesoft.dialog.ButtonPanel;
 import com.jidesoft.pane.FloorTabbedPane;
@@ -30,14 +30,14 @@ import org.ut.biolab.medsavant.model.Filter;
  *
  * @author mfiume
  */
-class FilterDialog extends JDialog {
+class FilterSubPanel extends JDialog {
 
     private ButtonPanel buttonPanel;
     private FloorTabbedPane filterViewTabbedPanel;
     private JButton applyButton;
     private final ArrayList<FilterView> filterViews;
 
-    FilterDialog(Frame owner, String title) {
+    FilterSubPanel(Frame owner, String title) {
         super(owner,title,true);
         filterViews = new ArrayList<FilterView>();
         initGUI();

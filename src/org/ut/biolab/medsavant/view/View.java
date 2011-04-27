@@ -5,19 +5,13 @@
 
 package org.ut.biolab.medsavant.view;
 
-import com.jidesoft.dashboard.Gadget;
-import com.jidesoft.dashboard.GadgetManager;
-import com.jidesoft.dashboard.SingleDashboardHolder;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.model.Filter;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Component;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -25,9 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JRadioButton;
 import org.ut.biolab.medsavant.util.ViewUtil;
 import org.ut.biolab.medsavant.view.subview.PatientSubView;
@@ -41,8 +32,6 @@ import org.ut.biolab.medsavant.view.subview.VariantSubView;
 public class View extends JPanel {
 
     List<String> subViewNames;
-    private PatientFilterDialog patientFilterDialog;
-    private FilterController mfc;
     private JPanel viewContainer;
     private CardLayout viewContainerLayout;
     private JPanel bannerContainer;
@@ -66,26 +55,6 @@ public class View extends JPanel {
         initViewContainer();
         initViews();
         setSubView(DEFAULT_SUBVIEW);
-    }
-
-    private void initFilters() {
-        mfc = new FilterController();
-        patientFilterDialog = new PatientFilterDialog();
-        
-        JButton addPatientFilterButton = new JButton("Add patient filter");
-        this.add(addPatientFilterButton);
-        addPatientFilterButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                patientFilterDialog.reset();
-                patientFilterDialog.setVisible(true);
-                Filter filter = patientFilterDialog.getFilter();
-                if (filter != null) {
-                    mfc.addFilter(filter);
-                }
-            }
-
-        });
     }
 
     private void addSubView(final SubView view) {
