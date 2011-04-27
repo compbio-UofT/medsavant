@@ -30,6 +30,7 @@ public class GadgetFactory {
                 return new FilterPanel();
             }
         });
+        g.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FILTER));
         g.setLargeIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FILTER));
         return g;
     }
@@ -42,6 +43,7 @@ public class GadgetFactory {
                 return p;
             }
         });
+        g.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.RESULTS));
         g.setLargeIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.RESULTS));
         return g;
     }
@@ -52,6 +54,7 @@ public class GadgetFactory {
                 return new ChartPanel();
             }
         });
+        g.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART));
         g.setLargeIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART));
         return g;
     }

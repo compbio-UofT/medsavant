@@ -27,6 +27,7 @@ public class CollapsibleFrameGadget extends CollapsiblePane implements GadgetCom
     public CollapsibleFrameGadget(Gadget gadget) {
         super(gadget.getName());
         _gadget = gadget;
+
         setTitleIcon(gadget.getIcon());
         setFocusable(true);
         setRequestFocusEnabled(true);

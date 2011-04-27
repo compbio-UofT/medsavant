@@ -31,7 +31,7 @@ import org.ut.biolab.medsavant.view.subview.VariantPage;
  */
 public class View extends JPanel {
 
-    List<String> subViewNames;
+    private List<String> subViewNames;
     private JPanel viewContainer;
     private CardLayout viewContainerLayout;
     private JPanel bannerContainer;
