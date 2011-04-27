@@ -21,9 +21,9 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButton;
 import org.ut.biolab.medsavant.util.ViewUtil;
-import org.ut.biolab.medsavant.view.subview.PatientSubView;
-import org.ut.biolab.medsavant.view.subview.SubView;
-import org.ut.biolab.medsavant.view.subview.VariantSubView;
+import org.ut.biolab.medsavant.view.subview.PatientPage;
+import org.ut.biolab.medsavant.view.subview.Page;
+import org.ut.biolab.medsavant.view.subview.VariantPage;
 
 /**
  *
@@ -57,7 +57,7 @@ public class View extends JPanel {
         setSubView(DEFAULT_SUBVIEW);
     }
 
-    private void addSubView(final SubView view) {
+    private void addSubView(final Page view) {
 
         viewContainer.add(view.getView(), view.getName());
         bannerContainer.add(view.getBanner(), view.getName());
@@ -88,8 +88,8 @@ public class View extends JPanel {
     }
 
     private void initViews() {
-        addSubView(new PatientSubView());
-        addSubView(new VariantSubView());
+        addSubView(new PatientPage());
+        addSubView(new VariantPage());
     }
 
     private void setSubView(String subViewName) {

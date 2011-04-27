@@ -11,7 +11,7 @@ import java.awt.Component;
  *
  * @author mfiume
  */
-public interface SubView {
+public interface Page {
 
     public String getName();
 

@@ -26,9 +26,9 @@ import org.ut.biolab.medsavant.controller.ResultController;
  *
  * @author mfiume
  */
-public class MedSavant extends JFrame {
+public class Frame extends JFrame {
 
-    public MedSavant() {
+    public Frame() {
         super("MedSavant");
 
         this.setLayout(new BorderLayout());
@@ -41,7 +41,7 @@ public class MedSavant extends JFrame {
         JMenuBar menu = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
         JMenuItem closeItem = new JMenuItem("Close");
-        final MedSavant instance = this;
+        final Frame instance = this;
         closeItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 instance.requestClose();
@@ -56,11 +56,12 @@ public class MedSavant extends JFrame {
 
     private void initVariantCollection() {
         try {
-            VariantSet variants = VCFParser.parseVariants(new File("C:\\calls.vcf"));
+            VariantSet variants = VCFParser.parseVariants(new File("C:\\Users\\mfiume\\Desktop\\calls.vcf"));
             ResultController.clearVariants();
             ResultController.addVariantSet(variants);
 
         } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 

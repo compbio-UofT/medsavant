@@ -22,7 +22,7 @@ import org.ut.biolab.medsavant.view.gadget.GadgetFactory;
  *
  * @author mfiume
  */
-public class VariantSubView implements SubView {
+public class VariantPage implements Page {
 
     private JComponent panel;
 
@@ -61,11 +61,12 @@ public class VariantSubView implements SubView {
         g = GadgetFactory.createFilterGadget();
         m.addGadget(g);
         m.showGadget(g);
+        g = GadgetFactory.createChartGadget();
+        m.addGadget(g);
         g = GadgetFactory.createResultsGadget();
         m.addGadget(g);
         m.showGadget(g);
-        g = GadgetFactory.createChartGadget();
-        m.addGadget(g);
+        
         //m.showGadget(g);
     }
 

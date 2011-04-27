@@ -5,7 +5,7 @@
 package org.ut.biolab.medsavant.view.gadget.filter;
 
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
+import org.ut.biolab.medsavant.controller.FilterGenerator;
 
 /**
  *
@@ -32,7 +32,7 @@ class FilterView {
     }
 
     public JComponent getComponent() {
-        return new JScrollPane(_component);
+        return _component;
     }
 
     private void setComponent(JComponent component) {

@@ -6,25 +6,18 @@ package org.ut.biolab.medsavant.view.gadget.filter;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.jidesoft.pane.FloorTabbedPane;
+import com.jidesoft.pane.CollapsiblePane;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterGenerator;
 import org.ut.biolab.medsavant.db.DB;
 import org.ut.biolab.medsavant.db.PatientTable;
 import org.ut.biolab.medsavant.model.Filter;
@@ -36,41 +29,22 @@ import org.ut.biolab.medsavant.model.QueryFilter;
  * @author mfiume
  */
 public class FilterPanel extends JPanel {
-    
-    private FilterController mfc;
-    private FloorTabbedPane filterViewTabbedPanel;
+
+
     private final ArrayList<FilterView> filterViews;
+    private JPanel contentPanel;
 
     public FilterPanel() {
         this.setLayout(new BorderLayout());
-        this.setBackground(Color.black);
         filterViews = new ArrayList<FilterView>();
         initGUI();
     }
 
-
-    public void paintComponent(Graphics g) {
-
-        GradientPaint p = new GradientPaint(0,0,Color.darkGray,0,40,Color.black);
-        ((Graphics2D)g).setPaint(p);
-
-        g.fillRect(0, 0, this.getWidth(), this.getHeight());
-
-    }
-
     private void initGUI() {
-        mfc = new FilterController();
-
-        filterViewTabbedPanel = new FloorTabbedPane();
-        filterViewTabbedPanel.setPreferredSize(new Dimension(300,450));
-        filterViewTabbedPanel.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                //updateCurrentFilterViewIndex();
-
-            }
-        });
-
-        this.add(this.filterViewTabbedPanel,BorderLayout.CENTER);
+        
+        contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel,BoxLayout.Y_AXIS));
+        this.add(contentPanel,BorderLayout.CENTER);
 
         List<FilterView> fv = getPatientFilterViews();
         addFilterViews(fv);
@@ -84,7 +58,15 @@ public class FilterPanel extends JPanel {
     
     private void addFilterView(FilterView view) {
         filterViews.add(view);
-        filterViewTabbedPanel.addTab(view.getTitle(),view.getComponent());
+        CollapsiblePane cp = new CollapsiblePane(view.getTitle());
+        try {
+            cp.setCollapsed(true);
+            cp.setContentAreaFilled(false);
+            cp.setCollapsedPercentage(0);
+        } catch (PropertyVetoException ex) {
+        }
+        cp.setContentPane(view.getComponent());
+        this.contentPanel.add(cp);
     }
 
 
@@ -104,8 +86,8 @@ public class FilterPanel extends JPanel {
         container.setLayout(new BoxLayout(container,BoxLayout.Y_AXIS));
 
         container.add(new JLabel("Patients are:"));
-        container.add(new JRadioButton("Male"));
-        final JRadioButton buttonFemale = new JRadioButton("Female");
+        container.add(new JCheckBox("Male"));
+        final JCheckBox buttonFemale = new JCheckBox("Female");
         container.add(buttonFemale);
         listenToComponent(buttonFemale);
 
@@ -135,14 +117,14 @@ public class FilterPanel extends JPanel {
         container.setLayout(new BoxLayout(container,BoxLayout.Y_AXIS));
 
         container.add(new JLabel("Patients are:"));
-        container.add(new JRadioButton("10-20"));
-        container.add(new JRadioButton("20-30"));
-        container.add(new JRadioButton("old"));
+        container.add(new JCheckBox("10-20"));
+        container.add(new JCheckBox("20-30"));
+        container.add(new JCheckBox("old"));
 
         return new FilterView(title,container,null);
     }
 
-    void listenToComponent(final JRadioButton c) {
+    void listenToComponent(final JCheckBox c) {
         c.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {

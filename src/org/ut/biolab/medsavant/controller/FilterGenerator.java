@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.view.gadget.filter;
+package org.ut.biolab.medsavant.controller;
 
 import org.ut.biolab.medsavant.model.Filter;
 
@@ -11,7 +11,7 @@ import org.ut.biolab.medsavant.model.Filter;
  *
  * @author mfiume
  */
-interface FilterGenerator {
+public interface FilterGenerator {
 
     public Filter generateFilter();
 

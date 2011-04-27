@@ -14,9 +14,9 @@ import org.ut.biolab.medsavant.util.ViewUtil;
  *
  * @author mfiume
  */
-public class PatientSubView implements SubView {
+public class PatientPage implements Page {
 
-    public PatientSubView() {
+    public PatientPage() {
     }
 
     public String getName() {
@@ -25,7 +25,7 @@ public class PatientSubView implements SubView {
 
     public Component getView() {
         JPanel p = new JPanel();
-        p.setBackground(Color.blue);
+        p.setBackground(Color.lightGray);
         return p;
     }
 
