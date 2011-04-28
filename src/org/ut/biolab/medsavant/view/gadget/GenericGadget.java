@@ -10,7 +10,7 @@ import com.jidesoft.dashboard.Gadget;
 import com.jidesoft.dashboard.GadgetComponent;
 import javax.swing.JComponent;
 import org.ut.biolab.medsavant.view.gadget.filter.FilterPanel;
-import org.ut.biolab.medsavant.images.IconFactory;
+import fiume.table.images.IconFactory;
 
 /**
  *
