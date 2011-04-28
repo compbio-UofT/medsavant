@@ -215,6 +215,33 @@ public class VariantRecordModel {
         return (Class) getFieldClasses().get(index);
     }
 
+    public static Object getValueOfFieldAtIndex(int keyIndex, VariantRecord r) {
+        switch (keyIndex) {
+            case INDEX_OF_ALT:
+                return r.getAlt();
+            case INDEX_OF_CALLDETAILS:
+                return r.getCallDetails();
+            case INDEX_OF_CHROM:
+                return r.getChrom();
+            case INDEX_OF_FILTER:
+                return r.getFilter();
+            case INDEX_OF_FORMAT:
+                return r.getFormat();
+            case INDEX_OF_ID:
+                return r.getId();
+            case INDEX_OF_POS:
+                return r.getPos();
+            case INDEX_OF_QUAL:
+                return r.getQual();
+            case INDEX_OF_REF:
+                return r.getRef();
+            case INDEX_OF_SAMPLEID:
+                return r.getSampleID();
+        }
+
+        return null;
+    }
+
     /*
     private static final Class sc = String.class;
     private static final Class ic = Integer.class;

@@ -7,6 +7,8 @@ package org.ut.biolab.medsavant.view.gadget.filter;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.pane.CollapsiblePane;
+import com.jidesoft.pane.CollapsiblePanes;
+import fiume.vcf.VariantRecord;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagLayout;
@@ -16,16 +18,27 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterGenerator;
+import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.DB;
 import org.ut.biolab.medsavant.db.PatientTable;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.model.VariantRecordModel;
+import org.ut.biolab.medsavant.util.Util;
 
 
 /**
@@ -36,7 +49,7 @@ public class FilterPanel extends JPanel {
 
 
     private final ArrayList<FilterView> filterViews;
-    private JPanel contentPanel;
+    private CollapsiblePanes contentPanel;
 
     public FilterPanel() {
         this.setLayout(new BorderLayout());
@@ -46,15 +59,17 @@ public class FilterPanel extends JPanel {
 
     private void initGUI() {
         
-        contentPanel = new JPanel();
+        contentPanel = new CollapsiblePanes();
         contentPanel.setBackground(Color.white);
-        //contentPanel.setLayout(new GridBagLayout(0,1));
+        //contentPanel.setLayout(new GridLayout(0,1));
         //contentPanel.add(Box.createGlue());
         //contentPanel.setLayout(new BoxLayout(contentPanel,BoxLayout.Y_AXIS));
-        this.add(contentPanel,BorderLayout.CENTER);
+        this.add(new JScrollPane(contentPanel),BorderLayout.CENTER);
 
         List<FilterView> fv = getPatientFilterViews();
         addFilterViews(fv);
+
+        contentPanel.addExpansion();
     }
 
     public void addFilterViews(List<FilterView> filterViews) {
@@ -68,10 +83,10 @@ public class FilterPanel extends JPanel {
         CollapsiblePane cp = new CollapsiblePane(view.getTitle());
         try {
             cp.setCollapsed(true);
-            cp.setContentAreaFilled(false);
-            cp.setCollapsedPercentage(0);
         } catch (PropertyVetoException ex) {
         }
+        //cp.setContentAreaFilled(false);
+        cp.setCollapsedPercentage(0);
         cp.setContentPane(view.getComponent());
         this.contentPanel.add(cp);
     }
@@ -80,6 +95,9 @@ public class FilterPanel extends JPanel {
     private List<FilterView> getPatientFilterViews() {
         List<FilterView> views = new ArrayList<FilterView>();
 
+        for (FilterView v : getVariantRecordFilterViews()) {
+            views.add(v);
+        }
         views.add(getGenderFilterView());
         views.add(getAgeFilterView());
 
@@ -139,6 +157,96 @@ public class FilterPanel extends JPanel {
             }
 
         });
+    }
+
+    private List<FilterView> getVariantRecordFilterViews() {
+        List<FilterView> l = new ArrayList<FilterView>();
+
+        List<String> fieldNames = VariantRecordModel.getFieldNames();
+        int numFields = fieldNames.size();
+
+        for (int i = 0; i < numFields; i++) {
+            Class c = VariantRecordModel.getFieldClass(i);
+            if (Util.isQuantatitiveClass(c)) { continue; }
+             else {
+                String title = fieldNames.get(i);
+
+                JPanel container = new JPanel();
+                container.setLayout(new BoxLayout(container,BoxLayout.Y_AXIS));
+
+                Set<String> uniq = getUniqueValuesOfVariantRecordsAtField(i);
+
+                final JButton apply = new JButton("Apply");
+                apply.setEnabled(false);
+                apply.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        apply.setEnabled(false);
+                    }
+
+                });
+
+                final List<JCheckBox> boxes = new ArrayList<JCheckBox>();
+
+                for (String s : uniq) {
+                    JCheckBox b = new JCheckBox(s);
+                    b.setSelected(true);
+                    b.addChangeListener(new ChangeListener() {
+
+                        public void stateChanged(ChangeEvent e) {
+                            apply.setEnabled(true);
+                        }
+
+                    });
+                    container.add(b);
+                    boxes.add(b);
+                }
+
+                JButton selectAll = new JButton("Select All");
+                selectAll.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        for (JCheckBox c : boxes) {
+                            c.setSelected(true);
+                        }
+                    }
+
+                });
+                container.add(selectAll);
+
+                JButton selectNone = new JButton("Select None");
+                selectNone.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        for (JCheckBox c : boxes) {
+                            c.setSelected(false);
+                        }
+                    }
+
+                });
+                container.add(selectNone);
+
+                
+                container.add(apply);
+
+                l.add(new FilterView(title,container,null));
+             }
+        }
+
+        return l;
+    }
+
+    private Set<String> getUniqueValuesOfVariantRecordsAtField(int i) {
+        Set<String> result = new TreeSet<String>();
+
+        List<VariantRecord> records = ResultController.getVariantRecords();
+        for (VariantRecord r : records) {
+            Object o = VariantRecordModel.getValueOfFieldAtIndex(i, r);
+            if (o == null) { result.add("<none>"); }
+            else {result.add(o.toString()); }
+        }
+
+        return result;
     }
 
 }

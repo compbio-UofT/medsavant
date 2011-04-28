@@ -39,4 +39,9 @@ public class Util {
       return new Color(numGen.nextInt(256), numGen.nextInt(256), numGen.nextInt(256));
    }
 
+   public static boolean isQuantatitiveClass(Class c) {
+        if (c == Integer.class || c == Long.class || c == Short.class || c == Double.class || c == Float.class) { return true; }
+        return false;
+    }
+
 }

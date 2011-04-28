@@ -122,32 +122,7 @@ public class ChartPanel extends JPanel {
         this.add(chart, BorderLayout.CENTER);
     }
 
-    private static Object getValueOfFieldAtIndex(int keyIndex, VariantRecord r) {
-        switch (keyIndex) {
-            case VariantRecordModel.INDEX_OF_ALT:
-                return r.getAlt();
-            case VariantRecordModel.INDEX_OF_CALLDETAILS:
-                return r.getCallDetails();
-            case VariantRecordModel.INDEX_OF_CHROM:
-                return r.getChrom();
-            case VariantRecordModel.INDEX_OF_FILTER:
-                return r.getFilter();
-            case VariantRecordModel.INDEX_OF_FORMAT:
-                return r.getFormat();
-            case VariantRecordModel.INDEX_OF_ID:
-                return r.getId();
-            case VariantRecordModel.INDEX_OF_POS:
-                return r.getPos();
-            case VariantRecordModel.INDEX_OF_QUAL:
-                return r.getQual();
-            case VariantRecordModel.INDEX_OF_REF:
-                return r.getRef();
-            case VariantRecordModel.INDEX_OF_SAMPLEID:
-                return r.getSampleID();
-        }
-
-        return null;
-    }
+    
 
     private static void printHist(Map<String, Integer> chartMap) {
         if (true) {
@@ -245,10 +220,7 @@ public class ChartPanel extends JPanel {
         this.currentKeyIndex = currentKeyIndex;
     }
 
-    private static boolean isQuantatitiveClass(Class c) {
-        if (c == Integer.class || c == Long.class || c == Short.class || c == Double.class || c == Float.class) { return true; }
-        return false;
-    }
+    
 
     private int getNumberOfQuantitativeCategories() {
         return (Integer) numberModel.getValue();
@@ -259,13 +231,13 @@ public class ChartPanel extends JPanel {
         Map<String,Integer> chartMap = new TreeMap<String,Integer>();
 
         Class c = VariantRecordModel.getFieldClass(fieldIndex);
-        if (isQuantatitiveClass(c)) {
+        if (Util.isQuantatitiveClass(c)) {
             int numBins = getNumberOfQuantitativeCategories();
             List<Double> numbers = new ArrayList<Double>();
             Double min = Double.MAX_VALUE;
             Double max = Double.MIN_VALUE;
             for (VariantRecord r : ResultController.getVariantRecords()) {
-                Object numericvalue = getValueOfFieldAtIndex(fieldIndex, r);
+                Object numericvalue = VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
                 Double v = Double.parseDouble(numericvalue.toString());
                 min = Math.min(min, v);
                 max = Math.max(max, v);
@@ -287,7 +259,7 @@ public class ChartPanel extends JPanel {
 
         } else {
             for (VariantRecord r : ResultController.getVariantRecords()) {
-                String key = (String) getValueOfFieldAtIndex(fieldIndex, r);
+                String key = (String) VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
                 if (key == null) { key = "."; }
                 if (chartMap.containsKey(key)) {
                     chartMap.put(key, chartMap.get(key) + 1);
