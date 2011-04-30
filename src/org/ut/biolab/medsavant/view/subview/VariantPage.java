@@ -22,7 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.util.ViewUtil;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.gadget.GadgetFactory;
 
 /**

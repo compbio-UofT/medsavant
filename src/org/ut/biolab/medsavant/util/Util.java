@@ -5,11 +5,14 @@
 
 package org.ut.biolab.medsavant.util;
 
+import com.jidesoft.swing.JideButton;
 import fiume.vcf.VariantRecord;
 import java.awt.Color;
+import java.awt.Font;
 import java.util.List;
 import java.util.Random;
 import java.util.Vector;
+import javax.swing.JButton;
 import org.ut.biolab.medsavant.model.VariantRecordModel;
 
 /**
@@ -43,5 +46,4 @@ public class Util {
         if (c == Integer.class || c == Long.class || c == Short.class || c == Double.class || c == Float.class) { return true; }
         return false;
     }
-
 }

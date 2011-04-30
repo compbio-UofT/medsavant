@@ -20,7 +20,7 @@ import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButton;
-import org.ut.biolab.medsavant.util.ViewUtil;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.subview.PatientPage;
 import org.ut.biolab.medsavant.view.subview.Page;
 import org.ut.biolab.medsavant.view.subview.VariantPage;

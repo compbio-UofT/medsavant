@@ -22,8 +22,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -39,14 +42,13 @@ import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
-
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
  * @author mfiume
  */
 public class FilterPanel extends JPanel {
-
 
     private final ArrayList<FilterView> filterViews;
     private CollapsiblePanes contentPanel;
@@ -58,13 +60,13 @@ public class FilterPanel extends JPanel {
     }
 
     private void initGUI() {
-        
+
         contentPanel = new CollapsiblePanes();
         contentPanel.setBackground(Color.white);
         //contentPanel.setLayout(new GridLayout(0,1));
         //contentPanel.add(Box.createGlue());
         //contentPanel.setLayout(new BoxLayout(contentPanel,BoxLayout.Y_AXIS));
-        this.add(new JScrollPane(contentPanel),BorderLayout.CENTER);
+        this.add(new JScrollPane(contentPanel), BorderLayout.CENTER);
 
         List<FilterView> fv = getPatientFilterViews();
         addFilterViews(fv);
@@ -77,7 +79,7 @@ public class FilterPanel extends JPanel {
             addFilterView(view);
         }
     }
-    
+
     private void addFilterView(FilterView view) {
         filterViews.add(view);
         CollapsiblePane cp = new CollapsiblePane(view.getTitle());
@@ -90,7 +92,6 @@ public class FilterPanel extends JPanel {
         cp.setContentPane(view.getComponent());
         this.contentPanel.add(cp);
     }
-
 
     private List<FilterView> getPatientFilterViews() {
         List<FilterView> views = new ArrayList<FilterView>();
@@ -108,7 +109,7 @@ public class FilterPanel extends JPanel {
         String title = "Gender";
 
         JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container,BoxLayout.Y_AXIS));
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
         container.add(new JLabel("Patients are:"));
         container.add(new JCheckBox("Male"));
@@ -117,13 +118,17 @@ public class FilterPanel extends JPanel {
         listenToComponent(buttonFemale);
 
         FilterGenerator fg = new FilterGenerator() {
+
             public Filter generateFilter() {
                 QueryFilter qf = new QueryFilter() {
+
                     @Override
                     public List<Condition> getConditions() {
                         List<Condition> c = new ArrayList<Condition>();
                         String value = "male";
-                        if (buttonFemale.isSelected()) { value = "female"; }
+                        if (buttonFemale.isSelected()) {
+                            value = "female";
+                        }
                         c.add(BinaryCondition.equalTo(DB.getInstance().patientTable.getColumn(PatientTable.COL_GENDER), value));
                         return c;
                     }
@@ -132,21 +137,21 @@ public class FilterPanel extends JPanel {
             }
         };
 
-        return new FilterView(title,container,fg);
+        return new FilterView(title, container, fg);
     }
 
     private FilterView getAgeFilterView() {
         String title = "Age";
 
         JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container,BoxLayout.Y_AXIS));
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
         container.add(new JLabel("Patients are:"));
         container.add(new JCheckBox("10-20"));
         container.add(new JCheckBox("20-30"));
         container.add(new JCheckBox("old"));
 
-        return new FilterView(title,container,null);
+        return new FilterView(title, container, null);
     }
 
     void listenToComponent(final JCheckBox c) {
@@ -155,7 +160,6 @@ public class FilterPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 //setApplyButtonEnabled(true);
             }
-
         });
     }
 
@@ -167,12 +171,17 @@ public class FilterPanel extends JPanel {
 
         for (int i = 0; i < numFields; i++) {
             Class c = VariantRecordModel.getFieldClass(i);
-            if (Util.isQuantatitiveClass(c)) { continue; }
-             else {
+            if (Util.isQuantatitiveClass(c)) {
+                continue;
+            } else {
                 String title = fieldNames.get(i);
 
                 JPanel container = new JPanel();
-                container.setLayout(new BoxLayout(container,BoxLayout.Y_AXIS));
+                container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+
+                JPanel bottomContainer = new JPanel();
+                bottomContainer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.gray));
+                bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
 
                 Set<String> uniq = getUniqueValuesOfVariantRecordsAtField(i);
 
@@ -185,7 +194,6 @@ public class FilterPanel extends JPanel {
                     }
 
                 });
-
                 final List<JCheckBox> boxes = new ArrayList<JCheckBox>();
 
                 for (String s : uniq) {
@@ -194,43 +202,53 @@ public class FilterPanel extends JPanel {
                     b.addChangeListener(new ChangeListener() {
 
                         public void stateChanged(ChangeEvent e) {
-                            apply.setEnabled(true);
+                            AbstractButton abstractButton =
+                                    (AbstractButton) e.getSource();
+                            ButtonModel buttonModel = abstractButton.getModel();
+                            boolean pressed = buttonModel.isPressed();
+                            if (pressed) { apply.setEnabled(true); }
+                            //System.out.println("Changed: a=" + armed + "/p=" + pressed + "/s=" + selected);
                         }
-
                     });
+                    b.setAlignmentX(0F);
                     container.add(b);
                     boxes.add(b);
                 }
 
-                JButton selectAll = new JButton("Select All");
+                JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
                 selectAll.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
                         for (JCheckBox c : boxes) {
                             c.setSelected(true);
+                            apply.setEnabled(true);
                         }
                     }
-
                 });
-                container.add(selectAll);
+                bottomContainer.add(selectAll);
 
-                JButton selectNone = new JButton("Select None");
+                JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
+
                 selectNone.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
                         for (JCheckBox c : boxes) {
                             c.setSelected(false);
+                            apply.setEnabled(true);
                         }
                     }
-
                 });
-                container.add(selectNone);
+                bottomContainer.add(selectNone);
 
-                
-                container.add(apply);
+                bottomContainer.add(Box.createGlue());
 
-                l.add(new FilterView(title,container,null));
-             }
+                bottomContainer.add(apply);
+
+                bottomContainer.setAlignmentX(0F);
+                container.add(bottomContainer);
+
+                l.add(new FilterView(title, container, null));
+            }
         }
 
         return l;
@@ -242,11 +260,13 @@ public class FilterPanel extends JPanel {
         List<VariantRecord> records = ResultController.getVariantRecords();
         for (VariantRecord r : records) {
             Object o = VariantRecordModel.getValueOfFieldAtIndex(i, r);
-            if (o == null) { result.add("<none>"); }
-            else {result.add(o.toString()); }
+            if (o == null) {
+                result.add("<none>");
+            } else {
+                result.add(o.toString());
+            }
         }
 
         return result;
     }
-
 }

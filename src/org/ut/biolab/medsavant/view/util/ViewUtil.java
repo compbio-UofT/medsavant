@@ -3,9 +3,11 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.util;
+package org.ut.biolab.medsavant.view.util;
 
+import com.jidesoft.swing.JideButton;
 import java.awt.Component;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
@@ -22,6 +24,12 @@ public class ViewUtil {
     public static JComponent clear(JComponent c) {
         c.setOpaque(false);
         return c;
+    }
+
+    public static JButton createHyperLinkButton(String string) {
+        JideButton b = new JideButton(string);
+        b.setButtonStyle(JideButton.HYPERLINK_STYLE);
+        return b;
     }
 
 }

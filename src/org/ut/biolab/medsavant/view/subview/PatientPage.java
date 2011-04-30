@@ -8,7 +8,7 @@ package org.ut.biolab.medsavant.view.subview;
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.util.ViewUtil;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
