@@ -5,7 +5,10 @@
 
 package org.ut.biolab.medsavant.view.util;
 
+import com.jidesoft.plaf.basic.ThemePainter;
 import com.jidesoft.swing.JideButton;
+import com.jidesoft.swing.JideSplitButton;
+import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -30,6 +33,13 @@ public class ViewUtil {
         JideButton b = new JideButton(string);
         b.setButtonStyle(JideButton.HYPERLINK_STYLE);
         return b;
+    }
+
+    public static JideSplitButton createJideSplitButton(String name) {
+        final JideSplitButton button = new JideSplitButton(name);
+        button.setForegroundOfState(ThemePainter.STATE_DEFAULT, Color.BLACK);
+        //button.setIcon(icon);
+        return button;
     }
 
 }

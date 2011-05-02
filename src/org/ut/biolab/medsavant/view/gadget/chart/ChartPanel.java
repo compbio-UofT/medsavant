@@ -12,6 +12,7 @@ import com.jidesoft.chart.model.ChartCategory;
 import com.jidesoft.chart.model.ChartPoint;
 import com.jidesoft.chart.model.DefaultChartModel;
 import com.jidesoft.chart.model.Highlight;
+import com.jidesoft.chart.model.InvertibleTransform;
 import com.jidesoft.chart.render.AbstractPieSegmentRenderer;
 import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
@@ -51,17 +52,14 @@ import org.ut.biolab.medsavant.view.gadget.CollapsibleFrameGadget;
  */
 public class ChartPanel extends JPanel {
 
-
-
     private int currentKeyIndex = VariantRecordModel.INDEX_OF_REF;
-    //private Map<String, Integer> chartMap;
-   // private DefaultChartModel chartModel;
-   // private Chart chart;
     private JToolBar bar;
+    private boolean isLogscale = false;
     private boolean isPie = false;
     private boolean isSorted = false;
     private JCheckBox isPieCB;
     private JCheckBox isSortedCB;
+    private JCheckBox isLogarithmicCB;
     private SpinnerNumberModel numberModel;
     private static final int DEFAULT_NUM_QUANTITATIVE_CATEGORIES = 5;
 
@@ -73,25 +71,15 @@ public class ChartPanel extends JPanel {
 
     private void updateChartMap() {
 
-        Map<String,Integer> chartMap = getChartMap(currentKeyIndex, isSorted);
+        Map<String, Integer> chartMap = getChartMap(currentKeyIndex, isSorted);
 
         printHist(chartMap);
 
-        DefaultChartModel chartModel = new DefaultChartModel("Sample Model");
+        DefaultChartModel chartModel = new DefaultChartModel();
+        DefaultChartModel logChartModel = new DefaultChartModel();
+
         Chart chart = new Chart(new Dimension(200, 200));
-
-        ChartStyle s = new ChartStyle();
-        s.setBarsVisible(true);
-        s.setLinesVisible(false);
-
-        if (isPie) {
-            chart.setChartType(ChartType.PIE);
-        }
-
-        chart.addModel(chartModel);
-        chart.setStyle(chartModel, s);
         chart.setRolloverEnabled(true);
-
         chart.setSelectionEnabled(true);
         chart.setSelectionShowsOutline(true);
         chart.setSelectionShowsExplodedSegments(true);
@@ -110,19 +98,37 @@ public class ChartPanel extends JPanel {
             int value = chartMap.get(key);
             max = Math.max(max, value);
             ChartPoint p = new ChartPoint(cat, value);
+            ChartPoint logp = new ChartPoint(cat, Math.log10(value));
             p.setHighlight(h);
-            chartModel.addPoint(p);
+            logp.setHighlight(h);
+            if (this.isLogScale()) {
+                chartModel.addPoint(logp);
+            } else {
+                chartModel.addPoint(p);
+            }
         }
 
+        ChartStyle s = new ChartStyle();
+        s.setBarsVisible(true);
+        s.setLinesVisible(false);
+
         chart.setXAxis(new CategoryAxis(categories, "Category"));
-        chart.setYAxis(new Axis(new NumericRange(0, max), "Frequency"));
+        if (this.isLogScale()) {
+             chart.setYAxis(new Axis(new NumericRange(0, Math.log10(max)), "log(Frequency)"));
+        } else {
+            chart.setYAxis(new Axis(new NumericRange(0, max), "Frequency"));
+        }
+        chart.addModel(chartModel);
+        chart.setStyle(chartModel, s);
+
+        if (isPie) {
+            chart.setChartType(ChartType.PIE);
+        }
 
         this.removeAll();
         this.add(bar, BorderLayout.NORTH);
         this.add(chart, BorderLayout.CENTER);
     }
-
-    
 
     private static void printHist(Map<String, Integer> chartMap) {
         if (true) {
@@ -186,6 +192,19 @@ public class ChartPanel extends JPanel {
 
         bar.add(Box.createHorizontalStrut(5));
 
+        isLogarithmicCB = new JCheckBox("Log scale");
+        isLogarithmicCB.setSelected(isLogscale);
+        isLogarithmicCB.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                setIsLogarithmic(isLogarithmicCB.isSelected());
+                updateChartMap();
+            }
+        });
+        bar.add(isLogarithmicCB);
+
+        bar.add(Box.createHorizontalStrut(5));
+
         bar.add(new JLabel("Quantitative categories:"));
 
         bar.add(Box.createHorizontalStrut(5));
@@ -201,7 +220,6 @@ public class ChartPanel extends JPanel {
             public void stateChanged(ChangeEvent e) {
                 updateChartMap();
             }
-
         });
         bar.add(numberSpinner);
 
@@ -212,6 +230,10 @@ public class ChartPanel extends JPanel {
         this.isPie = b;
     }
 
+    private void setIsLogarithmic(boolean selected) {
+        this.isLogscale = selected;
+    }
+
     public void setSortByFrequency(boolean b) {
         this.isSorted = b;
     }
@@ -220,15 +242,13 @@ public class ChartPanel extends JPanel {
         this.currentKeyIndex = currentKeyIndex;
     }
 
-    
-
     private int getNumberOfQuantitativeCategories() {
         return (Integer) numberModel.getValue();
     }
 
     private Map<String, Integer> getChartMap(int fieldIndex, boolean isSorted) {
 
-        Map<String,Integer> chartMap = new TreeMap<String,Integer>();
+        Map<String, Integer> chartMap = new TreeMap<String, Integer>();
 
         Class c = VariantRecordModel.getFieldClass(fieldIndex);
         if (Util.isQuantatitiveClass(c)) {
@@ -244,23 +264,25 @@ public class ChartPanel extends JPanel {
                 numbers.add(v);
             }
 
-            max = max+1;
-            Double step = (max-min)/numBins;
+            max = max + 1;
+            Double step = (max - min) / numBins;
             int[] bins = new int[numBins];
 
             for (Double d : numbers) {
                 int binnumber = (int) ((d - min) / step);
                 bins[binnumber]++;
             }
-            
+
             for (int i = 0; i < numBins; i++) {
-                chartMap.put(((int)(min+i*step)) + " - " + ((int)(min+(i+1)*step)), bins[i]);
+                chartMap.put(((int) (min + i * step)) + " - " + ((int) (min + (i + 1) * step)), bins[i]);
             }
 
         } else {
             for (VariantRecord r : ResultController.getVariantRecords()) {
                 String key = (String) VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
-                if (key == null) { key = "."; }
+                if (key == null) {
+                    key = ".";
+                }
                 if (chartMap.containsKey(key)) {
                     chartMap.put(key, chartMap.get(key) + 1);
                 } else {
@@ -270,8 +292,8 @@ public class ChartPanel extends JPanel {
         }
 
         if (isSorted) {
-            ValueComparator bvc =  new ValueComparator(chartMap);
-            Map m = new TreeMap<String,Integer>(bvc);
+            ValueComparator bvc = new ValueComparator(chartMap);
+            Map m = new TreeMap<String, Integer>(bvc);
             m.putAll(chartMap);
             chartMap = m;
         }
@@ -296,6 +318,21 @@ public class ChartPanel extends JPanel {
             } else {
                 return -1;
             }
+        }
+    }
+
+    public boolean isLogScale() {
+        return isLogscale;
+    }
+
+    class LogTransform implements InvertibleTransform<Double> {
+
+        public Double transform(Double pos) {
+            return Math.log10(pos);
+        }
+
+        public Double inverseTransform(Double t) {
+            return Math.pow(10, t);
         }
     }
 }
