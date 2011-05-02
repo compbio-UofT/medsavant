@@ -9,6 +9,7 @@ import com.jidesoft.swing.JideSplitButton;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.Box;
@@ -59,7 +60,7 @@ public class SplitView extends JPanel {
         left.add(l);
     }
 
-    public void addSubsection(final String subsectionName, JPanel card) {
+    public void addSubsection(final String subsectionName, Component card) {
         JRadioButton b = (JRadioButton) ViewUtil.clear(new JRadioButton(subsectionName));
         b.setFont(new Font("Arial", Font.PLAIN, 14));
         b.setForeground(Color.darkGray);

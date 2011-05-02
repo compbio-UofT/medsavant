@@ -5,12 +5,9 @@
 
 package org.ut.biolab.medsavant.view.subview;
 
-import org.ut.biolab.medsavant.view.SplitView;
 import java.awt.Color;
 import java.awt.Component;
-import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -27,18 +24,7 @@ public class LibraryPage implements Page {
     }
 
     public Component getView() {
-        SplitView p = new SplitView();
-        JPanel red = new JPanel(); red.setBackground(Color.red);
-        JPanel green = new JPanel(); green.setBackground(Color.green);
-        
-        p.addSection("Library");
-        p.addSubsection("Patients",new JPanel());
-        p.addSubsection("Genes",red);
-        p.addSubsection("Pathways",green);
-        p.addSubsection("Variants",new JPanel());
-        p.addSection("Search");
-        p.addSubsection("Filter variants",new JPanel());
-        return p;
+        return new JPanel();
     }
 
     public Component getBanner() {

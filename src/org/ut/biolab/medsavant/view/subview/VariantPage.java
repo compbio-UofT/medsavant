@@ -13,15 +13,19 @@ import com.jidesoft.swing.JideSwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.gadget.GadgetFactory;
 
@@ -34,7 +38,7 @@ public class VariantPage implements Page {
     private JComponent panel;
 
     public String getName() {
-        return "Variant";
+        return "Filter variants";
     }
 
     public JComponent getView() {
@@ -115,7 +119,14 @@ public class VariantPage implements Page {
 
     public Component getBanner() {
         JPanel p = ViewUtil.createClearPanel();
+        p.add(Box.createHorizontalGlue());
+        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
         p.add(new JButton("Show in Savant"));
+        p.add(Box.createHorizontalStrut(10));
+        JTextField jtf = new JTextField("Search library");
+        jtf.setMaximumSize(new Dimension(200,999));
+        jtf.setColumns(30);
+        p.add(jtf);
         return p;
     }
 }

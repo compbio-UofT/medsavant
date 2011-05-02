@@ -5,6 +5,8 @@
 
 package org.ut.biolab.medsavant.view;
 
+import org.ut.biolab.medsavant.view.subview.LibraryVariantsPage;
+import org.ut.biolab.medsavant.view.subview.LibraryVariantsPage;
 import org.ut.biolab.medsavant.controller.FilterController;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -32,16 +34,12 @@ import org.ut.biolab.medsavant.view.subview.VariantPage;
  */
 public class View extends JPanel {
 
-    private List<String> subViewNames;
-    private JPanel viewContainer;
-    private CardLayout viewContainerLayout;
     private JPanel bannerContainer;
     private CardLayout bannerContainerLayout;
     private JPanel menuPanel;
-    private JPanel crossViewPanel;
-    private ButtonGroup subViewButtonGroup;
 
     private static final String DEFAULT_SUBVIEW = "Variant";
+    private SplitView splitView;
 
     public View() {
         this.setBackground(Color.darkGray);
@@ -49,7 +47,6 @@ public class View extends JPanel {
     }
 
     private void init() {
-        subViewNames = new ArrayList<String>();
         this.setLayout(new BorderLayout());
         initMenu();
         initBannerContainer();
@@ -59,43 +56,30 @@ public class View extends JPanel {
     }
 
     private void addSubView(final Page view) {
-
-        viewContainer.add(view.getView(), view.getName());
+        splitView.addSubsection(view.getName(), view.getView());
         bannerContainer.add(view.getBanner(), view.getName());
-        subViewNames.add(view.getName());
-
-        JRadioButton switchCardButton = new JRadioButton(view.getName());
-
-        if (view.getName().equals(DEFAULT_SUBVIEW)) { switchCardButton.setSelected(true); }
-        
-        switchCardButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                setSubView(view.getName());
-            }
-
-        });
-
-        subViewButtonGroup.add(switchCardButton);
-
-        crossViewPanel.add(ViewUtil.clear(switchCardButton));
     }
 
     private void initViewContainer() {
-        viewContainer = new JPanel();
-        viewContainerLayout = new CardLayout();
-        viewContainer.setLayout(viewContainerLayout);
-        this.add(viewContainer, BorderLayout.CENTER);
+        splitView = new SplitView();
+        this.add(splitView, BorderLayout.CENTER);
     }
 
     private void initViews() {
-        addSubView(new LibraryPage());
-        addSubView(new PatientPage());
+
+        JPanel red = new JPanel(); red.setBackground(Color.red);
+        JPanel green = new JPanel(); green.setBackground(Color.green);
+
+        splitView.addSection("Library");
+        splitView.addSubsection("Patients",new JPanel());
+        splitView.addSubsection("Genes",red);
+        splitView.addSubsection("Pathways",green);
+        addSubView(new LibraryVariantsPage());
+        splitView.addSection("Search");
         addSubView(new VariantPage());
     }
 
     private void setSubView(String subViewName) {
-        viewContainerLayout.show(viewContainer, subViewName);
         bannerContainerLayout.show(bannerContainer, subViewName);
     }
 
@@ -104,8 +88,6 @@ public class View extends JPanel {
         bannerContainerLayout = new CardLayout();
         bannerContainer.setLayout(bannerContainerLayout);
         menuPanel.add(bannerContainer);
-
-        subViewButtonGroup = new ButtonGroup();
     }
 
     private void initMenu() {
@@ -118,13 +100,7 @@ public class View extends JPanel {
             }
         };
         menuPanel.setLayout(new BoxLayout(menuPanel,BoxLayout.Y_AXIS));
-
-        crossViewPanel = ViewUtil.createClearPanel();
-        crossViewPanel.setLayout(new BoxLayout(crossViewPanel,BoxLayout.X_AXIS));
-        menuPanel.add(crossViewPanel);
         
         this.add(menuPanel, BorderLayout.NORTH);
     }
-
-    
 }
