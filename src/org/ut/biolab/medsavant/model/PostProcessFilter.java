@@ -5,8 +5,8 @@
 
 package org.ut.biolab.medsavant.model;
 
+import org.ut.biolab.medsavant.model.record.MedSavantRecord;
 import java.util.List;
-import java.util.concurrent.locks.Condition;
 import org.ut.biolab.medsavant.model.Filter.FilterType;
 
 /**

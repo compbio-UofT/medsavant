@@ -42,7 +42,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.model.VariantRecordModel;
+import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.view.gadget.CollapsibleFrameGadget;
 

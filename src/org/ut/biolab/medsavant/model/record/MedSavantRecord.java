@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.model;
+package org.ut.biolab.medsavant.model.record;
 
 import java.util.Vector;
 

@@ -5,6 +5,7 @@
 
 package org.ut.biolab.medsavant.view;
 
+import org.ut.biolab.medsavant.model.event.SectionChangedEvent;
 import org.ut.biolab.medsavant.view.subview.LibraryVariantsPage;
 import org.ut.biolab.medsavant.view.subview.LibraryVariantsPage;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -22,6 +23,7 @@ import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButton;
+import org.ut.biolab.medsavant.model.event.SectionChangedEventListener;
 import org.ut.biolab.medsavant.view.subview.LibraryPage;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.subview.PatientPage;
@@ -32,13 +34,9 @@ import org.ut.biolab.medsavant.view.subview.VariantPage;
  *
  * @author mfiume
  */
-public class View extends JPanel {
+public class View extends JPanel implements SectionChangedEventListener {
 
-    private JPanel bannerContainer;
-    private CardLayout bannerContainerLayout;
-    private JPanel menuPanel;
-
-    private static final String DEFAULT_SUBVIEW = "Variant";
+    private static final String DEFAULT_SUBVIEW = "Variants";
     private SplitView splitView;
 
     public View() {
@@ -48,20 +46,17 @@ public class View extends JPanel {
 
     private void init() {
         this.setLayout(new BorderLayout());
-        initMenu();
-        initBannerContainer();
         initViewContainer();
         initViews();
-        setSubView(DEFAULT_SUBVIEW);
     }
 
     private void addSubView(final Page view) {
-        splitView.addSubsection(view.getName(), view.getView());
-        bannerContainer.add(view.getBanner(), view.getName());
+        splitView.addSubsection(view.getName(), view);
     }
 
     private void initViewContainer() {
         splitView = new SplitView();
+        splitView.addSectionChangedListener(this);
         this.add(splitView, BorderLayout.CENTER);
     }
 
@@ -71,36 +66,21 @@ public class View extends JPanel {
         JPanel green = new JPanel(); green.setBackground(Color.green);
 
         splitView.addSection("Library");
-        splitView.addSubsection("Patients",new JPanel());
-        splitView.addSubsection("Genes",red);
-        splitView.addSubsection("Pathways",green);
+       // splitView.addSubsection("Diseases",new JPanel());
+       // splitView.addSubsection("Genes",red);
+       // splitView.addSubsection("Pathways",green);
+       // splitView.addSubsection("Patients",new JPanel());
+
         addSubView(new LibraryVariantsPage());
         splitView.addSection("Search");
         addSubView(new VariantPage());
+
+        splitView.setSubsection("Pathways");
+
+        splitView.setSubsection(DEFAULT_SUBVIEW);
     }
 
-    private void setSubView(String subViewName) {
-        bannerContainerLayout.show(bannerContainer, subViewName);
-    }
-
-    private void initBannerContainer() {
-        bannerContainer = ViewUtil.createClearPanel();
-        bannerContainerLayout = new CardLayout();
-        bannerContainer.setLayout(bannerContainerLayout);
-        menuPanel.add(bannerContainer);
-    }
-
-    private void initMenu() {
-        menuPanel = new JPanel() {
-            @Override
-            public void paintComponent(Graphics g) {
-                GradientPaint p = new GradientPaint(0,0,Color.white,0,40,Color.lightGray);
-                ((Graphics2D)g).setPaint(p);
-                g.fillRect(0, 0, menuPanel.getWidth(), menuPanel.getHeight());
-            }
-        };
-        menuPanel.setLayout(new BoxLayout(menuPanel,BoxLayout.Y_AXIS));
-        
-        this.add(menuPanel, BorderLayout.NORTH);
+    public void sectionChangedEventReceived(SectionChangedEvent e) {
+        System.out.println("View received section changed to " + e.getSection());
     }
 }

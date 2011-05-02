@@ -12,7 +12,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.images.IconFactory;
-import org.ut.biolab.medsavant.model.VariantRecordModel;
+import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.view.gadget.chart.ChartPanel;
 import org.ut.biolab.medsavant.view.gadget.filter.FilterPanel;

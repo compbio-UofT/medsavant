@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.model;
+package org.ut.biolab.medsavant.model.record;
 
 import fiume.vcf.VariantRecord;
 import java.util.Vector;

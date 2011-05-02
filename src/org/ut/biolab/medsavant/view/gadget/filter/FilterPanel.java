@@ -40,7 +40,7 @@ import org.ut.biolab.medsavant.db.DB;
 import org.ut.biolab.medsavant.db.PatientTable;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.model.VariantRecordModel;
+import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
