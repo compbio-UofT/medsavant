@@ -5,15 +5,22 @@
 
 package org.ut.biolab.medsavant.view.subview;
 
+import org.ut.biolab.medsavant.view.dialog.AddLibraryVariantsDialog;
+import java.awt.event.ActionEvent;
 import org.ut.biolab.medsavant.model.LibraryVariantsRecordModel;
 import fiume.table.SearchableTablePanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.LibraryVariantsController;
 import org.ut.biolab.medsavant.model.record.FileRecordModel;
@@ -49,8 +56,29 @@ public class LibraryVariantsPage implements Page {
 
     public Component getBanner() {
         JPanel p = ViewUtil.createClearPanel();
+        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+        p.add(Box.createHorizontalGlue());
         JButton addButton = new JButton("Add");
-        //p.a
+        addButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+                JFileChooser fc = new JFileChooser();
+                fc.setDialogTitle("Open File");
+                fc.setDialogType(JFileChooser.OPEN_DIALOG);
+                int result = fc.showDialog(null, null);
+                if (result == JFileChooser.CANCEL_OPTION || result == JFileChooser.ERROR_OPTION) {
+                    return;
+                }
+                //setPath(fc.getSelectedFile().getAbsolutePath());
+                //JDialog d = new AddLibraryVariantsDialog(null,true);
+                //d.setVisible(true);
+            }
+
+        });
+        p.add(addButton);
+        JButton removeButton = new JButton("Remove");
+        p.add(removeButton);
         return p;
     }
 

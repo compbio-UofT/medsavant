@@ -13,6 +13,8 @@ import java.awt.Component;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 
 /**
  *
@@ -40,6 +42,14 @@ public class ViewUtil {
         button.setForegroundOfState(ThemePainter.STATE_DEFAULT, Color.BLACK);
         //button.setIcon(icon);
         return button;
+    }
+
+    public static Border getMediumBorder() {
+        return new EmptyBorder(5,5,5,5);
+    }
+
+    public static Border getBigBorder() {
+        return new EmptyBorder(10,10,10,10);
     }
 
 }
