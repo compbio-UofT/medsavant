@@ -5,33 +5,34 @@
 
 package org.ut.biolab.medsavant.view.subview;
 
-import org.ut.biolab.medsavant.view.dialog.AddLibraryVariantsDialog;
 import java.awt.event.ActionEvent;
-import org.ut.biolab.medsavant.model.LibraryVariantsRecordModel;
 import fiume.table.SearchableTablePanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.LibraryVariantsController;
 import org.ut.biolab.medsavant.model.record.FileRecordModel;
+import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.util.Util;
+import org.ut.biolab.medsavant.util.view.PeekingPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
  * @author mfiume
  */
-public class LibraryVariantsPage implements Page {
+public class LibraryVariantsPage implements Page, ChangeListener {
     private final JPanel panel;
     private final SearchableTablePanel stp;
 
@@ -40,10 +41,24 @@ public class LibraryVariantsPage implements Page {
       panel = new JPanel();
       panel.setLayout(new BorderLayout());
 
+      LibraryVariantDetailPanel detailPane = new LibraryVariantDetailPanel();
+      PeekingPanel detailView = new PeekingPanel("Details", BorderLayout.SOUTH, detailPane, true);
+      panel.add(detailView, BorderLayout.NORTH);
+
       stp = new SearchableTablePanel(new ArrayList(), FileRecordModel.getFieldNames(), FileRecordModel.getFieldClasses());
+      stp.getTable().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
       panel.add(stp, BorderLayout.CENTER);
 
+      LibraryVariantsController.getInstance().addChangeListener(this);
+
       updateLibrary();
+    }
+
+    private class LibraryVariantDetailPanel extends JPanel {
+
+        public LibraryVariantDetailPanel() {
+            this.setBackground(new Color(20,20,20));
+        }
     }
 
     public String getName() {
@@ -64,12 +79,19 @@ public class LibraryVariantsPage implements Page {
             public void actionPerformed(ActionEvent e) {
 
                 JFileChooser fc = new JFileChooser();
-                fc.setDialogTitle("Open File");
+                fc.setDialogTitle("Add Variant Set");
                 fc.setDialogType(JFileChooser.OPEN_DIALOG);
+                fc.addChoosableFileFilter(new ExtensionFileFilter("vcf"));
                 int result = fc.showDialog(null, null);
                 if (result == JFileChooser.CANCEL_OPTION || result == JFileChooser.ERROR_OPTION) {
                     return;
                 }
+                String path = fc.getSelectedFile().getAbsolutePath();
+                LibraryVariantsController.getInstance().addFileRecord(
+                        new FileRecordModel(
+                            path,
+                            (new Date()).toLocaleString()
+                            ));
                 //setPath(fc.getSelectedFile().getAbsolutePath());
                 //JDialog d = new AddLibraryVariantsDialog(null,true);
                 //d.setVisible(true);
@@ -78,6 +100,31 @@ public class LibraryVariantsPage implements Page {
         });
         p.add(addButton);
         JButton removeButton = new JButton("Remove");
+
+        removeButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+                int viewrow = stp.getTable().getSelectedRow();
+                int modelRow;
+                for (modelRow = 0; modelRow < stp.getTable().getModel().getRowCount(); modelRow++) {
+                    if (stp.getTable().convertRowIndexToView(modelRow) == viewrow) {
+                        break;
+                    }
+                }
+                
+                System.out.println("Raw row: " + viewrow);
+                System.out.println("Model row: " + stp.getTable().convertRowIndexToModel(viewrow));
+                System.out.println("View row: " + stp.getTable().convertRowIndexToView(viewrow));
+                System.out.println("My row: " + modelRow);
+                
+                int row = stp.getTable().convertRowIndexToModel(viewrow);
+
+                LibraryVariantsController.getInstance().removeRecordAtIndex(modelRow);
+            }
+
+        });
+
         p.add(removeButton);
         return p;
     }
@@ -85,6 +132,10 @@ public class LibraryVariantsPage implements Page {
     private void updateLibrary() {
         List<FileRecordModel> r = LibraryVariantsController.getInstance().getFileRecords();
         stp.updateData(Util.getFileRecordVector(r));
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        updateLibrary();
     }
 
 }

@@ -109,7 +109,7 @@ public class FileRecordModel {
             for (int i = 0; i < NUM_FIELDS; i++) {
                 switch (i) {
                     case INDEX_OF_FILENAME:
-                        arr[i] = r.getFileName();
+                        arr[i] = r.getFileName().replace("\\", "\\\\");
                         break;
                     case INDEX_OF_MODDATE:
                         arr[i] = r.getModificationDate();

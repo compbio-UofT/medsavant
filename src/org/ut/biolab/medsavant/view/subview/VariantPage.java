@@ -38,7 +38,7 @@ public class VariantPage implements Page {
     private JComponent panel;
 
     public String getName() {
-        return "Filter variants";
+        return "Variants2";
     }
 
     public JComponent getView() {

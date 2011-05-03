@@ -28,6 +28,7 @@ import org.ut.biolab.medsavant.view.subview.LibraryPage;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.subview.PatientPage;
 import org.ut.biolab.medsavant.view.subview.Page;
+import org.ut.biolab.medsavant.view.subview.ResultsPage;
 import org.ut.biolab.medsavant.view.subview.VariantPage;
 
 /**
@@ -73,7 +74,7 @@ public class View extends JPanel implements SectionChangedEventListener {
 
         addSubView(new LibraryVariantsPage());
         splitView.addSection("Search");
-        addSubView(new VariantPage());
+        addSubView(new ResultsPage());
 
         splitView.setSubsection("Pathways");
 

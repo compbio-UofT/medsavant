@@ -38,7 +38,7 @@ public class GadgetFactory {
     public static Gadget createResultsGadget() {
         GenericGadget g = new GenericGadget("Results",new GadgetContentGenerator() {
             public JComponent generateGadgetContent() {
-                Vector records = Util.getVariantRecordsVector(ResultController.getVariantRecords());
+                Vector records = Util.getVariantRecordsVector(ResultController.getAllVariantRecords());
                 JPanel p = new SearchableTablePanel(records, VariantRecordModel.getFieldNames(), VariantRecordModel.getFieldClasses());
                 return p;
             }

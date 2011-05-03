@@ -62,7 +62,7 @@ public class FilterPanel extends JPanel {
     private void initGUI() {
 
         contentPanel = new CollapsiblePanes();
-        contentPanel.setBackground(Color.white);
+        contentPanel.setBackground(ViewUtil.getDarkColor());
         //contentPanel.setLayout(new GridLayout(0,1));
         //contentPanel.add(Box.createGlue());
         //contentPanel.setLayout(new BoxLayout(contentPanel,BoxLayout.Y_AXIS));
@@ -180,7 +180,7 @@ public class FilterPanel extends JPanel {
                 container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
                 JPanel bottomContainer = new JPanel();
-                bottomContainer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.gray));
+                //bottomContainer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.gray));
                 bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
 
                 Set<String> uniq = getUniqueValuesOfVariantRecordsAtField(i);
@@ -257,7 +257,7 @@ public class FilterPanel extends JPanel {
     private Set<String> getUniqueValuesOfVariantRecordsAtField(int i) {
         Set<String> result = new TreeSet<String>();
 
-        List<VariantRecord> records = ResultController.getVariantRecords();
+        List<VariantRecord> records = ResultController.getAllVariantRecords();
         for (VariantRecord r : records) {
             Object o = VariantRecordModel.getValueOfFieldAtIndex(i, r);
             if (o == null) {

@@ -33,7 +33,7 @@ public class Frame extends JFrame {
 
         this.setLayout(new BorderLayout());
 
-        initVariantCollection();
+        //initVariantCollection();
 
         JPanel view = new View();
         this.add(view, BorderLayout.CENTER);
@@ -52,17 +52,6 @@ public class Frame extends JFrame {
         this.add(menu, BorderLayout.NORTH);
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    }
-
-    private void initVariantCollection() {
-        try {
-            VariantSet variants = VCFParser.parseVariants(new File("C:\\Users\\mfiume\\Desktop\\calls.vcf"));
-            ResultController.clearVariants();
-            ResultController.addVariantSet(variants);
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
     }
 
     public void requestClose() {

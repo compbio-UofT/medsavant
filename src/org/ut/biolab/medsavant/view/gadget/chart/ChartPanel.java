@@ -76,7 +76,6 @@ public class ChartPanel extends JPanel {
         printHist(chartMap);
 
         DefaultChartModel chartModel = new DefaultChartModel();
-        DefaultChartModel logChartModel = new DefaultChartModel();
 
         Chart chart = new Chart(new Dimension(200, 200));
         chart.setRolloverEnabled(true);
@@ -256,7 +255,7 @@ public class ChartPanel extends JPanel {
             List<Double> numbers = new ArrayList<Double>();
             Double min = Double.MAX_VALUE;
             Double max = Double.MIN_VALUE;
-            for (VariantRecord r : ResultController.getVariantRecords()) {
+            for (VariantRecord r : ResultController.getAllVariantRecords()) {
                 Object numericvalue = VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
                 Double v = Double.parseDouble(numericvalue.toString());
                 min = Math.min(min, v);
@@ -278,7 +277,7 @@ public class ChartPanel extends JPanel {
             }
 
         } else {
-            for (VariantRecord r : ResultController.getVariantRecords()) {
+            for (VariantRecord r : ResultController.getAllVariantRecords()) {
                 String key = (String) VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
                 if (key == null) {
                     key = ".";

@@ -53,18 +53,11 @@ public class SplitView extends JPanel {
         left.setBorder(new EmptyBorder(10,10,10,10));
         left.setLayout(new BoxLayout(left,BoxLayout.Y_AXIS));
 
-        bannerContainer = new JPanel() {
-            @Override
-            public void paintComponent(Graphics g) {
-                GradientPaint p = new GradientPaint(0,0,Color.white,0,40,Color.lightGray);
-                ((Graphics2D)g).setPaint(p);
-                g.fillRect(0, 0, bannerContainer.getWidth(), bannerContainer.getHeight());
-            }
-        };
+        bannerContainer = ViewUtil.getBannerPanel();
         bannerContainer.setLayout(new BoxLayout(bannerContainer,BoxLayout.X_AXIS));
         bannerContainer.setBorder(new EmptyBorder(5,3,5,3));
         sectionTitleLabel = (JLabel) ViewUtil.clear(new JLabel("Title"));
-        sectionTitleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        sectionTitleLabel.setFont(ViewUtil.getBigTitleFont());//new Font("Arial", Font.BOLD, 18));
         sectionTitleLabel.setForeground(Color.darkGray);
         bannerContainer.add(sectionTitleLabel);
         bannerCardLayout = new CardLayout();
