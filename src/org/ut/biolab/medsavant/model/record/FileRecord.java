@@ -21,7 +21,7 @@ import org.ut.biolab.medsavant.util.Util;
  *
  * @author mfiume
  */
-public class FileRecordModel {
+public class FileRecord {
 
     private static final int INDEX_OF_FILENAME = 0;
     private static final int INDEX_OF_MODDATE = INDEX_OF_FILENAME + 1;
@@ -31,7 +31,7 @@ public class FileRecordModel {
 
     public static final char DELIMITER = '\t';
 
-    public static Vector convertToVector(FileRecordModel r) {
+    public static Vector convertToVector(FileRecord r) {
         Vector v = new Vector();
         for (int i = 0; i < NUM_FIELDS; i++) {
             switch (i) {
@@ -49,12 +49,12 @@ public class FileRecordModel {
     private String fileName;
     private String moddate;
 
-    public FileRecordModel(String[] line) {
+    public FileRecord(String[] line) {
         fileName =     (String)    Util.parseStringValueAs(CLASS_OF_FILENAME, line[INDEX_OF_FILENAME]);
         moddate =       (String)  Util.parseStringValueAs(CLASS_OF_MODDATE, line[INDEX_OF_MODDATE]);
     }
 
-    public FileRecordModel(String path, String comments) {
+    public FileRecord(String path, String comments) {
         this.fileName = path;
         this.moddate = comments;
     }
@@ -79,18 +79,18 @@ public class FileRecordModel {
         return (new File(fileName)).exists();
     }
 
-    public static List<FileRecordModel> getFileRecordsFromFile(File f) throws IOException {
+    public static List<FileRecord> getFileRecordsFromFile(File f) throws IOException {
 
         CSVReader r = getFileReader(f, DELIMITER);
         
         String [] nextLine;
 
-        List<FileRecordModel> results = new ArrayList<FileRecordModel>();
+        List<FileRecord> results = new ArrayList<FileRecord>();
 
         while ((nextLine = r.readNext()) != null) {
 
             if (nextLine.length > 0) {
-                    results.add(new FileRecordModel(nextLine));
+                    results.add(new FileRecord(nextLine));
             }
         }
 
@@ -99,11 +99,11 @@ public class FileRecordModel {
         return results;
     }
 
-    public static void writeFileRecordsToFile(File f, List<FileRecordModel> records) throws IOException {
+    public static void writeFileRecordsToFile(File f, List<FileRecord> records) throws IOException {
 
         CSVWriter w = getFileWriter(f, DELIMITER);
 
-        for (FileRecordModel r : records) {
+        for (FileRecord r : records) {
             
             String[] arr = new String[NUM_FIELDS];
             for (int i = 0; i < NUM_FIELDS; i++) {

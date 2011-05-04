@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.view.gadget.chart;
+package org.ut.biolab.medsavant.view.subview;
 
 /**
  *

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.PostProcessFilter;
-import org.ut.biolab.medsavant.model.record.FileRecordModel;
+import org.ut.biolab.medsavant.model.record.FileRecord;
 
 /**
  *
@@ -33,7 +33,7 @@ public class ResultController {
 
     public static List<VariantRecord> getAllVariantRecords() {
         List<VariantRecord> results = new ArrayList<VariantRecord>();
-        for (FileRecordModel f : LibraryVariantsController.getInstance().getFileRecords()) {
+        for (FileRecord f : LibraryVariantsController.getInstance().getFileRecords()) {
             try {
                 VariantSet set = VCFParser.parseVariants(new File(f.getFileName()));
                 results.addAll(set.getRecords());
@@ -52,9 +52,9 @@ public class ResultController {
         return results;
     }
 
-    public static List<VariantRecord> getVariantRecords(List<FileRecordModel> files) {
+    public static List<VariantRecord> getVariantRecords(List<FileRecord> files) {
         List<VariantRecord> results = new ArrayList<VariantRecord>();
-        for (FileRecordModel f : files) {
+        for (FileRecord f : files) {
             try {
                 VariantSet set = VCFParser.parseVariants(new File(f.getFileName()));
                 results.addAll(set.getRecords());

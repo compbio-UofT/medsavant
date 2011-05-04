@@ -22,7 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.LibraryVariantsController;
-import org.ut.biolab.medsavant.model.record.FileRecordModel;
+import org.ut.biolab.medsavant.model.record.FileRecord;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.util.view.PeekingPanel;
@@ -45,7 +45,7 @@ public class LibraryVariantsPage implements Page, ChangeListener {
       PeekingPanel detailView = new PeekingPanel("Details", BorderLayout.SOUTH, detailPane, true);
       panel.add(detailView, BorderLayout.NORTH);
 
-      stp = new SearchableTablePanel(new ArrayList(), FileRecordModel.getFieldNames(), FileRecordModel.getFieldClasses());
+      stp = new SearchableTablePanel(new ArrayList(), FileRecord.getFieldNames(), FileRecord.getFieldClasses());
       stp.getTable().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
       panel.add(stp, BorderLayout.CENTER);
 
@@ -88,7 +88,7 @@ public class LibraryVariantsPage implements Page, ChangeListener {
                 }
                 String path = fc.getSelectedFile().getAbsolutePath();
                 LibraryVariantsController.getInstance().addFileRecord(
-                        new FileRecordModel(
+                        new FileRecord(
                             path,
                             (new Date()).toLocaleString()
                             ));
@@ -130,7 +130,7 @@ public class LibraryVariantsPage implements Page, ChangeListener {
     }
 
     private void updateLibrary() {
-        List<FileRecordModel> r = LibraryVariantsController.getInstance().getFileRecords();
+        List<FileRecord> r = LibraryVariantsController.getInstance().getFileRecords();
         stp.updateData(Util.getFileRecordVector(r));
     }
 

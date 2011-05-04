@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.ut.biolab.medsavant.model.record.FileRecordModel;
+import org.ut.biolab.medsavant.model.record.FileRecord;
 
 /**
  *
@@ -25,7 +25,7 @@ public class LibraryVariantsController {
         try {
             File f = FileController.getLibraryVariantFile();
             if (!f.exists()) { f.createNewFile(); }
-            fileRecords = FileRecordModel.getFileRecordsFromFile(f);
+            fileRecords = FileRecord.getFileRecordsFromFile(f);
             listeners = new ArrayList<ChangeListener>();
         } catch (IOException ex) {
             System.err.println("Error retriving variant library");
@@ -39,19 +39,19 @@ public class LibraryVariantsController {
         return instance;
     }
 
-    private List<FileRecordModel> fileRecords = new ArrayList<FileRecordModel>();
+    private List<FileRecord> fileRecords = new ArrayList<FileRecord>();
 
-    public List<FileRecordModel> getFileRecords() {
+    public List<FileRecord> getFileRecords() {
         return fileRecords;
     }
 
     public void clearFileRecords() {
-        fileRecords = new ArrayList<FileRecordModel>();
+        fileRecords = new ArrayList<FileRecord>();
         fireChangeEvent();
         saveRecords();
     }
 
-    public void addFileRecord(FileRecordModel r) {
+    public void addFileRecord(FileRecord r) {
         fileRecords.add(r);
         fireChangeEvent();
         saveRecords();
@@ -60,7 +60,7 @@ public class LibraryVariantsController {
     private void saveRecords() {
         File f = FileController.getLibraryVariantFile();
         try {
-            FileRecordModel.writeFileRecordsToFile(f, fileRecords);
+            FileRecord.writeFileRecordsToFile(f, fileRecords);
         } catch (IOException ex) {
             System.err.println("Error saving variant library");
         }

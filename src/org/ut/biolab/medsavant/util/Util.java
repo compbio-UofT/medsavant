@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 import javax.swing.JButton;
-import org.ut.biolab.medsavant.model.record.FileRecordModel;
+import org.ut.biolab.medsavant.model.record.FileRecord;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 
 /**
@@ -37,10 +37,10 @@ public class Util {
         return result;
     }
 
-    public static Vector getFileRecordVector(List<FileRecordModel> list) {
+    public static Vector getFileRecordVector(List<FileRecord> list) {
         Vector result = new Vector();
-        for (FileRecordModel r : list) {
-            Vector v = FileRecordModel.convertToVector(r);
+        for (FileRecord r : list) {
+            Vector v = FileRecord.convertToVector(r);
             result.add(v);
         }
         return result;

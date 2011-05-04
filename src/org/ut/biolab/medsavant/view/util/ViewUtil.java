@@ -10,6 +10,7 @@ import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideSplitButton;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -59,7 +60,7 @@ public class ViewUtil {
         return new EmptyBorder(5,5,5,5);
     }
 
-    public static Border getBigBorder() {
+    public static Border getHugeBorder() {
         return new EmptyBorder(10,10,10,10);
     }
 
@@ -97,6 +98,10 @@ public class ViewUtil {
 
     public static Component getMediumSeparator() {
         return Box.createHorizontalStrut(10);
+    }
+
+    public static Component getSmallVerticalSeparator() {
+        return Box.createVerticalStrut(2);
     }
 
     public static Border getTinyLineBorder() {
