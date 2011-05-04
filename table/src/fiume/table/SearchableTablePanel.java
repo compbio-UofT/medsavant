@@ -268,7 +268,6 @@ public class SearchableTablePanel extends JPanel {
         if (0 == getTotalNumPages()) { i = 0; }
         else if (i > getTotalNumPages()) { i = getTotalNumPages(); }
         else if(i < 1) { i = 1; }
-        System.out.println("Setting page num to " + i);
         this.pageNum = i;
         this.updateView();
     }
