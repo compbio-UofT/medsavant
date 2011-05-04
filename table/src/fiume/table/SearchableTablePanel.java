@@ -15,6 +15,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -62,9 +63,10 @@ public class SearchableTablePanel extends JPanel {
         return table;
     }
 
-    public void updateData(List data) {
+    public void updateData(Vector data) {
         this.data = data;
-        updateView();
+        //updateView();
+        this.setPageNumber(1); // updates the view
         model.fireTableDataChanged();
         table.repaint();
     }
@@ -87,19 +89,19 @@ public class SearchableTablePanel extends JPanel {
             this.gotoNext.setEnabled(true);
             this.gotoLast.setEnabled(true);
 
-        if (pageNum == 1) {
+        if (pageNum == 1 || pageNum == 0) {
             this.gotoFirst.setEnabled(false);
             this.gotoPrevious.setEnabled(false);
         }
-        if (pageNum == getTotalNumPages()) {
+        if (pageNum == getTotalNumPages() || pageNum == 0) {
             this.gotoNext.setEnabled(false);
             this.gotoLast.setEnabled(false);
         }
             
 
         pageLabel.setText("Page " + this.getPageNumber() + " of " + this.getTotalNumPages());
-        int start = (this.getPageNumber()-1)*this.getRowsPerPage()+1;
-        int end = Math.min(start + this.getRowsPerPage()-1, this.getTotalRowCount());
+        int start = getTotalNumPages() == 0 ? 0 : (this.getPageNumber()-1)*this.getRowsPerPage()+1;
+        int end = getTotalNumPages() == 0 ? 0 : Math.min(start + this.getRowsPerPage()-1, this.getTotalRowCount());
         amountLabel.setText("Showing " + start + " - " + end + " of " + data.size() + " records");
 
         int[] columns = new int[columnNames.size()];
@@ -147,7 +149,9 @@ public class SearchableTablePanel extends JPanel {
         table.setOptimized(true);
         table.setColumnAutoResizable(true);
         table.setAutoResort(false);
-        table.setDragEnabled(false);
+        //table.setDragEnabled(false);
+        table.setRowHeight(20);
+        //table.setFont(new Font("Times New Roman", Font.PLAIN, 14));
 
         table.setAutoResizeMode(SortableTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
@@ -261,8 +265,10 @@ public class SearchableTablePanel extends JPanel {
     }
 
     private void setPageNumber(int i) {
-        if (i > getTotalNumPages()) { i = getTotalNumPages(); }
-        if (i < 1) { i = 1; }
+        if (0 == getTotalNumPages()) { i = 0; }
+        else if (i > getTotalNumPages()) { i = getTotalNumPages(); }
+        else if(i < 1) { i = 1; }
+        System.out.println("Setting page num to " + i);
         this.pageNum = i;
         this.updateView();
     }
@@ -301,10 +307,14 @@ public class SearchableTablePanel extends JPanel {
     }
 
     private List<List> getDataOnPage(int pageNumber, List<List> data) {
+
+        List<List> result = new ArrayList<List>();
+
+        if (pageNumber == 0) { return result; }
+
         int start = (pageNumber-1)*this.getRowsPerPage();
         int end = start+this.getRowsPerPage();
 
-        List<List> result = new ArrayList<List>();
         if (data != null) {
             for (int i = start; i < end && i < data.size(); i++) {
                 result.add(data.get(i));
@@ -319,5 +329,9 @@ public class SearchableTablePanel extends JPanel {
         b.setBorderPainted(false);
         b.setOpaque(false);
         return b;
+    }
+
+    public void setSelectionMode(int selectionMode) {
+        table.setSelectionMode(selectionMode);
     }
 }
