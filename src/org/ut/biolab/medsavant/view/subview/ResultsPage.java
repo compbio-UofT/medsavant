@@ -38,7 +38,7 @@ import org.ut.biolab.medsavant.util.view.PeekingPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.gadget.GadgetFactory;
 import org.ut.biolab.medsavant.view.gadget.chart.ChartPanel;
-import org.ut.biolab.medsavant.view.gadget.filter.FilterPanel;
+import org.ut.biolab.medsavant.view.filter.FilterPanel;
 
 /**
  *
@@ -59,8 +59,8 @@ public class ResultsPage implements Page {
 
                 public void actionPerformed(ActionEvent e) {
                     JPanel p = new ChartPanel();
-                    p.setPreferredSize(new Dimension(300,230));
-                    p.setMaximumSize(new Dimension(300,230));
+                    p.setPreferredSize(new Dimension(400,230));
+                    p.setMaximumSize(new Dimension(400,230));
                     p.setBorder(ViewUtil.getTinyLineBorder());
                     addChart(p);
                 }
@@ -101,20 +101,16 @@ public class ResultsPage implements Page {
         panel.setLayout(new BorderLayout());
         
         PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true);
-        detailView.setTabColor(ViewUtil.getMidColor());//new Color(70,136,165));
         panel.add(detailView, BorderLayout.WEST);
 
-        PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, new JPanel(), false);
-        genomeView.setTabColor(ViewUtil.getMidColor());//new Color(255,166,0));
+        JPanel gp = new JPanel(); gp.setBackground(Color.black);
+        PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, false,150);
         panel.add(genomeView, BorderLayout.NORTH);
 
         PeekingPanel chartView = new PeekingPanel("Charts", BorderLayout.NORTH, new ChartContainer(), true);
-        chartView.setTabColor(ViewUtil.getMidColor());//new Color(233,74,64));
         panel.add(chartView, BorderLayout.SOUTH);
-
-        Vector records = Util.getVariantRecordsVector(ResultController.getAllVariantRecords());
-        JPanel p = new SearchableTablePanel(records, VariantRecordModel.getFieldNames(), VariantRecordModel.getFieldClasses());
-        panel.add(p, BorderLayout.CENTER);
+        
+        panel.add(new TablePanel(), BorderLayout.CENTER);
 
         //m.showGadget(g);
     }

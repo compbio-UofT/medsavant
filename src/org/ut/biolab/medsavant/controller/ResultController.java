@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.ut.biolab.medsavant.model.Filter;
+import org.ut.biolab.medsavant.model.PostProcessFilter;
 import org.ut.biolab.medsavant.model.record.FileRecordModel;
 
 /**
@@ -37,6 +39,15 @@ public class ResultController {
                 results.addAll(set.getRecords());
             } catch (IOException ex) {
             }
+        }
+        return results;
+    }
+
+    public static List<VariantRecord> getFilteredVariantRecords() {
+        List<PostProcessFilter> filters = FilterController.getPostProcessFilters();
+        List<VariantRecord> results = getAllVariantRecords();
+        for (PostProcessFilter f : filters) {
+            results = f.filterResults(results);
         }
         return results;
     }

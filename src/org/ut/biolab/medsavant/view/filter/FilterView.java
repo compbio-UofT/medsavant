@@ -2,10 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.view.gadget.filter;
+package org.ut.biolab.medsavant.view.filter;
 
 import javax.swing.JComponent;
-import org.ut.biolab.medsavant.controller.FilterGenerator;
 
 /**
  *
@@ -15,12 +14,10 @@ class FilterView {
 
     private JComponent _component;
     private String _title;
-    private FilterGenerator filterGenerator;
 
-    public FilterView(String title, JComponent content, FilterGenerator fg) {
+    public FilterView(String title, JComponent content) {
         setTitle(title);
         setComponent(content);
-        setFilterGenerator(fg);
     }
 
     public String getTitle() {
@@ -39,11 +36,4 @@ class FilterView {
         _component = component;
     }
 
-    private void setFilterGenerator(FilterGenerator fg) {
-        this.filterGenerator = fg;
-    }
-
-     public FilterGenerator getFilterGenerator() {
-        return filterGenerator;
-    }
 }

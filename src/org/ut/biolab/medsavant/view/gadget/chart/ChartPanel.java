@@ -41,7 +41,9 @@ import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
+import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.view.gadget.CollapsibleFrameGadget;
@@ -50,7 +52,7 @@ import org.ut.biolab.medsavant.view.gadget.CollapsibleFrameGadget;
  *
  * @author mfiume
  */
-public class ChartPanel extends JPanel {
+public class ChartPanel extends JPanel implements FiltersChangedListener {
 
     private int currentKeyIndex = VariantRecordModel.INDEX_OF_REF;
     private JToolBar bar;
@@ -62,11 +64,13 @@ public class ChartPanel extends JPanel {
     private JCheckBox isLogarithmicCB;
     private SpinnerNumberModel numberModel;
     private static final int DEFAULT_NUM_QUANTITATIVE_CATEGORIES = 5;
+    private JToolBar bottombar;
 
     public ChartPanel() {
         this.setLayout(new BorderLayout());
         initToolBar();
         updateChartMap();
+        FilterController.addFilterListener(this);
     }
 
     private void updateChartMap() {
@@ -127,6 +131,7 @@ public class ChartPanel extends JPanel {
         this.removeAll();
         this.add(bar, BorderLayout.NORTH);
         this.add(chart, BorderLayout.CENTER);
+        this.add(bottombar, BorderLayout.SOUTH);
     }
 
     private static void printHist(Map<String, Integer> chartMap) {
@@ -141,6 +146,7 @@ public class ChartPanel extends JPanel {
 
     private void initToolBar() {
         bar = new JToolBar();
+        bottombar = new JToolBar();
         JComboBox b = new JComboBox();
 
         Vector v = VariantRecordModel.getFieldNames();
@@ -165,7 +171,7 @@ public class ChartPanel extends JPanel {
 
         bar.add(Box.createHorizontalStrut(5));
 
-        isPieCB = new JCheckBox("Display as Pie");
+        isPieCB = new JCheckBox("Pie");
         isPieCB.setSelected(isPie);
         isPieCB.addActionListener(new ActionListener() {
 
@@ -174,11 +180,11 @@ public class ChartPanel extends JPanel {
                 updateChartMap();
             }
         });
-        bar.add(isPieCB);
+        bottombar.add(isPieCB);
 
-        bar.add(Box.createHorizontalStrut(5));
+        bottombar.add(Box.createHorizontalStrut(5));
 
-        isSortedCB = new JCheckBox("Sort by frequency");
+        isSortedCB = new JCheckBox("Sort");
         isSortedCB.setSelected(isSorted);
         isSortedCB.addActionListener(new ActionListener() {
 
@@ -187,11 +193,11 @@ public class ChartPanel extends JPanel {
                 updateChartMap();
             }
         });
-        bar.add(isSortedCB);
+        bottombar.add(isSortedCB);
 
-        bar.add(Box.createHorizontalStrut(5));
+        bottombar.add(Box.createHorizontalStrut(5));
 
-        isLogarithmicCB = new JCheckBox("Log scale");
+        isLogarithmicCB = new JCheckBox("Log");
         isLogarithmicCB.setSelected(isLogscale);
         isLogarithmicCB.addActionListener(new ActionListener() {
 
@@ -200,13 +206,13 @@ public class ChartPanel extends JPanel {
                 updateChartMap();
             }
         });
-        bar.add(isLogarithmicCB);
+        bottombar.add(isLogarithmicCB);
 
-        bar.add(Box.createHorizontalStrut(5));
+        bottombar.add(Box.createHorizontalStrut(5));
 
-        bar.add(new JLabel("Quantitative categories:"));
+        bottombar.add(new JLabel("Bins:"));
 
-        bar.add(Box.createHorizontalStrut(5));
+        bottombar.add(Box.createHorizontalGlue());
 
         numberModel = new SpinnerNumberModel();
         numberModel.setStepSize(2);
@@ -220,9 +226,10 @@ public class ChartPanel extends JPanel {
                 updateChartMap();
             }
         });
-        bar.add(numberSpinner);
+        bottombar.add(numberSpinner);
 
         this.add(bar, BorderLayout.NORTH);
+        this.add(bottombar, BorderLayout.SOUTH);
     }
 
     public void setIsPie(boolean b) {
@@ -255,7 +262,7 @@ public class ChartPanel extends JPanel {
             List<Double> numbers = new ArrayList<Double>();
             Double min = Double.MAX_VALUE;
             Double max = Double.MIN_VALUE;
-            for (VariantRecord r : ResultController.getAllVariantRecords()) {
+            for (VariantRecord r : ResultController.getFilteredVariantRecords()) {
                 Object numericvalue = VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
                 Double v = Double.parseDouble(numericvalue.toString());
                 min = Math.min(min, v);
@@ -277,7 +284,7 @@ public class ChartPanel extends JPanel {
             }
 
         } else {
-            for (VariantRecord r : ResultController.getAllVariantRecords()) {
+            for (VariantRecord r : ResultController.getFilteredVariantRecords()) {
                 String key = (String) VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
                 if (key == null) {
                     key = ".";
@@ -298,6 +305,10 @@ public class ChartPanel extends JPanel {
         }
 
         return chartMap;
+    }
+
+    public void filtersChanged() {
+        updateChartMap();
     }
 
     static class ValueComparator implements Comparator {

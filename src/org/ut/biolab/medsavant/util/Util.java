@@ -29,7 +29,7 @@ public class Util {
     }
 
     public static Vector getVariantRecordsVector(List<VariantRecord> list) {
-        Vector result = new Vector();
+        Vector result = new Vector(); 
         for (VariantRecord r : list) {
             Vector v = VariantRecordModel.convertToVector(r);
             result.add(v);
@@ -80,5 +80,17 @@ public class Util {
         }
 
         throw new UnsupportedOperationException("Parser doesn't deal with objects of type " + c);
+    }
+
+    public static String getListFilterToString(String filtername, List<String> acceptableValues) {
+        String s = filtername + " = (";
+        for (String v : acceptableValues) {
+            s += v + ",";
+        }
+        if (!acceptableValues.isEmpty()) {
+            s = s.substring(0,s.length()-1);
+        }
+        s += ")";
+        return s;
     }
 }

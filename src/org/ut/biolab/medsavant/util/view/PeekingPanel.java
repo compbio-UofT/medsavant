@@ -7,6 +7,7 @@ package org.ut.biolab.medsavant.util.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -30,16 +31,10 @@ public class PeekingPanel extends JPanel {
     private final JLabel title;
     private final String titleString;
     private final JPanel titlePanel;
-    private Color tabColor = ViewUtil.getDarkColor();
 
     public PeekingPanel(String label, String borderLayoutPosition, JPanel panel, boolean isExpanded) {
         this(label, borderLayoutPosition, panel, isExpanded, 300);
     }
-
-    public void setTabColor(Color c) {
-        this.tabColor = c;
-    }
-
 
     public PeekingPanel(String label, String borderLayoutPosition, JPanel panel, boolean isExpanded, int size) {
 
@@ -59,18 +54,22 @@ public class PeekingPanel extends JPanel {
                 //g.setColor(tabColor);
                 //g.fillRect(0, 0, titlePanel.getWidth(), titlePanel.getHeight());
 
+                Color start = Color.lightGray;//new Color(37,113,190);//Color.black;
+                Color end = Color.white; //new Color(109,164,221);//Color.black;
+
                 if (isVertical) {
-                    GradientPaint p = new GradientPaint(0,0,Color.darkGray,40,0,Color.black);
+                    GradientPaint p = new GradientPaint(0,0,end,titlePanel.getWidth(),0,start);
                     ((Graphics2D)g).setPaint(p);
                     g.fillRect(0, 0, titlePanel.getWidth(), titlePanel.getHeight());
                 } else {
-                    GradientPaint p = new GradientPaint(0,0,Color.darkGray,0,40,Color.black);
+                    GradientPaint p = new GradientPaint(0,0,end,0,titlePanel.getHeight(),start);
                     ((Graphics2D)g).setPaint(p);
                     g.fillRect(0, 0, titlePanel.getWidth(), titlePanel.getHeight());
                 }
             }
         };
-        titlePanel.setBorder(ViewUtil.getTinyBorder());
+        titlePanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        //titlePanel.setBorder(ViewUtil.getTinyBorder());
         if (isVertical) {
             titlePanel.setLayout(new BoxLayout(titlePanel,BoxLayout.Y_AXIS));
         } else {
@@ -82,7 +81,7 @@ public class PeekingPanel extends JPanel {
         this.titleString = label.toUpperCase();
         title = new JLabel(titleString);
         title.setFont(ViewUtil.getSmallTitleFont());
-        title.setForeground(Color.white);
+        title.setForeground(Color.darkGray);
         if (borderLayoutPosition.equals(BorderLayout.EAST)) {
             title.setUI(new VerticalLabelUI(true));
         } else if (borderLayoutPosition.equals(BorderLayout.WEST)) {

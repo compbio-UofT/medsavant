@@ -72,7 +72,7 @@ public class ViewUtil {
     }
 
     public static Font getSmallTitleFont() {
-        return new Font("Arial", Font.PLAIN, 11);
+        return new Font("Arial", Font.PLAIN, 9);
     }
 
     public static Color getDarkColor() {
@@ -105,6 +105,10 @@ public class ViewUtil {
 
     public static Color getMidColor() {
         return new Color(60,60,60);
+    }
+
+    public static Color getMenuColor() {
+        return new Color(217,222,229);
     }
 
 }

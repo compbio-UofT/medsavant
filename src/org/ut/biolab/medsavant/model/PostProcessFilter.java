@@ -5,7 +5,7 @@
 
 package org.ut.biolab.medsavant.model;
 
-import org.ut.biolab.medsavant.model.record.MedSavantRecord;
+import fiume.vcf.VariantRecord;
 import java.util.List;
 import org.ut.biolab.medsavant.model.Filter.FilterType;
 
@@ -18,6 +18,9 @@ public abstract class PostProcessFilter extends Filter {
     public PostProcessFilter() {
         super(FilterType.POSTQUERY);
     }
+
     
-    public abstract List<MedSavantRecord> filterResults(List<MedSavantRecord> results);
+    public abstract List<VariantRecord> filterResults(List<VariantRecord> results);
+
+    public abstract String toString();
 }
