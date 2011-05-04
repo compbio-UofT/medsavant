@@ -17,6 +17,7 @@ import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Chromosome;
@@ -33,13 +34,16 @@ public class ChromosomeDiagramPanel extends JPanel implements FiltersChangedList
 
     public ChromosomeDiagramPanel(Chromosome c) {
         this.chr = c;
+        this.setOpaque(false);
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         this.setPreferredSize(new Dimension(20,999));
         this.setMaximumSize(new Dimension(20,999));
         updateAnnotations();
+        FilterController.addFilterListener(this);
     }
 
     public void paintComponent(Graphics g) {
+        super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -47,7 +51,7 @@ public class ChromosomeDiagramPanel extends JPanel implements FiltersChangedList
         if (cent == -1) {
             cent = chr.getLength()/2;
         }
-
+        
         int centView = translateModelToView(cent, chr.getLength(), this.getEffectiveHeight());
         GradientPaint p = new GradientPaint(0,0,Color.white,0, this.getHeight(), Color.lightGray);
 
@@ -64,7 +68,7 @@ public class ChromosomeDiagramPanel extends JPanel implements FiltersChangedList
         for (RangeAnnotation a : annotations) {
             int viewStart = translateModelToView(a.getStart(), chr.getLength(), this.getEffectiveHeight());
             int viewEnd = translateModelToView(a.getEnd(), chr.getLength(), this.getEffectiveHeight());
-            if (viewEnd-viewStart < 2) { viewEnd = viewStart+2; }
+            if (viewEnd-viewStart < 1) { viewEnd = viewStart+1; }
             g2.setColor(a.getColor());
             g2.fillRect(0, viewStart, this.getWidth(), viewEnd);
         }
@@ -89,15 +93,14 @@ public class ChromosomeDiagramPanel extends JPanel implements FiltersChangedList
 
     public void filtersChanged() {
         updateAnnotations();
-        
     }
 
     private void updateAnnotations() {
-        List<VariantRecord> rs = ResultController.getFilteredVariantRecords();
+        List<VariantRecord> rs = ResultController.getInstance().getFilteredVariantRecords();
         List<RangeAnnotation> as = new ArrayList<RangeAnnotation>();
         for (VariantRecord r : rs) {
             if (r.getChrom().equals(chr.getName())) {
-                as.add(new RangeAnnotation(r.getPos(),r.getPos()+1,Color.yellow));
+                as.add(new RangeAnnotation(r.getPos(),r.getPos(),new Color(0,178,222,50)));
             }
         }
         setAnnotations(as);

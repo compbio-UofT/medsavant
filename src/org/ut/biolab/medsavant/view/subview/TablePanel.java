@@ -31,7 +31,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
     }
 
     private void updateTable() {
-        tablePanel.updateData(Util.getVariantRecordsVector(ResultController.getFilteredVariantRecords()));
+        tablePanel.updateData(Util.getVariantRecordsVector(ResultController.getInstance().getFilteredVariantRecords()));
     }
 
     public void filtersChanged() {

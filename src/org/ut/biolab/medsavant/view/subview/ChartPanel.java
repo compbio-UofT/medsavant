@@ -262,7 +262,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
             List<Double> numbers = new ArrayList<Double>();
             Double min = Double.MAX_VALUE;
             Double max = Double.MIN_VALUE;
-            for (VariantRecord r : ResultController.getFilteredVariantRecords()) {
+            for (VariantRecord r : ResultController.getInstance().getFilteredVariantRecords()) {
                 Object numericvalue = VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
                 Double v = Double.parseDouble(numericvalue.toString());
                 min = Math.min(min, v);
@@ -284,7 +284,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
             }
 
         } else {
-            for (VariantRecord r : ResultController.getFilteredVariantRecords()) {
+            for (VariantRecord r : ResultController.getInstance().getFilteredVariantRecords()) {
                 String key = (String) VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
                 if (key == null) {
                     key = ".";

@@ -264,7 +264,7 @@ public class FilterPanel extends JPanel {
     private Set<String> getUniqueValuesOfVariantRecordsAtField(int i) {
         Set<String> result = new TreeSet<String>();
 
-        List<VariantRecord> records = ResultController.getAllVariantRecords();
+        List<VariantRecord> records = ResultController.getInstance().getAllVariantRecords();
         for (VariantRecord r : records) {
             Object o = VariantRecordModel.getValueOfFieldAtIndex(i, r);
             if (o == null) {
