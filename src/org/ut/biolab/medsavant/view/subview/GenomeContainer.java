@@ -22,13 +22,13 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class GenomePanel extends JPanel {
+public class GenomeContainer extends JPanel {
         
     private Genome genome;
     private final JPanel chrContainer;
     private ArrayList<ChromosomePanel> chrViews;
 
-    public GenomePanel() {
+    public GenomeContainer() {
         this.setLayout(new BorderLayout());
         chrContainer = ViewUtil.createClearPanel();
         chrContainer.setBorder(ViewUtil.getHugeBorder());

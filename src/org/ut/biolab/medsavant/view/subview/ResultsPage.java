@@ -71,12 +71,25 @@ public class ResultsPage implements Page {
             });
             title.add(addButton);
             this.add(title,BorderLayout.NORTH);
-            container = new JPanel();
+            container = ViewUtil.createClearPanel();
             //container.setBackground(ViewUtil.get);
             container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
             container.add(ViewUtil.getMediumSeparator());
             container.add(Box.createHorizontalGlue());
-            this.add(new JScrollPane(container),BorderLayout.CENTER);
+            container.add(Box.createHorizontalGlue());
+            JScrollPane sp = (JScrollPane) ViewUtil.clear(new JScrollPane(container));
+            sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+            sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+            sp.getViewport().setOpaque(false);
+            this.add(sp,BorderLayout.CENTER);
+        }
+
+        @Override
+        public void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g;
+            GradientPaint p = new GradientPaint(0,0,Color.darkGray,0, this.getHeight(), Color.black);
+            g2.setPaint(p);
+            g2.fillRect(0, 0, this.getWidth(), this.getHeight());
         }
 
         private void addChart(Component p) {
@@ -106,7 +119,7 @@ public class ResultsPage implements Page {
         PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true);
         panel.add(detailView, BorderLayout.WEST);
 
-        GenomePanel gp = new GenomePanel();
+        GenomeContainer gp = new GenomeContainer();
         List<Chromosome> chrs = new ArrayList<Chromosome>();
         chrs.add(new Chromosome("chr1", "1", -1, 197195432));
         chrs.add(new Chromosome("chr2", "2", -1, 181748087));
