@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.db;
+package medsavant.db.table;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 
@@ -11,14 +11,14 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
  *
  * @author mfiume
  */
-public class PatientTable extends TableSchema {
+public class VariantAnnotationTable extends TableSchema {
 
     public static final String TABLE_NAME = "patient";
     public static final String COL_PATIENTID = "id";
     public static final String COL_GENDER = "gender";
     public static final String COL_AGE = "age";
 
-    public PatientTable(DbSchema s) {
+    public VariantAnnotationTable(DbSchema s) {
         super(s.addTable(TABLE_NAME));
         addColumns();
     }

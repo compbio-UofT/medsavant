@@ -14,12 +14,12 @@ import java.util.Map;
  *
  * @author mfiume
  */
-public class Table {
+public class TableSchema {
 
     private DbTable table;
     private Map<String,DbColumn> columnMap;
 
-    public Table(DbTable t) {
+    public TableSchema(DbTable t) {
         this.table = t;
         columnMap = new HashMap<String,DbColumn>();
     }

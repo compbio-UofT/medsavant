@@ -140,6 +140,8 @@ public class ResultsPage implements Page {
         chrs.add(new Chromosome("chr17", "17", -1, 95272651));
         chrs.add(new Chromosome("chr18", "18", -1, 90772031));
         chrs.add(new Chromosome("chr19", "19", -1, 61342430));
+        chrs.add(new Chromosome("chr20", "20", -1, 61342430));
+        chrs.add(new Chromosome("chr21", "21", -1, 61342430));
         chrs.add(new Chromosome("chrX", "X", -1, 166650296));
         chrs.add(new Chromosome("chrY", "Y", -1, 15902555));
         Genome g = new Genome(chrs);
