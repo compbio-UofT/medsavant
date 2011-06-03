@@ -22,6 +22,40 @@ public class VCFParser {
     private static String headerChars = "#";
     private static String commentSplitter = "=";
 
+    private static void printVariantsFromReader(CSVReader r) throws IOException {
+        String [] nextLine;
+
+        VariantSet s = new VariantSet();
+
+        Logger.log(VCFParser.class, "Parsing variant file");
+
+        while ((nextLine = r.readNext()) != null) {
+
+            //Logger.log(VCFParser.class, "Parsing " + nextLine[0] + "...");
+
+            if (nextLine.length > 0) {
+
+                // a comment line
+                if (nextLine[0].startsWith(commentChars)) {
+                    String[] keyValue = parseComment(nextLine[0]);
+                    s.addProperty(keyValue[0],keyValue[1]);
+                }
+                // header line
+                else if (nextLine[0].startsWith(headerChars)) {
+                    s.setHeader(parseHeader(nextLine));
+                    Logger.log(VCFParser.class, s.getHeader().toString());
+                }
+                // a data line
+                else {
+                    List<VariantRecord> records = parseRecord(nextLine,s.getHeader());
+                    for (VariantRecord rec : records) {
+                        System.out.println(rec.toTabString());
+                    }
+                }
+            }
+        }
+    }
+
     private static VariantSet parseVariantsFromReader(CSVReader r) throws IOException {
         String [] nextLine;
 
@@ -65,6 +99,11 @@ public class VCFParser {
         return parseVariantsFromReader(r);
     }
 
+    public static void printVariants(File vcffile, char delimiter) throws FileNotFoundException, IOException {
+        CSVReader r = openFile(vcffile, delimiter);
+        printVariantsFromReader(r);
+    }
+
     private static CSVReader openFile(File vcffile, char delim) throws FileNotFoundException {
         return new CSVReader(new FileReader(vcffile), delim);
     }
@@ -96,6 +135,10 @@ public class VCFParser {
 
     public static VariantSet parseVariants(File vcffile) throws IOException {
         return parseVariants(vcffile,defaultDelimiter);
+    }
+
+    public static void printVariants(File vcffile) throws IOException {
+        printVariants(vcffile,defaultDelimiter);
     }
 
     private static List<VariantRecord> parseRecord(String[] line, VCFHeader h) {

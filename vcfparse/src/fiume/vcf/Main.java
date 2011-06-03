@@ -22,8 +22,7 @@ public class Main {
      */
     public static void main(String[] args) {
         try {
-            // TODO code application logic here
-            VariantSet variants = VCFParser.parseVariants(new File("C:\\calls.vcf"));
+            VariantSet variants = VCFParser.parseVariants(new File(args[0]));
         } catch (IOException ex) {
             ex.printStackTrace();
         }

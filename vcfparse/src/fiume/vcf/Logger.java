@@ -13,7 +13,7 @@ import java.util.Date;
  */
 public class Logger {
 
-    private static boolean logOn = true;
+    private static boolean logOn = false;
 
     public static void log(Class c, String msg) {
         if (logOn)

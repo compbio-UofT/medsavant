@@ -13,7 +13,7 @@ import java.util.Vector;
  */
 public class VariantRecord implements Serializable {
 
-    
+
     private static final int FILE_INDEX_OF_CHROM = 0;
     private static final int FILE_INDEX_OF_POS = FILE_INDEX_OF_CHROM + 1;
     private static final int FILE_INDEX_OF_ID = FILE_INDEX_OF_POS + 1;
@@ -61,6 +61,33 @@ public class VariantRecord implements Serializable {
             format = (String)   parse(CLASS_OF_FORMAT, line[FILE_INDEX_OF_FORMAT]);
         }
     }
+
+    public VariantRecord(
+            String sampleID,
+            String callDetails,
+            String chrom,
+            long pos,
+            String id,
+            String ref,
+            String alt,
+            float qual,
+            String filter,
+            String info,
+            String format) {
+        this.sampleID = sampleID;
+        this.callDetails = callDetails;
+        this.chrom = chrom;
+        this.pos = pos;
+        this.id = id;
+        this.ref = ref;
+        this.alt = alt;
+        this.qual = qual;
+        this.filter = filter;
+        this.info = info;
+        this.format = format;
+    }
+
+
 
     public VariantRecord(VariantRecord r) {
         this.setChrom(r.getChrom());
@@ -203,6 +230,12 @@ public class VariantRecord implements Serializable {
     @Override
     public String toString() {
         return "VariantRecord{" + "sampleID=" + sampleID + "callDetails=" + callDetails + "chrom=" + chrom + "pos=" + pos + "id=" + id + "ref=" + ref + "alt=" + alt + "qual=" + qual + "filter=" + filter + "info=" + info + "format=" + format + '}';
+    }
+
+    private static String delim = "\t";
+
+    public String toTabString() {
+        return sampleID + delim + chrom + delim + pos + delim + id + delim + ref + delim + alt + delim + qual + delim + filter + delim + info + delim + format + delim + callDetails ;
     }
 
 }
