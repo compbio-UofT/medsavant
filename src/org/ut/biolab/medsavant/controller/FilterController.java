@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.DB;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.Filter.FilterType;
@@ -63,7 +65,11 @@ public class FilterController {
     private static void fireFiltersChangedEvent() {
         printFilters();
         for (FiltersChangedListener l : listeners) {
-            l.filtersChanged();
+            try {
+                l.filtersChanged();
+            } catch (Exception e) {
+                Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage());
+            }
         }
     }
 
@@ -85,6 +91,16 @@ public class FilterController {
             }
         }
         return ppfs;
+    }
+
+    static List<QueryFilter> getQueryFilters() {
+        List<QueryFilter> qfs = new ArrayList<QueryFilter>();
+        for (Filter f : filterMap.values()) {
+            if (f instanceof PostProcessFilter) {
+                qfs.add((QueryFilter) f);
+            }
+        }
+        return qfs;
     }
 
 }

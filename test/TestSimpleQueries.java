@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-import medsavant.db.Util;
+import medsavant.db.DBUtil;
 import java.util.Vector;
 import java.util.ArrayList;
 import medsavant.db.table.TableSchema.ColumnType;
@@ -16,7 +16,7 @@ import java.sql.SQLException;
 import medsavant.db.Database;
 import medsavant.db.ConnectionController;
 import java.sql.Connection;
-import medsavant.exception.MedSavantDBException;
+import medsavant.exception.FatalDatabaseException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -57,7 +57,7 @@ public class TestSimpleQueries {
 
 
     @Test
-    public void testVariantQueries() throws SQLException, MedSavantDBException {
+    public void testVariantQueries() throws SQLException, FatalDatabaseException {
         Connection c = ConnectionController.connect();
 
         TableSchema t = Database.getInstance().getVariantTableSchema();
@@ -69,7 +69,7 @@ public class TestSimpleQueries {
         ResultSet r1 = c.createStatement().executeQuery(q1String);
 
         List<DbColumn> columns = t.getColumns();
-        List<Vector> results = Util.parseResultSet(columns, r1);
+        List<Vector> results = DBUtil.parseResultSet(columns, r1);
 
         for (Vector row : results) {
             for (Object f : row) {

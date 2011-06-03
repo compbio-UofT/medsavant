@@ -5,10 +5,15 @@
 
 package org.ut.biolab.medsavant.view.subview;
 
+import org.ut.biolab.medsavant.view.util.DialogUtil;
 import fiume.table.SearchableTablePanel;
 import java.awt.BorderLayout;
+import java.sql.SQLException;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
+import medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -26,15 +31,20 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         tablePanel = new SearchableTablePanel(new Vector(), VariantRecordModel.getFieldNames(), VariantRecordModel.getFieldClasses());
         this.setLayout(new BorderLayout());
         this.add(tablePanel, BorderLayout.CENTER);
-        updateTable();
+        try {
+            updateTable();
+        } catch (Exception ex) {
+            Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+            DialogUtil.displayErrorMessage("Problem getting data.", ex);
+        }
         FilterController.addFilterListener(this);
     }
 
-    private void updateTable() {
-        tablePanel.updateData(Util.getVariantRecordsVector(ResultController.getInstance().getFilteredVariantRecords()));
+    private void updateTable() throws SQLException, FatalDatabaseException {
+        tablePanel.updateData(Util.convertVariantRecordsToVectors(ResultController.getInstance().getFilteredVariantRecords()));
     }
 
-    public void filtersChanged() {
+    public void filtersChanged() throws SQLException, FatalDatabaseException {
         updateTable();
     }
 

@@ -5,12 +5,15 @@
 
 package org.ut.biolab.medsavant.model.event;
 
+import java.sql.SQLException;
+import medsavant.exception.FatalDatabaseException;
+
 /**
  *
  * @author mfiume
  */
 public interface FiltersChangedListener {
 
-    public void filtersChanged();
+    public void filtersChanged() throws SQLException, FatalDatabaseException;
 
 }

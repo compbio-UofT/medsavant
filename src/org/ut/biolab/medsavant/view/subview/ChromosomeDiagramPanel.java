@@ -12,15 +12,20 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Chromosome;
+import org.ut.biolab.medsavant.view.util.DialogUtil;
 
 /**
  *
@@ -93,20 +98,25 @@ public class ChromosomeDiagramPanel extends JPanel implements FiltersChangedList
         this.annotations = annotations;
     }
 
-    public void filtersChanged() {
+    public void filtersChanged() throws SQLException, FatalDatabaseException {
         updateAnnotations();
     }
 
     private void updateAnnotations() {
-        List<VariantRecord> rs = ResultController.getInstance().getFilteredVariantRecords();
-        List<RangeAnnotation> as = new ArrayList<RangeAnnotation>();
-        for (VariantRecord r : rs) {
-            if (r.getChrom().equals(chr.getName())) {
-                as.add(new RangeAnnotation(r.getPos(),r.getPos(),new Color(0,178,222,50)));
+        try {
+            List<VariantRecord> rs = ResultController.getInstance().getFilteredVariantRecords();
+            List<RangeAnnotation> as = new ArrayList<RangeAnnotation>();
+            for (VariantRecord r : rs) {
+                if (r.getChrom().equals(chr.getName())) {
+                    as.add(new RangeAnnotation(r.getPos(), r.getPos(), new Color(0, 178, 222, 50)));
+                }
             }
+            setAnnotations(as);
+            repaint();
+        } catch (Exception ex) {
+            Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
+            DialogUtil.displayErrorMessage("Problem getting data.", ex);
         }
-        setAnnotations(as);
-        repaint();
     }
 
 }

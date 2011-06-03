@@ -5,7 +5,7 @@
 
 package medsavant.db.table;
 
-import medsavant.exception.MedSavantDBException;
+import medsavant.exception.FatalDatabaseException;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class TableSchema {
     public static final String COLUMN_INTEGER = "int";
     public static final String COLUMN_FLOAT = "float";
 
-    public static String mapColumnTypeEnumToString(ColumnType c) throws MedSavantDBException {
+    public static String mapColumnTypeEnumToString(ColumnType c) throws FatalDatabaseException {
         switch (c) {
             case VARCHAR:
                return COLUMN_VARCHAR;
@@ -45,7 +45,7 @@ public class TableSchema {
             case FLOAT:
                 return COLUMN_FLOAT;
             default:
-                throw new MedSavantDBException("Unrecognized column type " + c);
+                throw new FatalDatabaseException("Unrecognized column type " + c);
         }
     }
 
@@ -59,7 +59,7 @@ public class TableSchema {
     }
      */
 
-    public static List<ColumnType> mapColumnsToEnums(List<DbColumn> columns) throws MedSavantDBException {
+    public static List<ColumnType> mapColumnsToEnums(List<DbColumn> columns) throws FatalDatabaseException {
         List<ColumnType> enums = new ArrayList<ColumnType>();
         for (DbColumn c : columns) {
             enums.add(mapColumnTypeStringToEnum(c.getTypeNameSQL()));
@@ -67,12 +67,12 @@ public class TableSchema {
         return enums;
     }
 
-    public static ColumnType mapColumnTypeStringToEnum(String c) throws MedSavantDBException {
+    public static ColumnType mapColumnTypeStringToEnum(String c) throws FatalDatabaseException {
         if (c.equals(COLUMN_VARCHAR)) { return ColumnType.VARCHAR; }
         if (c.equals(COLUMN_BOOLEAN)) { return ColumnType.BOOLEAN; }
         if (c.equals(COLUMN_INTEGER)) { return ColumnType.INTEGER; }
         if (c.equals(COLUMN_FLOAT)) { return ColumnType.FLOAT; }
-        throw new MedSavantDBException("Unrecognized column type " + c);
+        throw new FatalDatabaseException("Unrecognized column type " + c);
     }
 
     private DbTable table;

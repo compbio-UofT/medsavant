@@ -9,9 +9,9 @@ package medsavant.exception;
  *
  * @author mfiume
  */
-public class MedSavantDBException extends Exception {
+public class FatalDatabaseException extends RuntimeException {
 
-    public MedSavantDBException(String msg) {
+    public FatalDatabaseException(String msg) {
         super(msg);
     }
 

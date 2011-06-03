@@ -5,17 +5,24 @@
 
 package org.ut.biolab.medsavant.controller;
 
-import fiume.vcf.VCFParser;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import fiume.vcf.VariantRecord;
-import fiume.vcf.VariantSet;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
-import org.ut.biolab.medsavant.model.Filter;
-import org.ut.biolab.medsavant.model.PostProcessFilter;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import medsavant.db.ConnectionController;
+import medsavant.db.Database;
+import medsavant.db.DBUtil;
+import medsavant.db.table.TableSchema;
+import medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.model.record.FileRecord;
+import org.ut.biolab.medsavant.util.Util;
 
 /**
  *
@@ -25,20 +32,11 @@ public class ResultController implements FiltersChangedListener {
 
     private List<VariantRecord> filteredVariants;
 
-    //private static List<VariantRecord> variants = new ArrayList<VariantRecord>();
-
-    /*
-    public static List<VariantRecord> getVariantRecords() {
-        return variants;
-    }
-     * 
-     */
-
     private static ResultController instance;
     
     public ResultController() {
         FilterController.addFilterListener(this);
-        updateFilteredVariantResults();
+        updateFilteredVariantDBResults();
     }
 
     public static ResultController getInstance() {
@@ -50,44 +48,65 @@ public class ResultController implements FiltersChangedListener {
 
 
     public List<VariantRecord> getAllVariantRecords() {
-        List<VariantRecord> results = new ArrayList<VariantRecord>();
-        for (FileRecord f : LibraryVariantsController.getInstance().getFileRecords()) {
-            try {
-                VariantSet set = VCFParser.parseVariants(new File(f.getFileName()));
-                results.addAll(set.getRecords());
-            } catch (IOException ex) {
-            }
-        }
-        return results;
+        return filteredVariants;
     }
 
     public List<VariantRecord> getFilteredVariantRecords() {
         return filteredVariants;
     }
 
-    public List<VariantRecord> getVariantRecords(List<FileRecord> files) {
-        List<VariantRecord> results = new ArrayList<VariantRecord>();
-        for (FileRecord f : files) {
-            try {
-                VariantSet set = VCFParser.parseVariants(new File(f.getFileName()));
-                results.addAll(set.getRecords());
-            } catch (IOException ex) {
+    public void filtersChanged() throws SQLException, FatalDatabaseException {
+        updateFilteredVariantDBResults();
+    }
+
+    private void updateFilteredVariantDBResults() {
+
+        TableSchema tableSchema = Database.getInstance().getVariantTableSchema();
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(tableSchema.getTable());
+        query.addAllColumns();
+
+        List<QueryFilter> filters = FilterController.getQueryFilters();
+        for (QueryFilter f : filters) {
+            for (Condition c : f.getConditions()) {
+                query.addCondition(c);
             }
         }
-        return results;
-    }
 
-    public void filtersChanged() {
-        updateFilteredVariantResults();
-    }
+        String queryString = query.toString() + " LIMIT 100";
 
-    private void updateFilteredVariantResults() {
-        List<PostProcessFilter> filters = FilterController.getPostProcessFilters();
-        filteredVariants = getAllVariantRecords();
-        for (PostProcessFilter f : filters) {
-            filteredVariants = f.filterResults(filteredVariants);
+        ResultSet r1;
+        try {
+            r1 = ConnectionController.connect().createStatement().executeQuery(queryString);
+        } catch (SQLException ex) {
+            Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);
+            throw new FatalDatabaseException(ex.getMessage());
         }
+
+        List<DbColumn> columns = tableSchema.getColumns();
+        List<Vector> results;
+        try {
+            results = DBUtil.parseResultSet(columns, r1);
+        } catch (Exception ex) {
+            Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);
+            throw new FatalDatabaseException(ex.getMessage());
+        }
+        filteredVariants = Util.convertVectorsToVariantRecords(results);
+
+        /*
+        for (Vector row : results) {
+            for (Object f : row) {
+                System.out.print(f + "\t");
+            }
+            System.out.println();
+        }
+         * 
+         */
+
     }
+
+
+
 
     /*
     public static void clearVariants() {

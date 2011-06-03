@@ -23,6 +23,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -30,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -47,6 +50,7 @@ import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.view.gadget.CollapsibleFrameGadget;
+import org.ut.biolab.medsavant.view.util.DialogUtil;
 
 /**
  *
@@ -75,7 +79,14 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
 
     private void updateChartMap() {
 
-        Map<String, Integer> chartMap = getChartMap(currentKeyIndex, isSorted);
+        Map<String, Integer> chartMap;
+        try {
+            chartMap = getChartMap(currentKeyIndex, isSorted);
+        } catch (Exception ex) {
+            Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
+            DialogUtil.displayErrorMessage("Problem getting data.", ex);
+            return;
+        }
 
         printHist(chartMap);
 
@@ -252,7 +263,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
         return (Integer) numberModel.getValue();
     }
 
-    private Map<String, Integer> getChartMap(int fieldIndex, boolean isSorted) {
+    private Map<String, Integer> getChartMap(int fieldIndex, boolean isSorted) throws Exception {
 
         Map<String, Integer> chartMap = new TreeMap<String, Integer>();
 

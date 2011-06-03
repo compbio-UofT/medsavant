@@ -13,19 +13,15 @@ import java.util.List;
 import java.util.Vector;
 import medsavant.db.table.TableSchema;
 import medsavant.db.table.TableSchema.ColumnType;
-import medsavant.exception.MedSavantDBException;
+import medsavant.exception.FatalDatabaseException;
 
 /**
  *
  * @author mfiume
  */
-public class Util {
+public class DBUtil {
 
-    
-
-
-
-    public static List<Vector> parseResultSet(List<DbColumn> columns, ResultSet r1) throws MedSavantDBException, SQLException {
+    public static List<Vector> parseResultSet(List<DbColumn> columns, ResultSet r1) throws FatalDatabaseException, SQLException {
 
         int numColumns = columns.size();
 
@@ -52,7 +48,7 @@ public class Util {
                         v.add(r1.getFloat(i));
                         break;
                     default:
-                        throw new MedSavantDBException("Unrecognized column type: " + columnTypeEnums.get(j));
+                        throw new FatalDatabaseException("Unrecognized column type: " + columnTypeEnums.get(j));
                 }
             }
             

@@ -7,9 +7,14 @@ package org.ut.biolab.medsavant.view.gadget;
 
 import com.jidesoft.dashboard.Gadget;
 import fiume.table.SearchableTablePanel;
+import java.sql.SQLException;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.images.IconFactory;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
@@ -38,8 +43,16 @@ public class GadgetFactory {
     public static Gadget createResultsGadget() {
         GenericGadget g = new GenericGadget("Results",new GadgetContentGenerator() {
             public JComponent generateGadgetContent() {
-                Vector records = Util.getVariantRecordsVector(ResultController.getInstance().getAllVariantRecords());
-                JPanel p = new SearchableTablePanel(records, VariantRecordModel.getFieldNames(), VariantRecordModel.getFieldClasses());
+                Vector records;
+                JPanel p;
+                try {
+                    records = Util.convertVariantRecordsToVectors(ResultController.getInstance().getFilteredVariantRecords());
+                    p = new SearchableTablePanel(records, VariantRecordModel.getFieldNames(), VariantRecordModel.getFieldClasses());
+                } catch (Exception ex) {
+                    Logger.getLogger(GadgetFactory.class.getName()).log(Level.SEVERE, null, ex);
+                    p = new JPanel();
+                    p.add(new JLabel("Problem retrieving data"));
+                }
                 return p;
             }
         });

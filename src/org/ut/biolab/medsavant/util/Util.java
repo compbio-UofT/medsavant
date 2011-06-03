@@ -28,11 +28,19 @@ public class Util {
         return v;
     }
 
-    public static Vector getVariantRecordsVector(List<VariantRecord> list) {
+    public static Vector convertVariantRecordsToVectors(List<VariantRecord> list) {
         Vector result = new Vector(); 
         for (VariantRecord r : list) {
             Vector v = VariantRecordModel.convertToVector(r);
             result.add(v);
+        }
+        return result;
+    }
+
+    public static Vector convertVectorsToVariantRecords(List<Vector> dbResults) {
+        Vector result = new Vector();
+        for (Vector dbResult : dbResults) {
+            result.add(VariantRecordModel..convertToVariantRecord(dbResult));
         }
         return result;
     }
@@ -93,4 +101,6 @@ public class Util {
         s += ")";
         return s;
     }
+
+
 }

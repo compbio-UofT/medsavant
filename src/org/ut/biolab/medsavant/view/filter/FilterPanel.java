@@ -11,10 +11,13 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -25,12 +28,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
+import org.ut.biolab.medsavant.view.util.DialogUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -81,68 +86,71 @@ public class FilterPanel extends JPanel {
 
     private List<FilterView> getPatientFilterViews() {
         List<FilterView> views = new ArrayList<FilterView>();
-
         for (FilterView v : getVariantRecordFilterViews()) {
             views.add(v);
         }
-       // views.add(getGenderFilterView());
-       // views.add(getAgeFilterView());
+        // views.add(getGenderFilterView());
+        // views.add(getAgeFilterView());
+        // views.add(getGenderFilterView());
+        // views.add(getAgeFilterView());
+
+        // views.add(getGenderFilterView());
+        // views.add(getAgeFilterView());
 
         return views;
     }
 
     /*
     private FilterView getGenderFilterView() {
-        String title = "Gender";
+    String title = "Gender";
 
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+    JPanel container = new JPanel();
+    container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
-        container.add(new JLabel("Patients are:"));
-        container.add(new JCheckBox("Male"));
-        final JCheckBox buttonFemale = new JCheckBox("Female");
-        container.add(buttonFemale);
-        listenToComponent(buttonFemale);
+    container.add(new JLabel("Patients are:"));
+    container.add(new JCheckBox("Male"));
+    final JCheckBox buttonFemale = new JCheckBox("Female");
+    container.add(buttonFemale);
+    listenToComponent(buttonFemale);
 
-        FilterGenerator fg = new FilterGenerator() {
+    FilterGenerator fg = new FilterGenerator() {
 
-            public Filter generateFilter() {
-                QueryFilter qf = new QueryFilter() {
+    public Filter generateFilter() {
+    QueryFilter qf = new QueryFilter() {
 
-                    @Override
-                    public List<Condition> getConditions() {
-                        List<Condition> c = new ArrayList<Condition>();
-                        String value = "male";
-                        if (buttonFemale.isSelected()) {
-                            value = "female";
-                        }
-                        c.add(BinaryCondition.equalTo(DB.getInstance().patientTable.getColumn(PatientTable.COL_GENDER), value));
-                        return c;
-                    }
-                };
-                return qf;
-            }
-        };
+    @Override
+    public List<Condition> getConditions() {
+    List<Condition> c = new ArrayList<Condition>();
+    String value = "male";
+    if (buttonFemale.isSelected()) {
+    value = "female";
+    }
+    c.add(BinaryCondition.equalTo(DB.getInstance().patientTable.getColumn(PatientTable.COL_GENDER), value));
+    return c;
+    }
+    };
+    return qf;
+    }
+    };
 
-        return new FilterView(title, container, fg);
+    return new FilterView(title, container, fg);
     }
 
     private FilterView getAgeFilterView() {
-        String title = "Age";
+    String title = "Age";
 
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+    JPanel container = new JPanel();
+    container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
-        container.add(new JLabel("Patients are:"));
-        container.add(new JCheckBox("10-20"));
-        container.add(new JCheckBox("20-30"));
-        container.add(new JCheckBox("old"));
+    container.add(new JLabel("Patients are:"));
+    container.add(new JCheckBox("10-20"));
+    container.add(new JCheckBox("20-30"));
+    container.add(new JCheckBox("old"));
 
-        return new FilterView(title, container, null);
+    return new FilterView(title, container, null);
     }
      * 
      */
-
     void listenToComponent(final JCheckBox c) {
         c.addActionListener(new ActionListener() {
 
@@ -165,7 +173,7 @@ public class FilterPanel extends JPanel {
                 continue;
             } else {
                 final String title = fieldNames.get(i);
-               
+
 
                 JPanel container = new JPanel();
                 container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
@@ -173,7 +181,13 @@ public class FilterPanel extends JPanel {
                 JPanel bottomContainer = new JPanel();
                 bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
 
-                Set<String> uniq = getUniqueValuesOfVariantRecordsAtField(i);
+                Set<String> uniq;
+                try {
+                    uniq = getUniqueValuesOfVariantRecordsAtField(i);
+                } catch (Exception ex) {
+                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    continue;
+                }
 
                 final JButton apply = new JButton("Apply");
                 apply.setEnabled(false);
@@ -185,21 +199,20 @@ public class FilterPanel extends JPanel {
                         apply.setEnabled(false);
 
                         List<String> acceptableValues = new ArrayList<String>();
-                                for (JCheckBox b : boxes) {
-                                    if (b.isSelected()) {
-                                        acceptableValues.add(b.getText());
-                                    }
-                                }
+                        for (JCheckBox b : boxes) {
+                            if (b.isSelected()) {
+                                acceptableValues.add(b.getText());
+                            }
+                        }
 
                         if (acceptableValues.size() == boxes.size()) {
                             FilterController.removeFilter(VariantRecordModel.getFieldNameForIndex(fieldNum));
                         } else {
-                            Filter f = new VariantRecordFilter(acceptableValues,fieldNum);
+                            Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
                             System.out.println("Adding filter: " + f);
                             FilterController.addFilter(f);
                         }
                     }
-
                 });
 
                 for (String s : uniq) {
@@ -212,7 +225,9 @@ public class FilterPanel extends JPanel {
                                     (AbstractButton) e.getSource();
                             ButtonModel buttonModel = abstractButton.getModel();
                             boolean pressed = buttonModel.isPressed();
-                            if (pressed) { apply.setEnabled(true); }
+                            if (pressed) {
+                                apply.setEnabled(true);
+                            }
                             //System.out.println("Changed: a=" + armed + "/p=" + pressed + "/s=" + selected);
                         }
                     });
@@ -264,7 +279,18 @@ public class FilterPanel extends JPanel {
     private Set<String> getUniqueValuesOfVariantRecordsAtField(int i) {
         Set<String> result = new TreeSet<String>();
 
-        List<VariantRecord> records = ResultController.getInstance().getAllVariantRecords();
+        /**
+         * TODO: this should query the database
+         */
+        List<VariantRecord> records;
+        try {
+            records = ResultController.getInstance().getFilteredVariantRecords();
+        } catch (Exception ex) {
+            Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
+            DialogUtil.displayErrorMessage("Problem getting data.", ex);
+            return null;
+        }
+
         for (VariantRecord r : records) {
             Object o = VariantRecordModel.getValueOfFieldAtIndex(i, r);
             if (o == null) {
