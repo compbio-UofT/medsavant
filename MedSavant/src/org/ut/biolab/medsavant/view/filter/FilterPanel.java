@@ -33,10 +33,14 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import medsavant.db.BasicQuery;
@@ -106,7 +110,7 @@ public class FilterPanel extends JPanel {
     private List<FilterView> getFilterViews() throws SQLException {
         List<FilterView> views = new ArrayList<FilterView>();
         views.addAll(getVariantRecordFilterViews());
-        views.add(getGOntologyView()); 
+        views.add(getGOntologyFilterView()); 
         // views.add(getGenderFilterView());
         // views.add(getAgeFilterView());
         // views.add(getGenderFilterView());
@@ -118,45 +122,131 @@ public class FilterPanel extends JPanel {
         return views;
     }
     
-    private FilterView getGOntologyView(){
+    /**
+     * Return the filter view for the gene ontology filter.
+     * @return 
+     */
+    private FilterView getGOntologyFilterView(){
         
-        FilterView gontologyView = null;
+        final JPanel container = new JPanel();
+        FilterView gontologyFilterView = new FilterView("Gene Ontology", container);
+        // Add button to ask whether the person wants to see the tree.
+        final JButton buttonShowTree = new JButton("Show tree");
+        container.add(buttonShowTree);
+        buttonShowTree.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) { 
+                container.remove(buttonShowTree);
+                // show progress bar while loading data, and then show the tree.
+                loadData(container);
+            }
+        });
+
+
+        return gontologyFilterView;
+    }
+    
+    /**
+     * Load data once the user has indicated the wish to show the tree (ie, 
+     * pressed on the button asking to show the tree).
+     * @param container 
+     */
+    private void loadData(final JPanel container){
+                
+        final JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(false);
+        container.add(progressBar);
+        
+          class Task extends SwingWorker{
+              
+              XTree xtree;
+
+                @Override
+                protected Object doInBackground() throws Exception {
+                    setProgress(0);
+                    xtree = XMLontology.makeTree("");
+                    setProgress(100);
+                    return xtree;
+                }
+            }
+
         try{
+
+            final Task task = new Task();
             
-            XTree xtree = XMLontology.makeTree("");
+            task.addPropertyChangeListener(new PropertyChangeListener() {
+
+                // To detect progress with the loading of the tree.
+                public void propertyChange(PropertyChangeEvent evt) {
+                    
+                    if ("progress".equals(evt.getPropertyName()) && 
+                            (Integer)(evt.getNewValue()) == 100){
+
+                        progressBar.setIndeterminate(false);
+                        progressBar.setVisible(false);
+                        container.remove(progressBar);
+                        // When we're done loading the information, show tree.
+                        showTree(container, task.xtree);
+                    }   
+                    else if ("state".equals(evt.getPropertyName()) && 
+                            "STARTED".equals(evt.getNewValue() + "")){
+
+                        progressBar.setIndeterminate(true);
+                    }
+                }
+            });
             
+            // Try to load the information into the tree (i.e., download XML 
+            // file etc)
+            task.execute();
+                    
+        }
+        // If we could not show the tree (load data), say that we could not.
+        catch(Exception e){
+
+            container.remove(progressBar);
+            container.add(new JLabel("Could not display the tree"));
+            System.out.println("Could not display the tree.");
+        }
+    }
+    
+    /**
+     * Set up the panel so that the jtree component can be seen, along with the
+     * button asking to "apply" a filter.
+     * @param container
+     * @param xtree 
+     */
+    private void showTree(JPanel container, XTree xtree){
             final JButton applyButton = new JButton("Apply");
             
             // Construct jtree from xtree that has been made.
             // Put tree in scrollpane, and scrollpane in panel.
             JTree jTree = getTree(xtree);
+            // Add a listener to the tree.  Note: tree can allow non-contiguous
+            // multiple selections.
+            jTree.addTreeSelectionListener(new TreeSelectionListener() {
+
+                public void valueChanged(TreeSelectionEvent e) {
+                    System.out.println("Selected tree");
+                }
+            }); 
+            
             JScrollPane scrollpane = new JScrollPane(jTree);
-            JPanel container = new JPanel();
             container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
             container.add(scrollpane);
             container.add(Box.createVerticalBox());
             container.add(applyButton);
-            gontologyView = new FilterView("Gene Ontology", container);
-            
-//            applyButton.setEnabled(false);
+
+            applyButton.setEnabled(false);
             applyButton.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
                     System.out.println("Pressed apply for gene ontology filter");
                 }
-            });
-                    
-        }
-        catch(Exception e){
-
-            gontologyView = new FilterView
-                    ("Gene Ontology", new JLabel("Could not display the tree"));
-            System.out.println("Could not display the tree.");
-        }
-
-        return gontologyView;
+            });        
     }
     
+    // Obtain the JTree component to be added to the panel, given the xtree.
     private JTree getTree(XTree xtree){
         
         // "dummy" root of the tree.
@@ -175,6 +265,7 @@ public class FilterPanel extends JPanel {
         return jtree;
     }
     
+    // Add the nodes to form part of the jtree.
     private void addNodes(DefaultMutableTreeNode actualRoot, XTree xtree){
         
         // To contain the roots of the tree.
