@@ -11,6 +11,10 @@ import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.swing.RangeSlider;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -19,16 +23,22 @@ import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTree;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeSelectionModel;
 import medsavant.db.BasicQuery;
 import medsavant.db.ConnectionController;
 import medsavant.db.Database;
@@ -41,6 +51,7 @@ import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.view.filter.geneontology.*;
 
 /**
  *
@@ -95,6 +106,7 @@ public class FilterPanel extends JPanel {
     private List<FilterView> getFilterViews() throws SQLException {
         List<FilterView> views = new ArrayList<FilterView>();
         views.addAll(getVariantRecordFilterViews());
+        views.add(getGOntologyView()); 
         // views.add(getGenderFilterView());
         // views.add(getAgeFilterView());
         // views.add(getGenderFilterView());
@@ -104,6 +116,122 @@ public class FilterPanel extends JPanel {
         // views.add(getAgeFilterView());
 
         return views;
+    }
+    
+    private FilterView getGOntologyView(){
+        
+        FilterView gontologyView = null;
+        try{
+            
+            XTree xtree = XMLontology.makeTree("");
+            
+            final JButton applyButton = new JButton("Apply");
+            
+            // Construct jtree from xtree that has been made.
+            // Put tree in scrollpane, and scrollpane in panel.
+            JTree jTree = getTree(xtree);
+            JScrollPane scrollpane = new JScrollPane(jTree);
+            JPanel container = new JPanel();
+            container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+            container.add(scrollpane);
+            container.add(Box.createVerticalBox());
+            container.add(applyButton);
+            gontologyView = new FilterView("Gene Ontology", container);
+            
+//            applyButton.setEnabled(false);
+            applyButton.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    System.out.println("Pressed apply for gene ontology filter");
+                }
+            });
+                    
+        }
+        catch(Exception e){
+
+            gontologyView = new FilterView
+                    ("Gene Ontology", new JLabel("Could not display the tree"));
+            System.out.println("Could not display the tree.");
+        }
+
+        return gontologyView;
+    }
+    
+    private JTree getTree(XTree xtree){
+        
+        // "dummy" root of the tree.
+        XNode root = new XNode("...");
+        root.setDescription("...");
+//        root.setLocs(new ArrayList< ArrayList<String> >());
+
+        DefaultMutableTreeNode actualRoot = new DefaultMutableTreeNode(root);
+        
+        // Add the nodes beneath the root node to this tree.
+        addNodes(actualRoot, xtree);
+        JTree jtree = new JTree(actualRoot);
+        jtree.getSelectionModel().setSelectionMode
+                (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+        
+        return jtree;
+    }
+    
+    private void addNodes(DefaultMutableTreeNode actualRoot, XTree xtree){
+        
+        // To contain the roots of the tree.
+        Set<XNode> roots = xtree.getRootNodes();
+        
+        // Get the name of the children while going down the tree.
+        TreeSet<XNode> children;
+        
+        // The child in consideration in context.
+        DefaultMutableTreeNode child;
+        
+        // To contain the parent nodes (to be used when displaying) in question.
+        List<DefaultMutableTreeNode> parentNodes = 
+                new ArrayList<DefaultMutableTreeNode>();
+        
+        
+        // To contain the children nodes in question.
+        List<DefaultMutableTreeNode> childrenNodes = 
+                new ArrayList<DefaultMutableTreeNode>();
+        
+        
+        // Add all roots to the tree.
+        for (XNode root: roots){
+        
+            // Connect the root to its children.
+            child = new DefaultMutableTreeNode(root);
+            actualRoot.add(child);
+            
+            // The future parents to be considered.
+            parentNodes.add(child);
+        }
+        
+        // While we still have children nodes...
+        while(!parentNodes.isEmpty()){
+            
+            // Go through the tree in a breadth-first manner.
+            for (DefaultMutableTreeNode parent: parentNodes){
+
+                // Get the set of children, and have the parents accept their
+                // children.
+                children = xtree.getChildrenNodes
+                        (((XNode)parent.getUserObject()).getIdentifier());
+
+                for (XNode child2: children){
+
+                    child = new DefaultMutableTreeNode(child2);
+                    childrenNodes.add(child);
+                    parent.add(child);
+                }
+            }
+
+            // Now have the children become parents.
+            parentNodes.clear();
+            parentNodes.addAll(childrenNodes);
+            childrenNodes.clear();           
+        }
+
     }
 
     void listenToComponent(final JCheckBox c) {
