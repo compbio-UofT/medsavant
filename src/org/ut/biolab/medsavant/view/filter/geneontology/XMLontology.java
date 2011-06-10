@@ -31,7 +31,6 @@ public class XMLontology {
     
     /**
      * Makes and returns a tree using GO terms.
-     * @param mapFile map of GO ID to genome locations.
      * @return the tree.
      */
     public static XTree makeTree(String mapFile) throws Exception{
@@ -57,7 +56,11 @@ public class XMLontology {
             out.write(buf, 0, len);
         }
 
-        
+        // Location of the file to contain the mappings from GO ID to genome
+        // location.
+//        String mapFile = (new File("")).getAbsolutePath() + sep + "src" + sep
+//                + "org" + sep + "ut" + sep + "biolab" + sep + "medsavant" + sep
+//                + "view" + sep + "filter" + sep + "geneontology" + sep + "";
         XTree tree = new XTree(mapFile);
         
         Handler handler = new Handler(tree, locationOfFile);

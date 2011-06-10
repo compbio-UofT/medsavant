@@ -60,7 +60,7 @@ public class XTree {
         identifierToNode.put("ROOT", fakeRoot);
         
         // Map GO ID to locations on genome.
-//        goToLocs = mapIDtoLocations(fileGenLocation);
+        goToLocs = mapIDtoLocations(fileGenLocation);
         
     }
     
@@ -128,7 +128,7 @@ public class XTree {
             identifierToNode.put(childref.getIdentifier(), childref);            
         }
         
-//        markLocations(childref);
+        markLocations(childref);
         
         // For each parent, mark this as their child.
         for (String parentID: parentIDs){
@@ -172,7 +172,7 @@ public class XTree {
         fakeRoot.addChild(root);
         
         // Mark the location of this node.
-//        markLocations(root);
+        markLocations(root);
     }
     
         /**
