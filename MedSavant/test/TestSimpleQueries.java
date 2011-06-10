@@ -85,7 +85,7 @@ public class TestSimpleQueries {
         for (DbColumn dbc : columns) {
             if (TableSchema.isNumeric(t.getColumnType(dbc))) {
                 Range extremeValues = BasicQuery.getExtremeValuesForColumn(c, t, dbc);
-                System.out.println(dbc.getColumnNameSQL() + ": " + extremeValues.min + " " + extremeValues.max);
+                System.out.println(dbc.getColumnNameSQL() + ": " + extremeValues.getMin() + " " + extremeValues.getMax());
             }
         }
 
