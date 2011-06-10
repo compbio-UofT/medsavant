@@ -11,10 +11,6 @@ import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.swing.RangeSlider;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -22,6 +18,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,6 +39,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import medsavant.db.BasicQuery;
 import medsavant.db.ConnectionController;
@@ -131,17 +129,19 @@ public class FilterPanel extends JPanel {
         final JPanel container = new JPanel();
         FilterView gontologyFilterView = new FilterView("Gene Ontology", container);
         // Add button to ask whether the person wants to see the tree.
-        final JButton buttonShowTree = new JButton("Show tree");
-        container.add(buttonShowTree);
-        buttonShowTree.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) { 
-                container.remove(buttonShowTree);
-                // show progress bar while loading data, and then show the tree.
-                loadData(container);
-            }
-        });
-
+//        final JButton buttonShowTree = new JButton("Show tree");
+//        container.add(buttonShowTree);
+//        buttonShowTree.addActionListener(new ActionListener() {
+//
+//            public void actionPerformed(ActionEvent e) { 
+//                container.remove(buttonShowTree);
+//                // show progress bar while loading data, and then show the tree.
+//                loadData(container);
+//            }
+//        });
+        
+        // Start loading the information at the beginning.
+        loadData(container);
 
         return gontologyFilterView;
     }
@@ -164,7 +164,10 @@ public class FilterPanel extends JPanel {
                 @Override
                 protected Object doInBackground() throws Exception {
                     setProgress(0);
-                    xtree = XMLontology.makeTree("");
+                    // Create the mappings file at a certain destination 
+                    // then show the tree.
+                    String destination = CreateMappingsFile.getMappings();
+                    xtree = XMLontology.makeTree(destination);
                     setProgress(100);
                     return xtree;
                 }
@@ -219,31 +222,58 @@ public class FilterPanel extends JPanel {
     private void showTree(JPanel container, XTree xtree){
             final JButton applyButton = new JButton("Apply");
             
-            // Construct jtree from xtree that has been made.
-            // Put tree in scrollpane, and scrollpane in panel.
-            JTree jTree = getTree(xtree);
-            // Add a listener to the tree.  Note: tree can allow non-contiguous
-            // multiple selections.
-            jTree.addTreeSelectionListener(new TreeSelectionListener() {
+        // Construct jtree from xtree that has been made.
+        // Put tree in scrollpane, and scrollpane in panel.
+        final JTree jTree = getTree(xtree);
+        // Add a listener to the tree.  Note: tree can allow non-contiguous
+        // multiple selections.
+        jTree.addTreeSelectionListener(new TreeSelectionListener() {
 
-                public void valueChanged(TreeSelectionEvent e) {
-                    System.out.println("Selected tree");
+            public void valueChanged(TreeSelectionEvent e) {
+                // Iff no path has been selected, make the button non-clickable.
+                if (jTree.isSelectionEmpty()){
+                    applyButton.setEnabled(false);
                 }
-            }); 
-            
-            JScrollPane scrollpane = new JScrollPane(jTree);
-            container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-            container.add(scrollpane);
-            container.add(Box.createVerticalBox());
-            container.add(applyButton);
-
-            applyButton.setEnabled(false);
-            applyButton.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    System.out.println("Pressed apply for gene ontology filter");
+                else{
+                    applyButton.setEnabled(true);
                 }
-            });        
+            }
+        }); 
+
+        JScrollPane scrollpane = new JScrollPane(jTree);
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.add(scrollpane);
+        container.add(Box.createVerticalBox());
+        container.add(applyButton);
+
+        applyButton.setEnabled(false);
+        applyButton.addActionListener(new ActionListener() {
+
+            // Note that an action could have been performed only if some tree
+            // element has been selected.
+            public void actionPerformed(ActionEvent e) {
+                
+                HashSet<String> locations = new HashSet<String>();
+                System.out.println("Pressed apply for gene ontology filter");
+                TreePath[] paths = jTree.getSelectionPaths();
+                for (TreePath path: paths){
+                    DefaultMutableTreeNode currNode = 
+                            (DefaultMutableTreeNode)path.getLastPathComponent();
+                    XNode currXnode = (XNode) currNode.getUserObject();
+                    ArrayList<ArrayList<String>> arrayLocs = currXnode.getLocs();
+                    
+                    for (ArrayList<String> arrayLoc: arrayLocs){
+                        // Need to subtract 1 because of BED format.
+                        int formattedEnd = 
+                                Integer.parseInt(arrayLoc.get(3).trim()) - 1;
+                        String str = arrayLoc.get(1).trim() + "_" + 
+                                arrayLoc.get(2).trim() + "_" + formattedEnd;
+                        locations.add(str);
+                    }
+                }
+                System.out.println(locations);
+            }
+        });        
     }
     
     // Obtain the JTree component to be added to the panel, given the xtree.
