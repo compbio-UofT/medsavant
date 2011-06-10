@@ -272,6 +272,7 @@ public class FilterPanel extends JPanel {
                     }
                 }
                 System.out.println(locations);
+                // nirvana was here.
             }
         });        
     }
@@ -395,14 +396,14 @@ public class FilterPanel extends JPanel {
 
                 RangeSlider rs = new com.jidesoft.swing.RangeSlider();
 
-                rs.setMinimum((int) Math.floor(extremeValues.min));
-                rs.setMaximum((int) Math.ceil(extremeValues.max));
+                rs.setMinimum((int) Math.floor(extremeValues.getMin()));
+                rs.setMaximum((int) Math.ceil(extremeValues.getMax()));
 
                 rs.setMajorTickSpacing(5);
                 rs.setMinorTickSpacing(1);
 
-                rs.setLowValue((int) Math.floor(extremeValues.min));
-                rs.setHighValue((int) Math.ceil(extremeValues.max));
+                rs.setLowValue((int) Math.floor(extremeValues.getMin()));
+                rs.setHighValue((int) Math.ceil(extremeValues.getMax()));
 
                 container.add(rs);
                 container.add(Box.createVerticalBox());
