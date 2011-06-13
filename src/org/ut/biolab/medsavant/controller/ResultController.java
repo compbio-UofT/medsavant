@@ -72,7 +72,7 @@ public class ResultController implements FiltersChangedListener {
         for (QueryFilter f : filters) {
             query.addCondition(ComboCondition.or(f.getConditions()));
         }
-
+        
         String queryString = query.toString() + " LIMIT 1000";
         System.out.println(queryString);
 
