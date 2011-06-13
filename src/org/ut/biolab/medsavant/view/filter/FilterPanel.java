@@ -5,6 +5,7 @@
 package org.ut.biolab.medsavant.view.filter;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.pane.CollapsiblePane;
@@ -18,6 +19,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,12 +65,14 @@ public class FilterPanel extends JPanel {
 
     private final ArrayList<FilterView> filterViews;
     private CollapsiblePanes contentPanel;
+    private SelectQueryGO selectStatementGO;
 
     public FilterPanel() {
         this.setLayout(new BorderLayout());
         filterViews = new ArrayList<FilterView>();
         initGUI();
     }
+    
 
     private void initGUI() {
 
@@ -127,6 +131,7 @@ public class FilterPanel extends JPanel {
     private FilterView getGOntologyFilterView(){
         
         final JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         FilterView gontologyFilterView = new FilterView("Gene Ontology", container);
         // Add button to ask whether the person wants to see the tree.
 //        final JButton buttonShowTree = new JButton("Show tree");
@@ -202,7 +207,6 @@ public class FilterPanel extends JPanel {
             // Try to load the information into the tree (i.e., download XML 
             // file etc)
             task.execute();
-                    
         }
         // If we could not show the tree (load data), say that we could not.
         catch(Exception e){
@@ -242,10 +246,41 @@ public class FilterPanel extends JPanel {
 
         JScrollPane scrollpane = new JScrollPane(jTree);
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        container.add(scrollpane);
         container.add(Box.createVerticalBox());
-        container.add(applyButton);
+        container.add(scrollpane);
+        scrollpane.setAlignmentX(0F);
 
+        JPanel bottomContainer = new JPanel();
+        
+        
+//        bottomContainer.add(Box.createVerticalBox());
+        JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
+        selectAll.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                // select all the nodes in the tree.
+                System.out.println("All nodes in the tree selected; not yet implemented");
+            }
+        });
+        bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
+        bottomContainer.add(selectAll);
+        JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
+        selectNone.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                // deselect any node in the tree.
+                jTree.clearSelection();
+                FilterController.removeFilter("position gene Ont");
+            }
+        });
+        bottomContainer.add(selectNone);
+        
+        bottomContainer.add(Box.createGlue());
+        bottomContainer.add(applyButton);
+        bottomContainer.setAlignmentX(0F);
+
+        container.add(bottomContainer);
+        
         applyButton.setEnabled(false);
         applyButton.addActionListener(new ActionListener() {
 
@@ -253,6 +288,8 @@ public class FilterPanel extends JPanel {
             // element has been selected.
             public void actionPerformed(ActionEvent e) {
                 
+                // Select query statement for GO.
+                selectStatementGO = new SelectQueryGO();
                 HashSet<String> locations = new HashSet<String>();
                 System.out.println("Pressed apply for gene ontology filter");
                 TreePath[] paths = jTree.getSelectionPaths();
@@ -264,15 +301,52 @@ public class FilterPanel extends JPanel {
                     
                     for (ArrayList<String> arrayLoc: arrayLocs){
                         // Need to subtract 1 because of BED format.
-                        int formattedEnd = 
-                                Integer.parseInt(arrayLoc.get(3).trim()) - 1;
+                        Double formattedEnd = 
+                                Integer.parseInt(arrayLoc.get(3).trim()) - 1 + 0.0;
+                        Double begin = Integer.parseInt(arrayLoc.get(2).trim()) + 0.0;
+                        selectStatementGO.addCondition(arrayLoc.get(1), begin, formattedEnd);
+                        
                         String str = arrayLoc.get(1).trim() + "_" + 
                                 arrayLoc.get(2).trim() + "_" + formattedEnd;
                         locations.add(str);
                     }
                 }
-                System.out.println(locations);
-                // nirvana was here.
+                final HashMap<String, List<Range>> map = selectStatementGO.getConditions();
+                System.out.println(selectStatementGO);
+//                System.out.println(locations);
+                Filter f = new QueryFilter() {
+
+                    @Override
+                    public Condition[] getConditions() {
+                        
+                        Condition[] conds = new Condition[map.keySet().size()];
+                        int i = 0;
+                        for (String key: map.keySet()){
+                            
+                            List<ComboCondition> listInnerCond = 
+                                    new ArrayList<ComboCondition>();
+                            List<Range> ranges = map.get(key);
+                            for (Range range: ranges){
+                                
+                                BinaryCondition innerCond1 = BinaryCondition.greaterThan(SelectQueryGO.POSITION_COL, range.getMin(), true);
+                                BinaryCondition innerCond2 = BinaryCondition.lessThan(SelectQueryGO.POSITION_COL, range.getMax(), true);
+                                BinaryCondition[] condTogether = {innerCond1, innerCond2};
+                                listInnerCond.add(ComboCondition.and(condTogether));
+                            } // for each range for the chromosome of interest.
+                            BinaryCondition chrCond = BinaryCondition.equalTo(SelectQueryGO.CHROM_COL, key);
+                            conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
+//                            System.out.println(conds[i-1]);
+                        } // for each chromosome.
+                        return conds;
+                    }
+
+                    @Override
+                    public String getName() {
+                        return "position gene Ont";
+                    }
+                };
+                System.out.println("Adding Filter" + f.getName());
+                FilterController.addFilter(f);
             }
         });        
     }
@@ -286,7 +360,6 @@ public class FilterPanel extends JPanel {
 //        root.setLocs(new ArrayList< ArrayList<String> >());
 
         DefaultMutableTreeNode actualRoot = new DefaultMutableTreeNode(root);
-        
         // Add the nodes beneath the root node to this tree.
         addNodes(actualRoot, xtree);
         JTree jtree = new JTree(actualRoot);
