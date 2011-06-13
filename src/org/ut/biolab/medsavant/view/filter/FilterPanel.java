@@ -327,13 +327,16 @@ public class FilterPanel extends JPanel {
                                     new ArrayList<ComboCondition>();
                             List<Range> ranges = map.get(key);
                             for (Range range: ranges){
-                                
-                                BinaryCondition innerCond1 = BinaryCondition.greaterThan(SelectQueryGO.POSITION_COL, range.getMin(), true);
-                                BinaryCondition innerCond2 = BinaryCondition.lessThan(SelectQueryGO.POSITION_COL, range.getMax(), true);
+
+                                BinaryCondition innerCond1 = BinaryCondition.greaterThan
+                                        (Database.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.POSITION_COL), range.getMin(), true);
+                                BinaryCondition innerCond2 = BinaryCondition.lessThan
+                                        (Database.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.POSITION_COL), range.getMax(), true);
                                 BinaryCondition[] condTogether = {innerCond1, innerCond2};
                                 listInnerCond.add(ComboCondition.and(condTogether));
                             } // for each range for the chromosome of interest.
-                            BinaryCondition chrCond = BinaryCondition.equalTo(SelectQueryGO.CHROM_COL, key);
+                            BinaryCondition chrCond = BinaryCondition.equalTo
+                                    (Database.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.CHROM_COL), key);
                             conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
 //                            System.out.println(conds[i-1]);
                         } // for each chromosome.
