@@ -34,20 +34,23 @@ public class Range implements Comparable{
     
     /**
      * Return the list of ranges which result from merging the ranges from 
-     * range1 with those from range2.
+     * range1 with those from range2. Note that the Range objects within may
+     * have their parameters changed.
      * @param range1
      * @param range2
      * @return 
      */
-    public List<Range> merge(List<Range> range1, List<Range> range2){
-        
+    public static List<Range> merge(List<Range> range1, List<Range> range2){
+        // TODO: testing this method.
         List<Range> mergedList = new ArrayList<Range>();
         // Arrange first in order by starting positions.
         TreeSet<Range> allRangesInOrder = new TreeSet<Range>();
         range1.addAll(range2);
+
         for (Range currRange:range1){
             allRangesInOrder.add(currRange);
         }
+        
         // Merge now.
         Range currMerged = null;
 
@@ -59,6 +62,7 @@ public class Range implements Comparable{
             else if (currMerged.canBeMergedWith(currRange)){
                 // merge them here
                 currMerged.max = Math.max(currMerged.max, currRange.max);
+                currMerged.min = Math.min(currMerged.min, currRange.min);
             }
             else{
                 currMerged = currRange;
@@ -67,6 +71,22 @@ public class Range implements Comparable{
         }
         return mergedList;
     }
+    
+    public String toString(){
+        return this.min + " " + this.max;
+    }
+    
+    /**
+     * Get the list you get by merging the Range objects in this list.
+     * @param range
+     * @return 
+     */
+    public static List<Range> merge(List<Range> range){
+        
+        return merge(range, new ArrayList());
+    }
+    
+
 
     /**
      * Compare two Range objects by starting point.
@@ -90,7 +110,9 @@ public class Range implements Comparable{
      */
     public boolean canBeMergedWith(Range range){
         return (this.min <= range.max && range.max <= this.max) || 
-                (range.min <= this.max && this.max <= range.max);
+                (range.min <= this.max && this.max <= range.max) || 
+                (this.min >= range.min && this.max <= range.max) ||
+                (range.min >= this.min && range.max <= this.max);
     }
     
 }
