@@ -152,9 +152,13 @@ public class CreateMappingsFile {
             HashMap<String, ArrayList< ArrayList<String> > > refSeqToGenome) 
             throws IOException{
         
-        // File to write to; have the file be deleted upon exit.
-        File toWriteTo = new File(destination);
-//        toWriteTo.deleteOnExit();
+        // File to write to; if the file already exists (with inProgress next 
+        // to it), delete that file, and construct a new file
+        File toWriteTo = new File(destination + "inProgress");
+        if (toWriteTo.exists()){
+            toWriteTo.delete();
+            toWriteTo.createNewFile();
+        }
         Writer writer = new BufferedWriter(new FileWriter(toWriteTo));
         
         // Parse through file containing GO to ref seq IDs map.
@@ -192,6 +196,7 @@ public class CreateMappingsFile {
         is.close();
         writer.flush();
         writer.close();
+        toWriteTo.renameTo(new File(destination));
     }
     
         /**
