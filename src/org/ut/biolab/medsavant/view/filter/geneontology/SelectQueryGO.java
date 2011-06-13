@@ -20,12 +20,12 @@ public class SelectQueryGO {
     /**
      * Name of the column with chromosome info.
      */
-    public final static String CHROM_COL = VariantTableSchema.DBFIELDNAME_CHROM;
+    public final static String CHROM_COL = VariantTableSchema.ALIAS_CHROM;
     
     /**
      * Name of the column with position info.
      */
-    public final static String POSITION_COL = VariantTableSchema.DBFIELDNAME_POSITION;
+    public final static String POSITION_COL = VariantTableSchema.ALIAS_POSITION;
 
     
     /**
