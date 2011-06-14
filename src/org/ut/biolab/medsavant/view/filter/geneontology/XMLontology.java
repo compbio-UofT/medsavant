@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.ut.biolab.medsavant.view.filter.ontology.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -90,7 +91,7 @@ public class XMLontology {
         /**
          * The current node being filled.
          */
-        private XNode currNode;
+        private Node currNode;
         
         /**
          * List of parents for the current node.
@@ -178,7 +179,7 @@ public class XMLontology {
                     // Create a node if we have seen the id.
                     if (qName.equals("id")){
 
-                        currNode = new XNode(stringAcc);
+                        currNode = new Node(stringAcc);
                     }
                     // Set the description of the node.
                     else if (qName.equals("name")){

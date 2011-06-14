@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.view.filter.geneontology.*;
+import org.ut.biolab.medsavant.view.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -176,7 +177,7 @@ public class GOFilter {
                     for (TreePath path: paths){
                         DefaultMutableTreeNode currNode = 
                                 (DefaultMutableTreeNode)path.getLastPathComponent();
-                        XNode currXnode = (XNode) currNode.getUserObject();
+                        Node currXnode = (Node) currNode.getUserObject();
                         ArrayList<ArrayList<String>> arrayLocs = currXnode.getLocs();
 
                         for (ArrayList<String> arrayLoc: arrayLocs){
@@ -342,7 +343,7 @@ public class GOFilter {
     private static JTree getTree(XTree xtree){
         
         // "dummy" root of the tree.
-        XNode root = new XNode("...");
+        Node root = new Node("...");
         root.setDescription("...");
 //        root.setLocs(new ArrayList< ArrayList<String> >());
 
@@ -360,10 +361,10 @@ public class GOFilter {
     private static void addNodes(DefaultMutableTreeNode actualRoot, XTree xtree){
         
         // To contain the roots of the tree.
-        Set<XNode> roots = xtree.getRootNodes();
+        Set<Node> roots = xtree.getRootNodes();
         
         // Get the name of the children while going down the tree.
-        TreeSet<XNode> children;
+        TreeSet<Node> children;
         
         // The child in consideration in context.
         DefaultMutableTreeNode child;
@@ -379,7 +380,7 @@ public class GOFilter {
         
         
         // Add all roots to the tree.
-        for (XNode root: roots){
+        for (Node root: roots){
         
             // Connect the root to its children.
             child = new DefaultMutableTreeNode(root);
@@ -398,9 +399,9 @@ public class GOFilter {
                 // Get the set of children, and have the parents accept their
                 // children.
                 children = xtree.getChildrenNodes
-                        (((XNode)parent.getUserObject()).getIdentifier());
+                        (((Node)parent.getUserObject()).getIdentifier());
 
-                for (XNode child2: children){
+                for (Node child2: children){
 
                     child = new DefaultMutableTreeNode(child2);
                     childrenNodes.add(child);

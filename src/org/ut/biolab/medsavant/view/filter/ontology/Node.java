@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.view.filter.geneontology;
+package org.ut.biolab.medsavant.view.filter.ontology;
 
+import org.ut.biolab.medsavant.view.filter.geneontology.*;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
@@ -11,12 +12,12 @@ import java.util.TreeSet;
  *
  * @author Nirvana Nursimulu
  */
-public class XNode implements Comparable{
+public class Node implements Comparable{
     
     /**
      * Child of this node.
      */
-    private TreeSet<XNode> children;
+    private TreeSet<Node> children;
     
     /**
      * Identifier of this node. (Acts as some kind of key)
@@ -47,9 +48,9 @@ public class XNode implements Comparable{
      * Constructor of this node given an identifier.
      * @param identifier  "key" of this node.
      */
-    public XNode(String identifier){
+    public Node(String identifier){
         
-        this.children = new TreeSet<XNode>();
+        this.children = new TreeSet<Node>();
         this.identifier = identifier;
         this.description = null;
         this.locs = null;
@@ -74,7 +75,7 @@ public class XNode implements Comparable{
      * Adds a child to this node.
      * @param child 
      */
-    public void addChild(XNode child){
+    public void addChild(Node child){
         
         this.children.add(child);
     }
@@ -85,7 +86,7 @@ public class XNode implements Comparable{
      * @param child the child to be removed.
      * @return true iff the child was removed.
      */
-    public boolean removeChild(XNode child){
+    public boolean removeChild(Node child){
         
         // If this is not the root node, this operation is not enabled.
         if (!this.getIdentifier().equals("ROOT")){
@@ -102,7 +103,7 @@ public class XNode implements Comparable{
      * Returns the child of this node.
      * @return 
      */
-    public TreeSet<XNode> getChildren(){
+    public TreeSet<Node> getChildren(){
         
         return this.children;
     }
@@ -112,7 +113,7 @@ public class XNode implements Comparable{
      * (except for children info)
      * @param node node to copy info to. 
      */
-    public void copyInfoExceptChildrenTo(XNode node){
+    public void copyInfoExceptChildrenTo(Node node){
         
         node.description = this.description;
         node.identifier = this.identifier;
@@ -187,7 +188,7 @@ public class XNode implements Comparable{
     public int compareTo(Object o) {
         
         try{
-            XNode node = (XNode)o;
+            Node node = (Node)o;
             return this.description.compareTo(node.description);
         }
         catch(Exception e){
