@@ -99,8 +99,19 @@ public class Range implements Comparable{
             return -1;
         else if (this.min > range.min)
             return 1;
-        else
+        else 
             return 0;
+    }
+    
+    @Override
+    public boolean equals(Object r){
+        try{
+            Range range = (Range)r;
+            return range.min == this.min && range.max == this.max;
+        }
+        catch(Exception e){
+            return false;
+        }
     }
     
     /**
