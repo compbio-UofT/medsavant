@@ -235,12 +235,13 @@ public class FilterPanel extends JPanel {
 
             public void valueChanged(TreeSelectionEvent e) {
                 // Iff no path has been selected, make the button non-clickable.
-                if (jTree.isSelectionEmpty()){
-                    applyButton.setEnabled(false);
-                }
-                else{
-                    applyButton.setEnabled(true);
-                }
+//                if (jTree.isSelectionEmpty()){
+//                    applyButton.setEnabled(false);
+//                }
+//                else{
+//                    applyButton.setEnabled(true);
+//                }
+                applyButton.setEnabled(true);
             }
         }); 
 
@@ -288,31 +289,42 @@ public class FilterPanel extends JPanel {
             // element has been selected.
             public void actionPerformed(ActionEvent e) {
                 
+                applyButton.setEnabled(false); 
                 // Select query statement for GO.
                 selectStatementGO = new SelectQueryGO();
                 HashSet<String> locations = new HashSet<String>();
                 System.out.println("Pressed apply for gene ontology filter");
                 TreePath[] paths = jTree.getSelectionPaths();
-                for (TreePath path: paths){
-                    DefaultMutableTreeNode currNode = 
-                            (DefaultMutableTreeNode)path.getLastPathComponent();
-                    XNode currXnode = (XNode) currNode.getUserObject();
-                    ArrayList<ArrayList<String>> arrayLocs = currXnode.getLocs();
-                    
-                    for (ArrayList<String> arrayLoc: arrayLocs){
-                        // Need to subtract 1 because of BED format.
-                        Double formattedEnd = 
-                                Integer.parseInt(arrayLoc.get(3).trim()) - 1 + 0.0;
-                        Double begin = Integer.parseInt(arrayLoc.get(2).trim()) + 0.0;
-                        selectStatementGO.addCondition(arrayLoc.get(1), begin, formattedEnd);
-                        
-                        String str = arrayLoc.get(1).trim() + "_" + 
-                                arrayLoc.get(2).trim() + "_" + formattedEnd;
-                        locations.add(str);
+                
+                if (paths != null){
+                    for (TreePath path: paths){
+                        DefaultMutableTreeNode currNode = 
+                                (DefaultMutableTreeNode)path.getLastPathComponent();
+                        XNode currXnode = (XNode) currNode.getUserObject();
+                        ArrayList<ArrayList<String>> arrayLocs = currXnode.getLocs();
+
+                        for (ArrayList<String> arrayLoc: arrayLocs){
+                            // Need to subtract 1 because of BED format.
+                            Double formattedEnd = 
+                                    Integer.parseInt(arrayLoc.get(3).trim()) - 1 + 0.0;
+                            Double begin = Integer.parseInt(arrayLoc.get(2).trim()) + 0.0;
+                            selectStatementGO.addCondition(arrayLoc.get(1), begin, formattedEnd);
+
+                            String str = arrayLoc.get(1).trim() + "_" + 
+                                    arrayLoc.get(2).trim() + "_" + formattedEnd;
+                            locations.add(str);
+                        }
                     }
                 }
+//                System.out.println(selectStatementGO);
+                // If there are no conditions at all, do not display
+                // anything (most intuitive). So, create bogus condition that 
+                // will never be satisfied.
+                if (selectStatementGO.getConditions().isEmpty() && paths != null){
+                    selectStatementGO.addCondition("chr1", 23, 22); 
+                }
                 final HashMap<String, List<Range>> map = selectStatementGO.getConditions();
-                System.out.println(selectStatementGO);
+                
 //                System.out.println(locations);
                 Filter f = new QueryFilter() {
 
@@ -321,6 +333,7 @@ public class FilterPanel extends JPanel {
                         
                         Condition[] conds = new Condition[map.keySet().size()];
                         int i = 0;
+                       
                         for (String key: map.keySet()){
                             
                             List<ComboCondition> listInnerCond = 
@@ -338,14 +351,13 @@ public class FilterPanel extends JPanel {
                             BinaryCondition chrCond = BinaryCondition.equalTo
                                     (Database.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.CHROM_COL), key);
                             conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
-//                            System.out.println(conds[i-1]);
                         } // for each chromosome.
                         return conds;
                     }
 
                     @Override
                     public String getName() {
-                        return "position gene Ont";
+                        return " position gene Ont";
                     }
                 };
                 System.out.println("Adding Filter" + f.getName());
