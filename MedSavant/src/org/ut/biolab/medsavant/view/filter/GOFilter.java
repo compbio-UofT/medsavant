@@ -149,6 +149,8 @@ public class GOFilter {
     private static void showTree(JPanel container, XTree xtree){
             final JButton applyButton = new JButton("Apply");
             
+        // label will show number of locations.
+        final JLabel numberSelected = new JLabel();
         // Construct jtree from xtree that has been made.
         // Put tree in scrollpane, and scrollpane in panel.
         final JTree jTree = getTree(xtree);
@@ -189,6 +191,15 @@ public class GOFilter {
                             }
                         }
                     }
+                    if (locations.size() != 1){
+                        numberSelected.setText(locations.size() + " gene location ranges selected");
+                    }
+                    else{
+                        numberSelected.setText(locations.size() + " gene location range selected");
+                    }
+                }
+                else{
+                    numberSelected.setText("");
                 }
                 applyButton.setEnabled(true);
                 
@@ -200,6 +211,8 @@ public class GOFilter {
         container.add(Box.createVerticalBox());
         container.add(scrollpane);
         scrollpane.setAlignmentX(0F);
+        
+        container.add(numberSelected);
 
         JPanel bottomContainer = new JPanel();
         
@@ -254,7 +267,7 @@ public class GOFilter {
                     Double end = Integer.parseInt(split[2]) + 0.0;
                     selectStatementGO.addCondition(split[0], start, end);
                 } 
-                System.out.println(locations.size() + " autant selected");
+
 //                if (paths != null){
 //                    for (TreePath path: paths){
 //                        DefaultMutableTreeNode currNode = 
