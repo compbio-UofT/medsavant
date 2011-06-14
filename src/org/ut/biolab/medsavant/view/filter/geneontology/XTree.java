@@ -20,10 +20,6 @@ import java.util.TreeSet;
  */
 public class XTree {
     
-    /**
-     * Number of distinct parents that are shared.
-     */
-    public static List<String> parents = new ArrayList<String>();
     
     /**
      * Fake root of the tree.  Useful since this is actually a forest of trees.
@@ -54,7 +50,6 @@ public class XTree {
     public XTree(String fileGenLocation) throws Exception{
         
         this.fileGenLocation = fileGenLocation;
-        parents = new ArrayList<String>();
         fakeRoot = new XNode("ROOT");
         identifierToNode = new HashMap<String, XNode>();
         identifierToNode.put("ROOT", fakeRoot);
@@ -145,9 +140,6 @@ public class XTree {
             // Mark the child.  This is the easy part.
             parentRef.addChild(childref);
             
-            if (parentIDs.size() > 1){
-                parents.add(parentID);
-            }
                         
         }
 
