@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.view.filter.geneontology.*;
+import org.ut.biolab.medsavant.view.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -154,7 +155,9 @@ public class GOFilter {
         final JLabel numberSelected = new JLabel();
         // Construct jtree from xtree that has been made.
         // Put tree in scrollpane, and scrollpane in panel.
-        final JTree jTree = getTree(xtree);
+        final JTree jTree = ConstructJTree.getTree(xtree, true);
+        jTree.getSelectionModel().setSelectionMode
+                (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         // to keep track of the locations of the places selected.
         final HashSet<String> locations = new HashSet<String>();
         // Add a listener to the tree.  Note: tree can allow non-contiguous
@@ -162,13 +165,7 @@ public class GOFilter {
         jTree.addTreeSelectionListener(new TreeSelectionListener() {
 
             public void valueChanged(TreeSelectionEvent e) {
-                // Iff no path has been selected, make the button non-clickable.
-//                if (jTree.isSelectionEmpty()){
-//                    applyButton.setEnabled(false);
-//                }
-//                else{
-//                    applyButton.setEnabled(true);
-//                }
+
                 locations.clear();
                 System.out.println("Pressed apply for gene ontology filter");
                 TreePath[] paths = jTree.getSelectionPaths();
@@ -217,8 +214,6 @@ public class GOFilter {
 
         JPanel bottomContainer = new JPanel();
         
-        
-//        bottomContainer.add(Box.createVerticalBox());
         JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
         selectAll.addActionListener(new ActionListener() {
 
@@ -269,27 +264,6 @@ public class GOFilter {
                     selectStatementGO.addCondition(split[0], start, end);
                 } 
 
-//                if (paths != null){
-//                    for (TreePath path: paths){
-//                        DefaultMutableTreeNode currNode = 
-//                                (DefaultMutableTreeNode)path.getLastPathComponent();
-//                        XNode currXnode = (XNode) currNode.getUserObject();
-//                        ArrayList<ArrayList<String>> arrayLocs = currXnode.getLocs();
-//
-//                        for (ArrayList<String> arrayLoc: arrayLocs){
-//                            // Need to subtract 1 because of BED format.
-//                            Double formattedEnd = 
-//                                    Integer.parseInt(arrayLoc.get(3).trim()) - 1 + 0.0;
-//                            Double begin = Integer.parseInt(arrayLoc.get(2).trim()) + 0.0;
-//                            selectStatementGO.addCondition(arrayLoc.get(1), begin, formattedEnd);
-//
-//                            String str = arrayLoc.get(1).trim() + "_" + 
-//                                    arrayLoc.get(2).trim() + "_" + formattedEnd;
-//                            locations.add(str);
-//                        }
-//                    }
-//                }
-//                System.out.println(selectStatementGO);
                 // If there are no conditions at all, do not display
                 // anything (most intuitive). So, create bogus condition that 
                 // will never be satisfied.
@@ -298,7 +272,6 @@ public class GOFilter {
                 }
                 final HashMap<String, List<Range>> map = selectStatementGO.getConditions();
                 
-//                System.out.println(locations);
                 Filter f = new QueryFilter() {
 
                     @Override
@@ -337,84 +310,6 @@ public class GOFilter {
                 FilterController.addFilter(f);
             }
         });        
-    }
-    
-    // Obtain the JTree component to be added to the panel, given the xtree.
-    private static JTree getTree(XTree xtree){
-        
-        // "dummy" root of the tree.
-        Node root = new Node("...");
-        root.setDescription("...");
-//        root.setLocs(new ArrayList< ArrayList<String> >());
-
-        DefaultMutableTreeNode actualRoot = new DefaultMutableTreeNode(root);
-        // Add the nodes beneath the root node to this tree.
-        addNodes(actualRoot, xtree);
-        JTree jtree = new JTree(actualRoot);
-        jtree.getSelectionModel().setSelectionMode
-                (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-        
-        return jtree;
-    }
-    
-    // Add the nodes to form part of the jtree.
-    private static void addNodes(DefaultMutableTreeNode actualRoot, XTree xtree){
-        
-        // To contain the roots of the tree.
-        Set<Node> roots = xtree.getRootNodes();
-        
-        // Get the name of the children while going down the tree.
-        TreeSet<Node> children;
-        
-        // The child in consideration in context.
-        DefaultMutableTreeNode child;
-        
-        // To contain the parent nodes (to be used when displaying) in question.
-        List<DefaultMutableTreeNode> parentNodes = 
-                new ArrayList<DefaultMutableTreeNode>();
-        
-        
-        // To contain the children nodes in question.
-        List<DefaultMutableTreeNode> childrenNodes = 
-                new ArrayList<DefaultMutableTreeNode>();
-        
-        
-        // Add all roots to the tree.
-        for (Node root: roots){
-        
-            // Connect the root to its children.
-            child = new DefaultMutableTreeNode(root);
-            actualRoot.add(child);
-            
-            // The future parents to be considered.
-            parentNodes.add(child);
-        }
-        
-        // While we still have children nodes...
-        while(!parentNodes.isEmpty()){
-            
-            // Go through the tree in a breadth-first manner.
-            for (DefaultMutableTreeNode parent: parentNodes){
-
-                // Get the set of children, and have the parents accept their
-                // children.
-                children = xtree.getChildrenNodes
-                        (((Node)parent.getUserObject()).getIdentifier());
-
-                for (Node child2: children){
-
-                    child = new DefaultMutableTreeNode(child2);
-                    childrenNodes.add(child);
-                    parent.add(child);
-                }
-            }
-
-            // Now have the children become parents.
-            parentNodes.clear();
-            parentNodes.addAll(childrenNodes);
-            childrenNodes.clear();           
-        }
-
     }
     
 }
