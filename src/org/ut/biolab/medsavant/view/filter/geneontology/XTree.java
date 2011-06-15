@@ -26,7 +26,7 @@ public class XTree extends Tree{
     /**
      * Map from GO ID to locations
      */
-    HashMap<String, ArrayList<ArrayList<String>>> goToLocs;
+    HashMap<String, ArrayList<ArrayList<String>>> idToLocs;
     
     /**
      * The file containing genome locations.
@@ -43,7 +43,7 @@ public class XTree extends Tree{
         super();
         this.fileGenLocation = fileGenLocation;
         // Map GO ID to locations on genome.
-        this.goToLocs = super.goToLocs;
+        this.idToLocs = super.idToLocs;
         mapIDtoLocations();
         
     }
@@ -77,13 +77,13 @@ public class XTree extends Tree{
             key = key.replace(':', '_');
 
             // Get the value
-            ArrayList<ArrayList<String>> value = goToLocs.get(key);
+            ArrayList<ArrayList<String>> value = idToLocs.get(key);
 
             // If the key has not been put yet, create a map.
             if (value == null){
 
                 value = new ArrayList<ArrayList<String>>();
-                goToLocs.put(key, value);
+                idToLocs.put(key, value);
             }
 
             ArrayList<String> location = new ArrayList<String>();
