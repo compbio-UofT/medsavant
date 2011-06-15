@@ -33,21 +33,26 @@ public class Tree {
     protected HashMap<String, Node> identifierToNode;
     
     /**
-     * Map from GO ID to locations
+     * Map from ID to locations.  This is customizable, therefore, has 
+     * protected access.
      */
-    protected HashMap<String, ArrayList<ArrayList<String>>> goToLocs;
+    protected HashMap<String, ArrayList<ArrayList<String>>> idToLocs;
     
     /**
      * Constructor
      * @param fileGenLocation the location of the file mapping GO IDs to 
      * genome locations.
      */
-    public Tree() throws Exception{
+    public Tree(){
         
         fakeRoot = new Node("ROOT");
         identifierToNode = new HashMap<String, Node>();
         identifierToNode.put("ROOT", fakeRoot);  
-        goToLocs = new HashMap<String, ArrayList<ArrayList<String>>>();
+        idToLocs = new HashMap<String, ArrayList<ArrayList<String>>>();
+    }
+    
+    public int getSize(){
+        return identifierToNode.keySet().size();
     }
     
     /**
@@ -80,7 +85,7 @@ public class Tree {
             return;
         }
         ArrayList<ArrayList<String>> locs = 
-                goToLocs.get(node.getIdentifier().replace(':', '_'));
+                idToLocs.get(node.getIdentifier().replace(':', '_'));
         if (locs == null){
             
             locs = new ArrayList< ArrayList<String> >();
@@ -129,9 +134,7 @@ public class Tree {
             }
             
             // Mark the child.  This is the easy part.
-            parentRef.addChild(childref);
-            
-                        
+            parentRef.addChild(childref);        
         }
 
     }
