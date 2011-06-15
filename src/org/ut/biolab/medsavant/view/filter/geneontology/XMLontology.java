@@ -42,7 +42,9 @@ public class XMLontology {
                 sep + "org" + sep + "ut" + sep + "biolab" + sep + "medsavant" 
                 + sep + "view" + sep + "filter" + sep + "geneontology" + sep + 
                 "TEMP_GOtree.xml";
-        File file = new File(locationOfFile);                
+        File file = new File(locationOfFile);  
+        file.createNewFile();
+        file.deleteOnExit();
 
         InputStream stream = 
             (new URL(LOCATION_OF_GO_XML_FILE)).openStream();
@@ -68,10 +70,7 @@ public class XMLontology {
         
         // Parse through the file, and get the xtree to be made and return it.
         parseXMLFile(true, handler);
-        
-        // delete the file here.
         file.delete();
-        
         return tree;
     }
     
