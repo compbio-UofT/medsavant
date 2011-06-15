@@ -41,7 +41,7 @@ public class CreateMappingsFile {
      * @param url the url of interest.
      * @return the data input stream of the url
      */
-    public static void openStream(URL url) throws Exception{
+    private static void openStream(URL url) throws Exception{
         
         is = null;
         buffer = null;
