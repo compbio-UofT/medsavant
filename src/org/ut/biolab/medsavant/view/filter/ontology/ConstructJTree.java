@@ -52,8 +52,14 @@ public class ConstructJTree {
      */
     private static void addNodes(DefaultMutableTreeNode actualRoot, Tree tree, boolean isForest){
         
+        Set<Node> roots;
         // To contain the roots of the tree.
-        Set<Node> roots = tree.getRootNodes();
+        if (isForest){
+            roots = tree.getRootNodes();
+        }
+        else{
+            roots = ((Node)actualRoot.getUserObject()).getChildren();
+        }
         
         // Get the name of the children while going down the tree.
         TreeSet<Node> children;
@@ -76,11 +82,7 @@ public class ConstructJTree {
         
             // Connect the root to its children.
             child = new DefaultMutableTreeNode(root);
-            if (isForest){
-                
-                actualRoot.add(child);
-            }
-            
+            actualRoot.add(child);
             // The future parents to be considered.
             parentNodes.add(child);
         }
