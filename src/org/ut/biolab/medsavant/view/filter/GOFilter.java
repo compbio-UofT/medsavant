@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -96,8 +94,12 @@ public class GOFilter {
                     setProgress(0);
                     // Create the mappings file at a certain destination 
                     // then show the tree.
-                    String destination = CreateMappingsFile.getMappings();
-                    xtree = XMLontology.makeTree(destination);
+                    try{
+                        String destination = CreateMappingsFile.getMappings();
+                        xtree = XMLontology.makeTree(destination);
+                    }
+                    catch(Exception e){
+                    }
                     setProgress(100);
                     return xtree;
                 }
@@ -119,7 +121,14 @@ public class GOFilter {
                         progressBar.setVisible(false);
                         container.remove(progressBar);
                         // When we're done loading the information, show tree.
-                        showTree(container, task.xtree);
+                        try{
+                            showTree(container, task.xtree);
+                        }
+                        catch(Exception e){
+                            container.remove(progressBar);
+                            container.add(new JLabel("Could not display the tree"));
+                            System.out.println("Could not display the tree.");
+                        }
                     }   
                     else if ("state".equals(evt.getPropertyName()) && 
                             "STARTED".equals(evt.getNewValue() + "")){
@@ -149,8 +158,9 @@ public class GOFilter {
      * @param xtree 
      */
     private static void showTree(JPanel container, XTree xtree){
-            final JButton applyButton = new JButton("Apply");
-            
+
+        final JButton applyButton = new JButton("Apply");
+
         // label will show number of locations.
         final JLabel numberSelected = new JLabel();
         // Construct jtree from xtree that has been made.
@@ -169,9 +179,14 @@ public class GOFilter {
                 locations.clear();
                 System.out.println("Pressed apply for gene ontology filter");
                 TreePath[] paths = jTree.getSelectionPaths();
-                
+
+                                
                 if (paths != null){
                     for (TreePath path: paths){
+                        if (path.getPathCount() == 1){
+                            continue;
+                        }
+                        applyButton.setEnabled(true);
                         DefaultMutableTreeNode currNode = 
                                 (DefaultMutableTreeNode)path.getLastPathComponent();
                         Node currXnode = (Node) currNode.getUserObject();
@@ -200,7 +215,6 @@ public class GOFilter {
                     numberSelected.setText("");
                 }
                 applyButton.setEnabled(true);
-                
             }
         }); 
 

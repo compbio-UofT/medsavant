@@ -96,6 +96,7 @@ public class FilterPanel extends JPanel {
         List<FilterView> views = new ArrayList<FilterView>();
         views.addAll(getVariantRecordFilterViews());
         views.add(GOFilter.getGOntologyFilterView()); 
+        views.add(HPOFilter.getHPOntologyFilterView()); 
         // views.add(getGenderFilterView());
         // views.add(getAgeFilterView());
         // views.add(getGenderFilterView());
