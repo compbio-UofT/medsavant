@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.view.subview;
+package org.ut.biolab.medsavant.view.subview.genetics;
 
 import com.jidesoft.chart.Chart;
 import com.jidesoft.chart.ChartType;
@@ -158,6 +158,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
     private void initToolBar() {
         bar = new JToolBar();
         bottombar = new JToolBar();
+        bottombar.setFloatable(false);
         JComboBox b = new JComboBox();
 
         List<String> v = VariantRecordModel.getFieldNames();

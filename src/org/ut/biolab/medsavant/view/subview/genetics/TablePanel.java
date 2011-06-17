@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.view.subview;
+package org.ut.biolab.medsavant.view.subview.genetics;
 
 import org.ut.biolab.medsavant.view.util.DialogUtil;
 import fiume.table.SearchableTablePanel;

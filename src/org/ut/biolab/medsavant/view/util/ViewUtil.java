@@ -108,6 +108,10 @@ public class ViewUtil {
         return new LineBorder(Color.darkGray,1);
     }
 
+    public static Color getLightColor() {
+        return new Color(200,200,200);
+    }
+
     public static Color getMidColor() {
         return new Color(60,60,60);
     }

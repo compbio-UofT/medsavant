@@ -19,7 +19,7 @@ import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.images.IconFactory;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
-import org.ut.biolab.medsavant.view.subview.ChartPanel;
+import org.ut.biolab.medsavant.view.subview.genetics.ChartPanel;
 import org.ut.biolab.medsavant.view.filter.FilterPanel;
 
 /**

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.view.subview;
+package org.ut.biolab.medsavant.view.subview.genetics;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -47,13 +47,15 @@ public class ChartContainer extends JPanel {
         this.add(title, BorderLayout.NORTH);
         container = ViewUtil.createClearPanel();
         //container.setBackground(ViewUtil.get);
-        container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.add(ViewUtil.getMediumSeparator());
         container.add(Box.createHorizontalGlue());
-        container.add(Box.createHorizontalGlue());
+        //container.add(Box.createHorizontalGlue());
         JScrollPane sp = (JScrollPane) ViewUtil.clear(new JScrollPane(container));
-        sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        //sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        //sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         sp.getViewport().setOpaque(false);
         this.add(sp, BorderLayout.CENTER);
     }

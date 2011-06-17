@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.view.subview;
+package org.ut.biolab.medsavant.view.subview.genetics;
 
 import com.jidesoft.dashboard.Dashboard;
 import com.jidesoft.dashboard.Gadget;
@@ -42,17 +42,18 @@ import org.ut.biolab.medsavant.util.view.PeekingPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.gadget.GadgetFactory;
 import org.ut.biolab.medsavant.view.filter.FilterPanel;
+import org.ut.biolab.medsavant.view.subview.Page;
 
 /**
  *
  * @author mfiume
  */
-public class ResultsPage implements Page {
+public class GeneticsSearchPage implements Page {
 
     private JComponent panel;
 
     public String getName() {
-        return "Results";
+        return "Filter";
     }
 
     public JComponent getView() {
@@ -67,7 +68,7 @@ public class ResultsPage implements Page {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         
-        PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true);
+        PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true,400);
         panel.add(detailView, BorderLayout.WEST);
 
         GenomeContainer gp = new GenomeContainer();
@@ -98,13 +99,13 @@ public class ResultsPage implements Page {
         chrs.add(new Chromosome("chrY", "Y", -1, 15902555));
         Genome g = new Genome(chrs);
         gp.setGenome(g);
-        PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, false,150);
+        PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, false,225);
         panel.add(genomeView, BorderLayout.NORTH);
 
-        PeekingPanel chartView = new PeekingPanel("Charts", BorderLayout.NORTH, new ChartContainer(), true);
-        panel.add(chartView, BorderLayout.SOUTH);
+        //PeekingPanel chartView = new PeekingPanel("Charts", BorderLayout.NORTH, new ChartContainer(), true);
+        panel.add(new ChartContainer(), BorderLayout.CENTER);
         
-        panel.add(new TablePanel(), BorderLayout.CENTER);
+        //panel.add(new TablePanel(), BorderLayout.CENTER);
 
         //m.showGadget(g);
     }

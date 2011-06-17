@@ -14,13 +14,13 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class PatientPage implements Page {
+public class PatientsPage implements Page {
 
-    public PatientPage() {
+    public PatientsPage() {
     }
 
     public String getName() {
-        return "Patient";
+        return "Patients";
     }
 
     public Component getView() {

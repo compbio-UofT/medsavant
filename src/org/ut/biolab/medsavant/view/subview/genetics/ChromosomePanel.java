@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.view.subview;
+package org.ut.biolab.medsavant.view.subview.genetics;
 
 import java.awt.Color;
 import java.awt.Dimension;
