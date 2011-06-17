@@ -86,8 +86,7 @@ public class HPOFilter {
 
                 public void propertyChange(PropertyChangeEvent evt) {
 
-                    if ("progress".equals(evt.getPropertyName()) && 
-                            (Integer)(evt.getNewValue()) == 100){
+                    if (task.getState() == Task.StateValue.DONE){
 
                         progressBar.setIndeterminate(false);
                         progressBar.setVisible(false);
@@ -101,9 +100,9 @@ public class HPOFilter {
                             container.add(new JLabel("Could not display the tree"));
                             System.out.println("Could not display the tree.");                            
                         }
+                        task.removePropertyChangeListener(this);
                     }   
-                    else if ("state".equals(evt.getPropertyName()) && 
-                            "STARTED".equals(evt.getNewValue() + "")){
+                    else {
 
                         progressBar.setIndeterminate(true);
                     }                

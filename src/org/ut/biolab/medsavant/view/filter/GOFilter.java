@@ -113,9 +113,13 @@ public class GOFilter {
 
                 // To detect progress with the loading of the tree.
                 public void propertyChange(PropertyChangeEvent evt) {
-                    
-                    if ("progress".equals(evt.getPropertyName()) && 
-                            (Integer)(evt.getNewValue()) == 100){
+
+                    System.out.println("Event name: " + evt.getPropertyName());
+                    System.out.println("Event value: " + evt.getNewValue());
+
+//                    if ("state".equals(evt.getPropertyName()) && 
+//                            "DONE".equals(evt.getNewValue() + "")){
+                    if (task.getState() == Task.StateValue.DONE){
 
                         progressBar.setIndeterminate(false);
                         progressBar.setVisible(false);
@@ -129,9 +133,9 @@ public class GOFilter {
                             container.add(new JLabel("Could not display the tree"));
                             System.out.println("Could not display the tree.");
                         }
+                        task.removePropertyChangeListener(this);
                     }   
-                    else if ("state".equals(evt.getPropertyName()) && 
-                            "STARTED".equals(evt.getNewValue() + "")){
+                    else {
 
                         progressBar.setIndeterminate(true);
                     }
