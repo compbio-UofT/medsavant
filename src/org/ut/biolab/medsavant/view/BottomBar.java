@@ -67,7 +67,7 @@ public class BottomBar extends JPanel implements FiltersChangedListener{
     }
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, AccessDeniedDatabaseException {
-        setStatus(ResultController.getInstance().getAllVariantRecords().size() + " records");
+        //setStatus(ResultController.getInstance().getAllVariantRecords().size() + " records");
     }
 
     public void updateLoginStatus() {

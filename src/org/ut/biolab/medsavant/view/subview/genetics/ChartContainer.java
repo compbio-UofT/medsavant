@@ -54,6 +54,7 @@ public class ChartContainer extends JPanel {
         this.add(sp, BorderLayout.CENTER);
     }
 
+    /*
     @Override
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
@@ -61,6 +62,8 @@ public class ChartContainer extends JPanel {
         g2.setPaint(p);
         g2.fillRect(0, 0, this.getWidth(), this.getHeight());
     }
+     * 
+     */
 
     private void addChart(Component p) {
         container.add(p);

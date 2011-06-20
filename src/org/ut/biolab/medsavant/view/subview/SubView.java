@@ -28,6 +28,8 @@ public abstract class SubView extends JPanel {
 
     public abstract Page[] getPages();
 
+    public abstract JPanel getPersistentPanel();
+
     private void initPages() {
         Page[] pages = getPages();
         pane = new JTabbedPane(JTabbedPane.LEFT);
@@ -36,6 +38,11 @@ public abstract class SubView extends JPanel {
         }
         this.setLayout(new BorderLayout());
         this.add(pane, BorderLayout.CENTER);
+
+        JPanel p = getPersistentPanel();
+        if (p != null) {
+            this.add(p,BorderLayout.EAST);
+        }
     }
 
 }

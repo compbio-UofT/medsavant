@@ -11,6 +11,7 @@ import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.swing.RangeSlider;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
@@ -26,6 +27,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
@@ -38,9 +40,11 @@ import medsavant.db.table.VariantTableSchema;
 import medsavant.exception.AccessDeniedDatabaseException;
 import medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -49,19 +53,39 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class FilterPanel extends JPanel {
+public class FilterPanel extends JPanel implements FiltersChangedListener {
 
     private final ArrayList<FilterView> filterViews;
     private CollapsiblePanes contentPanel;
+    private JLabel status;
 
     public FilterPanel() throws AccessDeniedDatabaseException {
         this.setLayout(new BorderLayout());
         filterViews = new ArrayList<FilterView>();
+        FilterController.addFilterListener(this);
         initGUI();
     }
     
 
     private void initGUI() throws AccessDeniedDatabaseException {
+
+        JPanel titlePanel = ViewUtil.getBannerPanel();
+        JLabel title = new JLabel("Filters");
+        ViewUtil.clear(title);
+        title.setFont(ViewUtil.getMediumTitleFont());
+        titlePanel.add(Box.createHorizontalGlue());
+        titlePanel.add(title);
+        titlePanel.add(Box.createHorizontalGlue());
+        this.add(titlePanel,BorderLayout.NORTH);
+        
+        JPanel statusPanel = ViewUtil.getBannerPanel();
+        status = new JLabel("No filters applied");
+        ViewUtil.clear(status);
+        status.setFont(ViewUtil.getMediumTitleFont());
+        statusPanel.add(Box.createHorizontalGlue());
+        statusPanel.add(status);
+        statusPanel.add(Box.createHorizontalGlue());
+        this.add(statusPanel,BorderLayout.SOUTH);
 
         contentPanel = new CollapsiblePanes();
         contentPanel.setBackground(ViewUtil.getMenuColor());
@@ -76,6 +100,8 @@ public class FilterPanel extends JPanel {
         }
 
         contentPanel.addExpansion();
+
+        this.setPreferredSize(new Dimension(400,999));
     }
 
     public void addFilterViews(List<FilterView> filterViews) {
@@ -343,6 +369,14 @@ public class FilterPanel extends JPanel {
         }
 
         return l;
+    }
+
+    private void setStatus(String status) {
+        this.status.setText(status);
+    }
+
+    public void filtersChanged() throws SQLException, FatalDatabaseException, AccessDeniedDatabaseException {
+        setStatus(ResultController.getInstance().getAllVariantRecords().size() + " records");
     }
 
     /*

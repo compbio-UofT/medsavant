@@ -27,12 +27,12 @@ import org.ut.biolab.medsavant.view.subview.Page;
  *
  * @author mfiume
  */
-public class GeneticsFilterPage implements Page {
+public class GeneticsSummerizePage implements Page {
 
     private JComponent panel;
 
     public String getName() {
-        return "Filter";
+        return "Summary";
     }
 
     public JComponent getView() {
@@ -50,8 +50,8 @@ public class GeneticsFilterPage implements Page {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         
-        PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true,400);
-        panel.add(detailView, BorderLayout.WEST);
+        //PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true,400);
+        //panel.add(detailView, BorderLayout.WEST);
 
         GenomeContainer gp = new GenomeContainer();
         List<Chromosome> chrs = new ArrayList<Chromosome>();
