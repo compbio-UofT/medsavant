@@ -37,8 +37,8 @@ public class ChartContainer extends JPanel {
 
             public void actionPerformed(ActionEvent e) {
                 JPanel p = new ChartPanel();
-                p.setPreferredSize(new Dimension(400, 230));
-                p.setMaximumSize(new Dimension(400, 230));
+                p.setPreferredSize(new Dimension(800, 230));
+                p.setMaximumSize(new Dimension(800, 230));
                 p.setBorder(ViewUtil.getTinyLineBorder());
                 addChart(p);
             }
@@ -46,16 +46,10 @@ public class ChartContainer extends JPanel {
         title.add(addButton);
         this.add(title, BorderLayout.NORTH);
         container = ViewUtil.createClearPanel();
-        //container.setBackground(ViewUtil.get);
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        container.add(ViewUtil.getMediumSeparator());
-        container.add(Box.createHorizontalGlue());
-        //container.add(Box.createHorizontalGlue());
         JScrollPane sp = (JScrollPane) ViewUtil.clear(new JScrollPane(container));
         sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        //sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        //sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         sp.getViewport().setOpaque(false);
         this.add(sp, BorderLayout.CENTER);
     }
@@ -69,7 +63,6 @@ public class ChartContainer extends JPanel {
     }
 
     private void addChart(Component p) {
-        container.add(p, container.getComponentCount() - 1);
-        container.add(ViewUtil.getMediumSeparator(), container.getComponentCount() - 1);
+        container.add(p);
     }
 }

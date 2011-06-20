@@ -22,7 +22,7 @@ public class GeneticsSubView extends SubView {
     @Override
     public Page[] getPages() {
         Page[] pages = new Page[2];
-        pages[0] = new GeneticsSearchPage();
+        pages[0] = new GeneticsFilterPage();
         pages[1] = new GeneticsListPage();
         return pages;
     }

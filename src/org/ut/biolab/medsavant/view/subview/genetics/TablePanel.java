@@ -5,6 +5,7 @@
 
 package org.ut.biolab.medsavant.view.subview.genetics;
 
+import medsavant.exception.AccessDeniedDatabaseException;
 import org.ut.biolab.medsavant.view.util.DialogUtil;
 import fiume.table.SearchableTablePanel;
 import java.awt.BorderLayout;
@@ -40,11 +41,11 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         FilterController.addFilterListener(this);
     }
 
-    private void updateTable() throws SQLException, FatalDatabaseException {
+    private void updateTable() throws SQLException, FatalDatabaseException, AccessDeniedDatabaseException {
         tablePanel.updateData(Util.convertVariantRecordsToVectors(ResultController.getInstance().getFilteredVariantRecords()));
     }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException {
+    public void filtersChanged() throws SQLException, FatalDatabaseException, AccessDeniedDatabaseException {
         updateTable();
     }
 

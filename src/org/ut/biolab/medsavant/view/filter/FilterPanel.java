@@ -14,9 +14,12 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -32,6 +35,7 @@ import medsavant.db.ConnectionController;
 import medsavant.db.Database;
 import medsavant.db.table.TableSchema;
 import medsavant.db.table.VariantTableSchema;
+import medsavant.exception.AccessDeniedDatabaseException;
 import medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.model.Filter;
@@ -50,14 +54,14 @@ public class FilterPanel extends JPanel {
     private final ArrayList<FilterView> filterViews;
     private CollapsiblePanes contentPanel;
 
-    public FilterPanel() {
+    public FilterPanel() throws AccessDeniedDatabaseException {
         this.setLayout(new BorderLayout());
         filterViews = new ArrayList<FilterView>();
         initGUI();
     }
     
 
-    private void initGUI() {
+    private void initGUI() throws AccessDeniedDatabaseException {
 
         contentPanel = new CollapsiblePanes();
         contentPanel.setBackground(ViewUtil.getMenuColor());
@@ -92,7 +96,7 @@ public class FilterPanel extends JPanel {
         this.contentPanel.add(cp);
     }
 
-    private List<FilterView> getFilterViews() throws SQLException {
+    private List<FilterView> getFilterViews() throws SQLException, AccessDeniedDatabaseException {
         List<FilterView> views = new ArrayList<FilterView>();
         views.addAll(getVariantRecordFilterViews());
         views.add(GOFilter.getGOntologyFilterView()); 
@@ -119,7 +123,7 @@ public class FilterPanel extends JPanel {
         });
     }
 
-    private List<FilterView> getVariantRecordFilterViews() throws SQLException {
+    private List<FilterView> getVariantRecordFilterViews() throws SQLException, AccessDeniedDatabaseException {
         List<FilterView> l = new ArrayList<FilterView>();
 
         System.out.println("Making filters");
@@ -223,7 +227,9 @@ public class FilterPanel extends JPanel {
                 l.add(fv);
             } else {
 
-                List<String> uniq = BasicQuery.getDistinctValuesForColumn(ConnectionController.connect(), table, col);
+                Connection conn = ConnectionController.connect();
+           
+                List<String> uniq = BasicQuery.getDistinctValuesForColumn(conn, table, col);
 
                 JPanel container = new JPanel();
                 container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));

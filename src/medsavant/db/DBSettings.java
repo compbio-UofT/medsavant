@@ -13,8 +13,8 @@ public class DBSettings {
 
     public static final String DRIVER = "com.mysql.jdbc.Driver";
 
-    public static final String DB_USER_NAME = "root";
-    public static final String DB_PASSWORD = "";
+    //public static final String DB_USER_NAME = "root";
+    //public static final String DB_PASSWORD = "";
     public static final String DB_HOST = "localhost";
     public static final String DB_PORT = "5029";
     public static final String DB_NAME = "medsavant";

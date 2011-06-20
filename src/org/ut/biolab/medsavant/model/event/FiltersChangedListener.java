@@ -6,6 +6,7 @@
 package org.ut.biolab.medsavant.model.event;
 
 import java.sql.SQLException;
+import medsavant.exception.AccessDeniedDatabaseException;
 import medsavant.exception.FatalDatabaseException;
 
 /**
@@ -14,6 +15,6 @@ import medsavant.exception.FatalDatabaseException;
  */
 public interface FiltersChangedListener {
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException;
+    public void filtersChanged() throws SQLException, FatalDatabaseException, AccessDeniedDatabaseException;
 
 }

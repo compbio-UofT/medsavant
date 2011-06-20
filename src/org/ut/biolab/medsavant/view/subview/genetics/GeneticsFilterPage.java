@@ -4,43 +4,22 @@
  */
 package org.ut.biolab.medsavant.view.subview.genetics;
 
-import com.jidesoft.dashboard.Dashboard;
-import com.jidesoft.dashboard.Gadget;
-import com.jidesoft.dashboard.GadgetManager;
-import com.jidesoft.dashboard.GadgetPalette;
-import com.jidesoft.dashboard.SingleDashboardHolder;
-import com.jidesoft.swing.JideSwingUtilities;
-import fiume.table.SearchableTablePanel;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
-import javax.swing.BorderFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import org.ut.biolab.medsavant.controller.ResultController;
+import medsavant.exception.AccessDeniedDatabaseException;
 import org.ut.biolab.medsavant.model.record.Chromosome;
 import org.ut.biolab.medsavant.model.record.Genome;
-import org.ut.biolab.medsavant.model.record.VariantRecordModel;
-import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.util.view.PeekingPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
-import org.ut.biolab.medsavant.view.gadget.GadgetFactory;
 import org.ut.biolab.medsavant.view.filter.FilterPanel;
 import org.ut.biolab.medsavant.view.subview.Page;
 
@@ -48,7 +27,7 @@ import org.ut.biolab.medsavant.view.subview.Page;
  *
  * @author mfiume
  */
-public class GeneticsSearchPage implements Page {
+public class GeneticsFilterPage implements Page {
 
     private JComponent panel;
 
@@ -58,12 +37,15 @@ public class GeneticsSearchPage implements Page {
 
     public JComponent getView() {
         if (panel == null) {
-            setPanel();
+            try {
+                setPanel();
+            } catch (AccessDeniedDatabaseException ex) {
+            }
         }
         return panel;
     }
 
-    private void setPanel() {
+    private void setPanel() throws AccessDeniedDatabaseException {
 
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -91,23 +73,18 @@ public class GeneticsSearchPage implements Page {
         chrs.add(new Chromosome("chr16", "16", -1, 98319150));
         chrs.add(new Chromosome("chr17", "17", -1, 95272651));
         chrs.add(new Chromosome("chr18", "18", -1, 90772031));
-        chrs.add(new Chromosome("chr19", "19", -1, 61342430));
-        chrs.add(new Chromosome("chr20", "20", -1, 61342430));
-        chrs.add(new Chromosome("chr21", "21", -1, 61342430));
-        chrs.add(new Chromosome("chr22", "22", -1, 61342430));
-        chrs.add(new Chromosome("chrX", "X", -1, 166650296));
-        chrs.add(new Chromosome("chrY", "Y", -1, 15902555));
+        chrs.add(new Chromosome("chr19", "19", -1, 63806651));
+        chrs.add(new Chromosome("chr20", "20", -1, 62435965));
+        chrs.add(new Chromosome("chr21", "21", -1, 46944323));
+        chrs.add(new Chromosome("chr22", "22", -1, 49528953));
+        chrs.add(new Chromosome("chrX", "X", -1, 154913754));
+        chrs.add(new Chromosome("chrY", "Y", -1, 57741652));
         Genome g = new Genome(chrs);
         gp.setGenome(g);
         PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, false,225);
-        panel.add(genomeView, BorderLayout.NORTH);
+        //TODO: re-add genome view to panel
 
-        //PeekingPanel chartView = new PeekingPanel("Charts", BorderLayout.NORTH, new ChartContainer(), true);
         panel.add(new ChartContainer(), BorderLayout.CENTER);
-        
-        //panel.add(new TablePanel(), BorderLayout.CENTER);
-
-        //m.showGadget(g);
     }
 
     

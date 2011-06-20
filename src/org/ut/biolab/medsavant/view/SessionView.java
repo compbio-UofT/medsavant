@@ -6,47 +6,27 @@
 package org.ut.biolab.medsavant.view;
 
 import org.ut.biolab.medsavant.model.event.SectionChangedEvent;
-import org.ut.biolab.medsavant.view.subview.LibraryVariantsPage;
-import org.ut.biolab.medsavant.view.subview.LibraryVariantsPage;
-import org.ut.biolab.medsavant.controller.FilterController;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Font;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 import org.ut.biolab.medsavant.model.event.SectionChangedEventListener;
-import org.ut.biolab.medsavant.view.subview.AnnotationsPage;
-import org.ut.biolab.medsavant.view.subview.LibraryPage;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
-import org.ut.biolab.medsavant.view.subview.PatientsPage;
-import org.ut.biolab.medsavant.view.subview.Page;
-import org.ut.biolab.medsavant.view.subview.genetics.GeneticsSearchPage;
 import org.ut.biolab.medsavant.view.subview.genetics.GeneticsSubView;
 import org.ut.biolab.medsavant.view.subview.SubView;
-import org.ut.biolab.medsavant.view.subview.VariantPage;
 
 /**
  *
  * @author mfiume
  */
-public class View extends JPanel implements SectionChangedEventListener {
+public class SessionView extends JPanel implements SectionChangedEventListener {
+
     private JTabbedPane panes;
 
     //private static final String DEFAULT_SUBVIEW = "Variants";
    // private SplitView splitView;
 
-    public View() {
+    public SessionView() {
         this.setBackground(Color.darkGray);
         init();
     }

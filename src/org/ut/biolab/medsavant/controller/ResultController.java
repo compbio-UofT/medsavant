@@ -6,7 +6,6 @@
 package org.ut.biolab.medsavant.controller;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import fiume.vcf.VariantRecord;
@@ -20,6 +19,7 @@ import medsavant.db.ConnectionController;
 import medsavant.db.Database;
 import medsavant.db.DBUtil;
 import medsavant.db.table.TableSchema;
+import medsavant.exception.AccessDeniedDatabaseException;
 import medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -35,12 +35,12 @@ public class ResultController implements FiltersChangedListener {
 
     private static ResultController instance;
     
-    public ResultController() {
+    public ResultController() throws AccessDeniedDatabaseException {
         FilterController.addFilterListener(this);
         updateFilteredVariantDBResults();
     }
 
-    public static ResultController getInstance() {
+    public static ResultController getInstance() throws AccessDeniedDatabaseException {
         if (instance == null) {
             instance = new ResultController();
         }
@@ -56,11 +56,11 @@ public class ResultController implements FiltersChangedListener {
         return filteredVariants;
     }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException {
+    public void filtersChanged() throws SQLException, FatalDatabaseException, AccessDeniedDatabaseException {
         updateFilteredVariantDBResults();
     }
 
-    private void updateFilteredVariantDBResults() {
+    private void updateFilteredVariantDBResults() throws AccessDeniedDatabaseException {
 
         TableSchema tableSchema = Database.getInstance().getVariantTableSchema();
         SelectQuery query = new SelectQuery();

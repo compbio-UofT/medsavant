@@ -5,11 +5,12 @@
 
 package medsavant.db;
 
+import medsavant.exception.AccessDeniedDatabaseException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.view.util.DialogUtil;
 
 /**
  *
@@ -20,7 +21,7 @@ public class ConnectionController {
     
     private static Connection connection;
 
-    public static Connection connect() {
+    public static Connection connect() throws AccessDeniedDatabaseException {
 
         boolean createNewConnection = false;
 
@@ -34,12 +35,19 @@ public class ConnectionController {
             try {
               Class.forName(DBSettings.DRIVER);
               System.out.println("Connecting to DB host: " + DBSettings.DB_HOST);
-              connection = DriverManager.getConnection(DBSettings.DB_URL,DBSettings.DB_USER_NAME,DBSettings.DB_PASSWORD);
+              connection = DriverManager.getConnection(DBSettings.DB_URL,LoginController.getUsername(),LoginController.getPassword());
+              //connection = DriverManager.getConnection(DBSettings.DB_URL,DBSettings.DB_USER_NAME,DBSettings.DB_PASSWORD);
               System.out.println("Connection successful");
             }
             catch (Exception e)
             {
-              System.err.println(e.getMessage());
+                if (e.getMessage().startsWith("Access denied")) {
+                    LoginController.logout();
+                    DialogUtil.displayErrorMessage("Access denied for user: " + LoginController.getUsername(), e);
+                    throw new AccessDeniedDatabaseException(LoginController.getUsername());
+                } else {
+                    e.printStackTrace();
+                }
             }
         }
 
