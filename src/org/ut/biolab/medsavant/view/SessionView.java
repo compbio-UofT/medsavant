@@ -12,7 +12,7 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import javax.swing.JTabbedPane;
 import org.ut.biolab.medsavant.model.event.SectionChangedEventListener;
-import org.ut.biolab.medsavant.view.subview.genetics.GeneticsSubView;
+import org.ut.biolab.medsavant.view.genetics.GeneticsSubView;
 import org.ut.biolab.medsavant.view.subview.SubView;
 
 /**

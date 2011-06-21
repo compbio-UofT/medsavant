@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -28,7 +29,7 @@ public abstract class SubView extends JPanel {
 
     public abstract Page[] getPages();
 
-    public abstract JPanel getPersistentPanel();
+    public abstract JPanel[] getPersistentPanels();
 
     private void initPages() {
         Page[] pages = getPages();
@@ -37,11 +38,26 @@ public abstract class SubView extends JPanel {
             pane.addTab(p.getName(), p.getView());
         }
         this.setLayout(new BorderLayout());
-        this.add(pane, BorderLayout.CENTER);
 
-        JPanel p = getPersistentPanel();
-        if (p != null) {
-            this.add(p,BorderLayout.EAST);
+        JPanel[] panels = getPersistentPanels();
+        if (panels != null) {
+            JTabbedPane perpane = new JTabbedPane();
+            for (JPanel p : panels) {
+                perpane.add(p.getName(), p);
+            }
+            
+            JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                                       pane, perpane);
+            //splitPane.setOneTouchExpandable(true);
+            splitPane.setResizeWeight(1.0);
+            splitPane.setDividerLocation(splitPane.getSize().width
+                             - splitPane.getInsets().right
+                             - splitPane.getDividerSize()
+                             - 300);
+            
+            this.add(splitPane,BorderLayout.CENTER);
+        } else {
+            this.add(pane, BorderLayout.CENTER);
         }
     }
 
