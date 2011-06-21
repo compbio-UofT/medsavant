@@ -168,6 +168,11 @@ public class CreateMappingsFile {
             
             String[] split = line.split("\t");
             
+            // forget about those lines where the qualifier is NOT.
+            if (split[5].trim().equals("NOT")){
+                continue;
+            }
+            
             // Get the GO ID.
             String goID = split[3].trim();
             
