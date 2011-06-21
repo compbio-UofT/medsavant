@@ -107,10 +107,7 @@ public class CreateMappingsFile {
         
         // The destination of the file.
         String sep = File.separator;
-        String destination = (new File("")).getAbsolutePath() + sep + "src" + sep
-                + "org" + sep + "ut" + sep + "biolab" + sep + "medsavant" + sep
-                + "view" + sep + "genetics" + sep + "filter" + sep + 
-                "geneontology" + sep + "";
+        String destination = (new File("")).getAbsolutePath() + sep + "src" + sep;
         
         String fileName = 
                 File.separator + "MAPPING_GO_Genome_location_" + version;
