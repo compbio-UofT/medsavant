@@ -40,8 +40,8 @@ public class XMLontology {
         // The location of the temporary XML file
         String locationOfFile = (new File("")).getAbsolutePath() + sep + "src" + 
                 sep + "org" + sep + "ut" + sep + "biolab" + sep + "medsavant" 
-                + sep + "view" + sep + "filter" + sep + "geneontology" + sep + 
-                "TEMP_GOtree.xml";
+                + sep + "view" + sep + "genetics" + sep + "filter" + sep + 
+                "geneontology" + sep + "TEMP_GOtree.xml";
         File file = new File(locationOfFile);  
         file.createNewFile();
         file.deleteOnExit();
