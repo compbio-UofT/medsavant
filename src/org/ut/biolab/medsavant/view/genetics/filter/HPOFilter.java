@@ -128,7 +128,7 @@ public class HPOFilter {
         
         // Now that we have the tree, construct jTree, and display it.
         // Enable multiple discontinuous selection.
-        final JTree jtree = ConstructJTree.getTree(tree, false);
+        final JTree jtree = ConstructJTree.getTree(tree, false, false);
         jtree.getSelectionModel().setSelectionMode
                 (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         jtree.addTreeSelectionListener(new TreeSelectionListener() {

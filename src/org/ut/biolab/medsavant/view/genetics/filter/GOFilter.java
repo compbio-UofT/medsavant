@@ -169,7 +169,7 @@ public class GOFilter {
         final JLabel numberSelected = new JLabel();
         // Construct jtree from xtree that has been made.
         // Put tree in scrollpane, and scrollpane in panel.
-        final JTree jTree = ConstructJTree.getTree(xtree, true);
+        final JTree jTree = ConstructJTree.getTree(xtree, true, false);
         jTree.getSelectionModel().setSelectionMode
                 (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         // to keep track of the locations of the places selected.

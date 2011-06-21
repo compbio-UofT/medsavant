@@ -22,9 +22,10 @@ public class ConstructJTree {
      * @param tree the Tree object containing ontology information.
      * @param isForest true iff there is more than one root, in which case, a
      * default root is created.
+     * @param isCheckBoxTree true iff the tree is to be a check box tree.
      * @return the jTree object made.
      */
-    public static JTree getTree(Tree tree, boolean isForest){
+    public static JTree getTree(Tree tree, boolean isForest, boolean isCheckBoxTree){
 
         DefaultMutableTreeNode actualRoot;
         if (isForest){
