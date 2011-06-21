@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.controller;
 
+import main.ProgramInformation;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -170,7 +171,7 @@ public class SettingsController {
      */
     private void resetPersistenceMap() {
         persistenceMap.clear();
-        setValueSilent(KEY_VERSION,Version.getVersion());
+        setValueSilent(KEY_VERSION,ProgramInformation.getVersion());
         resetSettingSilent(KEY_USERNAME);
         resetSettingSilent(KEY_PASSWORD);
         resetSettingSilent(KEY_REMEMBER_PASSWORD);

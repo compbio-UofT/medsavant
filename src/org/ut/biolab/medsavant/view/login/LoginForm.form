@@ -16,18 +16,30 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="cb_autosignin" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cb_rememberpassword" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="field_password" alignment="0" pref="247" max="32767" attributes="0"/>
-                  <Component id="field_username" alignment="0" pref="247" max="32767" attributes="0"/>
-                  <Component id="jLabel1" alignment="0" pref="247" max="32767" attributes="0"/>
-                  <Component id="jLabel2" alignment="0" pref="247" max="32767" attributes="0"/>
-                  <Component id="label_status" alignment="0" pref="247" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="label_status" pref="247" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="cb_autosignin" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cb_rememberpassword" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="field_password" alignment="0" pref="247" max="32767" attributes="0"/>
+                          <Component id="field_username" alignment="0" pref="247" max="32767" attributes="0"/>
+                          <Component id="jLabel2" alignment="0" pref="247" max="32767" attributes="0"/>
+                          <Component id="jLabel1" alignment="1" pref="247" max="32767" attributes="0"/>
+                          <Component id="label_versioninfo" alignment="0" pref="247" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="button_login" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="103" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -35,7 +47,9 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="label_status" min="-2" max="-2" attributes="0"/>
+              <Component id="label_versioninfo" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="label_status" min="-2" pref="14" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -48,7 +62,9 @@
               <Component id="cb_rememberpassword" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="cb_autosignin" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="button_login" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -102,9 +118,25 @@
     </Component>
     <Component class="javax.swing.JLabel" name="label_status">
       <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Tahoma" size="11" style="1"/>
+        </Property>
         <Property name="horizontalAlignment" type="int" value="0"/>
-        <Property name="text" type="java.lang.String" value="Sign in to MedSavant"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="label_versioninfo">
+      <Properties>
+        <Property name="horizontalAlignment" type="int" value="0"/>
+        <Property name="text" type="java.lang.String" value="version information"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="button_login">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Login"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="button_loginActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
