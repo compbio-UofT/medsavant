@@ -15,6 +15,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.controller.Version;
 
 /**
  *
@@ -25,6 +27,18 @@ public class LoginForm extends javax.swing.JPanel {
     /** Creates new form LoginForm */
     public LoginForm() {
         initComponents();
+        field_username.setText(LoginController.getUsername());
+        field_password.setText(LoginController.getPassword());
+        
+        this.field_username.setText(SettingsController.getInstance().getUsername());
+        if (SettingsController.getInstance().getRememberPassword()) {
+            this.field_password.setText(SettingsController.getInstance().getPassword());
+        }
+        this.cb_rememberpassword.setSelected(SettingsController.getInstance().getRememberPassword());
+        this.cb_autosignin.setSelected(SettingsController.getInstance().getAutoLogin());
+        
+        updateAutoSignInCheckBoxBasedOnPasswordCheckbox();
+        
         //this.setOpaque(false);
         this.setMaximumSize(new Dimension(400, 400));
     }
@@ -42,22 +56,21 @@ public class LoginForm extends javax.swing.JPanel {
         field_username = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         field_password = new javax.swing.JPasswordField();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jCheckBox2 = new javax.swing.JCheckBox();
+        cb_rememberpassword = new javax.swing.JCheckBox();
+        cb_autosignin = new javax.swing.JCheckBox();
         label_status = new javax.swing.JLabel();
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 13));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Username:");
 
-        field_username.setText("root");
         field_username.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 field_usernameKeyPressed(evt);
             }
         });
 
-        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 13));
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("Password:");
 
@@ -67,11 +80,21 @@ public class LoginForm extends javax.swing.JPanel {
             }
         });
 
-        jCheckBox1.setText("Remember my password");
-        jCheckBox1.setOpaque(false);
+        cb_rememberpassword.setText("Remember my password");
+        cb_rememberpassword.setOpaque(false);
+        cb_rememberpassword.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cb_rememberpasswordActionPerformed(evt);
+            }
+        });
 
-        jCheckBox2.setText("Sign me in automatically");
-        jCheckBox2.setOpaque(false);
+        cb_autosignin.setText("Sign me in automatically");
+        cb_autosignin.setOpaque(false);
+        cb_autosignin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cb_autosigninActionPerformed(evt);
+            }
+        });
 
         label_status.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_status.setText("Sign in to MedSavant");
@@ -83,8 +106,8 @@ public class LoginForm extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCheckBox2)
-                    .addComponent(jCheckBox1)
+                    .addComponent(cb_autosignin)
+                    .addComponent(cb_rememberpassword)
                     .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                     .addComponent(field_username, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
@@ -106,9 +129,9 @@ public class LoginForm extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(field_password, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jCheckBox1)
+                .addComponent(cb_rememberpassword)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jCheckBox2)
+                .addComponent(cb_autosignin)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -127,11 +150,22 @@ public class LoginForm extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_field_passwordKeyPressed
 
+    private void cb_rememberpasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cb_rememberpasswordActionPerformed
+        String value = SettingsController.booleanToString(this.cb_rememberpassword.isSelected());
+        SettingsController.getInstance().setValue(SettingsController.KEY_REMEMBER_PASSWORD,value);
+        updateAutoSignInCheckBoxBasedOnPasswordCheckbox();
+    }//GEN-LAST:event_cb_rememberpasswordActionPerformed
+
+    private void cb_autosigninActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cb_autosigninActionPerformed
+        String value = SettingsController.booleanToString(this.cb_autosignin.isSelected());
+        SettingsController.getInstance().setValue(SettingsController.KEY_AUTOLOGIN,value);
+    }//GEN-LAST:event_cb_autosigninActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox cb_autosignin;
+    private javax.swing.JCheckBox cb_rememberpassword;
     private javax.swing.JPasswordField field_password;
     private javax.swing.JTextField field_username;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel label_status;
@@ -147,6 +181,20 @@ public class LoginForm extends javax.swing.JPanel {
             this.label_status.setFont(new Font("Tahoma",Font.BOLD,13));
             this.label_status.setForeground(Color.red);
             this.field_username.requestFocus();
+        }
+    }
+
+    private void updateAutoSignInCheckBoxBasedOnPasswordCheckbox() {
+        boolean rememberpw = this.cb_rememberpassword.isSelected();
+        boolean autosignin = this.cb_autosignin.isSelected();
+        if (!rememberpw) {
+            this.cb_autosignin.setEnabled(false);
+            if (autosignin) {
+                this.cb_autosignin.setSelected(false);
+                SettingsController.getInstance().setAutoLogin(false);
+            }
+        } else {
+            this.cb_autosignin.setEnabled(true);
         }
     }
 }

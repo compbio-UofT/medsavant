@@ -10,6 +10,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.controller.Version;
 import org.ut.biolab.medsavant.view.Frame;
 
 /**
@@ -24,6 +26,7 @@ public class Main {
     public static void main(String[] args) {
         verifyJIDE();
         setLAF();
+        SettingsController.getInstance();
         Frame s = new Frame();
         s.setExtendedState(s.MAXIMIZED_BOTH);
         s.setVisible(true);

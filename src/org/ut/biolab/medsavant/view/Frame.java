@@ -24,6 +24,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.login.LoginView;
 
@@ -41,8 +42,10 @@ public class Frame extends JFrame implements LoginListener {
     private SessionView sessionView;
     private final JMenuItem logOutItem;
     private LoginView loginView;
+    private String currentCard;
 
     private void switchToSessionView() {
+        if (currentCard != null && currentCard.equals(SESSION_VIEW_CARD_NAME)) { return; }
         if (loginView != null) {
             view.remove(loginView);
         }
@@ -54,6 +57,7 @@ public class Frame extends JFrame implements LoginListener {
     }
 
     public void switchToLoginView() {
+        if (currentCard != null && currentCard.equals(LOGIN_CARD_NAME)) { return; }
         if (sessionView != null) {
             view.remove(sessionView);
         }
@@ -66,6 +70,7 @@ public class Frame extends JFrame implements LoginListener {
 
     private void switchToView(String cardname) {
          viewCardLayout.show(view, cardname);
+         currentCard = cardname;
     }
 
     public Frame() {
@@ -108,7 +113,11 @@ public class Frame extends JFrame implements LoginListener {
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        switchToLoginView();
+        if (SettingsController.getInstance().getAutoLogin()) {
+            LoginController.login(SettingsController.getInstance().getUsername(), SettingsController.getInstance().getPassword());
+        } else {
+            switchToLoginView();
+        }
     }
 
     public void requestClose() {

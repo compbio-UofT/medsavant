@@ -6,6 +6,7 @@ package org.ut.biolab.medsavant.view.genetics;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -15,6 +16,7 @@ class CohortPanel extends JPanel {
 
     public CohortPanel() {
         this.setName("Cohorts");
+        this.setBackground(ViewUtil.getMenuColor());
         this.add(new JLabel("Settings go here"));
     }
     

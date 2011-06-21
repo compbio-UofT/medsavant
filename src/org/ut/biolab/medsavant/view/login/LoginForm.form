@@ -19,8 +19,8 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jCheckBox2" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cb_autosignin" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cb_rememberpassword" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="field_password" alignment="0" pref="247" max="32767" attributes="0"/>
                   <Component id="field_username" alignment="0" pref="247" max="32767" attributes="0"/>
                   <Component id="jLabel1" alignment="0" pref="247" max="32767" attributes="0"/>
@@ -45,9 +45,9 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="field_password" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
+              <Component id="cb_rememberpassword" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="jCheckBox2" min="-2" max="-2" attributes="0"/>
+              <Component id="cb_autosignin" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -64,9 +64,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="field_username">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="root"/>
-      </Properties>
       <Events>
         <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="field_usernameKeyPressed"/>
       </Events>
@@ -85,17 +82,23 @@
         <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="field_passwordKeyPressed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="jCheckBox1">
+    <Component class="javax.swing.JCheckBox" name="cb_rememberpassword">
       <Properties>
         <Property name="text" type="java.lang.String" value="Remember my password"/>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cb_rememberpasswordActionPerformed"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="jCheckBox2">
+    <Component class="javax.swing.JCheckBox" name="cb_autosignin">
       <Properties>
         <Property name="text" type="java.lang.String" value="Sign me in automatically"/>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cb_autosigninActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="label_status">
       <Properties>

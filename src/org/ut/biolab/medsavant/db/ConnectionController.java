@@ -7,6 +7,7 @@ package org.ut.biolab.medsavant.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import org.ut.biolab.medsavant.controller.LoginController;
 
 /**
  *
@@ -14,8 +15,8 @@ import java.sql.DriverManager;
  */
 public class ConnectionController {
 
-     private static String un = "root";
-    private static String pw = "";
+    //private static String un = "root";
+    //private static String pw = "";
     private static String host = "localhost";
     private static String port = "5029";
     private static String dbName = "medsavant";
@@ -30,7 +31,8 @@ public class ConnectionController {
             try {
               Class.forName(driver);
               System.out.println("Connecting to DB host: " + host);
-              Connection conn = DriverManager.getConnection(url,un,pw);
+              System.out.println("Logging in with un: " + LoginController.getUsername() + " and password " + LoginController.getPassword());
+              Connection conn = DriverManager.getConnection(url,LoginController.getUsername(),LoginController.getPassword());
               System.out.println("Connection successful");
             }
             catch (Exception e)

@@ -34,6 +34,12 @@ public class LoginController {
     private static boolean loggedIn = false;
 
     private static void setLoggedIn(boolean loggedIn) {
+        if (!loggedIn) {
+            ConnectionController.disconnect();
+            if (!SettingsController.getInstance().getRememberPassword()) {
+                password = "";
+            }
+        }
         LoginController.loggedIn = loggedIn;
         fireLoginEvent(new LoginEvent(loggedIn,username));
     }
@@ -48,6 +54,11 @@ public class LoginController {
 
         username = un;
         password = pw;
+        
+        SettingsController.getInstance().setUsername(un);
+        if (SettingsController.getInstance().getRememberPassword()) {
+            SettingsController.getInstance().setPassword(pw);
+        }
 
         try {
             setLoggedIn(null != ConnectionController.connect());

@@ -5,6 +5,8 @@
 
 package medsavant.db;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import medsavant.exception.AccessDeniedDatabaseException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,6 +22,17 @@ public class ConnectionController {
 
     
     private static Connection connection;
+    
+    
+    public static void disconnect() {
+        try {
+            if (connection != null) 
+                connection.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(ConnectionController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        connection = null;
+    }
 
     public static Connection connect() throws AccessDeniedDatabaseException {
 
