@@ -34,7 +34,7 @@ public class CreateMappingsFile {
      * Location of the XML file which is to be parsed for location of files.
      */
     public static final String LOCATION_XML = 
-            "http://savantbrowser.com/nirvana/map.xml";
+            "http://savantbrowser.com/nirvana/GOmap.xml";
     
     /**
      * Tries to open an input stream from the url given.
