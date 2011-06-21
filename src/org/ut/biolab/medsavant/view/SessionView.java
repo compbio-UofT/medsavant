@@ -48,7 +48,7 @@ public class SessionView extends JPanel implements SectionChangedEventListener {
     private void initViewContainer() {
         panes = new JTabbedPane(JTabbedPane.TOP);
         panes.setBorder(ViewUtil.getSmallBorder());
-        panes.setFont(new Font("Arial", Font.PLAIN, 14));
+        panes.setFont(new Font("Arial", Font.BOLD, 12));
         this.add(panes, BorderLayout.CENTER);
         //splitView = new SplitView();
         //splitView.addSectionChangedListener(this);

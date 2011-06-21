@@ -21,7 +21,7 @@ public class GeneticsSubView extends SubView {
 
     @Override
     public String getName() {
-        return "Genetics";
+        return "Genetic Variants";
     }
 
     @Override

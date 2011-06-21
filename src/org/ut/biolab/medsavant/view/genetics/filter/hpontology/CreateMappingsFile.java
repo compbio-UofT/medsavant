@@ -4,7 +4,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter.hpontology;
 
-import org.ut.biolab.medsavant.view.filter.hpontology.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
