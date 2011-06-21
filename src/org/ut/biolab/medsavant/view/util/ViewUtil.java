@@ -55,6 +55,10 @@ public class ViewUtil {
     public static Border getTinyBorder() {
         return new EmptyBorder(1,1,1,1);
     }
+    
+    public static Border getSmallBorder() {
+        return new EmptyBorder(3,3,3,3);
+    }
 
     public static Border getMediumBorder() {
         return new EmptyBorder(5,5,5,5);

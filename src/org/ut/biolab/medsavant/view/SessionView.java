@@ -12,8 +12,11 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import javax.swing.JTabbedPane;
 import org.ut.biolab.medsavant.model.event.SectionChangedEventListener;
+import org.ut.biolab.medsavant.view.annotations.AnnotationsSubView;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSubView;
+import org.ut.biolab.medsavant.view.patients.PatientsSubView;
 import org.ut.biolab.medsavant.view.subview.SubView;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -27,7 +30,7 @@ public class SessionView extends JPanel implements SectionChangedEventListener {
    // private SplitView splitView;
 
     public SessionView() {
-        this.setBackground(Color.darkGray);
+        this.setBackground(ViewUtil.getDarkColor());
         init();
     }
 
@@ -44,6 +47,7 @@ public class SessionView extends JPanel implements SectionChangedEventListener {
 
     private void initViewContainer() {
         panes = new JTabbedPane(JTabbedPane.TOP);
+        panes.setBorder(ViewUtil.getSmallBorder());
         panes.setFont(new Font("Arial", Font.PLAIN, 14));
         this.add(panes, BorderLayout.CENTER);
         //splitView = new SplitView();
@@ -57,7 +61,10 @@ public class SessionView extends JPanel implements SectionChangedEventListener {
         //addSubView(new LibraryVariantsPage());
         //splitView.addSection("Search");
         //addSubView(new PatientsPage());
+        addSubView(new PatientsSubView());
         addSubView(new GeneticsSubView());
+        addSubView(new AnnotationsSubView());
+        
         //addSubView(new AnnotationsPage());
         panes.setSelectedIndex(0);
         //splitView.setSubsection(DEFAULT_SUBVIEW);

@@ -21,7 +21,6 @@ public abstract class SubView extends JPanel {
     private JTabbedPane pane;
 
     public SubView() {
-        this.setBackground(ViewUtil.getLightColor());
         initPages();
     }
 
@@ -37,6 +36,7 @@ public abstract class SubView extends JPanel {
         for (Page p : pages) {
             pane.addTab(p.getName(), p.getView());
         }
+
         this.setLayout(new BorderLayout());
 
         JPanel[] panels = getPersistentPanels();

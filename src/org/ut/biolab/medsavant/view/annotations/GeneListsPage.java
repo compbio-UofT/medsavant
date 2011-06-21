@@ -2,25 +2,20 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+package org.ut.biolab.medsavant.view.annotations;
 
-package org.ut.biolab.medsavant.view.subview;
-
-import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.view.subview.Page;
 
 /**
  *
  * @author mfiume
  */
-public class LibraryPage implements Page {
-
-    public LibraryPage() {
-    }
+public class GeneListsPage implements Page {
 
     public String getName() {
-        return "Library";
+        return "Gene Lists";
     }
 
     public Component getView() {
@@ -28,9 +23,7 @@ public class LibraryPage implements Page {
     }
 
     public Component getBanner() {
-        JPanel p = ViewUtil.createClearPanel();
-        p.setBackground(Color.black);
-        return p;
+        return new JPanel();
     }
-
+    
 }
