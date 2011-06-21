@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import medsavant.db.Database;
+import org.ut.biolab.medsavant.db.Database;
 import org.ut.biolab.medsavant.db.DB;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.Filter.FilterType;

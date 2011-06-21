@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package medsavant.db;
+package org.ut.biolab.medsavant.db;
 
 /**
  *

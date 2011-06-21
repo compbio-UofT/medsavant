@@ -6,8 +6,8 @@
 package org.ut.biolab.medsavant.model.event;
 
 import java.sql.SQLException;
-import medsavant.exception.AccessDeniedDatabaseException;
-import medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
+import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 
 /**
  *

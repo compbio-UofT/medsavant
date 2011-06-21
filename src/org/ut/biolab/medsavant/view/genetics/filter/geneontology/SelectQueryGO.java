@@ -7,7 +7,7 @@ package org.ut.biolab.medsavant.view.genetics.filter.geneontology;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import medsavant.db.table.VariantTableSchema;
+import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.model.Range;
 
 /**

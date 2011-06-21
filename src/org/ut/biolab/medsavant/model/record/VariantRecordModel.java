@@ -19,8 +19,8 @@ import fiume.vcf.VariantRecord;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import medsavant.db.Database;
-import medsavant.db.table.VariantTableSchema;
+import org.ut.biolab.medsavant.db.Database;
+import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 
 /**
  *

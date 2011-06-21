@@ -5,9 +5,14 @@
 
 package org.ut.biolab.medsavant.db;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.view.util.DialogUtil;
 
 /**
  *
@@ -15,32 +20,51 @@ import org.ut.biolab.medsavant.controller.LoginController;
  */
 public class ConnectionController {
 
-    //private static String un = "root";
-    //private static String pw = "";
-    private static String host = "localhost";
-    private static String port = "5029";
-    private static String dbName = "medsavant";
-    private static String url = "jdbc:mysql://" + host + ":" + port + "/" + dbName;
-    private static String table = "annotation_variant";
-    private static String driver = "com.mysql.jdbc.Driver";
+    
     private static Connection connection;
+    
+    
+    public static void disconnect() {
+        try {
+            if (connection != null) 
+                connection.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(ConnectionController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        connection = null;
+    }
 
-    public static Connection connect() {
+    public static Connection connect() throws AccessDeniedDatabaseException {
 
-        if (connection == null) {
+        boolean createNewConnection = false;
+
+        try {
+            createNewConnection = connection == null || connection.isClosed();
+        } catch (SQLException ex) {
+            createNewConnection = true;
+        }
+
+        if (createNewConnection) {
             try {
-              Class.forName(driver);
-              System.out.println("Connecting to DB host: " + host);
-              System.out.println("Logging in with un: " + LoginController.getUsername() + " and password " + LoginController.getPassword());
-              Connection conn = DriverManager.getConnection(url,LoginController.getUsername(),LoginController.getPassword());
+              Class.forName(DBSettings.DRIVER);
+              System.out.println("Connecting to DB host: " + DBSettings.DB_HOST);
+              connection = DriverManager.getConnection(DBSettings.DB_URL,LoginController.getUsername(),LoginController.getPassword());
+              //connection = DriverManager.getConnection(DBSettings.DB_URL,DBSettings.DB_USER_NAME,DBSettings.DB_PASSWORD);
               System.out.println("Connection successful");
             }
             catch (Exception e)
             {
-              System.err.println(e.getMessage());
+                if (e.getMessage().startsWith("Access denied")) {
+                    LoginController.logout();
+                    DialogUtil.displayErrorMessage("Access denied for user: " + LoginController.getUsername(), e);
+                    throw new AccessDeniedDatabaseException(LoginController.getUsername());
+                } else {
+                    e.printStackTrace();
+                }
             }
         }
 
         return connection;
     }
+
 }

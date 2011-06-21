@@ -8,8 +8,8 @@ package org.ut.biolab.medsavant.controller;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import medsavant.db.ConnectionController;
-import medsavant.exception.AccessDeniedDatabaseException;
+import org.ut.biolab.medsavant.db.ConnectionController;
+import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 

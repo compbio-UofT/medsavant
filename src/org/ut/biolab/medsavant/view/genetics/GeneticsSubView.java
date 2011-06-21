@@ -8,7 +8,7 @@ package org.ut.biolab.medsavant.view.genetics;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import medsavant.exception.AccessDeniedDatabaseException;
+import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 import org.ut.biolab.medsavant.view.subview.Page;
 import org.ut.biolab.medsavant.view.subview.SubView;

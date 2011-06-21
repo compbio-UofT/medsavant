@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;

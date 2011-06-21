@@ -29,7 +29,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import medsavant.db.Database;
+import org.ut.biolab.medsavant.db.Database;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;

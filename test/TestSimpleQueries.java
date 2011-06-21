@@ -4,21 +4,21 @@
  */
 
 import org.ut.biolab.medsavant.model.Range;
-import medsavant.db.BasicQuery;
-import medsavant.db.DBUtil;
+import org.ut.biolab.medsavant.db.BasicQuery;
+import org.ut.biolab.medsavant.db.DBUtil;
 import java.util.Vector;
 import java.util.ArrayList;
-import medsavant.db.table.TableSchema.ColumnType;
-import medsavant.db.table.TableSchema;
+import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.db.table.TableSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.util.List;
 import java.sql.ResultSet;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.sql.SQLException;
-import medsavant.db.Database;
-import medsavant.db.ConnectionController;
+import org.ut.biolab.medsavant.db.Database;
+import org.ut.biolab.medsavant.db.ConnectionController;
 import java.sql.Connection;
-import medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

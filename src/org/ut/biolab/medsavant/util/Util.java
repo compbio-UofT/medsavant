@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 import javax.swing.JButton;
-import medsavant.db.table.VariantTableSchema;
+import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.model.record.FileRecord;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 

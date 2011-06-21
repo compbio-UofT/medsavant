@@ -3,15 +3,15 @@
  * and open the template in the editor.
  */
 
-package medsavant.db;
+package org.ut.biolab.medsavant.db;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import medsavant.db.table.TableSchema.ColumnType;
-import medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 
 /**
  *

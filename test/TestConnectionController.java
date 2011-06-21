@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-import medsavant.db.ConnectionController;
+import org.ut.biolab.medsavant.db.ConnectionController;
 import java.sql.Connection;
 import org.junit.After;
 import org.junit.AfterClass;

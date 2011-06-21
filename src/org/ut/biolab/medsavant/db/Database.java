@@ -3,12 +3,12 @@
  * and open the template in the editor.
  */
 
-package medsavant.db;
+package org.ut.biolab.medsavant.db;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
-import medsavant.db.table.TableSchema;
-import medsavant.db.table.VariantTableSchema;
+import org.ut.biolab.medsavant.db.table.TableSchema;
+import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 
 /**
  *

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package medsavant.db;
+package org.ut.biolab.medsavant.db;
 
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
@@ -16,9 +16,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import medsavant.db.table.TableSchema;
-import medsavant.db.table.TableSchema.ColumnType;
-import medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.table.TableSchema;
+import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.model.Range;
 
 
