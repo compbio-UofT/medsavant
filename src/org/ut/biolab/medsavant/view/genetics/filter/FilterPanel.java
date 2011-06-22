@@ -169,13 +169,14 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
             final String columnAlias = fieldNames.get(i);
 
-            if (columnAlias.equals(VariantTableSchema.ALIAS_ID) || columnAlias.equals(VariantTableSchema.ALIAS_INFORMATION) || columnAlias.equals(VariantTableSchema.ALIAS_FILTER)) {
+            if (columnAlias.equals(VariantTableSchema.ALIAS_ID) || columnAlias.equals(VariantTableSchema.ALIAS_FILTER)) {// || columnAlias.equals(VariantTableSchema.ALIAS_INFORMATION)) {
                 continue;
             }
 
             TableSchema table = Database.getInstance().getVariantTableSchema();
             DbColumn col = table.getDBColumn(columnAlias);
             boolean isNumeric = TableSchema.isNumeric(table.getColumnType(col));
+            boolean isBoolean = TableSchema.isBoolean(table.getColumnType(col));
 
             if (isNumeric) {
                 Range extremeValues = BasicQuery.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
@@ -256,6 +257,121 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
                 final FilterView fv = new FilterView(columnAlias,container);
                 l.add(fv);
+
+            } else if (isBoolean) {
+
+                List<String> uniq = new ArrayList<String>();
+                uniq.add("True");
+                uniq.add("False");
+
+                JPanel container = new JPanel();
+                container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+
+                JPanel bottomContainer = new JPanel();
+                bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
+
+                final JButton applyButton = new JButton("Apply");
+                applyButton.setEnabled(false);
+                final List<JCheckBox> boxes = new ArrayList<JCheckBox>();
+
+                applyButton.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+
+                        applyButton.setEnabled(false);
+
+                        final List<String> acceptableValues = new ArrayList<String>();
+
+                        if(boxes.get(0).isSelected()) acceptableValues.add("1");
+                        if(boxes.get(1).isSelected()) acceptableValues.add("0");
+
+                        if (acceptableValues.size() == boxes.size()) {
+                            FilterController.removeFilter(VariantRecordModel.getFieldNameForIndex(fieldNum));
+                        } else {
+                            Filter f = new QueryFilter() {
+
+                                @Override
+                                public Condition[] getConditions() {
+                                    Condition[] results = new Condition[acceptableValues.size()];
+                                    int i = 0;
+                                    for (String s : acceptableValues) {
+                                        results[i++] = BinaryCondition.equalTo(Database.getInstance().getVariantTableSchema().getDBColumn(columnAlias), s);
+                                    }
+                                    return results;
+                                }
+
+                                @Override
+                                public String getName() {
+                                    return columnAlias;
+                                }
+                            };
+                            //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
+                            System.out.println("Adding filter: " + f.getName());
+                            FilterController.addFilter(f);
+                        }
+
+                        //TODO: why does this not work? Freezes GUI
+                        //apply.setEnabled(false);
+                    }
+                });
+
+                for (String s : uniq) {
+                    JCheckBox b = new JCheckBox(s);
+                    b.setSelected(true);
+                    b.addChangeListener(new ChangeListener() {
+
+                        public void stateChanged(ChangeEvent e) {
+                            AbstractButton abstractButton =
+                                    (AbstractButton) e.getSource();
+                            ButtonModel buttonModel = abstractButton.getModel();
+                            boolean pressed = buttonModel.isPressed();
+                            if (pressed) {
+                                applyButton.setEnabled(true);
+                            }
+                            //System.out.println("Changed: a=" + armed + "/p=" + pressed + "/s=" + selected);
+                        }
+                    });
+                    b.setAlignmentX(0F);
+                    container.add(b);
+                    boxes.add(b);
+                }
+
+                JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
+                selectAll.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        for (JCheckBox c : boxes) {
+                            c.setSelected(true);
+                            applyButton.setEnabled(true);
+                        }
+                    }
+                });
+                bottomContainer.add(selectAll);
+
+                JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
+
+                selectNone.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        for (JCheckBox c : boxes) {
+                            c.setSelected(false);
+                            applyButton.setEnabled(true);
+                        }
+                    }
+                });
+                bottomContainer.add(selectNone);
+
+                bottomContainer.add(Box.createGlue());
+
+                bottomContainer.add(applyButton);
+
+                bottomContainer.setAlignmentX(0F);
+                container.add(bottomContainer);
+
+                FilterView fv = new FilterView(columnAlias, container);
+                l.add(fv);
+
+
             } else {
 
                 Connection conn = ConnectionController.connect();

@@ -62,7 +62,7 @@ public class FilterController {
         listeners.add(l);
     }
 
-    private static void fireFiltersChangedEvent() {
+    public static void fireFiltersChangedEvent() {
         //printFilters();
         for (FiltersChangedListener l : listeners) {
             try {

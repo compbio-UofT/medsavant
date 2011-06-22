@@ -45,7 +45,12 @@ public class BasicQuery {
         List<String> distinctValues = new ArrayList<String>();
 
         while(rs.next()) {
-            distinctValues.add(rs.getString(1));
+            String val = rs.getString(1);
+            if(val == null){
+                distinctValues.add("");
+            } else {
+                distinctValues.add(val);
+            }
         }
 
         Collections.sort(distinctValues);

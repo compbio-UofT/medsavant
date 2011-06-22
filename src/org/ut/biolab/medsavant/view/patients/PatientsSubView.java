@@ -5,9 +5,7 @@
 
 package org.ut.biolab.medsavant.view.patients;
 
-import org.ut.biolab.medsavant.view.genetics.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.Component;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 import org.ut.biolab.medsavant.view.subview.Page;
@@ -34,6 +32,11 @@ public class PatientsSubView extends SubView {
 
     @Override
     public JPanel[] getPersistentPanels() {
+        return null;
+    }
+
+    @Override
+    public Component getBanner() {
         return null;
     }
 

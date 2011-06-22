@@ -6,12 +6,10 @@
 package org.ut.biolab.medsavant.view.subview;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -29,6 +27,8 @@ public abstract class SubView extends JPanel {
     public abstract Page[] getPages();
 
     public abstract JPanel[] getPersistentPanels();
+
+    public abstract Component getBanner();
 
     private void initPages() {
         Page[] pages = getPages();
@@ -59,6 +59,12 @@ public abstract class SubView extends JPanel {
         } else {
             this.add(pane, BorderLayout.CENTER);
         }
+
+        Component banner = getBanner();
+        if(banner != null){
+            this.add(banner, BorderLayout.NORTH);
+        }
+
     }
 
 }

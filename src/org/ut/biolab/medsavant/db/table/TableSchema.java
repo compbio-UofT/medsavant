@@ -127,6 +127,10 @@ public class TableSchema {
         return ColumnType.FLOAT == columnType || ColumnType.INTEGER == columnType;
     }
 
+    public static boolean isBoolean(ColumnType columnType) {
+        return ColumnType.BOOLEAN == columnType;
+    }
+
     public enum ColumnType {
         VARCHAR,
         BOOLEAN,

@@ -5,12 +5,25 @@
 
 package org.ut.biolab.medsavant.db;
 
+import fiume.vcf.VCFParser;
+import fiume.vcf.VariantRecord;
+import fiume.vcf.VariantSet;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 
 /**
@@ -56,6 +69,126 @@ public class DBUtil {
         }
 
         return results;
+
+    }
+
+    /*
+     * Given path to vcf file, add to database.
+     * Return true iff success.
+     */
+    public static void addVcfToDb(String filename) throws SQLException {
+
+        JDialog dialog = new JDialog();
+
+        //get variants from file
+        VariantSet variants = new VariantSet();
+        try {
+            variants = VCFParser.parseVariants(new File(filename));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            /*final JOptionPane optionPane = new JOptionPane(
+                "Variants could not be loaded from " + filename,
+                JOptionPane.ERROR_MESSAGE,
+                JOptionPane.OK_OPTION);
+            dialog.setTitle("Error loading variants");
+            dialog.setContentPane(optionPane);
+            dialog.pack();
+            dialog.setLocationRelativeTo(null);
+            dialog.setVisible(true);*/
+        }
+
+        //add to db
+        addVariantsToDb(variants);
+        FilterController.fireFiltersChangedEvent();
+        /*final JOptionPane optionPane = new JOptionPane(
+            variants.getRecords().size() + " variants were loaded from " + filename,
+            JOptionPane.INFORMATION_MESSAGE,
+            JOptionPane.OK_OPTION);
+        dialog.setTitle("Variants loaded");
+        dialog.setContentPane(optionPane);
+        dialog.pack();
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);*/
+
+    }
+
+    private static void addVariantsToDb(VariantSet variants) throws SQLException {
+
+        Connection conn;
+        try {
+            conn = ConnectionController.connect();
+        } catch (AccessDeniedDatabaseException ex) {
+            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
+
+        // Prepare a statement to insert a record
+        String sql = "INSERT INTO variant ("
+                + "dna_id,"
+                + "chrom,"
+                + "position,"
+                + "id,"
+                + "ref,"
+                + "alt,"
+                + "qual,"
+                + "filter,"
+                //+ "info) "
+                + "aa,"
+                + "ac,"
+                + "af,"
+                + "an,"
+                + "bq,"
+                + "cigar,"
+                + "db,"
+                + "dp,"
+                + "end,"
+                + "h2,"
+                + "mq,"
+                + "mq0,"
+                + "ns,"
+                + "sb,"
+                + "somatic,"
+                + "validated,"
+                + "custom_info,"
+                + "genome_id,"
+                + "pipeline_id) "
+                + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+
+        //add records
+        for(VariantRecord record : variants.getRecords()){
+
+            pstmt.setString(1, record.getDnaID());
+            pstmt.setString(2, record.getChrom());
+            pstmt.setLong(3, record.getPos());
+            pstmt.setString(4, record.getId());
+            pstmt.setString(5, record.getRef());
+            pstmt.setString(6, record.getAlt());
+            pstmt.setFloat(7, record.getQual());
+            pstmt.setString(8, record.getFilter());
+            //pstmt.setString(9, record.getInfo());
+            pstmt.setString(9, record.getAA());
+            pstmt.setString(10, record.getAC());
+            pstmt.setString(11, record.getAF());
+            pstmt.setInt(12, record.getAN());
+            pstmt.setFloat(13, record.getBQ());
+            pstmt.setString(14, record.getCigar());
+            pstmt.setBoolean(15, record.getDB());
+            pstmt.setInt(16, record.getDP());
+            pstmt.setString(17, record.getEnd());
+            pstmt.setBoolean(18, record.getH2());
+            pstmt.setString(19, record.getMQ());
+            pstmt.setString(20, record.getMQ0());
+            pstmt.setInt(21, record.getNS());
+            pstmt.setString(22, record.getSB());
+            pstmt.setBoolean(23, record.getSomatic());
+            pstmt.setBoolean(24, record.getValidated());
+            pstmt.setString(25, record.getCustomInfo());
+            pstmt.setString(26, "1");
+            pstmt.setString(27, "1");
+
+            pstmt.execute();//.executeUpdate();
+        }
 
     }
 
