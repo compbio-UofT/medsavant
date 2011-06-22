@@ -9,15 +9,16 @@ import com.jidesoft.grid.QuickTableFilterField;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.lucene.LuceneFilterableTableModel;
 import com.jidesoft.lucene.LuceneQuickTableFilterField;
+import com.jidesoft.swing.JideButton;
 import fiume.table.images.IconFactory;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -28,6 +29,8 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 
 /**
@@ -71,7 +74,7 @@ public class SearchableTablePanel extends JPanel {
         table.repaint();
     }
 
-    private void updateView() {
+    public void updateView() {
 
         if (data == null) { return; }
 
@@ -79,6 +82,7 @@ public class SearchableTablePanel extends JPanel {
 
         if (model == null) {
             model = new GenericTableModel(pageData, columnNames, columnClasses);
+            //TODO: set default columns here!
         } else {
             model.getDataVector().removeAllElements();
             model.getDataVector().addAll(pageData);
@@ -107,9 +111,12 @@ public class SearchableTablePanel extends JPanel {
         int[] columns = new int[columnNames.size()];
         for (int i = 0; i < columns.length; i++) { columns[i] = i; }
 
+        boolean[] visibleColumns = model.getVisibleColumns().clone();
+        model.resetVisible(); //make all columns visible temporarily
         filterField.setTableModel(model);
         filterField.setColumnIndices(columns);
         filterField.setObjectConverterManagerEnabled(true);
+        model.setVisibleColumns(visibleColumns); //replace column visibility
 
         table.setModel(new LuceneFilterableTableModel(filterField.getDisplayTableModel()));
     }
@@ -168,6 +175,20 @@ public class SearchableTablePanel extends JPanel {
         this.setLayout(new BorderLayout(3, 3));
         fieldPanel = new JPanel();
         fieldPanel.add(filterField);
+
+        JideButton columnsButton = new JideButton("Choose Columns");
+        final SearchableTablePanel instance = this;
+        columnsButton.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                ColumnChooser cc = new ColumnChooser(instance, model);
+            }
+            public void mousePressed(MouseEvent e) {}
+            public void mouseReleased(MouseEvent e) {}
+            public void mouseEntered(MouseEvent e) {}
+            public void mouseExited(MouseEvent e) {}
+        });
+        fieldPanel.add(new JSeparator(SwingConstants.VERTICAL));
+        fieldPanel.add(columnsButton);
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
