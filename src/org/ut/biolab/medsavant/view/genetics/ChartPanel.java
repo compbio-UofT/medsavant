@@ -292,9 +292,12 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
 
         } else {
             for (VariantRecord r : ResultController.getInstance().getFilteredVariantRecords()) {
-                String key = (String) VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
-                if (key == null) {
+                String key = null;
+                Object value = VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
+                if (value == null) {
                     key = ".";
+                } else {
+                    key = value.toString();
                 }
                 if (chartMap.containsKey(key)) {
                     chartMap.put(key, chartMap.get(key) + 1);
