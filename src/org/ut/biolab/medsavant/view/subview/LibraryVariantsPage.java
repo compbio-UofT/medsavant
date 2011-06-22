@@ -45,7 +45,7 @@ public class LibraryVariantsPage implements Page, ChangeListener {
       PeekingPanel detailView = new PeekingPanel("Details", BorderLayout.SOUTH, detailPane, true);
       panel.add(detailView, BorderLayout.NORTH);
 
-      stp = new SearchableTablePanel(new ArrayList(), FileRecord.getFieldNames(), FileRecord.getFieldClasses());
+      stp = new SearchableTablePanel(new ArrayList(), FileRecord.getFieldNames(), FileRecord.getFieldClasses(), FileRecord.getDefaultColumns());
       stp.getTable().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
       panel.add(stp, BorderLayout.CENTER);
 

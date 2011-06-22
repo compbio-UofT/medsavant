@@ -29,7 +29,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
     private final SearchableTablePanel tablePanel;
 
     public TablePanel() {
-        tablePanel = new SearchableTablePanel(new Vector(), VariantRecordModel.getFieldNames(), VariantRecordModel.getFieldClasses());
+        tablePanel = new SearchableTablePanel(new Vector(), VariantRecordModel.getFieldNames(), VariantRecordModel.getFieldClasses(), VariantRecordModel.getDefaultColumns());
         this.setLayout(new BorderLayout());
         this.add(tablePanel, BorderLayout.CENTER);
         try {

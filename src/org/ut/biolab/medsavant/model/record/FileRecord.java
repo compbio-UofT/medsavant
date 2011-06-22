@@ -161,4 +161,12 @@ public class FileRecord {
         return v;
     }
 
+    public static List<Boolean> getDefaultColumns(){
+        List<Boolean> list = new ArrayList<Boolean>();
+        for(int i = 0; i < NUM_FIELDS; i++){
+            list.add(true);
+        }
+        return list;
+    }
+
 }

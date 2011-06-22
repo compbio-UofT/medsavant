@@ -61,6 +61,7 @@ public class SearchableTablePanel extends JPanel {
     private final JButton gotoPrevious;
     private final JButton gotoNext;
     private final JButton gotoLast;
+    private List<Boolean> defaultColumns;
 
     public SortableTable getTable() {
         return table;
@@ -82,7 +83,9 @@ public class SearchableTablePanel extends JPanel {
 
         if (model == null) {
             model = new GenericTableModel(pageData, columnNames, columnClasses);
-            //TODO: set default columns here!
+            boolean[] arr = new boolean[defaultColumns.size()];
+            for(int i = 0; i < defaultColumns.size(); i++) arr[i] = defaultColumns.get(i);
+            model.setVisibleColumns(arr);
         } else {
             model.getDataVector().removeAllElements();
             model.getDataVector().addAll(pageData);
@@ -129,8 +132,9 @@ public class SearchableTablePanel extends JPanel {
     }
     
     public SearchableTablePanel(
-            List<Vector> data, List<String> columnNames, List<Class> columnClasses) {
+            List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Boolean> columnVisibility) {
 
+        this.defaultColumns = columnVisibility;
         table = new SortableTable() {
 
             @Override

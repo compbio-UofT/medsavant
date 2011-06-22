@@ -86,6 +86,35 @@ public class VariantRecordModel {
     private static final Class CLASS_OF_VALIDATED = VariantRecord.CLASS_OF_VALIDATED;
     private static final Class CLASS_OF_CUSTOMINFO = VariantRecord.CLASS_OF_CUSTOMINFO;
 
+    private static final boolean DEFAULT_GENOMEID = false;
+    private static final boolean DEFAULT_PIPELINEID = false;
+    private static final boolean DEFAULT_DNAID = true;
+    private static final boolean DEFAULT_CHROM = true;
+    private static final boolean DEFAULT_POS = true;
+    private static final boolean DEFAULT_ID = true;
+    private static final boolean DEFAULT_REF = true;
+    private static final boolean DEFAULT_ALT = true;
+    private static final boolean DEFAULT_QUAL = true;
+    private static final boolean DEFAULT_FILTER = true;
+    private static final boolean DEFAULT_AA = false;
+    private static final boolean DEFAULT_AC = false;
+    private static final boolean DEFAULT_AF = false;
+    private static final boolean DEFAULT_AN = false;
+    private static final boolean DEFAULT_BQ = false;
+    private static final boolean DEFAULT_CIGAR = false;
+    private static final boolean DEFAULT_DB = false;
+    private static final boolean DEFAULT_DP = false;
+    private static final boolean DEFAULT_END = false;
+    private static final boolean DEFAULT_H2 = false;
+    private static final boolean DEFAULT_MQ = false;
+    private static final boolean DEFAULT_MQ0 = false;
+    private static final boolean DEFAULT_NS = false;
+    private static final boolean DEFAULT_SB = false;
+    private static final boolean DEFAULT_SOMATIC = false;
+    private static final boolean DEFAULT_VALIDATED = false;
+    private static final boolean DEFAULT_CUSTOMINFO = false;
+
+
     private static final int NUM_FIELDS = INDEX_OF_CUSTOMINFO + 1; // index of the last field + 1
 
     public static int getNumberOfFields() {
@@ -524,7 +553,103 @@ public class VariantRecordModel {
         return null;
     }
 
-
+    public static List<Boolean> getDefaultColumns(){
+        List<Boolean> v = new ArrayList<Boolean>();
+        for (int i = 0; i < NUM_FIELDS; i++) {
+            switch (i) {
+                case INDEX_OF_GENOMEID:
+                    v.add(DEFAULT_GENOMEID);
+                    break;
+                case INDEX_OF_PIPELINEID:
+                    v.add(DEFAULT_PIPELINEID);
+                    break;
+                case INDEX_OF_DNAID:
+                    v.add(DEFAULT_DNAID);
+                    break;
+                /*case INDEX_OF_CALLDETAILS:
+                    v.add(VariantTableSchema.ALIAS_INFORMATION);
+                    break;
+                 *
+                 */
+                case INDEX_OF_CHROM:
+                    v.add(DEFAULT_CHROM);
+                    break;
+                case INDEX_OF_POS:
+                    v.add(DEFAULT_POS);
+                    break;
+                case INDEX_OF_ID:
+                    v.add(DEFAULT_ID);
+                    break;
+                case INDEX_OF_REF:
+                    v.add(DEFAULT_REF);
+                    break;
+                case INDEX_OF_ALT:
+                    v.add(DEFAULT_ALT);
+                    break;
+                case INDEX_OF_QUAL:
+                    v.add(DEFAULT_QUAL);
+                    break;
+                case INDEX_OF_FILTER:
+                    v.add(DEFAULT_FILTER);
+                    break;
+                //case INDEX_OF_INFO:
+                //    v.add(VariantTableSchema.ALIAS_INFORMATION);
+                //    break;
+                case INDEX_OF_AA:
+                    v.add(DEFAULT_AA);
+                    break;
+                case INDEX_OF_AC:
+                    v.add(DEFAULT_AC);
+                    break;
+                case INDEX_OF_AF:
+                    v.add(DEFAULT_AF);
+                    break;
+                case INDEX_OF_AN:
+                    v.add(DEFAULT_AN);
+                    break;
+                case INDEX_OF_BQ:
+                    v.add(DEFAULT_BQ);
+                    break;
+                case INDEX_OF_CIGAR:
+                    v.add(DEFAULT_CIGAR);
+                    break;
+                case INDEX_OF_DB:
+                    v.add(DEFAULT_DB);
+                    break;
+                case INDEX_OF_DP:
+                    v.add(DEFAULT_DP);
+                    break;
+                case INDEX_OF_END:
+                    v.add(DEFAULT_END);
+                    break;
+                case INDEX_OF_H2:
+                    v.add(DEFAULT_H2);
+                    break;
+                case INDEX_OF_MQ:
+                    v.add(DEFAULT_MQ);
+                    break;
+                case INDEX_OF_MQ0:
+                    v.add(DEFAULT_MQ0);
+                    break;
+                case INDEX_OF_NS:
+                    v.add(DEFAULT_NS);
+                    break;
+                case INDEX_OF_SB:
+                    v.add(DEFAULT_SB);
+                    break;
+                case INDEX_OF_SOMATIC:
+                    v.add(DEFAULT_SOMATIC);
+                    break;
+                case INDEX_OF_VALIDATED:
+                    v.add(DEFAULT_VALIDATED);
+                    break;
+                case INDEX_OF_CUSTOMINFO:
+                    v.add(DEFAULT_CUSTOMINFO);
+                    break;
+            }
+        }
+        return v;
+    }
 
 
 }
