@@ -1,5 +1,5 @@
-general.autologin=true
+general.autologin=false
 medsavant.version=1.0
-user.name=root
-user.password=
-user.rememberpass=true
+user.name=mfiumedwf
+user.password=fiume3640
+user.rememberpass=false

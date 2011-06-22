@@ -59,7 +59,8 @@ public class ConnectionController {
                     DialogUtil.displayErrorMessage("Access denied for user: " + LoginController.getUsername(), e);
                     throw new AccessDeniedDatabaseException(LoginController.getUsername());
                 } else {
-                    e.printStackTrace();
+                    System.out.println("Message: " + e.getMessage());
+                    //e.printStackTrace();
                 }
             }
         }

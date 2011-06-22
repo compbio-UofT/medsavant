@@ -67,6 +67,10 @@ public class ViewUtil {
     public static Border getHugeBorder() {
         return new EmptyBorder(10,10,10,10);
     }
+    
+    public static Border getGiganticBorder() {
+        return new EmptyBorder(100,100,100,100);
+    }
 
     public static Font getBigTitleFont() {
         return new Font("Arial", Font.BOLD, 18);
