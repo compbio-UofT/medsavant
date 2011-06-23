@@ -35,7 +35,7 @@ public class GenericTableModel extends DefaultContextSensitiveTableModel {
     @Override
     public Class<?> getColumnClass(int columnIndex) {
         if (columnClasses == null || columnClasses.size() == 0) return String.class;
-        return (Class) columnClasses.get(columnIndex);
+        return (Class) columnClasses.get(getNumber(columnIndex));
     }
 
     @Override
@@ -66,8 +66,6 @@ public class GenericTableModel extends DefaultContextSensitiveTableModel {
 
     @Override
     public Object getValueAt (int row, int col) {
-        //Object[] array = (Object[])(this.getDataVector().elementAt(row));
-        //return array[getNumber(col)];
         return super.getValueAt(row, getNumber(col));
     }
 
