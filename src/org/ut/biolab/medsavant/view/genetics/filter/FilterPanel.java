@@ -5,6 +5,7 @@
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.pane.CollapsiblePane;
@@ -187,12 +188,13 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 Range extremeValues = BasicQuery.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
 
                 JPanel container = new JPanel();
+                container.setBorder(ViewUtil.getMediumBorder());
                 container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
-                RangeSlider rs = new com.jidesoft.swing.RangeSlider();
+                final RangeSlider rs = new com.jidesoft.swing.RangeSlider();
 
-                int min = (int) Math.floor(extremeValues.getMin());
-                int max = (int) Math.ceil(extremeValues.getMax());
+                final int min = (int) Math.floor(extremeValues.getMin());
+                final int max = (int) Math.ceil(extremeValues.getMax());
                 
                 rs.setMinimum(min);
                 rs.setMaximum(max);
@@ -206,14 +208,30 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 JPanel rangeContainer = new JPanel();
                 rangeContainer.setLayout(new BoxLayout(rangeContainer,BoxLayout.X_AXIS));
                 
-                container.add(rs);
+                
+                final JLabel fromLabel = new JLabel(ViewUtil.numToString(min));
+                final JLabel toLabel = new JLabel(ViewUtil.numToString(max));
+                
+                rangeContainer.add(fromLabel);
+                rangeContainer.add(rs);
+                rangeContainer.add(toLabel);
+                
+                container.add(rangeContainer);
                 container.add(Box.createVerticalBox());
+                
+                rs.addChangeListener(new ChangeListener() {
+
+                    public void stateChanged(ChangeEvent e) {
+                        fromLabel.setText(ViewUtil.numToString(rs.getLowValue()));
+                        toLabel.setText(ViewUtil.numToString(rs.getHighValue()));
+                    }
+                    
+                });
                 
                 
 
                 final JButton applyButton = new JButton("Apply");
                 applyButton.setEnabled(false);
-                final List<JCheckBox> boxes = new ArrayList<JCheckBox>();
 
                 applyButton.addActionListener(new ActionListener() {
 
@@ -221,26 +239,23 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
                         applyButton.setEnabled(false);
 
-                        final List<String> acceptableValues = new ArrayList<String>();
-                        for (JCheckBox b : boxes) {
-                            if (b.isSelected()) {
-                                acceptableValues.add(b.getText());
-                            }
-                        }
+                        Range acceptableRange = new Range(rs.getLowValue(),rs.getHighValue());
 
-                        if (acceptableValues.size() == boxes.size()) {
+                        if (min == acceptableRange.getMin() && max == acceptableRange.getMax()) {
                             FilterController.removeFilter(VariantRecordModel.getFieldNameForIndex(fieldNum));
                         } else {
                             Filter f = new QueryFilter() {
 
                                 @Override
                                 public Condition[] getConditions() {
-                                    Condition[] results = new Condition[acceptableValues.size()];
-                                    int i = 0;
-                                    for (String s : acceptableValues) {
-                                        results[i++] = BinaryCondition.equalTo(Database.getInstance().getVariantTableSchema().getDBColumn(columnAlias), s);
-                                    }
-                                    return results;
+                                    Condition[] results = new Condition[2];
+                                    results[0] = BinaryCondition.greaterThan(Database.getInstance().getVariantTableSchema().getDBColumn(columnAlias), rs.getLowValue(), true);
+                                    results[1] = BinaryCondition.lessThan(Database.getInstance().getVariantTableSchema().getDBColumn(columnAlias), rs.getHighValue(), true);
+                                    
+                                    Condition[] resultsCombined = new Condition[1];
+                                    resultsCombined[0] = ComboCondition.and(results);
+
+                                    return resultsCombined;
                                 }
 
                                 @Override
@@ -265,8 +280,24 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                     }
 
                 });
+                
+                JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
+                selectAll.addActionListener(new ActionListener() {
 
-                container.add(applyButton);
+                    public void actionPerformed(ActionEvent e) {
+                        rs.setLowValue(min);
+                        rs.setHighValue(max);
+                    }
+                });
+                
+                JPanel bottomContainer = new JPanel();
+                bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
+
+                bottomContainer.add(selectAll);
+                bottomContainer.add(Box.createHorizontalGlue());
+                bottomContainer.add(applyButton);
+                
+                container.add(bottomContainer);
 
                 final FilterView fv = new FilterView(columnAlias,container);
                 l.add(fv);

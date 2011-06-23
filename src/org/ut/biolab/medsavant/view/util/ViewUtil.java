@@ -15,6 +15,7 @@ import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.text.NumberFormat;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -153,4 +154,7 @@ public class ViewUtil {
         return thisOS;
     }
 
+    public static String numToString(int num) {
+        return NumberFormat.getInstance().format(num);
+    }
 }

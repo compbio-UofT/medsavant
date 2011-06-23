@@ -170,7 +170,7 @@ public class DBUtil {
                 System.out.println("Prepared " + numrecords + " records");
             }
             
-            if (numrecords == 50000) { break; }
+            if (numrecords == 10000) { break; }
 
             pstmt.setString(1, record.getDnaID());
             pstmt.setString(2, record.getChrom());
