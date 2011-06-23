@@ -164,12 +164,12 @@ public class VariantTableSchema extends TableSchema {
         addColumn(DBFIELDNAME_CIGAR,ALIAS_CIGAR,TableSchema.ColumnType.VARCHAR,500);
         addColumn(DBFIELDNAME_DB,ALIAS_DB,TableSchema.ColumnType.BOOLEAN,1);
         addColumn(DBFIELDNAME_DP,ALIAS_DP,TableSchema.ColumnType.INTEGER,11);
-        addColumn(DBFIELDNAME_END,ALIAS_END,TableSchema.ColumnType.VARCHAR,500);
+        addColumn(DBFIELDNAME_END,ALIAS_END,TableSchema.ColumnType.INTEGER,11);
         addColumn(DBFIELDNAME_H2,ALIAS_H2,TableSchema.ColumnType.BOOLEAN,1);
-        addColumn(DBFIELDNAME_MQ,ALIAS_MQ,TableSchema.ColumnType.VARCHAR,500);
-        addColumn(DBFIELDNAME_MQ0,ALIAS_MQ0,TableSchema.ColumnType.VARCHAR,500);
+        addColumn(DBFIELDNAME_MQ,ALIAS_MQ,TableSchema.ColumnType.FLOAT,1);
+        addColumn(DBFIELDNAME_MQ0,ALIAS_MQ0,TableSchema.ColumnType.INTEGER,11);
         addColumn(DBFIELDNAME_NS,ALIAS_NS,TableSchema.ColumnType.INTEGER,11);
-        addColumn(DBFIELDNAME_SB,ALIAS_SB,TableSchema.ColumnType.VARCHAR,500);
+        addColumn(DBFIELDNAME_SB,ALIAS_SB,TableSchema.ColumnType.FLOAT,1);
         addColumn(DBFIELDNAME_SOMATIC,ALIAS_SOMATIC,TableSchema.ColumnType.BOOLEAN,1);
         addColumn(DBFIELDNAME_VALIDATED,ALIAS_VALIDATED,TableSchema.ColumnType.BOOLEAN,1);
         addColumn(DBFIELDNAME_CUSTOMINFO,ALIAS_CUSTOMINFO,TableSchema.ColumnType.VARCHAR,500);
@@ -196,12 +196,12 @@ public class VariantTableSchema extends TableSchema {
                 (String) dbResult.get(INDEX_CIGAR-1),
                 (Boolean) dbResult.get(INDEX_DB-1),
                 (Integer) dbResult.get(INDEX_DP-1),
-                (String) dbResult.get(INDEX_END-1),
+                new Long((Integer) dbResult.get(INDEX_END-1)),
                 (Boolean) dbResult.get(INDEX_H2-1),
-                (String) dbResult.get(INDEX_MQ-1),
-                (String) dbResult.get(INDEX_MQ0-1),
+                (Float) dbResult.get(INDEX_MQ-1),
+                (Integer) dbResult.get(INDEX_MQ0-1),
                 (Integer) dbResult.get(INDEX_NS-1),
-                (String) dbResult.get(INDEX_SB-1),
+                (Float) dbResult.get(INDEX_SB-1),
                 (Boolean) dbResult.get(INDEX_SOMATIC-1),
                 (Boolean) dbResult.get(INDEX_VALIDATED-1),
                 (String) dbResult.get(INDEX_CUSTOMINFO-1)

@@ -189,12 +189,12 @@ public class DBUtil {
             pstmt.setString(14, record.getCigar());
             pstmt.setBoolean(15, record.getDB());
             pstmt.setInt(16, record.getDP());
-            pstmt.setString(17, record.getEnd());
+            pstmt.setLong(17, record.getEnd());
             pstmt.setBoolean(18, record.getH2());
-            pstmt.setString(19, record.getMQ());
-            pstmt.setString(20, record.getMQ0());
+            pstmt.setFloat(19, record.getMQ());
+            pstmt.setInt(20, record.getMQ0());
             pstmt.setInt(21, record.getNS());
-            pstmt.setString(22, record.getSB());
+            pstmt.setFloat(22, record.getSB());
             pstmt.setBoolean(23, record.getSomatic());
             pstmt.setBoolean(24, record.getValidated());
             pstmt.setString(25, record.getCustomInfo());

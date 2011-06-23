@@ -55,12 +55,12 @@ public class VariantRecord implements Serializable {
     public static final Class CLASS_OF_CIGAR = String.class;
     public static final Class CLASS_OF_DB = Boolean.class;
     public static final Class CLASS_OF_DP = Integer.class;
-    public static final Class CLASS_OF_END = String.class;
+    public static final Class CLASS_OF_END = Long.class;
     public static final Class CLASS_OF_H2 = Boolean.class;
-    public static final Class CLASS_OF_MQ = String.class;
-    public static final Class CLASS_OF_MQ0 = String.class;
+    public static final Class CLASS_OF_MQ = Float.class;
+    public static final Class CLASS_OF_MQ0 = Integer.class;
     public static final Class CLASS_OF_NS = Integer.class;
-    public static final Class CLASS_OF_SB = String.class;
+    public static final Class CLASS_OF_SB = Float.class;
     public static final Class CLASS_OF_SOMATIC = Boolean.class;
     public static final Class CLASS_OF_VALIDATED = Boolean.class;
     public static final Class CLASS_OF_CUSTOMINFO = String.class;
@@ -71,11 +71,11 @@ public class VariantRecord implements Serializable {
     private String pipelineID;
     private String dnaID;
     private String chrom;
-    private Long pos;
+    private long pos;
     private String id;
     private String ref;
     private String alt;
-    private Float qual;
+    private float qual;
     private String filter;
     //private String info;
     private String aa;// = ""; //TODO: default values!?
@@ -86,12 +86,12 @@ public class VariantRecord implements Serializable {
     private String cigar;// = "";
     private boolean db;// = false;
     private int dp;// = -1;
-    private String end;// = "";
+    private long end;// = "";
     private boolean h2;// = false;
-    private String mq;// = "";
-    private String mq0;// = "";
+    private float mq;// = "";
+    private int mq0;// = "";
     private int ns;// = -1;
-    private String sb;// = "";
+    private float sb;// = "";
     private boolean somatic;// = "";
     private boolean validated;// = "";
     private String customInfo;// = "";
@@ -135,12 +135,12 @@ public class VariantRecord implements Serializable {
             String cigar,
             boolean db,
             int dp,
-            String end,
+            long end,
             boolean h2,
-            String mq,
-            String mq0,
+            float mq,
+            int mq0,
             int ns,
-            String sb,
+            float sb,
             boolean somatic,
             boolean validated,
             String customInfo) {
@@ -290,22 +290,22 @@ public class VariantRecord implements Serializable {
                         dp =     (Integer)   parse(CLASS_OF_DP, value);
                         break;
                     case END:
-                        end =    (String)    parse(CLASS_OF_END, value);
+                        end =    (Long)    parse(CLASS_OF_END, value);
                         break;
                     case H2:
                         h2 =     (Boolean)   parse(CLASS_OF_H2, value);
                         break;
                     case MQ:
-                        mq =     (String)    parse(CLASS_OF_MQ, value);
+                        mq =     (Float)    parse(CLASS_OF_MQ, value);
                         break;
                     case MQ0:
-                        mq0 =    (String)    parse(CLASS_OF_MQ0, value);
+                        mq0 =    (Integer)    parse(CLASS_OF_MQ0, value);
                         break;
                     case NS:
                         ns =     (Integer)   parse(CLASS_OF_NS, value);
                         break;
                     case SB:
-                        sb =     (String)    parse(CLASS_OF_SB, value);
+                        sb =     (Float)    parse(CLASS_OF_SB, value);
                         break;
                     case SOMATIC:
                         somatic =(Boolean)    parse(CLASS_OF_SOMATIC, value);
@@ -483,11 +483,11 @@ public class VariantRecord implements Serializable {
         this.dp = dp;
     }
 
-    public String getEnd(){
+    public long getEnd(){
         return end;
     }
     
-    public void setEnd(String end){
+    public void setEnd(long end){
         this.end = end;
     }
 
@@ -499,19 +499,19 @@ public class VariantRecord implements Serializable {
         this.h2 = h2;
     }
 
-    public String getMQ(){
+    public float getMQ(){
         return mq;
     }
     
-    public void setMQ(String mq){
+    public void setMQ(float mq){
         this.mq = mq;
     }
 
-    public String getMQ0(){
+    public int getMQ0(){
         return mq0;
     }
     
-    public void setMQ0(String mq0){
+    public void setMQ0(int mq0){
         this.mq0 = mq0;
     }
 
@@ -523,11 +523,11 @@ public class VariantRecord implements Serializable {
         this.ns = ns;
     }
 
-    public String getSB(){
+    public float getSB(){
         return sb;
     }
 
-    public void setSB(String sb){
+    public void setSB(float sb){
         this.sb = sb;
     }
 
