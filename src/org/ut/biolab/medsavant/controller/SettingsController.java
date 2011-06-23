@@ -47,6 +47,10 @@ public class SettingsController {
     public static final String KEY_REMEMBER_PASSWORD = "user.rememberpass";
     public static final String KEY_USERNAME = "user.name";
     public static final String KEY_PASSWORD = "user.password";
+    public static final String KEY_DB_DRIVER = "db.driver";
+    public static final String KEY_DB_HOST = "db.host";
+    public static final String KEY_DB_NAME = "db.name";
+    public static final String KEY_DB_PORT = "db.port";
 
     /**
      * Convert a boolean to a string representation
@@ -177,6 +181,10 @@ public class SettingsController {
         resetSettingSilent(KEY_PASSWORD);
         resetSettingSilent(KEY_REMEMBER_PASSWORD);
         resetSettingSilent(KEY_AUTOLOGIN);
+        resetSettingSilent(KEY_DB_DRIVER);
+        resetSettingSilent(KEY_DB_HOST);
+        resetSettingSilent(KEY_DB_NAME);
+        resetSettingSilent(KEY_DB_PORT);
         savePersistenceMap();
     }
     
@@ -233,6 +241,14 @@ public class SettingsController {
             return booleanToString(false);
         } else if (key.equals(KEY_AUTOLOGIN)) {
             return booleanToString(false);
+        } else if (key.equals(KEY_DB_DRIVER)) {
+            return "com.mysql.jdbc.Driver";
+        } else if (key.equals(KEY_DB_HOST)) {
+            return "localhost";
+        } else if (key.equals(KEY_DB_PORT)) {
+            return "5029";
+        } else if (key.equals(KEY_DB_NAME)) {
+            return "medsavant";
         } else {
             return null;
         }
@@ -272,6 +288,18 @@ public class SettingsController {
     
     public String getPassword() {
         return getValue(SettingsController.KEY_PASSWORD);
+    }
+
+    public String getDBDriver() {
+        return getValue(SettingsController.KEY_DB_DRIVER);
+    }
+
+    public String getDBHost() {
+        return getValue(SettingsController.KEY_DB_HOST);
+    }
+
+    public String getDBURL() {
+        return "jdbc:mysql://" + getValue(KEY_DB_HOST) + ":" + getValue(KEY_DB_PORT) + "/" + getValue(KEY_DB_NAME);
     }
     
 }

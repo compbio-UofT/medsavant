@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.view.util.DialogUtil;
 
 /**
@@ -46,9 +47,10 @@ public class ConnectionController {
 
         if (createNewConnection) {
             try {
-              Class.forName(DBSettings.DRIVER);
-              System.out.println("Connecting to DB host: " + DBSettings.DB_HOST);
-              connection = DriverManager.getConnection(DBSettings.DB_URL,LoginController.getUsername(),LoginController.getPassword());
+              Class.forName(SettingsController.getInstance().getDBDriver());
+              System.out.println("Connecting to DB host: " + SettingsController.getInstance().getDBHost());
+              System.out.println("Connecting to DB url: " + SettingsController.getInstance().getDBURL());
+              connection = DriverManager.getConnection(SettingsController.getInstance().getDBURL(),LoginController.getUsername(),LoginController.getPassword());
               System.out.println("Connection successful");
             }
             catch (Exception e)
