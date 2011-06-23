@@ -18,7 +18,6 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.db.DBUtil;
-import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 import org.ut.biolab.medsavant.view.subview.Page;
@@ -51,7 +50,7 @@ public class GeneticsSubView extends SubView {
             panels[0] = new FilterPanel();
             //TODO: account for exception in filter panel instead
             return panels;
-        } catch (AccessDeniedDatabaseException ex) {
+        } catch (Exception ex) {
             return null;
         }
     }

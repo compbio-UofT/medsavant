@@ -14,38 +14,51 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import main.ProgramInformation;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.model.event.LoginEvent;
+import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.view.Frame;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
  * @author mfiume
  */
-public class LoginForm extends javax.swing.JPanel {
+public class LoginForm extends javax.swing.JPanel implements LoginListener {
 
     /** Creates new form LoginForm */
     public LoginForm() {
+        
+        LoginController.addLoginListener(this);
+        
         initComponents();
+        
         field_username.setText(LoginController.getUsername());
         field_password.setText(LoginController.getPassword());
-        
+
         this.field_username.setText(SettingsController.getInstance().getUsername());
         if (SettingsController.getInstance().getRememberPassword()) {
             this.field_password.setText(SettingsController.getInstance().getPassword());
         }
         this.cb_rememberpassword.setSelected(SettingsController.getInstance().getRememberPassword());
         this.cb_autosignin.setSelected(SettingsController.getInstance().getAutoLogin());
-        
+
         this.label_versioninformation.setText(ProgramInformation.getVersion() + " " + ProgramInformation.getReleaseType());
-        
-        
+
+        ViewUtil.clear(this.cb_autosignin);
+        ViewUtil.clear(this.cb_rememberpassword);
+
         updateAutoSignInCheckBoxBasedOnPasswordCheckbox();
-        
+
         //this.setBorder(ViewUtil.getGiganticBorder());
         this.setBackground(Color.white);
-        
+
         //this.setOpaque(false);
         this.setMaximumSize(new Dimension(400, 400));
     }
@@ -73,11 +86,13 @@ public class LoginForm extends javax.swing.JPanel {
         setBackground(new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createEmptyBorder(30, 100, 30, 100));
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 13));
+        jLabel1.setForeground(new java.awt.Color(51, 51, 51));
         jLabel1.setForeground(new java.awt.Color(51, 51, 51));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Username:");
 
+        field_username.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_username.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 field_usernameKeyPressed(evt);
@@ -86,9 +101,11 @@ public class LoginForm extends javax.swing.JPanel {
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(51, 51, 51));
+        jLabel2.setForeground(new java.awt.Color(51, 51, 51));
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("Password:");
 
+        field_password.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_password.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 field_passwordKeyPressed(evt);
@@ -109,7 +126,7 @@ public class LoginForm extends javax.swing.JPanel {
             }
         });
 
-        label_status.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        label_status.setFont(new java.awt.Font("Tahoma", 1, 11));
         label_status.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
 
         label_programtitle.setFont(new java.awt.Font("Lucida Grande", 1, 48)); // NOI18N
@@ -135,17 +152,17 @@ public class LoginForm extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(label_programtitle, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(label_versioninformation, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
+                    .addComponent(label_versioninformation, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(button_login)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
+                        .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE))
                     .addComponent(cb_autosignin)
                     .addComponent(cb_rememberpassword)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
-                    .addComponent(field_username, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
-                    .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .addComponent(field_username, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -171,7 +188,7 @@ public class LoginForm extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(button_login)
                     .addComponent(label_status, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -191,19 +208,18 @@ public class LoginForm extends javax.swing.JPanel {
 
     private void cb_rememberpasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cb_rememberpasswordActionPerformed
         String value = SettingsController.booleanToString(this.cb_rememberpassword.isSelected());
-        SettingsController.getInstance().setValue(SettingsController.KEY_REMEMBER_PASSWORD,value);
+        SettingsController.getInstance().setValue(SettingsController.KEY_REMEMBER_PASSWORD, value);
         updateAutoSignInCheckBoxBasedOnPasswordCheckbox();
     }//GEN-LAST:event_cb_rememberpasswordActionPerformed
 
     private void cb_autosigninActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cb_autosigninActionPerformed
         String value = SettingsController.booleanToString(this.cb_autosignin.isSelected());
-        SettingsController.getInstance().setValue(SettingsController.KEY_AUTOLOGIN,value);
+        SettingsController.getInstance().setValue(SettingsController.KEY_AUTOLOGIN, value);
     }//GEN-LAST:event_cb_autosigninActionPerformed
 
     private void button_loginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_loginActionPerformed
         this.loginUsingEnteredUsernameAndPassword();
     }//GEN-LAST:event_button_loginActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton button_login;
     private javax.swing.JCheckBox cb_autosignin;
@@ -219,17 +235,16 @@ public class LoginForm extends javax.swing.JPanel {
 
     private void loginUsingEnteredUsernameAndPassword() {
         this.label_status.setText("signing in...");
-        this.label_status.setFont(new Font("Tahoma",Font.BOLD,11));
+        this.label_status.setFont(new Font("Tahoma", Font.BOLD, 11));
         this.label_status.setForeground(Color.black);
         this.button_login.setEnabled(false);
-        LoginController.login(field_username.getText(), field_password.getText());
-        if (!LoginController.isLoggedIn()) {
-            this.label_status.setText("login incorrect");
-            this.label_status.setFont(new Font("Tahoma",Font.BOLD,11));
-            this.label_status.setForeground(Color.red);
-            this.field_username.requestFocus();
-            this.button_login.setEnabled(true);
-        }
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                LoginController.login(field_username.getText(),field_password.getText());
+            }
+        });
+        //new Thread(new RunLogin(this,this.field_username.getText(),this.field_password.getText())).start();
     }
 
     private void updateAutoSignInCheckBoxBasedOnPasswordCheckbox() {
@@ -243,6 +258,36 @@ public class LoginForm extends javax.swing.JPanel {
             }
         } else {
             this.cb_autosignin.setEnabled(true);
+        }
+    }
+
+    public void notifyOfUnsuccessfulLogin(NonFatalDatabaseException ex) {
+        System.out.println("Notified of exception " + ex.getMessage() + " of type " + ex.getExceptionType());
+        if (!LoginController.isLoggedIn()) {
+            if (ex.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_ACCESS_DENIED) {
+                this.label_status.setText("login incorrect");
+            } else if (ex.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_DB_CONNECTION_FAILURE
+                    ) {
+                this.label_status.setText("error accessing database");
+            } else if (ex.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_UNKNOWN) {
+                this.label_status.setText("login failure");
+            }
+            this.label_status.setFont(new Font("Tahoma", Font.BOLD, 11));
+            this.label_status.setForeground(Color.red);
+            this.field_username.requestFocus();
+            this.button_login.setEnabled(true);
+        }
+    }
+
+    public void loginEvent(LoginEvent evt) {
+        switch(evt.getType()) {
+            case LOGGED_IN:
+                break;
+            case LOGGED_OUT:
+                break;
+            case LOGIN_FAILED:
+                notifyOfUnsuccessfulLogin(evt.getException());
+                break;
         }
     }
 }

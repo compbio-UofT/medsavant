@@ -12,7 +12,9 @@ import java.util.logging.Logger;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.view.Frame;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -30,6 +32,19 @@ public class Main {
         Frame s = new Frame();
         s.setExtendedState(s.MAXIMIZED_BOTH);
         s.setVisible(true);
+        
+        ThreadController.getInstance().runInThread(new Runnable() {
+
+            public void run() {
+                System.out.println("Starting long thread");
+                try {
+                    Thread.sleep(12000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+        });
     }
 
     private static void setLAF() {

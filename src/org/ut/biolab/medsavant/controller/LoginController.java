@@ -6,10 +6,8 @@
 package org.ut.biolab.medsavant.controller;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.ConnectionController;
-import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 
@@ -41,14 +39,19 @@ public class LoginController {
             }
         }
         LoginController.loggedIn = loggedIn;
-        fireLoginEvent(new LoginEvent(loggedIn,username));
+
+        if (loggedIn) {
+            fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_IN));
+        } else {
+            fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_OUT));
+        }
     }
 
     private static ArrayList<LoginListener> loginListeners = new ArrayList<LoginListener>();
 
     public static boolean isLoggedIn() { return loggedIn; }
 
-    public static boolean login(String un, String pw) {
+    public static synchronized void login(String un, String pw) {
         
         System.out.println("Logging in with un: " + un + " pass: " + pw);
 
@@ -62,11 +65,9 @@ public class LoginController {
 
         try {
             setLoggedIn(null != ConnectionController.connect());
-        } catch (AccessDeniedDatabaseException ex) {
-            setLoggedIn(false);
+        } catch (NonFatalDatabaseException ex) {
+            setLoginException(ex);
         }
-
-        return loggedIn;
     }
 
     public static void addLoginListener(LoginListener l) {
@@ -78,6 +79,7 @@ public class LoginController {
     }
 
     private static void fireLoginEvent(LoginEvent evt) {
+        System.out.println("Firing login event: " + evt.getType());
         for (LoginListener l : loginListeners) {
             l.loginEvent(evt);
         }
@@ -87,4 +89,7 @@ public class LoginController {
         setLoggedIn(false);
     }
 
+    private static void setLoginException(NonFatalDatabaseException ex) {
+        fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED,ex));
+    }
 }

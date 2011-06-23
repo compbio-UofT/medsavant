@@ -15,7 +15,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -66,7 +66,7 @@ public class BottomBar extends JPanel implements FiltersChangedListener{
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
     }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException, AccessDeniedDatabaseException {
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
         //setStatus(ResultController.getInstance().getAllVariantRecords().size() + " records");
     }
 

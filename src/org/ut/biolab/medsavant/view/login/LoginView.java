@@ -40,8 +40,12 @@ public class LoginView extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        GradientPaint p = new GradientPaint(0, 0, Color.darkGray, 0, this.getHeight(), Color.black);
-        g2.setPaint(p);
+        
+        g2.setColor(Color.white);
         g2.fillRect(0, 0, this.getWidth(), this.getHeight());
+        
+        //GradientPaint p = new GradientPaint(0, 0, Color.darkGray, 0, this.getHeight(), Color.black);
+        //g2.setPaint(p);
+        //g2.fillRect(0, 0, this.getWidth(), this.getHeight());
     }
 }

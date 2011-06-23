@@ -23,7 +23,6 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
-import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 
 /**
@@ -83,7 +82,9 @@ public class DBUtil {
         //get variants from file
         VariantSet variants = new VariantSet();
         try {
+            System.out.println("Parsing variants...");
             variants = VCFParser.parseVariants(new File(filename));
+            System.out.println("Done parsing variants...");
         } catch (IOException ex) {
             ex.printStackTrace();
             /*final JOptionPane optionPane = new JOptionPane(
@@ -117,7 +118,7 @@ public class DBUtil {
         Connection conn;
         try {
             conn = ConnectionController.connect();
-        } catch (AccessDeniedDatabaseException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
@@ -155,8 +156,21 @@ public class DBUtil {
                 + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement pstmt = conn.prepareStatement(sql);
 
+        conn.setAutoCommit(false);
+        
+        int numrecords = 0;
+        
+        System.out.println("Preparing " + variants.getRecords().size() + " records ...");
+        
         //add records
         for(VariantRecord record : variants.getRecords()){
+            
+            numrecords++;
+            if (numrecords % 1000 == 0) {
+                System.out.println("Prepared " + numrecords + " records");
+            }
+            
+            if (numrecords == 50000) { break; }
 
             pstmt.setString(1, record.getDnaID());
             pstmt.setString(2, record.getChrom());
@@ -187,8 +201,11 @@ public class DBUtil {
             pstmt.setString(26, "1");
             pstmt.setString(27, "1");
 
-            pstmt.execute();//.executeUpdate();
+            pstmt.executeUpdate();
         }
+        
+        conn.commit();
+        conn.setAutoCommit(true);
 
     }
 

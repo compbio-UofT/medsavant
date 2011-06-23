@@ -29,19 +29,19 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="label_programtitle" alignment="1" max="32767" attributes="0"/>
-                  <Component id="label_versioninformation" alignment="0" pref="266" max="32767" attributes="0"/>
+                  <Component id="label_programtitle" alignment="1" pref="297" max="32767" attributes="0"/>
+                  <Component id="label_versioninformation" alignment="0" pref="297" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="button_login" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="label_status" pref="180" max="32767" attributes="0"/>
+                      <Component id="label_status" pref="236" max="32767" attributes="0"/>
                   </Group>
                   <Component id="cb_autosignin" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cb_rememberpassword" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel2" alignment="0" pref="266" max="32767" attributes="0"/>
-                  <Component id="jLabel1" alignment="0" pref="266" max="32767" attributes="0"/>
-                  <Component id="field_username" alignment="0" pref="266" max="32767" attributes="0"/>
-                  <Component id="field_password" alignment="0" pref="266" max="32767" attributes="0"/>
+                  <Component id="jLabel2" alignment="0" pref="297" max="32767" attributes="0"/>
+                  <Component id="jLabel1" alignment="0" pref="297" max="32767" attributes="0"/>
+                  <Component id="field_username" alignment="0" pref="297" max="32767" attributes="0"/>
+                  <Component id="field_password" alignment="0" pref="297" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -71,7 +71,7 @@
                   <Component id="button_login" min="-2" max="-2" attributes="0"/>
                   <Component id="label_status" min="-2" pref="14" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="13" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -90,6 +90,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="field_username">
+      <Properties>
+        <Property name="horizontalAlignment" type="int" value="0"/>
+      </Properties>
       <Events>
         <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="field_usernameKeyPressed"/>
       </Events>
@@ -107,6 +110,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JPasswordField" name="field_password">
+      <Properties>
+        <Property name="horizontalAlignment" type="int" value="0"/>
+      </Properties>
       <Events>
         <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="field_passwordKeyPressed"/>
       </Events>

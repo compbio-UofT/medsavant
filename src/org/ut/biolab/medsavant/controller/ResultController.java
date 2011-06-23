@@ -19,7 +19,7 @@ import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.Database;
 import org.ut.biolab.medsavant.db.DBUtil;
 import org.ut.biolab.medsavant.db.table.TableSchema;
-import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -35,12 +35,12 @@ public class ResultController implements FiltersChangedListener {
 
     private static ResultController instance;
     
-    public ResultController() throws AccessDeniedDatabaseException {
+    public ResultController() throws NonFatalDatabaseException {
         FilterController.addFilterListener(this);
         updateFilteredVariantDBResults();
     }
 
-    public static ResultController getInstance() throws AccessDeniedDatabaseException {
+    public static ResultController getInstance() throws NonFatalDatabaseException {
         if (instance == null) {
             instance = new ResultController();
         }
@@ -56,11 +56,11 @@ public class ResultController implements FiltersChangedListener {
         return filteredVariants;
     }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException, AccessDeniedDatabaseException {
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
         updateFilteredVariantDBResults();
     }
 
-    private void updateFilteredVariantDBResults() throws AccessDeniedDatabaseException {
+    private void updateFilteredVariantDBResults() throws NonFatalDatabaseException {
 
         TableSchema tableSchema = Database.getInstance().getVariantTableSchema();
         SelectQuery query = new SelectQuery();
@@ -73,7 +73,7 @@ public class ResultController implements FiltersChangedListener {
             query.addCondition(ComboCondition.or(f.getConditions()));
         }
         
-        String queryString = query.toString() + " LIMIT 1000";
+        String queryString = query.toString() + " LIMIT 600";
         System.out.println(queryString);
 
         ResultSet r1;

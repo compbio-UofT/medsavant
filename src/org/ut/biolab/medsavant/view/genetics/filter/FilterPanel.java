@@ -38,7 +38,7 @@ import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.Database;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
-import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
@@ -61,7 +61,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     private CollapsiblePanes contentPanel;
     private JLabel status;
 
-    public FilterPanel() throws AccessDeniedDatabaseException {
+    public FilterPanel() throws NonFatalDatabaseException {
         this.setName("Filters");
         this.setLayout(new BorderLayout());
         filterViews = new ArrayList<FilterView>();
@@ -70,7 +70,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     }
     
 
-    private void initGUI() throws AccessDeniedDatabaseException {
+    private void initGUI() throws NonFatalDatabaseException {
 
         /*
         JPanel titlePanel = ViewUtil.getBannerPanel();
@@ -101,6 +101,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             fv = getFilterViews();
             addFilterViews(fv);
         } catch (SQLException ex) {
+            ex.printStackTrace();
             throw new FatalDatabaseException("Problem getting filters");
         }
 
@@ -127,7 +128,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         this.contentPanel.add(cp);
     }
 
-    private List<FilterView> getFilterViews() throws SQLException, AccessDeniedDatabaseException {
+    private List<FilterView> getFilterViews() throws SQLException, NonFatalDatabaseException {
         List<FilterView> views = new ArrayList<FilterView>();
         views.addAll(getVariantRecordFilterViews());
         views.add(GOFilter.getGOntologyFilterView()); 
@@ -154,7 +155,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         });
     }
 
-    private List<FilterView> getVariantRecordFilterViews() throws SQLException, AccessDeniedDatabaseException {
+    private List<FilterView> getVariantRecordFilterViews() throws SQLException, NonFatalDatabaseException {
         List<FilterView> l = new ArrayList<FilterView>();
 
         System.out.println("Making filters");
@@ -168,6 +169,10 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             Class c = VariantRecordModel.getFieldClass(i);
 
             final String columnAlias = fieldNames.get(i);
+            
+            if (columnAlias.equals("Information")) { continue; }
+            
+            //System.out.println("Making filter for " + columnAlias);
 
             if (columnAlias.equals(VariantTableSchema.ALIAS_ID) || columnAlias.equals(VariantTableSchema.ALIAS_FILTER)) {// || columnAlias.equals(VariantTableSchema.ALIAS_INFORMATION)) {
                 continue;
@@ -186,17 +191,25 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
                 RangeSlider rs = new com.jidesoft.swing.RangeSlider();
 
-                rs.setMinimum((int) Math.floor(extremeValues.getMin()));
-                rs.setMaximum((int) Math.ceil(extremeValues.getMax()));
+                int min = (int) Math.floor(extremeValues.getMin());
+                int max = (int) Math.ceil(extremeValues.getMax());
+                
+                rs.setMinimum(min);
+                rs.setMaximum(max);
 
                 rs.setMajorTickSpacing(5);
                 rs.setMinorTickSpacing(1);
 
-                rs.setLowValue((int) Math.floor(extremeValues.getMin()));
-                rs.setHighValue((int) Math.ceil(extremeValues.getMax()));
+                rs.setLowValue(min);
+                rs.setHighValue(max);
 
+                JPanel rangeContainer = new JPanel();
+                rangeContainer.setLayout(new BoxLayout(rangeContainer,BoxLayout.X_AXIS));
+                
                 container.add(rs);
                 container.add(Box.createVerticalBox());
+                
+                
 
                 final JButton applyButton = new JButton("Apply");
                 applyButton.setEnabled(false);
@@ -496,7 +509,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         this.status.setText(status);
     }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException, AccessDeniedDatabaseException {
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
         setStatus(ResultController.getInstance().getAllVariantRecords().size() + " records");
     }
 

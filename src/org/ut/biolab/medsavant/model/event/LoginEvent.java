@@ -5,30 +5,43 @@
 
 package org.ut.biolab.medsavant.model.event;
 
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+
 /**
  *
  * @author mfiume
  */
 public class LoginEvent {
     
+    public enum EventType { LOGGED_IN, LOGGED_OUT, LOGIN_FAILED };
+    
     private final boolean isLoggedIn;
-    private final String username;
+    private final EventType type;
+    private NonFatalDatabaseException exception;
 
-    public LoginEvent(boolean isLoggedIn) {
-        this(isLoggedIn,null);
+    public LoginEvent(EventType type) {
+        this.isLoggedIn = type == EventType.LOGGED_IN;
+        this.type = type;
+        this.exception = null;
+    }
+    
+    public LoginEvent(EventType type, NonFatalDatabaseException e) {
+        this.isLoggedIn = type == EventType.LOGGED_IN;
+        this.type = type;
+        this.exception = e;
     }
 
-    public LoginEvent(boolean isLoggedIn, String username) {
-        System.out.println("Creating " + isLoggedIn + " login event");
-        this.isLoggedIn = isLoggedIn;
-        this.username = username;
+    public NonFatalDatabaseException getException() {
+        return exception;
     }
 
-    public boolean getLoggedIn() {
+    public boolean isLoggedIn() {
         return isLoggedIn;
     }
 
-    public String getUserName() {
-        return username;
+    public EventType getType() {
+        return type;
     }
+    
+    
 }

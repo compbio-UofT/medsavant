@@ -15,7 +15,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.exception.AccessDeniedDatabaseException;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.record.Chromosome;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.util.view.PeekingPanel;
@@ -39,13 +39,13 @@ public class GeneticsSummerizePage implements Page {
         if (panel == null) {
             try {
                 setPanel();
-            } catch (AccessDeniedDatabaseException ex) {
+            } catch (NonFatalDatabaseException ex) {
             }
         }
         return panel;
     }
 
-    private void setPanel() throws AccessDeniedDatabaseException {
+    private void setPanel() throws NonFatalDatabaseException {
 
         panel = new JPanel();
         panel.setLayout(new BorderLayout());

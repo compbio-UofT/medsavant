@@ -98,6 +98,8 @@ public class ViewUtil {
                 g.fillRect(0, 0, this.getWidth(), this.getHeight());
             }
         };
+        
+        p.setBorder(ViewUtil.getSmallBorder());
 
         p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
 
@@ -126,6 +128,29 @@ public class ViewUtil {
 
     public static Color getMenuColor() {
         return new Color(217,222,229);
+    }
+    
+    public enum OS { Unknown, Windows, Linux, Mac };
+    
+    public static OS thisOS = OS.Unknown;
+    
+    public static OS getOS() {
+        if (thisOS == OS.Unknown) {
+            String osname = System.getProperty("os.name").toLowerCase();
+            
+            if (osname.contains("windows")) {
+                thisOS = OS.Windows;
+            } else if (osname.contains("mac")) {
+                thisOS = OS.Mac;
+            // todo: check that this actually works (may need to check variants - e.g. centos, ubuntu, etc.)
+            } else if (osname.contains("linux")) {
+                thisOS = OS.Linux;
+            }
+            
+            System.out.println("OS=" + thisOS);
+        }
+        
+        return thisOS;
     }
 
 }

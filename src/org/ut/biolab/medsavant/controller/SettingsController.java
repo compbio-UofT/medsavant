@@ -131,7 +131,7 @@ public class SettingsController {
     private void readPersistenceMap() {
         File pFile = new File(PERSISTENCE_FILE_PATH);
         
-        System.out.println("Reading settings from file: " + pFile.getAbsolutePath());
+        System.out.println("Reading map file: " + pFile.getAbsolutePath());
         
         if (!pFile.exists()) {
             resetPersistenceMap();
@@ -149,7 +149,7 @@ public class SettingsController {
                     String key = line.substring(0,splitIndex);
                     String value = line.substring(splitIndex+1);
                     
-                    System.out.println("Reading setting: " + key + "=" + value);
+                    //System.out.println("Reading setting: " + key + "=" + value);
                     
                     setValueSilent(key,value);
                 }
@@ -157,6 +157,7 @@ public class SettingsController {
                 resetPersistenceMap();
             } finally {
             try {
+                System.out.println("Done reading map file");
                 br.close();
             } catch (IOException ex) {
                 Logger.getLogger(SettingsController.class.getName()).log(Level.SEVERE, null, ex);
@@ -195,7 +196,7 @@ public class SettingsController {
         try {
             File pFile = new File(PERSISTENCE_FILE_PATH);
 
-            System.out.println("Settings saved to " + pFile.getAbsolutePath());
+            System.out.println("Saving map file: " + pFile.getAbsolutePath());
             
             if (pFile.exists()) {
                 pFile.delete();
@@ -204,10 +205,13 @@ public class SettingsController {
             for (String key : persistenceMap.keySet()) {
                 bw.write(key + DELIM + persistenceMap.get(key) + "\n");
             }
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(SettingsController.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("ERROR: saving map file... " + ex.getMessage());
+            //ex.printStackTrace();
         } finally {
             try {
+                System.out.println("Done saving map file");
                 bw.close();
             } catch (IOException ex) {
                 Logger.getLogger(SettingsController.class.getName()).log(Level.SEVERE, null, ex);
