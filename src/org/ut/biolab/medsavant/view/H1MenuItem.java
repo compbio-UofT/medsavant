@@ -4,6 +4,10 @@
  */
 package org.ut.biolab.medsavant.view;
 
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
 import javax.swing.JToggleButton;
 
 /**
@@ -24,5 +28,6 @@ public class H1MenuItem extends JToggleButton {
             this.putClientProperty( "JButton.buttonType", "segmentedRoundRect" );
             this.putClientProperty( "JButton.segmentPosition", "middle" );
         }
+        this.setFont(new Font("Tahoma",Font.PLAIN,14));
     }
 }
