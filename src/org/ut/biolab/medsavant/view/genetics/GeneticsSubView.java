@@ -7,6 +7,7 @@ package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
@@ -22,6 +23,7 @@ import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 import org.ut.biolab.medsavant.view.subview.Page;
 import org.ut.biolab.medsavant.view.subview.SubView;
+import org.ut.biolab.medsavant.view.util.PaintUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -82,7 +84,11 @@ public class GeneticsSubView extends SubView {
 
     @Override
     public Component getBanner() {
-        JPanel p = ViewUtil.createClearPanel();
+        JPanel p = new JPanel() {
+            public void paintComponent(Graphics g) {
+                PaintUtil.paintDarkMenu(g, this);
+            }
+        };
         p.setBackground(Color.red);
         p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
        // p.add(Box.createHorizontalStrut(10));

@@ -18,6 +18,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import org.ut.biolab.medsavant.view.util.PaintUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -30,7 +31,11 @@ public class ChartContainer extends JPanel {
 
     public ChartContainer() {
         this.setLayout(new BorderLayout());
-        JPanel title = ViewUtil.getBannerPanel();
+        JPanel title = new JPanel() {
+            public void paintComponent(Graphics g) {
+                PaintUtil.paintDarkMenu(g, this);
+            }
+        };
         title.add(Box.createHorizontalGlue());
         JButton addButton = new JButton("Add chart");
         addButton.addActionListener(new ActionListener() {
