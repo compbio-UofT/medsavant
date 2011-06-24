@@ -20,6 +20,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -129,6 +130,25 @@ public class ViewUtil {
 
     public static Color getMenuColor() {
         return new Color(217,222,229);
+    }
+
+    public static JPanel getDropDownPanel(String str, boolean isSelected, boolean cellHasFocus) {
+        
+        JPanel p;
+        if (isSelected) {
+            p = ViewUtil.getBannerPanel();
+        } else {
+            p = new JPanel();
+            p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+            p.setBorder(ViewUtil.getSmallBorder());
+            p.setBackground(Color.white);
+            //p.setBorder(ViewUtil.getTinyLineBorder());
+        }
+        JLabel l = new JLabel(str);
+        l.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        l.setOpaque(false);
+        p.add(l);
+        return p;
     }
     
     public enum OS { Unknown, Windows, Linux, Mac };

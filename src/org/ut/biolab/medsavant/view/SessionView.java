@@ -49,6 +49,10 @@ public class SessionView extends JPanel implements SectionChangedEventListener {
     }
 
     private void initViewContainer() {
+        
+        //JPanel topMenu = new H1Menu();
+        //this.add(topMenu, BorderLayout.NORTH);
+        
         panes = ComponentUtil.getH1TabbedPane();
         panes.setBorder(ViewUtil.getSmallBorder());
         //panes.setFont(new Font("Arial", Font.BOLD, 12));

@@ -28,5 +28,23 @@ public class PaintUtil {
         g2.setPaint(p);
         g2.fillRect(0, 0, c.getWidth(), c.getHeight());
     }
+
+    public static void paintDarkMenu(Graphics g, Component c) {
+        paintEvenGradient(g,c,Color.black,Color.darkGray);
+    }
+
+    private static void paintEvenGradient(Graphics g, Component c, Color bottom, Color top) {
+        Graphics2D g2 = (Graphics2D) g;
+        GradientPaint p = new GradientPaint(0, 0, top, 0, c.getHeight(), 
+                bottom);
+        g2.setPaint(p);
+        g2.fillRect(0, 0, c.getWidth(), c.getHeight());
+    }
+
+    
+    
+    public static void paintLightMenu(Graphics g, Component c) {
+        paintEvenGradient(g,c,Color.lightGray,Color.white);
+    }
     
 }
