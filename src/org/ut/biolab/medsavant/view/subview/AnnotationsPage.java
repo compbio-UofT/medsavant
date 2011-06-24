@@ -23,7 +23,7 @@ public class AnnotationsPage implements Page {
         return "Annotations";
     }
 
-    public Component getView() {
+    public JPanel getView() {
         JPanel p = new JPanel();
         p.setBackground(Color.lightGray);
         return p;

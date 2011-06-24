@@ -65,7 +65,7 @@ public class LibraryVariantsPage implements Page, ChangeListener {
         return "Variants";
     }
 
-    public Component getView() {
+    public JPanel getView() {
         return panel;
     }
 

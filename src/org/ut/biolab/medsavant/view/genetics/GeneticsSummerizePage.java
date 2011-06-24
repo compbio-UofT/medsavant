@@ -29,13 +29,13 @@ import org.ut.biolab.medsavant.view.subview.Page;
  */
 public class GeneticsSummerizePage implements Page {
 
-    private JComponent panel;
+    private JPanel panel;
 
     public String getName() {
         return "Summary";
     }
 
-    public JComponent getView() {
+    public JPanel getView() {
         if (panel == null) {
             try {
                 setPanel();

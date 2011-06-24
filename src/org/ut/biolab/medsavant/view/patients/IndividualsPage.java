@@ -18,7 +18,7 @@ public class IndividualsPage implements Page {
         return "Individuals";
     }
 
-    public Component getView() {
+    public JPanel getView() {
         return new JPanel();
     }
 

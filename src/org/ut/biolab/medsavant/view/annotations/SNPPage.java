@@ -18,7 +18,7 @@ public class SNPPage implements Page {
         return "SNPs";
     }
 
-    public Component getView() {
+    public JPanel getView() {
         return new JPanel();
     }
 

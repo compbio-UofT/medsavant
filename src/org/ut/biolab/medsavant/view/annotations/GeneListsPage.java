@@ -18,7 +18,7 @@ public class GeneListsPage implements Page {
         return "Gene Lists";
     }
 
-    public Component getView() {
+    public JPanel getView() {
         return new JPanel();
     }
 

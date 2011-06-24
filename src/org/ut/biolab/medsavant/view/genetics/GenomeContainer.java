@@ -31,7 +31,7 @@ public class GenomeContainer extends JPanel {
     public GenomeContainer() {
         this.setLayout(new BorderLayout());
         chrContainer = ViewUtil.createClearPanel();
-        chrContainer.setBorder(ViewUtil.getHugeBorder());
+        chrContainer.setBorder(ViewUtil.getBigBorder());
         chrContainer.setLayout(new BoxLayout(chrContainer,BoxLayout.X_AXIS));
         this.add(chrContainer);
     }

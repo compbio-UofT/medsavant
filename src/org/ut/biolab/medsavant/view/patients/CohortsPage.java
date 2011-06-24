@@ -18,7 +18,7 @@ public class CohortsPage implements Page {
         return "Cohorts";
     }
 
-    public Component getView() {
+    public JPanel getView() {
         return new JPanel();
     }
 

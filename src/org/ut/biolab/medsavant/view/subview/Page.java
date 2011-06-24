@@ -6,6 +6,7 @@
 package org.ut.biolab.medsavant.view.subview;
 
 import java.awt.Component;
+import javax.swing.JPanel;
 
 /**
  *
@@ -15,7 +16,7 @@ public interface Page {
 
     public String getName();
 
-    public Component getView();
+    public JPanel getView();
 
     public Component getBanner();
 

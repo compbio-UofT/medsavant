@@ -22,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -66,7 +67,7 @@ public class ViewUtil {
         return new EmptyBorder(5,5,5,5);
     }
 
-    public static Border getHugeBorder() {
+    public static Border getBigBorder() {
         return new EmptyBorder(10,10,10,10);
     }
     
@@ -180,5 +181,25 @@ public class ViewUtil {
 
     public static String numToString(int num) {
         return NumberFormat.getInstance().format(num);
+    }
+    
+    public static JToggleButton getMenuToggleButton(String title) { //, int num) {
+        
+        JToggleButton button = new JToggleButton(title);
+        
+        if (isMac()) {
+            button.putClientProperty( "JButton.buttonType", "segmentedGradient" );
+            button.putClientProperty( "JButton.segmentPosition", "middle" );
+            
+            /*if (num == -1) {
+                button.putClientProperty( "JButton.segmentPosition", "first" );
+            } else if (num == 1) {
+                button.putClientProperty( "JButton.segmentPosition", "last" );
+            } else {
+                button.putClientProperty( "JButton.segmentPosition", "middle" );
+            }*/
+        }
+        
+        return button;
     }
 }

@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
-import org.ut.biolab.medsavant.view.SessionView;
+import org.ut.biolab.medsavant.view.OldSessionView;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
@@ -41,7 +41,7 @@ public class Frame extends JFrame implements LoginListener {
     
     private static final String LOGIN_CARD_NAME = "login";
     private static final String SESSION_VIEW_CARD_NAME = "main";
-    private SessionView sessionView;
+    private JPanel sessionView;
     private final JMenuItem logOutItem;
     private LoginView loginView;
     private String currentCard;
@@ -53,7 +53,10 @@ public class Frame extends JFrame implements LoginListener {
         if (loginView != null) {
             view.remove(loginView);
         }
+        
         sessionView = new SessionView();
+        
+        //sessionView = new SessionView();
         view.add(sessionView, SESSION_VIEW_CARD_NAME);
         logOutItem.setEnabled(true);
         BottomBar.getInstance().updateLoginStatus();
