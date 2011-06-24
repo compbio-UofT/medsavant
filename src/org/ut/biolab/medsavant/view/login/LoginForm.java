@@ -84,14 +84,14 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         label_versioninformation = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(30, 100, 30, 100));
+        setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 13));
-        jLabel1.setForeground(new java.awt.Color(51, 51, 51));
         jLabel1.setForeground(new java.awt.Color(51, 51, 51));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Username:");
 
+        field_username.setFont(new java.awt.Font("Lucida Grande", 1, 24)); // NOI18N
         field_username.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_username.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -99,12 +99,12 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             }
         });
 
-        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(51, 51, 51));
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 13));
         jLabel2.setForeground(new java.awt.Color(51, 51, 51));
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("Password:");
 
+        field_password.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
         field_password.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_password.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -126,10 +126,9 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             }
         });
 
-        label_status.setFont(new java.awt.Font("Tahoma", 1, 11));
         label_status.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
 
-        label_programtitle.setFont(new java.awt.Font("Lucida Grande", 1, 48)); // NOI18N
+        label_programtitle.setFont(new java.awt.Font("Tahoma", 1, 48)); // NOI18N
         label_programtitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_programtitle.setText("MedSavant");
 
@@ -140,6 +139,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             }
         });
 
+        label_versioninformation.setFont(new java.awt.Font("Lucida Grande", 1, 18)); // NOI18N
         label_versioninformation.setForeground(new java.awt.Color(102, 102, 102));
         label_versioninformation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_versioninformation.setText("version information");
@@ -151,18 +151,18 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(label_programtitle, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(label_versioninformation, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                    .addComponent(label_programtitle, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+                    .addComponent(label_versioninformation, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(button_login)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE))
+                        .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE))
                     .addComponent(cb_autosignin)
                     .addComponent(cb_rememberpassword)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                    .addComponent(field_username, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                    .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+                    .addComponent(field_username, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+                    .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -187,8 +187,8 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(button_login)
-                    .addComponent(label_status, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(13, Short.MAX_VALUE))
+                    .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -235,7 +235,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
 
     private void loginUsingEnteredUsernameAndPassword() {
         this.label_status.setText("signing in...");
-        this.label_status.setFont(new Font("Tahoma", Font.BOLD, 11));
+        this.label_status.setFont(new Font("Tahoma", Font.BOLD, 14));
         this.label_status.setForeground(Color.black);
         this.button_login.setEnabled(false);
 
@@ -272,7 +272,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             } else if (ex.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_UNKNOWN) {
                 this.label_status.setText("login failure");
             }
-            this.label_status.setFont(new Font("Tahoma", Font.BOLD, 11));
+            this.label_status.setFont(new Font("Tahoma", Font.BOLD, 14));
             this.label_status.setForeground(Color.red);
             this.field_username.requestFocus();
             this.button_login.setEnabled(true);

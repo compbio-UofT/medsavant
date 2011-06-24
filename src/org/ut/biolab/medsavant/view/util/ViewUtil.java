@@ -133,7 +133,7 @@ public class ViewUtil {
     
     public enum OS { Unknown, Windows, Linux, Mac };
     
-    public static OS thisOS = OS.Unknown;
+    private static OS thisOS = OS.Unknown;
     
     public static OS getOS() {
         if (thisOS == OS.Unknown) {
@@ -152,6 +152,10 @@ public class ViewUtil {
         }
         
         return thisOS;
+    }
+    
+    public static boolean isMac() {
+        return getOS() == OS.Mac;
     }
 
     public static String numToString(int num) {

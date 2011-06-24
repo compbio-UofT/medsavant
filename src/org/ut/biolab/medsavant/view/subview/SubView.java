@@ -32,7 +32,7 @@ public abstract class SubView extends JPanel {
 
     private void initPages() {
         Page[] pages = getPages();
-        pane = new JTabbedPane(JTabbedPane.LEFT);
+        pane = new JTabbedPane(JTabbedPane.TOP);
         for (Page p : pages) {
             pane.addTab(p.getName(), p.getView());
         }

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.images;
+package org.ut.biolab.medsavant.controller;
 
 import javax.swing.ImageIcon;
 

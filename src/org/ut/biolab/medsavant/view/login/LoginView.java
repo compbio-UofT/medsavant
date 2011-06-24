@@ -11,6 +11,7 @@ import java.awt.Graphics2D;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.view.util.PaintUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -39,13 +40,8 @@ public class LoginView extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
         
-        g2.setColor(Color.white);
-        g2.fillRect(0, 0, this.getWidth(), this.getHeight());
-        
-        //GradientPaint p = new GradientPaint(0, 0, Color.darkGray, 0, this.getHeight(), Color.black);
-        //g2.setPaint(p);
-        //g2.fillRect(0, 0, this.getWidth(), this.getHeight());
+        PaintUtil.paintSky(g,this);
+ 
     }
 }

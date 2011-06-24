@@ -39,7 +39,7 @@ public class ChartContainer extends JPanel {
                 JPanel p = new ChartPanel();
                 p.setPreferredSize(new Dimension(800, 230));
                 p.setMaximumSize(new Dimension(800, 230));
-                p.setBorder(ViewUtil.getTinyLineBorder());
+                //p.setBorder(ViewUtil.getTinyLineBorder());
                 addChart(p);
             }
         });

@@ -5,17 +5,20 @@
 
 package org.ut.biolab.medsavant.view;
 
+import org.ut.biolab.medsavant.view.util.ComponentUtil;
 import org.ut.biolab.medsavant.model.event.SectionChangedEvent;
 import java.awt.Color;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.Graphics;
 import javax.swing.JTabbedPane;
 import org.ut.biolab.medsavant.model.event.SectionChangedEventListener;
 import org.ut.biolab.medsavant.view.annotations.AnnotationsSubView;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSubView;
 import org.ut.biolab.medsavant.view.patients.PatientsSubView;
 import org.ut.biolab.medsavant.view.subview.SubView;
+import org.ut.biolab.medsavant.view.util.PaintUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -30,7 +33,7 @@ public class SessionView extends JPanel implements SectionChangedEventListener {
    // private SplitView splitView;
 
     public SessionView() {
-        this.setBackground(ViewUtil.getDarkColor());
+        //this.setBackground(ViewUtil.getDarkColor());
         init();
     }
 
@@ -46,9 +49,9 @@ public class SessionView extends JPanel implements SectionChangedEventListener {
     }
 
     private void initViewContainer() {
-        panes = new JTabbedPane(JTabbedPane.TOP);
+        panes = ComponentUtil.getH1TabbedPane();
         panes.setBorder(ViewUtil.getSmallBorder());
-        panes.setFont(new Font("Arial", Font.BOLD, 12));
+        //panes.setFont(new Font("Arial", Font.BOLD, 12));
         this.add(panes, BorderLayout.CENTER);
         //splitView = new SplitView();
         //splitView.addSectionChangedListener(this);
@@ -72,5 +75,9 @@ public class SessionView extends JPanel implements SectionChangedEventListener {
 
     public void sectionChangedEventReceived(SectionChangedEvent e) {
         //System.out.println("View received section changed to " + e.getSection());
+    }
+    
+    public void paintComponent(Graphics g) {
+        PaintUtil.paintSky(g, this);
     }
 }

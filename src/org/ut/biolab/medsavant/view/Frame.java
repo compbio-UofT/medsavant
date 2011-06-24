@@ -128,7 +128,9 @@ public class Frame extends JFrame implements LoginListener {
         
         menu.add(viewMenu);
 
-        this.add(menu, BorderLayout.NORTH);
+        //this.add(menu, BorderLayout.NORTH);
+        
+        setJMenuBar(menu);
 
         this.add(BottomBar.getInstance(),BorderLayout.SOUTH);
 
