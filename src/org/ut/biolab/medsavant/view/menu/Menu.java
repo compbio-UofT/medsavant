@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-class Menu extends JPanel implements SelectionListener {
+class Menu extends JPanel implements MenuItemSelected {
 
     public static class MenuItem extends JPanel {
 
@@ -36,7 +36,7 @@ class Menu extends JPanel implements SelectionListener {
         private boolean isSelected = false;
         private final SubSectionView view;
         private final JLabel l;
-        private final ArrayList<SelectionListener> listeners;
+        private final ArrayList<MenuItemSelected> listeners;
 
         public boolean isIsSelected() {
             return isSelected;
@@ -44,7 +44,7 @@ class Menu extends JPanel implements SelectionListener {
 
         public MenuItem(SubSectionView v) {
             this.view = v;
-            listeners = new ArrayList<SelectionListener>();
+            listeners = new ArrayList<MenuItemSelected>();
             this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
             this.setBorder(ViewUtil.getMenuItemBorder());
             //this.setBackground(Color.red);
@@ -93,7 +93,7 @@ class Menu extends JPanel implements SelectionListener {
 
             if (repaint) {
                 if (isHovering()) {
-                    l.setForeground(Color.blue);
+                    l.setForeground(Color.black);
                 } else {
                     if (!isSelected()) {
                         l.setForeground(Color.darkGray);
@@ -109,7 +109,7 @@ class Menu extends JPanel implements SelectionListener {
 
             if (repaint) {
                 if (isPressed()) {
-                    l.setForeground(Color.blue);
+                    l.setForeground(Color.black);
                 } else {
                     if (!isSelected()) {
                         l.setForeground(Color.darkGray);
@@ -124,10 +124,11 @@ class Menu extends JPanel implements SelectionListener {
             this.isSelected = b;
             if (repaint) {
                 if (isSelected()) {
-                    for (SelectionListener lis : listeners) {
+                    ViewController.getInstance().changeSubSectionTo(this.view);
+                    for (MenuItemSelected lis : listeners) {
                         lis.itemSelected(this);
                     }
-                    l.setForeground(Color.blue);
+                    l.setForeground(Color.black);
                 } else {
                     l.setForeground(Color.darkGray);
                 }
@@ -169,7 +170,7 @@ class Menu extends JPanel implements SelectionListener {
         }
          * 
          */
-        private void addSelectionListener(SelectionListener l) {
+        private void addSelectionListener(MenuItemSelected l) {
             listeners.add(l);
         }
 
@@ -178,7 +179,7 @@ class Menu extends JPanel implements SelectionListener {
         }
     }
 
-    private static class MenuItemGroup implements SelectionListener {
+    private static class MenuItemGroup implements MenuItemSelected {
 
         private final ArrayList<MenuItem> group;
         private MenuItem lastSelected;
@@ -239,7 +240,6 @@ class Menu extends JPanel implements SelectionListener {
     }
     
     private void setContentTo(SubSectionView v) {
-        this.
         contentContainer.removeAll();
         contentContainer.add(v.getView(), BorderLayout.CENTER);
         contentContainer.updateUI();

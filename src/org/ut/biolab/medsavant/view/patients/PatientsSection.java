@@ -6,8 +6,8 @@
 package org.ut.biolab.medsavant.view.patients;
 
 import java.awt.Component;
+import javax.swing.JButton;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
@@ -17,6 +17,8 @@ import org.ut.biolab.medsavant.view.subview.SectionView;
  */
 public class PatientsSection extends SectionView {
 
+    
+    
     @Override
     public String getName() {
         return "Patients";
@@ -25,8 +27,8 @@ public class PatientsSection extends SectionView {
     @Override
     public SubSectionView[] getSubSections() {
         SubSectionView[] pages = new SubSectionView[2];
-        pages[0] = new IndividualsPage();
-        pages[1] = new CohortsPage();
+        pages[0] = new IndividualsPage(this);
+        pages[1] = new CohortsPage(this);
         return pages;
     }
 
@@ -36,8 +38,10 @@ public class PatientsSection extends SectionView {
     }
 
     @Override
-    public Component getBanner() {
-        return null;
+    public Component[] getBanner() {
+        Component[] cs = new Component[1];
+        cs[0] = new JButton("Blah");
+        return cs;
     }
-
+    
 }

@@ -10,9 +10,15 @@ import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
@@ -21,6 +27,8 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.images.ImagePanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -39,11 +47,12 @@ public class BottomBar extends JPanel implements FiltersChangedListener{
     }
     private final JLabel statusLabel;
     private final JLabel loginStatusLabel;
+    private final ImagePanel loginImagePanel;
 
     public BottomBar() {
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        this.setBorder(ViewUtil.getMediumBorder());
-        this.setPreferredSize(new Dimension(20,20));
+        this.setBorder(ViewUtil.getSmallBorder());
+        this.setPreferredSize(new Dimension(25,25));
 
         loginStatusLabel = new JLabel();
 
@@ -51,10 +60,17 @@ public class BottomBar extends JPanel implements FiltersChangedListener{
         statusLabel = new JLabel("");
         statusLabel.setFont(ViewUtil.getMediumTitleFont());
         
+        ImageIcon im = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOGGED_IN);
+        
+        loginImagePanel = new ImagePanel(im.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH),15,15);
+        this.add(loginImagePanel);
+        this.add(ViewUtil.getSmallSeparator());
         this.add(loginStatusLabel);
         this.add(Box.createHorizontalGlue());
         this.add(statusLabel);
         this.add(Box.createHorizontalGlue());
+        
+        updateLoginStatus();
 
         FilterController.addFilterListener(this);
     }
@@ -72,9 +88,15 @@ public class BottomBar extends JPanel implements FiltersChangedListener{
 
     public void updateLoginStatus() {
         if (LoginController.isLoggedIn()) {
+            
             this.loginStatusLabel.setText("Signed in as " + LoginController.getUsername());
+            loginStatusLabel.setToolTipText("Signed in since: " + (new SimpleDateFormat()).format((new Date())));
+            loginImagePanel.setVisible(true);
+        
         } else {
             this.loginStatusLabel.setText("Not signed in");
+            loginStatusLabel.setToolTipText(null);
+             loginImagePanel.setVisible(false);
         }
     } 
 

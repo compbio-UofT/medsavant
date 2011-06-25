@@ -6,12 +6,16 @@ package org.ut.biolab.medsavant.view.menu;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.subview.SectionView;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -26,6 +30,10 @@ public class ViewController extends JPanel {
     private SidePanel leftPanel;
     private Menu menu;
     private JPanel contentContainer;
+
+    void changeSubSectionTo(SubSectionView view) {
+        this.sectionHeader.setSubSection(view);
+    }
 
     private static class SidePanel extends JPanel {
 
@@ -56,19 +64,73 @@ public class ViewController extends JPanel {
 
     private static class SectionHeader extends JPanel {
 
+        private final JLabel title;
+        private final JPanel sectionMenuPanel;
+        private final JPanel subSectionMenuPanel;
+
         public SectionHeader() {
             this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
-            this.add(ViewUtil.getTitleLabel("Section Header"));
+            this.setBorder(null);
+            
+            this.setBorder(ViewUtil.getMediumSideBorder());
+            title = ViewUtil.getHeaderLabel(" ");
+            this.add(title);
+            sectionMenuPanel = ViewUtil.createClearPanel();
+            subSectionMenuPanel = ViewUtil.createClearPanel();
+            
+            sectionMenuPanel.setLayout(new BoxLayout(sectionMenuPanel,BoxLayout.X_AXIS));
+            subSectionMenuPanel.setLayout(new BoxLayout(subSectionMenuPanel,BoxLayout.X_AXIS));
+            
+            this.add(Box.createHorizontalGlue());
+            this.add(subSectionMenuPanel);
+            this.add(ViewUtil.getMediumSeparator()); 
+            this.add(sectionMenuPanel);
+            
         }
         
         public void paintComponent(Graphics g) {
             PaintUtil.paintLightMenu(g, this);
         }
-    }
 
+        private void setTitle(String sectionName, String subsectionName) {
+            title.setText(sectionName.toUpperCase() + " › " + subsectionName);
+        }
+
+        private void setSubSection(SubSectionView view) {
+            setTitle(view.getParent().getName(),view.getName());
+            
+            subSectionMenuPanel.removeAll();
+            sectionMenuPanel.removeAll();
+            
+            Component[] subsectionBanner = view.getBanner();
+            Component[] sectionBanner = view.getParent().getBanner();
+            
+            if (subsectionBanner != null) {
+                for (Component c : subsectionBanner)
+                    subSectionMenuPanel.add(c);
+            }
+            if (sectionBanner != null) {
+                for (Component c : sectionBanner)
+                    sectionMenuPanel.add(c);
+            }
+        }
+        
+        
+    }
+    
+    private static ViewController instance;
+
+    public static ViewController getInstance() {
+        if (instance == null) {
+            instance = new ViewController();
+        }
+        return instance;
+    }
+    
     public ViewController() {
         initUI();
     }
+    
 
     private void initUI() {
         this.setLayout(new BorderLayout());
@@ -80,7 +142,7 @@ public class ViewController extends JPanel {
         
         // create the section header
         sectionHeader = new SectionHeader();
-        h1.add(sectionHeader, BorderLayout.CENTER);
+        h1.add(sectionHeader, BorderLayout.NORTH);
         
         // create the content container
         contentContainer = new JPanel();

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.view.subview;
+package org.ut.biolab.medsavant.view.subview.old;
 
 import java.awt.event.ActionEvent;
 import fiume.table.SearchableTablePanel;
@@ -26,18 +26,23 @@ import org.ut.biolab.medsavant.model.record.FileRecord;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.util.view.PeekingPanel;
+import org.ut.biolab.medsavant.view.subview.SectionView;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
  * @author mfiume
  */
-public class LibraryVariantsPage implements SubSectionView, ChangeListener {
+public class LibraryVariantsPage { 
+/* extends SubSectionView implements ChangeListener {
     private final JPanel panel;
     private final SearchableTablePanel stp;
 
 
-  public LibraryVariantsPage() {
+  public LibraryVariantsPage(SectionView parent) {
+      super(parent);
+      
       panel = new JPanel();
       panel.setLayout(new BorderLayout());
 
@@ -69,7 +74,7 @@ public class LibraryVariantsPage implements SubSectionView, ChangeListener {
         return panel;
     }
 
-    public Component getBanner() {
+    public Component[] getBanner() {
         JPanel p = ViewUtil.createClearPanel();
         p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
         p.add(Box.createHorizontalGlue());
@@ -138,4 +143,6 @@ public class LibraryVariantsPage implements SubSectionView, ChangeListener {
         updateLibrary();
     }
 
+     * 
+     */
 }

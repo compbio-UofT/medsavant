@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.controller;
+package org.ut.biolab.medsavant.view.images;
 
 import javax.swing.ImageIcon;
 
@@ -16,7 +16,6 @@ public class IconFactory {
     static IconFactory instance;
 
     public IconFactory() {
-        instance = this;
     }
 
     public static IconFactory getInstance() {
@@ -33,9 +32,11 @@ public class IconFactory {
     public enum StandardIcon { 
         FILTER,
         RESULTS,
-        CHART};
+        CHART,
+        LOGGED_IN
+    };
 
-    private static final String iconroot = "/org/ut/biolab/medsavant/images/icon/";
+    private static final String iconroot = "/org/ut/biolab/medsavant/view/images/icon/";
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch(icon) {
@@ -45,6 +46,8 @@ public class IconFactory {
                 return getIcon(iconroot + "results.png");
             case CHART:
                 return getIcon(iconroot + "chart.png");
+            case LOGGED_IN:
+                return getIcon(iconroot + "loggedin.png");
             default:
                 return null;
         }

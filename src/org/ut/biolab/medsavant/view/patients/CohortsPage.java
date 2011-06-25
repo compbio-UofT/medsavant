@@ -6,14 +6,17 @@ package org.ut.biolab.medsavant.view.patients;
 
 import java.awt.Component;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
 /**
  *
  * @author mfiume
  */
-public class CohortsPage implements SubSectionView {
+public class CohortsPage extends SubSectionView {
 
+    public CohortsPage(SectionView parent) { super(parent); }
+    
     public String getName() {
         return "Cohorts";
     }
@@ -21,9 +24,4 @@ public class CohortsPage implements SubSectionView {
     public JPanel getView() {
         return new JPanel();
     }
-
-    public Component getBanner() {
-        return new JPanel();
-    }
-    
 }

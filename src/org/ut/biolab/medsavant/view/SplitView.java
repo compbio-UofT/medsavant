@@ -113,7 +113,7 @@ public class SplitView extends JPanel {
         b.setAlignmentX(0F);
         bg.add(b);
         left.add(b);
-        bannerCard.add(view.getBanner(), subsectionName);
+        //bannerCard.add(view.getBanner(), subsectionName);
         pageCard.add(view.getView(),subsectionName);
         b.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {

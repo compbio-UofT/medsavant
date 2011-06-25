@@ -9,7 +9,6 @@ import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.annotations.AnnotationsSection;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
-import org.ut.biolab.medsavant.view.menu.SectionNavigator;
 import org.ut.biolab.medsavant.view.menu.ViewController;
 import org.ut.biolab.medsavant.view.patients.PatientsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -34,7 +33,7 @@ public class LoggedInView extends JPanel {
     }
 
     private void initViewContainer() {
-        viewController = new ViewController();
+        viewController = ViewController.getInstance();
         this.add(viewController,BorderLayout.CENTER);
     }
     

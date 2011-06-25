@@ -26,8 +26,9 @@ import org.ut.biolab.medsavant.model.Range;
  *
  * @author mfiume
  */
-public class BasicQuery {
+public class QueryUtil {
 
+    
     public static List<String> getDistinctValuesForColumn(Connection conn, TableSchema t, DbColumn col) throws SQLException {
 
         if (t.isNumeric(t.getColumnType(t.getColumnIndex(col)))) {

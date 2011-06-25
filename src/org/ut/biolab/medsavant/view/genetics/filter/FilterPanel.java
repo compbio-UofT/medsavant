@@ -34,7 +34,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.ut.biolab.medsavant.db.BasicQuery;
+import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.Database;
 import org.ut.biolab.medsavant.db.table.TableSchema;
@@ -185,7 +185,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             boolean isBoolean = TableSchema.isBoolean(table.getColumnType(col));
 
             if (isNumeric) {
-                Range extremeValues = BasicQuery.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
+                Range extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
 
                 JPanel container = new JPanel();
                 container.setBorder(ViewUtil.getMediumBorder());
@@ -420,7 +420,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
                 Connection conn = ConnectionController.connect();
            
-                List<String> uniq = BasicQuery.getDistinctValuesForColumn(conn, table, col);
+                List<String> uniq = QueryUtil.getDistinctValuesForColumn(conn, table, col);
 
                 JPanel container = new JPanel();
                 container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));

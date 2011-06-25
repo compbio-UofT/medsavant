@@ -6,18 +6,30 @@
 package org.ut.biolab.medsavant.view.subview;
 
 import java.awt.Component;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
  * @author mfiume
  */
-public interface SubSectionView {
+public abstract class SubSectionView {
 
-    public String getName();
+    private SectionView parent;
 
-    public JPanel getView();
+    
+    public SubSectionView(SectionView parent) {
+        this.parent = parent;
+    }
+    
+    public abstract String getName();
 
-    public Component getBanner();
+    public abstract JPanel getView();
 
+    public Component[] getBanner() { return null; }
+
+    public SectionView getParent() {
+        return this.parent;
+    }
 }

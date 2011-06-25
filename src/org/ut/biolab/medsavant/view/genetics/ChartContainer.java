@@ -29,27 +29,16 @@ public class ChartContainer extends JPanel {
 
     private JPanel container;
 
+    public void addChart() {
+        JPanel p = new ChartPanel();
+        p.setPreferredSize(new Dimension(800, 230));
+        p.setMaximumSize(new Dimension(800, 230));
+        //p.setBorder(ViewUtil.getTinyLineBorder());
+        container.add(p);
+    }
+
     public ChartContainer() {
         this.setLayout(new BorderLayout());
-        JPanel title = new JPanel();/* {
-            public void paintComponent(Graphics g) {
-                PaintUtil.paintDarkMenu(g, this);
-            }
-        };*/
-        title.add(Box.createHorizontalGlue());
-        JButton addButton = new JButton("Add chart");
-        addButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                JPanel p = new ChartPanel();
-                p.setPreferredSize(new Dimension(800, 230));
-                p.setMaximumSize(new Dimension(800, 230));
-                //p.setBorder(ViewUtil.getTinyLineBorder());
-                addChart(p);
-            }
-        });
-        title.add(addButton);
-        this.add(title, BorderLayout.NORTH);
         container = ViewUtil.createClearPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         JScrollPane sp = (JScrollPane) ViewUtil.clear(new JScrollPane(container));
@@ -62,15 +51,12 @@ public class ChartContainer extends JPanel {
     /*
     @Override
     public void paintComponent(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        GradientPaint p = new GradientPaint(0, 0, Color.darkGray, 0, this.getHeight(), Color.black);
-        g2.setPaint(p);
-        g2.fillRect(0, 0, this.getWidth(), this.getHeight());
+    Graphics2D g2 = (Graphics2D) g;
+    GradientPaint p = new GradientPaint(0, 0, Color.darkGray, 0, this.getHeight(), Color.black);
+    g2.setPaint(p);
+    g2.fillRect(0, 0, this.getWidth(), this.getHeight());
     }
      * 
      */
 
-    private void addChart(Component p) {
-        container.add(p);
-    }
 }

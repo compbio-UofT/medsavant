@@ -11,7 +11,7 @@ import org.ut.biolab.medsavant.view.menu.Menu.MenuItem;
  *
  * @author mfiume
  */
-interface SelectionListener {
+interface MenuItemSelected {
 
     public void itemSelected(MenuItem mi);
 }

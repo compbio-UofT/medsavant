@@ -5,9 +5,7 @@
 
 package org.ut.biolab.medsavant.view.annotations;
 
-import java.awt.Component;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
@@ -25,8 +23,8 @@ public class AnnotationsSection extends SectionView {
     @Override
     public SubSectionView[] getSubSections() {
         SubSectionView[] pages = new SubSectionView[2];
-        pages[0] = new GeneListsPage();
-        pages[1] = new SNPPage();
+        pages[0] = new GeneListsPage(this);
+        pages[1] = new SNPPage(this);
         return pages;
     }
 
@@ -34,10 +32,4 @@ public class AnnotationsSection extends SectionView {
     public JPanel[] getPersistentPanels() {
         return null;
     }
-
-    @Override
-    public Component getBanner() {
-        return null;
-    }
-
 }

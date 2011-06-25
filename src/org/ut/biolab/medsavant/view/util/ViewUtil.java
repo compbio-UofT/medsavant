@@ -110,8 +110,16 @@ public class ViewUtil {
         return p;
     }
 
+    public static Component getSmallSeparator() {
+        return Box.createHorizontalStrut(2);
+    }
+    
     public static Component getMediumSeparator() {
-        return Box.createHorizontalStrut(10);
+        return Box.createHorizontalStrut(5);
+    }
+    
+    public static Component getLargeSeparator() {
+        return Box.createHorizontalStrut(15);
     }
 
     public static Component getSmallVerticalSeparator() {
@@ -164,6 +172,13 @@ public class ViewUtil {
         return l;
     }
     
+    public static JLabel getHeaderLabel(String str) {
+        JLabel l = new JLabel(str);
+        l.setFont(new Font(getDefaultFontFamily(),Font.PLAIN,15));
+        l.setForeground(Color.black);
+        return l;
+    }
+    
     public static JLabel getMenuSectionLabel(String string) {
         JLabel l = new JLabel(string.toUpperCase());
         l.setFont(new Font(l.getFont().getFamily(),Font.BOLD,14));
@@ -197,6 +212,10 @@ public class ViewUtil {
         aligned.add(c);
         aligned.add(Box.createHorizontalGlue());
         return aligned;
+    }
+
+    public static Border getMediumSideBorder() {
+        return BorderFactory.createEmptyBorder(0, 5, 0, 5);
     }
     
     public enum OS { Unknown, Windows, Linux, Mac };

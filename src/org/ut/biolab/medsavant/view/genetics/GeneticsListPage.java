@@ -11,6 +11,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
@@ -18,10 +19,13 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  *
  * @author mfiume
  */
-public class GeneticsListPage implements SubSectionView {
+public class GeneticsListPage extends SubSectionView {
 
     private JPanel panel;
 
+    public GeneticsListPage(SectionView parent) { super(parent); }
+
+    
     public String getName() {
         return "List";
     }
@@ -39,17 +43,4 @@ public class GeneticsListPage implements SubSectionView {
         panel.add(new TablePanel(), BorderLayout.CENTER);
     }
 
-    public Component getBanner() {
-        JPanel p = ViewUtil.createClearPanel();
-        p.add(Box.createHorizontalGlue());
-        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
-        p.add(new JButton("Save Result Set"));
-        p.add(new JButton("Show in Savant"));
-        p.add(Box.createHorizontalStrut(10));
-        //JTextField jtf = new JTextField("Search library");
-        //jtf.setMaximumSize(new Dimension(200,999));
-        //jtf.setColumns(30);
-        //p.add(jtf);
-        return p;
-    }
 }

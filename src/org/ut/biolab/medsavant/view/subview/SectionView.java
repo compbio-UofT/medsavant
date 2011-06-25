@@ -16,6 +16,7 @@ import javax.swing.JTabbedPane;
  * @author mfiume
  */
 public abstract class SectionView {
+    
     private JTabbedPane pane;
 
     public abstract String getName();
@@ -24,7 +25,7 @@ public abstract class SectionView {
 
     public abstract JPanel[] getPersistentPanels();
 
-    public abstract Component getBanner();
+    public Component[] getBanner() { return null; }
 
     /*
     private void initPages() {

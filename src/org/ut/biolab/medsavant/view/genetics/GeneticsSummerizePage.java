@@ -6,6 +6,9 @@ package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -21,15 +24,19 @@ import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.util.view.PeekingPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
+import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
 /**
  *
  * @author mfiume
  */
-public class GeneticsSummerizePage implements SubSectionView {
+public class GeneticsSummerizePage extends SubSectionView {
 
     private JPanel panel;
+    private ChartContainer cc;
+    
+    public GeneticsSummerizePage(SectionView parent) { super(parent); }
 
     public String getName() {
         return "Summary";
@@ -84,22 +91,21 @@ public class GeneticsSummerizePage implements SubSectionView {
         PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, false,225);
         //TODO: re-add genome view to panel
 
-        panel.add(new ChartContainer(), BorderLayout.CENTER);
+        
+        cc = new ChartContainer();
+        panel.add(cc, BorderLayout.CENTER);
     }
-
     
+    public Component[] getBanner() {
+        Component[] cs = new Component[1];
+        JButton addButton = new JButton("Add chart");
+        addButton.addActionListener(new ActionListener() {
 
-    public Component getBanner() {
-        JPanel p = ViewUtil.createClearPanel();
-        p.add(Box.createHorizontalGlue());
-        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
-        p.add(new JButton("Save Result Set"));
-        p.add(new JButton("Show in Savant"));
-        p.add(Box.createHorizontalStrut(10));
-        //JTextField jtf = new JTextField("Search library");
-        //jtf.setMaximumSize(new Dimension(200,999));
-        //jtf.setColumns(30);
-        //p.add(jtf);
-        return p;
+            public void actionPerformed(ActionEvent e) {
+                cc.addChart();
+            }
+        });
+        cs[0] = addButton;
+        return cs;
     }
 }

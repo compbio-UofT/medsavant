@@ -7,6 +7,7 @@ package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,8 +41,8 @@ public class GeneticsSection extends SectionView {
     @Override
     public SubSectionView[] getSubSections() {
         SubSectionView[] pages = new SubSectionView[2];
-        pages[0] = new GeneticsSummerizePage();
-        pages[1] = new GeneticsListPage();
+        pages[0] = new GeneticsSummerizePage(this);
+        pages[1] = new GeneticsListPage(this);
         return pages;
     }
 
@@ -58,12 +59,12 @@ public class GeneticsSection extends SectionView {
     }
 
     public JButton createVcfButton(){
-        JButton button = new JButton("Add VCF");
+        JButton button = new JButton("Import Variants");
 
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fc = new JFileChooser();
-                fc.setDialogTitle("Add VCF");
+                fc.setDialogTitle("Import Variants");
                 fc.setDialogType(JFileChooser.OPEN_DIALOG);
                 fc.addChoosableFileFilter(new ExtensionFileFilter("vcf"));
                 int result = fc.showDialog(null, null);
@@ -83,21 +84,15 @@ public class GeneticsSection extends SectionView {
     }
 
     @Override
-    public Component getBanner() {
-        JPanel p = new JPanel() {
-            public void paintComponent(Graphics g) {
-                PaintUtil.paintDarkMenu(g, this);
-            }
-        };
-        p.setBackground(Color.red);
-        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
-       // p.add(Box.createHorizontalStrut(10));
-        //p.add(new JButton("Add VCF"));
-        p.add(createVcfButton());
-        p.add(Box.createHorizontalGlue());
-        //p.add(new JButton("Show in Savant"));
-        p.add(Box.createHorizontalStrut(10));
-        return p;
+    public Component[] getBanner() {
+
+        Component[] result = new Component[3];
+        
+        result[0] = new JButton("Save Result Set");
+        result[1] = new JButton("Show in Savant");
+        result[2] = createVcfButton();
+        
+        return result;
     }
 
 }
