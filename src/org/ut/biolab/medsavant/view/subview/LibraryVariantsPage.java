@@ -32,7 +32,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class LibraryVariantsPage implements Page, ChangeListener {
+public class LibraryVariantsPage implements SubSectionView, ChangeListener {
     private final JPanel panel;
     private final SearchableTablePanel stp;
 

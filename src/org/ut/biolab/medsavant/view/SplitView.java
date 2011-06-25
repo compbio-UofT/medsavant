@@ -28,7 +28,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.model.event.SectionChangedEventListener;
-import org.ut.biolab.medsavant.view.subview.Page;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -106,7 +106,7 @@ public class SplitView extends JPanel {
         }
     }
 
-    public void addSubsection(final String subsectionName, Page view) {
+    public void addSubsection(final String subsectionName, SubSectionView view) {
         JRadioButton b = (JRadioButton) ViewUtil.clear(new JRadioButton(subsectionName));
         b.setFont(new Font("Arial", Font.PLAIN, 14));
         b.setForeground(Color.darkGray);

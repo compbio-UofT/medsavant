@@ -15,25 +15,22 @@ import javax.swing.JTabbedPane;
  *
  * @author mfiume
  */
-public abstract class SubView extends JPanel {
+public abstract class SectionView {
     private JTabbedPane pane;
-
-    public SubView() {
-        initPages();
-    }
 
     public abstract String getName();
 
-    public abstract Page[] getPages();
+    public abstract SubSectionView[] getSubSections();
 
     public abstract JPanel[] getPersistentPanels();
 
     public abstract Component getBanner();
 
+    /*
     private void initPages() {
-        Page[] pages = getPages();
+        SubSectionView[] pages = getSubSections();
         pane = new JTabbedPane(JTabbedPane.TOP);
-        for (Page p : pages) {
+        for (SubSectionView p : pages) {
             pane.addTab(p.getName(), p.getView());
         }
 
@@ -64,7 +61,8 @@ public abstract class SubView extends JPanel {
         if(banner != null){
             this.add(banner, BorderLayout.NORTH);
         }
-
     }
+     * 
+     */
 
 }

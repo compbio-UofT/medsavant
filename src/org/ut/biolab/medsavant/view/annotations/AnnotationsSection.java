@@ -3,30 +3,30 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.view.patients;
+package org.ut.biolab.medsavant.view.annotations;
 
 import java.awt.Component;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
-import org.ut.biolab.medsavant.view.subview.Page;
-import org.ut.biolab.medsavant.view.subview.SubView;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.view.subview.SectionView;
 
 /**
  *
  * @author mfiume
  */
-public class PatientsSubView extends SubView {
+public class AnnotationsSection extends SectionView {
 
     @Override
     public String getName() {
-        return "Patients";
+        return "Annotations";
     }
 
     @Override
-    public Page[] getPages() {
-        Page[] pages = new Page[2];
-        pages[0] = new IndividualsPage();
-        pages[1] = new CohortsPage();
+    public SubSectionView[] getSubSections() {
+        SubSectionView[] pages = new SubSectionView[2];
+        pages[0] = new GeneListsPage();
+        pages[1] = new SNPPage();
         return pages;
     }
 

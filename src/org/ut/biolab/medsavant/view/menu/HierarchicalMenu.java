@@ -23,6 +23,8 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import org.ut.biolab.medsavant.view.subview.SectionView;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -30,68 +32,90 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-class DualMenu extends JPanel {
+class HierarchicalMenu extends JPanel {
 
     private final JPanel container;
-    private JPanel secondLevelMenu;
-    private JPanel firstLevelMenu;
-    private final Map<String, DualTab> tabMap;
+    private JPanel level2MenuContainer;
+    private JPanel level1MenuContainer;
+    private final Map<String, SectionView> tabMap;
     private JPanel currentPanel;
-    private final TreeMap<String, JToggleButton[]> secondLevelComponentMap;
+    private final TreeMap<String, JToggleButton[]> level2ComponentMap;
     private ButtonGroup firstLevelButtonGroup;
-    private JComboBox sectionDropDown;
+    private JComboBox level1Dropdown;
 
-    public DualMenu(JPanel container) {
+    public HierarchicalMenu(JPanel container) {
         this.container = container;
-        this.tabMap = new TreeMap<String, DualTab>();
-        this.secondLevelComponentMap = new TreeMap<String, JToggleButton[]>();
+        this.tabMap = new TreeMap<String, SectionView>();
+        this.level2ComponentMap = new TreeMap<String, JToggleButton[]>();
 
         initGUI();
     }
 
     private void initGUI() {
         this.setLayout(new BorderLayout());
-        firstLevelMenu = ViewUtil.createClearPanel();
-        firstLevelMenu.setLayout(new BoxLayout(firstLevelMenu, BoxLayout.X_AXIS));
+        level1MenuContainer = ViewUtil.createClearPanel();
+        level1MenuContainer.setLayout(new BoxLayout(level1MenuContainer, BoxLayout.X_AXIS));
         
-        sectionDropDown = new JComboBox();
-        sectionDropDown.setMaximumSize(new Dimension(200,50));
-        sectionDropDown.addActionListener(new ActionListener() {
+        level1Dropdown = new JComboBox();
+        level1Dropdown.setMaximumSize(new Dimension(200,50));
+        level1Dropdown.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 changeSection((String) ((JComboBox) e.getSource()).getSelectedItem());
             }
             
         });
-        firstLevelMenu.add(sectionDropDown);
+        level1MenuContainer.add(level1Dropdown);
         
-        secondLevelMenu = ViewUtil.createClearPanel();
-        secondLevelMenu.setLayout(new BoxLayout(secondLevelMenu, BoxLayout.X_AXIS));
+        level2MenuContainer = ViewUtil.createClearPanel();
+        level2MenuContainer.setLayout(new BoxLayout(level2MenuContainer, BoxLayout.X_AXIS));
         
-        TopMenuPanel top = new TopMenuPanel(); top.add(firstLevelMenu); top.add(secondLevelMenu);
-        //BottomMenuPanel bottom = new BottomMenuPanel(); bottom.add(secondLevelMenu);
+        JPanel menuPanel = ViewUtil.getBannerPanel();
+        menuPanel.add(level1MenuContainer);
+        menuPanel.add(level2MenuContainer);
         
-        this.add(top,BorderLayout.NORTH);
-        //this.add(Box.createHorizontalStrut(30));
-        //this.add(bottom,BorderLayout.SOUTH);
-        
-        //this.add(Box.createHorizontalGlue());
+        this.add(menuPanel,BorderLayout.NORTH);
         firstLevelButtonGroup = new ButtonGroup();
     }
 
-    class TopMenuPanel extends JPanel {
-        public TopMenuPanel() { this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS)); }
+    public void addSection(SectionView section) {
+        addToFirstLevelMenu(section);
+        tabMap.put(section.getName(), section);
+        level2ComponentMap.put(section.getName(), getSecondLevelComponents(section.getSubSections()));
+    }
+
+    private JToggleButton[] getSecondLevelComponents(SubSectionView[] subSections) {
+        JToggleButton[] components = new JToggleButton[subSections.length];
+        int i = 0;
+        for (final SubSectionView t : subSections) {
+            JToggleButton c = new JToggleButton(t.getName());
+            c.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    showPanelForTab(t);
+                }
+            });
+
+            components[i++] = c;
+        }
+        return components;
+    }
+
+    class MenuPanel extends JPanel {
+        public MenuPanel() { this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS)); }
         public void paintComponent(Graphics g) {
             PaintUtil.paintLightMenu(g, this);
         }
     }
     
+    /*
     class BottomMenuPanel extends JPanel {
         public BottomMenuPanel() { this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS)); }
         public void paintComponent(Graphics g) {
             PaintUtil.paintDarkMenu(g, this);
         }
     }
+     */
     
     /*
     public void paintComponent(Graphics g) {
@@ -100,31 +124,32 @@ class DualMenu extends JPanel {
      * 
      */
 
-    public void addDualTab(DualTab tab) {
+    /*
+    public void addDualTab(Level1Section tab) {
         addToFirstLevelMenu(tab);
         tabMap.put(tab.getName(), tab);
-        secondLevelComponentMap.put(tab.getName(), getSecondLevelComponents(tab));
+        level2ComponentMap.put(tab.getName(), getSecondLevelComponents(tab));
     }
+     * 
+     */
 
     public void changeSection(String sectionName) {
-        System.out.println("Changing section to : " + sectionName);
-        
-        if (secondLevelComponentMap.get(sectionName) == null) { return; }
-        secondLevelMenu.removeAll();
+        if (level2ComponentMap.get(sectionName) == null) { return; }
+        level2MenuContainer.removeAll();
         ButtonGroup bg = new ButtonGroup();
-        for (JToggleButton button : secondLevelComponentMap.get(sectionName)) {
+        for (JToggleButton button : level2ComponentMap.get(sectionName)) {
             if (ViewUtil.isMac()) {
                 button.putClientProperty( "JButton.buttonType", "segmentedGradient" );
                 button.putClientProperty( "JButton.segmentPosition", "middle" );
                 //button.putClientProperty( "JComponent.sizeVariant", "mini" );
             }
-            secondLevelMenu.add(button);
+            level2MenuContainer.add(button);
             bg.add(button);
         }
-        secondLevelMenu.updateUI();
+        level2MenuContainer.updateUI();
     }
 
-    private void addToFirstLevelMenu(final DualTab tab) {
+    private void addToFirstLevelMenu(SectionView tab) {
 
         /*
         JToggleButton button = ViewUtil.getMenuToggleButton(tab.getName());
@@ -140,15 +165,16 @@ class DualMenu extends JPanel {
         firstLevelMenu.add(button);
          * 
          */
-        sectionDropDown.addItem(tab.getName());
+        level1Dropdown.addItem(tab.getName());
 
         //firstLevelButtonGroup.add(button);
     }
 
-    private JToggleButton[] getSecondLevelComponents(DualTab dt) {
+    /*
+    private JToggleButton[] getSecondLevelComponents(Level1Section dt) {
         JToggleButton[] components = new JToggleButton[dt.getTabs().size()];
         int i = 0;
-        for (final Tab t : dt.getTabs()) {
+        for (final Level2Section t : dt.getTabs()) {
             JToggleButton c = new JToggleButton(t.getName());
             c.addActionListener(new ActionListener() {
 
@@ -161,6 +187,8 @@ class DualMenu extends JPanel {
         }
         return components;
     }
+     * 
+     */
 
     private void showPanel(JPanel panel) {
 
@@ -175,7 +203,7 @@ class DualMenu extends JPanel {
         container.updateUI();
     }
 
-    private void showPanelForTab(Tab t) {
-        showPanel(t.getPanel());
+    private void showPanelForTab(SubSectionView t) {
+        showPanel(t.getView());
     }
 }

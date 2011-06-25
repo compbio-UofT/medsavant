@@ -14,7 +14,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class AnnotationsPage implements Page {
+public class AnnotationsPage implements SubSectionView {
 
     public AnnotationsPage() {
     }

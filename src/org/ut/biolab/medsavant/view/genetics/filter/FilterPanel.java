@@ -48,7 +48,7 @@ import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
-import org.ut.biolab.medsavant.view.subview.Page;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 

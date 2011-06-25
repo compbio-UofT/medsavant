@@ -21,8 +21,8 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.db.DBUtil;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
-import org.ut.biolab.medsavant.view.subview.Page;
-import org.ut.biolab.medsavant.view.subview.SubView;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -30,7 +30,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class GeneticsSubView extends SubView {
+public class GeneticsSection extends SectionView {
 
     @Override
     public String getName() {
@@ -38,8 +38,8 @@ public class GeneticsSubView extends SubView {
     }
 
     @Override
-    public Page[] getPages() {
-        Page[] pages = new Page[2];
+    public SubSectionView[] getSubSections() {
+        SubSectionView[] pages = new SubSectionView[2];
         pages[0] = new GeneticsSummerizePage();
         pages[1] = new GeneticsListPage();
         return pages;
@@ -74,7 +74,7 @@ public class GeneticsSubView extends SubView {
                 try {
                     DBUtil.addVcfToDb(path);
                 } catch (SQLException ex) {
-                    Logger.getLogger(GeneticsSubView.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });

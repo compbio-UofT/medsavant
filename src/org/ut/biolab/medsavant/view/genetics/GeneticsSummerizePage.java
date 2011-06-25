@@ -21,13 +21,13 @@ import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.util.view.PeekingPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
-import org.ut.biolab.medsavant.view.subview.Page;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
 /**
  *
  * @author mfiume
  */
-public class GeneticsSummerizePage implements Page {
+public class GeneticsSummerizePage implements SubSectionView {
 
     private JPanel panel;
 

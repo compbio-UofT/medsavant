@@ -6,13 +6,13 @@ package org.ut.biolab.medsavant.view.annotations;
 
 import java.awt.Component;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.view.subview.Page;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
 /**
  *
  * @author mfiume
  */
-public class GeneListsPage implements Page {
+public class GeneListsPage implements SubSectionView {
 
     public String getName() {
         return "Gene Lists";

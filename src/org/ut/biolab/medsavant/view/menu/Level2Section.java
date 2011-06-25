@@ -10,12 +10,12 @@ import javax.swing.JPanel;
  *
  * @author mfiume
  */
-public class Tab {
+public class Level2Section {
     
     private String name;
     private final JPanel panel;
     
-    public Tab(String name, JPanel panel) {
+    public Level2Section(String name, JPanel panel) {
         this.name = name;
         this.panel = panel;
     }

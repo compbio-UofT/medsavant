@@ -12,13 +12,13 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
-import org.ut.biolab.medsavant.view.subview.Page;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
 /**
  *
  * @author mfiume
  */
-public class GeneticsListPage implements Page {
+public class GeneticsListPage implements SubSectionView {
 
     private JPanel panel;
 

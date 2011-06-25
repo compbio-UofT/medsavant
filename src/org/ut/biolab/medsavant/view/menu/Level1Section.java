@@ -12,17 +12,17 @@ import javax.swing.JPanel;
  *
  * @author mfiume
  */
-public class DualTab extends JPanel {
+public class Level1Section extends JPanel {
     
-    private List<Tab> tabs;
+    private List<Level2Section> tabs;
     private String name;
 
-    public DualTab(String name) {
-        tabs = new ArrayList<Tab>();
+    public Level1Section(String name) {
+        tabs = new ArrayList<Level2Section>();
         this.name = name;
     }
     
-    public List<Tab> getTabs() {
+    public List<Level2Section> getTabs() {
         return tabs;
     }
     
@@ -30,7 +30,7 @@ public class DualTab extends JPanel {
         return name;
     }
     
-    public void addTab(Tab t) {
+    public void addTab(Level2Section t) {
         this.tabs.add(t);
     }
 }

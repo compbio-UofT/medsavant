@@ -12,7 +12,7 @@ import javax.swing.JPanel;
  *
  * @author mfiume
  */
-public interface Page {
+public interface SubSectionView {
 
     public String getName();
 

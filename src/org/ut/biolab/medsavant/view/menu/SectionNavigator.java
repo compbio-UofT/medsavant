@@ -11,21 +11,18 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.view.subview.SectionView;
 
 /**
  *
  * @author mfiume
  */
-public class DualTabbedPane extends JPanel {
-    
+public class SectionNavigator extends JPanel {
     
     private JPanel container;
-    private CardLayout containerLayout;
-    private List<DualTab> dualTabs;
-    private DualMenu menu;
+    private HierarchicalMenu menu;
 
-    public DualTabbedPane() {
-        dualTabs = new ArrayList<DualTab>();
+    public SectionNavigator() {
         initUI();
     }
 
@@ -35,21 +32,18 @@ public class DualTabbedPane extends JPanel {
         container = new JPanel();
         container.setBackground(Color.red);
         container.setLayout(new BorderLayout());
-        System.out.println("C1:" + container);
         
         JPanel tmpBanner = new JPanel();
         tmpBanner.setLayout(new BoxLayout(tmpBanner,BoxLayout.Y_AXIS));
         
-        menu = new DualMenu(container);
+        menu = new HierarchicalMenu(container);
         
         this.add(menu,BorderLayout.NORTH);
         this.add(container,BorderLayout.CENTER);
         
     }
 
-    public void addDualTab(DualTab dt) {
-        dualTabs.add(dt);
-        menu.addDualTab(dt);
-        menu.changeSection(dt.getName());
+    public void addSection(SectionView section) {
+        menu.addSection(section);
     }
 }

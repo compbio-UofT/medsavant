@@ -6,13 +6,13 @@ package org.ut.biolab.medsavant.view.patients;
 
 import java.awt.Component;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.view.subview.Page;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
 /**
  *
  * @author mfiume
  */
-public class IndividualsPage implements Page {
+public class IndividualsPage implements SubSectionView {
 
     public String getName() {
         return "Individuals";

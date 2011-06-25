@@ -12,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
-import org.ut.biolab.medsavant.view.OldSessionView;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
@@ -54,7 +53,7 @@ public class Frame extends JFrame implements LoginListener {
             view.remove(loginView);
         }
         
-        sessionView = new SessionView();
+        sessionView = new LoggedInView();
         
         //sessionView = new SessionView();
         view.add(sessionView, SESSION_VIEW_CARD_NAME);
