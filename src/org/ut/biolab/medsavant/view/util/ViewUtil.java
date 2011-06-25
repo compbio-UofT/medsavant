@@ -133,6 +133,10 @@ public class ViewUtil {
     public static Border getSideLineBorder() {
         return BorderFactory.createMatteBorder(0,1,0,1,Color.lightGray);
     }
+    
+    public static Border getEndzoneLineBorder() {
+        return BorderFactory.createMatteBorder(1,0,1,0,Color.lightGray);
+    }
 
     public static Color getLightColor() {
         return new Color(200,200,200);

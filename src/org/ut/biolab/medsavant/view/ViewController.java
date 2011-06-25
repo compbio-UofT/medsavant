@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -94,7 +95,7 @@ public class ViewController extends JPanel {
 
         public Banner() {
             this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
-            this.setBorder(ViewUtil.getMediumBorder());
+            this.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getEndzoneLineBorder(),ViewUtil.getMediumBorder()));
             this.add(ViewUtil.getTitleLabel("MedSavant"));
         }
         

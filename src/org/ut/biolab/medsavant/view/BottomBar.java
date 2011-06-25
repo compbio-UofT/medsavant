@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -51,7 +52,7 @@ public class BottomBar extends JPanel implements FiltersChangedListener{
 
     public BottomBar() {
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        this.setBorder(ViewUtil.getSmallBorder());
+        this.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getEndzoneLineBorder(),ViewUtil.getSmallBorder()));
         this.setPreferredSize(new Dimension(25,25));
 
         loginStatusLabel = new JLabel();
