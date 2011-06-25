@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.annotations.AnnotationsSection;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.menu.SectionNavigator;
+import org.ut.biolab.medsavant.view.menu.ViewController;
 import org.ut.biolab.medsavant.view.patients.PatientsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
@@ -19,7 +20,8 @@ import org.ut.biolab.medsavant.view.subview.SectionView;
  * @author mfiume
  */
 public class LoggedInView extends JPanel {
-    private SectionNavigator sectionNavigator;
+    
+    private ViewController viewController;
 
     public LoggedInView() {
         init();
@@ -32,12 +34,12 @@ public class LoggedInView extends JPanel {
     }
 
     private void initViewContainer() {
-        sectionNavigator = new SectionNavigator();
-        this.add(sectionNavigator,BorderLayout.CENTER);
+        viewController = new ViewController();
+        this.add(viewController,BorderLayout.CENTER);
     }
     
     private void addSection(SectionView view) {
-        sectionNavigator.addSection(view);
+        viewController.addSection(view);
     }
 
     private void initTabs() {

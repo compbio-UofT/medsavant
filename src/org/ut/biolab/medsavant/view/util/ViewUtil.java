@@ -16,6 +16,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.text.NumberFormat;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -120,6 +121,10 @@ public class ViewUtil {
     public static Border getTinyLineBorder() {
         return new LineBorder(Color.darkGray,1);
     }
+    
+    public static Border getRightLineBorder() {
+        return BorderFactory.createMatteBorder(0,0,0,1,Color.lightGray);
+    }
 
     public static Color getLightColor() {
         return new Color(200,200,200);
@@ -150,6 +155,48 @@ public class ViewUtil {
         l.setOpaque(false);
         p.add(l);
         return p;
+    }
+
+    public static JLabel getTitleLabel(String string) {
+        JLabel l = new JLabel(string);
+        l.setFont(new Font(getDefaultFontFamily(),Font.BOLD,18));
+        l.setForeground(new Color(240,240,240));
+        return l;
+    }
+    
+    public static JLabel getMenuSectionLabel(String string) {
+        JLabel l = new JLabel(string.toUpperCase());
+        l.setFont(new Font(l.getFont().getFamily(),Font.BOLD,14));
+        l.setForeground(new Color(20,20,20));
+        return l;
+    }
+            
+    public static JLabel getMenuSubsectionLabel(String string) {
+        JLabel l = new JLabel(string);
+        l.setFont(new Font(l.getFont().getFamily(),Font.PLAIN,13));
+        l.setForeground(new Color(70,70,70));
+        return l;
+    }
+
+    private static String getDefaultFontFamily() {
+        return "Tahoma";
+    }
+    
+    private static String getSecondaryFontFamily() {
+        return "Arial";
+    }
+
+    public static Border getMenuItemBorder() {
+        return new EmptyBorder(1,10,1,10);
+    }
+
+    public static JPanel alignLeft(Component c) {
+        JPanel aligned = new JPanel();
+        aligned.setOpaque(false);
+        aligned.setLayout(new BoxLayout(aligned,BoxLayout.X_AXIS));
+        aligned.add(c);
+        aligned.add(Box.createHorizontalGlue());
+        return aligned;
     }
     
     public enum OS { Unknown, Windows, Linux, Mac };

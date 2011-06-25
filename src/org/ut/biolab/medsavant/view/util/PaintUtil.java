@@ -47,4 +47,21 @@ public class PaintUtil {
         paintEvenGradient(g,c,Color.lightGray,Color.white);
     }
     
+    public static void paintFlexedMediumMenu(Graphics g, Component c) {
+        paintEvenGradient(g,c,Color.white,Color.lightGray);
+    }
+    
+     public static void paintSelectedMenu(Graphics g, Component c) {
+        paintEvenGradient(g,c,Color.gray,Color.white);
+    }
+
+    public static void paintSolid(Graphics g, Component c, Color color) {
+        g.setColor(color);
+        g.fillRect(0, 0, c.getWidth(), c.getHeight());
+    }
+
+   
+
+    
+    
 }

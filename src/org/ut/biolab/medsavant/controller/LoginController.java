@@ -31,7 +31,7 @@ public class LoginController {
 
     private static boolean loggedIn = false;
 
-    private static void setLoggedIn(boolean loggedIn) {
+    private synchronized static void setLoggedIn(boolean loggedIn) {
         if (!loggedIn) {
             ConnectionController.disconnect();
             if (!SettingsController.getInstance().getRememberPassword()) {

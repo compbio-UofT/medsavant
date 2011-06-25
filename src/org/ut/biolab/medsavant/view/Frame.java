@@ -5,10 +5,6 @@
 
 package org.ut.biolab.medsavant.view;
 
-import fiume.vcf.VCFParser;
-import fiume.vcf.VariantSet;
-import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.LoginEvent;

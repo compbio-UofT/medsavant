@@ -31,11 +31,11 @@ public class ChartContainer extends JPanel {
 
     public ChartContainer() {
         this.setLayout(new BorderLayout());
-        JPanel title = new JPanel() {
+        JPanel title = new JPanel();/* {
             public void paintComponent(Graphics g) {
                 PaintUtil.paintDarkMenu(g, this);
             }
-        };
+        };*/
         title.add(Box.createHorizontalGlue());
         JButton addButton = new JButton("Add chart");
         addButton.addActionListener(new ActionListener() {
