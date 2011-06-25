@@ -40,9 +40,11 @@ public class GeneticsSection extends SectionView {
 
     @Override
     public SubSectionView[] getSubSections() {
-        SubSectionView[] pages = new SubSectionView[2];
-        pages[0] = new GeneticsSummerizePage(this);
-        pages[1] = new GeneticsListPage(this);
+        SubSectionView[] pages = new SubSectionView[4];
+        pages[0] = new GeneticsListPage(this);
+        pages[1] = new GeneticsChartPage(this);
+        pages[2] = new GeneticsRegionsPage(this);
+        pages[3] = new GeneticsTestPage(this);
         return pages;
     }
 
@@ -86,11 +88,8 @@ public class GeneticsSection extends SectionView {
     @Override
     public Component[] getBanner() {
 
-        Component[] result = new Component[3];
-        
-        result[0] = new JButton("Save Result Set");
-        result[1] = new JButton("Show in Savant");
-        result[2] = createVcfButton();
+        Component[] result = new Component[1];
+        result[0] = createVcfButton();
         
         return result;
     }

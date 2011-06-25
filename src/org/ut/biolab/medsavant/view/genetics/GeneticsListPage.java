@@ -43,4 +43,10 @@ public class GeneticsListPage extends SubSectionView {
         panel.add(new TablePanel(), BorderLayout.CENTER);
     }
 
+    public Component[] getBanner() {
+        Component[] cs = new Component[2];
+        cs[0] = new JButton("Save Result Set");
+        cs[1] = new JButton("Show in Savant");
+        return cs;
+    }
 }

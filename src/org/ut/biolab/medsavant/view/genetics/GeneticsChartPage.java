@@ -31,15 +31,15 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  *
  * @author mfiume
  */
-public class GeneticsSummerizePage extends SubSectionView {
+public class GeneticsChartPage extends SubSectionView {
 
     private JPanel panel;
     private ChartContainer cc;
     
-    public GeneticsSummerizePage(SectionView parent) { super(parent); }
+    public GeneticsChartPage(SectionView parent) { super(parent); }
 
     public String getName() {
-        return "Summary";
+        return "Chart";
     }
 
     public JPanel getView() {
@@ -91,7 +91,6 @@ public class GeneticsSummerizePage extends SubSectionView {
         PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, false,225);
         //TODO: re-add genome view to panel
 
-        
         cc = new ChartContainer();
         panel.add(cc, BorderLayout.CENTER);
     }

@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.menu;
 
+import org.ut.biolab.medsavant.view.ViewController;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -27,7 +28,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-class Menu extends JPanel implements MenuItemSelected {
+public class Menu extends JPanel implements MenuItemSelected {
 
     public static class MenuItem extends JPanel {
 
@@ -213,7 +214,7 @@ class Menu extends JPanel implements MenuItemSelected {
         itemGroup = new MenuItemGroup();
     }
 
-    void addSection(SectionView section) {
+    public void addSection(SectionView section) {
 
         //if (this.getComponents().length != 0) {
         this.add(Box.createVerticalStrut(10));

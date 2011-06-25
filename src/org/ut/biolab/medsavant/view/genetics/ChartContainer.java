@@ -45,6 +45,7 @@ public class ChartContainer extends JPanel {
         sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         sp.getViewport().setOpaque(false);
+        sp.setBorder(null);
         this.add(sp, BorderLayout.CENTER);
     }
 

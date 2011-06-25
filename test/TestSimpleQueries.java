@@ -4,7 +4,7 @@
  */
 
 import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.db.BasicQuery;
+import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.db.DBUtil;
 import java.util.Vector;
 import java.util.ArrayList;
@@ -84,7 +84,7 @@ public class TestSimpleQueries {
 
         for (DbColumn dbc : columns) {
             if (TableSchema.isNumeric(t.getColumnType(dbc))) {
-                Range extremeValues = BasicQuery.getExtremeValuesForColumn(c, t, dbc);
+                Range extremeValues = QueryUtil.getExtremeValuesForColumn(c, t, dbc);
                 System.out.println(dbc.getColumnNameSQL() + ": " + extremeValues.getMin() + " " + extremeValues.getMax());
             }
         }
@@ -95,7 +95,7 @@ public class TestSimpleQueries {
 
         for (DbColumn dbc : columns) {
             if (!TableSchema.isNumeric(t.getColumnType(dbc))) {
-                List<String> distinctvalues = BasicQuery.getDistinctValuesForColumn(c, t, dbc);
+                List<String> distinctvalues = QueryUtil.getDistinctValuesForColumn(c, t, dbc);
                 System.out.println(dbc.getColumnNameSQL());
                 for (String v : distinctvalues) {
                     System.out.println(v);

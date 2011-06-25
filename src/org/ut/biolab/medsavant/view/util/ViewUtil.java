@@ -130,8 +130,8 @@ public class ViewUtil {
         return new LineBorder(Color.darkGray,1);
     }
     
-    public static Border getRightLineBorder() {
-        return BorderFactory.createMatteBorder(0,0,0,1,Color.lightGray);
+    public static Border getSideLineBorder() {
+        return BorderFactory.createMatteBorder(0,1,0,1,Color.lightGray);
     }
 
     public static Color getLightColor() {

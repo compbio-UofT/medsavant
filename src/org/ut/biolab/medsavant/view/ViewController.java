@@ -2,18 +2,23 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.view.menu;
+package org.ut.biolab.medsavant.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JToggleButton;
+import org.ut.biolab.medsavant.view.menu.Menu;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
@@ -30,22 +35,58 @@ public class ViewController extends JPanel {
     private SidePanel leftPanel;
     private Menu menu;
     private JPanel contentContainer;
+    private PersistencePanel sectionPanel;
+    private JToggleButton buttonSectionPanelController;
+    private SectionView currentSection;
 
-    void changeSubSectionTo(SubSectionView view) {
+    public void changeSubSectionTo(SubSectionView view) {
         this.sectionHeader.setSubSection(view);
+        
+        SectionView parent = view.getParent();
+        
+        if (parent != currentSection) {
+            if (parent.getPersistentPanels() != null) {
+                sectionPanel.setVisible(true);
+                buttonSectionPanelController.setVisible(true);
+                buttonSectionPanelController.setEnabled(true);
+                sectionPanel.setSectionPersistencePanels(view.getParent().getPersistentPanels());
+            } else {
+                sectionPanel.setVisible(false);
+                buttonSectionPanelController.setVisible(false);
+            }
+        }
+        currentSection = parent;
     }
 
     private static class SidePanel extends JPanel {
 
         public SidePanel() {
             this.setBackground(ViewUtil.getMenuColor());
-            this.setBorder(ViewUtil.getRightLineBorder());
+            this.setBorder(ViewUtil.getSideLineBorder());
+            
             //this.setPreferredSize(new Dimension(200,200));
             this.setLayout(new BorderLayout());
         }
         
         public void setContent(JPanel p) {
             this.add(p,BorderLayout.CENTER);
+        }
+    }
+    
+    private static class PersistencePanel extends SidePanel {
+        private final JTabbedPane panes;
+
+        public PersistencePanel() {
+            panes = new JTabbedPane();
+            this.setLayout(new BorderLayout());
+            this.add(panes,BorderLayout.CENTER);
+        }
+
+        private void setSectionPersistencePanels(JPanel[] persistentPanels) {
+            panes.removeAll();
+            for (JPanel p : persistentPanels) {
+                panes.addTab(p.getName(), p);
+            }
         }
     }
 
@@ -85,6 +126,7 @@ public class ViewController extends JPanel {
             this.add(subSectionMenuPanel);
             this.add(ViewUtil.getMediumSeparator()); 
             this.add(sectionMenuPanel);
+          
             
         }
         
@@ -155,11 +197,29 @@ public class ViewController extends JPanel {
         menu = new Menu(contentContainer);
         leftPanel.setContent(menu);
         
+        // create the right panel
+        sectionPanel = new PersistencePanel();
+        sectionPanel.setPreferredSize(new Dimension(350,999));
+        h1.add(sectionPanel,BorderLayout.EAST);
+        
+        buttonSectionPanelController = new JToggleButton();
+        buttonSectionPanelController.setFocusPainted(false);
+        buttonSectionPanelController.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                sectionPanel.setVisible(!sectionPanel.isVisible());
+            }
+            
+        });
+        sectionHeader.add(buttonSectionPanelController);
+        
         // add it all to the view
         this.add(banner,BorderLayout.NORTH);
         this.add(h1,BorderLayout.CENTER);
         this.add(leftPanel,BorderLayout.WEST);
         
+        sectionPanel.setVisible(false);
+        buttonSectionPanelController.setVisible(false);
     }
 
     public void addSection(SectionView section) {
