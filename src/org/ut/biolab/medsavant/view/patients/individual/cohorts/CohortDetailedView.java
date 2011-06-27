@@ -124,4 +124,8 @@ public class CohortDetailedView extends DetailedView {
         sw.execute();
     }
     
+    @Override
+    public void setMultipleSelections(Vector[] items){
+        
+    }
 }

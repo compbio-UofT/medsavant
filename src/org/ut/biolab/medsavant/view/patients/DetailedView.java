@@ -51,6 +51,8 @@ public abstract class DetailedView extends JPanel {
 
     public abstract void setSelectedItem(Vector selectedRow);
     
+    public abstract void setMultipleSelections(Vector[] selectedRows);
+    
     public void setTitle(String str) {
         this.title.setText(str);
     }

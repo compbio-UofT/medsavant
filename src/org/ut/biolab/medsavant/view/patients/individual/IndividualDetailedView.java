@@ -33,7 +33,7 @@ public class IndividualDetailedView extends DetailedView {
     private final JPanel content;
     private final JPanel details;
     private final JPanel menu;
-    private String patientId;
+    private String[] patientIds;
     
     private class IndividualDetailsSQ extends SwingWorker {
         private final String pid;
@@ -98,7 +98,7 @@ public class IndividualDetailedView extends DetailedView {
     
     @Override
     public void setSelectedItem(Vector item) {
-        patientId = (String) item.get(0);
+        String patientId = (String) item.get(0);
         setTitle(patientId);
         
         details.removeAll();
@@ -111,25 +111,33 @@ public class IndividualDetailedView extends DetailedView {
         sw.execute();
     }
     
+    @Override
+    public void setMultipleSelections(Vector[] items){
+        patientIds = new String[items.length];
+        for(int i = 0; i < items.length; i++){
+            patientIds[i] = (String) items[i].get(0);
+        }
+    }
+    
     private JButton addIndividualButton(){
-        JButton button = new JButton("Add individual to cohort");
+        JButton button = new JButton("Add individual(s) to cohort");
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(patientId != null)
-                    DBUtil.addIndividualToCohort(patientId);        
+                if(patientIds != null && patientIds.length > 0)
+                    DBUtil.addIndividualToCohort(patientIds);        
             }
         }); 
         return button;
     }
     
     private JButton deleteIndividualButton(){
-        JButton button = new JButton("Delete individual");
+        JButton button = new JButton("Delete individual(s)");
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(patientId != null)
-                    DBUtil.deleteIndividual(patientId);        
+                if(patientIds != null && patientIds.length > 0)
+                    DBUtil.deleteIndividual(patientIds);        
             }
         }); 
         return button;

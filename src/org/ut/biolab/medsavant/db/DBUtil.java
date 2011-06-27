@@ -197,7 +197,7 @@ public class DBUtil {
 
     }
     
-    public static void addIndividualToCohort(String patient_id){
+    public static void addIndividualToCohort(String[] patient_ids){
 
         HashMap<String, Integer> cohortMap = new HashMap<String, Integer>();
         
@@ -221,42 +221,62 @@ public class DBUtil {
         if(selected == null) return;
         int cohort_id = cohortMap.get(selected);
 
-        String sql = "INSERT INTO cohort_membership ("
-                + "cohort_id,"
-                + "hospital_id) "
-                + "VALUES ("
-                + cohort_id + ","
-                + "\"" + patient_id + "\")";
-        
-        Statement stmt;
         try {
-            stmt = conn.createStatement();
-            stmt.executeUpdate(sql);
+            String sql = "INSERT INTO cohort_membership ("
+                    + "cohort_id,"
+                    + "hospital_id) "
+                    + "VALUES (?,?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            conn.setAutoCommit(false);
+
+            for(String patient_id : patient_ids){       
+                pstmt.setInt(1, cohort_id);
+                pstmt.setString(2, patient_id);
+                
+                pstmt.executeUpdate();
+            }
+
+            conn.commit();
+            conn.setAutoCommit(true);
+            
         } catch (SQLException ex) {
             Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
     
-    public static void deleteIndividual(String patient_id){
+    public static void deleteIndividual(String[] patient_ids){
 
-        String message = "Do you really want to delete " + patient_id + "?";
+        String message = "Do you really want to delete these individuals?";
+        if(patient_ids.length == 1){
+            message = "Do you really want to delete " + patient_ids + "?";
+        }
+
         ConfirmDialog cd = new ConfirmDialog("Confirm delete", message);
         boolean confirmed = cd.isConfirmed();
         cd.dispose();
         if(!confirmed) return;
 
-        Connection conn;
-        try {
-            conn = ConnectionController.connect();
+        
+        try {         
             String sql = "DELETE FROM subject "
-                    + "WHERE hospital_id=\"" + patient_id + "\"";
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(sql);
+                + "WHERE hospital_id=?";
+            Connection conn = ConnectionController.connect();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            conn.setAutoCommit(false);
+
+            for(String patient_id : patient_ids){       
+                pstmt.setString(1, patient_id);
+
+                pstmt.executeUpdate();
+            }
+
+            conn.commit();
+            conn.setAutoCommit(true);
+            
         } catch (Exception ex) {
             Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
-            return;
-        } 
+        }
         
     }
 
