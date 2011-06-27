@@ -6,12 +6,16 @@ package org.ut.biolab.medsavant.view.patients.individual;
 
 import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.db.DBUtil;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
@@ -29,6 +33,7 @@ public class IndividualDetailedView extends DetailedView {
     private final JPanel content;
     private final JPanel details;
     private final JPanel menu;
+    private String patientId;
     
     private class IndividualDetailsSQ extends SwingWorker {
         private final String pid;
@@ -82,8 +87,8 @@ public class IndividualDetailedView extends DetailedView {
         details = ViewUtil.getClearPanel();
         menu = ViewUtil.getButtonPanel();
         
-        menu.add(new JButton("Add individual to cohort"));
-        menu.add(new JButton("Delete individual"));
+        menu.add(addIndividualButton());
+        menu.add(deleteIndividualButton());
         
         content.setLayout(new BorderLayout());
         
@@ -93,7 +98,7 @@ public class IndividualDetailedView extends DetailedView {
     
     @Override
     public void setSelectedItem(Vector item) {
-        String patientId = (String) item.get(0);
+        patientId = (String) item.get(0);
         setTitle(patientId);
         
         details.removeAll();
@@ -104,6 +109,29 @@ public class IndividualDetailedView extends DetailedView {
         }
         sw = new IndividualDetailsSQ(patientId);
         sw.execute();
+    }
+    
+    private JButton addIndividualButton(){
+        JButton button = new JButton("Add individual to cohort");
+        button.setBackground(ViewUtil.getDetailsBackgroundColor());
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(patientId != null)
+                    DBUtil.addIndividualToCohort(patientId);        
+            }
+        }); 
+        return button;
+    }
+    
+    private JButton deleteIndividualButton(){
+        JButton button = new JButton("Delete individual");
+        button.setBackground(ViewUtil.getDetailsBackgroundColor());
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //DBUtil.
+            }
+        }); 
+        return button;
     }
     
 }

@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -25,10 +26,11 @@ import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.view.dialog.ComboForm;
 
 /**
  *
- * @author mfiume
+ * @author mfiume, AndrewBrook
  */
 public class DBUtil {
 
@@ -187,6 +189,47 @@ public class DBUtil {
         conn.commit();
         conn.setAutoCommit(true);
 
+    }
+    
+    public static void addIndividualToCohort(String patient_id){
+
+        HashMap<String, Integer> cohortMap = new HashMap<String, Integer>();
+        
+        Connection conn;        
+        try {
+            conn = ConnectionController.connect();
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery("SELECT * FROM cohort");   
+            while(rs.next()) {
+                cohortMap.put(rs.getString(2), rs.getInt(1)); 
+            }
+            
+        } catch (Exception ex) {
+            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
+            return; //TODO
+        }
+        
+        Object[] options = cohortMap.keySet().toArray();
+        ComboForm form = new ComboForm(options, "Select Cohort", "Select which cohort to add to:");
+        String selected = (String)form.getSelectedValue();
+        if(selected == null) return;
+        int cohort_id = cohortMap.get(selected);
+
+        String sql = "INSERT INTO cohort_membership ("
+                + "cohort_id,"
+                + "hospital_id) "
+                + "VALUES ("
+                + cohort_id + ","
+                + "\"" + patient_id + "\")";
+        
+        Statement stmt;
+        try {
+            stmt = conn.createStatement();
+            stmt.executeUpdate(sql);
+        } catch (SQLException ex) {
+            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
 
 }
