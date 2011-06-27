@@ -259,16 +259,24 @@ public class DBUtil {
 
         
         try {         
-            String sql = "DELETE FROM subject "
-                + "WHERE hospital_id=?";
             Connection conn = ConnectionController.connect();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            
+            String sql1 = "DELETE FROM subject "
+                    + "WHERE hospital_id=?";         
+            PreparedStatement pstmt1 = conn.prepareStatement(sql1);
+            
+            String sql2 = "DELETE FROM cohort_membership "
+                    + "WHERE hospital_id=?";
+            PreparedStatement pstmt2 = conn.prepareStatement(sql2);
+
             conn.setAutoCommit(false);
 
             for(String patient_id : patient_ids){       
-                pstmt.setString(1, patient_id);
-
-                pstmt.executeUpdate();
+                pstmt1.setString(1, patient_id);
+                pstmt1.executeUpdate();
+                
+                pstmt2.setString(1, patient_id);
+                pstmt2.executeUpdate();
             }
 
             conn.commit();
