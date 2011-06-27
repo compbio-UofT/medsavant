@@ -42,6 +42,8 @@ public class CohortDetailedView extends DetailedView {
     private final JPanel details;
     private final JPanel menu;
     private String[] cohortNames;
+    private JList list;
+    private String cohortName;
     
     private class CohortDetailsSW extends SwingWorker {
         private final String cohortName;
@@ -83,14 +85,14 @@ public class CohortDetailedView extends DetailedView {
             //details.add(l);
             lm.addElement((String) v.get(2));
         }
-        JList list = (JList) ViewUtil.clear(new JList(lm));
+        list = (JList) ViewUtil.clear(new JList(lm));
         list.setBackground(ViewUtil.getDetailsBackgroundColor());
         list.setForeground(Color.white);
         JScrollPane jsp = ViewUtil.getClearBorderedJSP(list);
         details.add(jsp, BorderLayout.CENTER);
         //list.setOpaque(false);
 
-        details.updateUI();
+        details.updateUI();  
     }
     
     public CohortDetailedView() {
@@ -114,8 +116,8 @@ public class CohortDetailedView extends DetailedView {
     
     @Override
     public void setSelectedItem(Vector item) {
-        String patientId = (String) item.get(0);
-        setTitle(patientId);
+        cohortName = (String) item.get(0);
+        setTitle(cohortName);
         
         details.removeAll();
         details.updateUI();
@@ -123,7 +125,7 @@ public class CohortDetailedView extends DetailedView {
         if (sw != null) {
             sw.cancel(true);
         }
-        sw = new CohortDetailsSW(patientId);
+        sw = new CohortDetailsSW(cohortName);
         sw.execute();
     }
     
@@ -162,7 +164,16 @@ public class CohortDetailedView extends DetailedView {
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //TODO
+                Object[] selected = list.getSelectedValues();
+                String[] patientIds = new String[selected.length];
+                for(int i = 0; i < selected.length; i++){
+                    patientIds[i] = (String) selected[i];
+                }
+                if(patientIds != null && patientIds.length > 0){
+                    DBUtil.removeIndividualsFromCohort(cohortName, patientIds);     
+                    sw = new CohortDetailsSW(cohortName);
+                    sw.execute();
+                }
             }
         }); 
         return button;

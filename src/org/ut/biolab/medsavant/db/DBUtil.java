@@ -245,6 +245,40 @@ public class DBUtil {
         
     }
     
+    public static void removeIndividualsFromCohort(String cohort_name, String[] patient_ids){
+        try {
+            Connection conn = ConnectionController.connect();
+            
+            String sql1 = "SELECT id FROM cohort WHERE name=\"" + cohort_name + "\"";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql1);   
+            int cohort_id = -1;
+            if(rs.next()) {
+                cohort_id = rs.getInt(1);
+            } else {
+                return;
+            }
+                      
+            String sql2 = "DELETE FROM cohort_membership "
+                    + "WHERE cohort_id=? AND hospital_id=?";
+            PreparedStatement pstmt = conn.prepareStatement(sql2);
+            conn.setAutoCommit(false);
+
+            for(String patient_id : patient_ids){       
+                pstmt.setInt(1, cohort_id);
+                pstmt.setString(2, patient_id);
+                
+                pstmt.executeUpdate();
+            }
+
+            conn.commit();
+            conn.setAutoCommit(true);
+            
+        } catch (Exception ex) {
+            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public static void deleteIndividuals(String[] patient_ids){
 
         String message = "Do you really want to delete these individuals?";
