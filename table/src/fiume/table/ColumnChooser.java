@@ -5,7 +5,6 @@
 
 package fiume.table;
 
-import com.jidesoft.grid.SortableTable;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -17,7 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-
+import javax.swing.JScrollPane;
 
 /**
  *
@@ -26,6 +25,7 @@ import javax.swing.JPanel;
 public class ColumnChooser extends JDialog {
 
     private JPanel panel;
+    private JScrollPane scrollPane;
     private GenericTableModel model;
     private SearchableTablePanel table;
     private List<JCheckBox> boxes = new ArrayList<JCheckBox>();
@@ -35,13 +35,19 @@ public class ColumnChooser extends JDialog {
         this.model = model;
         this.table = table;
         this.setTitle("Choose Columns to Display");
-        this.setMinimumSize(new Dimension(260,100));
-        this.setLayout(new BorderLayout());
+        this.setPreferredSize(new Dimension(260,400));       
+        this.setLayout(new BorderLayout());    
+        
+        scrollPane = new JScrollPane();
+        JPanel container = new JPanel();
+        scrollPane.getViewport().add(container); 
+        container.setLayout(new BorderLayout());
+        this.add(scrollPane, BorderLayout.CENTER);
 
-        this.add(createFiller(), BorderLayout.NORTH);
-        this.add(createFiller(), BorderLayout.SOUTH);
-        this.add(createFiller(), BorderLayout.WEST);
-        this.add(createFiller(), BorderLayout.EAST);
+        container.add(createFiller(), BorderLayout.NORTH);
+        container.add(createFiller(), BorderLayout.SOUTH);
+        container.add(createFiller(), BorderLayout.WEST);
+        container.add(createFiller(), BorderLayout.EAST);
 
         //checkboxes
         panel = new JPanel();
@@ -60,8 +66,8 @@ public class ColumnChooser extends JDialog {
             public void mouseExited(MouseEvent e) {}
         });
         panel.add(createFiller());
-        panel.add(submitButton);
-        this.add(panel, BorderLayout.CENTER);
+        this.add(submitButton, BorderLayout.SOUTH); 
+        container.add(panel, BorderLayout.CENTER);
 
         this.pack();
         this.setLocationRelativeTo(null);
