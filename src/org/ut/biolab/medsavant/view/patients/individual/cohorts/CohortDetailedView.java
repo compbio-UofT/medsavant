@@ -107,6 +107,7 @@ public class CohortDetailedView extends DetailedView {
         menu.add(setDefaultControlButton());
         menu.add(removeIndividualsButton());
         menu.add(deleteCohortButton());
+        menu.setVisible(false);
         
         content.setLayout(new BorderLayout());
         
@@ -127,6 +128,8 @@ public class CohortDetailedView extends DetailedView {
         }
         sw = new CohortDetailsSW(cohortName);
         sw.execute();
+        
+        if(menu != null) menu.setVisible(true);
     }
     
     @Override
@@ -193,5 +196,5 @@ public class CohortDetailedView extends DetailedView {
         return button;
     }
     
-    
+
 }

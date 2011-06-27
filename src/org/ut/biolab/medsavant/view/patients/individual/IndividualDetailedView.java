@@ -89,6 +89,7 @@ public class IndividualDetailedView extends DetailedView {
         
         menu.add(addIndividualsButton());
         menu.add(deleteIndividualsButton());
+        menu.setVisible(false);
         
         content.setLayout(new BorderLayout());
         
@@ -109,6 +110,8 @@ public class IndividualDetailedView extends DetailedView {
         }
         sw = new IndividualDetailsSQ(patientId);
         sw.execute();
+        
+        if(menu != null) menu.setVisible(true);
     }
     
     @Override
