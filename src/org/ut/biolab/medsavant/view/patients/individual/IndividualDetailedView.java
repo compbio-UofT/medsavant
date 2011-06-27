@@ -87,8 +87,8 @@ public class IndividualDetailedView extends DetailedView {
         details = ViewUtil.getClearPanel();
         menu = ViewUtil.getButtonPanel();
         
-        menu.add(addIndividualButton());
-        menu.add(deleteIndividualButton());
+        menu.add(addIndividualsButton());
+        menu.add(deleteIndividualsButton());
         
         content.setLayout(new BorderLayout());
         
@@ -119,26 +119,26 @@ public class IndividualDetailedView extends DetailedView {
         }
     }
     
-    private JButton addIndividualButton(){
+    private JButton addIndividualsButton(){
         JButton button = new JButton("Add individual(s) to cohort");
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(patientIds != null && patientIds.length > 0){
-                    DBUtil.addIndividualToCohort(patientIds); 
+                    DBUtil.addIndividualsToCohort(patientIds); 
                 }                   
             }
         }); 
         return button;
     }
     
-    private JButton deleteIndividualButton(){
+    private JButton deleteIndividualsButton(){
         JButton button = new JButton("Delete individual(s)");
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(patientIds != null && patientIds.length > 0){
-                    DBUtil.deleteIndividual(patientIds);     
+                    DBUtil.deleteIndividuals(patientIds);     
                     parent.refresh();
                 }
             }

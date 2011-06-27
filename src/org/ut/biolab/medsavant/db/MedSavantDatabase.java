@@ -7,6 +7,7 @@ package org.ut.biolab.medsavant.db;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
+import org.ut.biolab.medsavant.db.table.CohortTableSchema;
 import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.db.table.SubjectTableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema;
@@ -37,6 +38,7 @@ public class MedSavantDatabase {
         return instance;
     }
     private CohortViewTableSchema cohortviewTableSchema;
+    private CohortTableSchema cohortTableSchema;
 
     public DbSchema getSchema() {
         return schema;
@@ -52,6 +54,7 @@ public class MedSavantDatabase {
         variantTableSchema = new VariantTableSchema(schema);
         subjectTableSchema = new SubjectTableSchema(schema);
         cohortviewTableSchema = new CohortViewTableSchema(schema);
+        cohortTableSchema = new CohortTableSchema(schema);
     }
 
     public TableSchema getVariantTableSchema() {
@@ -66,5 +69,8 @@ public class MedSavantDatabase {
         return this.cohortviewTableSchema;
     }
     
+    public TableSchema getCohortTableSchema() {
+        return this.cohortTableSchema;
+    }
     
 }

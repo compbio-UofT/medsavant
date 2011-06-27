@@ -197,7 +197,7 @@ public class DBUtil {
 
     }
     
-    public static void addIndividualToCohort(String[] patient_ids){
+    public static void addIndividualsToCohort(String[] patient_ids){
 
         HashMap<String, Integer> cohortMap = new HashMap<String, Integer>();
         
@@ -245,11 +245,11 @@ public class DBUtil {
         
     }
     
-    public static void deleteIndividual(String[] patient_ids){
+    public static void deleteIndividuals(String[] patient_ids){
 
         String message = "Do you really want to delete these individuals?";
         if(patient_ids.length == 1){
-            message = "Do you really want to delete " + patient_ids + "?";
+            message = "Do you really want to delete " + patient_ids[0] + "?";
         }
 
         ConfirmDialog cd = new ConfirmDialog("Confirm delete", message);
@@ -265,6 +265,7 @@ public class DBUtil {
                     + "WHERE hospital_id=?";         
             PreparedStatement pstmt1 = conn.prepareStatement(sql1);
             
+            //TODO: THIS SHOULD BE DONE USING FOREIGN KEYS IN TABLE
             String sql2 = "DELETE FROM cohort_membership "
                     + "WHERE hospital_id=?";
             PreparedStatement pstmt2 = conn.prepareStatement(sql2);
@@ -284,8 +285,42 @@ public class DBUtil {
             
         } catch (Exception ex) {
             Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }       
+    }
+    
+    public static void deleteCohorts(String[] cohort_names){
         
+        String message = "Do you really want to delete these cohorts?";
+        if(cohort_names.length == 1){
+            message = "Do you really want to delete " + cohort_names[0] + "?";
+        }
+
+        ConfirmDialog cd = new ConfirmDialog("Confirm delete", message);
+        boolean confirmed = cd.isConfirmed();
+        cd.dispose();
+        if(!confirmed) return;
+
+        
+        try {         
+            Connection conn = ConnectionController.connect();
+            
+            String sql1 = "DELETE FROM cohort "
+                    + "WHERE name=?";         
+            PreparedStatement pstmt1 = conn.prepareStatement(sql1);
+
+            conn.setAutoCommit(false);
+
+            for(String cohort_name : cohort_names){       
+                pstmt1.setString(1, cohort_name);
+                pstmt1.executeUpdate();
+            }
+
+            conn.commit();
+            conn.setAutoCommit(true);
+            
+        } catch (Exception ex) {
+            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }

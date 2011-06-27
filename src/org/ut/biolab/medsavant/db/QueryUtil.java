@@ -172,8 +172,8 @@ public class QueryUtil {
     public static List<String> getDistinctCohortNames() throws NonFatalDatabaseException, SQLException {
          return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
-                    MedSavantDatabase.getInstance().getCohortViewTableSchema(),
-                    MedSavantDatabase.getInstance().getCohortViewTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME));
+                    MedSavantDatabase.getInstance().getCohortTableSchema(),
+                    MedSavantDatabase.getInstance().getCohortTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME));
     }
 
     public static List<Vector> getPatientsInCohort(String cohortName) throws SQLException, NonFatalDatabaseException {
