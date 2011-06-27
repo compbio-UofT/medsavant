@@ -5,27 +5,15 @@
 
 package org.ut.biolab.medsavant.view.genetics;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.db.DBUtil;
-import org.ut.biolab.medsavant.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.view.dialog.VCFUploadForm;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
-import org.ut.biolab.medsavant.view.util.PaintUtil;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -65,20 +53,7 @@ public class GeneticsSection extends SectionView {
 
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JFileChooser fc = new JFileChooser();
-                fc.setDialogTitle("Import Variants");
-                fc.setDialogType(JFileChooser.OPEN_DIALOG);
-                fc.addChoosableFileFilter(new ExtensionFileFilter("vcf"));
-                int result = fc.showDialog(null, null);
-                if (result == JFileChooser.CANCEL_OPTION || result == JFileChooser.ERROR_OPTION) {
-                    return;
-                }
-                String path = fc.getSelectedFile().getAbsolutePath();
-                try {
-                    DBUtil.addVcfToDb(path);
-                } catch (SQLException ex) {
-                    Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                new VCFUploadForm();
             }
         });
 

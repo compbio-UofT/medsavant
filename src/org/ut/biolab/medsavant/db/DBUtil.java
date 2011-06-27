@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -75,9 +76,7 @@ public class DBUtil {
      * Given path to vcf file, add to database.
      * Return true iff success.
      */
-    public static void addVcfToDb(String filename) throws SQLException {
-
-        JDialog dialog = new JDialog();
+    public static void addVcfToDb(String filename, String genome_id, String pipeline_id) throws SQLException {
 
         //get variants from file
         VariantSet variants = new VariantSet();
@@ -87,33 +86,14 @@ public class DBUtil {
             System.out.println("Done parsing variants...");
         } catch (IOException ex) {
             ex.printStackTrace();
-            /*final JOptionPane optionPane = new JOptionPane(
-                "Variants could not be loaded from " + filename,
-                JOptionPane.ERROR_MESSAGE,
-                JOptionPane.OK_OPTION);
-            dialog.setTitle("Error loading variants");
-            dialog.setContentPane(optionPane);
-            dialog.pack();
-            dialog.setLocationRelativeTo(null);
-            dialog.setVisible(true);*/
         }
 
         //add to db
-        addVariantsToDb(variants);
+        addVariantsToDb(variants, genome_id, pipeline_id);
         FilterController.fireFiltersChangedEvent();
-        /*final JOptionPane optionPane = new JOptionPane(
-            variants.getRecords().size() + " variants were loaded from " + filename,
-            JOptionPane.INFORMATION_MESSAGE,
-            JOptionPane.OK_OPTION);
-        dialog.setTitle("Variants loaded");
-        dialog.setContentPane(optionPane);
-        dialog.pack();
-        dialog.setLocationRelativeTo(null);
-        dialog.setVisible(true);*/
-
     }
 
-    private static void addVariantsToDb(VariantSet variants) throws SQLException {
+    private static void addVariantsToDb(VariantSet variants, String genome_id, String pipeline_id) throws SQLException {
 
         Connection conn;
         try {
@@ -198,8 +178,8 @@ public class DBUtil {
             pstmt.setBoolean(23, record.getSomatic());
             pstmt.setBoolean(24, record.getValidated());
             pstmt.setString(25, record.getCustomInfo());
-            pstmt.setString(26, "1");
-            pstmt.setString(27, "1");
+            pstmt.setString(26, genome_id);
+            pstmt.setString(27, pipeline_id);
 
             pstmt.executeUpdate();
         }
