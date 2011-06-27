@@ -8,6 +8,11 @@ package org.ut.biolab.medsavant.db;
 import fiume.vcf.VCFParser;
 import fiume.vcf.VariantRecord;
 import fiume.vcf.VariantSet;
+import java.awt.Dialog.ModalityType;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -27,6 +32,7 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
+import org.ut.biolab.medsavant.view.dialog.ConfirmDialog;
 
 /**
  *
@@ -229,6 +235,28 @@ public class DBUtil {
         } catch (SQLException ex) {
             Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+    }
+    
+    public static void deleteIndividual(String patient_id){
+
+        String message = "Do you really want to delete " + patient_id + "?";
+        ConfirmDialog cd = new ConfirmDialog("Confirm delete", message);
+        boolean confirmed = cd.isConfirmed();
+        cd.dispose();
+        if(!confirmed) return;
+
+        Connection conn;
+        try {
+            conn = ConnectionController.connect();
+            String sql = "DELETE FROM subject "
+                    + "WHERE hospital_id=\"" + patient_id + "\"";
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(sql);
+        } catch (Exception ex) {
+            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        } 
         
     }
 

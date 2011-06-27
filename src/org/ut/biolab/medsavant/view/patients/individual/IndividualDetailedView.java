@@ -128,7 +128,8 @@ public class IndividualDetailedView extends DetailedView {
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //DBUtil.
+                if(patientId != null)
+                    DBUtil.deleteIndividual(patientId);        
             }
         }); 
         return button;
