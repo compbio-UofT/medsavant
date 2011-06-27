@@ -39,7 +39,7 @@ public class ChartContainer extends JPanel {
 
     public ChartContainer() {
         this.setLayout(new BorderLayout());
-        container = ViewUtil.createClearPanel();
+        container = ViewUtil.getClearPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         JScrollPane sp = (JScrollPane) ViewUtil.clear(new JScrollPane(container));
         sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);

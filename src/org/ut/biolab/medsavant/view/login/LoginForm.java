@@ -57,7 +57,8 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         updateAutoSignInCheckBoxBasedOnPasswordCheckbox();
 
         //this.setBorder(ViewUtil.getGiganticBorder());
-        this.setBackground(Color.white);
+        //this.setBackground(Color.white);
+        this.setOpaque(false);
 
         //this.setOpaque(false);
         this.setMaximumSize(new Dimension(400, 400));
@@ -84,14 +85,13 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         label_versioninformation = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
-        setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 13));
         jLabel1.setForeground(new java.awt.Color(51, 51, 51));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Username:");
 
-        field_username.setFont(new java.awt.Font("Lucida Grande", 1, 24)); // NOI18N
+        field_username.setFont(new java.awt.Font("Lucida Grande", 1, 24));
         field_username.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_username.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -104,7 +104,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("Password:");
 
-        field_password.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
+        field_password.setFont(new java.awt.Font("Lucida Grande", 0, 24));
         field_password.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_password.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -139,7 +139,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             }
         });
 
-        label_versioninformation.setFont(new java.awt.Font("Lucida Grande", 1, 18)); // NOI18N
+        label_versioninformation.setFont(new java.awt.Font("Lucida Grande", 1, 18));
         label_versioninformation.setForeground(new java.awt.Color(102, 102, 102));
         label_versioninformation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_versioninformation.setText("version information");
@@ -151,18 +151,18 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(label_programtitle, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
-                    .addComponent(label_versioninformation, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+                    .addComponent(label_programtitle, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                    .addComponent(label_versioninformation, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(button_login)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE))
+                        .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE))
                     .addComponent(cb_autosignin)
                     .addComponent(cb_rememberpassword)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
-                    .addComponent(field_username, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
-                    .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE))
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                    .addComponent(field_username, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                    .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -187,7 +187,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(button_login)
-                    .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE))
+                    .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

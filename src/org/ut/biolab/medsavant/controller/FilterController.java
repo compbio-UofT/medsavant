@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ut.biolab.medsavant.db.Database;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.DB;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.Filter.FilterType;
@@ -44,7 +44,7 @@ public class FilterController {
     private static void printSQLSelect() {
 
         SelectQuery q = new SelectQuery();
-        q.addAllTableColumns(Database.getInstance().getVariantTableSchema().getTable());
+        q.addAllTableColumns(MedSavantDatabase.getInstance().getVariantTableSchema().getTable());
 
         for (Filter f : filterMap.values()) {
             if (f.getType() == FilterType.QUERY) {

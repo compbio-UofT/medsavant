@@ -16,7 +16,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.ConnectionController;
-import org.ut.biolab.medsavant.db.Database;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.DBUtil;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
@@ -62,7 +62,7 @@ public class ResultController implements FiltersChangedListener {
 
     private void updateFilteredVariantDBResults() throws NonFatalDatabaseException {
 
-        TableSchema tableSchema = Database.getInstance().getVariantTableSchema();
+        TableSchema tableSchema = MedSavantDatabase.getInstance().getVariantTableSchema();
         SelectQuery query = new SelectQuery();
         query.addFromTable(tableSchema.getTable());
         query.addAllColumns();
@@ -84,7 +84,6 @@ public class ResultController implements FiltersChangedListener {
             throw new FatalDatabaseException(ex.getMessage());
         }
 
-        List<DbColumn> columns = tableSchema.getColumns();
         List<Vector> results;
         try {
             results = DBUtil.parseResultSet(tableSchema.getColumnGrid(), r1);

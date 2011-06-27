@@ -15,7 +15,7 @@ import java.util.List;
 import java.sql.ResultSet;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.sql.SQLException;
-import org.ut.biolab.medsavant.db.Database;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.ConnectionController;
 import java.sql.Connection;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
@@ -62,7 +62,7 @@ public class TestSimpleQueries {
     public void testVariantQueries() throws SQLException, FatalDatabaseException {
         Connection c = ConnectionController.connect();
 
-        TableSchema t = Database.getInstance().getVariantTableSchema();
+        TableSchema t = MedSavantDatabase.getInstance().getVariantTableSchema();
         SelectQuery q1 = new SelectQuery();
         q1.addFromTable(t.getTable());
         q1.addAllColumns();

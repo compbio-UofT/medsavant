@@ -5,9 +5,9 @@
 
 package org.ut.biolab.medsavant.view.patients;
 
-import java.awt.Component;
-import javax.swing.JButton;
+import org.ut.biolab.medsavant.view.patients.individual.IndividualsPage;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.view.patients.individual.cohorts.CohortsPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
@@ -35,13 +35,6 @@ public class PatientsSection extends SectionView {
     @Override
     public JPanel[] getPersistentPanels() {
         return null;
-    }
-
-    @Override
-    public Component[] getBanner() {
-        Component[] cs = new Component[1];
-        cs[0] = new JButton("Blah");
-        return cs;
     }
     
 }

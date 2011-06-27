@@ -5,6 +5,9 @@
 
 package org.ut.biolab.medsavant.db;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import org.ut.biolab.medsavant.db.table.SubjectTableSchema;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.Table;
@@ -16,9 +19,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
+import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Range;
 
 
@@ -113,5 +120,67 @@ public class QueryUtil {
 
         return new Range(min,max);
 
+    }
+
+    public static List<String> getDistinctDNAIds() throws SQLException, NonFatalDatabaseException {
+        return QueryUtil.getDistinctValuesForColumn(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getVariantTableSchema(),
+                    MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(VariantTableSchema.ALIAS_DNAID));
+    }
+
+    public static List<String> getDistinctPatientIDs() throws SQLException, NonFatalDatabaseException {
+                return QueryUtil.getDistinctValuesForColumn(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getSubjectTableSchema(),
+                    MedSavantDatabase.getInstance().getSubjectTableSchema().getDBColumn(SubjectTableSchema.ALIAS_HOSPITALID));
+    }
+
+    public static List<Vector> getPatientRecord(String pid) throws NonFatalDatabaseException, SQLException {
+        return QueryUtil.getRecordsMatchingID(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getSubjectTableSchema(),
+                    MedSavantDatabase.getInstance().getSubjectTableSchema().getDBColumn(SubjectTableSchema.ALIAS_HOSPITALID),
+                    pid);
+    }
+
+    private static List<Vector> getRecordsMatchingID(Connection conn, TableSchema t, DbColumn col, String id) throws SQLException {
+        
+        SelectQuery q = new SelectQuery();
+        q.addAllColumns();
+        q.addFromTable(t.getTable());
+        
+        q.addCondition(new BinaryCondition(BinaryCondition.Op.EQUAL_TO,col,id));
+
+        Statement s = conn.createStatement();
+        
+        System.out.println("Querying for: " + q.toString());
+        
+        ResultSet rs = s.executeQuery(q.toString());
+        
+        List<Vector> results;
+        try {
+            results = DBUtil.parseResultSet(t.getColumnGrid(), rs);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new FatalDatabaseException(ex.getMessage());
+        }
+        
+        return results;
+    }
+
+    public static List<String> getDistinctCohortNames() throws NonFatalDatabaseException, SQLException {
+         return QueryUtil.getDistinctValuesForColumn(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getCohortViewTableSchema(),
+                    MedSavantDatabase.getInstance().getCohortViewTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME));
+    }
+
+    public static List<Vector> getPatientsInCohort(String cohortName) throws SQLException, NonFatalDatabaseException {
+        return QueryUtil.getRecordsMatchingID(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getCohortViewTableSchema(),
+                    MedSavantDatabase.getInstance().getCohortViewTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME),
+                    cohortName);
     }
 }

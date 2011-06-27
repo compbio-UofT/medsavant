@@ -29,7 +29,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import org.ut.biolab.medsavant.db.Database;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
@@ -306,14 +306,14 @@ public class GOFilter {
                             for (Range range: ranges){
 
                                 BinaryCondition innerCond1 = BinaryCondition.greaterThan
-                                        (Database.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.POSITION_COL), range.getMin(), true);
+                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.POSITION_COL), range.getMin(), true);
                                 BinaryCondition innerCond2 = BinaryCondition.lessThan
-                                        (Database.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.POSITION_COL), range.getMax(), true);
+                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.POSITION_COL), range.getMax(), true);
                                 BinaryCondition[] condTogether = {innerCond1, innerCond2};
                                 listInnerCond.add(ComboCondition.and(condTogether));
                             } // for each range for the chromosome of interest.
                             BinaryCondition chrCond = BinaryCondition.equalTo
-                                    (Database.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.CHROM_COL), key);
+                                    (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.CHROM_COL), key);
                             conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
                         } // for each chromosome.
                         return conds;

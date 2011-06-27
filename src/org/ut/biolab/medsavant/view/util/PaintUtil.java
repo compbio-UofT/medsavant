@@ -23,8 +23,11 @@ public class PaintUtil {
         g2.setColor(Color.white);
         g2.fillRect(0, 0, c.getWidth(), c.getHeight());
         
-        GradientPaint p = new GradientPaint(0, c.getHeight()-200, Color.white, 0, c.getHeight(), 
-                skyColor);
+        
+        GradientPaint p = new GradientPaint(0, c.getHeight()-200, Color.white/*new Color(97,135,172)*/, 0, c.getHeight(), 
+                new Color(92,168,229));
+        //GradientPaint p = new GradientPaint(0, 200, Color.white, 0, c.getHeight(), 
+        //        skyColor);
         g2.setPaint(p);
         g2.fillRect(0, 0, c.getWidth(), c.getHeight());
     }
@@ -57,6 +60,11 @@ public class PaintUtil {
 
     public static void paintSolid(Graphics g, Component c, Color color) {
         g.setColor(color);
+        g.fillRect(0, 0, c.getWidth(), c.getHeight());
+    }
+
+    public static void paintDrillDown(Graphics g, Component c) {
+        g.setColor(ViewUtil.getDetailsBackgroundColor());
         g.fillRect(0, 0, c.getWidth(), c.getHeight());
     }
 

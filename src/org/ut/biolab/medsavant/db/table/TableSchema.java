@@ -208,6 +208,7 @@ public class TableSchema {
         return new ArrayList<DbColumn>(indexToColumn.values());
     }
 
+
     /*
     public void addColumn(String name, String typeName, int length) {
         DbColumn c = table.addColumn(name, typeName, length);

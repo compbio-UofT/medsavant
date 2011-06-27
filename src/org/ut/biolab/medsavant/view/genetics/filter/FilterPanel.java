@@ -36,7 +36,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.db.ConnectionController;
-import org.ut.biolab.medsavant.db.Database;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
@@ -179,7 +179,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 continue;
             }
 
-            TableSchema table = Database.getInstance().getVariantTableSchema();
+            TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
             DbColumn col = table.getDBColumn(columnAlias);
             boolean isNumeric = TableSchema.isNumeric(table.getColumnType(col));
             boolean isBoolean = TableSchema.isBoolean(table.getColumnType(col));
@@ -249,8 +249,8 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                                 @Override
                                 public Condition[] getConditions() {
                                     Condition[] results = new Condition[2];
-                                    results[0] = BinaryCondition.greaterThan(Database.getInstance().getVariantTableSchema().getDBColumn(columnAlias), rs.getLowValue(), true);
-                                    results[1] = BinaryCondition.lessThan(Database.getInstance().getVariantTableSchema().getDBColumn(columnAlias), rs.getHighValue(), true);
+                                    results[0] = BinaryCondition.greaterThan(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), rs.getLowValue(), true);
+                                    results[1] = BinaryCondition.lessThan(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), rs.getHighValue(), true);
                                     
                                     Condition[] resultsCombined = new Condition[1];
                                     resultsCombined[0] = ComboCondition.and(results);
@@ -339,7 +339,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                                     Condition[] results = new Condition[acceptableValues.size()];
                                     int i = 0;
                                     for (String s : acceptableValues) {
-                                        results[i++] = BinaryCondition.equalTo(Database.getInstance().getVariantTableSchema().getDBColumn(columnAlias), s);
+                                        results[i++] = BinaryCondition.equalTo(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), s);
                                     }
                                     return results;
                                 }
@@ -455,7 +455,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                                     Condition[] results = new Condition[acceptableValues.size()];
                                     int i = 0;
                                     for (String s : acceptableValues) {
-                                        results[i++] = BinaryCondition.equalTo(Database.getInstance().getVariantTableSchema().getDBColumn(columnAlias), s);
+                                        results[i++] = BinaryCondition.equalTo(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), s);
                                     }
                                     return results;
                                 }

@@ -117,8 +117,8 @@ public class ViewController extends JPanel {
             this.setBorder(ViewUtil.getMediumSideBorder());
             title = ViewUtil.getHeaderLabel(" ");
             this.add(title);
-            sectionMenuPanel = ViewUtil.createClearPanel();
-            subSectionMenuPanel = ViewUtil.createClearPanel();
+            sectionMenuPanel = ViewUtil.getClearPanel();
+            subSectionMenuPanel = ViewUtil.getClearPanel();
             
             sectionMenuPanel.setLayout(new BoxLayout(sectionMenuPanel,BoxLayout.X_AXIS));
             subSectionMenuPanel.setLayout(new BoxLayout(subSectionMenuPanel,BoxLayout.X_AXIS));
@@ -170,7 +170,7 @@ public class ViewController extends JPanel {
         return instance;
     }
     
-    public ViewController() {
+    private ViewController() {
         initUI();
     }
     

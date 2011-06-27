@@ -19,7 +19,7 @@ import fiume.vcf.VariantRecord;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import org.ut.biolab.medsavant.db.Database;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 
 /**

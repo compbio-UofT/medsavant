@@ -10,6 +10,7 @@ import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideSplitButton;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
@@ -23,9 +24,11 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
 /**
@@ -34,7 +37,7 @@ import javax.swing.border.LineBorder;
  */
 public class ViewUtil {
 
-    public static JPanel createClearPanel() {
+    public static JPanel getClearPanel() {
         return (JPanel) clear(new JPanel());
     }
 
@@ -221,6 +224,18 @@ public class ViewUtil {
     public static Border getMediumSideBorder() {
         return BorderFactory.createEmptyBorder(0, 5, 0, 5);
     }
+
+    public static JScrollPane getClearBorderedJSP(Container c) {
+        JScrollPane jsp = new JScrollPane(c);
+        ViewUtil.clear(jsp);
+        ViewUtil.clear(jsp.getViewport());
+        jsp.setBorder(ViewUtil.getTinyLineBorder());
+        return jsp;
+    }
+
+    public static Color getDetailsBackgroundColor() {
+        return new Color(40,40,40);
+    }
     
     public enum OS { Unknown, Windows, Linux, Mac };
     
@@ -271,5 +286,62 @@ public class ViewUtil {
         }
         
         return button;
+    }
+    
+    public static JLabel getGrayLabel(String label) {
+        JLabel l = new JLabel(label);
+        l.setForeground(Color.darkGray);
+        l.setFont(new Font("Arial",Font.PLAIN,18));
+        return l;
+    }
+    
+    public static JLabel getDetailTitleLabel(String label) {
+        JLabel l = new JLabel(label);
+        l.setForeground(Color.white);
+        l.setFont(new Font("Arial",Font.BOLD,36));
+        return l; 
+    }
+    
+    public static JPanel getKeyValuePairPanel(String key, String val) {
+        JLabel keyl = new JLabel(key + ": ");
+            keyl.setFont(new Font(keyl.getFont().getFamily(),Font.BOLD,keyl.getFont().getSize()));
+            keyl.setForeground(Color.white);
+
+            JLabel value = new JLabel(val);
+            value.setForeground(Color.white);
+            
+            JPanel h1 = ViewUtil.getClearPanel(); h1.setLayout(new BoxLayout(h1,BoxLayout.X_AXIS));
+            
+            h1.add(keyl); h1.add(value); h1.add(Box.createHorizontalGlue());
+            
+            return h1;
+    }
+    
+    public static JPanel getKeyValuePairPanel(String[][] keyPairs) {
+        JPanel p = new JPanel();
+        p.setOpaque(false);
+        p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+        for (int i = 0; i < keyPairs.length; i++) {
+            p.add(getKeyValuePairPanel(keyPairs[i][0],keyPairs[i][1]));
+        }
+        p.add(Box.createVerticalGlue());
+        return p;
+    }
+    
+    public static JPanel getButtonPanel() {
+        JPanel p = ViewUtil.getClearPanel();
+        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+        Dimension d = new Dimension(999,35);
+        p.setBorder(null);
+        p.setMaximumSize(d); p.setMinimumSize(d); p.setPreferredSize(d);
+        p.add(Box.createHorizontalGlue());
+        return p;
+    }
+    
+    public static JPanel getLeftAlignedComponent(Component c) {
+        JPanel p = ViewUtil.getClearPanel();
+        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+        p.add(c); p.add(Box.createHorizontalGlue());
+        return p;
     }
 }
