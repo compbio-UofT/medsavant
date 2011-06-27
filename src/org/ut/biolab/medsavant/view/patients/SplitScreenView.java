@@ -75,6 +75,11 @@ public class SplitScreenView extends JPanel {
             updateShowCard();
             showShowCard();
         }
+                   
+        public void refreshList(){
+            showWaitCard();
+            fetchList();
+        }
 
         private void fetchList() {
 
@@ -138,8 +143,9 @@ public class SplitScreenView extends JPanel {
 
     public SplitScreenView(DetailedListModel lm, DetailedView view) {
         this.detailedListModel = lm;
-        this.detailedView = view;
+        this.detailedView = view;        
         initGUI();
+        detailedView.setSplitScreenParent(this);
     }
 
     private void initGUI() {
@@ -149,5 +155,9 @@ public class SplitScreenView extends JPanel {
         
         this.add(detailedView, BorderLayout.NORTH);
         this.add(listView, BorderLayout.CENTER);
+    }
+    
+    public void refresh(){
+        listView.refreshList();
     }
 }

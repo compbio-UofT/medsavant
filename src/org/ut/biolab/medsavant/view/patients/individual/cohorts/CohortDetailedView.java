@@ -99,7 +99,6 @@ public class CohortDetailedView extends DetailedView {
         
         menu.add(new JButton("Set default Case cohort"));
         menu.add(new JButton("Set default Control cohort"));
-        menu.add(new JButton("Add individual(s) to cohort"));
         menu.add(new JButton("Remove individual(s) from cohort"));
         menu.add(new JButton("Delete cohort"));
         

@@ -124,8 +124,9 @@ public class IndividualDetailedView extends DetailedView {
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(patientIds != null && patientIds.length > 0)
-                    DBUtil.addIndividualToCohort(patientIds);        
+                if(patientIds != null && patientIds.length > 0){
+                    DBUtil.addIndividualToCohort(patientIds); 
+                }                   
             }
         }); 
         return button;
@@ -136,8 +137,10 @@ public class IndividualDetailedView extends DetailedView {
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(patientIds != null && patientIds.length > 0)
-                    DBUtil.deleteIndividual(patientIds);        
+                if(patientIds != null && patientIds.length > 0){
+                    DBUtil.deleteIndividual(patientIds);     
+                    parent.refresh();
+                }
             }
         }); 
         return button;

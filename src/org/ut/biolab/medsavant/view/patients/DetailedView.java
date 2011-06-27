@@ -24,6 +24,7 @@ public abstract class DetailedView extends JPanel {
 
     private final JLabel title;
     private final JPanel contentPanel;
+    protected SplitScreenView parent;
 
     public DetailedView() {
         this.setPreferredSize(new Dimension(9999, 310));
@@ -60,4 +61,9 @@ public abstract class DetailedView extends JPanel {
     public JPanel getContentPanel() {
         return this.contentPanel;
     }
+    
+    public void setSplitScreenParent(SplitScreenView parent){
+        this.parent = parent;
+    }
+    
 }
