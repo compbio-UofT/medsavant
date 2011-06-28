@@ -18,6 +18,7 @@ import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
+import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -27,14 +28,16 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class XMLontology {
     
-    public static String LOCATION_OF_GO_XML_FILE = "http://archive."
+    public static final String NAME_EXTRA_GENES = "Miscellaneous genes";
+    
+    public static final String LOCATION_OF_GO_XML_FILE = "http://archive."
             + "geneontology.org/latest-termdb/go_daily-termdb.obo-xml.gz";
     
     /**
      * Makes and returns a tree using GO terms.
      * @return the tree.
      */
-    public static XTree makeTree(String mapFile) throws Exception{
+    public static GOTree makeTree(String mapFile) throws Exception{
         
         String sep = File.separator;
         // The location of the temporary XML file
@@ -62,13 +65,17 @@ public class XMLontology {
 //        String mapFile = (new File("")).getAbsolutePath() + sep + "src" + sep
 //                + "org" + sep + "ut" + sep + "biolab" + sep + "medsavant" + sep
 //                + "view" + sep + "filter" + sep + "geneontology" + sep + "";
-        XTree tree = new XTree(mapFile);
+        GOTree tree = new GOTree(mapFile);
         
         Handler handler = new Handler(tree, locationOfFile);
         
         // Parse through the file, and get the xtree to be made and return it.
         parseXMLFile(true, handler);
         file.delete();
+        
+        // Now propagate up info.
+        ((Tree)tree).propagateUp();
+        
         return tree;
     }
     
@@ -78,7 +85,7 @@ public class XMLontology {
         /**
          * The tree to be populated via parsing.
          */
-        private XTree tree;
+        private GOTree tree;
         
         /**
          * The location of the file to be parsed.
@@ -110,7 +117,7 @@ public class XMLontology {
          */
         private String stringAcc;
         
-        Handler(XTree tree, String locationOfFile){
+        Handler(GOTree tree, String locationOfFile){
             
             this.tree = tree;
             this.locationOfFile = locationOfFile;
@@ -161,13 +168,14 @@ public class XMLontology {
                         // If this is not a root, do a simple addition.
                         if (!isRoot){
                             
-                            tree.addNode(currNode, currParents);
+                            tree.addNode(currNode, currParents, NAME_EXTRA_GENES);
+//                            currNode.setSpecialNode("genes");
                         }
                         // But if this is a root, add as a root.
                         else{
                         
                             isRoot = false;
-                            tree.addRoot(currNode);
+                            tree.addRoot(currNode, NAME_EXTRA_GENES);
                         }
                         
                         currParents.clear();
@@ -176,7 +184,7 @@ public class XMLontology {
                     // Create a node if we have seen the id.
                     if (qName.equals("id")){
 
-                        currNode = new Node(stringAcc);
+                        currNode = new Node(stringAcc, NAME_EXTRA_GENES);
                     }
                     // Set the description of the node.
                     else if (qName.equals("name")){

@@ -23,6 +23,8 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
  */
 public class HPOParser {
     
+    public static final String NAME_EXTRA_GENES = "Miscellaneous genes";
+    
     /**
      * The location of the OBO file.
      */
@@ -33,7 +35,7 @@ public class HPOParser {
     /**
      * The identifier of the root node.
      */
-    public static final String rootId = "HP:0000001";
+    public static final String ROOT_ID = "HP:0000001";
     
     /**
      * Makes and returns the human phenotype tree.
@@ -63,11 +65,11 @@ public class HPOParser {
 
                 if ((currNode = getNodeFromString(accumulatedString)) != null){
                     if (isRoot(currNode)){
-                        tree.addRoot(currNode);
+                        tree.addRoot(currNode, null);
                     }
                     else{
                         List<String> parentIDs = getParentIDs(accumulatedString);
-                        tree.addNode(currNode, parentIDs);
+                        tree.addNode(currNode, parentIDs, NAME_EXTRA_GENES);
                     }
                      // Time to accumulate a new string.
                     accumulatedString = "";
@@ -82,16 +84,19 @@ public class HPOParser {
         // We have missed the last term but we now add it.
         if ((currNode = getNodeFromString(accumulatedString)) != null){
             if (isRoot(currNode)){
-                tree.addRoot(currNode);
+                // No special node for the root.
+                tree.addRoot(currNode, null);
             }
             else{
                 List<String> parentIDs = getParentIDs(accumulatedString);
-                tree.addNode(currNode, parentIDs);
+                tree.addNode(currNode, parentIDs, NAME_EXTRA_GENES);
             }
 //            System.out.println(currNode.getIdentifier() + "\t" + currNode.getDescription());
         }
         
 //        System.out.println(tree.getSize());
+        // Propagate up the gene location info.
+        tree.propagateUp();
         return tree;
     }
     
@@ -150,7 +155,7 @@ public class HPOParser {
                     description = description.substring(1);
                 }
             }
-            Node node = new Node(identifier);
+            Node node = new Node(identifier, NAME_EXTRA_GENES);
             node.setDescription(description);
             return node;
         }
@@ -174,7 +179,7 @@ public class HPOParser {
      */
     private static boolean isRoot(Node node){
         
-        return node.getIdentifier().equals(rootId);
+        return node.getIdentifier().equals(ROOT_ID);
     }
     
 }

@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 import org.jdom.Document;
@@ -21,6 +22,11 @@ import org.jdom.input.SAXBuilder;
  */
 public class CreateMappingsFile {
     
+    public static void main(String[] args) throws Exception{
+        HashMap<String, HashSet<String>> map = getMappings();
+//        System.out.println(map);
+    }
+    
     /**
      * The location of the XML file containing the location of the mapping file.
      */
@@ -32,17 +38,17 @@ public class CreateMappingsFile {
     public static String LOCATION_HPO_TO_GENENAME = 
             "http://compbio.charite.de/svn/hpo/trunk/src/annotation/genes_to_phenotype.txt";
     
-    public static HashMap<String, TreeSet<String>> getMappings() 
+    public static HashMap<String, HashSet<String>> getMappings() 
             throws Exception{
         
         String locFileGeneNameToLoc = getNameOfFileMapGeneNameToLoc();
-        
+
         // Map from gene name to loc.
         HashMap<String, TreeSet<String>> mapFromGeneNameToLoc = 
                 getMapGeneNameToLoc(locFileGeneNameToLoc);
-        
+     
         // Map from HPO to loc by using map from gene name to loc.
-        HashMap<String, TreeSet<String>> mapFromHPOToLoc = 
+        HashMap<String, HashSet<String>> mapFromHPOToLoc = 
                 getMapHPOtoLoc(mapFromGeneNameToLoc);
         
         return mapFromHPOToLoc;
@@ -53,12 +59,12 @@ public class CreateMappingsFile {
      * @param mapFromGeneNameToLoc map from gene name to location.
      * @return 
      */
-    private static HashMap<String, TreeSet<String>> getMapHPOtoLoc
+    private static HashMap<String, HashSet<String>> getMapHPOtoLoc
             (HashMap<String, TreeSet<String>> mapFromGeneNameToLoc) 
             throws Exception{
         
-        HashMap<String, TreeSet<String>> mapHPOtoLoc = 
-                new HashMap<String, TreeSet<String>>();
+        HashMap<String, HashSet<String>> mapHPOtoLoc = 
+                new HashMap<String, HashSet<String>>();
         
         URL url = new URL(LOCATION_HPO_TO_GENENAME);
         BufferedReader reader = 
@@ -70,20 +76,29 @@ public class CreateMappingsFile {
             // Ignore any comment.
             if (line.trim().startsWith("#")){
                 continue;
-            }
+            }       
             String[] split = line.split("\t");
             String geneName = split[1].trim();
             TreeSet<String> locsFromName = mapFromGeneNameToLoc.get(geneName);
             
+            // If the locations are available from gene name, carry on; 
+            // otherwise, it's pointless to even think of proceeding.
+            if (locsFromName == null){
+//                System.out.println(geneName);
+                continue;
+            }
+            
+            // Get the HPO Ids associated with this gene name.
             List<String> listHPOids = getHPOIDs(split[2]);
+//            System.out.println(listHPOids);
             
             // For each HPO id associated with this gene name...
             for (String hPOid: listHPOids){
                 
-                TreeSet<String> locsFromHPO = mapHPOtoLoc.get(hPOid);
+                HashSet<String> locsFromHPO = mapHPOtoLoc.get(hPOid);
                 
                 if (locsFromHPO == null){
-                    locsFromHPO = new TreeSet<String>();
+                    locsFromHPO = new HashSet<String>();
                     mapHPOtoLoc.put(hPOid, locsFromHPO);
                 }
                 
@@ -134,7 +149,7 @@ public class CreateMappingsFile {
         
         SAXBuilder builder = new SAXBuilder();
         Document doc = builder.build((new URL(LOCATION_XML)).openStream());
-        
+    
         List versionChildren = doc.getRootElement().getChildren("branch");
         List children = null;
         
@@ -194,7 +209,9 @@ public class CreateMappingsFile {
                 continue;
             }
             String key = split[3];
-            String value = split[0].trim() + "\t" + split[1].trim() + "\t" + split[2].trim();
+            // Fix the end value (bed file)
+            int end = Integer.parseInt(split[2].trim()) - 1;
+            String value = split[0].trim() + "\t" + split[1].trim() + "\t" + end;
             
             TreeSet<String> listValue = mapHPOtoGenes.get(key);
             

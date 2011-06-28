@@ -24,7 +24,7 @@ public class Tree {
     /**
      * Fake root of the tree.  Useful since this is actually a forest of trees.
      */
-    protected Node fakeRoot; 
+    protected final Node fakeRoot; 
     
     /**
      * Dictionary from an identifier to a node.
@@ -35,7 +35,9 @@ public class Tree {
      * Map from ID to locations.  This is customizable, therefore, has 
      * protected access.
      */
-    protected HashMap<String, ArrayList<ArrayList<String>>> idToLocs;
+    protected HashMap<String, HashSet<String>> idToLocs;
+    
+    public static final String NAME_OF_ROOT = "ROOT";
     
     /**
      * Constructor
@@ -44,11 +46,14 @@ public class Tree {
      */
     public Tree(){
         
-        fakeRoot = new Node("ROOT");
+        // no special node for the fake root.
+        fakeRoot = new Node(NAME_OF_ROOT, null);
+        fakeRoot.setLocs(new HashSet<String>(), false);
         identifierToNode = new HashMap<String, Node>();
-        identifierToNode.put("ROOT", fakeRoot);  
-        idToLocs = new HashMap<String, ArrayList<ArrayList<String>>>();
+        identifierToNode.put(NAME_OF_ROOT, fakeRoot);  
+        idToLocs = new HashMap<String, HashSet<String>>();
     }
+    
     
     public int getSize(){
         return identifierToNode.keySet().size();
@@ -70,7 +75,16 @@ public class Tree {
      */
     public TreeSet<Node> getChildrenNodes(String identifier){
         
-        return identifierToNode.get(identifier).getChildren();
+        Node node = identifierToNode.get(identifier);
+        if (node != null){
+            return node.getChildren();
+        }
+        // If this node is special, it is not fated to have children at all, and
+        // is not even registered to belong to the tree..
+        else{
+            return new TreeSet<Node>();
+        }
+        
     }
     
     /**
@@ -81,15 +95,18 @@ public class Tree {
         
         // If the locations have already been marked, do not do anything.
         if (node.getLocs() != null){
+            
             return;
         }
-        ArrayList<ArrayList<String>> locs = 
-                idToLocs.get(node.getIdentifier().replace(':', '_'));
+//        HashSet<String> locs = 
+//                idToLocs.get(node.getIdentifier().replace(':', '_'));
+        HashSet<String> locs = 
+            idToLocs.get(node.getIdentifier());
         if (locs == null){
             
-            locs = new ArrayList< ArrayList<String> >();
+            locs = new HashSet<String>();
         }
-        node.setLocs(locs);
+        node.setLocs(locs, true);
     }
     
     /**
@@ -97,8 +114,9 @@ public class Tree {
      * once for each child node.
      * @param child the child in this relationship.
      * @param parentID the parent's identifier in this relationship.
+     * @param descriptionSpecialNode the description of the special node.
      */
-    public void addNode(Node child, List<String> parentIDs){
+    public void addNode(Node child, List<String> parentIDs, String descriptionSpecialNode){
         
         // First of all, get the child node if it already exists from the 
         // dictionary.
@@ -106,7 +124,6 @@ public class Tree {
         // to watch out for.  Note that the information in this node should
         // be complete since this node is being encountered as a child.
         Node childref = identifierToNode.get(child.getIdentifier());
-        
         if (childref != null){
             
             child.copyInfoExceptChildrenTo(childref);
@@ -128,7 +145,7 @@ public class Tree {
             Node parentRef = identifierToNode.get(parentID);
             if (parentRef == null){
                 
-                parentRef = new Node(parentID);
+                parentRef = new Node(parentID, descriptionSpecialNode);
                 identifierToNode.put(parentID, parentRef);
             }
             
@@ -142,7 +159,7 @@ public class Tree {
      * Add a (true) root to this tree.
      * @param root 
      */
-    public void addRoot(Node root){
+    public void addRoot(Node root, String descriptionSpecialNode){
         
         // See if we already have this root in a map.  If so, use it; otherwise,
         // put the root into the dictionary.
@@ -152,13 +169,71 @@ public class Tree {
             rootRef = root;
             identifierToNode.put(rootRef.getIdentifier(), rootRef);
         }
-        
-        // Add this node as a child to the fake root.
-        fakeRoot.addChild(root);
+        else{
+            root.copyInfoExceptChildrenTo(rootRef);
+            root = rootRef;
+        }
         
         // Mark the location of this node.
         markLocations(root);
+        
+        root.setSpecialNode(descriptionSpecialNode);
+        // Add this node as a child to the fake root.
+        fakeRoot.addChild(root);
+        
     }
     
+    /**
+     * Provides the option of propagating up the genome locations.  This is an
+     * optional operation.  
+     */
+    public void propagateUp(){
+        System.out.println("Propagating up");
+        // send to recursive function.  
+        setLocations(fakeRoot);
+    }
+    
+    /**
+     * Set the locations of this node. This is done recursively.
+     * @param curr the present node to consider.
+     * @return all locations associated with this node.
+     */
+    private void setLocations(Node curr){
+        
+        // get all the children of the present node.
+        TreeSet<Node> children = curr.getChildren();
+//        TreeSet<Node> children = this.getChildrenNodes(curr.getIdentifier()); 
+//        System.out.println(curr);
+//        System.out.println("\t" + children);
+        
+        // locations for this node.
+        HashSet<String> currLocs = curr.getLocs();
+
+        // for each child:
+        for (Node child: children){
+
+            // If this node is special, there is no need to do anything (as
+            // the gene locations of this child are exactly the same as those of
+            // the parent at this point in time.
+            if (child.isSpecial){
+                continue;
+            }
+            
+            // if this node has not already been discovered.
+            if (!child.isDiscovered()){
+                // apply this function to this node.
+                setLocations(child);
+            }
+            
+            // add all locations of this child to this parent node
+            HashSet<String> childLocs =  child.getLocs();
+            currLocs.addAll(childLocs);  
+        }
+        
+        curr.setLocs(currLocs, false);
+        
+        // say that this node has been discovered.
+        curr.discover();
+    }
 
 }

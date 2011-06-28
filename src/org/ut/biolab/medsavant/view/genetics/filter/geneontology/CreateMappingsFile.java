@@ -115,7 +115,7 @@ public class CreateMappingsFile {
         // Does the file already exist?  If it does, don't recreate it.
         destination = destination + fileName;
         File file = new File(destination);
-        System.out.println(file.getAbsolutePath());
+        System.out.println("Mapping file from " + file.getAbsolutePath());
         if (file.exists()){
             return destination;
         }

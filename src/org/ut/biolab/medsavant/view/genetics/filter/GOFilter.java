@@ -4,9 +4,12 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import com.jidesoft.plaf.LookAndFeelFactory;
+import com.jidesoft.swing.CheckBoxTree;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -27,6 +30,7 @@ import javax.swing.SwingWorker;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
@@ -35,6 +39,7 @@ import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.view.genetics.filter.geneontology.*;
+import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -45,7 +50,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class GOFilter {
     
-    private static SelectQueryGO selectStatementGO;
+    private static ClassifiedPositionInfo classifiedPosInfo;
         
     /**
      * Return the filter view for the gene ontology filter.
@@ -87,7 +92,7 @@ public class GOFilter {
         
           class Task extends SwingWorker{
               
-              XTree xtree;
+              GOTree xtree;
 
                 @Override
                 protected Object doInBackground() throws Exception {
@@ -99,6 +104,8 @@ public class GOFilter {
                         xtree = XMLontology.makeTree(destination);
                     }
                     catch(Exception e){
+                        System.out.println("Encountered some kind of problem");
+                        e.printStackTrace();
                     }
                     setProgress(100);
                     return xtree;
@@ -114,8 +121,8 @@ public class GOFilter {
                 // To detect progress with the loading of the tree.
                 public void propertyChange(PropertyChangeEvent evt) {
 
-                    System.out.println("Event name: " + evt.getPropertyName());
-                    System.out.println("Event value: " + evt.getNewValue());
+//                    System.out.println("Event name: " + evt.getPropertyName());
+//                    System.out.println("Event value: " + evt.getNewValue());
 
 //                    if ("state".equals(evt.getPropertyName()) && 
 //                            "DONE".equals(evt.getNewValue() + "")){
@@ -132,6 +139,7 @@ public class GOFilter {
                             container.remove(progressBar);
                             container.add(new JLabel("Could not display the tree"));
                             System.out.println("Could not display the tree.");
+                            e.printStackTrace();
                         }
                         task.removePropertyChangeListener(this);
                     }   
@@ -161,58 +169,71 @@ public class GOFilter {
      * @param container
      * @param xtree 
      */
-    private static void showTree(JPanel container, XTree xtree){
-
+    private static void showTree(JPanel container, GOTree xtree){
+        
         final JButton applyButton = new JButton("Apply");
 
         // label will show number of locations.
         final JLabel numberSelected = new JLabel();
         // Construct jtree from xtree that has been made.
         // Put tree in scrollpane, and scrollpane in panel.
-        final JTree jTree = ConstructJTree.getTree(xtree, true, false);
-        jTree.getSelectionModel().setSelectionMode
-                (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+        // For the tree, we want to use a checkboxtree, a dummy root, and to add 
+        // a package we will be calling "genes" to every single node.
+        
+        final JTree jTree = ConstructJTree.getTree(xtree, true, true);
+        
         // to keep track of the locations of the places selected.
         final HashSet<String> locations = new HashSet<String>();
+
         // Add a listener to the tree.  Note: tree can allow non-contiguous
         // multiple selections.
-        jTree.addTreeSelectionListener(new TreeSelectionListener() {
+        ((CheckBoxTreeNew)jTree).getCheckBoxTreeSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
 
+            
             public void valueChanged(TreeSelectionEvent e) {
 
                 locations.clear();
-                System.out.println("Pressed apply for gene ontology filter");
-                TreePath[] paths = jTree.getSelectionPaths();
-
-                                
+                System.out.println("Selected elements for gene ontology filter.");
+//                TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
+                TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
+               
+                
                 if (paths != null){
+ 
                     for (TreePath path: paths){
-                        if (path.getPathCount() == 1){
-                            continue;
-                        }
-                        applyButton.setEnabled(true);
+                        
+                        System.out.println(path);
+//                        if (path.getPathCount() == 1){
+//                            
+//                            continue;
+//                        }
                         DefaultMutableTreeNode currNode = 
                                 (DefaultMutableTreeNode)path.getLastPathComponent();
                         Node currXnode = (Node) currNode.getUserObject();
-                        ArrayList<ArrayList<String>> arrayLocs = currXnode.getLocs();
+                        
+                        HashSet<String> arrayLocs = currXnode.getLocs();
 
-                        for (ArrayList<String> arrayLoc: arrayLocs){
+                        for (String arrayLoc: arrayLocs){
+                            
+                            String[] split = arrayLoc.split("\t"); 
                             // Need to subtract 1 because of BED format.
                             int formattedEnd = 
-                                    Integer.parseInt(arrayLoc.get(3).trim()) - 1;
+                                    Integer.parseInt(split[3].trim()) - 1;
 
-                            String str = arrayLoc.get(1).trim() + "_" + 
-                                    arrayLoc.get(2).trim() + "_" + formattedEnd;
-                            if (!arrayLoc.get(1).matches(".*_.*")){
+                            String str = split[1].trim() + "_" + 
+                                    split[2].trim() + "_" + formattedEnd;
+                            if (!split[1].matches(".*_.*")){
                                 locations.add(str);
                             }
                         }
                     }
                     if (locations.size() != 1){
-                        numberSelected.setText(locations.size() + " gene location ranges selected");
+                        numberSelected.setText(locations.size() + 
+                                " gene location ranges selected");
                     }
                     else{
-                        numberSelected.setText(locations.size() + " gene location range selected");
+                        numberSelected.setText(locations.size() + 
+                                " gene location range selected");
                     }
                 }
                 else{
@@ -237,7 +258,8 @@ public class GOFilter {
 
             public void actionPerformed(ActionEvent e) {
                 // select all the nodes in the tree.
-                System.out.println("All nodes in the tree selected; not yet implemented");
+                System.out.println("All nodes in the tree selected");
+                ((CheckBoxTreeNew)jTree).selectAllFromRoot();
             }
         });
         bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
@@ -247,8 +269,8 @@ public class GOFilter {
 
             public void actionPerformed(ActionEvent e) {
                 // deselect any node in the tree.
-                jTree.clearSelection();
-                FilterController.removeFilter("position gene Ont");
+                ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().clearSelection();
+//                FilterController.removeFilter("position gene Ont");
             }
         });
         bottomContainer.add(selectNone);
@@ -267,9 +289,8 @@ public class GOFilter {
             public void actionPerformed(ActionEvent e) {
                 
                 applyButton.setEnabled(false); 
-                // wilhelm
                 // Select query statement for GO.
-                selectStatementGO = new SelectQueryGO();
+                classifiedPosInfo = new ClassifiedPositionInfo();
 
                 System.out.println("Pressed apply for gene ontology filter");
                 TreePath[] paths = jTree.getSelectionPaths();
@@ -279,16 +300,16 @@ public class GOFilter {
                     String[] split = location.split("_");
                     Double start = Integer.parseInt(split[1]) + 0.0;
                     Double end = Integer.parseInt(split[2]) + 0.0;
-                    selectStatementGO.addCondition(split[0], start, end);
+                    classifiedPosInfo.addCondition(split[0], start, end);
                 } 
 
                 // If there are no conditions at all, do not display
                 // anything (most intuitive). So, create bogus condition that 
                 // will never be satisfied.
-                if (selectStatementGO.getConditions().isEmpty() && paths != null){
-                    selectStatementGO.addCondition("chr1", 23, 22); 
+                if (classifiedPosInfo.getConditions().isEmpty() && paths != null){
+                    classifiedPosInfo.addCondition("chr1", 23, 22); 
                 }
-                final HashMap<String, List<Range>> map = selectStatementGO.getConditions();
+                final HashMap<String, List<Range>> map = classifiedPosInfo.getConditions();
                 
                 Filter f = new QueryFilter() {
 
@@ -306,14 +327,14 @@ public class GOFilter {
                             for (Range range: ranges){
 
                                 BinaryCondition innerCond1 = BinaryCondition.greaterThan
-                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.POSITION_COL), range.getMin(), true);
+                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMin(), true);
                                 BinaryCondition innerCond2 = BinaryCondition.lessThan
-                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.POSITION_COL), range.getMax(), true);
+                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMax(), true);
                                 BinaryCondition[] condTogether = {innerCond1, innerCond2};
                                 listInnerCond.add(ComboCondition.and(condTogether));
                             } // for each range for the chromosome of interest.
                             BinaryCondition chrCond = BinaryCondition.equalTo
-                                    (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(SelectQueryGO.CHROM_COL), key);
+                                    (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
                             conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
                         } // for each chromosome.
                         return conds;
@@ -324,7 +345,7 @@ public class GOFilter {
                         return " position gene Ont";
                     }
                 };
-                System.out.println("Adding Filter" + f.getName());
+                System.out.println("Adding Filter " + f.getName());
                 FilterController.addFilter(f);
             }
         });        

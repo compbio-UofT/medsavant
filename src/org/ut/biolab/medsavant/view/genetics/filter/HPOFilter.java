@@ -4,11 +4,18 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.jidesoft.swing.CheckBoxTree;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -20,10 +27,19 @@ import javax.swing.JTree;
 import javax.swing.SwingWorker;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.model.Filter;
+import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOParser;
+import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
+import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
+import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -33,6 +49,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class HPOFilter {
     
+    private static ClassifiedPositionInfo classifiedPos;
+            
     /**
      * Returns the filterview object associated with the human phenotype 
      * ontology.
@@ -117,7 +135,7 @@ public class HPOFilter {
     }
     
     /**
-     * Display the jtree in the container, once it has been loaded.
+     * Display the jTree in the container, once it has been loaded.
      * @param container JPanel object
      * @param tree the tree containing the ontology information.
      */
@@ -126,26 +144,69 @@ public class HPOFilter {
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
         
+        final JLabel numberSelected = new JLabel();
+        
+        // To keep track of the locations in question.
+        final HashSet<String> locations = new HashSet<String>();
+        
         // Now that we have the tree, construct jTree, and display it.
         // Enable multiple discontinuous selection.
-        final JTree jtree = ConstructJTree.getTree(tree, false, false);
-        jtree.getSelectionModel().setSelectionMode
+        final JTree jTree = ConstructJTree.getTree(tree, false, true);
+        jTree.getSelectionModel().setSelectionMode
                 (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-        jtree.addTreeSelectionListener(new TreeSelectionListener() {
+        ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
 
             public void valueChanged(TreeSelectionEvent e) {
-                applyButton.setEnabled(true); 
                 
-                // do something here.
-
+                locations.clear();
+                System.out.println("Selected elements from the Human Phenotype Filter.");
+                TreePath[] paths = 
+                        ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().
+                        getSelectionPaths();
+                
+                if (paths != null){
+                    for (TreePath path: paths){
+                        System.out.println(path);
+                        DefaultMutableTreeNode currVisualNode = 
+                                (DefaultMutableTreeNode)path.getLastPathComponent();
+                        Node currNode = (Node)currVisualNode.getUserObject();
+                        
+                        HashSet<String> arrayLocs = currNode.getLocs();
+//                        System.out.println("For this path\n" + arrayLocs);
+                        for (String arrayLoc: arrayLocs){
+                            
+                            String[] split = arrayLoc.split("\t");
+                            // Note: BED format fixed already so get locations as they are.
+                            String str = split[0] + "\t" + split[1] + "\t" + split[2];
+                            locations.add(str);
+                        }
+                    }
+                    
+                    if (locations.size() != 1){
+                        numberSelected.setText(locations.size() + 
+                                " gene location ranges selected");
+                    }
+                    else{
+                        numberSelected.setText(locations.size() + 
+                                " gene location range selected");                        
+                    }
+                }
+                else{
+                    numberSelected.setText("");
+                }
+                
+                applyButton.setEnabled(true); 
+//                System.out.println("Locations\n" + locations);
             }
         });
         
-        JScrollPane scrollPane = new JScrollPane(jtree);
+        JScrollPane scrollPane = new JScrollPane(jTree);
         scrollPane.setAlignmentX(0F);
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.add(Box.createVerticalBox());
         container.add(scrollPane);
+        
+        container.add(numberSelected);
         
         JPanel bottomContainer = new JPanel();
         
@@ -153,7 +214,8 @@ public class HPOFilter {
         selectAll.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // select all the nodes in the tree.
-                System.out.println("All nodes in the tree selected; not yet implemented");
+                System.out.println("All nodes in the tree selected");
+                ((CheckBoxTreeNew)jTree).selectAllFromRoot();
             }
         });
         bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
@@ -163,8 +225,8 @@ public class HPOFilter {
 
             public void actionPerformed(ActionEvent e) {
                 // deselect any node in the tree.
-                jtree.clearSelection();
-                FilterController.removeFilter("position gene Ont");
+                ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().clearSelection();
+//                FilterController.removeFilter("position human phenotype ont");
             }
         });
         bottomContainer.add(selectNone);
@@ -177,9 +239,66 @@ public class HPOFilter {
         applyButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                applyButton.setEnabled(false);
                 
-                // And do something here...
+                applyButton.setEnabled(false); 
+                // Select query statement for GO.
+                classifiedPos = new ClassifiedPositionInfo();
+
+                System.out.println("Pressed apply for gene ontology filter");
+                TreePath[] paths = jTree.getSelectionPaths();
+                
+                for (String location: locations){
+
+                    String[] split = location.split("\t");
+                    Double start = Integer.parseInt(split[1]) + 0.0;
+                    Double end = Integer.parseInt(split[2]) + 0.0;
+                    classifiedPos.addCondition(split[0], start, end);
+                } 
+
+                // If there are no conditions at all, do not display
+                // anything (most intuitive). So, create bogus condition that 
+                // will never be satisfied.
+                if (classifiedPos.getConditions().isEmpty() && paths != null){
+                    classifiedPos.addCondition("chr1", 23, 22); 
+                }
+                final HashMap<String, List<Range>> map = classifiedPos.getConditions();
+                
+                Filter f = new QueryFilter() {
+
+                    @Override
+                    public Condition[] getConditions() {
+                        
+                        Condition[] conds = new Condition[map.keySet().size()];
+                        int i = 0;
+                       
+                        for (String key: map.keySet()){
+                            
+                            List<ComboCondition> listInnerCond = 
+                                    new ArrayList<ComboCondition>();
+                            List<Range> ranges = map.get(key);
+                            for (Range range: ranges){
+
+                                BinaryCondition innerCond1 = BinaryCondition.greaterThan
+                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMin(), true);
+                                BinaryCondition innerCond2 = BinaryCondition.lessThan
+                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMax(), true);
+                                BinaryCondition[] condTogether = {innerCond1, innerCond2};
+                                listInnerCond.add(ComboCondition.and(condTogether));
+                            } // for each range for the chromosome of interest.
+                            BinaryCondition chrCond = BinaryCondition.equalTo
+                                    (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
+                            conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
+                        } // for each chromosome.
+                        return conds;
+                    }
+
+                    @Override
+                    public String getName() {
+                        return " position gene Ont";
+                    }
+                };
+                System.out.println("Adding Filter " + f.getName());
+                FilterController.addFilter(f);
             }
         });
     }

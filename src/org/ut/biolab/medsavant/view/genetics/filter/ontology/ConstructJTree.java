@@ -4,12 +4,14 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter.ontology;
 
+import com.jidesoft.swing.CheckBoxTree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 
 /**
  *
@@ -21,7 +23,8 @@ public class ConstructJTree {
      * Obtain the jTree object to be made from this ontology.
      * @param tree the Tree object containing ontology information.
      * @param isForest true iff there is more than one root, in which case, a
-     * default root is created.
+     * default root is created. Note that there is a packageToAdd, and isForest
+     * is true, the root will not have a child with the package to be added.
      * @param isCheckBoxTree true iff the tree is to be a check box tree.
      * @return the jTree object made.
      */
@@ -29,21 +32,32 @@ public class ConstructJTree {
 
         DefaultMutableTreeNode actualRoot;
         if (isForest){
-            // "dummy" root of the tree.
-            Node root = new Node("...");
-            root.setDescription("...");
+            // "dummy" root of the tree.  No special node here...
+//            Node root = new Node("...", null);
+//            root.setDescription("...");
+            Node root = tree.fakeRoot;
             actualRoot = new DefaultMutableTreeNode(root);
         }
         else{
             actualRoot = 
                     new DefaultMutableTreeNode(tree.getRootNodes().toArray(new Node[1])[0]);
         }
+        
+        
         // Add the nodes beneath the root node to this tree.
         addNodes(actualRoot, tree, isForest);
-        JTree jtree = new JTree(actualRoot);
+        JTree displayedTree = null;
         
-        return jtree;
+        if (!isCheckBoxTree){
+            displayedTree = new JTree(actualRoot);
+        }
+        else{
+            displayedTree = new CheckBoxTreeNew(actualRoot);
+        }
+        
+        return displayedTree;
     }
+    
     
     /**
      * Add the nodes to form part of the jTree.
@@ -51,7 +65,8 @@ public class ConstructJTree {
      * @param tree the tree containing all ontology information.
      * @param isForest true iff the tree has multiple roots.
      */
-    private static void addNodes(DefaultMutableTreeNode actualRoot, Tree tree, boolean isForest){
+    private static void addNodes
+            (DefaultMutableTreeNode actualRoot, Tree tree, boolean isForest){
         
         Set<Node> roots;
         // To contain the roots of the tree.
@@ -61,7 +76,7 @@ public class ConstructJTree {
         else{
             roots = ((Node)actualRoot.getUserObject()).getChildren();
         }
-        
+
         // Get the name of the children while going down the tree.
         TreeSet<Node> children;
         
@@ -87,7 +102,7 @@ public class ConstructJTree {
             // The future parents to be considered.
             parentNodes.add(child);
         }
-        
+
         // While we still have children nodes...
         while(!parentNodes.isEmpty()){
             
@@ -101,7 +116,7 @@ public class ConstructJTree {
 
                 for (Node child2: children){
 
-                    child = new DefaultMutableTreeNode(child2);
+                    child = new DefaultMutableTreeNode(child2);                   
                     childrenNodes.add(child);
                     parent.add(child);
                 }
@@ -110,7 +125,7 @@ public class ConstructJTree {
             // Now have the children become parents.
             parentNodes.clear();
             parentNodes.addAll(childrenNodes);
-            childrenNodes.clear();           
+            childrenNodes.clear();   
         }
 
     }

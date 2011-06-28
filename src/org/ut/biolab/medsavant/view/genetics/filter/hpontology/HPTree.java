@@ -6,6 +6,7 @@ package org.ut.biolab.medsavant.view.genetics.filter.hpontology;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
 
 /**
@@ -14,14 +15,16 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
  */
 public class HPTree extends Tree{
     
-     /**
-     * Map from GO ID to locations
-     */
-    HashMap<String, ArrayList<ArrayList<String>>> idToLocs;
+//     /**
+//     * Map from GO ID to locations
+//     */
+//    HashMap<String, HashSet<String>> idToLocs;
         
-        HPTree(){
+        public HPTree() throws Exception{
             super();
-            this.idToLocs = super.idToLocs;
+            super.idToLocs = CreateMappingsFile.getMappings();
+//            System.out.println(idToLocs);
+//            this.idToLocs = super.idToLocs;
         }
     
 }
