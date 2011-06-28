@@ -46,11 +46,12 @@ public class ViewController extends JPanel {
         SectionView parent = view.getParent();
         
         if (parent != currentSection) {
-            if (parent.getPersistentPanels() != null) {
+            JPanel[] persistentPanels = parent.getPersistentPanels();
+            if (persistentPanels != null) {
                 sectionPanel.setVisible(true);
                 buttonSectionPanelController.setVisible(true);
                 buttonSectionPanelController.setEnabled(true);
-                sectionPanel.setSectionPersistencePanels(view.getParent().getPersistentPanels());
+                sectionPanel.setSectionPersistencePanels(persistentPanels);
             } else {
                 sectionPanel.setVisible(false);
                 buttonSectionPanelController.setVisible(false);
