@@ -19,6 +19,6 @@ public interface DetailedListModel {
 
     public List<Class> getColumnClasses();
 
-    public List<Boolean> getColumnVisibility();
+    public List<Integer> getHiddenColumns();
     
 }

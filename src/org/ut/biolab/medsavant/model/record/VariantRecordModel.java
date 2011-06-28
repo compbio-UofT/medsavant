@@ -553,18 +553,25 @@ public class VariantRecordModel {
         return null;
     }
 
-    public static List<Boolean> getDefaultColumns(){
-        List<Boolean> v = new ArrayList<Boolean>();
+    public static List<Integer> getDefaultColumns(){
+        List<Integer> v = new ArrayList<Integer>();
         for (int i = 0; i < NUM_FIELDS; i++) {
             switch (i) {
                 case INDEX_OF_GENOMEID:
-                    v.add(DEFAULT_GENOMEID);
+                    if(!DEFAULT_GENOMEID){
+                        v.add(i);
+                    }
+                    //v.add(DEFAULT_GENOMEID);
                     break;
                 case INDEX_OF_PIPELINEID:
-                    v.add(DEFAULT_PIPELINEID);
+                    if(!DEFAULT_PIPELINEID){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_DNAID:
-                    v.add(DEFAULT_DNAID);
+                    if(!DEFAULT_DNAID){
+                        v.add(i);
+                    }
                     break;
                 /*case INDEX_OF_CALLDETAILS:
                     v.add(VariantTableSchema.ALIAS_INFORMATION);
@@ -572,79 +579,127 @@ public class VariantRecordModel {
                  *
                  */
                 case INDEX_OF_CHROM:
-                    v.add(DEFAULT_CHROM);
+                    if(!DEFAULT_CHROM){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_POS:
-                    v.add(DEFAULT_POS);
+                    if(!DEFAULT_POS){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_ID:
-                    v.add(DEFAULT_ID);
+                    if(!DEFAULT_ID){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_REF:
-                    v.add(DEFAULT_REF);
+                    if(!DEFAULT_REF){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_ALT:
-                    v.add(DEFAULT_ALT);
+                    if(!DEFAULT_ALT){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_QUAL:
-                    v.add(DEFAULT_QUAL);
+                    if(!DEFAULT_QUAL){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_FILTER:
-                    v.add(DEFAULT_FILTER);
+                    if(!DEFAULT_FILTER){
+                        v.add(i);
+                    }
                     break;
                 //case INDEX_OF_INFO:
                 //    v.add(VariantTableSchema.ALIAS_INFORMATION);
                 //    break;
                 case INDEX_OF_AA:
-                    v.add(DEFAULT_AA);
+                    if(!DEFAULT_AA){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_AC:
-                    v.add(DEFAULT_AC);
+                    if(!DEFAULT_AC){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_AF:
-                    v.add(DEFAULT_AF);
+                    if(!DEFAULT_AF){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_AN:
-                    v.add(DEFAULT_AN);
+                    if(!DEFAULT_AN){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_BQ:
-                    v.add(DEFAULT_BQ);
+                    if(!DEFAULT_BQ){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_CIGAR:
-                    v.add(DEFAULT_CIGAR);
+                    if(!DEFAULT_CIGAR){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_DB:
-                    v.add(DEFAULT_DB);
+                    if(!DEFAULT_DB){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_DP:
-                    v.add(DEFAULT_DP);
+                    if(!DEFAULT_DP){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_END:
-                    v.add(DEFAULT_END);
+                    if(!DEFAULT_END){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_H2:
-                    v.add(DEFAULT_H2);
+                    if(!DEFAULT_H2){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_MQ:
-                    v.add(DEFAULT_MQ);
+                    if(!DEFAULT_MQ){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_MQ0:
-                    v.add(DEFAULT_MQ0);
+                    if(!DEFAULT_MQ0){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_NS:
-                    v.add(DEFAULT_NS);
+                    if(!DEFAULT_NS){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_SB:
-                    v.add(DEFAULT_SB);
+                    if(!DEFAULT_SB){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_SOMATIC:
-                    v.add(DEFAULT_SOMATIC);
+                    if(!DEFAULT_SOMATIC){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_VALIDATED:
-                    v.add(DEFAULT_VALIDATED);
+                    if(!DEFAULT_VALIDATED){
+                        v.add(i);
+                    }
                     break;
                 case INDEX_OF_CUSTOMINFO:
-                    v.add(DEFAULT_CUSTOMINFO);
+                    if(!DEFAULT_CUSTOMINFO){
+                        v.add(i);
+                    }
                     break;
             }
         }

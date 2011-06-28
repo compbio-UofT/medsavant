@@ -278,9 +278,8 @@ public class ImportFileView extends javax.swing.JDialog {
             columnNames.add(this.getFileFormat().getFieldNumberToFieldNameMap().get(i));
             columnClasses.add(this.getFileFormat().getFieldNumberToClassMap().get(i));
         }
-        List<Boolean> columnVisibility = Util.getTrueList(columnNames.size());
         
-        SearchableTablePanel searchableTablePanel = new SearchableTablePanel(data,columnNames,columnClasses,columnVisibility);
+        SearchableTablePanel searchableTablePanel = new SearchableTablePanel(data,columnNames,columnClasses,new ArrayList<Integer>());
         
         this.previewPanel.remove(waitPanel);
         this.previewPanel.add(searchableTablePanel,BorderLayout.CENTER);

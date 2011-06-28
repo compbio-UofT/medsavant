@@ -116,7 +116,7 @@ public class SplitScreenView extends JPanel {
             final List<Vector> data = list;
             List<String> columnNames = listModel.getColumnNames();
             List<Class> columnClasses = listModel.getColumnClasses();
-            List<Boolean> columnVisibility = listModel.getColumnVisibility();
+            List<Integer> columnVisibility = listModel.getHiddenColumns();
 
             final SearchableTablePanel stp = new SearchableTablePanel(data, columnNames, columnClasses, columnVisibility);
 

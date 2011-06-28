@@ -44,12 +44,10 @@ public class IndividualListModel implements DetailedListModel {
         return result;
     }
 
-    public List<Boolean> getColumnVisibility() {
-        List<Boolean> result = new ArrayList<Boolean>();
-        result.add(true);
-        return result;
+    public List<Integer> getHiddenColumns() {
+        return new ArrayList<Integer>();
     }
-
+    
     public static String getIndividualID(Vector r) {
         return (String) r.get(0);
     }

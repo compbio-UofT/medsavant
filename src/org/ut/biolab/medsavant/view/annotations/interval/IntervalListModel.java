@@ -43,11 +43,9 @@ public class IntervalListModel implements DetailedListModel {
         result.add(String.class);
         return result;
     }
-
-    public List<Boolean> getColumnVisibility() {
-        List<Boolean> result = new ArrayList<Boolean>();
-        result.add(true);
-        return result;
+    
+    public List<Integer> getHiddenColumns() {
+        return new ArrayList<Integer>();
     }
 
     public static String getIndividualID(Vector r) {
