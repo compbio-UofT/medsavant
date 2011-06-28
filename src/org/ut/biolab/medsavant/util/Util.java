@@ -9,6 +9,7 @@ import com.jidesoft.swing.JideButton;
 import fiume.vcf.VariantRecord;
 import java.awt.Color;
 import java.awt.Font;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Vector;
@@ -101,6 +102,26 @@ public class Util {
         }
         s += ")";
         return s;
+    }
+
+    public static List<Vector> convertToListOfVectors(List<String[]> rest) {
+        List<Vector> result = new ArrayList<Vector>(rest.size());
+        for (String[] row : rest) {
+            Vector v = new Vector();
+            for (String s : row) {
+                v.add(s);
+            }
+            result.add(v);
+        }
+        return result;
+    }
+
+    public static List<Boolean> getTrueList(int size) {
+        List<Boolean> results = new ArrayList<Boolean>();
+        for (int i = 0; i < size; i++) {
+            results.add(true);
+        }
+        return results;
     }
 
 

@@ -5,6 +5,7 @@
 
 package org.ut.biolab.medsavant.db;
 
+import com.healthmarketscience.sqlbuilder.InsertQuery;
 import fiume.vcf.VCFParser;
 import fiume.vcf.VariantRecord;
 import fiume.vcf.VariantSet;
@@ -22,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -31,6 +33,7 @@ import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.view.dialog.ConfirmDialog;
 
@@ -355,6 +358,65 @@ public class DBUtil {
         } catch (Exception ex) {
             Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public static void addGeneListToDatabase(String geneListName, Iterator<String[]> i) throws NonFatalDatabaseException {
+        
+        Connection conn = ConnectionController.connect();
+        
+        // create gene list
+       // try {
+            
+            /*
+            InsertQuery q = new InsertQuery(MedSavantDatabase.getInstance().getGeneListTableSchema());
+            q.addPreparedColumns(columns) 
+            
+             * 
+             */
+                    /**
+                     * TODO: all this!
+                     */
+                    
+            //SelectQuery q = new SelectQuery();
+            /*
+        q.addFromTable(t.getTable());
+        q.addCustomColumns(FunctionCall.min().addColumnParams(col));
+        q.addCustomColumns(FunctionCall.max().addColumnParams(col));
+
+        Statement s = conn.createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+            
+            
+            
+            
+            
+            
+            
+            
+            String sql = "INSERT INTO cohort_membership ("
+                    + "cohort_id,"
+                    + "hospital_id) "
+                    + "VALUES (?,?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            conn.setAutoCommit(false);
+
+            for(String patient_id : patient_ids){       
+                pstmt.setInt(1, cohort_id);
+                pstmt.setString(2, patient_id);
+                
+                pstmt.executeUpdate();
+            }
+
+            conn.commit();
+            conn.setAutoCommit(true);
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        // put genes into gene list
+             * 
+             */
     }
 
 }

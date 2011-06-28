@@ -7,7 +7,7 @@ package org.ut.biolab.medsavant.view.patients;
 
 import org.ut.biolab.medsavant.view.patients.individual.IndividualsPage;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.view.patients.individual.cohorts.CohortsPage;
+import org.ut.biolab.medsavant.view.patients.cohorts.CohortsPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 

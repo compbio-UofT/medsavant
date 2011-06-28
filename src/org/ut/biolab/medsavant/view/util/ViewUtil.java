@@ -75,6 +75,11 @@ public class ViewUtil {
         return new EmptyBorder(10,10,10,10);
     }
     
+    
+    public static Border getHugeBorder() {
+        return new EmptyBorder(25,25,25,25);
+    }
+    
     public static Border getGiganticBorder() {
         return new EmptyBorder(100,100,100,100);
     }
@@ -236,6 +241,13 @@ public class ViewUtil {
     public static Color getDetailsBackgroundColor() {
         return new Color(40,40,40);
     }
+
+    public static Component getDialogLabel(String string) {
+        JLabel l = new JLabel(string);
+        l.setFont(new Font("Tahoma",Font.BOLD,14));
+        return l;
+    }
+
     
     public enum OS { Unknown, Windows, Linux, Mac };
     
@@ -341,6 +353,14 @@ public class ViewUtil {
     public static JPanel getLeftAlignedComponent(Component c) {
         JPanel p = ViewUtil.getClearPanel();
         p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+        p.add(c); p.add(Box.createHorizontalGlue());
+        return p;
+    }
+    
+    public static JPanel getCenterAlignedComponent(Component c) {
+        JPanel p = ViewUtil.getClearPanel();
+        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+        p.add(Box.createHorizontalGlue());
         p.add(c); p.add(Box.createHorizontalGlue());
         return p;
     }

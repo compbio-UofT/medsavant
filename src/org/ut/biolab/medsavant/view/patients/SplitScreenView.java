@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.patients;
 
+import org.ut.biolab.medsavant.view.util.WaitPanel;
 import com.jidesoft.utils.SwingWorker;
 import fiume.table.SearchableTablePanel;
 import fiume.table.Util;
@@ -22,6 +23,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import org.ut.biolab.medsavant.view.patients.cohorts.CohortDetailedView;
+import org.ut.biolab.medsavant.view.patients.cohorts.CohortListModel;
 import org.ut.biolab.medsavant.view.patients.individual.IndividualDetailedView;
 import org.ut.biolab.medsavant.view.patients.individual.IndividualListModel;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
@@ -54,7 +57,7 @@ public class SplitScreenView extends JPanel {
             cl = new CardLayout();
             this.setLayout(cl);
 
-            this.add(new WaitPanel(), CARD_WAIT);
+            this.add(new WaitPanel("Getting list"), CARD_WAIT);
             showCard = new JPanel();
             this.add(showCard, CARD_SHOW);
 
