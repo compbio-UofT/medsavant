@@ -8,6 +8,8 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -21,6 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import org.ut.biolab.medsavant.db.DBUtil;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
@@ -38,11 +41,9 @@ public class CohortDetailedView extends DetailedView {
     private final JPanel content;
     private final JPanel details;
     private final JPanel menu;
-
-    @Override
-    public void setMultipleSelections(Vector[] selectedRows) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    private String[] cohortNames;
+    private JList list;
+    private String cohortName;
     
     private class CohortDetailsSW extends SwingWorker {
         private final String cohortName;
@@ -84,14 +85,14 @@ public class CohortDetailedView extends DetailedView {
             //details.add(l);
             lm.addElement((String) v.get(2));
         }
-        JList list = (JList) ViewUtil.clear(new JList(lm));
+        list = (JList) ViewUtil.clear(new JList(lm));
         list.setBackground(ViewUtil.getDetailsBackgroundColor());
         list.setForeground(Color.white);
         JScrollPane jsp = ViewUtil.getClearBorderedJSP(list);
         details.add(jsp, BorderLayout.CENTER);
         //list.setOpaque(false);
 
-        details.updateUI();
+        details.updateUI();  
     }
     
     public CohortDetailedView() {
@@ -102,11 +103,11 @@ public class CohortDetailedView extends DetailedView {
         details = ViewUtil.getClearPanel();
         menu = ViewUtil.getButtonPanel();
         
-        menu.add(new JButton("Set default Case cohort"));
-        menu.add(new JButton("Set default Control cohort"));
-        menu.add(new JButton("Add individual(s) to cohort"));
-        menu.add(new JButton("Remove individual(s) from cohort"));
-        menu.add(new JButton("Delete cohort"));
+        menu.add(setDefaultCaseButton());
+        menu.add(setDefaultControlButton());
+        menu.add(removeIndividualsButton());
+        menu.add(deleteCohortButton());
+        menu.setVisible(false);
         
         content.setLayout(new BorderLayout());
         
@@ -116,8 +117,8 @@ public class CohortDetailedView extends DetailedView {
     
     @Override
     public void setSelectedItem(Vector item) {
-        String patientId = (String) item.get(0);
-        setTitle(patientId);
+        cohortName = (String) item.get(0);
+        setTitle(cohortName);
         
         details.removeAll();
         details.updateUI();
@@ -125,8 +126,75 @@ public class CohortDetailedView extends DetailedView {
         if (sw != null) {
             sw.cancel(true);
         }
-        sw = new CohortDetailsSW(patientId);
+        sw = new CohortDetailsSW(cohortName);
         sw.execute();
+        
+        if(menu != null) menu.setVisible(true);
     }
     
+    @Override
+    public void setMultipleSelections(Vector[] items){
+        cohortNames = new String[items.length];
+        for(int i = 0; i < items.length; i++){
+            cohortNames[i] = (String) items[i].get(0);
+        }
+    }
+    
+    private JButton setDefaultCaseButton(){
+        JButton button = new JButton("Set default Case cohort");
+        button.setBackground(ViewUtil.getDetailsBackgroundColor());
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //TODO
+            }
+        }); 
+        return button;
+    }
+    
+    private JButton setDefaultControlButton(){
+        JButton button = new JButton("Set default Control cohort");
+        button.setBackground(ViewUtil.getDetailsBackgroundColor());
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //TODO
+            }
+        }); 
+        return button;
+    }
+    
+    private JButton removeIndividualsButton(){
+        JButton button = new JButton("Remove individual(s) from cohort");
+        button.setBackground(ViewUtil.getDetailsBackgroundColor());
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Object[] selected = list.getSelectedValues();
+                String[] patientIds = new String[selected.length];
+                for(int i = 0; i < selected.length; i++){
+                    patientIds[i] = (String) selected[i];
+                }
+                if(patientIds != null && patientIds.length > 0){
+                    DBUtil.removeIndividualsFromCohort(cohortName, patientIds);     
+                    sw = new CohortDetailsSW(cohortName);
+                    sw.execute();
+                }
+            }
+        }); 
+        return button;
+    }
+    
+    private JButton deleteCohortButton(){
+        JButton button = new JButton("Delete cohort(s)");
+        button.setBackground(ViewUtil.getDetailsBackgroundColor());
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(cohortNames != null && cohortNames.length > 0){
+                    DBUtil.deleteCohorts(cohortNames);     
+                    parent.refresh();
+                }
+            }
+        }); 
+        return button;
+    }
+    
+
 }
