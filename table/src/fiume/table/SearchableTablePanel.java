@@ -126,6 +126,16 @@ public class SearchableTablePanel extends JPanel {
             filterField.setObjectConverterManagerEnabled(true);
             table.setModel(new LuceneFilterableTableModel(filterField.getDisplayTableModel()));
             columnChooser.hideColumns(table, hiddenColumns);
+                       
+            int[] favColumns = new int[columnNames.size() - hiddenColumns.size()];
+            int pos = 0;
+            for(int i = 0; i < columnNames.size(); i++){
+                if(!hiddenColumns.contains(i)){
+                    favColumns[pos] = i;
+                    pos++;
+                }             
+            }                       
+            columnChooser.setFavoriteColumns(favColumns);
         }
         
     }
@@ -391,16 +401,7 @@ public class SearchableTablePanel extends JPanel {
     }    
     
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
-        
-        /*@Override
-        protected void hideColumn(JTable table, int columnIndex){
-            super.hideColumn(table, columnIndex);
-            if(!hiddenColumns.contains(columnIndex)){
-                hiddenColumns.add(columnIndex);
-            }
-        }*/
-
-            
+                  
         public void hideColumns(JTable table, List<Integer> indices){
             for(Integer i : indices){
                 hideColumn(table, i);
