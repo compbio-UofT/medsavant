@@ -5,8 +5,11 @@
 package fiume.table;
 
 import com.jidesoft.grid.AutoFilterTableHeader;
+import com.jidesoft.grid.AutoResizePopupMenuCustomizer;
 import com.jidesoft.grid.QuickTableFilterField;
 import com.jidesoft.grid.SortableTable;
+import com.jidesoft.grid.TableColumnChooserPopupMenuCustomizer;
+import com.jidesoft.grid.TableHeaderPopupMenuInstaller;
 import com.jidesoft.lucene.LuceneFilterableTableModel;
 import com.jidesoft.lucene.LuceneQuickTableFilterField;
 import com.jidesoft.swing.JideButton;
@@ -31,6 +34,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 
@@ -63,7 +67,9 @@ public class SearchableTablePanel extends JPanel {
     private final JButton gotoPrevious;
     private final JButton gotoNext;
     private final JButton gotoLast;
-    private List<Boolean> defaultColumns;
+    
+    private ColumnChooser columnChooser;
+    private List<Integer> hiddenColumns;
 
     public SortableTable getTable() {
         return table;
@@ -78,16 +84,15 @@ public class SearchableTablePanel extends JPanel {
     }
 
     public void updateView() {
-
+        
         if (data == null) { return; }
 
         List<List> pageData = getDataOnPage(this.getPageNumber(),data);
 
+        boolean first = false;
         if (model == null) {
             model = new GenericTableModel(pageData, columnNames, columnClasses);
-            boolean[] arr = new boolean[defaultColumns.size()];
-            for(int i = 0; i < defaultColumns.size(); i++) arr[i] = defaultColumns.get(i);
-            model.setVisibleColumns(arr);
+            first = true;
         } else {
             model.getDataVector().removeAllElements();
             model.getDataVector().addAll(pageData);
@@ -113,17 +118,16 @@ public class SearchableTablePanel extends JPanel {
         int end = getTotalNumPages() == 0 ? 0 : Math.min(start + this.getRowsPerPage()-1, this.getTotalRowCount());
         amountLabel.setText("Showing " + start + " - " + end + " of " + data.size() + " records");
 
-        int[] columns = new int[columnNames.size()];
-        for (int i = 0; i < columns.length; i++) { columns[i] = i; }
-
-        boolean[] visibleColumns = model.getVisibleColumns().clone();
-        model.resetVisible(); //make all columns visible temporarily
-        filterField.setTableModel(model);
-        filterField.setColumnIndices(columns);
-        filterField.setObjectConverterManagerEnabled(true);
-        model.setVisibleColumns(visibleColumns); //replace column visibility
-
-        table.setModel(new LuceneFilterableTableModel(filterField.getDisplayTableModel()));
+        if(first) {       
+            int[] columns = new int[columnNames.size()];
+            for (int i = 0; i < columns.length; i++) { columns[i] = i; }
+            filterField.setTableModel(model);
+            filterField.setColumnIndices(columns);
+            filterField.setObjectConverterManagerEnabled(true);
+            table.setModel(new LuceneFilterableTableModel(filterField.getDisplayTableModel()));
+            columnChooser.hideColumns(table, hiddenColumns);
+        }
+        
     }
 
     private void setTableModel(List<List> data, List<String> columnNames, List<Class> columnClasses) {
@@ -133,17 +137,17 @@ public class SearchableTablePanel extends JPanel {
         updateView();
     }
     
-    public SearchableTablePanel(List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Boolean> columnVisibility){
-        this(data, columnNames, columnClasses, columnVisibility, true, true, ROWSPERPAGE_2, true);
+    public SearchableTablePanel(List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns){
+        this(data, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true);
     }
     
     public SearchableTablePanel(
-            List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Boolean> columnVisibility, 
+            List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, 
             boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection) {
 
         this.ROWSPERPAGE_X = defaultRows;      
         
-        this.defaultColumns = columnVisibility;
+        this.hiddenColumns = hiddenColumns;
         table = new SortableTable() {
 
             @Override
@@ -178,6 +182,12 @@ public class SearchableTablePanel extends JPanel {
         //table.setFont(new Font("Times New Roman", Font.PLAIN, 14));
 
         table.setAutoResizeMode(SortableTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        
+        //column chooser
+        TableHeaderPopupMenuInstaller installer = new TableHeaderPopupMenuInstaller(table);
+        installer.addTableHeaderPopupMenuCustomizer(new AutoResizePopupMenuCustomizer());      
+        columnChooser = new ColumnChooser();        
+        installer.addTableHeaderPopupMenuCustomizer(columnChooser);
 
         AutoFilterTableHeader header = new AutoFilterTableHeader(table);
         header.setAutoFilterEnabled(true);
@@ -195,20 +205,6 @@ public class SearchableTablePanel extends JPanel {
         if(allowSearch){
             fieldPanel.add(filterField);
         }
-        
-        JideButton columnsButton = new JideButton("Choose Columns");
-        final SearchableTablePanel instance = this;
-        columnsButton.addMouseListener(new MouseListener() {
-            public void mouseClicked(MouseEvent e) {
-                ColumnChooser cc = new ColumnChooser(instance, model);
-            }
-            public void mousePressed(MouseEvent e) {}
-            public void mouseReleased(MouseEvent e) {}
-            public void mouseEntered(MouseEvent e) {}
-            public void mouseExited(MouseEvent e) {}
-        });
-        fieldPanel.add(new JSeparator(SwingConstants.VERTICAL));
-        fieldPanel.add(columnsButton);
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
@@ -311,7 +307,7 @@ public class SearchableTablePanel extends JPanel {
         this.add(fieldPanel, BorderLayout.BEFORE_FIRST_LINE);
         this.add(bottomPanel,BorderLayout.AFTER_LAST_LINE);
 
-        this.add(tablePanel);
+        this.add(tablePanel);      
     }
 
     private void setNumRowsPerPage(int num) {
@@ -392,5 +388,26 @@ public class SearchableTablePanel extends JPanel {
 
     public void setSelectionMode(int selectionMode) {
         table.setSelectionMode(selectionMode);
+    }    
+    
+    private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
+        
+        /*@Override
+        protected void hideColumn(JTable table, int columnIndex){
+            super.hideColumn(table, columnIndex);
+            if(!hiddenColumns.contains(columnIndex)){
+                hiddenColumns.add(columnIndex);
+            }
+        }*/
+
+            
+        public void hideColumns(JTable table, List<Integer> indices){
+            for(Integer i : indices){
+                hideColumn(table, i);
+            }
+        }
+
     }
 }
+
+
