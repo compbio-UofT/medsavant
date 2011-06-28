@@ -127,7 +127,8 @@ public class SplitScreenView extends JPanel {
                 public void valueChanged(ListSelectionEvent e) {
                     //set last selection
                     int row = stp.getTable().getSelectedRow();    
-                    detailedView.setSelectedItem(data.get(row));
+                    if(row != -1)
+                        detailedView.setSelectedItem(data.get(row));
                     
                     //set all selected
                     int[] allRows = stp.getTable().getSelectedRows();
