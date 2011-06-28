@@ -20,6 +20,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.Box;
@@ -48,6 +49,7 @@ public class SearchableTablePanel extends JPanel {
     private static final int ROWSPERPAGE_1 = 100;
     private static final int ROWSPERPAGE_2 = 500;
     private static final int ROWSPERPAGE_3 = 1000;
+    private static int ROWSPERPAGE_X;
 
     private int pageNum = 1;
     private int numRowsPerPage = ROWSPERPAGE_2;
@@ -131,9 +133,16 @@ public class SearchableTablePanel extends JPanel {
         updateView();
     }
     
+    public SearchableTablePanel(List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Boolean> columnVisibility){
+        this(data, columnNames, columnClasses, columnVisibility, true, true, ROWSPERPAGE_2, true);
+    }
+    
     public SearchableTablePanel(
-            List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Boolean> columnVisibility) {
+            List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Boolean> columnVisibility, 
+            boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection) {
 
+        this.ROWSPERPAGE_X = defaultRows;      
+        
         this.defaultColumns = columnVisibility;
         table = new SortableTable() {
 
@@ -162,6 +171,10 @@ public class SearchableTablePanel extends JPanel {
         table.setAutoResort(false);
         //table.setDragEnabled(false);
         table.setRowHeight(20);
+        table.setSortable(allowSort);
+        table.setSortingEnabled(allowSort);
+        table.setFocusable(allowSelection);
+        table.setCellSelectionEnabled(allowSelection);
         //table.setFont(new Font("Times New Roman", Font.PLAIN, 14));
 
         table.setAutoResizeMode(SortableTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
@@ -178,8 +191,11 @@ public class SearchableTablePanel extends JPanel {
 
         this.setLayout(new BorderLayout(3, 3));
         fieldPanel = new JPanel();
-        fieldPanel.add(filterField);
-
+        
+        if(allowSearch){
+            fieldPanel.add(filterField);
+        }
+        
         JideButton columnsButton = new JideButton("Choose Columns");
         final SearchableTablePanel instance = this;
         columnsButton.addMouseListener(new MouseListener() {
@@ -248,19 +264,38 @@ public class SearchableTablePanel extends JPanel {
         bottomPanel.add(new JLabel("Results per page:"));
 
         strut(bottomPanel);
+        
+        boolean hasDefaultRowsPerPage = true;
+        if(ROWSPERPAGE_X == ROWSPERPAGE_1 || ROWSPERPAGE_X == ROWSPERPAGE_2 || ROWSPERPAGE_X == ROWSPERPAGE_3){
+            hasDefaultRowsPerPage = false;
+        }
+        ArrayList<Integer> rowsList = new ArrayList<Integer>();
+        rowsList.add(ROWSPERPAGE_1);
+        rowsList.add(ROWSPERPAGE_2);
+        rowsList.add(ROWSPERPAGE_3);
+        Integer[] finalList = new Integer[3];
+        if(hasDefaultRowsPerPage){
+            rowsList.add(ROWSPERPAGE_X);
+            Collections.sort(rowsList);
+        }
+        finalList = rowsList.toArray(finalList);
 
-        rowsPerPageDropdown = new JComboBox(new Integer[]{ROWSPERPAGE_1,ROWSPERPAGE_2,ROWSPERPAGE_3});
+        rowsPerPageDropdown = new JComboBox(finalList);
         rowsPerPageDropdown.setPrototypeDisplayValue(ROWSPERPAGE_3);
         rowsPerPageDropdown.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {               
                 JComboBox cb = (JComboBox)e.getSource();
                 int rowsPerPage = (Integer) cb.getSelectedItem();
                 setNumRowsPerPage(rowsPerPage);
             }
 
         });
-        rowsPerPageDropdown.setSelectedIndex(1);
+        if(hasDefaultRowsPerPage){
+            rowsPerPageDropdown.setSelectedIndex(rowsList.indexOf(ROWSPERPAGE_X));
+        } else {
+            rowsPerPageDropdown.setSelectedIndex(1);
+        }       
         rowsPerPageDropdown.setPreferredSize(new Dimension(100,25));
         rowsPerPageDropdown.setMaximumSize(new Dimension(100,25));
         bottomPanel.add(rowsPerPageDropdown);
