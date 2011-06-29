@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.chart.Chart;
 import com.jidesoft.chart.ChartType;
 import com.jidesoft.chart.axis.Axis;
@@ -18,16 +19,20 @@ import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
+import com.jidesoft.utils.SwingWorker;
 import fiume.vcf.VariantRecord;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -42,10 +47,18 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
+import org.ut.biolab.medsavant.db.ConnectionController;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.QueryUtil;
+import org.ut.biolab.medsavant.db.table.TableSchema;
+import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
+import org.ut.biolab.medsavant.view.genetics.ChartFrequencyMap.FrequencyEntry;
 import org.ut.biolab.medsavant.view.util.DialogUtil;
+import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
  *
@@ -53,7 +66,7 @@ import org.ut.biolab.medsavant.view.util.DialogUtil;
  */
 public class ChartPanel extends JPanel implements FiltersChangedListener {
 
-    private int currentKeyIndex = VariantRecordModel.INDEX_OF_REF;
+    //private int currentKeyIndex = VariantRecordModel.INDEX_OF_REF;
     private JToolBar bar;
     private boolean isLogscale = false;
     private boolean isPie = false;
@@ -62,29 +75,35 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
     private JCheckBox isSortedCB;
     private JCheckBox isLogarithmicCB;
     private SpinnerNumberModel numberModel;
-    private static final int DEFAULT_NUM_QUANTITATIVE_CATEGORIES = 5;
+    private static final int DEFAULT_NUM_QUANTITATIVE_CATEGORIES = 10;
     private JToolBar bottombar;
-
+    
+    private List<String> chartNames;
+    private String currentChart;
+    private ChartMapSW cmsw;
+    
     public ChartPanel() {
         this.setLayout(new BorderLayout());
         initToolBar();
-        updateChartMap();
+        updateDataAndDrawChart();
         FilterController.addFilterListener(this);
     }
 
-    private void updateChartMap() {
+    private void updateDataAndDrawChart() {
 
-        Map<String, Integer> chartMap;
-        try {
-            chartMap = getChartMap(currentKeyIndex, isSorted);
-        } catch (Exception ex) {
-            Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
-            DialogUtil.displayErrorMessage("Problem getting data.", ex);
-            return;
-        }
-
-        printHist(chartMap);
-
+        this.removeAll();
+        this.add(new WaitPanel("Getting chart data"), BorderLayout.CENTER);
+        this.updateUI();
+        
+        // kill existing thread, if any
+        if (cmsw != null && !cmsw.isDone()) { cmsw.cancel(true); }
+        
+        cmsw = new ChartMapSW(currentChart,isSorted);
+        cmsw.execute();
+        
+    }
+    
+    private synchronized void drawChart(ChartFrequencyMap chartMap) {
         DefaultChartModel chartModel = new DefaultChartModel();
 
         Chart chart = new Chart(new Dimension(200, 200));
@@ -99,12 +118,13 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
         CategoryRange<String> categories = new CategoryRange<String>();
         int max = Integer.MIN_VALUE;
 
-        for (String key : chartMap.keySet()) {
+        for (FrequencyEntry fe : chartMap.entries) {
+            String key = fe.getKey();
+            int value = fe.getValue();
             ChartCategory cat = new ChartCategory<String>(key);
             categories.add(cat);
             Highlight h = new Highlight(key);
             chart.setHighlightStyle(h, new ChartStyle(Util.getRandomColor()));
-            int value = chartMap.get(key);
             max = Math.max(max, value);
             ChartPoint p = new ChartPoint(cat, value);
             ChartPoint logp = new ChartPoint(cat, Math.log10(value));
@@ -156,20 +176,21 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
         bottombar.setFloatable(false);
         JComboBox b = new JComboBox();
 
-        List<String> v = VariantRecordModel.getFieldNames();
-        for (int i = 0; i < VariantRecordModel.getNumberOfFields(); i++) {
-            b.addItem(v.get(i));
+        
+        chartNames = MedSavantDatabase.getInstance().getVariantTableSchema().getFieldAliases();
+        for (String chartName : chartNames) {
+            b.addItem(chartName);
         }
-
-        b.setSelectedIndex(currentKeyIndex);
-
+        
+        setCurrentChart(chartNames.get(0));
+        
         b.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 JComboBox cb = (JComboBox) e.getSource();
                 String fieldName = (String) cb.getSelectedItem();
-                setCurrentKeyIndex(VariantRecordModel.getIndexOfField(fieldName));
-                updateChartMap();
+                setCurrentChart(fieldName);
+                updateDataAndDrawChart();
             }
         });
 
@@ -184,7 +205,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
 
             public void actionPerformed(ActionEvent e) {
                 setIsPie(isPieCB.isSelected());
-                updateChartMap();
+                updateDataAndDrawChart();
             }
         });
         bottombar.add(isPieCB);
@@ -197,7 +218,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
 
             public void actionPerformed(ActionEvent e) {
                 setSortByFrequency(isSortedCB.isSelected());
-                updateChartMap();
+                updateDataAndDrawChart();
             }
         });
         bottombar.add(isSortedCB);
@@ -210,7 +231,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
 
             public void actionPerformed(ActionEvent e) {
                 setIsLogarithmic(isLogarithmicCB.isSelected());
-                updateChartMap();
+                updateDataAndDrawChart();
             }
         });
         bottombar.add(isLogarithmicCB);
@@ -230,7 +251,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
         numberModel.addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
-                updateChartMap();
+                updateDataAndDrawChart();
             }
         });
         bottombar.add(numberSpinner);
@@ -251,78 +272,150 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
         this.isSorted = b;
     }
 
-    public void setCurrentKeyIndex(int currentKeyIndex) {
-        this.currentKeyIndex = currentKeyIndex;
+    public void setCurrentChart(String chartName) {
+        this.currentChart = chartName;
     }
 
     private int getNumberOfQuantitativeCategories() {
         return (Integer) numberModel.getValue();
     }
 
-    private Map<String, Integer> getChartMap(int fieldIndex, boolean isSorted) throws Exception {
-
-        Map<String, Integer> chartMap = new TreeMap<String, Integer>();
-
-        Class c = VariantRecordModel.getFieldClass(fieldIndex);
-        if (Util.isQuantatitiveClass(c)) {
-            int numBins = getNumberOfQuantitativeCategories();
-            List<Double> numbers = new ArrayList<Double>();
-            Double min = Double.MAX_VALUE;
-            Double max = Double.MIN_VALUE;
+    public class ChartMapSW extends SwingWorker {
+        
+        private final String fieldName;
+        private final boolean isSorted;
+        
+        public ChartMapSW(String fieldName, boolean isSorted) {
+            this.fieldName = fieldName;
+            this.isSorted = isSorted;
+        }
             
-            // TODO: replace with database call
-            for (VariantRecord r : ResultController.getInstance().getFilteredVariantRecords()) {
-                Object numericvalue = VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
-                Double v = Double.parseDouble(numericvalue.toString());
-                min = Math.min(min, v);
-                max = Math.max(max, v);
-                numbers.add(v);
-            }
+        private ChartFrequencyMap getChartMap(String fieldName, boolean isSorted) throws Exception {
 
-            max = max + 1;
-            Double step = (max - min) / numBins;
-            int[] bins = new int[numBins];
-
-            for (Double d : numbers) {
-                int binnumber = (int) ((d - min) / step);
-                bins[binnumber]++;
-            }
-
-            for (int i = 0; i < numBins; i++) {
-                chartMap.put(((int) (min + i * step)) + " - " + ((int) (min + (i + 1) * step)), bins[i]);
-            }
-
-        } else {
+            System.out.println("Threading chart retrieval for " + fieldName);
             
-            // TODO: replace with database call
-            for (VariantRecord r : ResultController.getInstance().getFilteredVariantRecords()) {
-                String key = null;
-                Object value = VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
-                if (value == null) {
-                    key = ".";
-                } else {
-                    key = value.toString();
+            ChartFrequencyMap chartMap = new ChartFrequencyMap();
+            
+            TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
+            DbColumn column = table.getDBColumn(fieldName);
+            
+            ColumnType type = table.getColumnType(column);
+            
+            if (TableSchema.isNumeric(type)) {
+                
+                Range r = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, column);
+                System.err.println("Need to do something for range " + r.toString());
+                
+                int numBins = getNumberOfQuantitativeCategories();
+                
+                int min = (int) Math.floor(r.getMin());
+                int max = (int) Math.ceil(r.getMax());
+                
+                double step = ((double) (max - min)) / numBins;
+
+                for (int i = 0; i < numBins; i++) {
+                    Range binrange = new Range((int) (min + i * step), (int) (min + (i + 1) * step));
+                    chartMap.addEntry(
+                            binrange.toString(), 
+                            QueryUtil.getFilteredFrequencyValuesForColumnInRange(ConnectionController.connect(), table, column, binrange)
+                            );
                 }
-                if (chartMap.containsKey(key)) {
-                    chartMap.put(key, chartMap.get(key) + 1);
-                } else {
-                    chartMap.put(key, 1);
+
+            } else {
+                try {
+                    chartMap.addAll(QueryUtil.getFilteredFrequencyValuesForColumn(ConnectionController.connect(), table, column));
+                    Collections.sort(chartMap.entries);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
+            
+            /*
+            Class c = VariantRecordModel.getFieldClass(fieldIndex);
+            
+            
+            if (Util.isQuantatitiveClass(c)) {
+                int numBins = getNumberOfQuantitativeCategories();
+                List<Double> numbers = new ArrayList<Double>();
+                Double min = Double.MAX_VALUE;
+                Double max = Double.MIN_VALUE;
+
+                // TODO: replace with database call
+
+
+                DBFilterUtil.get
+
+
+                for (VariantRecord r : ResultController.getInstance().getFilteredVariantRecords()) {
+                    Object numericvalue = VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
+                    Double v = Double.parseDouble(numericvalue.toString());
+                    min = Math.min(min, v);
+                    max = Math.max(max, v);
+                    numbers.add(v);
+                }
+
+                max = max + 1;
+                Double step = (max - min) / numBins;
+                int[] bins = new int[numBins];
+
+                for (Double d : numbers) {
+                    int binnumber = (int) ((d - min) / step);
+                    bins[binnumber]++;
+                }
+
+                for (int i = 0; i < numBins; i++) {
+                    chartMap.put(((int) (min + i * step)) + " - " + ((int) (min + (i + 1) * step)), bins[i]);
+                }
+
+            } else {
+
+                // TODO: replace with database call
+                for (VariantRecord r : ResultController.getInstance().getFilteredVariantRecords()) {
+                    String key = null;
+                    Object value = VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
+                    if (value == null) {
+                        key = ".";
+                    } else {
+                        key = value.toString();
+                    }
+                    if (chartMap.containsKey(key)) {
+                        chartMap.put(key, chartMap.get(key) + 1);
+                    } else {
+                        chartMap.put(key, 1);
+                    }
+                }
+            }
+
+            if (isSorted) {
+                ValueComparator bvc = new ValueComparator(chartMap);
+                Map m = new TreeMap<String, Integer>(bvc);
+                m.putAll(chartMap);
+                chartMap = m;
+            }
+             * 
+             */
+
+            return chartMap;
         }
 
-        if (isSorted) {
-            ValueComparator bvc = new ValueComparator(chartMap);
-            Map m = new TreeMap<String, Integer>(bvc);
-            m.putAll(chartMap);
-            chartMap = m;
+        @Override
+        protected Object doInBackground() throws Exception {
+            return getChartMap(fieldName,isSorted);
         }
-
-        return chartMap;
+        
+        protected void done() {
+            try {
+                ChartFrequencyMap chartMap = (ChartFrequencyMap) get();
+                drawChart(chartMap);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     public void filtersChanged() {
-        updateChartMap();
+        updateDataAndDrawChart();
     }
 
     static class ValueComparator implements Comparator {

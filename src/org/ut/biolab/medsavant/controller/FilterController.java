@@ -26,6 +26,10 @@ import org.ut.biolab.medsavant.model.QueryFilter;
  */
 public class FilterController {
 
+    
+    private static int filterSetID = 0;
+    
+    private static Map<Integer,Map<String,Filter>> filterMapHistory = new TreeMap<Integer,Map<String,Filter>>();
     private static Map<String,Filter> filterMap = new TreeMap<String,Filter>();
     private static List<FiltersChangedListener> listeners = new ArrayList<FiltersChangedListener>();
 
@@ -60,8 +64,20 @@ public class FilterController {
     public static void addFilterListener(FiltersChangedListener l) {
         listeners.add(l);
     }
+    
+    public static int getCurrentFilterSetID() {
+        return filterSetID;
+    }
+    
+    public static Map<String,Filter> getFilterSet(int filterSetID) {
+        return filterMapHistory.get(filterSetID);
+    }
 
     public static void fireFiltersChangedEvent() {
+        
+        filterSetID++;
+        filterMapHistory.put(filterSetID,filterMap);
+        
         //printFilters();
         for (FiltersChangedListener l : listeners) {
             try {

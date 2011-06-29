@@ -27,6 +27,9 @@ import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ResultController;
+import org.ut.biolab.medsavant.db.ConnectionController;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.images.ImagePanel;
@@ -36,7 +39,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class BottomBar extends JPanel implements FiltersChangedListener{
+public class BottomBar extends JPanel {
     private static BottomBar instance;
 
     public static BottomBar getInstance() {
@@ -72,8 +75,6 @@ public class BottomBar extends JPanel implements FiltersChangedListener{
         this.add(Box.createHorizontalGlue());
         
         updateLoginStatus();
-
-        FilterController.addFilterListener(this);
     }
 
     @Override
@@ -81,10 +82,6 @@ public class BottomBar extends JPanel implements FiltersChangedListener{
         GradientPaint p = new GradientPaint(0, 0, Color.white, 0, 40, Color.lightGray);
         ((Graphics2D) g).setPaint(p);
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
-    }
-
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        //setStatus(ResultController.getInstance().getAllVariantRecords().size() + " records");
     }
 
     public void updateLoginStatus() {

@@ -23,7 +23,8 @@ public class WaitPanel extends JPanel {
     private final JProgressBar prog;
 
     public WaitPanel(String message) {
-        this.setBackground(Color.lightGray);
+        //this.setBackground(Color.lightGray);
+        this.setOpaque(false);
         this.setBorder(ViewUtil.getHugeBorder());
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         prog = new JProgressBar();

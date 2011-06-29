@@ -19,7 +19,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
@@ -262,4 +264,101 @@ public class QueryUtil {
         
         return q;
     }
+
+
+    public static Map<String, Integer> getFrequencyValuesForColumn(Connection conn, TableSchema t, DbColumn col) throws SQLException {
+
+        SelectQuery q = new SelectQuery();
+        FunctionCall count = FunctionCall.countAll();
+        q.addColumns(col);
+        q.addCustomColumns(count);
+        q.addFromTable(t.getTable());
+        q.addGroupings(col);
+
+        Statement s = conn.createStatement();
+
+        System.out.println("Querying for: " + q.toString());
+
+        ResultSet rs = s.executeQuery(q.toString());
+
+        Map<String, Integer> map = new HashMap<String, Integer>();
+
+        while (rs.next()) {
+            map.put(rs.getString(1), rs.getInt(2));
+        }
+
+        return map;
+    }
+
+    public static int getFrequencyValuesForColumnInRange(Connection conn, TableSchema t, DbColumn col, Range r) throws SQLException {
+
+        SelectQuery q = new SelectQuery();
+        FunctionCall count = FunctionCall.countAll();
+        q.addCustomColumns(count);
+        q.addFromTable(t.getTable());
+        q.addCondition(getRangeCondition(col,r));
+
+        Statement s = conn.createStatement();
+
+        System.out.println("Querying for: " + q.toString());
+
+        ResultSet rs = s.executeQuery(q.toString());
+
+        rs.next();
+        
+        return rs.getInt(1);
+    }
+    
+    
+    public static Map<String, Integer> getFilteredFrequencyValuesForColumn(Connection conn, TableSchema t, DbColumn col) throws SQLException {
+
+        SelectQuery q = QueryUtil.getCurrentBaseFilterQuery(t);
+        FunctionCall count = FunctionCall.countAll();
+        q.addColumns(col);
+        q.addCustomColumns(count);
+        q.addGroupings(col);
+
+        Statement s = conn.createStatement();
+
+        System.out.println("Querying for: " + q.toString());
+
+        ResultSet rs = s.executeQuery(q.toString());
+
+        Map<String, Integer> map = new HashMap<String, Integer>();
+
+        while (rs.next()) {
+            map.put(rs.getString(1), rs.getInt(2));
+        }
+
+        return map;
+    }
+
+    public static int getFilteredFrequencyValuesForColumnInRange(Connection conn, TableSchema t, DbColumn col, Range r) throws SQLException {
+
+        SelectQuery q = QueryUtil.getCurrentBaseFilterQuery(t);
+        FunctionCall count = FunctionCall.countAll();
+        q.addCustomColumns(count);
+        q.addCondition(getRangeCondition(col,r));
+
+        Statement s = conn.createStatement();
+
+        System.out.println("Querying for: " + q.toString());
+
+        ResultSet rs = s.executeQuery(q.toString());
+
+        rs.next();
+        
+        return rs.getInt(1);
+    }
+
+    public static Condition getRangeCondition(DbColumn col, Range r) {
+        Condition[] results = new Condition[2];
+        results[0] = BinaryCondition.greaterThan(col, r.getMin(), true);
+        results[1] = BinaryCondition.lessThan(col, r.getMax(), true);
+
+                                    
+        Condition[] resultsCombined = new Condition[1];
+        return ComboCondition.and(results);
+    }
+    
 }

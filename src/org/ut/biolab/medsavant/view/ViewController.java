@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
+import org.ut.biolab.medsavant.util.view.PeekingPanel;
 import org.ut.biolab.medsavant.view.menu.Menu;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -37,8 +38,9 @@ public class ViewController extends JPanel {
     private Menu menu;
     private JPanel contentContainer;
     private PersistencePanel sectionPanel;
-    private JToggleButton buttonSectionPanelController;
+    //private JToggleButton buttonSectionPanelController;
     private SectionView currentSection;
+    private PeekingPanel peekRight;
 
     public void changeSubSectionTo(SubSectionView view) {
         this.sectionHeader.setSubSection(view);
@@ -48,13 +50,12 @@ public class ViewController extends JPanel {
         if (parent != currentSection) {
             JPanel[] persistentPanels = parent.getPersistentPanels();
             if (persistentPanels != null) {
-                sectionPanel.setVisible(true);
-                buttonSectionPanelController.setVisible(true);
-                buttonSectionPanelController.setEnabled(true);
+                peekRight.setVisible(true);
+                //buttonSectionPanelController.setEnabled(true);
                 sectionPanel.setSectionPersistencePanels(persistentPanels);
             } else {
-                sectionPanel.setVisible(false);
-                buttonSectionPanelController.setVisible(false);
+                peekRight.setVisible(false);
+                //buttonSectionPanelController.setVisible(false);
             }
         }
         currentSection = parent;
@@ -202,8 +203,10 @@ public class ViewController extends JPanel {
         // create the right panel
         sectionPanel = new PersistencePanel();
         sectionPanel.setPreferredSize(new Dimension(350,999));
-        h1.add(sectionPanel,BorderLayout.EAST);
-        
+        peekRight = new PeekingPanel("", BorderLayout.WEST, sectionPanel, true);
+        h1.add(peekRight,BorderLayout.EAST);
+       
+        /*
         buttonSectionPanelController = new JToggleButton();
         buttonSectionPanelController.setFocusPainted(false);
         buttonSectionPanelController.addActionListener(new ActionListener() {
@@ -214,14 +217,18 @@ public class ViewController extends JPanel {
             
         });
         sectionHeader.add(buttonSectionPanelController);
+         * 
+         */
         
         // add it all to the view
         this.add(banner,BorderLayout.NORTH);
         this.add(h1,BorderLayout.CENTER);
-        this.add(leftPanel,BorderLayout.WEST);
         
-        sectionPanel.setVisible(false);
-        buttonSectionPanelController.setVisible(false);
+        PeekingPanel peekLeft = new PeekingPanel("Menu", BorderLayout.EAST, leftPanel, true, 200);
+        this.add(peekLeft,BorderLayout.WEST);
+        
+        peekRight.setVisible(false);
+        //buttonSectionPanelController.setVisible(false);
     }
 
     public void addSection(SectionView section) {

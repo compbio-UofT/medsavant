@@ -107,7 +107,6 @@ public class ResultController implements FiltersChangedListener {
 
 
 
-
     /*
     public static void clearVariants() {
         variants = new ArrayList<VariantRecord>();

@@ -33,7 +33,7 @@ public class PeekingPanel extends JPanel {
     private final JPanel titlePanel;
 
     public PeekingPanel(String label, String borderLayoutPosition, JPanel panel, boolean isExpanded) {
-        this(label, borderLayoutPosition, panel, isExpanded, 300);
+        this(label, borderLayoutPosition, panel, isExpanded, 350);
     }
 
     public PeekingPanel(String label, String borderLayoutPosition, JPanel panel, boolean isExpanded, int size) {

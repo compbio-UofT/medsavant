@@ -70,7 +70,6 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         initGUI();
     }
     
-
     private void initGUI() throws NonFatalDatabaseException {
 
         /*
@@ -85,9 +84,17 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
          */
         
         JPanel statusPanel = ViewUtil.getBannerPanel();
-        status = new JLabel("No filters applied");
+        status = new JLabel();
+        
+        try {
+            status.setText(ViewUtil.numToString(QueryUtil.getNumRowsInTable(
+                    ConnectionController.connect(), 
+                    MedSavantDatabase.getInstance().getVariantTableSchema().getTable())) + " variants in table");
+        } catch (SQLException ex) {
+        }
+        
         ViewUtil.clear(status);
-        status.setFont(ViewUtil.getSmallTitleFont());
+        status.setFont(ViewUtil.getMediumTitleFont());
         statusPanel.add(Box.createHorizontalGlue());
         statusPanel.add(status);
         statusPanel.add(Box.createHorizontalGlue());
@@ -95,7 +102,12 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
         contentPanel = new CollapsiblePanes();
         contentPanel.setBackground(ViewUtil.getMenuColor());
-        this.add(new JScrollPane(contentPanel), BorderLayout.CENTER);
+        
+        JScrollPane p1 = new JScrollPane(contentPanel);
+        p1.setBorder(null);
+        //p1.getRootPane().setBorder(null);
+        
+        this.add(p1, BorderLayout.CENTER);
 
         List<FilterView> fv;
         try {
@@ -541,7 +553,8 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     }
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        setStatus(ResultController.getInstance().getAllVariantRecords().size() + " records");
+        setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect(), 
+                MedSavantDatabase.getInstance().getVariantTableSchema())) + " records pass filters");
     }
 
     /*
