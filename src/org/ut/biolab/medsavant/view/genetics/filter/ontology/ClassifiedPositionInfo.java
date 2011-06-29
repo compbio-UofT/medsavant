@@ -78,7 +78,7 @@ public class ClassifiedPositionInfo {
             if (ranges.isEmpty())
                 ;
             else{
-                map.put(key, ranges);
+                map.put(key, Range.merge(ranges));
             }
         }
         return map;
