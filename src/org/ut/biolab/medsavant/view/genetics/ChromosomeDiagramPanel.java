@@ -5,6 +5,7 @@
 
 package org.ut.biolab.medsavant.view.genetics;
 
+import com.jidesoft.utils.SwingWorker;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
@@ -29,7 +30,7 @@ import org.ut.biolab.medsavant.model.record.Chromosome;
 
 /**
  *
- * @author mfiume
+ * @author mfiume, AndrewBrook
  */
 public class ChromosomeDiagramPanel extends JPanel {
 
@@ -44,15 +45,7 @@ public class ChromosomeDiagramPanel extends JPanel {
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         this.setPreferredSize(new Dimension(20,999));
         this.setMaximumSize(new Dimension(20,999));
-        int totalNum = 0;
-        try {
-            totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect(), MedSavantDatabase.getInstance().getVariantTableSchema());
-        } catch (NonFatalDatabaseException ex) {
-            Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        updateAnnotations(totalNum);      
+        annotations = new ArrayList<RangeAnnotation>();
     }
 
     public void paintComponent(Graphics g) {
@@ -108,14 +101,15 @@ public class ChromosomeDiagramPanel extends JPanel {
         return (int) (modelPosition*totalModelSize/totalViewSize);
     }
 
-    public void setAnnotations(List<RangeAnnotation> annotations) {
+    public synchronized void setAnnotations(List<RangeAnnotation> annotations) {
         this.annotations = annotations;
+        repaint();
     }
-
+    
     public void update(int totalNum){
         updateAnnotations(totalNum);
     }
-
+    
     private void updateAnnotations(int totalNum) {
         
         TableSchema tableSchema = MedSavantDatabase.getInstance().getVariantTableSchema();
@@ -145,7 +139,6 @@ public class ChromosomeDiagramPanel extends JPanel {
         }
         
         setAnnotations(as);
-        repaint();       
     }
-
+    
 }

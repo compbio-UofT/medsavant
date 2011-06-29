@@ -5,26 +5,25 @@
 
 package org.ut.biolab.medsavant.view.genetics;
 
-import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import javax.swing.SwingWorker;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
-import org.ut.biolab.medsavant.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Chromosome;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
  *
@@ -35,13 +34,21 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
     private Genome genome;
     private final JPanel chrContainer;
     private ArrayList<ChromosomePanel> chrViews;
+    private static final String CARD_WAIT = "wait";
+    private static final String CARD_SHOW = "show";
+    private CardLayout cl;
 
     public GenomeContainer() {
-        this.setLayout(new BorderLayout());
+        cl = new CardLayout();
+        this.setLayout(cl);
+     
         chrContainer = ViewUtil.getClearPanel();
         chrContainer.setBorder(ViewUtil.getBigBorder());
         chrContainer.setLayout(new BoxLayout(chrContainer,BoxLayout.X_AXIS));
-        this.add(chrContainer);
+        this.add(chrContainer, CARD_SHOW);
+               
+        this.add(new WaitPanel("Generating Genome View"), CARD_WAIT);
+
         FilterController.addFilterListener(this);
     }
 
@@ -55,6 +62,7 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
     public void setGenome(Genome g) {
         this.genome = g;
         setChromosomeViews();
+        this.filtersChanged();
     }
 
     private void setChromosomeViews() {
@@ -75,14 +83,38 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         chrContainer.add(Box.createHorizontalGlue());
 
     }
+    
+    private synchronized void showWaitCard() {
+        cl.show(this, CARD_WAIT);
+        
+    }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+    private synchronized void showShowCard() {
+        cl.show(this, CARD_SHOW);
+    }
+
+    public void filtersChanged() { 
+        showWaitCard();
+        GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker();
+        gnv.execute();
+    }
+    
+    private class GetNumVariantsSwingWorker extends SwingWorker {
+
+        public GetNumVariantsSwingWorker() {}
         
-        //TODO: do we already have total number of variants?    
-        int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect(), MedSavantDatabase.getInstance().getVariantTableSchema());
-        
-        for(ChromosomePanel p : chrViews){
-            p.update(totalNum);
+        @Override
+        protected Object doInBackground() throws Exception {
+            int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect(), MedSavantDatabase.getInstance().getVariantTableSchema());
+            for(ChromosomePanel p : chrViews){
+                p.update(totalNum);
+            }           
+            return null;            
         }
+        
+        @Override
+        protected void done() {
+            showShowCard();
+        }      
     }
 }
