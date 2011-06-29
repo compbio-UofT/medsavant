@@ -95,7 +95,7 @@ public class FilterController {
         return ppfs;
     }
 
-    static List<QueryFilter> getQueryFilters() {
+    public static List<QueryFilter> getQueryFilters() {
         List<QueryFilter> qfs = new ArrayList<QueryFilter>();
         for (Filter f : filterMap.values()) {
             if (f instanceof QueryFilter) {

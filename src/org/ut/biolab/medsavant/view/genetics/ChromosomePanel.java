@@ -45,5 +45,9 @@ public class ChromosomePanel extends JPanel {
     void setScaleWithRespectToLength(long len) {
         cdp.setScaleWithRespectToLength(len);
     }
+    
+    public void update(int totalNum){
+        cdp.update(totalNum);
+    }
 
 }

@@ -6,6 +6,7 @@
 package org.ut.biolab.medsavant.db;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import org.ut.biolab.medsavant.db.table.SubjectTableSchema;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListViewTableSchema;
@@ -28,6 +30,7 @@ import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 
 
@@ -211,6 +214,52 @@ public class QueryUtil {
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getGeneListViewTableSchema().getTable());
     }
+    
+    public static int getNumVariantsInRange(Connection c, TableSchema t, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException {
+        FunctionCall count = FunctionCall.countAll();
+        SelectQuery q = getCurrentBaseFilterQuery(t);
+        q.addCustomColumns(count);
+        
+        Condition[] conditions = new Condition[3];
+        conditions[0] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_CHROM), chrom);
+        conditions[1] = new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_POSITION), start);
+        conditions[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, t.getDBColumn(VariantTableSchema.ALIAS_POSITION), end);       
+        q.addCondition(ComboCondition.and(conditions));        
+        
+        Statement s = c.createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+        rs.next();
 
+        int numrows = rs.getInt(1);
+        s.close();
+        
+        return numrows;
+    }
+    
+    public static int getNumFilteredVariants(Connection c, TableSchema t) throws SQLException {
+        FunctionCall count = FunctionCall.countAll();
+        SelectQuery q = getCurrentBaseFilterQuery(t);     
+        q.addCustomColumns(count);
+       
+        Statement s = c.createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+        rs.next();
 
+        int numrows = rs.getInt(1);
+        s.close();
+        
+        return numrows;
+    }
+    
+    public static SelectQuery getCurrentBaseFilterQuery(TableSchema t) {
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(t.getTable());
+        
+        List<QueryFilter> filters = FilterController.getQueryFilters();
+        for (QueryFilter f : filters) {
+            q.addCondition(ComboCondition.or(f.getConditions()));
+        }
+        
+        return q;
+    }
 }

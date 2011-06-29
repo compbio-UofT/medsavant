@@ -10,10 +10,18 @@ import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.ConnectionController;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.QueryUtil;
+import org.ut.biolab.medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Chromosome;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -22,7 +30,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class GenomeContainer extends JPanel {
+public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         
     private Genome genome;
     private final JPanel chrContainer;
@@ -34,6 +42,7 @@ public class GenomeContainer extends JPanel {
         chrContainer.setBorder(ViewUtil.getBigBorder());
         chrContainer.setLayout(new BoxLayout(chrContainer,BoxLayout.X_AXIS));
         this.add(chrContainer);
+        FilterController.addFilterListener(this);
     }
 
     public void paintComponent(Graphics g) {
@@ -65,5 +74,15 @@ public class GenomeContainer extends JPanel {
         }
         chrContainer.add(Box.createHorizontalGlue());
 
+    }
+
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        
+        //TODO: do we already have total number of variants?    
+        int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect(), MedSavantDatabase.getInstance().getVariantTableSchema());
+        
+        for(ChromosomePanel p : chrViews){
+            p.update(totalNum);
+        }
     }
 }

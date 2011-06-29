@@ -5,37 +5,38 @@
 
 package org.ut.biolab.medsavant.view.genetics;
 
-import fiume.vcf.VariantRecord;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.Area;
+import java.awt.geom.RoundRectangle2D;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.db.ConnectionController;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.QueryUtil;
+import org.ut.biolab.medsavant.db.table.TableSchema;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.record.Chromosome;
-import org.ut.biolab.medsavant.view.util.DialogUtil;
 
 /**
  *
  * @author mfiume
  */
-public class ChromosomeDiagramPanel extends JPanel implements FiltersChangedListener {
+public class ChromosomeDiagramPanel extends JPanel {
 
     private long scaleWRTLength;
     private final Chromosome chr;
     private List<RangeAnnotation> annotations;
+    private static final int BINSIZE = 5000000;
 
     public ChromosomeDiagramPanel(Chromosome c) {
         this.chr = c;
@@ -43,8 +44,15 @@ public class ChromosomeDiagramPanel extends JPanel implements FiltersChangedList
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         this.setPreferredSize(new Dimension(20,999));
         this.setMaximumSize(new Dimension(20,999));
-        updateAnnotations();
-        FilterController.addFilterListener(this);
+        int totalNum = 0;
+        try {
+            totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect(), MedSavantDatabase.getInstance().getVariantTableSchema());
+        } catch (NonFatalDatabaseException ex) {
+            Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        updateAnnotations(totalNum);      
     }
 
     public void paintComponent(Graphics g) {
@@ -65,19 +73,25 @@ public class ChromosomeDiagramPanel extends JPanel implements FiltersChangedList
         g2.setPaint(p);
         g2.fillRoundRect(0, 0, this.getWidth(), centView,bend,bend);
         g2.setColor(Color.gray);
-        g2.drawRoundRect(0, 0, this.getWidth(), centView,bend,bend);
+        RoundRectangle2D rec1 = new RoundRectangle2D.Double(0, 0, this.getWidth(), centView,bend,bend);
+        g2.draw(rec1);
 
         g2.setPaint(p);
         g2.fillRoundRect(0, centView, this.getWidth(), this.getEffectiveHeight()-centView,bend,bend);
         g2.setColor(Color.gray);
-        g2.drawRoundRect(0, centView, this.getWidth(), this.getEffectiveHeight()-centView,bend,bend);
+        RoundRectangle2D rec2 = new RoundRectangle2D.Double(0, centView, this.getWidth(), this.getEffectiveHeight()-centView,bend,bend);
+        g2.draw(rec2);
 
+        Area shape = new Area(rec1);
+        shape.add(new Area(rec2));
+            
+        g2.clip(shape);
         for (RangeAnnotation a : annotations) {
             int viewStart = translateModelToView(a.getStart(), chr.getLength(), this.getEffectiveHeight());
             int viewEnd = translateModelToView(a.getEnd(), chr.getLength(), this.getEffectiveHeight());
             if (viewEnd-viewStart < 1) { viewEnd = viewStart+1; }
-            g2.setColor(a.getColor());
-            g2.fillRect(0, viewStart, this.getWidth(), viewEnd-viewStart);
+            g2.setColor(a.getColor());           
+            g2.fillRect(0, viewStart, this.getWidth(), viewEnd-viewStart);           
         }
     }
 
@@ -98,25 +112,40 @@ public class ChromosomeDiagramPanel extends JPanel implements FiltersChangedList
         this.annotations = annotations;
     }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException {
-        updateAnnotations();
+    public void update(int totalNum){
+        updateAnnotations(totalNum);
     }
 
-    private void updateAnnotations() {
+    private void updateAnnotations(int totalNum) {
+        
+        TableSchema tableSchema = MedSavantDatabase.getInstance().getVariantTableSchema();
+        List<RangeAnnotation> as = new ArrayList<RangeAnnotation>();
+        
+        List<Integer> nums = new ArrayList<Integer>();
+       
         try {
-            List<VariantRecord> rs = ResultController.getInstance().getFilteredVariantRecords();
-            List<RangeAnnotation> as = new ArrayList<RangeAnnotation>();
-            for (VariantRecord r : rs) {
-                if (r.getChrom().equals(chr.getName())) {
-                    as.add(new RangeAnnotation(r.getPos(), r.getPos(), new Color(0, 178, 222, 50)));
+            for(int i = 0; i < chr.getLength(); i += BINSIZE){
+                int numVariants = QueryUtil.getNumVariantsInRange(                  
+                        ConnectionController.connect(),
+                        tableSchema,
+                        chr.getName(),
+                        i,
+                        i + BINSIZE);
+                nums.add(numVariants); 
+                if(numVariants > 0 && totalNum >= 1){
+                    float alpha = 0.15f + (0.85f * (float)((double)numVariants / (double)totalNum));                 
+                    as.add(new RangeAnnotation(i, i + BINSIZE, new Color(0.0f, 0.7f, 0.87f, alpha)));
                 }
             }
-            setAnnotations(as);
-            repaint();
-        } catch (Exception ex) {
+            
+        } catch (NonFatalDatabaseException ex) {
             Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
-            DialogUtil.displayErrorMessage("Problem getting data.", ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        setAnnotations(as);
+        repaint();       
     }
 
 }
