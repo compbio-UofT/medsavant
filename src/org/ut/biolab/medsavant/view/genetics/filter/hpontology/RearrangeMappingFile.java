@@ -32,11 +32,11 @@ public class RearrangeMappingFile {
     /**
      * Location to which we are moving the mapping file.
      */
-    public static final String LOCATION_TO = "ReducedMap.txt";
+    public static final String LOCATION_TO = "C:\\Documents and Settings\\Nirvana Nursimulu\\Desktop\\ReducedMap.txt";
     
     public static void main(String[] args) throws Exception{
         // Run this only once!
-//        reduceRepetition();
+        reduceRepetition();
     }
 
     /**
@@ -129,7 +129,7 @@ public class RearrangeMappingFile {
                 for (Range range: merged){
                     
                     String line = chromosome + "\t" + 
-                            range.getMin() + "\t" + range.getMax() + "\t" + geneName;
+                            (long)range.getMin() + "\t" + (long)range.getMax() + "\t" + geneName;
                     writer.write(line + "\n");
                 }
                 
