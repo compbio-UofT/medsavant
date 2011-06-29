@@ -80,7 +80,7 @@ public class Range implements Comparable{
         for (Range currRange: allRangesInOrder){
             // To detect the beginning:
             if (currMerged == null){
-                currMerged = currRange;
+                currMerged = new Range(currRange.min, currRange.max);
                 mergedList.add(currMerged);
             }
             else if (currMerged.canBeMergedWith(currRange)){
@@ -89,7 +89,7 @@ public class Range implements Comparable{
                 currMerged.min = Math.min(currMerged.min, currRange.min);
             }
             else{
-                currMerged = currRange;
+                currMerged = new Range(currRange.min, currRange.max);
                 mergedList.add(currMerged);
             }
         }
