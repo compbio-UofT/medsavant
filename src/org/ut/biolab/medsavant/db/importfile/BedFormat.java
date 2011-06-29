@@ -18,10 +18,10 @@ public class BedFormat extends FileFormat {
 
     public TreeMap<Integer, String> getFieldNumberToFieldNameMap() {
         TreeMap<Integer,String> map = new TreeMap<Integer,String>();
-        map.put(0, "Name");
-        map.put(1, "Chromosome");
-        map.put(3, "Start");
-        map.put(4, "End");
+        map.put(0, "Chromosome");
+        map.put(1, "Start");
+        map.put(2, "End");
+        map.put(3, "Name");
         return map;
     }
 

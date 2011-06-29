@@ -9,13 +9,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.List;
 import java.util.Vector;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -26,36 +26,43 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class IntervalDetailedView extends DetailedView {
 
-    private List<String> fieldNames;
+    private int limitNumberOfRegionsShown = 100;
+    
+    //private List<String> fieldNames;
     //private List<Object> fieldValues;
-    private CohortDetailsSW sw;
+    private RegionDetailsSW sw;
     private final JPanel content;
     private final JPanel details;
     private final JPanel menu;
+    
+    private int numRegionsInRegionList;
 
     @Override
     public void setMultipleSelections(Vector[] selectedRows) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        System.err.println("Multiple selections of regions not supported yet!");
     }
     
-    private class CohortDetailsSW extends SwingWorker {
-        private final String cohortName;
+    private class RegionDetailsSW extends SwingWorker {
+        private final String regionName;
+        private final int limit;
 
-        public CohortDetailsSW(String cohortName) {
-            this.cohortName = cohortName;
+        public RegionDetailsSW(String regionName, int limit) {
+            this.regionName = regionName;
+            this.limit = limit;
         }
         
         @Override
         protected Object doInBackground() throws Exception {
-            List<Vector> patientList = QueryUtil.getPatientsInCohort(cohortName);
-            return patientList;
+            numRegionsInRegionList = QueryUtil.getNumRegionsInRegionSet(regionName);
+            List<Vector> regionList = QueryUtil.getRegionsInRegionSet(regionName,limit);
+            return regionList;
         }
         
         @Override
         protected void done() {
             try {
                 List<Vector> result = (List<Vector>) get();
-                setPatientList(result);
+                setRegionList(result);
                 
             } catch (Exception ex) {
                 return;
@@ -64,19 +71,31 @@ public class IntervalDetailedView extends DetailedView {
         
     }
 
-    public synchronized void setPatientList(List<Vector> patients) {
+    public synchronized void setRegionList(List<Vector> regions) {
 
         details.removeAll();
         
         details.setLayout(new BorderLayout());
         //.setLayout(new BoxLayout(details,BoxLayout.Y_AXIS));
         
-        details.add(ViewUtil.getKeyValuePairPanel("Patients in cohort", patients.size() + ""), BorderLayout.NORTH);
+        JPanel h1 = ViewUtil.getClearPanel();
+        h1.setLayout(new BoxLayout(h1,BoxLayout.Y_AXIS));
+        
+        h1.add(ViewUtil.getKeyValuePairPanel("Regions in set", numRegionsInRegionList + ""));
+        
+        if (numRegionsInRegionList != regions.size()) {
+            JLabel l = new JLabel("Showing first " + regions.size());
+            l.setForeground(Color.white);
+            h1.add(ViewUtil.getLeftAlignedComponent(l));
+        }
+        
+        details.add(h1,BorderLayout.NORTH);
+        
         DefaultListModel lm = new DefaultListModel();
-        for (Vector v : patients) {
-            JLabel l = new JLabel(v.get(2).toString()); l.setForeground(Color.white);
-            //details.add(l);
-            lm.addElement((String) v.get(2));
+        for (Vector v : regions) {
+            //JLabel l = new JLabel(v.get(1).toString()); 
+            //l.setForeground(Color.white);
+            lm.addElement((String) v.get(6));
         }
         JList list = (JList) ViewUtil.clear(new JList(lm));
         list.setBackground(ViewUtil.getDetailsBackgroundColor());
@@ -89,18 +108,14 @@ public class IntervalDetailedView extends DetailedView {
     }
     
     public IntervalDetailedView() {
-        fieldNames = MedSavantDatabase.getInstance().getSubjectTableSchema().getFieldAliases();
+        //fieldNames = MedSavantDatabase.getInstance().getSubjectTableSchema().getFieldAliases();
         
         content = this.getContentPanel();
         
         details = ViewUtil.getClearPanel();
         menu = ViewUtil.getButtonPanel();
         
-        menu.add(new JButton("Set default Case cohort"));
-        menu.add(new JButton("Set default Control cohort"));
-        menu.add(new JButton("Add individual(s) to cohort"));
-        menu.add(new JButton("Remove individual(s) from cohort"));
-        menu.add(new JButton("Delete cohort"));
+        menu.add(new JButton("Delete region list"));
         
         content.setLayout(new BorderLayout());
         
@@ -110,8 +125,8 @@ public class IntervalDetailedView extends DetailedView {
     
     @Override
     public void setSelectedItem(Vector item) {
-        String patientId = (String) item.get(0);
-        setTitle(patientId);
+        String regionListName = (String) item.get(0);
+        setTitle(regionListName);
         
         details.removeAll();
         details.updateUI();
@@ -119,7 +134,7 @@ public class IntervalDetailedView extends DetailedView {
         if (sw != null) {
             sw.cancel(true);
         }
-        sw = new CohortDetailsSW(patientId);
+        sw = new RegionDetailsSW(regionListName,limitNumberOfRegionsShown);
         sw.execute();
     }
     

@@ -165,6 +165,8 @@ public class ImportFileView extends javax.swing.JDialog {
         bottomPanel.add(Box.createHorizontalGlue());
         bottomPanel.add(importButton);
         bottomPanel.add(cancelButton);
+        
+        this.getRootPane().setDefaultButton(importButton);
 
         this.add(bottomPanel, BorderLayout.SOUTH);
         
@@ -279,8 +281,11 @@ public class ImportFileView extends javax.swing.JDialog {
             columnClasses.add(this.getFileFormat().getFieldNumberToClassMap().get(i));
         }
         
-        SearchableTablePanel searchableTablePanel = new SearchableTablePanel(data,columnNames,columnClasses,new ArrayList<Integer>());
+        SearchableTablePanel searchableTablePanel = new SearchableTablePanel(
+                data,columnNames,columnClasses,new ArrayList<Integer>(),
+                false,false,50,false,false);
         
+        //boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection
         this.previewPanel.remove(waitPanel);
         this.previewPanel.add(searchableTablePanel,BorderLayout.CENTER);
         this.previewPanel.updateUI();

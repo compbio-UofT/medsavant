@@ -10,6 +10,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -35,7 +38,7 @@ public class IntervalPage extends SubSectionView {
     }
     
     public String getName() {
-        return "Gene List";
+        return "Region Lists";
     }
 
     public JPanel getView() {
@@ -51,7 +54,7 @@ public class IntervalPage extends SubSectionView {
     }
 
     private Component getAddCohortButton() {
-        JButton b = new JButton("Add gene list");
+        JButton b = new JButton("Add region list");
         
         b.addActionListener(new ActionListener() {
 
@@ -59,8 +62,8 @@ public class IntervalPage extends SubSectionView {
                 
                 String geneListName = (String) JOptionPane.showInputDialog(
                     null,
-                    "Name of Gene List:",
-                    "Import Gene List",
+                    "Name of Region List:",
+                    "Import Region List",
                     JOptionPane.PLAIN_MESSAGE,
                     null,
                     null,
@@ -125,11 +128,8 @@ public class IntervalPage extends SubSectionView {
             
             System.out.println("Importing in the background");
             
-            int linesParsed = 0;
-            
             Iterator<String[]> i = ImportDelimitedFile.getFileIterator(path, delim, numHeaderLines,fileFormat);
             DBUtil.addGeneListToDatabase(geneListName,i);
-            
             
             System.out.println("Done importing in the background");
             
@@ -140,6 +140,12 @@ public class IntervalPage extends SubSectionView {
         
         @Override
         protected void done() {
+            try {
+                get();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            
             if (progressDialog != null) {
                 if (!progressDialog.wasCancelRequested()) {
                     progressDialog.setComplete();

@@ -10,6 +10,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import org.ut.biolab.medsavant.db.table.CohortTableSchema;
 import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
+import org.ut.biolab.medsavant.db.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.db.table.SubjectTableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema;
@@ -43,6 +44,7 @@ public class MedSavantDatabase {
     private CohortTableSchema cohortTableSchema;
     private GeneListTableSchema geneListTableSchema;
     private GeneListViewTableSchema geneListViewTableSchema;
+    private GeneListMembershipTableSchema geneListMembershipTableSchema;
 
     public DbSchema getSchema() {
         return schema;
@@ -61,6 +63,7 @@ public class MedSavantDatabase {
         cohortTableSchema = new CohortTableSchema(schema);
         geneListTableSchema = new GeneListTableSchema(schema);
         geneListViewTableSchema = new GeneListViewTableSchema(schema);
+        geneListMembershipTableSchema = new GeneListMembershipTableSchema(schema);
     }
 
     public TableSchema getVariantTableSchema() {
@@ -86,6 +89,11 @@ public class MedSavantDatabase {
     public TableSchema getGeneListTableSchema() {
         return this.geneListTableSchema;
     }
+
+    public TableSchema getGeneListMembershipTableSchema() {
+        return geneListMembershipTableSchema;
+    }
+   
     
     
 }

@@ -21,7 +21,7 @@ public class IntervalListModel implements DetailedListModel {
 
         List<Vector> table = new ArrayList<Vector>();
 
-        List<String> dbresults = QueryUtil.getDistinctCohortNames();
+        List<String> dbresults = QueryUtil.getDistinctRegionLists();
 
         for (String s : dbresults) {
             Vector v = new Vector();
@@ -34,7 +34,7 @@ public class IntervalListModel implements DetailedListModel {
 
     public List<String> getColumnNames() {
         List<String> result = new ArrayList<String>();
-        result.add("Cohort");
+        result.add("Region List");
         return result;
     }
 

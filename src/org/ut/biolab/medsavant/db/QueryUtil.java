@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
+import org.ut.biolab.medsavant.db.table.GeneListTableSchema;
+import org.ut.biolab.medsavant.db.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
@@ -46,7 +48,7 @@ public class QueryUtil {
         q.setIsDistinct(true);
         q.addColumns(col);
         q.addFromTable(t.getTable());
-
+        
         Statement s = conn.createStatement();
         ResultSet rs = s.executeQuery(q.toString());
 
@@ -143,8 +145,12 @@ public class QueryUtil {
                     MedSavantDatabase.getInstance().getSubjectTableSchema().getDBColumn(SubjectTableSchema.ALIAS_HOSPITALID),
                     pid);
     }
-
+    
     private static List<Vector> getRecordsMatchingID(Connection conn, TableSchema t, DbColumn col, String id) throws SQLException {
+        return getRecordsMatchingID(conn,t,col,id,-1);
+    }
+
+    private static List<Vector> getRecordsMatchingID(Connection conn, TableSchema t, DbColumn col, String id, int limit) throws SQLException {
         
         SelectQuery q = new SelectQuery();
         q.addAllColumns();
@@ -154,9 +160,9 @@ public class QueryUtil {
 
         Statement s = conn.createStatement();
         
-        System.out.println("Querying for: " + q.toString());
+        System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
         
-        ResultSet rs = s.executeQuery(q.toString());
+        ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
         
         List<Vector> results;
         try {
@@ -183,4 +189,28 @@ public class QueryUtil {
                     MedSavantDatabase.getInstance().getCohortViewTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME),
                     cohortName);
     }
+    
+    public static List<Vector> getRegionsInRegionSet(String regionName, int limit) throws SQLException, NonFatalDatabaseException {
+        return QueryUtil.getRecordsMatchingID(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getGeneListViewTableSchema(),
+                    MedSavantDatabase.getInstance().getGeneListViewTableSchema().getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETNAME),
+                    regionName,
+                    limit);
+    }
+
+    public static List<String> getDistinctRegionLists() throws NonFatalDatabaseException, SQLException {
+        return QueryUtil.getDistinctValuesForColumn(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getGeneListTableSchema(),
+                    MedSavantDatabase.getInstance().getGeneListTableSchema().getDBColumn(GeneListTableSchema.ALIAS_NAME));
+    }
+
+    public static int getNumRegionsInRegionSet(String regionName) throws NonFatalDatabaseException, SQLException {
+        return QueryUtil.getNumRowsInTable(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getGeneListViewTableSchema().getTable());
+    }
+
+
 }
