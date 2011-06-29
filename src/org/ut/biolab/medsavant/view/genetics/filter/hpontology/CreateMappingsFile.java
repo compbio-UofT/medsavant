@@ -22,10 +22,10 @@ import org.jdom.input.SAXBuilder;
  */
 public class CreateMappingsFile {
     
-    public static void main(String[] args) throws Exception{
-        HashMap<String, HashSet<String>> map = getMappings();
-//        System.out.println(map);
-    }
+//    public static void main(String[] args) throws Exception{
+//        HashMap<String, HashSet<String>> map = getMappings();
+////        System.out.println(map);
+//    }
     
     /**
      * The location of the XML file containing the location of the mapping file.
