@@ -88,6 +88,10 @@ public class PeekingPanel extends JPanel {
             title.setUI(new VerticalLabelUI(false));
         }
         titlePanel.add(title);
+        
+        if (!isVertical) {
+            titlePanel.add(Box.createHorizontalGlue());
+        }
 
         titlePanel.addMouseListener(new MouseListener() {
 
