@@ -44,7 +44,7 @@ public class FilterJComponentStorer {
      * @param name the name of the component.
      * @return 
      */
-    public boolean containsComponentWithName(String name){
+    public static boolean containsComponentWithName(String name){
         return mapToComponent.containsKey(name);
     }    
 }
