@@ -43,8 +43,18 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.swing.gvt.GVTTreeRendererAdapter;
 import org.apache.batik.swing.gvt.GVTTreeRendererEvent;
+import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.model.Filter;
+import org.ut.biolab.medsavant.model.QueryFilter;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.table.TableSchema;
+import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 //import savant.controller.LocationController;
 //import savant.util.Range;
 
@@ -64,7 +74,7 @@ public class Viewer extends JSplitPane {
     private JScrollPane treeScroll;
     private JSplitPane rightPanel;
     private JTree dataTree;
-    private JLabel jumpLocationButton;
+    //private JLabel jumpLocationButton;
     private JLabel linkOutButton;
     private JLabel jumpPathwayButton;
     private ExtendedJSVGCanvas svgCanvas;
@@ -134,7 +144,7 @@ public class Viewer extends JSplitPane {
         Border buttonBorder = BorderFactory.createEmptyBorder(3,5,0,5);
 
         //jumpLocationButton
-        jumpLocationButton = new JLabel("<HTML><B>Jump to Gene Location</B></HTML>");
+        /*jumpLocationButton = new JLabel("<HTML><B>Jump to Gene Location</B></HTML>");
         jumpLocationButton.setForeground(Color.BLUE);
         jumpLocationButton.setBackground(Color.WHITE);
         jumpLocationButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -150,7 +160,7 @@ public class Viewer extends JSplitPane {
             public void mouseEntered(MouseEvent e) {}
             public void mouseExited(MouseEvent e) {}
         });
-        infoPanel.add(jumpLocationButton, gbc);
+        infoPanel.add(jumpLocationButton, gbc);*/
 
         //jumpPathwayButton
         jumpPathwayButton = new JLabel("<HTML><B>Jump to Pathway</B></HTML>");
@@ -270,6 +280,48 @@ public class Viewer extends JSplitPane {
         svgCanvas.setURI(svgUri.toString());      
         getGPML(gpmlUri);
         getGeneInfo();
+        applyFilter();
+    }
+    
+    private void applyFilter(){
+        
+        loader.setMessage("Applying Filter");
+        
+        final ArrayList<Gene> genes = new ArrayList<Gene>();      
+        for(DataNode n : dataNodes){
+            if(n.hasGene()){
+                genes.add(n.getGene());
+            }
+        }
+        
+        TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
+        final DbColumn positionCol = table.getDBColumn(VariantTableSchema.ALIAS_POSITION);
+        final DbColumn chromCol = table.getDBColumn(VariantTableSchema.ALIAS_CHROM);
+    
+        Filter f = new QueryFilter() {
+
+            @Override
+            public Condition[] getConditions() {               
+                Condition[] results = new Condition[genes.size()];
+                int i = 0;               
+                for(Gene g : genes){                    
+                    Condition[] current = new Condition[3];
+                    current[0] = BinaryCondition.equalTo(chromCol, "chr" + g.getChromosome());
+                    current[1] = BinaryCondition.greaterThan(positionCol, Math.min(g.getStart(), g.getEnd()), true);
+                    current[2] = BinaryCondition.lessThan(positionCol, Math.max(g.getStart(), g.getEnd()), true);                                   
+                    results[i++] = ComboCondition.and(current);
+                }
+                return results;
+            }
+
+            @Override
+            public String getName() {
+                return VariantTableSchema.ALIAS_POSITION;
+            }
+        };
+        System.out.println("Adding filter: " + f.getName());
+        FilterController.addFilter(f);
+        
     }
 
     private void getGeneInfo(){
@@ -472,7 +524,7 @@ public class Viewer extends JSplitPane {
     }
 
     private void clearInfo(){
-        jumpLocationButton.setVisible(false);
+        //jumpLocationButton.setVisible(false);
         jumpPathwayButton.setVisible(false);
         linkOutButton.setVisible(false);
         infoLabel.setText("");
@@ -481,13 +533,13 @@ public class Viewer extends JSplitPane {
 
     private void fillInfo(DataNode dataNode){
 
-        if(dataNode.hasGene()){
+        /*if(dataNode.hasGene()){
             jumpLocationButton.setVisible(true);
             jumpGene = dataNode.getGene();
         } else {
             jumpLocationButton.setVisible(false);
             jumpGene = null;
-        }
+        }*/
 
         if(dataNode.hasWikiPathway()){
             jumpPathwayButton.setVisible(true);
