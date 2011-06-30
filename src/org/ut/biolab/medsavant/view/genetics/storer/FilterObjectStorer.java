@@ -20,7 +20,7 @@ public class FilterObjectStorer {
      * @param name the name by which this component should be identified.
      * @param component the corresponding component.
      */
-    public static void addJComponent(String name, Object o){
+    public static void addObject(String name, Object o){
         mapToObject.put(name, o);
     }    
 }
