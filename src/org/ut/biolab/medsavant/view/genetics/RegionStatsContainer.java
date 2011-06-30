@@ -19,7 +19,7 @@ public class RegionStatsContainer extends JPanel{
     
     JPanel container;
     
-    public void addChart() {
+    public void addRegionStats() {
         JPanel p = new RegionStatsPanel();
         p.setPreferredSize(new Dimension(800, 230));
         p.setMaximumSize(new Dimension(800, 230));
