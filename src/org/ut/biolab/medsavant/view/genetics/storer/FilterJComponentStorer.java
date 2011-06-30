@@ -14,7 +14,7 @@ import javax.swing.JComponent;
  */
 public class FilterJComponentStorer {
     
-    private static final HashMap<String, JComponent> filterElementToComponent
+    private static final HashMap<String, JComponent> mapToComponent
             = new HashMap<String, JComponent>();
     
     /**
@@ -23,6 +23,6 @@ public class FilterJComponentStorer {
      * @param component the corresponding component.
      */
     public static void addJComponent(String name, JComponent component){
-        filterElementToComponent.put(name, component);
+        mapToComponent.put(name, component);
     }
 }
