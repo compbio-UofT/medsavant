@@ -25,4 +25,16 @@ public class FilterJComponentStorer {
     public static void addJComponent(String name, JComponent component){
         mapToComponent.put(name, component);
     }
+    
+    /**
+     * Get the object by this name
+     * @param name the name of the jComponent.
+     * @return the corresponding object, and null if the object was not even 
+     * inserted here in the first place.  Note that IF the object returned is 
+     * null, this does not necessarily mean that a null object was not inserted
+     * in the dictionary in the first place.
+     */
+    public static JComponent getJComponent(String name){
+        return mapToComponent.get(name);
+    }    
 }

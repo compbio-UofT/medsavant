@@ -22,5 +22,17 @@ public class FilterObjectStorer {
      */
     public static void addObject(String name, Object o){
         mapToObject.put(name, o);
-    }    
+    }
+    
+    /**
+     * Get the object by this name
+     * @param name the name of the object.
+     * @return the corresponding object, and null if the object was not even 
+     * inserted here in the first place.  Note that IF the object returned is 
+     * null, this does not necessarily mean that a null object was not inserted
+     * in the dictionary in the first place.
+     */
+    public static Object getObject(String name){
+        return mapToObject.get(name);
+    }
 }
