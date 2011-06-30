@@ -40,7 +40,7 @@ import javax.swing.table.TableCellRenderer;
 
 /**
  *
- * @author mfiume
+ * @author mfiume, AndrewBrook
  */
 public class SearchableTablePanel extends JPanel {
 
@@ -75,7 +75,7 @@ public class SearchableTablePanel extends JPanel {
         return table;
     }
 
-    public void updateData(Vector data) {
+    public synchronized void updateData(Vector data) {
         this.data = data;
         //updateView();
         this.setPageNumber(1); // updates the view

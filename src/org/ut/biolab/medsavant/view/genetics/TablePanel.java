@@ -61,6 +61,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
     }
 
     private void updateTable() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {       
+        showWaitCard();
         GetVariantsSwingWorker gv = new GetVariantsSwingWorker();
         gv.execute();
     }
@@ -72,11 +73,14 @@ class TablePanel extends JPanel implements FiltersChangedListener {
     private class GetVariantsSwingWorker extends SwingWorker {
         @Override
         protected Object doInBackground() throws Exception {
-            showWaitCard();
             tablePanel.updateData(Util.convertVariantRecordsToVectors(ResultController.getInstance().getFilteredVariantRecords()));
-            showShowCard();
             return null;
         }
+        
+        @Override
+        protected void done() {
+            showShowCard();
+        }  
     }
 
 }
