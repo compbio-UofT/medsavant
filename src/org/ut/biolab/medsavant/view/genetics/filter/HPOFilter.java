@@ -41,6 +41,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionI
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
+import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -48,6 +49,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Nirvana Nursimulu
  */
 public class HPOFilter {
+    
+    public static String NAME_TREE = "HPO TREE";
     
     private static ClassifiedPositionInfo classifiedPos;
             
@@ -152,6 +155,11 @@ public class HPOFilter {
         // Now that we have the tree, construct jTree, and display it.
         // Enable multiple discontinuous selection.
         final JTree jTree = ConstructJTree.getTree(tree, false, true);
+        
+        // Add this tree to the storer so that it does not need to be loaded 
+        // again when dealing with statistics.
+        FilterObjectStorer.addObject(NAME_TREE, tree);
+        
         jTree.getSelectionModel().setSelectionMode
                 (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {

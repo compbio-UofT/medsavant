@@ -8,6 +8,9 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionI
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.SetOperationQuery;
+import com.healthmarketscience.sqlbuilder.UnionQuery;
 import com.jidesoft.plaf.LookAndFeelFactory;
 import com.jidesoft.swing.CheckBoxTree;
 import java.awt.event.ActionEvent;
@@ -15,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +46,8 @@ import org.ut.biolab.medsavant.view.genetics.filter.geneontology.*;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
+import org.ut.biolab.medsavant.view.genetics.storer.FilterJComponentStorer;
+import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -49,6 +55,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Nirvana Nursimulu
  */
 public class GOFilter {
+    
+    public static String NAME_TREE = "GO TREE";
     
     private static ClassifiedPositionInfo classifiedPosInfo;
         
@@ -182,6 +190,10 @@ public class GOFilter {
         
         final JTree jTree = ConstructJTree.getTree(xtree, true, true);
         
+        // Add this tree to the storer so that it does not need to be loaded 
+        // again when dealing with statistics.
+        FilterObjectStorer.addObject(NAME_TREE, xtree);
+        
         // to keep track of the locations of the places selected.
         final HashSet<String> locations = new HashSet<String>();
 
@@ -287,7 +299,7 @@ public class GOFilter {
             // Note that an action could have been performed only if some tree
             // element has been selected.
             public void actionPerformed(ActionEvent e) {
-                
+            
                 applyButton.setEnabled(false); 
                 // Select query statement for GO.
                 classifiedPosInfo = new ClassifiedPositionInfo();
@@ -318,12 +330,15 @@ public class GOFilter {
                         
                         Condition[] conds = new Condition[map.keySet().size()];
                         int i = 0;
-                       
+                        List<SelectQuery> list = new ArrayList<SelectQuery>();
+                        
                         for (String key: map.keySet()){
                             
                             List<ComboCondition> listInnerCond = 
                                     new ArrayList<ComboCondition>();
                             List<Range> ranges = map.get(key);
+                            BinaryCondition chrCond = BinaryCondition.equalTo
+                                    (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
                             for (Range range: ranges){
 
                                 BinaryCondition innerCond1 = BinaryCondition.greaterThan
@@ -332,17 +347,25 @@ public class GOFilter {
                                         (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMax(), true);
                                 BinaryCondition[] condTogether = {innerCond1, innerCond2};
                                 listInnerCond.add(ComboCondition.and(condTogether));
+                                
+                                
+                            SelectQuery q = new SelectQuery();
+                            q.addAllColumns();
+                            list.add(q.addCondition(ComboCondition.and(chrCond, ComboCondition.and(condTogether))));
+                                
                             } // for each range for the chromosome of interest.
-                            BinaryCondition chrCond = BinaryCondition.equalTo
-                                    (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
                             conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
+                            
+                            
                         } // for each chromosome.
+//                        System.out.println(UnionQuery.unionAll(list.toArray(new SelectQuery[1])));
+//                        System.out.println("\n\n\n");
                         return conds;
                     }
 
                     @Override
                     public String getName() {
-                        return " position gene Ont";
+                        return "position Gene Ont";
                     }
                 };
                 System.out.println("Adding Filter " + f.getName());
