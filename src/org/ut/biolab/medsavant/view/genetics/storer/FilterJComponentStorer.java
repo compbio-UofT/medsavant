@@ -36,5 +36,15 @@ public class FilterJComponentStorer {
      */
     public static JComponent getJComponent(String name){
         return mapToComponent.get(name);
+    } 
+    
+    /**
+     * Returns true iff a component with this name has been inserted in the 
+     * static dict.
+     * @param name the name of the component.
+     * @return 
+     */
+    public boolean containsComponentWithName(String name){
+        return mapToComponent.containsKey(name);
     }    
 }

@@ -35,4 +35,8 @@ public class FilterObjectStorer {
     public static Object getObject(String name){
         return mapToObject.get(name);
     }
+    
+    public boolean containsObjectWithName(String name){
+        return mapToObject.containsKey(name);
+    }
 }
