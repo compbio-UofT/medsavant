@@ -5,6 +5,7 @@
 
 package org.ut.biolab.medsavant.view.dialog;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,6 +29,7 @@ public class VCFUploadForm extends javax.swing.JDialog {
     private List<String> species = new ArrayList<String>();
     private List<String> version = new ArrayList<String>();
     private String path;
+    private File[] files;
 
     /** Creates new form VCFUploadForm */
     public VCFUploadForm() {
@@ -168,25 +170,46 @@ public class VCFUploadForm extends javax.swing.JDialog {
         fc.setDialogTitle("Import Variants");
         fc.setDialogType(JFileChooser.OPEN_DIALOG);
         fc.addChoosableFileFilter(new ExtensionFileFilter("vcf"));
+        fc.setMultiSelectionEnabled(true);
+        
         int result = fc.showDialog(null, null);
         if (result == JFileChooser.CANCEL_OPTION || result == JFileChooser.ERROR_OPTION) {
             return;
         }
-        path = fc.getSelectedFile().getAbsolutePath();
+        
+        files = fc.getSelectedFiles();
+        path = getPathString(files);
         outputFileField.setText(path);
         uploadButton.setEnabled(true);
     }//GEN-LAST:event_chooseFileButtonActionPerformed
 
+    private String getPathString(File[] files) {
+        if (files.length > 1) {
+            return files.length + " files";
+        } else if (files.length == 1) {
+            return files[0].getAbsolutePath();
+        } else {
+            return "";
+        }
+    }
+    
     private void uploadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadButtonActionPerformed
         
         String g_id = genome_id.get(genomeComboBox.getSelectedIndex());
         String p_id = pipelineComboBox.getSelectedItem().toString();
         
-        try {
-            DBUtil.addVcfToDb(path, g_id, p_id);
-        } catch (SQLException ex) {
-            Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
-            this.dispose();
+        int currentfile = 0;
+        int totalnumfiles = files.length;
+        for (File f : files) {
+            currentfile++;
+            try {
+                System.out.println("Importing file " + currentfile + " of " + totalnumfiles);
+                DBUtil.addVcfToDb(f.getAbsolutePath(), g_id, p_id);
+                System.gc();
+            } catch (SQLException ex) {
+                Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
+                this.dispose();
+            }
         }
         this.dispose();
     }//GEN-LAST:event_uploadButtonActionPerformed

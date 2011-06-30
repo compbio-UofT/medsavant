@@ -19,5 +19,7 @@ public abstract class QueryFilter extends Filter {
         super(FilterType.QUERY);
     }
     
+    public boolean unionOverConditions() { return false; }
+    
     public abstract Condition[] getConditions();
 }

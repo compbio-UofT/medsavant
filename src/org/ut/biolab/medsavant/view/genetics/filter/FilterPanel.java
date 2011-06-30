@@ -11,7 +11,9 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.swing.RangeSlider;
+import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -21,6 +23,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -50,7 +53,7 @@ import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
-
+import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
  *
@@ -59,8 +62,9 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class FilterPanel extends JPanel implements FiltersChangedListener {
 
     private final ArrayList<FilterView> filterViews;
-    private CollapsiblePanes contentPanel;
+    private CollapsiblePanes filterContainer;
     private JLabel status;
+    private JPanel contentPlaceholder;
 
     public FilterPanel() throws NonFatalDatabaseException {
         this.setName("Filters");
@@ -69,7 +73,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         FilterController.addFilterListener(this);
         initGUI();
     }
-    
+
     private void initGUI() throws NonFatalDatabaseException {
 
         /*
@@ -82,45 +86,34 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         titlePanel.add(Box.createHorizontalGlue());
         this.add(titlePanel,BorderLayout.NORTH);
          */
-        
+
         JPanel statusPanel = ViewUtil.getBannerPanel();
         status = new JLabel();
-        
+
         try {
             status.setText(ViewUtil.numToString(QueryUtil.getNumRowsInTable(
-                    ConnectionController.connect(), 
+                    ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getVariantTableSchema().getTable())) + " variants in table");
         } catch (SQLException ex) {
         }
-        
+
         ViewUtil.clear(status);
         status.setFont(ViewUtil.getMediumTitleFont());
         statusPanel.add(Box.createHorizontalGlue());
         statusPanel.add(status);
         statusPanel.add(Box.createHorizontalGlue());
-        this.add(statusPanel,BorderLayout.SOUTH);
+        this.add(statusPanel, BorderLayout.SOUTH);
 
-        contentPanel = new CollapsiblePanes();
-        contentPanel.setBackground(ViewUtil.getMenuColor());
         
-        JScrollPane p1 = new JScrollPane(contentPanel);
-        p1.setBorder(null);
-        //p1.getRootPane().setBorder(null);
+        contentPlaceholder = new JPanel();
+        contentPlaceholder.setBackground(ViewUtil.getMenuColor());
+        contentPlaceholder.setLayout(new BorderLayout());
+        contentPlaceholder.add(new WaitPanel("Generating filters"), BorderLayout.CENTER);
+        this.add(contentPlaceholder,BorderLayout.CENTER);
         
-        this.add(p1, BorderLayout.CENTER);
-
-        List<FilterView> fv;
-        try {
-            fv = getFilterViews();
-            addFilterViews(fv);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            throw new FatalDatabaseException("Problem getting filters");
-        }
-
-        contentPanel.addExpansion();
-
-        this.setPreferredSize(new Dimension(400,999));
+        (new FilterViewGenerator()).execute();
+        
+        this.setPreferredSize(new Dimension(400, 999));
     }
 
     public void addFilterViews(List<FilterView> filterViews) {
@@ -129,7 +122,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         }
     }
 
-    private void addFilterView(FilterView view) {
+    private synchronized void addFilterView(FilterView view) {
         filterViews.add(view);
         CollapsiblePane cp = new CollapsiblePane(view.getTitle());
         try {
@@ -138,28 +131,53 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         }
         cp.setCollapsedPercentage(0);
         cp.setContentPane(view.getComponent());
-        this.contentPanel.add(cp);
+        this.filterContainer.add(cp);
     }
 
-    private List<FilterView> getFilterViews() throws SQLException, NonFatalDatabaseException {
-        List<FilterView> views = new ArrayList<FilterView>();
-        views.addAll(getVariantRecordFilterViews());
-        views.add(GOFilter.getGOntologyFilterView()); 
-        views.add(HPOFilter.getHPOntologyFilterView()); 
-        // views.add(getGenderFilterView());
-        // views.add(getAgeFilterView());
-        // views.add(getGenderFilterView());
-        // views.add(getAgeFilterView());
+    public class FilterViewGenerator extends SwingWorker {
 
-        // views.add(getGenderFilterView());
-        // views.add(getAgeFilterView());
+        private List<FilterView> getFilterViews() throws SQLException, NonFatalDatabaseException {
+            List<FilterView> views = new ArrayList<FilterView>();
+            views.addAll(getVariantRecordFilterViews());
+            views.add(GOFilter.getGOntologyFilterView());
+            views.add(HPOFilter.getHPOntologyFilterView());
 
-        return views;
+            return views;
+        }
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            return getFilterViews();
+        }
+        
+        protected void done() {
+            try {
+                
+                filterContainer = new CollapsiblePanes();
+                filterContainer.setBackground(ViewUtil.getMenuColor());
+
+                JScrollPane p1 = new JScrollPane(filterContainer);
+                p1.setBorder(null);
+
+                contentPlaceholder.removeAll();
+                contentPlaceholder.add(p1, BorderLayout.CENTER);
+
+                List<FilterView> views = (List<FilterView>) get();
+                addFilterViews(views);
+                filterContainer.addExpansion();
+                
+                contentPlaceholder.updateUI();
+                
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
-    
     
 
     void listenToComponent(final JCheckBox c) {
+
         c.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -169,6 +187,8 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     }
 
     private List<FilterView> getVariantRecordFilterViews() throws SQLException, NonFatalDatabaseException {
+
+
         List<FilterView> l = new ArrayList<FilterView>();
 
         System.out.println("Making filters");
@@ -182,9 +202,11 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             Class c = VariantRecordModel.getFieldClass(i);
 
             final String columnAlias = fieldNames.get(i);
-            
-            if (columnAlias.equals("Information")) { continue; }
-            
+
+            if (columnAlias.equals("Information")) {
+                continue;
+            }
+
             //System.out.println("Making filter for " + columnAlias);
 
             if (columnAlias.equals(VariantTableSchema.ALIAS_ID) || columnAlias.equals(VariantTableSchema.ALIAS_FILTER)) {// || columnAlias.equals(VariantTableSchema.ALIAS_INFORMATION)) {
@@ -207,7 +229,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
                 final int min = (int) Math.floor(extremeValues.getMin());
                 final int max = (int) Math.ceil(extremeValues.getMax());
-                
+
                 rs.setMinimum(min);
                 rs.setMaximum(max);
 
@@ -218,29 +240,28 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 rs.setHighValue(max);
 
                 JPanel rangeContainer = new JPanel();
-                rangeContainer.setLayout(new BoxLayout(rangeContainer,BoxLayout.X_AXIS));
-                
-                
+                rangeContainer.setLayout(new BoxLayout(rangeContainer, BoxLayout.X_AXIS));
+
+
                 final JLabel fromLabel = new JLabel(ViewUtil.numToString(min));
                 final JLabel toLabel = new JLabel(ViewUtil.numToString(max));
-                
+
                 rangeContainer.add(fromLabel);
                 rangeContainer.add(rs);
                 rangeContainer.add(toLabel);
-                
+
                 container.add(rangeContainer);
                 container.add(Box.createVerticalBox());
-                
+
                 rs.addChangeListener(new ChangeListener() {
 
                     public void stateChanged(ChangeEvent e) {
                         fromLabel.setText(ViewUtil.numToString(rs.getLowValue()));
                         toLabel.setText(ViewUtil.numToString(rs.getHighValue()));
                     }
-                    
                 });
-                
-                
+
+
 
                 final JButton applyButton = new JButton("Apply");
                 applyButton.setEnabled(false);
@@ -251,7 +272,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
                         applyButton.setEnabled(false);
 
-                        Range acceptableRange = new Range(rs.getLowValue(),rs.getHighValue());
+                        Range acceptableRange = new Range(rs.getLowValue(), rs.getHighValue());
 
                         if (min == acceptableRange.getMin() && max == acceptableRange.getMax()) {
                             FilterController.removeFilter(VariantRecordModel.getFieldNameForIndex(fieldNum));
@@ -263,7 +284,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                                     Condition[] results = new Condition[2];
                                     results[0] = BinaryCondition.greaterThan(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), rs.getLowValue(), true);
                                     results[1] = BinaryCondition.lessThan(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), rs.getHighValue(), true);
-                                    
+
                                     Condition[] resultsCombined = new Condition[1];
                                     resultsCombined[0] = ComboCondition.and(results);
 
@@ -290,9 +311,8 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                     public void stateChanged(ChangeEvent e) {
                         applyButton.setEnabled(true);
                     }
-
                 });
-                
+
                 JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
                 selectAll.addActionListener(new ActionListener() {
 
@@ -301,17 +321,17 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                         rs.setHighValue(max);
                     }
                 });
-                
+
                 JPanel bottomContainer = new JPanel();
                 bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
 
                 bottomContainer.add(selectAll);
                 bottomContainer.add(Box.createHorizontalGlue());
                 bottomContainer.add(applyButton);
-                
+
                 container.add(bottomContainer);
 
-                final FilterView fv = new FilterView(columnAlias,container);
+                final FilterView fv = new FilterView(columnAlias, container);
                 l.add(fv);
 
             } else if (isBoolean) {
@@ -338,8 +358,12 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
                         final List<String> acceptableValues = new ArrayList<String>();
 
-                        if(boxes.get(0).isSelected()) acceptableValues.add("1");
-                        if(boxes.get(1).isSelected()) acceptableValues.add("0");
+                        if (boxes.get(0).isSelected()) {
+                            acceptableValues.add("1");
+                        }
+                        if (boxes.get(1).isSelected()) {
+                            acceptableValues.add("0");
+                        }
 
                         if (acceptableValues.size() == boxes.size()) {
                             FilterController.removeFilter(VariantRecordModel.getFieldNameForIndex(fieldNum));
@@ -431,7 +455,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             } else {
 
                 Connection conn = ConnectionController.connect();
-           
+
                 List<String> uniq = QueryUtil.getDistinctValuesForColumn(conn, table, col);
 
                 JPanel container = new JPanel();
@@ -553,14 +577,14 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     }
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect(), 
+        setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect(),
                 MedSavantDatabase.getInstance().getVariantTableSchema())) + " records pass filters");
     }
 
     /*
     private Set<String> getUniqueValuesOfVariantRecordsAtField(int i) {
     Set<String> result = new TreeSet<String>();
-
+    
     /**
      * TODO: this should query the database
      *
@@ -572,7 +596,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     DialogUtil.displayErrorMessage("Problem getting data.", ex);
     return null;
     }
-
+    
     for (VariantRecord r : records) {
     Object o = VariantRecordModel.getValueOfFieldAtIndex(i, r);
     if (o == null) {
@@ -581,7 +605,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     result.add(o.toString());
     }
     }
-
+    
     return result;
     }
      * 

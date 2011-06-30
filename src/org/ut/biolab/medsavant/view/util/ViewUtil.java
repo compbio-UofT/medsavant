@@ -93,7 +93,11 @@ public class ViewUtil {
     }
 
     public static Font getSmallTitleFont() {
-        return new Font("Arial", Font.PLAIN, 9);
+        return new Font("Arial", Font.PLAIN, 10);
+    }
+    
+    public static Font getSuperSmallTitleFont() {
+        return new Font("Arial", Font.PLAIN, 6);
     }
 
     public static Color getDarkColor() {

@@ -57,6 +57,13 @@ public class PeekingPanel extends JPanel {
                 Color start = Color.lightGray;//new Color(37,113,190);//Color.black;
                 Color end = Color.white; //new Color(109,164,221);//Color.black;
 
+                /*
+                if (!isExpanded()) {
+                    end = Color.orange;
+                }
+                 * 
+                 */
+                
                 if (isVertical) {
                     GradientPaint p = new GradientPaint(0,0,end,titlePanel.getWidth(),0,start);
                     ((Graphics2D)g).setPaint(p);
@@ -79,8 +86,8 @@ public class PeekingPanel extends JPanel {
        // titlePanel.setBackground(Color.black); //new Color(1,73,98));//
 
         this.titleString = label.toUpperCase();
-        title = new JLabel(titleString);
-        title.setFont(ViewUtil.getSmallTitleFont());
+        title = new JLabel(" ");//titleString);
+        
         title.setForeground(Color.darkGray);
         if (borderLayoutPosition.equals(BorderLayout.EAST)) {
             title.setUI(new VerticalLabelUI(true));
@@ -122,7 +129,14 @@ public class PeekingPanel extends JPanel {
     public void setExpanded(boolean expanded) {
         this.isExpanded = expanded;
         String s = this.isExpanded ? " HIDE " + titleString : " SHOW " + titleString;
-        this.title.setText(s);
+        titlePanel.setToolTipText(s);
+        if (!this.isExpanded) {
+            this.title.setText(s);
+            title.setFont(ViewUtil.getSmallTitleFont());
+        } else {
+            this.title.setText(" ");
+            title.setFont(ViewUtil.getSuperSmallTitleFont());
+        }
         panel.setVisible(isExpanded);
     }
 
@@ -130,4 +144,9 @@ public class PeekingPanel extends JPanel {
         setExpanded(!this.isExpanded);
     }
 
+    public boolean isExpanded() {
+        return isExpanded;
+    }
+
+    
 }

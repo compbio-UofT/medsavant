@@ -52,8 +52,17 @@ public class FilterController {
         for (Filter f : filterMap.values()) {
             if (f.getType() == FilterType.QUERY) {
                 QueryFilter qf = (QueryFilter) f;
-                for (Condition c : qf.getConditions()) {
-                    q.addCondition(c);
+                
+                if (qf.unionOverConditions()) {
+                    
+                    /**
+                     * TODO: support unions
+                     */
+                    
+                } else {
+                    for (Condition c : qf.getConditions()) {
+                        q.addCondition(c);
+                    }
                 }
             }
         }

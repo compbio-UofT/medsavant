@@ -163,12 +163,8 @@ public class DBUtil {
         for (VariantRecord record : variants.getRecords()) {
 
             numrecords++;
-            if (numrecords % 1000 == 0) {
+            if (numrecords % 10000 == 0) {
                 System.out.println("Prepared " + numrecords + " records");
-            }
-
-            if (numrecords == 10000) {
-                break;
             }
 
             pstmt.setString(1, record.getDnaID());
