@@ -86,7 +86,7 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
     
     private synchronized void showWaitCard() {
         cl.show(this, CARD_WAIT);
-        
+              
     }
 
     private synchronized void showShowCard() {

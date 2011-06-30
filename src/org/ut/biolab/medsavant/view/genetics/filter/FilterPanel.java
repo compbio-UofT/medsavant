@@ -18,6 +18,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -51,9 +53,11 @@ import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterView.FilterViewType;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
+import pathways.PathwaysTab;
 
 /**
  *
@@ -122,7 +126,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         }
     }
 
-    private synchronized void addFilterView(FilterView view) {
+    private synchronized void addFilterView(final FilterView view) {
         filterViews.add(view);
         CollapsiblePane cp = new CollapsiblePane(view.getTitle());
         try {
@@ -131,6 +135,20 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         }
         cp.setCollapsedPercentage(0);
         cp.setContentPane(view.getComponent());
+        
+        if(view.getFilterViewType().equals(FilterViewType.FRAME)){
+            cp.addMouseListener(new MouseListener() {
+
+                public void mouseClicked(MouseEvent e) {
+                    view.getFrame().setVisible(true);
+                }
+
+                public void mousePressed(MouseEvent e) {}
+                public void mouseReleased(MouseEvent e) {}
+                public void mouseEntered(MouseEvent e) {}
+                public void mouseExited(MouseEvent e) {}
+            });
+        }      
         this.filterContainer.add(cp);
     }
 
@@ -141,6 +159,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             views.addAll(getVariantRecordFilterViews());
             views.add(GOFilter.getGOntologyFilterView());
             views.add(HPOFilter.getHPOntologyFilterView());
+            //views.add(new FilterView("WikiPathways", new PathwaysTab()));
 
             return views;
         }

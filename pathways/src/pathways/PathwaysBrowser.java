@@ -211,6 +211,7 @@ public class PathwaysBrowser extends JPanel{
                     //TODO: parallelize data retrieval!
 
                     //get svg
+                    //TODO: these paths should be retreived from medsavant!!!
                     String filename = System.getProperty("user.home") + System.getProperty("file.separator") + "medsavant" + System.getProperty("file.separator") + pathwayID + ".svg";
                     //String filename = SettingsController.getTempDirectory() + System.getProperty("file.separator") + pathwayID + ".svg";
                     byte[] svgByte = wpclient.getPathwayAs("svg", pathwayID, 0);
