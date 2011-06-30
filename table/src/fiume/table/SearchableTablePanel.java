@@ -147,13 +147,13 @@ public class SearchableTablePanel extends JPanel {
         updateView();
     }
     
-    public SearchableTablePanel(List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns){
-        this(data, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true);
+    public SearchableTablePanel(List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns) {
+        this(data, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true);
     }
-    
+
     public SearchableTablePanel(
-            List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, 
-            boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection) {
+        List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
+        boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection) {
 
         this.ROWSPERPAGE_X = defaultRows;      
         
