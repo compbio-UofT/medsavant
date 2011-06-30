@@ -12,7 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.dialog.VCFUploadForm;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
+//import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 

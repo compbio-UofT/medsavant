@@ -53,11 +53,11 @@ import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
+import org.ut.biolab.medsavant.view.filter.pathways.PathwaysTab;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterView.FilterViewType;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
-import pathways.PathwaysTab;
 
 /**
  *
@@ -162,7 +162,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             views.addAll(getVariantRecordFilterViews());
             views.add(GOFilter.getGOntologyFilterView());
             views.add(HPOFilter.getHPOntologyFilterView());
-            //views.add(new FilterView("WikiPathways", new PathwaysTab()));
+            views.add(new FilterView("WikiPathways", new PathwaysTab()));
 
             return views;
         }
