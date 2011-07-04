@@ -24,7 +24,9 @@ import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,11 +71,13 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     private CollapsiblePanes filterContainer;
     private JLabel status;
     private JPanel contentPlaceholder;
+    private final HashMap<String, CollapsiblePane> filterToCPMap;
 
     public FilterPanel() throws NonFatalDatabaseException {
         this.setName("Filters");
         this.setLayout(new BorderLayout());
         filterViews = new ArrayList<FilterView>();
+        filterToCPMap = new HashMap<String,CollapsiblePane>();
         FilterController.addFilterListener(this);
         initGUI();
     }
@@ -128,7 +132,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
     private synchronized void addFilterView(final FilterView view) {
         filterViews.add(view);
-        CollapsiblePane cp = new CollapsiblePane(view.getTitle());
+        final CollapsiblePane cp = new CollapsiblePane(view.getTitle());
         try {
             cp.setCollapsed(true);
         } catch (PropertyVetoException ex) {
@@ -148,8 +152,24 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 public void mouseEntered(MouseEvent e) {}
                 public void mouseExited(MouseEvent e) {}
             });
-        }      
+        }
+        
+        filterToCPMap.put(view.getTitle(),cp);
+        
         this.filterContainer.add(cp);
+    }
+
+    private void updatePaneEmphasis() {
+        Set<String> filters = FilterController.getFilterSet(FilterController.getCurrentFilterSetID()).keySet();
+        
+        for (String p : this.filterToCPMap.keySet()) {
+            this.filterToCPMap.get(p).setEmphasized(false);
+        }
+        for (String s : filters) {
+            this.filterToCPMap.get(s).setEmphasized(true);
+        }
+        
+        
     }
 
     public class FilterViewGenerator extends SwingWorker {
@@ -159,6 +179,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             
             
             views.add(CohortFilterView.getCohortFilterView());
+            views.add(GeneListFilterView.getFilterView());
             views.addAll(getVariantRecordFilterViews());
             views.add(GOFilter.getGOntologyFilterView());
             views.add(HPOFilter.getHPOntologyFilterView());
@@ -599,8 +620,9 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     }
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect(),
-                MedSavantDatabase.getInstance().getVariantTableSchema())) + " records pass filters");
+        setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect()
+                )) + " records pass filters");
+        updatePaneEmphasis();
     }
 
     /*
