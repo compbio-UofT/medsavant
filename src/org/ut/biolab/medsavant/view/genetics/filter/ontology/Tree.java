@@ -54,6 +54,14 @@ public class Tree {
         idToLocs = new HashMap<String, HashSet<String>>();
     }
     
+    /**
+     * Returns a copy of this tree.
+     * @return 
+     */
+    public Tree copyTree(){
+        return this;
+    }
+    
     
     public int getSize(){
         return identifierToNode.keySet().size();
@@ -188,7 +196,7 @@ public class Tree {
      * optional operation.  
      */
     public void propagateUp(){
-        System.out.println("Propagating up");
+        System.out.println("Propagating up the locations in this tree.");
         // send to recursive function.  
         setLocations(fakeRoot);
     }
