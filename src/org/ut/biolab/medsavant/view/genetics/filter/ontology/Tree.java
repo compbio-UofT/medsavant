@@ -59,6 +59,7 @@ public class Tree {
      * @return 
      */
     public Tree copyTree(){
+        // TODO work on this one.
         return this;
     }
     
