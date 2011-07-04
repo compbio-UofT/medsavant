@@ -209,10 +209,16 @@ public class PathwaysBrowser extends JPanel{
                 try {
 
                     //TODO: parallelize data retrieval!
+                    
+                    //TODO: this path should be retreived from medsavant!!!
+                    String dirString = System.getProperty("user.home") + System.getProperty("file.separator") + "medsavant";
+                    File dir = new File(dirString);
+                    if(!dir.exists()){
+                        dir.mkdirs();
+                    }
 
-                    //get svg
-                    //TODO: these paths should be retreived from medsavant!!!
-                    String filename = System.getProperty("user.home") + System.getProperty("file.separator") + "medsavant" + System.getProperty("file.separator") + pathwayID + ".svg";
+                    //get svg              
+                    String filename = dirString + System.getProperty("file.separator") + pathwayID + ".svg";
                     //String filename = SettingsController.getTempDirectory() + System.getProperty("file.separator") + pathwayID + ".svg";
                     byte[] svgByte = wpclient.getPathwayAs("svg", pathwayID, 0);
                     OutputStream out;
@@ -221,7 +227,7 @@ public class PathwaysBrowser extends JPanel{
                     out.close();
 
                     //get gpml
-                    String filename1 = System.getProperty("user.home") + System.getProperty("file.separator") + "medsavant" + System.getProperty("file.separator") + pathwayID + ".gpml";
+                    String filename1 = dirString + System.getProperty("file.separator") + pathwayID + ".gpml";
                     //String filename1 = SettingsController.getTempDirectory() + System.getProperty("file.separator") + pathwayID + ".gpml";
                     byte[] gpmlByte = wpclient.getPathwayAs("gpml", pathwayID, 0);
                     OutputStream out1;
