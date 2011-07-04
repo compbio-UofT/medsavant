@@ -77,6 +77,10 @@ public class Tree {
         return fakeRoot.getChildren();
     }
     
+    public HashSet<String> getLocsOfFakeRoot(){
+        return fakeRoot.getLocs();
+    }
+    
     /**
      * Get the children of the node with the provided identifier.
      * @param identifier the identifier of the parent.
