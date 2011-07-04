@@ -236,7 +236,7 @@ public class PathwaysBrowser extends JPanel{
                     out1.close();
 
                     //set pathway
-                    svgPanel.setPathway(new File(filename).toURI(), new File(filename1).toURI());
+                    svgPanel.setPathway(new File(filename).toURI(), new File(filename1).toURI(), pathwayID);
                     setVisible(false);
                     svgPanel.setVisible(true);
                     loader.setVisible(false);

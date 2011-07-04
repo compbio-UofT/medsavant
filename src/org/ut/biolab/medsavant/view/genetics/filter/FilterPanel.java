@@ -55,6 +55,7 @@ import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
+import org.ut.biolab.medsavant.view.filter.pathways.PathwaysPanel;
 import org.ut.biolab.medsavant.view.filter.pathways.PathwaysTab;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterView.FilterViewType;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -66,7 +67,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class FilterPanel extends JPanel implements FiltersChangedListener {
-
+    
     private final ArrayList<FilterView> filterViews;
     private CollapsiblePanes filterContainer;
     private JLabel status;
@@ -179,11 +180,11 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             
             
             views.add(CohortFilterView.getCohortFilterView());
-            views.add(GeneListFilterView.getFilterView());
+            //views.add(GeneListFilterView.getFilterView());
             views.addAll(getVariantRecordFilterViews());
             views.add(GOFilter.getGOntologyFilterView());
-            views.add(HPOFilter.getHPOntologyFilterView());
-            views.add(new FilterView("WikiPathways", new PathwaysTab()));
+            views.add(HPOFilter.getHPOntologyFilterView());                     
+            views.add(new FilterView("WikiPathways", new PathwaysPanel()));
 
             return views;
         }
@@ -620,8 +621,8 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     }
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect()
-                )) + " records pass filters");
+        setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect(),
+                MedSavantDatabase.getInstance().getVariantTableSchema())) + " records pass filters");
         updatePaneEmphasis();
     }
 

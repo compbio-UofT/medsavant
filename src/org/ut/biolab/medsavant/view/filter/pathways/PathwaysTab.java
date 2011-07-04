@@ -47,6 +47,8 @@ import org.pathvisio.wikipathways.WikiPathwaysClient;
  * @author AndrewBrook
  */
 public class PathwaysTab extends JFrame {
+    
+    private PathwaysPanel pathwaysPanel;
 
     private JPanel parent;
     private PathwaysBrowser browser;
@@ -64,8 +66,9 @@ public class PathwaysTab extends JFrame {
     private boolean started = false;
 
     
-    public PathwaysTab(){
+    public PathwaysTab(PathwaysPanel pp){
         super();
+        this.pathwaysPanel = pp;
         this.setPreferredSize(new Dimension(800,500));
         this.setMinimumSize(new Dimension(400,250));
         this.setSize(new Dimension(800,500));
@@ -74,6 +77,14 @@ public class PathwaysTab extends JFrame {
         JPanel pane = new JPanel();
         this.getContentPane().add(pane, BorderLayout.CENTER);
         init(pane);
+    }
+    
+    public void applyFilter(){
+        if(svgPanel != null) {
+            pathwaysPanel.enableApply(false);
+            svgPanel.applyFilter();
+            pathwaysPanel.enableApply(true);
+        }
     }
     
     //public static FilterView getWikiPathwaysFilterView(){
@@ -179,7 +190,7 @@ public class PathwaysTab extends JFrame {
                 }
 
                 //create panel for viewing svgs
-                svgPanel = new Viewer(loader);
+                svgPanel = new Viewer(loader, pathwaysPanel);
                 svgPanel.setVisible(false);
 
                 GridBagConstraints gbc = new GridBagConstraints();

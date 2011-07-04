@@ -94,9 +94,15 @@ public class Viewer extends JSplitPane {
     private Point start;
     private int initialVerticalScroll = 0;
     private int initialHorizontalScroll = 0;
+    
+    private boolean hasPathway = false;
+    private PathwaysPanel pathwaysPanel;
+    private String pathwayString;
 
-    Viewer(Loader loader) {
+    Viewer(Loader loader, PathwaysPanel pp) {
 
+        this.pathwaysPanel = pp;
+        
         this.loader = loader;
 
         this.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
@@ -271,7 +277,13 @@ public class Viewer extends JSplitPane {
         this.browser = browser;
     }
 
-    public void setPathway(URI svgUri, URI gpmlUri) {
+    public void setPathway(URI svgUri, URI gpmlUri, String pathway) {
+        
+        this.pathwayString = pathway;
+        
+        hasPathway = false;
+        pathwaysPanel.enableApply(false);
+        
         jumpGene = null;
         jumpPathway = null;
         linkOutUrl = null;
@@ -280,11 +292,18 @@ public class Viewer extends JSplitPane {
         svgCanvas.setURI(svgUri.toString());      
         getGPML(gpmlUri);
         getGeneInfo();
-        applyFilter();
+        //applyFilter();
+        
+        hasPathway = true;
+        pathwaysPanel.enableApply(true);      
+        pathwaysPanel.setCurrentFilter(pathwayString);
     }
     
-    private void applyFilter(){
+    public void applyFilter(){
         
+        if(!hasPathway) return;
+        
+        loader.setVisible(true);
         loader.setMessage("Applying Filter");
         
         final ArrayList<Gene> genes = new ArrayList<Gene>();      
@@ -321,6 +340,10 @@ public class Viewer extends JSplitPane {
         };
         System.out.println("Adding filter: " + f.getName());
         FilterController.addFilter(f);
+        
+        
+        pathwaysPanel.setAppliedFilter(pathwayString);
+        loader.setVisible(false);
         
     }
 

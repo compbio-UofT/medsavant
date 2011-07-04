@@ -27,11 +27,11 @@ public class FilterView {
         setFilterViewType(FilterViewType.NORMAL);
     }
     
-    public FilterView(String title, JFrame frame){
+    public FilterView(String title, JComponent content, JFrame frame){
         setTitle(title);
         setFrame(frame);
         setFilterViewType(FilterViewType.FRAME);
-        setComponent(new JPanel());
+        setComponent(content);
     }
 
     public String getTitle() {
