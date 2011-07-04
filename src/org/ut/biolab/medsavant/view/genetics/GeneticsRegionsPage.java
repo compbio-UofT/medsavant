@@ -59,6 +59,7 @@ public class GeneticsRegionsPage extends SubSectionView {
         addButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
+                System.out.println("Pressed button");
                 rsc.addRegionStats();
             }
         });

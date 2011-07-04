@@ -42,6 +42,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     private JToolBar bar;
     private String currentRegionStat;
     private RegionStatsWorker rsw;
+    private WaitPanel waitPanel;
     
     /**
      * List containing the name of region stats the user can view.
@@ -51,38 +52,36 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     /**
      * Maps the name of a region stats to its corresponding component (eg, JTree).
      */
-    private HashMap<String, JComponent> regionStatToComp;
+    private static HashMap<String, JComponent> regionStatToComp = new HashMap<String, JComponent>();
 
     
     public RegionStatsPanel(){
         this.setLayout(new BorderLayout());
-        regionStatToComp = new HashMap<String, JComponent>();
-        
-        for (String regionStatsName: regionStatsNames){
-            // At the beginning, no component has been created.
-            regionStatToComp.put(regionStatsName, null);
-        }
+
+//        updateRegionStats();
         initToolBar();
-        updateRegionStats();
         FilterController.addFilterListener(this);
     }
     
     private void updateRegionStats(){
         
         this.removeAll();
-        this.add(new WaitPanel("Getting region statistics"), BorderLayout.CENTER);
+        waitPanel = new WaitPanel("Getting region statistics");
+        this.add(waitPanel, BorderLayout.CENTER);
         this.updateUI();
         
         // Kill any existing threads, if any.
         if (rsw != null && !rsw.isDone()){  rsw.cancel(true);     }
         
-        rsw = new RegionStatsWorker(currentRegionStat);
+        rsw = new RegionStatsWorker(currentRegionStat, this, waitPanel);
         rsw.execute();
     }  
     
-    private synchronized void drawRegionStats(JComponent component){
-        this.add(component);
-    }    
+//    private void drawRegionStats(JComponent component){
+//        // Remove the wait panel first.
+//        this.remove(waitPanel);
+//        this.add(component);
+//    }    
     
     private void initToolBar(){
         bar = new JToolBar();
@@ -107,7 +106,8 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
         
         bar.add(b);
         bar.add(Box.createHorizontalStrut(5));
-        this.add(bar, BorderLayout.NORTH);        
+        this.add(bar, BorderLayout.NORTH);   
+        this.updateUI();
     }
 
     private void setCurrentRegionStats(String regionStatsName) {
@@ -118,9 +118,13 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     public class RegionStatsWorker extends SwingWorker{
         
         private String regionStatsName;
+        private JPanel panel;
+        private JPanel waitPanel;
         
-        public RegionStatsWorker(String regionStatsName){
+        public RegionStatsWorker(String regionStatsName, JPanel panel, WaitPanel waitPanel){
             this.regionStatsName = regionStatsName;
+            this.panel = panel;
+            this.waitPanel = waitPanel;
         }
         
         // TODO: make this more general if possible, for future purposes.
@@ -128,7 +132,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
             
             // Get the component that is associated with this region stats.
             JComponent component = regionStatToComp.get(regionStatsName);
-            
+      System.out.println(regionStatToComp);
             // If the component hasn't been made yet, make it, and put into the
             // dictionary, so that it can be accessed later on.
             if (component == null){
@@ -138,14 +142,14 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
                         ;
                     Object o = FilterObjectStorer.getObject(GOFilter.NAME_TREE);
                     component = ConstructJTree.getTree((Tree)o, true, false);
-//                    System.out.println("dun dun dun");
+                    System.out.println("Gene Ontology tree constructed for Regions stats.");
                 }
                 else if (regionStatsName.equals("Human Phenotype Ontology")){
                     while (!FilterObjectStorer.containsObjectWithName(HPOFilter.NAME_TREE))
                         ;
                     Object o = FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
                     component = ConstructJTree.getTree((Tree)o, false, false);
-//                    System.out.println("dun dun dun");
+                    System.out.println("HPO tree constructed for Region stats");
                 }
                 
                 regionStatToComp.put(regionStatsName, (JTree)component);
@@ -165,8 +169,15 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
         
         protected void done(){
             try {
+                System.out.println("Beginning of done");
                 JScrollPane scrollPane = new JScrollPane((JComponent)get());
-                drawRegionStats(scrollPane);
+
+            // Remove the wait panel first.
+            panel.remove(waitPanel);
+            panel.add(scrollPane);
+            panel.updateUI();
+        
+                System.out.println("Ending of done");
             } catch (Exception ex){
                 ex.printStackTrace();
                 Logger.getLogger(RegionStatsPanel.class.getName()).log(Level.SEVERE, null, ex);                

@@ -25,6 +25,7 @@ public class RegionStatsContainer extends JPanel{
         p.setMaximumSize(new Dimension(800, 230));
         //p.setBorder(ViewUtil.getTinyLineBorder());
         container.add(p);
+        this.updateUI();
     }
 
     public RegionStatsContainer() {
