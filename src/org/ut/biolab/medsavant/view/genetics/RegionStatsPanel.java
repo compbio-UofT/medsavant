@@ -49,10 +49,6 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
      */
     private static final String[] regionStatsNames = {"Gene Ontology", "Human Phenotype Ontology"};
     
-    /**
-     * Maps the name of a region stats to its corresponding component (eg, JTree).
-     */
-    private static HashMap<String, JComponent> regionStatToComp = new HashMap<String, JComponent>();
 
     
     public RegionStatsPanel(){
@@ -65,7 +61,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     
     private void updateRegionStats(){
         
-        this.removeAll();
+        this.remove(bar);
         waitPanel = new WaitPanel("Getting region statistics");
         this.add(waitPanel, BorderLayout.CENTER);
         this.updateUI();
@@ -130,30 +126,24 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
         // TODO: make this more general if possible, for future purposes.
         private JComponent getRegionStatsFor(String regionStatsName){
             
-            // Get the component that is associated with this region stats.
-            JComponent component = regionStatToComp.get(regionStatsName);
-      System.out.println(regionStatToComp);
-            // If the component hasn't been made yet, make it, and put into the
-            // dictionary, so that it can be accessed later on.
-            if (component == null){
-                
-                if (regionStatsName.equals("Gene Ontology")){                   
+                JComponent component = null;
+                if (regionStatsName.equals("Gene Ontology")){  
+                    // TODO: change this approach: what if the GO tree is never loaded?
                     while (!FilterObjectStorer.containsObjectWithName(GOFilter.NAME_TREE))
                         ;
                     Object o = FilterObjectStorer.getObject(GOFilter.NAME_TREE);
                     component = ConstructJTree.getTree((Tree)o, true, false);
-                    System.out.println("Gene Ontology tree constructed for Regions stats.");
+//                    System.out.println("Gene Ontology tree constructed for Regions stats.");
                 }
                 else if (regionStatsName.equals("Human Phenotype Ontology")){
+                    // TODO: change this approach: what if the HPO tree is never loaded?
                     while (!FilterObjectStorer.containsObjectWithName(HPOFilter.NAME_TREE))
                         ;
                     Object o = FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
                     component = ConstructJTree.getTree((Tree)o, false, false);
-                    System.out.println("HPO tree constructed for Region stats");
+//                    System.out.println("HPO tree constructed for Region stats");
                 }
-                
-                regionStatToComp.put(regionStatsName, (JTree)component);
-            }
+
             if (regionStatsName.equals("Gene Ontology") || 
                     regionStatsName.equals("Human Phenotype Ontology")){
              
@@ -169,7 +159,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
         
         protected void done(){
             try {
-                System.out.println("Beginning of done");
+//                System.out.println("Beginning of done");
                 JScrollPane scrollPane = new JScrollPane((JComponent)get());
 
             // Remove the wait panel first.
@@ -177,7 +167,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
             panel.add(scrollPane);
             panel.updateUI();
         
-                System.out.println("Ending of done");
+//                System.out.println("Ending of done");
             } catch (Exception ex){
                 ex.printStackTrace();
                 Logger.getLogger(RegionStatsPanel.class.getName()).log(Level.SEVERE, null, ex);                
