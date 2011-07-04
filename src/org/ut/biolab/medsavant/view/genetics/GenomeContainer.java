@@ -47,7 +47,7 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         chrContainer.setLayout(new BoxLayout(chrContainer,BoxLayout.X_AXIS));
         this.add(chrContainer, CARD_SHOW);
                
-        this.add(new WaitPanel("Generating Genome View"), CARD_WAIT);
+        this.add(new WaitPanel("Generating Genome View", Color.WHITE), CARD_WAIT);
 
         FilterController.addFilterListener(this);
     }
@@ -108,7 +108,7 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
             int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect(), MedSavantDatabase.getInstance().getVariantTableSchema());
             for(ChromosomePanel p : chrViews){
                 p.update(totalNum);
-            }           
+            }     
             return null;            
         }
         

@@ -21,9 +21,13 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class WaitPanel extends JPanel {
     private final JLabel statusLabel;
     private final JProgressBar prog;
+    
+    public WaitPanel(String message){
+        this(message, null);
+    }
 
-    public WaitPanel(String message) {
-        //this.setBackground(Color.lightGray);
+    public WaitPanel(String message, Color foreground) {
+        //this.setBackground(Color.lightGray);       
         this.setOpaque(false);
         this.setBorder(ViewUtil.getHugeBorder());
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
@@ -33,7 +37,7 @@ public class WaitPanel extends JPanel {
         statusLabel = new JLabel("");
         
         this.add(Box.createVerticalGlue());
-        this.add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel(message)));
+        this.add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel(message, foreground)));
         this.add(ViewUtil.getCenterAlignedComponent(statusLabel));
         this.add(prog);
         this.add(Box.createVerticalGlue());

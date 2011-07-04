@@ -251,6 +251,13 @@ public class ViewUtil {
         l.setFont(new Font("Tahoma",Font.BOLD,14));
         return l;
     }
+    
+    public static Component getDialogLabel(String string, Color fontColor) {
+        Component l = getDialogLabel(string);
+        if(fontColor != null)
+            l.setForeground(fontColor);
+        return l;
+    }
 
     
     public enum OS { Unknown, Windows, Linux, Mac };
