@@ -316,7 +316,7 @@ public class Viewer extends JSplitPane {
 
             @Override
             public String getName() {
-                return VariantTableSchema.ALIAS_POSITION;
+                return "WikiPathways";
             }
         };
         System.out.println("Adding filter: " + f.getName());
