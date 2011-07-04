@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.dialog.VCFUploadForm;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 //import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
@@ -40,9 +41,9 @@ public class GeneticsSection extends SectionView {
     @Override
     public JPanel[] getPersistentPanels() {
         try {
-            JPanel[] panels = new JPanel[1];
+            JPanel[] panels = new JPanel[2];
             panels[0] = new FilterPanel();
-            //panels[1] = new FilterProgressPanel();
+            panels[1] = new FilterProgressPanel();
             //TODO: account for exception in filter panel instead
             return panels;
         } catch (Exception ex) {

@@ -32,15 +32,25 @@ public class FilterController {
     private static Map<Integer,Map<String,Filter>> filterMapHistory = new TreeMap<Integer,Map<String,Filter>>();
     private static Map<String,Filter> filterMap = new TreeMap<String,Filter>();
     private static List<FiltersChangedListener> listeners = new ArrayList<FiltersChangedListener>();
+       
+    private static Filter lastFilter;
+    private static FilterAction lastAction;
+    public static enum FilterAction {ADDED, REMOVED, MODIFIED};
 
     public static void addFilter(Filter filter) {
-        filterMap.put(filter.getName(), filter);
+        Filter prev = filterMap.put(filter.getName(), filter);
+        if(prev == null){
+            setLastFilter(filter, FilterAction.ADDED);
+        } else {
+            setLastFilter(filter, FilterAction.MODIFIED);
+        }
         fireFiltersChangedEvent();
         //printSQLSelect();
     }
 
     public static void removeFilter(String filtername) {
-        filterMap.remove(filtername);
+        Filter removed = filterMap.remove(filtername);
+        setLastFilter(removed, FilterAction.REMOVED);
         fireFiltersChangedEvent();
     }
 
@@ -128,6 +138,32 @@ public class FilterController {
             }
         }
         return qfs;
+    }
+    
+    private static void setLastFilter(Filter filter, FilterAction action){
+        lastFilter = filter;
+        lastAction = action;
+    }
+    
+    public static Filter getLastFilter(){
+        return lastFilter;
+    }
+    
+    public static FilterAction getLastAction(){
+        return lastAction;
+    }
+    
+    public static String getLastActionString(){
+        switch(lastAction){
+            case ADDED:
+                return "Added";
+            case REMOVED:
+                return "Removed";
+            case MODIFIED:
+                return "Modified";
+            default:
+                return "";
+        }
     }
 
 }

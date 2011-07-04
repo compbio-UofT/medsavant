@@ -37,7 +37,7 @@ public class ChromosomeDiagramPanel extends JPanel {
     private long scaleWRTLength;
     private final Chromosome chr;
     private List<RangeAnnotation> annotations;
-    private static final int BINSIZE = 5000000;
+    private static final int BINSIZE = 15000000;
 
     public ChromosomeDiagramPanel(Chromosome c) {
         this.chr = c;
