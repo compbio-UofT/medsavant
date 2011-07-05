@@ -615,10 +615,11 @@ public class Viewer extends JSplitPane {
                 if(selRow != -1) {
                     if(e.getClickCount() == 2) {
                         DefaultMutableTreeNode node = (DefaultMutableTreeNode)selPath.getLastPathComponent();
-                        if (node == null) return;
+                        if (node == null) return;                      
                         if (node.isLeaf()) {
                             DataNode dataNode = (DataNode)node.getUserObject();
                             fillInfo(dataNode);
+                            treeScroll.getVerticalScrollBar().setValue(treeScroll.getVerticalScrollBar().getMinimum());
                         }
                     }
                 }
