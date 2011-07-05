@@ -5,7 +5,6 @@
 
 package org.ut.biolab.medsavant.view.genetics;
 
-import com.jidesoft.utils.SwingWorker;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
@@ -22,9 +21,7 @@ import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.db.ConnectionController;
-import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
-import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.record.Chromosome;
 
@@ -37,7 +34,9 @@ public class ChromosomeDiagramPanel extends JPanel {
     private long scaleWRTLength;
     private final Chromosome chr;
     private List<RangeAnnotation> annotations;
-    private static final int BINSIZE = 15000000;
+    //private static final int BINSIZE = 15000000;
+    private static final int MINBINSIZE = 10000000;
+    private static final int BINMULTIPLIER = 25;
 
     public ChromosomeDiagramPanel(Chromosome c) {
         this.chr = c;
@@ -115,28 +114,29 @@ public class ChromosomeDiagramPanel extends JPanel {
         List<RangeAnnotation> as = new ArrayList<RangeAnnotation>();
         
         List<Integer> nums = new ArrayList<Integer>();
-       
+        
+        int binsize = (int)Math.min(Integer.MAX_VALUE, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
+        
         try {
-            for(int i = 0; i < chr.getLength(); i += BINSIZE){
+            for(int i = 0; i < chr.getLength(); i += binsize){
                 int numVariants = QueryUtil.getNumVariantsInRange(                  
                         ConnectionController.connect(),
                         chr.getName(),
                         i,
-                        i + BINSIZE);
+                        i + binsize);
                 nums.add(numVariants); 
                 if(numVariants > 0 && totalNum >= 1){
                     float alpha = 0.15f + (0.85f * (float)((double)numVariants / (double)totalNum));                 
-                    as.add(new RangeAnnotation(i, i + BINSIZE, new Color(0.0f, 0.7f, 0.87f, alpha)));
+                    as.add(new RangeAnnotation(i, i + binsize, new Color(0.0f, 0.7f, 0.87f, alpha)));
                 }
-            }
-            
+            }           
         } catch (NonFatalDatabaseException ex) {
             Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        setAnnotations(as);
+        setAnnotations(as);      
     }
     
 }
