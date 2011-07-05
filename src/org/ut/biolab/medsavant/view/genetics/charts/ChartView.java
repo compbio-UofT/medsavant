@@ -16,6 +16,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
@@ -39,6 +40,7 @@ public class ChartView extends JPanel {
     public ChartView() {
         mapGenerators = new HashMap<String, ChartMapGenerator>();
         initGUI();
+        this.chartChooser.setSelectedItem(VariantTableSchema.ALIAS_CHROM);
     }
 
     private void initGUI() {
@@ -51,11 +53,12 @@ public class ChartView extends JPanel {
     private void initToolBar() {
 
         JPanel toolbar = ViewUtil.getBannerPanel();
-        toolbar.setBorder(ViewUtil.getTinyLineBorder());
+        toolbar.setBorder(ViewUtil.getMediumBorder());
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
 
         toolbar.add(Box.createHorizontalGlue());
 
+        toolbar.add(new JLabel("Field: "));
         chartChooser = new JComboBox();
         toolbar.add(chartChooser);
 
@@ -84,10 +87,10 @@ public class ChartView extends JPanel {
         rg.add(b1);
         rg.add(b2);
 
-        toolbar.add(ViewUtil.getMediumSeparator());
+        //toolbar.add(ViewUtil.getMediumSeparator());
 
-        toolbar.add(ViewUtil.clear(b1));
-        toolbar.add(ViewUtil.clear(b2));
+        //toolbar.add(ViewUtil.clear(b1));
+        //toolbar.add(ViewUtil.clear(b2));
 
         toolbar.add(Box.createHorizontalGlue());
 

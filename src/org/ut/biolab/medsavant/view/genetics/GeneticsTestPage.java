@@ -25,7 +25,7 @@ public class GeneticsTestPage extends SubSectionView {
 
     
     public String getName() {
-        return "Test";
+        return "Tests";
     }
 
     public JPanel getView() {

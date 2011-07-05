@@ -24,15 +24,14 @@ import org.ut.biolab.medsavant.util.view.PeekingPanel;
  *
  * @author mfiume
  */
-public class GeneticsListPage extends SubSectionView {
+public class GeneticsTablePage extends SubSectionView {
 
     private JPanel panel;
 
-    public GeneticsListPage(SectionView parent) { super(parent); }
+    public GeneticsTablePage(SectionView parent) { super(parent); }
 
-    
     public String getName() {
-        return "List";
+        return "Table";
     }
 
     public JPanel getView() {

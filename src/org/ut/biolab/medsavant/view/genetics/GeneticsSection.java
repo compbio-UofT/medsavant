@@ -31,7 +31,7 @@ public class GeneticsSection extends SectionView {
     @Override
     public SubSectionView[] getSubSections() {
         SubSectionView[] pages = new SubSectionView[4];
-        pages[0] = new GeneticsListPage(this);
+        pages[0] = new GeneticsTablePage(this);
         pages[1] = new GeneticsChartPage(this);
         pages[2] = new GeneticsRegionsPage(this);
         pages[3] = new GeneticsTestPage(this);
