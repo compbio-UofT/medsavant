@@ -342,7 +342,7 @@ public class Viewer extends JSplitPane {
         FilterController.addFilter(f);
         
         
-        pathwaysPanel.setAppliedFilter(pathwayString);
+        pathwaysPanel.setAppliedFilter(pathwayString, genes.size());
         loader.setVisible(false);
         
     }
