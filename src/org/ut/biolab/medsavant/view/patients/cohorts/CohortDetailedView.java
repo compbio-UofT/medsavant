@@ -88,7 +88,7 @@ public class CohortDetailedView extends DetailedView {
         list = (JList) ViewUtil.clear(new JList(lm));
         list.setBackground(ViewUtil.getDetailsBackgroundColor());
         list.setForeground(Color.white);
-        JScrollPane jsp = ViewUtil.getClearBorderedJSP(list);
+        JScrollPane jsp = ViewUtil.getClearBorderlessJSP(list);
         details.add(jsp, BorderLayout.CENTER);
         //list.setOpaque(false);
 

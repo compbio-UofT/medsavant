@@ -49,10 +49,10 @@ public class Frame extends JFrame implements LoginListener {
             view.remove(loginView);
         }
         
-        sessionView = new LoggedInView();
-        
-        //sessionView = new SessionView();
-        view.add(sessionView, SESSION_VIEW_CARD_NAME);
+        //if (sessionView == null) {
+            sessionView = new LoggedInView();
+            view.add(sessionView, SESSION_VIEW_CARD_NAME);
+        //}
         logOutItem.setEnabled(true);
         BottomBar.getInstance().updateLoginStatus();
         switchToView(SESSION_VIEW_CARD_NAME);
@@ -64,8 +64,12 @@ public class Frame extends JFrame implements LoginListener {
         if (sessionView != null) {
             view.remove(sessionView);
         }
-        loginView = new LoginView();
-        view.add(loginView, LOGIN_CARD_NAME);
+        
+        //if (loginView == null) {
+            loginView = new LoginView();
+            view.add(loginView, LOGIN_CARD_NAME);
+        //}
+        
         logOutItem.setEnabled(false);
         BottomBar.getInstance().updateLoginStatus();
         switchToView(LOGIN_CARD_NAME);

@@ -20,6 +20,7 @@ import org.ut.biolab.medsavant.view.subview.SectionView;
 public class LoggedInView extends JPanel {
     
     private ViewController viewController;
+    private static boolean initiated = false;
 
     public LoggedInView() {
         init();
@@ -41,9 +42,12 @@ public class LoggedInView extends JPanel {
     }
 
     private void initTabs() {
-        addSection(new PatientsSection());
-        addSection(new GeneticsSection());
-        addSection(new AnnotationsSection());
+        if (!initiated) {
+            addSection(new PatientsSection());
+            addSection(new GeneticsSection());
+            addSection(new AnnotationsSection());
+        }
+        initiated = true;
     }
     
 }

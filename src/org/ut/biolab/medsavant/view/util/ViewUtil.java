@@ -260,6 +260,14 @@ public class ViewUtil {
         jsp.setBorder(ViewUtil.getTinyLineBorder());
         return jsp;
     }
+    
+    public static JScrollPane getClearBorderlessJSP(Container c) {
+        JScrollPane jsp = new JScrollPane(c);
+        ViewUtil.clear(jsp);
+        ViewUtil.clear(jsp.getViewport());
+        jsp.setBorder(null);
+        return jsp;
+    }
 
     public static Color getDetailsBackgroundColor() {
         return new Color(40,40,40);

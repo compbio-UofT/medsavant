@@ -81,7 +81,7 @@ public class IntervalDetailedView extends DetailedView {
         JPanel h1 = ViewUtil.getClearPanel();
         h1.setLayout(new BoxLayout(h1,BoxLayout.Y_AXIS));
         
-        h1.add(ViewUtil.getKeyValuePairPanel("Regions in set", numRegionsInRegionList + ""));
+        h1.add(ViewUtil.getKeyValuePairPanel("Regions in set", ViewUtil.numToString(numRegionsInRegionList)));
         
         if (numRegionsInRegionList != regions.size()) {
             JLabel l = new JLabel("Showing first " + regions.size());
@@ -100,7 +100,7 @@ public class IntervalDetailedView extends DetailedView {
         JList list = (JList) ViewUtil.clear(new JList(lm));
         list.setBackground(ViewUtil.getDetailsBackgroundColor());
         list.setForeground(Color.white);
-        JScrollPane jsp = ViewUtil.getClearBorderedJSP(list);
+        JScrollPane jsp = ViewUtil.getClearBorderlessJSP(list);
         details.add(jsp, BorderLayout.CENTER);
         //list.setOpaque(false);
 

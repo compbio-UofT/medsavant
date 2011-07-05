@@ -93,7 +93,7 @@ public class IndividualDetailedView extends DetailedView {
         
         content.setLayout(new BorderLayout());
         
-        content.add(ViewUtil.getClearBorderedJSP(details),BorderLayout.CENTER);
+        content.add(ViewUtil.getClearBorderlessJSP(details),BorderLayout.CENTER);
         content.add(menu,BorderLayout.SOUTH);
     }
     
