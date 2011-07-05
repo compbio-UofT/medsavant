@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.table.AlignmentTableSchema;
 import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListViewTableSchema;
@@ -472,7 +473,55 @@ public class QueryUtil {
         
         return results;
     }
+    
+    public static Map<String, List<String>> getVariantPositionsForDNAIds(Connection c, List<String> dnaIds) throws SQLException, NonFatalDatabaseException {
+        
+        Map<String, List<String>> results = new HashMap<String, List<String>>();
+        
+        TableSchema t = MedSavantDatabase.getInstance().getVariantTableSchema();
+        SelectQuery q = getCurrentBaseVariantFilterQuery();
+        q.addColumns(t.getDBColumn(VariantTableSchema.ALIAS_DNAID), t.getDBColumn(VariantTableSchema.ALIAS_CHROM), t.getDBColumn(VariantTableSchema.ALIAS_POSITION));
+        
+        Condition[] conditions = new Condition[dnaIds.size()];
+        for(int i = 0; i < dnaIds.size(); i++){
+            conditions[i] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_DNAID), dnaIds.get(i));
+            results.put(dnaIds.get(i), new ArrayList<String>());
+        }
+        q.addCondition(ComboCondition.or(conditions));    
+        
+        Statement s = c.createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
 
+        while (rs.next()) {
+            results.get(rs.getString(1)).add(rs.getString(2) + ":" + rs.getLong(3));  
+        }
+        
+        return results;
+    }
     
-    
+    public static List<String> getBAMFilesForDNAIds(Connection c, List<String> dnaIds) throws SQLException, NonFatalDatabaseException {
+        
+        TableSchema t = MedSavantDatabase.getInstance().getAlignmentTableSchema();
+        SelectQuery q = new SelectQuery();
+        q.setIsDistinct(true);
+        q.addColumns(t.getDBColumn(AlignmentTableSchema.ALIAS_ALIGNMENTPATH));
+        q.addFromTable(t.getTable());
+
+        Condition[] conditions = new Condition[dnaIds.size()];
+        for(int i = 0; i < dnaIds.size(); i++){
+            conditions[i] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_DNAID), dnaIds.get(i));
+        }
+        q.addCondition(ComboCondition.or(conditions));
+        
+        Statement s = c.createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<String> results = new ArrayList<String>();
+        while (rs.next()) {
+            results.add(rs.getString(1));
+        }
+        
+        return results;      
+    }
+       
 }

@@ -29,7 +29,13 @@ public class ExtensionFileFilter extends FileFilter {
 
     @Override
     public String getDescription() {
-        return "VCF files | *.vcf";
+        if(extension.equals("vcf")){
+            return "VCF files | *.vcf";
+        } else if (extension.equals("svp")){
+            return "Savant Project Files | *.svp";
+        } else {
+            return "*." + extension;
+        }        
     }
 
 }

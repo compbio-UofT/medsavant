@@ -6,19 +6,18 @@ package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.subview.SectionView;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.model.record.Chromosome;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.util.view.PeekingPanel;
+import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
 
 /**
  *
@@ -81,8 +80,28 @@ public class GeneticsTablePage extends SubSectionView {
 
     public Component[] getBanner() {
         Component[] cs = new Component[2];
-        cs[0] = new JButton("Save Result Set");
-        cs[1] = new JButton("Show in Savant");
+        cs[0] = addSaveResultSetButton();
+        cs[1] = addShowInSavantButton();
         return cs;
+    }
+    
+    private JButton addShowInSavantButton(){
+        JButton button = new JButton("Show in Savant");
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new SavantExportForm();
+            }
+        }); 
+        return button;
+    }
+    
+    private JButton addSaveResultSetButton(){
+        JButton button = new JButton("Save Result Set");
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //TODO
+            }
+        }); 
+        return button;
     }
 }
