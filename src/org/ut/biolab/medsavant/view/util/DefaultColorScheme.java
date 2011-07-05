@@ -20,9 +20,6 @@ class DefaultColorScheme implements ColorScheme {
     private DefaultColorScheme() {
         colors = new ArrayList<Color>();
         
-        colors.add(new Color(255,71,71));
-        colors.add(new Color(227,63,159));
-        colors.add(new Color(166,61,218));
         colors.add(new Color(87,61,218));
         colors.add(new Color(61,126,218));
         colors.add(new Color(61,179,218));
@@ -32,7 +29,9 @@ class DefaultColorScheme implements ColorScheme {
         colors.add(new Color(255,218,71));
         colors.add(new Color(255,181,71));
         colors.add(new Color(255,145,71));
-        
+        colors.add(new Color(255,71,71));
+        colors.add(new Color(227,63,159));
+        colors.add(new Color(166,61,218));
         
         /*
         colors.add(new Color(115, 7, 7));

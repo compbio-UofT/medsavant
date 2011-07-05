@@ -400,14 +400,14 @@ public class DBUtil {
 
         Statement s1 = conn.createStatement();
 
-        System.out.println("Querying for: " + q1.toString());
+        //System.out.println("Querying for: " + q1.toString());
 
         ResultSet r1 = s1.executeQuery(q1.toString());
         r1.next();
 
         int genelistid = r1.getInt(GeneListTableSchema.DBFIELDNAME_ID);
 
-        System.out.println("Gene list id = " + genelistid);
+        //System.out.println("Gene list id = " + genelistid);
 
         conn.setAutoCommit(false);
 

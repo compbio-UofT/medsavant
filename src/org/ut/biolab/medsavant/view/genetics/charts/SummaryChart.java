@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.view.genetics;
+package org.ut.biolab.medsavant.view.genetics.charts;
 
 import org.ut.biolab.medsavant.view.genetics.charts.ChartMapGenerator;
 import com.jidesoft.chart.Chart;
@@ -32,8 +32,6 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.view.genetics.charts.ChartFrequencyMap;
-import org.ut.biolab.medsavant.view.genetics.charts.ChartFrequencyMap.FrequencyEntry;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -50,6 +48,7 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
     //private String currentChart;
     private ChartMapSW cmsw;
     private ChartMapGenerator mapGenerator;
+    private boolean isSortedKaryotypically;
 
     public SummaryChart() {
         this.setLayout(new BorderLayout());
@@ -84,6 +83,10 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         return isSorted;
     }
 
+    public boolean isSortedKaryotypically() {
+        return isSortedKaryotypically;
+    }
+
     public void setChartMapGenerator(ChartMapGenerator cmg) {
         this.mapGenerator = cmg;
         updateDataAndDrawChart();
@@ -97,7 +100,11 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
 
         // kill existing thread, if any
         if (cmsw != null && !cmsw.isDone()) {
-            cmsw.cancel(true);
+            try {
+                cmsw.cancel(true);
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
         }
 
         cmsw = new ChartMapSW();
@@ -132,8 +139,15 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
 
         boolean isnumeric = mapGenerator.isNumeric();
 
-        Color c = ViewUtil.getColor(4);
+        Color c = ViewUtil.getColor(1);
         int entry = 0;
+        
+        if (this.isSortedKaryotypically()) {
+            chartMap.sortKaryotypically();
+        } else
+        if (this.isSorted()) {
+            chartMap.sortNumerically();
+        }
 
         for (FrequencyEntry fe : chartMap.getEntries()) {
 
@@ -142,7 +156,7 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
             }
 
             String key = fe.getKey();
-            int value = fe.getValue();
+            int value = fe.getFrequency();
             ChartCategory cat = new ChartCategory<String>(key);
             categories.add(cat);
             Highlight h = new Highlight(key);
@@ -200,6 +214,10 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         }
     }
 
+    void setIsSortedKaryotypically(boolean b) {
+        this.isSortedKaryotypically = b;
+    }
+
     public class ChartMapSW extends SwingWorker {
 
         @Override
@@ -217,8 +235,8 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
                 ChartFrequencyMap chartMap = (ChartFrequencyMap) get();
                 drawChart(chartMap);
             } catch (Exception ex) {
-                ex.printStackTrace();
-                Logger.getLogger(SummaryChart.class.getName()).log(Level.SEVERE, null, ex);
+                //ex.printStackTrace();
+                //Logger.getLogger(SummaryChart.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

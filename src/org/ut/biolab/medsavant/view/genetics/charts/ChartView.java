@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.view.genetics;
+package org.ut.biolab.medsavant.view.genetics.charts;
 
+import org.ut.biolab.medsavant.view.genetics.charts.SummaryChart;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -61,8 +62,17 @@ public class ChartView extends JPanel {
         chartChooser.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                sc.setChartMapGenerator(mapGenerators.get((String) chartChooser.getSelectedItem()));
-                //sc.isN
+                String alias = (String) chartChooser.getSelectedItem();
+                sc.setChartMapGenerator(mapGenerators.get(alias));
+                if (bSort == null) { return; }
+                if (alias.equals(VariantTableSchema.ALIAS_CHROM)) {
+                    bSort.setEnabled(false);
+                    sc.setIsSortedKaryotypically(true);
+                } else {
+                    bSort.setEnabled(true);
+                    sc.setIsSortedKaryotypically(false);
+                }
+                
             }
         });
 
@@ -76,8 +86,8 @@ public class ChartView extends JPanel {
 
         toolbar.add(ViewUtil.getMediumSeparator());
 
-        toolbar.add(b1);
-        toolbar.add(b2);
+        toolbar.add(ViewUtil.clear(b1));
+        toolbar.add(ViewUtil.clear(b2));
 
         toolbar.add(Box.createHorizontalGlue());
 
@@ -143,12 +153,24 @@ public class ChartView extends JPanel {
                 setIsPie(!sc.isPie());
             }
         });
+        
+         bSort.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setIsSorted(!sc.isSorted());
+            }
+        });
 
+         
+          bLog.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setIsLogscale(!sc.isLogscale());
+            }
+        });
         bottomToolbar.add(ViewUtil.getMediumSeparator());
 
-        bottomToolbar.add(bPie);
-        bottomToolbar.add(bSort);
-        bottomToolbar.add(bLog);
+        bottomToolbar.add(ViewUtil.clear(bPie));
+        bottomToolbar.add(ViewUtil.clear(bSort));
+        bottomToolbar.add(ViewUtil.clear(bLog));
 
         bottomToolbar.add(Box.createHorizontalGlue());
 
@@ -161,6 +183,20 @@ public class ChartView extends JPanel {
         if (bPie.isEnabled()) {
             sc.setIsPie(!sc.isPie());
             bPie.setSelected(sc.isPie());
+        }
+    }
+    
+    public void setIsSorted(boolean b) {
+        if (bSort.isEnabled()) {
+            sc.setIsSorted(!sc.isSorted());
+            bSort.setSelected(sc.isSorted());
+        }
+    }
+    
+    public void setIsLogscale(boolean b) {
+        if (bLog.isEnabled()) {
+            sc.setIsLogscale(!sc.isLogscale());
+            bLog.setSelected(sc.isLogscale());
         }
     }
 }

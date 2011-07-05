@@ -274,7 +274,7 @@ public class QueryUtil {
             q.addCondition(ComboCondition.or(f.getConditions()));
         }
         
-        System.out.println("Base filter: " + q.toString());
+        //System.out.println("Base filter: " + q.toString());
         
         return q;
     }

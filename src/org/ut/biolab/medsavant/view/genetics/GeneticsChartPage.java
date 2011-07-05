@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
+import org.ut.biolab.medsavant.view.genetics.charts.ChartView;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
