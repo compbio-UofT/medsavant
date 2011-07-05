@@ -12,6 +12,7 @@
 package org.ut.biolab.medsavant.view.dialog;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -24,12 +25,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
  *
@@ -41,6 +45,7 @@ public class SavantExportForm extends javax.swing.JDialog {
     private List<String> dnaIds;
     private File outputFile;
     private List<JCheckBox> checkBoxes = new ArrayList<JCheckBox>();
+    private JDialog progressDialog;
 
     /** Creates new form SavantExportForm */
     public SavantExportForm() {
@@ -87,14 +92,6 @@ public class SavantExportForm extends javax.swing.JDialog {
             }
         }
         
-        //get BAM files
-        List<String> bamFiles = new ArrayList<String>();
-        try {            
-            bamFiles = QueryUtil.getBAMFilesForDNAIds(ConnectionController.connect(), selectedIds);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        
         //get bookmarks
         Map<String, List<String>> map = new HashMap<String, List<String>>();
         try {
@@ -103,6 +100,14 @@ public class SavantExportForm extends javax.swing.JDialog {
             ex.printStackTrace();
         }
         
+        //get BAM files
+        List<String> bamFiles = new ArrayList<String>();
+        try {            
+            bamFiles = QueryUtil.getBAMFilesForDNAIds(ConnectionController.connect(), selectedIds);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+           
         //create file
         //TODO: savant files should not be hardcoded!!!
         String s = "<?xml version=\"1.0\" ?>\n"
@@ -133,6 +138,7 @@ public class SavantExportForm extends javax.swing.JDialog {
             e.printStackTrace();
         }
         
+        progressDialog.dispose();
         this.dispose();
     }
 
@@ -234,10 +240,21 @@ public class SavantExportForm extends javax.swing.JDialog {
         
         exportButton.setEnabled(false);
         chooseFileButton.setEnabled(false);
-        progressLabel.setText("Export in progress...");
         for(JCheckBox box : checkBoxes){
             box.setEnabled(false);
         }
+        
+        progressDialog = new JDialog();
+        progressDialog.setTitle("Show in Savant");
+        JPanel p = new JPanel();
+        p.setPreferredSize(new Dimension(300,100));
+        p.setLayout(new BorderLayout());
+        p.add(new WaitPanel("Exporting Savant Project"));
+        progressDialog.getContentPane().add(p);
+        progressDialog.pack();
+        progressDialog.setLocationRelativeTo(null);
+        this.setVisible(false);
+        progressDialog.setVisible(true);
         
         Thread thread = new Thread() {
             @Override
