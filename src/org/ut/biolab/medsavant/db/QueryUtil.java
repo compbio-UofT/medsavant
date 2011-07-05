@@ -167,7 +167,7 @@ public class QueryUtil {
 
         Statement s = conn.createStatement();
         
-        System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
+        //System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
         
         ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
         
@@ -310,7 +310,7 @@ public class QueryUtil {
 
         Statement s = conn.createStatement();
 
-        System.out.println("Querying for: " + q.toString());
+        //System.out.println("Querying for: " + q.toString());
 
         ResultSet rs = s.executeQuery(q.toString());
 
@@ -333,7 +333,7 @@ public class QueryUtil {
 
         Statement s = conn.createStatement();
 
-        System.out.println("Querying for: " + q.toString());
+        //System.out.println("Querying for: " + q.toString());
 
         ResultSet rs = s.executeQuery(q.toString());
 
@@ -353,7 +353,7 @@ public class QueryUtil {
 
         Statement s = conn.createStatement();
 
-        System.out.println("Querying for: " + q.toString());
+        //System.out.println("Querying for: " + q.toString());
 
         ResultSet rs = s.executeQuery(q.toString());
 
@@ -375,7 +375,7 @@ public class QueryUtil {
 
         Statement s = conn.createStatement();
 
-        System.out.println("Querying for: " + q.toString());
+        //System.out.println("Querying for: " + q.toString());
 
         ResultSet rs = s.executeQuery(q.toString());
 
@@ -412,7 +412,7 @@ public class QueryUtil {
         
         Statement s = ConnectionController.connect().createStatement();
 
-        System.out.println("Querying for: " + q.toString());
+        //System.out.println("Querying for: " + q.toString());
 
         ResultSet rs = s.executeQuery(q.toString());
 
@@ -436,7 +436,7 @@ public class QueryUtil {
         
         Statement s = ConnectionController.connect().createStatement();
 
-        System.out.println("Querying for: " + q.toString());
+        //System.out.println("Querying for: " + q.toString());
 
         ResultSet rs = s.executeQuery(q.toString());
 
@@ -462,7 +462,7 @@ public class QueryUtil {
         
         Statement s = ConnectionController.connect().createStatement();
 
-        System.out.println("Querying for: " + q.toString());
+        //System.out.println("Querying for: " + q.toString());
 
         ResultSet rs = s.executeQuery(q.toString());
 

@@ -24,6 +24,8 @@ import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -59,6 +61,7 @@ import org.ut.biolab.medsavant.view.filter.pathways.PathwaysPanel;
 import org.ut.biolab.medsavant.view.filter.pathways.PathwaysTab;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterView.FilterViewType;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.view.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -180,7 +183,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             
             
             views.add(CohortFilterView.getCohortFilterView());
-            //views.add(GeneListFilterView.getFilterView());
+            views.add(GeneListFilterView.getFilterView());
             views.addAll(getVariantRecordFilterViews());
             views.add(GOFilter.getGOntologyFilterView());
             views.add(HPOFilter.getHPOntologyFilterView());                     
@@ -243,7 +246,6 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         for (int i = 0; i < numFields; i++) {
 
             final int fieldNum = i;
-            Class c = VariantRecordModel.getFieldClass(i);
 
             final String columnAlias = fieldNames.get(i);
 
@@ -251,11 +253,28 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 continue;
             }
 
-            //System.out.println("Making filter for " + columnAlias);
-
-            if (columnAlias.equals(VariantTableSchema.ALIAS_ID) || columnAlias.equals(VariantTableSchema.ALIAS_FILTER)) {// || columnAlias.equals(VariantTableSchema.ALIAS_INFORMATION)) {
+            // Don't make filters for some fields
+            if (
+                    columnAlias.equals(VariantTableSchema.ALIAS_ID) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_GENOMEID) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_FILTER) || 
+                    columnAlias.equals(VariantTableSchema.ALIAS_DNAID) || // remove this later
+                    columnAlias.equals(VariantTableSchema.ALIAS_PIPELINEID) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_END) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_MQ0) || 
+                    columnAlias.equals(VariantTableSchema.ALIAS_MQ) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_AA) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_NS) || 
+                    columnAlias.equals(VariantTableSchema.ALIAS_CIGAR) || 
+                    columnAlias.equals(VariantTableSchema.ALIAS_SOMATIC) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_VALIDATED) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_AN) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_BQ)
+                    ) {
                 continue;
             }
+            
+            long start = System.currentTimeMillis();
 
             TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
             DbColumn col = table.getDBColumn(columnAlias);
@@ -502,6 +521,10 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
                 List<String> uniq = QueryUtil.getDistinctValuesForColumn(conn, table, col);
 
+                if (columnAlias.equals(VariantTableSchema.ALIAS_CHROM)) {
+                    Collections.sort(uniq,new ChromosomeComparator());
+                }
+                
                 JPanel container = new JPanel();
                 container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
@@ -611,6 +634,14 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 FilterView fv = new FilterView(columnAlias, container);
                 l.add(fv);
             }
+            
+            // Get elapsed time in milliseconds
+            long elapsedTimeMillis = System.currentTimeMillis()-start;
+
+            // Get elapsed time in seconds
+            float elapsedTimeSec = elapsedTimeMillis/1000F;
+            
+            System.out.println("Took " + elapsedTimeSec + " seconds to make " + columnAlias + " filter");
         }
 
         return l;
@@ -624,34 +655,4 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect())) + " records pass filters");
         updatePaneEmphasis();
     }
-
-    /*
-    private Set<String> getUniqueValuesOfVariantRecordsAtField(int i) {
-    Set<String> result = new TreeSet<String>();
-    
-    /**
-     * TODO: this should query the database
-     *
-    List<VariantRecord> records;
-    try {
-    records = ResultController.getInstance().getFilteredVariantRecords();
-    } catch (Exception ex) {
-    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
-    DialogUtil.displayErrorMessage("Problem getting data.", ex);
-    return null;
-    }
-    
-    for (VariantRecord r : records) {
-    Object o = VariantRecordModel.getValueOfFieldAtIndex(i, r);
-    if (o == null) {
-    result.add("<none>");
-    } else {
-    result.add(o.toString());
-    }
-    }
-    
-    return result;
-    }
-     * 
-     */
 }
