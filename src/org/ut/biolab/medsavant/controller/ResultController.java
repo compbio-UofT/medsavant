@@ -7,7 +7,6 @@ package org.ut.biolab.medsavant.controller;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import fiume.vcf.VariantRecord;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,21 +21,20 @@ import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.Util;
 
 /**
  *
  * @author mfiume
  */
-public class ResultController implements FiltersChangedListener {
+public class ResultController {
 
     private List<VariantRecord> filteredVariants;
+    private int filterSetId = -1;
 
     private static ResultController instance;
     
     public ResultController() throws NonFatalDatabaseException {
-        FilterController.addFilterListener(this);
         updateFilteredVariantDBResults();
     }
 
@@ -53,14 +51,19 @@ public class ResultController implements FiltersChangedListener {
     }
 
     public List<VariantRecord> getFilteredVariantRecords() {
+        if(filterSetId != FilterController.getCurrentFilterSetID()){
+            try {
+                updateFilteredVariantDBResults();
+            } catch (NonFatalDatabaseException ex) {
+                ex.printStackTrace();
+            }
+        }      
         return filteredVariants;
     }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        updateFilteredVariantDBResults();
-    }
-
     private void updateFilteredVariantDBResults() throws NonFatalDatabaseException {
+        
+        filterSetId = FilterController.getCurrentFilterSetID();
 
         TableSchema tableSchema = MedSavantDatabase.getInstance().getVariantTableSchema();
         SelectQuery query = new SelectQuery();
