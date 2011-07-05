@@ -56,7 +56,8 @@ import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
-import org.ut.biolab.medsavant.view.genetics.ChartFrequencyMap.FrequencyEntry;
+import org.ut.biolab.medsavant.view.genetics.charts.ChartFrequencyMap;
+import org.ut.biolab.medsavant.view.genetics.charts.ChartFrequencyMap.FrequencyEntry;
 import org.ut.biolab.medsavant.view.util.DialogUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -118,7 +119,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
         CategoryRange<String> categories = new CategoryRange<String>();
         int max = Integer.MIN_VALUE;
 
-        for (FrequencyEntry fe : chartMap.entries) {
+        for (FrequencyEntry fe : chartMap.getEntries()) {
             String key = fe.getKey();
             int value = fe.getValue();
             ChartCategory cat = new ChartCategory<String>(key);
@@ -324,7 +325,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
             } else {
                 try {
                     chartMap.addAll(QueryUtil.getFilteredFrequencyValuesForColumn(ConnectionController.connect(), column));
-                    Collections.sort(chartMap.entries);
+                    Collections.sort(chartMap.getEntries());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

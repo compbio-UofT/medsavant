@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.view.genetics;
+package org.ut.biolab.medsavant.view.genetics.charts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +13,6 @@ import java.util.Map;
  * @author mfiume
  */
 public class ChartFrequencyMap {
-
-    
 
     public static class FrequencyEntry implements Comparable {
         private final int value;
@@ -41,7 +39,7 @@ public class ChartFrequencyMap {
         }
     }
     
-    List<FrequencyEntry> entries;
+    private List<FrequencyEntry> entries;
 
     public ChartFrequencyMap() {
         this.entries = new ArrayList<FrequencyEntry>();
@@ -55,7 +53,7 @@ public class ChartFrequencyMap {
         return entries;
     }
     
-    void addAll(Map<String, Integer> map) {
+    public void addAll(Map<String, Integer> map) {
         for (String s : map.keySet()) {
             addEntry(s,map.get(s));
         }

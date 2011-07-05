@@ -158,7 +158,7 @@ public class ViewUtil {
     }
 
     public static Border getTinyLineBorder() {
-        return new LineBorder(Color.darkGray,1);
+        return new LineBorder(Color.lightGray,1);
     }
     
     public static Border getSideLineBorder() {

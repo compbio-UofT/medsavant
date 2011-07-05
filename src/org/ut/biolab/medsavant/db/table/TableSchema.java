@@ -29,8 +29,6 @@ public class TableSchema {
     private final LinkedHashMap<String,Integer> dbNameToIndex;
     private final LinkedHashMap<String, String> aliasToDBName;
 
-
-
     private static String getColumnTypeString(ColumnType t) {
         switch (t) {
             case INTEGER:
