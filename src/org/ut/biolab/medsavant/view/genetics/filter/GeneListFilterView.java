@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import org.ut.biolab.medsavant.model.GenomicRegion;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
@@ -26,6 +27,7 @@ import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
+import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Filter;
@@ -36,13 +38,13 @@ import org.ut.biolab.medsavant.model.record.VariantRecordModel;
  *
  * @author mfiume
  */
-class CohortFilterView {
+class GeneListFilterView {
 
-    private static final String FILTER_NAME = "Cohort";
-    private static final String COHORT_ALL = "All Individuals";
+    private static final String FILTER_NAME = "Gene List";
+    private static final String GENELIST_NONE = "None";
 
-    static FilterView getCohortFilterView() {
-        return new FilterView("Cohort", getContentPanel());
+    static FilterView getFilterView() {
+        return new FilterView(FILTER_NAME, getContentPanel());
     }
 
     private static JComponent getContentPanel() {
@@ -52,18 +54,18 @@ class CohortFilterView {
 
         final JComboBox b = new JComboBox();
 
-        b.addItem(COHORT_ALL);
-        List<String> cohortNames;
+        b.addItem(GENELIST_NONE);
+        List<String> geneListNames;
         try {
-            cohortNames = QueryUtil.getDistinctCohortNames();
+            geneListNames = QueryUtil.getDistinctGeneListNames();
 
-            for (String cohortName : cohortNames) {
-                b.addItem(cohortName);
+            for (String name : geneListNames) {
+                b.addItem(name);
             }
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GeneListFilterView.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         final JButton applyButton = new JButton("Apply");
@@ -75,7 +77,7 @@ class CohortFilterView {
 
                 applyButton.setEnabled(false);
 
-                if (((String) b.getSelectedItem()).equals(COHORT_ALL)) {
+                if (((String) b.getSelectedItem()).equals(GENELIST_NONE)) {
                     FilterController.removeFilter(FILTER_NAME);
                 } else {
                     Filter f = new QueryFilter() {
@@ -83,17 +85,22 @@ class CohortFilterView {
                         @Override
                         public Condition[] getConditions() {
 
-                            String cohortName = (String) b.getSelectedItem();
-
+                            String geneListName = (String) b.getSelectedItem();
+                            
+                            TableSchema variantSchema = MedSavantDatabase.getInstance().getVariantTableSchema();
+                            
                             try {
 
-                                List<String> individuals = QueryUtil.getDNAIdsForIndividualsInCohort(cohortName);
-                                
+                                List<GenomicRegion> regions = QueryUtil.getGenomicRangesForRegionList(geneListName);
 
-                                Condition[] results = new Condition[individuals.size()];
+                                Condition[] results = new Condition[regions.size()];
                                 int i = 0;
-                                for (String ind : individuals) {
-                                    results[i] = BinaryCondition.equalTo(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(VariantTableSchema.ALIAS_DNAID), ind);
+                                for (GenomicRegion gr : regions) {
+                                    Condition[] tmp = new Condition[2];
+                                    tmp[0] = BinaryCondition.equalTo(variantSchema.getDBColumn(VariantTableSchema.ALIAS_CHROM), gr.getChrom());
+                                    tmp[1] = QueryUtil.getRangeCondition(variantSchema.getDBColumn(VariantTableSchema.ALIAS_POSITION), gr.getRange());
+                                    results[i] = ComboCondition.and(tmp);
+                                    
                                     i++;
                                 }
 

@@ -32,6 +32,7 @@ import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 
@@ -186,6 +187,13 @@ public class QueryUtil {
                     MedSavantDatabase.getInstance().getCohortTableSchema(),
                     MedSavantDatabase.getInstance().getCohortTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME));
     }
+    
+    public static List<String> getDistinctGeneListNames() throws SQLException, NonFatalDatabaseException {
+        return QueryUtil.getDistinctValuesForColumn(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getGeneListTableSchema(),
+                    MedSavantDatabase.getInstance().getGeneListTableSchema().getDBColumn(GeneListTableSchema.ALIAS_NAME));
+    }
 
     public static List<Vector> getPatientsInCohort(String cohortName) throws SQLException, NonFatalDatabaseException {
         return QueryUtil.getRecordsMatchingID(
@@ -217,9 +225,12 @@ public class QueryUtil {
                     MedSavantDatabase.getInstance().getGeneListViewTableSchema().getTable());
     }
     
-    public static int getNumVariantsInRange(Connection c, TableSchema t, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException {
+    public static int getNumVariantsInRange(Connection c, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException {
+        
+        TableSchema t = MedSavantDatabase.getInstance().getVariantTableSchema();
+
         FunctionCall count = FunctionCall.countAll();
-        SelectQuery q = getCurrentBaseFilterQuery(t);
+        SelectQuery q = getCurrentBaseVariantFilterQuery();
         q.addCustomColumns(count);
         
         Condition[] conditions = new Condition[3];
@@ -238,9 +249,9 @@ public class QueryUtil {
         return numrows;
     }
     
-    public static int getNumFilteredVariants(Connection c, TableSchema t) throws SQLException {
+    public static int getNumFilteredVariants(Connection c) throws SQLException {
         FunctionCall count = FunctionCall.countAll();
-        SelectQuery q = getCurrentBaseFilterQuery(t);     
+        SelectQuery q = getCurrentBaseVariantFilterQuery();     
         q.addCustomColumns(count);
        
         Statement s = c.createStatement();
@@ -253,17 +264,38 @@ public class QueryUtil {
         return numrows;
     }
     
-    public static SelectQuery getCurrentBaseFilterQuery(TableSchema t) {
+    public static SelectQuery getCurrentBaseVariantFilterQuery() {
         SelectQuery q = new SelectQuery();
-        q.addFromTable(t.getTable());
+        //q.addAllColumns();
+        q.addFromTable(MedSavantDatabase.getInstance().getVariantTableSchema().getTable());
         
         List<QueryFilter> filters = FilterController.getQueryFilters();
         for (QueryFilter f : filters) {
             q.addCondition(ComboCondition.or(f.getConditions()));
         }
         
+        System.out.println("Base filter: " + q.toString());
+        
         return q;
     }
+    
+    /*
+    public static SelectQuery getCurrentBaseVariantFilterQueryWithNoColumns() {
+        SelectQuery q = new SelectQuery();
+        q.addAllColumns();
+        q.addFromTable(MedSavantDatabase.getInstance().getVariantTableSchema().getTable());
+        
+        List<QueryFilter> filters = FilterController.getQueryFilters();
+        for (QueryFilter f : filters) {
+            q.addCondition(ComboCondition.or(f.getConditions()));
+        }
+        
+        System.out.println("Base filter: " + q.toString());
+        
+        return q;
+    }
+     * 
+     */
 
 
     public static Map<String, Integer> getFrequencyValuesForColumn(Connection conn, TableSchema t, DbColumn col) throws SQLException {
@@ -310,9 +342,9 @@ public class QueryUtil {
     }
     
     
-    public static Map<String, Integer> getFilteredFrequencyValuesForColumn(Connection conn, TableSchema t, DbColumn col) throws SQLException {
+    public static Map<String, Integer> getFilteredFrequencyValuesForColumn(Connection conn, DbColumn col) throws SQLException {
 
-        SelectQuery q = QueryUtil.getCurrentBaseFilterQuery(t);
+        SelectQuery q = QueryUtil.getCurrentBaseVariantFilterQuery();
         FunctionCall count = FunctionCall.countAll();
         q.addColumns(col);
         q.addCustomColumns(count);
@@ -333,9 +365,9 @@ public class QueryUtil {
         return map;
     }
 
-    public static int getFilteredFrequencyValuesForColumnInRange(Connection conn, TableSchema t, DbColumn col, Range r) throws SQLException {
+    public static int getFilteredFrequencyValuesForColumnInRange(Connection conn, DbColumn col, Range r) throws SQLException {
 
-        SelectQuery q = QueryUtil.getCurrentBaseFilterQuery(t);
+        SelectQuery q = QueryUtil.getCurrentBaseVariantFilterQuery();
         FunctionCall count = FunctionCall.countAll();
         q.addCustomColumns(count);
         q.addCondition(getRangeCondition(col,r));
@@ -354,11 +386,93 @@ public class QueryUtil {
     public static Condition getRangeCondition(DbColumn col, Range r) {
         Condition[] results = new Condition[2];
         results[0] = BinaryCondition.greaterThan(col, r.getMin(), true);
-        results[1] = BinaryCondition.lessThan(col, r.getMax(), true);
+        results[1] = BinaryCondition.lessThan(col, r.getMax(), false);
 
-                                    
-        Condition[] resultsCombined = new Condition[1];
         return ComboCondition.and(results);
     }
+
+    public static List<String> getDNAIdsForIndividualsInCohort(String cohortName) throws NonFatalDatabaseException, SQLException {
+        
+        SubjectTableSchema tsubject = (SubjectTableSchema) MedSavantDatabase.getInstance().getSubjectTableSchema();
+        DbColumn currentDNAId = tsubject.getDBColumn(SubjectTableSchema.ALIAS_CURRENTDNAID);
+        DbColumn subjecthospitalId = tsubject.getDBColumn(SubjectTableSchema.ALIAS_HOSPITALID);
+        
+        CohortViewTableSchema tcohort = (CohortViewTableSchema) MedSavantDatabase.getInstance().getCohortViewTableSchema();
+        DbColumn cohorthospitalId = tcohort.getDBColumn(CohortViewTableSchema.ALIAS_HOSPITALID);
+        DbColumn cohortNameField = tcohort.getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME);
+        
+        
+        SelectQuery q = new SelectQuery();
+        q.addColumns(currentDNAId);
+        q.setIsDistinct(true);
+        q.addFromTable(tsubject.getTable());
+        q.addJoin(SelectQuery.JoinType.INNER, tsubject.getTable(), tcohort.getTable(), BinaryCondition.equalTo(subjecthospitalId, cohorthospitalId));
+        q.addCondition(BinaryCondition.equalTo(cohortNameField, cohortName));
+        
+        Statement s = ConnectionController.connect().createStatement();
+
+        System.out.println("Querying for: " + q.toString());
+
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<String> results = new ArrayList<String>();
+        while (rs.next()) {
+            results.add(rs.getString(1));
+        }
+        
+        return results;
+    }
+    
+    public static List<String> getAllDNAIds() throws NonFatalDatabaseException, SQLException {
+        
+        SubjectTableSchema tsubject = (SubjectTableSchema) MedSavantDatabase.getInstance().getSubjectTableSchema();
+        DbColumn currentDNAId = tsubject.getDBColumn(SubjectTableSchema.ALIAS_CURRENTDNAID);     
+
+        SelectQuery q = new SelectQuery();
+        q.addColumns(currentDNAId);
+        q.setIsDistinct(true);
+        q.addFromTable(tsubject.getTable());
+        
+        Statement s = ConnectionController.connect().createStatement();
+
+        System.out.println("Querying for: " + q.toString());
+
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<String> results = new ArrayList<String>();
+        while (rs.next()) {
+            results.add(rs.getString(1));
+        }
+        
+        return results;
+    }
+
+    public static List<GenomicRegion> getGenomicRangesForRegionList(String geneListName) throws SQLException, NonFatalDatabaseException {
+        
+        GeneListViewTableSchema t = (GeneListViewTableSchema) MedSavantDatabase.getInstance().getGeneListViewTableSchema();
+        DbColumn name = t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETNAME);     
+
+        SelectQuery q = new SelectQuery();
+        q.addColumns(t.getDBColumn(GeneListViewTableSchema.ALIAS_CHROM));
+        q.addColumns(t.getDBColumn(GeneListViewTableSchema.ALIAS_START));
+        q.addColumns(t.getDBColumn(GeneListViewTableSchema.ALIAS_END));
+        q.addFromTable(t.getTable());
+        q.addCondition(BinaryCondition.equalTo(name, geneListName)); 
+        
+        Statement s = ConnectionController.connect().createStatement();
+
+        System.out.println("Querying for: " + q.toString());
+
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<GenomicRegion> results = new ArrayList<GenomicRegion>();
+        while (rs.next()) {
+            results.add(new GenomicRegion(rs.getString(1), new Range(rs.getInt(2), rs.getInt(3))));
+        }
+        
+        return results;
+    }
+
+    
     
 }

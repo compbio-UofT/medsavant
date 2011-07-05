@@ -34,7 +34,8 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
 public class GeneticsChartPage extends SubSectionView {
 
     private JPanel panel;
-    private ChartContainer cc;
+    //private ChartContainer cc;
+    private ChartView cc;
     
     public GeneticsChartPage(SectionView parent) { super(parent); }
 
@@ -60,20 +61,25 @@ public class GeneticsChartPage extends SubSectionView {
         //PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true,400);
         //panel.add(detailView, BorderLayout.WEST);
 
-        cc = new ChartContainer();
+        cc = new ChartView();
         panel.add(cc, BorderLayout.CENTER);
     }
     
     public Component[] getBanner() {
+        /*
         Component[] cs = new Component[1];
         JButton addButton = new JButton("Add chart");
         addButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 cc.addChart();
+                cc.updateUI();
             }
         });
         cs[0] = addButton;
         return cs;
+         * 
+         */
+        return null;
     }
 }

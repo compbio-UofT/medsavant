@@ -51,7 +51,7 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
     private Color NEW_COLOR = new Color(0,153,77);
     
     public FilterProgressPanel(){
-        this.setName("Filter Progress");
+        this.setName("History");
         this.setLayout(new BorderLayout());
                
         table = new JTable(){
@@ -102,7 +102,7 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
         this.add(scrollPane, BorderLayout.CENTER);
         
         try {
-            maxRecords = QueryUtil.getNumFilteredVariants(ConnectionController.connect(), MedSavantDatabase.getInstance().getVariantTableSchema());
+            maxRecords = QueryUtil.getNumFilteredVariants(ConnectionController.connect());
         } catch (Exception ex) {
             Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
         }      
@@ -122,7 +122,7 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
     }
     
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        addFilterSet(QueryUtil.getNumFilteredVariants(ConnectionController.connect(), MedSavantDatabase.getInstance().getVariantTableSchema()));
+        addFilterSet(QueryUtil.getNumFilteredVariants(ConnectionController.connect()));
     }
     
     private void addFilterSet(int numRecords){

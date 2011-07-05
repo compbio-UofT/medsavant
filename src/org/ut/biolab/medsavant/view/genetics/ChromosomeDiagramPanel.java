@@ -112,7 +112,6 @@ public class ChromosomeDiagramPanel extends JPanel {
     
     private void updateAnnotations(int totalNum) {
         
-        TableSchema tableSchema = MedSavantDatabase.getInstance().getVariantTableSchema();
         List<RangeAnnotation> as = new ArrayList<RangeAnnotation>();
         
         List<Integer> nums = new ArrayList<Integer>();
@@ -121,7 +120,6 @@ public class ChromosomeDiagramPanel extends JPanel {
             for(int i = 0; i < chr.getLength(); i += BINSIZE){
                 int numVariants = QueryUtil.getNumVariantsInRange(                  
                         ConnectionController.connect(),
-                        tableSchema,
                         chr.getName(),
                         i,
                         i + BINSIZE);

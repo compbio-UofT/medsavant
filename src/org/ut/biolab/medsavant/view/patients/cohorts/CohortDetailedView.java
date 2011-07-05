@@ -103,8 +103,8 @@ public class CohortDetailedView extends DetailedView {
         details = ViewUtil.getClearPanel();
         menu = ViewUtil.getButtonPanel();
         
-        menu.add(setDefaultCaseButton());
-        menu.add(setDefaultControlButton());
+        //menu.add(setDefaultCaseButton());
+        //menu.add(setDefaultControlButton());
         menu.add(removeIndividualsButton());
         menu.add(deleteCohortButton());
         menu.setVisible(false);
@@ -140,6 +140,7 @@ public class CohortDetailedView extends DetailedView {
         }
     }
     
+    /*
     private JButton setDefaultCaseButton(){
         JButton button = new JButton("Set default Case cohort");
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
@@ -161,6 +162,8 @@ public class CohortDetailedView extends DetailedView {
         }); 
         return button;
     }
+     * 
+     */
     
     private JButton removeIndividualsButton(){
         JButton button = new JButton("Remove individual(s) from cohort");

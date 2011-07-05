@@ -16,6 +16,7 @@ import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.text.NumberFormat;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -102,6 +103,24 @@ public class ViewUtil {
 
     public static Color getDarkColor() {
         return new Color(20,20,20);
+    }
+    
+    public static JPanel getTertiaryBannerPanel() {
+        JPanel p = new JPanel() {
+
+            @Override
+            public void paintComponent(Graphics g) {
+                GradientPaint p = new GradientPaint(0,0,Color.white,0,40,Color.white);
+                ((Graphics2D)g).setPaint(p);
+                g.fillRect(0, 0, this.getWidth(), this.getHeight());
+            }
+        };
+        
+        p.setBorder(ViewUtil.getSmallBorder());
+
+        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+
+        return p;
     }
 
     public static JPanel getBannerPanel() {
@@ -259,6 +278,13 @@ public class ViewUtil {
         return l;
     }
 
+    /*
+    public static Paint getChartPaint(Container c) {
+        return new GradientPaint(0,c.getHeight()-100,Color.white,0,c.getHeight(),Color.gray);//new Color(200,200,200));
+    }
+     * 
+     */
+
     
     public enum OS { Unknown, Windows, Linux, Mac };
     
@@ -287,7 +313,7 @@ public class ViewUtil {
         return getOS() == OS.Mac;
     }
 
-    public static String numToString(int num) {
+    public static String numToString(double num) {
         return NumberFormat.getInstance().format(num);
     }
     
@@ -375,4 +401,20 @@ public class ViewUtil {
         p.add(c); p.add(Box.createHorizontalGlue());
         return p;
     }
+    
+    
+    public static Color getColor(int colorIndex) {
+        ColorScheme cs = DefaultColorScheme.getInstance();
+        return cs.getColor(colorIndex);
+        
+    }
+    
+    public static Color getColor(int colorIndex, int of) {
+        ColorScheme cs = DefaultColorScheme.getInstance();
+        return cs.getColor(colorIndex , of);
+        
+    }
+    
+    
+    
 }

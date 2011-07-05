@@ -621,8 +621,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     }
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect(),
-                MedSavantDatabase.getInstance().getVariantTableSchema())) + " records pass filters");
+        setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect())) + " records pass filters");
         updatePaneEmphasis();
     }
 

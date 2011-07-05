@@ -105,7 +105,7 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         
         @Override
         protected Object doInBackground() throws Exception {
-            int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect(), MedSavantDatabase.getInstance().getVariantTableSchema());
+            int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect());
             for(ChromosomePanel p : chrViews){
                 p.update(totalNum);
             }     

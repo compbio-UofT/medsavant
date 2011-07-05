@@ -20,19 +20,15 @@ import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
 import com.jidesoft.utils.SwingWorker;
-import fiume.vcf.VariantRecord;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -58,35 +54,52 @@ import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.view.genetics.ChartFrequencyMap.FrequencyEntry;
 import org.ut.biolab.medsavant.view.util.DialogUtil;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
  *
  * @author mfiume
  */
-public class ChartPanel extends JPanel implements FiltersChangedListener {
+public class SummaryChart extends JPanel implements FiltersChangedListener {
 
     //private int currentKeyIndex = VariantRecordModel.INDEX_OF_REF;
     private JToolBar bar;
+    
     private boolean isLogscale = false;
     private boolean isPie = false;
     private boolean isSorted = false;
+    
+    /*
     private JCheckBox isPieCB;
     private JCheckBox isSortedCB;
     private JCheckBox isLogarithmicCB;
+     * 
+     */
+    
+    
     private SpinnerNumberModel numberModel;
-    private static final int DEFAULT_NUM_QUANTITATIVE_CATEGORIES = 10;
+    private static final int DEFAULT_NUM_QUANTITATIVE_CATEGORIES = 15;
     private JToolBar bottombar;
     
     private List<String> chartNames;
     private String currentChart;
     private ChartMapSW cmsw;
     
-    public ChartPanel() {
+    public SummaryChart() {
         this.setLayout(new BorderLayout());
         initToolBar();
         updateDataAndDrawChart();
         FilterController.addFilterListener(this);
+    }
+    
+    
+    
+    public boolean isNumeric(String chartName) {
+        TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
+        DbColumn column = table.getDBColumn(chartName);
+        ColumnType type = table.getColumnType(column);
+        return TableSchema.isNumeric(type);
     }
 
     private void updateDataAndDrawChart() {
@@ -111,23 +124,38 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
         chart.setSelectionEnabled(true);
         chart.setSelectionShowsOutline(true);
         chart.setSelectionShowsExplodedSegments(true);
+        chart.setAntiAliasing(true);
+        chart.setBarGap(5);
+        chart.setBorder(ViewUtil.getBigBorder());
+        chart.setLabellingTraces(true);
 
         AbstractPieSegmentRenderer r = new RaisedPieSegmentRenderer();
         chart.setPieSegmentRenderer(r);
 
         CategoryRange<String> categories = new CategoryRange<String>();
         int max = Integer.MIN_VALUE;
+        
+        boolean isnumeric = isNumeric(this.currentChart);
 
+        Color c = ViewUtil.getColor(4);
+        int entry = 0;
+        
         for (FrequencyEntry fe : chartMap.entries) {
+            
+            if (!isnumeric || isPie) {
+                c = ViewUtil.getColor(entry++,chartMap.entries.size());
+            }
+            
             String key = fe.getKey();
             int value = fe.getValue();
             ChartCategory cat = new ChartCategory<String>(key);
             categories.add(cat);
             Highlight h = new Highlight(key);
-            chart.setHighlightStyle(h, new ChartStyle(Util.getRandomColor()));
+            chart.setHighlightStyle(h, new ChartStyle(c));
             max = Math.max(max, value);
             ChartPoint p = new ChartPoint(cat, value);
             ChartPoint logp = new ChartPoint(cat, Math.log10(value));
+            
             p.setHighlight(h);
             logp.setHighlight(h);
             if (this.isLogScale()) {
@@ -141,15 +169,22 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
         s.setBarsVisible(true);
         s.setLinesVisible(false);
 
-        chart.setXAxis(new CategoryAxis(categories, "Category"));
+        CategoryAxis xaxis = new CategoryAxis(categories, "Category");
+        chart.setXAxis(xaxis);
         if (this.isLogScale()) {
              chart.setYAxis(new Axis(new NumericRange(0, Math.log10(max)), "log(Frequency)"));
         } else {
             chart.setYAxis(new Axis(new NumericRange(0, max), "Frequency"));
         }
+        chart.getXAxis().getLabel().setFont(ViewUtil.getMediumTitleFont());
+        chart.getYAxis().getLabel().setFont(ViewUtil.getMediumTitleFont());
+        
+        // rotate 90 degrees (using radians)
+        chart.getXAxis().setTickLabelRotation(1.57079633);
+        
         chart.addModel(chartModel);
         chart.setStyle(chartModel, s);
-
+        
         if (isPie) {
             chart.setChartType(ChartType.PIE);
         }
@@ -199,6 +234,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
 
         bar.add(Box.createHorizontalStrut(5));
 
+        /*
         isPieCB = new JCheckBox("Pie");
         isPieCB.setSelected(isPie);
         isPieCB.addActionListener(new ActionListener() {
@@ -255,9 +291,11 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
             }
         });
         bottombar.add(numberSpinner);
+         * 
+         */
 
         this.add(bar, BorderLayout.NORTH);
-        this.add(bottombar, BorderLayout.SOUTH);
+        //this.add(bottombar, BorderLayout.SOUTH);
     }
 
     public void setIsPie(boolean b) {
@@ -304,7 +342,6 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
             if (TableSchema.isNumeric(type)) {
                 
                 Range r = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, column);
-                System.err.println("Need to do something for range " + r.toString());
                 
                 int numBins = getNumberOfQuantitativeCategories();
                 
@@ -329,71 +366,6 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
                     e.printStackTrace();
                 }
             }
-            
-            /*
-            Class c = VariantRecordModel.getFieldClass(fieldIndex);
-            
-            
-            if (Util.isQuantatitiveClass(c)) {
-                int numBins = getNumberOfQuantitativeCategories();
-                List<Double> numbers = new ArrayList<Double>();
-                Double min = Double.MAX_VALUE;
-                Double max = Double.MIN_VALUE;
-
-                // TODO: replace with database call
-
-
-                DBFilterUtil.get
-
-
-                for (VariantRecord r : ResultController.getInstance().getFilteredVariantRecords()) {
-                    Object numericvalue = VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
-                    Double v = Double.parseDouble(numericvalue.toString());
-                    min = Math.min(min, v);
-                    max = Math.max(max, v);
-                    numbers.add(v);
-                }
-
-                max = max + 1;
-                Double step = (max - min) / numBins;
-                int[] bins = new int[numBins];
-
-                for (Double d : numbers) {
-                    int binnumber = (int) ((d - min) / step);
-                    bins[binnumber]++;
-                }
-
-                for (int i = 0; i < numBins; i++) {
-                    chartMap.put(((int) (min + i * step)) + " - " + ((int) (min + (i + 1) * step)), bins[i]);
-                }
-
-            } else {
-
-                // TODO: replace with database call
-                for (VariantRecord r : ResultController.getInstance().getFilteredVariantRecords()) {
-                    String key = null;
-                    Object value = VariantRecordModel.getValueOfFieldAtIndex(fieldIndex, r);
-                    if (value == null) {
-                        key = ".";
-                    } else {
-                        key = value.toString();
-                    }
-                    if (chartMap.containsKey(key)) {
-                        chartMap.put(key, chartMap.get(key) + 1);
-                    } else {
-                        chartMap.put(key, 1);
-                    }
-                }
-            }
-
-            if (isSorted) {
-                ValueComparator bvc = new ValueComparator(chartMap);
-                Map m = new TreeMap<String, Integer>(bvc);
-                m.putAll(chartMap);
-                chartMap = m;
-            }
-             * 
-             */
 
             return chartMap;
         }
@@ -409,7 +381,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
                 drawChart(chartMap);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SummaryChart.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

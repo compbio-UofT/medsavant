@@ -54,6 +54,7 @@ public class FilterController {
         fireFiltersChangedEvent();
     }
 
+    /*
     private static void printSQLSelect() {
 
         SelectQuery q = new SelectQuery();
@@ -63,22 +64,16 @@ public class FilterController {
             if (f.getType() == FilterType.QUERY) {
                 QueryFilter qf = (QueryFilter) f;
                 
-                if (qf.unionOverConditions()) {
-                    
-                    /**
-                     * TODO: support unions
-                     */
-                    
-                } else {
                     for (Condition c : qf.getConditions()) {
                         q.addCondition(c);
                     }
-                }
             }
         }
 
         System.out.println(q);
     }
+     * 
+     */
 
     public static void addFilterListener(FiltersChangedListener l) {
         listeners.add(l);
