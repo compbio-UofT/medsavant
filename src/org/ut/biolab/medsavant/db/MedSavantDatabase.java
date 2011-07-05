@@ -13,6 +13,7 @@ import org.ut.biolab.medsavant.db.table.CohortTableSchema;
 import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListViewTableSchema;
+import org.ut.biolab.medsavant.db.table.GenomeTableSchema;
 import org.ut.biolab.medsavant.db.table.SubjectTableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
@@ -30,6 +31,12 @@ public class MedSavantDatabase {
     private VariantTableSchema variantTableSchema;
     private SubjectTableSchema subjectTableSchema;
     private AlignmentTableSchema alignmentTableSchema;
+    private CohortViewTableSchema cohortviewTableSchema;
+    private CohortTableSchema cohortTableSchema;
+    private GeneListTableSchema geneListTableSchema;
+    private GeneListViewTableSchema geneListViewTableSchema;
+    private GeneListMembershipTableSchema geneListMembershipTableSchema;
+    private GenomeTableSchema genomeTableSchema;
 
     
     public static void main(String[] argv) {
@@ -42,12 +49,7 @@ public class MedSavantDatabase {
         }
         return instance;
     }
-    private CohortViewTableSchema cohortviewTableSchema;
-    private CohortTableSchema cohortTableSchema;
-    private GeneListTableSchema geneListTableSchema;
-    private GeneListViewTableSchema geneListViewTableSchema;
-    private GeneListMembershipTableSchema geneListMembershipTableSchema;
-
+    
     public DbSchema getSchema() {
         return schema;
     }
@@ -67,6 +69,7 @@ public class MedSavantDatabase {
         geneListViewTableSchema = new GeneListViewTableSchema(schema);
         geneListMembershipTableSchema = new GeneListMembershipTableSchema(schema);
         alignmentTableSchema = new AlignmentTableSchema(schema);
+        genomeTableSchema = new GenomeTableSchema(schema);
     }
 
     public TableSchema getVariantTableSchema() {
@@ -100,7 +103,10 @@ public class MedSavantDatabase {
     public TableSchema getAlignmentTableSchema() {
         return alignmentTableSchema;
     }
-   
     
+    public TableSchema getGenomeTableSchema() {
+        return genomeTableSchema;
+    }
+   
     
 }
