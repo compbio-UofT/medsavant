@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     
-    private JToolBar bar;
+    private JPanel toolBarPanel;
     private String currentRegionStat;
     private RegionStatsWorker rsw;
     private WaitPanel waitPanel;
@@ -65,6 +65,8 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     private void updateRegionStats(){
         
 //        this.remove(bar);
+        this.removeAll();
+        this.add(toolBarPanel, BorderLayout.NORTH);
         waitPanel = new WaitPanel("Getting region statistics");
         this.add(waitPanel, BorderLayout.CENTER);
         this.updateUI();
@@ -85,14 +87,14 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     
     private void initToolBar(){
         
-        JPanel toolBarPanel = ViewUtil.getBannerPanel();
+        toolBarPanel = ViewUtil.getBannerPanel();
         toolBarPanel.setBorder(ViewUtil.getMediumBorder());
         toolBarPanel.setLayout(new BoxLayout(toolBarPanel, BoxLayout.X_AXIS));
 
         toolBarPanel.add(Box.createHorizontalGlue());
 
         toolBarPanel.add(new JLabel("Region statistics for: "));      
-        bar = new JToolBar();
+        JToolBar bar = new JToolBar();
         bar.setFloatable(false);
         toolBarPanel.add(bar);
         
@@ -172,6 +174,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
             return getRegionStatsFor(regionStatsName);
         }
         
+        @Override
         protected void done(){
             try {
 //                System.out.println("Beginning of done");
