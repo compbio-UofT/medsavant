@@ -73,7 +73,7 @@ public class GeneticsTablePage extends SubSectionView {
         chrs.add(new Chromosome("chrY", "Y", 12500000, 57741652));
         Genome g = new Genome(chrs);
         gp.setGenome(g);
-        PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, false,225);
+        PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, true,225);
         panel.add(genomeView, BorderLayout.NORTH);
         
         panel.add(new TablePanel(), BorderLayout.CENTER);

@@ -223,6 +223,7 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         @Override
         protected Object doInBackground() throws Exception {
             try {
+                if (mapGenerator == null) { return null; }
                 return mapGenerator.generateChartMap();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -233,6 +234,7 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         protected void done() {
             try {
                 ChartFrequencyMap chartMap = (ChartFrequencyMap) get();
+                if (chartMap == null) { return; }
                 drawChart(chartMap);
             } catch (Exception ex) {
                 //ex.printStackTrace();
