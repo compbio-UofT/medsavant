@@ -13,8 +13,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -29,6 +31,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.HPOFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
 import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 
@@ -54,14 +57,14 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     public RegionStatsPanel(){
         this.setLayout(new BorderLayout());
 
-//        updateRegionStats();
         initToolBar();
+        updateRegionStats();
         FilterController.addFilterListener(this);
     }
     
     private void updateRegionStats(){
         
-        this.remove(bar);
+//        this.remove(bar);
         waitPanel = new WaitPanel("Getting region statistics");
         this.add(waitPanel, BorderLayout.CENTER);
         this.updateUI();
@@ -71,6 +74,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
         
         rsw = new RegionStatsWorker(currentRegionStat, this, waitPanel);
         rsw.execute();
+//        this.updateUI();
     }  
     
 //    private void drawRegionStats(JComponent component){
@@ -80,8 +84,19 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
 //    }    
     
     private void initToolBar(){
+        
+        JPanel toolBarPanel = ViewUtil.getBannerPanel();
+        toolBarPanel.setBorder(ViewUtil.getMediumBorder());
+        toolBarPanel.setLayout(new BoxLayout(toolBarPanel, BoxLayout.X_AXIS));
+
+        toolBarPanel.add(Box.createHorizontalGlue());
+
+        toolBarPanel.add(new JLabel("Region statistics for: "));      
         bar = new JToolBar();
-        bar.setFloatable(false);        
+        bar.setFloatable(false);
+        toolBarPanel.add(bar);
+        
+//        bar.setFloatable(false);        
         JComboBox b = new JComboBox();
         
         for (String regionStatsName: regionStatsNames){
@@ -101,8 +116,8 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
         });
         
         bar.add(b);
-        bar.add(Box.createHorizontalStrut(5));
-        this.add(bar, BorderLayout.NORTH);   
+//        bar.add(Box.createHorizontalStrut(5));
+        this.add(toolBarPanel, BorderLayout.NORTH);   
         this.updateUI();
     }
 

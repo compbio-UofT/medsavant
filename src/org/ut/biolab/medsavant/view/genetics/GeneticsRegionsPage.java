@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
 public class GeneticsRegionsPage extends SubSectionView {
 
     private JPanel panel;
-    private RegionStatsContainer rsc;
+    private RegionStatsPanel rsc;
     
     public GeneticsRegionsPage(SectionView parent) { super(parent); }
 
@@ -49,22 +49,23 @@ public class GeneticsRegionsPage extends SubSectionView {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         
-        rsc = new RegionStatsContainer();
+        rsc = new RegionStatsPanel();
         panel.add(rsc, BorderLayout.CENTER);
     }
     
     public Component[] getBanner() {
-        Component[] cs = new Component[1];
-        JButton addButton = new JButton("Add Region Statistics");
-        addButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-//                System.out.println("Pressed button");
-                rsc.addRegionStats();
-            }
-        });
-        cs[0] = addButton;
-        return cs;
+//        Component[] cs = new Component[1];
+//        JButton addButton = new JButton("Add Region Statistics");
+//        addButton.addActionListener(new ActionListener() {
+//
+//            public void actionPerformed(ActionEvent e) {
+////                System.out.println("Pressed button");
+//                rsc.addRegionStats();
+//            }
+//        });
+//        cs[0] = addButton;
+//        return cs;
+        return null;
     }    
 
 }
