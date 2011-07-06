@@ -60,6 +60,8 @@ public abstract class OntologySubPanel extends JPanel implements FiltersChangedL
      * Start to gather info into the tree.
      */
     public void update(){
+        
+        // There are some threads that we are not doing anything about here...
                 
         // Kill any existing threads, if any.
         if (osw != null && !osw.isDone()){  osw.cancel(true);     }
