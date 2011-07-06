@@ -46,4 +46,5 @@ public class GOsubPanel extends OntologySubPanel{
         Tree tree = (Tree)FilterObjectStorer.getObject(GOFilter.NAME_TREE);
         return ConstructJTree.getTree(tree, true, false);
     }
+
 }

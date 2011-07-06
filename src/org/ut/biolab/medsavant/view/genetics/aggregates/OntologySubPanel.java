@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author Nirvana Nursimulu
  */
-public abstract class OntologySubPanel extends JPanel implements FiltersChangedListener{
+public abstract class OntologySubPanel extends JPanel implements FiltersChangedListener, AggregatePanel{
 
     
     private WaitPanel waitPanel;
@@ -54,7 +54,6 @@ public abstract class OntologySubPanel extends JPanel implements FiltersChangedL
         this.chromSplitIndex = chromSplitIndex;
         this.startSplitIndex = startSplitIndex;
         this.endSplitIndex = endSplitIndex;
-        this.update();
     }
     
     /**
@@ -78,6 +77,11 @@ public abstract class OntologySubPanel extends JPanel implements FiltersChangedL
         OntologyStatsWorker.nodesThatWereAlreadyVisible.clear();
         OntologyStatsWorker.mapNameToTree.clear();
         this.update();
+    }
+    
+    public JPanel getPanel(){
+        this.update();
+        return this;
     }
     
 }

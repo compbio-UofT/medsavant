@@ -34,7 +34,7 @@ public class AggregatesStatsPanel extends JPanel{
      * List containing the name of region stats the user can view.
      */
     private static final String[] regionStatsNames = {"Gene Ontology", "Human Phenotype Ontology"};
-    private TreeMap<String, JPanel> panelMap = new TreeMap<String, JPanel>();
+    private TreeMap<String, OntologySubPanel> panelMap = new TreeMap<String, OntologySubPanel>();
 
     
     public AggregatesStatsPanel(){
@@ -50,7 +50,7 @@ public class AggregatesStatsPanel extends JPanel{
         // Add your panel here.
     }
     
-    private void addPanel(JPanel p) {
+    private void addPanel(OntologySubPanel p) {
         panelMap.put(p.getName(), p);
     }
     
@@ -59,7 +59,7 @@ public class AggregatesStatsPanel extends JPanel{
         this.removeAll();
         this.add(toolBarPanel, BorderLayout.NORTH);
 
-        this.add(panelMap.get(currentRegionStat));    
+        this.add(panelMap.get(currentRegionStat).getPanel());    
         this.updateUI();
     }    
     
