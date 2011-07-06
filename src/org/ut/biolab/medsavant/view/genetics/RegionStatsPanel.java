@@ -8,7 +8,11 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,13 +26,19 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingWorker;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.ConnectionController;
+import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.filter.GOFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.HPOFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
+import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
 import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -46,6 +56,11 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     private String currentRegionStat;
     private RegionStatsWorker rsw;
     private WaitPanel waitPanel;
+    // Expecting only one such panel to be instantiated.
+    private static List<WorkingWithOneNode> listIndividualThreads = 
+            new ArrayList<WorkingWithOneNode>();
+    private static HashMap<String, Integer> mapLocToFreq = 
+            new HashMap<String, Integer>();
     
     /**
      * List containing the name of region stats the user can view.
@@ -143,28 +158,38 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
         // TODO: make this more general if possible, for future purposes.
         private JComponent getRegionStatsFor(String regionStatsName){
             
-                JComponent component = null;
-                if (regionStatsName.equals("Gene Ontology")){  
-                    // TODO: change this approach: what if the GO tree is never loaded?
-                    while (!FilterObjectStorer.containsObjectWithName(GOFilter.NAME_TREE))
-                        ;
-                    Object o = FilterObjectStorer.getObject(GOFilter.NAME_TREE);
-                    component = ConstructJTree.getTree((Tree)o, true, false);
+            JComponent component = null;
+            if (regionStatsName.equals("Gene Ontology")){  
+                // TODO: change this approach: what if the GO tree is never loaded?
+                while (!FilterObjectStorer.containsObjectWithName(GOFilter.NAME_TREE))
+                    ;
+                Object o = FilterObjectStorer.getObject(GOFilter.NAME_TREE);
+                component = ConstructJTree.getTree((Tree)o, true, false);
 //                    System.out.println("Gene Ontology tree constructed for Regions stats.");
-                }
-                else if (regionStatsName.equals("Human Phenotype Ontology")){
-                    // TODO: change this approach: what if the HPO tree is never loaded?
-                    while (!FilterObjectStorer.containsObjectWithName(HPOFilter.NAME_TREE))
-                        ;
-                    Object o = FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
-                    component = ConstructJTree.getTree((Tree)o, false, false);
+            }
+            else if (regionStatsName.equals("Human Phenotype Ontology")){
+                // TODO: change this approach: what if the HPO tree is never loaded?
+                while (!FilterObjectStorer.containsObjectWithName(HPOFilter.NAME_TREE))
+                    ;
+                Object o = FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
+                component = ConstructJTree.getTree((Tree)o, false, false);
 //                    System.out.println("HPO tree constructed for Region stats");
-                }
+            }
 
             if (regionStatsName.equals("Gene Ontology") || 
                     regionStatsName.equals("Human Phenotype Ontology")){
              
-                // Do something smart here with threads and what-not.
+                // Get those nodes that are visible to the user.
+                List<DefaultMutableTreeNode> visibleNodes = 
+                        RegionStatsPanel.getVisibleNodes((JTree)component);
+                // Change the descriptions of those nodes that are visible
+                // according to the statistics.
+                if (regionStatsName.equals("Gene Ontology")){
+                    RegionStatsPanel.changeStatistics(panel, visibleNodes, 1, 2, 3);
+                }
+                else{
+                    RegionStatsPanel.changeStatistics(panel, visibleNodes, 0, 1, 2);
+                }
             }
             return component;
         }
@@ -180,10 +205,10 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
 //                System.out.println("Beginning of done");
                 JScrollPane scrollPane = new JScrollPane((JComponent)get());
 
-            // Remove the wait panel first.
-            panel.remove(waitPanel);
-            panel.add(scrollPane);
-            panel.updateUI();
+                // Remove the wait panel first.
+                panel.remove(waitPanel);
+                panel.add(scrollPane);
+                panel.updateUI();
         
 //                System.out.println("Ending of done");
             } catch (Exception ex){
@@ -198,5 +223,143 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
         updateRegionStats();
     }    
     
+    /**
+     * Get the nodes that are visible in this tree.
+     * @param tree
+     * @return a listPaths containing all those nodes that are visible.
+     */
+    private static List<DefaultMutableTreeNode> getVisibleNodes(JTree tree){
+        
+        List<TreePath> listPaths = new ArrayList<TreePath>();
+        // path of the root.
+        TreePath rootPath = tree.getPathForRow(1).getParentPath();
+        getPaths(tree, rootPath, true, listPaths);
+        
+        List<DefaultMutableTreeNode> nodes = 
+                new ArrayList<DefaultMutableTreeNode>();
+        for (TreePath path: listPaths){
+            DefaultMutableTreeNode jnode = 
+                    (DefaultMutableTreeNode) path.getLastPathComponent();
+            nodes.add(jnode);
+        }
+        return nodes;
+    }
     
+    /**
+     * Change the statistics for the visible nodes given.
+     * @param visibleNodes the nodes that are visible in the tree in question.
+     * @param chromIndex index where the chromosome will be when the location info
+     * is split.
+     * @param startIndex index where the start position will be when the location
+     * info is split.
+     * @param endIndex index where the end position will be when the location info
+     * is split.
+     */
+    private static void changeStatistics
+            (JPanel panel, List<DefaultMutableTreeNode> visibleNodes, int chromIndex, int startIndex, int endIndex) {
+        
+        RegionStatsPanel.mapLocToFreq.clear();
+        
+        // Kill each of those threads from before.
+        for (WorkingWithOneNode thread: listIndividualThreads){
+            if (!thread.isDone()){
+                thread.cancel(true);
+            }
+//            System.out.println("Cancelling");
+        }
+        listIndividualThreads.clear();
+        for (DefaultMutableTreeNode node: visibleNodes){
+            WorkingWithOneNode curr = 
+                    new WorkingWithOneNode(panel, node, chromIndex, startIndex, endIndex);
+            listIndividualThreads.add(curr);
+            curr.execute();
+        }
+    }
+    
+    /**
+     * Get all the visible paths.
+     * @param tree the tree in question
+     * @param parent the parent of this node
+     * @param expanded true iff we want the expanded nodes
+     * @param list the list to contain all the paths.
+     */
+      private static void getPaths
+              (JTree tree, TreePath parent, boolean expanded, List<TreePath> list) {
+        
+          if (expanded && !tree.isVisible(parent)) {
+              return;
+          }
+          list.add(parent);
+          TreeNode node = (TreeNode) parent.getLastPathComponent();
+        
+          if (node.getChildCount() >= 0) {          
+              for (Enumeration e = node.children(); e.hasMoreElements();) {            
+                  TreeNode n = (TreeNode) e.nextElement();            
+                  TreePath path = parent.pathByAddingChild(n);            
+                  getPaths(tree, path, expanded, list);          
+              }        
+          }  
+      }
+      
+      
+      public static class WorkingWithOneNode extends SwingWorker{
+          
+          private DefaultMutableTreeNode node;
+          private int chromIndex;
+          private int startIndex;
+          private int endIndex;
+          private JPanel panel;
+          
+          public WorkingWithOneNode
+                  (JPanel panel, DefaultMutableTreeNode node, int chromIndex, 
+                  int startIndex, int endIndex){
+              this.node = node;
+              this.chromIndex = chromIndex;
+              this.startIndex = startIndex;
+              this.endIndex = endIndex;
+              this.panel = panel;
+          }
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            
+            HashSet<String> locs = ((Node)(node.getUserObject())).getLocs();
+            int numVariants = 0;
+            for (String loc: locs){
+                
+                String[] split = loc.split("\t");
+                String chrom = split[chromIndex].trim();
+                int start = Integer.parseInt(split[startIndex].trim());
+                int end = Integer.parseInt(split[endIndex].trim());
+                
+                String key = chrom + "_" + start + "_" + end;
+                Integer numCurr = RegionStatsPanel.mapLocToFreq.get(key);
+                if (numCurr == null){
+                    
+                    numCurr = QueryUtil.getNumVariantsInRange
+                            (ConnectionController.connect(), chrom, start, end);
+                    RegionStatsPanel.mapLocToFreq.put(key, numCurr);
+                }
+
+                numVariants = numVariants + numCurr;
+//                System.out.println(numVariants);
+            }
+            return numVariants;
+        }
+        
+        @Override
+        protected void done(){
+            String desc = ((Node)node.getUserObject()).getDescription();
+            try {
+                desc = desc + "[" + get() + " records]";
+                ((Node)node.getUserObject()).setDescription(desc);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(RegionStatsPanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger(RegionStatsPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            panel.updateUI();
+        }
+          
+      }
 }
