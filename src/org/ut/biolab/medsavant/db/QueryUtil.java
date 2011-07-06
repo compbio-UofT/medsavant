@@ -28,6 +28,7 @@ import org.ut.biolab.medsavant.db.table.AlignmentTableSchema;
 import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListViewTableSchema;
+import org.ut.biolab.medsavant.db.table.GenomeTableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
@@ -474,7 +475,7 @@ public class QueryUtil {
         return results;
     }
     
-    public static Map<String, List<String>> getVariantPositionsForDNAIds(Connection c, List<String> dnaIds) throws SQLException, NonFatalDatabaseException {
+    public static Map<String, List<String>> getSavantBookmarkPositionsForDNAIds(Connection c, List<String> dnaIds, int limit) throws SQLException, NonFatalDatabaseException {
         
         Map<String, List<String>> results = new HashMap<String, List<String>>();
         
@@ -490,10 +491,10 @@ public class QueryUtil {
         q.addCondition(ComboCondition.or(conditions));    
         
         Statement s = c.createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
+        ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
 
         while (rs.next()) {
-            results.get(rs.getString(1)).add(rs.getString(2) + ":" + rs.getLong(3));  
+            results.get(rs.getString(1)).add(rs.getString(2) + ":" + (rs.getLong(3)-100) + "-" + (rs.getLong(3)+100));  
         }
         
         return results;
@@ -522,6 +523,25 @@ public class QueryUtil {
         }
         
         return results;      
+    }
+    
+    public static String getGenomeBAMPathForVersion(Connection c, String genomeVersion) throws SQLException, NonFatalDatabaseException {
+        
+        TableSchema t = MedSavantDatabase.getInstance().getGenomeTableSchema();
+        SelectQuery q = new SelectQuery();
+        q.addColumns(t.getDBColumn(GenomeTableSchema.ALIAS_BAMPATH));
+        q.addFromTable(t.getTable());
+        q.addCondition(new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(GenomeTableSchema.ALIAS_VERSION), genomeVersion));
+        
+        Statement s = c.createStatement();
+        ResultSet rs = s.executeQuery(q.toString() + " LIMIT 1");
+        
+        if(rs.next()){
+            return rs.getString(1);
+        } else {
+            return "";
+        }
+        
     }
        
 }

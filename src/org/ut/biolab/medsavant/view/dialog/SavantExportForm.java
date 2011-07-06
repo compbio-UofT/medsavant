@@ -91,11 +91,17 @@ public class SavantExportForm extends javax.swing.JDialog {
                 selectedIds.add(box.getText());
             }
         }
+        if(selectedIds.isEmpty()){
+            progressLabel.setText("No individuals selected");
+            progressDialog.setVisible(false);
+            this.setVisible(true);
+            return;
+        }
         
         //get bookmarks
         Map<String, List<String>> map = new HashMap<String, List<String>>();
         try {
-            map = QueryUtil.getVariantPositionsForDNAIds(ConnectionController.connect(), selectedIds);
+            map = QueryUtil.getSavantBookmarkPositionsForDNAIds(ConnectionController.connect(), selectedIds, 1000);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -107,13 +113,27 @@ public class SavantExportForm extends javax.swing.JDialog {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        
+        //TODO: retrieve actual genomeVersion
+        String genomeVersion = "hg19";
+        String genomePath = "";
+        try {            
+            genomePath = QueryUtil.getGenomeBAMPathForVersion(ConnectionController.connect(), genomeVersion);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        //TODO: this is a Savant problem...seems that cytoband is required (and not in genome table)
+        int posExt = genomePath.lastIndexOf(".fa.savant");
+        String cytoband = genomePath.substring(0, posExt) + ".cytoband"; 
            
         //create file
-        //TODO: savant files should not be hardcoded!!!
         String s = "<?xml version=\"1.0\" ?>\n"
                 + "<savant version=\"1\" range=\"chr1:1-1000\">\n"
-                + " <genome name=\"hg19\" cytoband=\"http://savantbrowser.com/data/hg19/hg19.cytoband\" "
-                + "uri=\"http://savantbrowser.com/data/hg19/hg19.fa.savant\"></genome>\n";
+                + " <genome name=\"" + genomeVersion + "\" "
+                + "cytoband=\"" + cytoband + "\" "
+                + "uri=\"" + genomePath + "\"></genome>\n"
+                + " <track uri=\"" + genomePath + "\"/>\n";
         
         for(String path : bamFiles){
             s += "  <track uri=\"" + path + "\"/>\n";
@@ -191,6 +211,7 @@ public class SavantExportForm extends javax.swing.JDialog {
 
         jLabel1.setText("Choose Individuals to Export:");
 
+        progressLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         progressLabel.setText(" ");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -207,8 +228,8 @@ public class SavantExportForm extends javax.swing.JDialog {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(chooseFileButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 55, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(layout.createSequentialGroup()
-                        .add(progressLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 142, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(progressLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(exportButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 117, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 231, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
@@ -238,11 +259,11 @@ public class SavantExportForm extends javax.swing.JDialog {
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
         
-        exportButton.setEnabled(false);
-        chooseFileButton.setEnabled(false);
-        for(JCheckBox box : checkBoxes){
-            box.setEnabled(false);
-        }
+        //exportButton.setEnabled(false);
+        //chooseFileButton.setEnabled(false);
+        //for(JCheckBox box : checkBoxes){
+        //    box.setEnabled(false);
+        //}
         
         progressDialog = new JDialog();
         progressDialog.setTitle("Show in Savant");

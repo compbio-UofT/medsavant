@@ -34,8 +34,8 @@
                       <Component id="chooseFileButton" min="-2" pref="55" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="progressLabel" min="-2" pref="142" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="progressLabel" pref="253" max="32767" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="exportButton" min="-2" pref="117" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jLabel1" alignment="0" min="-2" pref="231" max="-2" attributes="0"/>
@@ -120,6 +120,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="progressLabel">
       <Properties>
+        <Property name="horizontalAlignment" type="int" value="4"/>
         <Property name="text" type="java.lang.String" value=" "/>
       </Properties>
     </Component>
