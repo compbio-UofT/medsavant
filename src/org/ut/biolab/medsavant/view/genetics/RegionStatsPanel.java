@@ -126,7 +126,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
             b.addItem(regionStatsName);
         }
         
-        setCurrentRegionStats(regionStatsNames[1]);
+        setCurrentRegionStats(regionStatsNames[0]);
         
         b.addActionListener(new ActionListener() {
 
@@ -409,6 +409,8 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
                 Logger.getLogger(RegionStatsPanel.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ExecutionException ex) {
                 Logger.getLogger(RegionStatsPanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (java.util.concurrent.CancellationException e){
+                System.out.println("Got cancellation exception");
             }
         }
           
