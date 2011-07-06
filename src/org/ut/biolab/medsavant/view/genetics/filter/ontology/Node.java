@@ -47,6 +47,13 @@ public class Node implements Comparable{
     private boolean hasBeenSelected;
     
     /**
+     * Total description of a node.  Incorporates the actual description and any
+     * additional description.  Note that the total description is not actually
+     * used in comparisons, and is merely utilised for aesthetic purposes.
+     */
+    private String totalDescription;
+    
+    /**
      * Special node associated with this node. It has the same info as the node 
      * to which it is special, is that node's child, but has 
      * (identifier of parent)_SPECIAL as identifier name, and does not contain 
@@ -83,6 +90,7 @@ public class Node implements Comparable{
 //        this.parents = new HashSet<Node>();
         this.identifier = identifier;
         this.description = null;
+        this.totalDescription = "";
         this.locs = null;
         this.hasBeenSelected = false;
         this.specialCopyNode = null;
@@ -108,6 +116,7 @@ public class Node implements Comparable{
         this.identifier = nodeToWhichIamSpecial.identifier + "_SPECIAL";
         this.locs = nodeToWhichIamSpecial.locs;
         this.description = nodeToWhichIamSpecial.descriptionSpecialNode;
+        this.totalDescription = this.description;
         this.isSpecial = true;
         this.children = new TreeSet<Node>();
         this.hasBeenDiscovered = false;
@@ -134,6 +143,7 @@ public class Node implements Comparable{
         // Otherwise, just reformat info in this node.
         else{
             this.specialCopyNode.description = this.descriptionSpecialNode;
+            this.specialCopyNode.totalDescription = this.specialCopyNode.description;
             this.specialCopyNode.identifier = this.identifier + "_SPECIAL";
             this.specialCopyNode.locs = this.locs;
         }
@@ -302,11 +312,23 @@ public class Node implements Comparable{
     public void setDescription(String description){
         
         this.description = description;
+        this.totalDescription = this.description;
         // change of description does not affect special node.
     }
     
     /**
-     * Get the description of this node.
+     * Set the total description of this node.  This does not modify the actual
+     * description of the node, but modifies the total description.  This is
+     * an optional operation.
+     * @param additionalDescription 
+     */
+    public void setTotalDescription(String additionalDescription){
+        
+        this.totalDescription = this.description + additionalDescription;
+    }
+    
+    /**
+     * Get the actual description of this node.
      * @return description.
      */
     public String getDescription(){
@@ -317,7 +339,7 @@ public class Node implements Comparable{
     @Override
     public String toString(){
         
-        return this.description;
+        return this.totalDescription;
     }
 
     

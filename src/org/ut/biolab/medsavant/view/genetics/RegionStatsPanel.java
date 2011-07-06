@@ -120,7 +120,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
             b.addItem(regionStatsName);
         }
         
-        setCurrentRegionStats(regionStatsNames[0]);
+        setCurrentRegionStats(regionStatsNames[1]);
         
         b.addActionListener(new ActionListener() {
 
@@ -185,10 +185,10 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
                 // Change the descriptions of those nodes that are visible
                 // according to the statistics.
                 if (regionStatsName.equals("Gene Ontology")){
-                    RegionStatsPanel.changeStatistics(panel, visibleNodes, 1, 2, 3);
+                    RegionStatsPanel.changeStatistics((JTree)component, visibleNodes, 1, 2, 3);
                 }
                 else{
-                    RegionStatsPanel.changeStatistics(panel, visibleNodes, 0, 1, 2);
+                    RegionStatsPanel.changeStatistics((JTree)component, visibleNodes, 0, 1, 2);
                 }
             }
             return component;
@@ -256,7 +256,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
      * is split.
      */
     private static void changeStatistics
-            (JPanel panel, List<DefaultMutableTreeNode> visibleNodes, int chromIndex, int startIndex, int endIndex) {
+            (JTree tree, List<DefaultMutableTreeNode> visibleNodes, int chromIndex, int startIndex, int endIndex) {
         
         RegionStatsPanel.mapLocToFreq.clear();
         
@@ -270,7 +270,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
         listIndividualThreads.clear();
         for (DefaultMutableTreeNode node: visibleNodes){
             WorkingWithOneNode curr = 
-                    new WorkingWithOneNode(panel, node, chromIndex, startIndex, endIndex);
+                    new WorkingWithOneNode(tree, node, chromIndex, startIndex, endIndex);
             listIndividualThreads.add(curr);
             curr.execute();
         }
@@ -308,16 +308,16 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
           private int chromIndex;
           private int startIndex;
           private int endIndex;
-          private JPanel panel;
+          private JTree tree;
           
           public WorkingWithOneNode
-                  (JPanel panel, DefaultMutableTreeNode node, int chromIndex, 
+                  (JTree tree, DefaultMutableTreeNode node, int chromIndex, 
                   int startIndex, int endIndex){
               this.node = node;
               this.chromIndex = chromIndex;
               this.startIndex = startIndex;
               this.endIndex = endIndex;
-              this.panel = panel;
+              this.tree = tree;
           }
 
         @Override
@@ -342,23 +342,26 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
                 }
 
                 numVariants = numVariants + numCurr;
+                ((Node)node.getUserObject()).setTotalDescription(" [" + numVariants + " records]");
 //                System.out.println(numVariants);
+                tree.repaint();
             }
+           
             return numVariants;
         }
         
         @Override
         protected void done(){
-            String desc = ((Node)node.getUserObject()).getDescription();
             try {
-                desc = desc + "[" + get() + " records]";
-                ((Node)node.getUserObject()).setDescription(desc);
+                String additionalDesc = " [" + get() + " records in all]";
+                ((Node)node.getUserObject()).setTotalDescription(additionalDesc);
+                tree.repaint();
             } catch (InterruptedException ex) {
                 Logger.getLogger(RegionStatsPanel.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ExecutionException ex) {
                 Logger.getLogger(RegionStatsPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
-            panel.updateUI();
+//            tree.repaint();
         }
           
       }
