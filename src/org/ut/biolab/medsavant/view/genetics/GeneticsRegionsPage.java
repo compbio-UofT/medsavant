@@ -31,7 +31,7 @@ public class GeneticsRegionsPage extends SubSectionView {
 
     
     public String getName() {
-        return "Regions";
+        return "Aggregate";
     }
 
     public JPanel getView() {

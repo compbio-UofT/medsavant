@@ -18,6 +18,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
@@ -41,6 +43,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.db.QueryUtil;
@@ -305,6 +308,8 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 JPanel rangeContainer = new JPanel();
                 rangeContainer.setLayout(new BoxLayout(rangeContainer, BoxLayout.X_AXIS));
 
+                final JTextField frombox = new JTextField(ViewUtil.numToString(min));
+                final JTextField tobox = new JTextField(ViewUtil.numToString(max));
 
                 final JLabel fromLabel = new JLabel(ViewUtil.numToString(min));
                 final JLabel toLabel = new JLabel(ViewUtil.numToString(max));
@@ -313,18 +318,69 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 rangeContainer.add(rs);
                 rangeContainer.add(toLabel);
 
+                container.add(frombox);
+                container.add(tobox);
                 container.add(rangeContainer);
                 container.add(Box.createVerticalBox());
 
                 rs.addChangeListener(new ChangeListener() {
 
                     public void stateChanged(ChangeEvent e) {
-                        fromLabel.setText(ViewUtil.numToString(rs.getLowValue()));
-                        toLabel.setText(ViewUtil.numToString(rs.getHighValue()));
+                        frombox.setText(ViewUtil.numToString(rs.getLowValue()));
+                        tobox.setText(ViewUtil.numToString(rs.getHighValue()));
                     }
                 });
+                
+                tobox.addKeyListener(new KeyListener() {
 
+                    public void keyTyped(KeyEvent e) {
+                        
+                    }
 
+                    public void keyPressed(KeyEvent e) {
+                    }
+
+                    public void keyReleased(KeyEvent e) {
+                        int key = e.getKeyCode();
+                        if (key == KeyEvent.VK_ENTER) {
+                            try {
+                                int num = (int) Math.ceil(getNumber(tobox.getText()));
+                                rs.setHighValue(num);
+                                tobox.setText(ViewUtil.numToString(num));
+                            } catch (Exception e2) {
+                                e2.printStackTrace();
+                                tobox.requestFocus();
+                            }
+                        }
+                    }
+                    
+                });
+                
+                frombox.addKeyListener(new KeyListener() {
+
+                    public void keyTyped(KeyEvent e) {
+                        
+                    }
+
+                    public void keyPressed(KeyEvent e) {
+                    }
+
+                    public void keyReleased(KeyEvent e) {
+                        int key = e.getKeyCode();
+                        if (key == KeyEvent.VK_ENTER) {
+                            try {
+                                int num = (int) Math.floor(getNumber(frombox.getText()));
+                                rs.setLowValue(num);
+                                frombox.setText(ViewUtil.numToString(num));
+                            } catch (Exception e2) {
+                                e2.printStackTrace();
+                                frombox.requestFocus();
+                            }
+                        }
+                    }
+                    
+                });
+                
 
                 final JButton applyButton = new JButton("Apply");
                 applyButton.setEnabled(false);
@@ -654,5 +710,9 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
         setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect())) + " records pass filters");
         updatePaneEmphasis();
+    }
+    
+    public double getNumber(String s) {
+        return Double.parseDouble(s);
     }
 }

@@ -82,7 +82,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
 //        this.remove(bar);
         this.removeAll();
         this.add(toolBarPanel, BorderLayout.NORTH);
-        waitPanel = new WaitPanel("Getting region statistics");
+        waitPanel = new WaitPanel("Getting aggregate statistics");
         this.add(waitPanel, BorderLayout.CENTER);
         this.updateUI();
         
@@ -108,10 +108,12 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
 
         toolBarPanel.add(Box.createHorizontalGlue());
 
-        toolBarPanel.add(new JLabel("Region statistics for: "));      
+        toolBarPanel.add(new JLabel("Aggregate statistics by: "));      
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
-        toolBarPanel.add(bar);
+        toolBarPanel.add(ViewUtil.clear(bar));
+        
+        toolBarPanel.add(Box.createHorizontalGlue());
         
 //        bar.setFloatable(false);        
         JComboBox b = new JComboBox();
