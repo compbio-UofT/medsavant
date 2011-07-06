@@ -26,6 +26,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingWorker;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -61,6 +63,9 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
             new ArrayList<WorkingWithOneNode>();
     private static HashMap<String, Integer> mapLocToFreq = 
             new HashMap<String, Integer>();
+    // TODO: is there a better way of doing this?
+    private static JTree goTree;
+    private static JTree hpoTree;
     
     /**
      * List containing the name of region stats the user can view.
@@ -71,7 +76,6 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     
     public RegionStatsPanel(){
         this.setLayout(new BorderLayout());
-
         initToolBar();
         updateRegionStats();
         FilterController.addFilterListener(this);
@@ -145,11 +149,14 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     }
     
     
-    public class RegionStatsWorker extends SwingWorker{
+    public static class RegionStatsWorker extends SwingWorker{
         
         private String regionStatsName;
         private JPanel panel;
         private JPanel waitPanel;
+        // We don't want to reload the information that has already been loaded.
+        // Actually contains the identifiers of those nodes (unique).
+        public static HashSet<String> nodesThatWereAlreadyVisible = new HashSet<String>();
         
         public RegionStatsWorker(String regionStatsName, JPanel panel, WaitPanel waitPanel){
             this.regionStatsName = regionStatsName;
@@ -165,17 +172,23 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
                 // TODO: change this approach: what if the GO tree is never loaded?
                 while (!FilterObjectStorer.containsObjectWithName(GOFilter.NAME_TREE))
                     ;
-                Object o = FilterObjectStorer.getObject(GOFilter.NAME_TREE);
-                component = ConstructJTree.getTree((Tree)o, true, false);
-//                    System.out.println("Gene Ontology tree constructed for Regions stats.");
+                if (goTree == null){
+                    Object o = FilterObjectStorer.getObject(GOFilter.NAME_TREE);
+                    goTree = ConstructJTree.getTree((Tree)o, true, false);
+//                        System.out.println("Gene Ontology tree constructed for Regions stats.");
+                }
+                component = goTree;
             }
             else if (regionStatsName.equals("Human Phenotype Ontology")){
                 // TODO: change this approach: what if the HPO tree is never loaded?
                 while (!FilterObjectStorer.containsObjectWithName(HPOFilter.NAME_TREE))
                     ;
-                Object o = FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
-                component = ConstructJTree.getTree((Tree)o, false, false);
-//                    System.out.println("HPO tree constructed for Region stats");
+                if (hpoTree == null){
+                    Object o = FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
+                    hpoTree = ConstructJTree.getTree((Tree)o, false, false);
+//                      System.out.println("HPO tree constructed for Region stats");
+                }
+                component = hpoTree;
             }
 
             if (regionStatsName.equals("Gene Ontology") || 
@@ -184,6 +197,23 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
                 // Get those nodes that are visible to the user.
                 List<DefaultMutableTreeNode> visibleNodes = 
                         RegionStatsPanel.getVisibleNodes((JTree)component);
+                List<DefaultMutableTreeNode> purgedVisibleNodes = new ArrayList<DefaultMutableTreeNode>();
+                
+                // First subtract all the nodes that were already visible from 
+                // that list (using the identifiers), and add the identifiers of 
+                // those nodes that are already visible to the hashset (This
+                // hypothetically works).
+                for (DefaultMutableTreeNode visibleNode: visibleNodes){
+                    
+                    Node node = (Node)visibleNode.getUserObject();
+                    if (!nodesThatWereAlreadyVisible.contains(node.getIdentifier())){
+                        purgedVisibleNodes.add(visibleNode);
+                        nodesThatWereAlreadyVisible.add(node.getIdentifier());
+                    }
+                }
+                visibleNodes = purgedVisibleNodes;
+
+                
                 // Change the descriptions of those nodes that are visible
                 // according to the statistics.
                 if (regionStatsName.equals("Gene Ontology")){
@@ -193,6 +223,19 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
                     RegionStatsPanel.changeStatistics((JTree)component, visibleNodes, 0, 1, 2);
                 }
             }
+            
+            // Do something when the tree is expanded.
+            ((JTree)component).addTreeExpansionListener(new TreeExpansionListener() {
+
+                public void treeExpanded(TreeExpansionEvent event) {
+                    ;
+                }
+
+                public void treeCollapsed(TreeExpansionEvent event) {
+                    // No need to do anything here.
+                }
+            });
+            
             return component;
         }
 
@@ -222,6 +265,10 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
     }
     
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        // Do not use the same trees as were made earlier.
+        RegionStatsPanel.RegionStatsWorker.nodesThatWereAlreadyVisible.clear();
+        goTree = null;
+        hpoTree= null;
         updateRegionStats();
     }    
     
@@ -363,7 +410,6 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
             } catch (ExecutionException ex) {
                 Logger.getLogger(RegionStatsPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
-//            tree.repaint();
         }
           
       }
