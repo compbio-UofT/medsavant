@@ -391,7 +391,7 @@ public class RegionStatsPanel extends JPanel implements FiltersChangedListener{
                 }
 
                 numVariants = numVariants + numCurr;
-                ((Node)node.getUserObject()).setTotalDescription(" [" + numVariants + " records]");
+                ((Node)node.getUserObject()).setTotalDescription(" [>=" + numVariants + " records]");
 //                System.out.println(numVariants);
                 tree.repaint();
             }
