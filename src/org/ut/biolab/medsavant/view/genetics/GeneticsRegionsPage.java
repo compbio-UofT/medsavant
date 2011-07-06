@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
 public class GeneticsRegionsPage extends SubSectionView {
 
     private JPanel panel;
-    private RegionStatsPanel rsc;
+    private AggregatesStatsPanel asp;
     
     public GeneticsRegionsPage(SectionView parent) { super(parent); }
 
@@ -49,8 +49,8 @@ public class GeneticsRegionsPage extends SubSectionView {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         
-        rsc = new RegionStatsPanel();
-        panel.add(rsc, BorderLayout.CENTER);
+        asp = new AggregatesStatsPanel();
+        panel.add(asp, BorderLayout.CENTER);
     }
     
     public Component[] getBanner() {

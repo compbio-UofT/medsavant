@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Nirvana Nursimulu
  */
-public class RegionStatsPanel extends JPanel{
+public class AggregatesStatsPanel extends JPanel{
     
     private JPanel toolBarPanel;
     private String currentRegionStat;
@@ -37,7 +37,7 @@ public class RegionStatsPanel extends JPanel{
     private TreeMap<String, JPanel> panelMap = new TreeMap<String, JPanel>();
 
     
-    public RegionStatsPanel(){
+    public AggregatesStatsPanel(){
         this.setLayout(new BorderLayout());
         addPanels();
         initToolBar();
