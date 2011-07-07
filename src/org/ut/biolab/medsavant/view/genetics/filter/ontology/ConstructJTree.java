@@ -30,6 +30,9 @@ public class ConstructJTree {
      */
     public static JTree getTree(Tree tree, boolean isForest, boolean isCheckBoxTree){
 
+        if (tree == null){
+            return null;
+        }
         DefaultMutableTreeNode actualRoot;
         if (isForest){
             // "dummy" root of the tree.  No special node here...
