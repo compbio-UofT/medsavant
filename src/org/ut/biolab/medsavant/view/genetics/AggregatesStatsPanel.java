@@ -14,9 +14,9 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import org.ut.biolab.medsavant.view.genetics.aggregates.AggregatePanel;
 import org.ut.biolab.medsavant.view.genetics.aggregates.GOsubPanel;
 import org.ut.biolab.medsavant.view.genetics.aggregates.HPOsubPanel;
-import org.ut.biolab.medsavant.view.genetics.aggregates.OntologySubPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
@@ -33,8 +33,7 @@ public class AggregatesStatsPanel extends JPanel{
     /**
      * List containing the name of region stats the user can view.
      */
-    private static final String[] regionStatsNames = {"Gene Ontology", "Human Phenotype Ontology"};
-    private TreeMap<String, OntologySubPanel> panelMap = new TreeMap<String, OntologySubPanel>();
+    private TreeMap<String, AggregatePanel> panelMap = new TreeMap<String, AggregatePanel>();
 
     
     public AggregatesStatsPanel(){
@@ -50,7 +49,7 @@ public class AggregatesStatsPanel extends JPanel{
         // Add your panel here.
     }
     
-    private void addPanel(OntologySubPanel p) {
+    private void addPanel(AggregatePanel p) {
         panelMap.put(p.getName(), p);
     }
     
@@ -85,7 +84,7 @@ public class AggregatesStatsPanel extends JPanel{
             b.addItem(regionStatsName);
         }
         
-        setCurrentRegionStats(regionStatsNames[0]);
+        setCurrentRegionStats(panelMap.firstKey());
         
         b.addActionListener(new ActionListener() {
 
