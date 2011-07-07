@@ -303,8 +303,21 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             }
 
             if (isNumeric) {
-                Range extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
-
+                
+                Range extremeValues = null;
+                
+                if (columnAlias.equals(VariantTableSchema.ALIAS_POSITION)) {
+                    extremeValues = new Range(1,250000000);
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_SB)) {
+                    extremeValues = new Range(-100,100);
+                } else {
+                    extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
+                }
+                
+                if (columnAlias.equals(VariantTableSchema.ALIAS_DP)) {
+                    extremeValues = new Range(Math.min(0, extremeValues.getMin()),extremeValues.getMax());
+                }
+            
                 JPanel container = new JPanel();
                 container.setBorder(ViewUtil.getMediumBorder());
                 container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
@@ -598,7 +611,23 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 if(columnAlias.equals(VariantTableSchema.ALIAS_GT)){
                     uniq = new ArrayList<String>();
                     uniq.addAll(Arrays.asList(VariantRecord.ALIAS_ZYGOSITY));
-                } else {
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_CHROM)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8",
+                                "chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16",
+                                "chr17","chr18","chr19","chr20","chr21","chr22","chrX","chrY"
+                            }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_REFERENCE)
+                        || columnAlias.equals(VariantTableSchema.ALIAS_ALTERNATE)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "A","C","G","T"
+                            }));
+                } 
+                else {
                     uniq = QueryUtil.getDistinctValuesForColumn(conn, table, col);
                 }
                 

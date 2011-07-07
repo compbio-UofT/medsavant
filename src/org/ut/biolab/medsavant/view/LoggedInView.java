@@ -44,8 +44,8 @@ public class LoggedInView extends JPanel {
     private void initTabs() {
         if (!initiated) {
             addSection(new PatientsSection());
-            addSection(new GeneticsSection());
             addSection(new AnnotationsSection());
+            addSection(new GeneticsSection());
         }
         initiated = true;
     }

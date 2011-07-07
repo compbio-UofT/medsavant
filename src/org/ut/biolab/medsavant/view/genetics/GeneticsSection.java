@@ -22,7 +22,12 @@ import org.ut.biolab.medsavant.view.subview.SectionView;
  * @author mfiume
  */
 public class GeneticsSection extends SectionView {
+    private JPanel[] panels;
 
+    public GeneticsSection() {
+        setPersistencePanels();
+    }
+    
     @Override
     public String getName() {
         return "Genetic Variants";
@@ -40,15 +45,7 @@ public class GeneticsSection extends SectionView {
 
     @Override
     public JPanel[] getPersistentPanels() {
-        try {
-            JPanel[] panels = new JPanel[2];
-            panels[0] = new FilterPanel();
-            panels[1] = new FilterProgressPanel();
-            //TODO: account for exception in filter panel instead
-            return panels;
-        } catch (Exception ex) {
-            return null;
-        }
+        return panels;
     }
 
     public JButton createVcfButton(){
@@ -70,6 +67,16 @@ public class GeneticsSection extends SectionView {
         result[0] = createVcfButton();
         
         return result;
+    }
+
+    private void setPersistencePanels() {
+        try {
+            panels = new JPanel[2];
+            panels[0] = new FilterPanel();
+            panels[1] = new FilterProgressPanel();
+            //TODO: account for exception in filter panel instead
+        } catch (Exception ex) {
+        }
     }
 
 }

@@ -33,7 +33,7 @@ public class LoginController {
 
     private synchronized static void setLoggedIn(boolean loggedIn) {
         if (!loggedIn) {
-            ConnectionController.disconnect();
+            ConnectionController.disconnectAll();
             if (!SettingsController.getInstance().getRememberPassword()) {
                 password = "";
             }
