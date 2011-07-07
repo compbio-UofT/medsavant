@@ -8,7 +8,7 @@ package org.ut.biolab.medsavant.db;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import org.ut.biolab.medsavant.db.table.SubjectTableSchema;
+//import org.ut.biolab.medsavant.db.table.SubjectTableSchema;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
@@ -30,6 +30,7 @@ import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.db.table.GenomeTableSchema;
+import org.ut.biolab.medsavant.db.table.PatientTableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
@@ -125,6 +126,9 @@ public class QueryUtil {
                     min = rs.getFloat(1);
                     max = rs.getFloat(2);
                     break;
+                case DECIMAL:
+                    min = rs.getDouble(1);
+                    min = rs.getDouble(2);
                 default:
                     throw new FatalDatabaseException("Unhandled column type: " + type);
             }
@@ -141,7 +145,7 @@ public class QueryUtil {
                     MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(VariantTableSchema.ALIAS_DNAID));
     }
 
-    public static List<String> getDistinctPatientIDs() throws SQLException, NonFatalDatabaseException {
+    /*public static List<String> getDistinctPatientIDs() throws SQLException, NonFatalDatabaseException {
                 return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getSubjectTableSchema(),
@@ -153,6 +157,21 @@ public class QueryUtil {
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getSubjectTableSchema(),
                     MedSavantDatabase.getInstance().getSubjectTableSchema().getDBColumn(SubjectTableSchema.ALIAS_HOSPITALID),
+                    pid);
+    }*/
+    
+    public static List<String> getDistinctPatientIDs() throws SQLException, NonFatalDatabaseException {
+                return QueryUtil.getDistinctValuesForColumn(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_INDEXID));
+    }
+
+    public static List<Vector> getPatientRecord(String pid) throws NonFatalDatabaseException, SQLException {
+        return QueryUtil.getRecordsMatchingID(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_INDEXID),
                     pid);
     }
     
@@ -438,7 +457,7 @@ public class QueryUtil {
         return ComboCondition.and(results);
     }
 
-    public static List<String> getDNAIdsForIndividualsInCohort(String cohortName) throws NonFatalDatabaseException, SQLException {
+    /*public static List<String> getDNAIdsForIndividualsInCohort(String cohortName) throws NonFatalDatabaseException, SQLException {
         
         SubjectTableSchema tsubject = (SubjectTableSchema) MedSavantDatabase.getInstance().getSubjectTableSchema();
         DbColumn currentDNAId = tsubject.getDBColumn(SubjectTableSchema.ALIAS_CURRENTDNAID);
@@ -474,6 +493,62 @@ public class QueryUtil {
         
         SubjectTableSchema tsubject = (SubjectTableSchema) MedSavantDatabase.getInstance().getSubjectTableSchema();
         DbColumn currentDNAId = tsubject.getDBColumn(SubjectTableSchema.ALIAS_CURRENTDNAID);     
+
+        SelectQuery q = new SelectQuery();
+        q.addColumns(currentDNAId);
+        q.setIsDistinct(true);
+        q.addFromTable(tsubject.getTable());
+        
+        Statement s = ConnectionController.connect().createStatement();
+
+        //System.out.println("Querying for: " + q.toString());
+
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<String> results = new ArrayList<String>();
+        while (rs.next()) {
+            results.add(rs.getString(1));
+        }
+        
+        return results;
+    }*/
+    
+    public static List<String> getDNAIdsForIndividualsInCohort(String cohortName) throws NonFatalDatabaseException, SQLException {
+        
+        PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
+        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
+        DbColumn subjecthospitalId = tsubject.getDBColumn(PatientTableSchema.ALIAS_INDEXID);
+        
+        CohortViewTableSchema tcohort = (CohortViewTableSchema) MedSavantDatabase.getInstance().getCohortViewTableSchema();
+        DbColumn cohorthospitalId = tcohort.getDBColumn(CohortViewTableSchema.ALIAS_HOSPITALID);
+        DbColumn cohortNameField = tcohort.getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME);
+        
+        
+        SelectQuery q = new SelectQuery();
+        q.addColumns(currentDNAId);
+        q.setIsDistinct(true);
+        q.addFromTable(tsubject.getTable());
+        q.addJoin(SelectQuery.JoinType.INNER, tsubject.getTable(), tcohort.getTable(), BinaryCondition.equalTo(subjecthospitalId, cohorthospitalId));
+        q.addCondition(BinaryCondition.equalTo(cohortNameField, cohortName));
+        
+        Statement s = ConnectionController.connect().createStatement();
+
+        //System.out.println("Querying for: " + q.toString());
+
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<String> results = new ArrayList<String>();
+        while (rs.next()) {
+            results.add(rs.getString(1));
+        }
+        
+        return results;
+    }
+    
+    public static List<String> getAllDNAIds() throws NonFatalDatabaseException, SQLException {
+        
+        PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
+        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);     
 
         SelectQuery q = new SelectQuery();
         q.addColumns(currentDNAId);

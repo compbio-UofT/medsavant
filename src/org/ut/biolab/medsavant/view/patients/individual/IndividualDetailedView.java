@@ -66,7 +66,9 @@ public class IndividualDetailedView extends DetailedView {
         String[][] values = new String[fieldNames.size()][2];
         for (int i = 0; i < fieldNames.size(); i++) {
             values[i][0] = fieldNames.get(i);
-            values[i][1] = firstMatch.get(i).toString();
+            values[i][1] = "";
+            if(firstMatch.get(i) != null)
+                values[i][1] = firstMatch.get(i).toString();
         }
         
         details.removeAll();
@@ -80,7 +82,7 @@ public class IndividualDetailedView extends DetailedView {
     }
     
     public IndividualDetailedView() {
-        fieldNames = MedSavantDatabase.getInstance().getSubjectTableSchema().getFieldAliases();
+        fieldNames = MedSavantDatabase.getInstance().getPatientTableSchema().getFieldAliases();
         
         content = this.getContentPanel();
         

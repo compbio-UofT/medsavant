@@ -96,7 +96,7 @@ public class CohortDetailedView extends DetailedView {
     }
     
     public CohortDetailedView() {
-        fieldNames = MedSavantDatabase.getInstance().getSubjectTableSchema().getFieldAliases();
+        fieldNames = MedSavantDatabase.getInstance().getPatientTableSchema().getFieldAliases();
         
         content = this.getContentPanel();
         

@@ -39,6 +39,10 @@ public class TableSchema {
                 return COLUMN_BOOLEAN;
             case VARCHAR:
                 return COLUMN_VARCHAR;
+            case DECIMAL:
+                return COLUMN_DECIMAL;
+            case DATE:
+                return COLUMN_DATE;
             default:
                 throw new FatalDatabaseException("Unrecognized column type " + t);
         }
@@ -122,7 +126,7 @@ public class TableSchema {
     }
 
     public static boolean isNumeric(ColumnType columnType) {
-        return ColumnType.FLOAT == columnType || ColumnType.INTEGER == columnType;
+        return ColumnType.FLOAT == columnType || ColumnType.INTEGER == columnType || ColumnType.DECIMAL == columnType;
     }
 
     public static boolean isBoolean(ColumnType columnType) {
@@ -133,13 +137,17 @@ public class TableSchema {
         VARCHAR,
         BOOLEAN,
         INTEGER,
-        FLOAT
+        FLOAT,
+        DECIMAL,
+        DATE
     };
 
     public static final String COLUMN_VARCHAR = "varchar";
     public static final String COLUMN_BOOLEAN = "bool";
     public static final String COLUMN_INTEGER = "int";
     public static final String COLUMN_FLOAT = "float";
+    public static final String COLUMN_DECIMAL = "decimal";
+    public static final String COLUMN_DATE = "date";
     
     /*
     public static List<ColumnType> mapColumnsToEnums(List<DbColumn> columns) throws MedSavantDBException {

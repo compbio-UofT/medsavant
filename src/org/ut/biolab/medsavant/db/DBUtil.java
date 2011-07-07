@@ -78,6 +78,12 @@ public class DBUtil {
                     case FLOAT:
                         v.add(r1.getFloat(index));
                         break;
+                    case DECIMAL:
+                        v.add(r1.getDouble(index));
+                        break;
+                    case DATE:
+                        v.add(r1.getDate(index));
+                        break;
                     default:
                         throw new FatalDatabaseException("Unrecognized column type: " + type);
                 }
