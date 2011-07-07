@@ -48,6 +48,10 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         return panel;
     }
 
+    public void setUpdate(boolean updatePanelUponFilterChanges) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     public class GeneListPanel extends JPanel {
 
         private final JPanel banner;
