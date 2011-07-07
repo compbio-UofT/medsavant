@@ -237,6 +237,13 @@ public class QueryUtil {
                     MedSavantDatabase.getInstance().getCohortTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME));
     }
     
+    public static List<String> getDistinctEthnicNames() throws NonFatalDatabaseException, SQLException {
+         return QueryUtil.getDistinctValuesForColumn(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_RACEORIG));
+    }
+    
     public static List<String> getDistinctGeneListNames() throws SQLException, NonFatalDatabaseException {
         return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
@@ -545,6 +552,62 @@ public class QueryUtil {
         return results;
     }
     
+    //TODO: following few functions very similar. Refactor.
+    
+    public static List<String> getDNAIdsForGender(int gender) throws NonFatalDatabaseException, SQLException {
+        
+        PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
+        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
+        DbColumn subjectGender = tsubject.getDBColumn(PatientTableSchema.ALIAS_GENDER);
+        
+        SelectQuery q = new SelectQuery();
+        q.addColumns(currentDNAId);
+        q.setIsDistinct(true);
+        q.addFromTable(tsubject.getTable());
+        //q.addJoin(SelectQuery.JoinType.INNER, tsubject.getTable(), tcohort.getTable(), BinaryCondition.equalTo(subjecthospitalId, cohorthospitalId));
+        q.addCondition(BinaryCondition.equalTo(subjectGender, gender));
+        
+        Statement s = ConnectionController.connect().createStatement();
+
+        //System.out.println("Querying for: " + q.toString());
+
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<String> results = new ArrayList<String>();
+        while (rs.next()) {
+            results.add(rs.getString(1));
+        }
+        
+        return results;      
+    }
+    
+    public static List<String> getDNAIdsForEthnicity(String ethnicity) throws NonFatalDatabaseException, SQLException {
+        
+        PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
+        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
+        DbColumn subjectEthnicity = tsubject.getDBColumn(PatientTableSchema.ALIAS_RACEORIG);
+        
+        SelectQuery q = new SelectQuery();
+        q.addColumns(currentDNAId);
+        q.setIsDistinct(true);
+        q.addFromTable(tsubject.getTable());
+        //q.addJoin(SelectQuery.JoinType.INNER, tsubject.getTable(), tcohort.getTable(), BinaryCondition.equalTo(subjecthospitalId, cohorthospitalId));
+        q.addCondition(BinaryCondition.equalTo(subjectEthnicity, ethnicity));
+        
+        Statement s = ConnectionController.connect().createStatement();
+
+        //System.out.println("Querying for: " + q.toString());
+
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<String> results = new ArrayList<String>();
+        while (rs.next()) {
+            results.add(rs.getString(1));
+        }
+        
+        return results;      
+    }
+      
     public static List<String> getAllDNAIds() throws NonFatalDatabaseException, SQLException {
         
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();

@@ -188,6 +188,8 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             
             
             views.add(CohortFilterView.getCohortFilterView());
+            views.add(GenderFilterView.getGenderFilterView());
+            views.add(EthnicityFilterView.getEthnicityFilterView());
             views.add(GeneListFilterView.getFilterView());
             views.addAll(getVariantRecordFilterViews());
             views.add(GOFilter.getGOntologyFilterView());
