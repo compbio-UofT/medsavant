@@ -14,8 +14,9 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-import org.ut.biolab.medsavant.view.genetics.aggregates.AggregatePanel;
+import org.ut.biolab.medsavant.view.genetics.aggregates.AggregatePanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.aggregates.GOsubPanel;
+import org.ut.biolab.medsavant.view.genetics.aggregates.GeneListPanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.aggregates.HPOsubPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -33,7 +34,7 @@ public class AggregatesStatsPanel extends JPanel{
     /**
      * List containing the name of region stats the user can view.
      */
-    private TreeMap<String, AggregatePanel> panelMap = new TreeMap<String, AggregatePanel>();
+    private TreeMap<String, AggregatePanelGenerator> panelMap = new TreeMap<String, AggregatePanelGenerator>();
 
     
     public AggregatesStatsPanel(){
@@ -47,9 +48,10 @@ public class AggregatesStatsPanel extends JPanel{
         addPanel(new GOsubPanel());
         addPanel(new HPOsubPanel());
         // Add your panel here.
+        addPanel(new GeneListPanelGenerator());
     }
     
-    private void addPanel(AggregatePanel p) {
+    private void addPanel(AggregatePanelGenerator p) {
         panelMap.put(p.getName(), p);
     }
     

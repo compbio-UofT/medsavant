@@ -26,7 +26,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class IntervalDetailedView extends DetailedView {
 
-    private int limitNumberOfRegionsShown = 100;
+    private int limitNumberOfRegionsShown = 500;
     
     //private List<String> fieldNames;
     //private List<Object> fieldValues;

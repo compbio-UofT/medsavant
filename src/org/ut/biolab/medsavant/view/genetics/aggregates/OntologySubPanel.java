@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author Nirvana Nursimulu
  */
-public abstract class OntologySubPanel extends JPanel implements FiltersChangedListener, AggregatePanel{
+public abstract class OntologySubPanel extends JPanel implements FiltersChangedListener, AggregatePanelGenerator{
 
     
     private WaitPanel waitPanel;

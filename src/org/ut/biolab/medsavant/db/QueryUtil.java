@@ -34,6 +34,7 @@ import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.model.BEDRecord;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
@@ -222,9 +223,25 @@ public class QueryUtil {
     }
 
     public static int getNumRegionsInRegionSet(String regionName) throws NonFatalDatabaseException, SQLException {
-        return QueryUtil.getNumRowsInTable(
-                    ConnectionController.connect(),
-                    MedSavantDatabase.getInstance().getGeneListViewTableSchema().getTable());
+        
+        TableSchema t = MedSavantDatabase.getInstance().getGeneListViewTableSchema();
+
+        FunctionCall count = FunctionCall.countAll();
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(t.getTable());
+        q.addCustomColumns(count);
+        q.addCondition(BinaryCondition.equalTo(t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETNAME), regionName));
+        
+        System.out.println("Querying: " + q);
+        
+        Statement s = ConnectionController.connect().createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+        rs.next();
+
+        int numrows = rs.getInt(1);
+        s.close();
+        
+        return numrows;
     }
     
     public static int getNumVariantsInRange(Connection c, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException {
@@ -542,6 +559,43 @@ public class QueryUtil {
             return "";
         }
         
+    }
+
+    public static List<BEDRecord> getRegionsInRegionList(String geneListName) throws NonFatalDatabaseException, SQLException {
+        //select chrom,start,end,description from region_set_view where name = 'ASD Genes';
+        GeneListViewTableSchema t = (GeneListViewTableSchema) MedSavantDatabase.getInstance().getGeneListViewTableSchema();
+        
+        DbColumn chrom = t.getDBColumn(GeneListViewTableSchema.ALIAS_CHROM);
+        DbColumn start = t.getDBColumn(GeneListViewTableSchema.ALIAS_START);
+        DbColumn end = t.getDBColumn(GeneListViewTableSchema.ALIAS_END);
+        DbColumn description = t.getDBColumn(GeneListViewTableSchema.ALIAS_DESCRIPTION);
+        DbColumn name = t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETNAME);
+        
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(t.getTable());
+        q.addColumns(chrom);
+        q.addColumns(start);
+        q.addColumns(end);
+        q.addColumns(description);
+        q.addCondition(BinaryCondition.equalTo(name, geneListName));
+        
+        Statement s = ConnectionController.connect().createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+        
+        List<BEDRecord> results = new ArrayList<BEDRecord>();
+        
+        while(rs.next()) {
+            
+            results.add(new BEDRecord(
+                    rs.getString(1),
+                    rs.getInt(2),
+                    rs.getInt(3),
+                    rs.getString(4)
+                    ));
+            //System.out.println(results.get(results.size()-1));
+        }
+        
+        return results;
     }
        
 }

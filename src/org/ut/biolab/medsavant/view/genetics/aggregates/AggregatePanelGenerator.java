@@ -10,7 +10,7 @@ import javax.swing.JPanel;
  *
  * @author Nirvana Nursimulu
  */
-public interface AggregatePanel {
+public interface AggregatePanelGenerator {
     
     public String getName();
     
