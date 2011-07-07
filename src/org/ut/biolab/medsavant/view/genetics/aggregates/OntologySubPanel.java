@@ -76,8 +76,10 @@ public abstract class OntologySubPanel extends JPanel implements FiltersChangedL
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
         // Do not use the same trees as were made earlier.
+        OntologyStatsWorker.removeStatsFromVisibleNodes();
         OntologyStatsWorker.nodesThatWereAlreadyVisible.clear();
         OntologyStatsWorker.mapNameToTree.clear();
+        OntologyStatsWorker.mapLocToFreq.clear();
         this.update();
     }
     

@@ -7,6 +7,7 @@ package org.ut.biolab.medsavant.view.genetics;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.TreeMap;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -14,6 +15,9 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import org.ut.biolab.medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.aggregates.AggregatePanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.aggregates.GOsubPanel;
 import org.ut.biolab.medsavant.view.genetics.aggregates.GeneListPanelGenerator;
@@ -26,7 +30,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Nirvana Nursimulu
  */
-public class AggregatesStatsPanel extends JPanel{
+public class AggregatesStatsPanel extends JPanel implements FiltersChangedListener{
     
     private JPanel toolBarPanel;
     private String currentRegionStat;
@@ -60,7 +64,11 @@ public class AggregatesStatsPanel extends JPanel{
         this.removeAll();
         this.add(toolBarPanel, BorderLayout.NORTH);
 
-        this.add(panelMap.get(currentRegionStat).getPanel());    
+        stopAll();
+        AggregatePanelGenerator panelObj = panelMap.get(currentRegionStat);
+        panelObj.setUpdate(true);
+        
+        this.add(panelObj.getPanel());    
         this.updateUI();
     }    
     
@@ -106,6 +114,21 @@ public class AggregatesStatsPanel extends JPanel{
 
     private void setCurrentRegionStats(String regionStatsName) {
         currentRegionStat = regionStatsName;
+    }
+
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        stopAll();
+        ((AggregatePanelGenerator)panelMap.firstEntry()).setUpdate(true);
+    }
+    
+    /**
+     * Stop updating all panels.
+     */
+    private void stopAll(){        
+        // Set all panels to not be updated except for the "default" one.
+        for (String panelName: panelMap.keySet()){
+            panelMap.get(panelName).setUpdate(false);
+        }
     }
       
 }

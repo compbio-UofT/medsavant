@@ -15,4 +15,6 @@ public interface AggregatePanelGenerator {
     public String getName();
     
     public JPanel getPanel();
+    
+    public void setUpdate(boolean updatePanelUponFilterChanges);
 }

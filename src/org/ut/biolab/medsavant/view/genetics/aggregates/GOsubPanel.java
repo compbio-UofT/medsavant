@@ -23,7 +23,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class GOsubPanel extends OntologySubPanel{
     
-    private WaitPanel waitPanel;
+    private boolean updatePanelUponFilterChanges;
     
     public GOsubPanel(){
         super(1, 2, 3);
@@ -45,6 +45,10 @@ public class GOsubPanel extends OntologySubPanel{
     public JTree getJTree(){
         Tree tree = (Tree)FilterObjectStorer.getObject(GOFilter.NAME_TREE);
         return ConstructJTree.getTree(tree, true, false);
+    }
+
+    public void setUpdate(boolean updatePanelUponFilterChanges) {
+        this.updatePanelUponFilterChanges = updatePanelUponFilterChanges;
     }
 
 }

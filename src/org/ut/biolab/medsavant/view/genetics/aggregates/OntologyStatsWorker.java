@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingWorker;
@@ -26,14 +27,13 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class OntologyStatsWorker extends SwingWorker{
     
-    // Expecting only one such panel to be instantiated.
-    private static List<WorkingWithOneNode> listIndividualThreads = 
-            new ArrayList<WorkingWithOneNode>();
-    public static HashMap<String, Integer> mapLocToFreq = 
-            new HashMap<String, Integer>();
+    // Expecting only one such panel to be instantiated at a time.
+    private static List<WorkingWithOneNode> listIndividualThreads = new ArrayList<WorkingWithOneNode>();
+    public static HashMap<String, Integer> mapLocToFreq = new HashMap<String, Integer>();
+    
     // We don't want to reload the information that has already been loaded.
     // Actually contains the identifiers of those nodes (unique).
-    public static HashSet<String> nodesThatWereAlreadyVisible = new HashSet<String>();
+    public static HashMap<String, Node> nodesThatWereAlreadyVisible = new HashMap<String, Node>();
     
     private OntologySubPanel subPanel;
     private WaitPanel waitPanel;
@@ -71,20 +71,20 @@ public class OntologyStatsWorker extends SwingWorker{
     
     private JTree getOntologyStats(){
       
+        // Get the tree if it is available.
         JTree jTree = mapNameToTree.get(subPanel.getName());
-        // TODO: change this approach: what if the tree is never loaded?
-        while (!subPanel.treeIsReadyToBeFetched())
-            ;
         if (jTree == null){
+            // TODO: change this approach: what if the tree is never loaded?
+            while (!subPanel.treeIsReadyToBeFetched())
+                ;
             jTree = subPanel.getJTree();
             mapNameToTree.put(subPanel.getName(), jTree);
         }
-
              
-        // Get those nodes that are visible to the user.
+        // Get all those nodes that are visible to the user.
         List<DefaultMutableTreeNode> visibleNodes = getVisibleNodes(jTree);
-        List<DefaultMutableTreeNode> purgedVisibleNodes = 
-                new ArrayList<DefaultMutableTreeNode>();
+        // Get only those nodes that used to be invisible to the user.
+        List<DefaultMutableTreeNode> purgedVisibleNodes = new ArrayList<DefaultMutableTreeNode>();
                 
         // First subtract all the nodes that were already visible from 
         // that list (using the identifiers), and add the identifiers of 
@@ -93,30 +93,30 @@ public class OntologyStatsWorker extends SwingWorker{
         for (DefaultMutableTreeNode visibleNode: visibleNodes){
 
             Node node = (Node)visibleNode.getUserObject();
-            if (!nodesThatWereAlreadyVisible.contains(node.getIdentifier())){
+            if (!nodesThatWereAlreadyVisible.keySet().contains(node.getIdentifier())){
                 purgedVisibleNodes.add(visibleNode);
-                nodesThatWereAlreadyVisible.add(node.getIdentifier());
+                nodesThatWereAlreadyVisible.put(node.getIdentifier(), node);
             }
         }
-        visibleNodes = purgedVisibleNodes;
 
-        changeStatistics(jTree, visibleNodes, subPanel.chromSplitIndex, 
+        // Change statistics for only the NEWLY visible nodes.
+        changeStatistics(jTree, purgedVisibleNodes, subPanel.chromSplitIndex, 
                 subPanel.startSplitIndex, subPanel.endSplitIndex);
             
-            // Do something when the tree is expanded.
-            jTree.addTreeExpansionListener(new TreeExpansionListener() {
+        // Do something when the tree is expanded.
+        jTree.addTreeExpansionListener(new TreeExpansionListener() {
 
-                public void treeExpanded(TreeExpansionEvent event) {
-                    ;
-                }
+            public void treeExpanded(TreeExpansionEvent event) {
+                // TODO: Do something here when the tree is expanded. An idea would be to set more workers a-working?
+            }
 
-                public void treeCollapsed(TreeExpansionEvent event) {
-                    // No need to do anything here.
-                }
-            });
+            public void treeCollapsed(TreeExpansionEvent event) {
+                // Don't do anything. Just let whatever's been happening keep going on.
+            }
+        });
             
-            return jTree;
-        }    
+        return jTree;
+    }    
     
     /**
      * Change the statistics for the visible nodes given.
@@ -194,6 +194,16 @@ public class OntologyStatsWorker extends SwingWorker{
                   getPaths(tree, path, expanded, list);          
               }        
           }  
-      }    
+      }
+      
+      /**
+       * Remove all the stats from those nodes that used to be visible.
+       */
+      public static void removeStatsFromVisibleNodes(){
+//          Iterator<String> identifiersVisibleNodes = nodesThatWereAlreadyVisible.keySet().iterator();
+//          for (String identifier: nodesThatWereAlreadyVisible){
+//              
+//          }
+      }
     
 }
