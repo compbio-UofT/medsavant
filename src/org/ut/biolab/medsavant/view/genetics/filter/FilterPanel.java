@@ -185,8 +185,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
         private List<FilterView> getFilterViews() throws SQLException, NonFatalDatabaseException {
             List<FilterView> views = new ArrayList<FilterView>();
-            
-            
+                       
             views.add(CohortFilterView.getCohortFilterView());
             views.add(GenderFilterView.getGenderFilterView());
             views.add(EthnicityFilterView.getEthnicityFilterView());

@@ -104,7 +104,6 @@ public class EthnicityFilterView {
                             return FILTER_NAME;
                         }
                     };
-                    //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
                     System.out.println("Adding filter: " + f.getName());
                     FilterController.addFilter(f);
                 }
@@ -128,16 +127,6 @@ public class EthnicityFilterView {
 
         bottomContainer.add(Box.createHorizontalGlue());
         bottomContainer.add(applyButton);
-
-        /*
-        addChangeListener(new ChangeListener() {
-        
-        public void stateChanged(ChangeEvent e) {
-        applyButton.setEnabled(true);
-        }
-        });
-         * 
-         */
 
         p.add(b, BorderLayout.CENTER);
         p.add(bottomContainer, BorderLayout.SOUTH);
