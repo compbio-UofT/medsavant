@@ -7,12 +7,12 @@ package org.ut.biolab.medsavant.view.genetics.charts;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Map;
 import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Range;
 
@@ -43,8 +43,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
             
             ColumnType type = table.getColumnType(column);
             
-            if (TableSchema.isNumeric(type)) {
-                
+            if (isNumeric()) {
+
                 Range r = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, column);
                 
                 int numBins = 15;//getNumberOfQuantitativeCategories();
@@ -65,6 +65,16 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
             } else {
                 try {
                     chartMap.addAll(QueryUtil.getFilteredFrequencyValuesForColumn(ConnectionController.connect(), column));
+                    
+                    if (alias.equals(VariantTableSchema.ALIAS_GT)) {
+                        for (FrequencyEntry fe : chartMap.getEntries()) {
+                            if (fe.getKey().equals("0")) { fe.setKey("Unknown"); }
+                            else if (fe.getKey().equals("1")) { fe.setKey("HomoRef"); }
+                            else if (fe.getKey().equals("2")) { fe.setKey("HomoAlt"); }
+                            else if (fe.getKey().equals("3")) { fe.setKey("Hetero"); }
+                        }
+                    }
+                    
                     Collections.sort(chartMap.getEntries());
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -76,7 +86,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
     public boolean isNumeric() {
         TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
         ColumnType type = table.getColumnType(column);
-        return TableSchema.isNumeric(type);
+        return TableSchema.isNumeric(type) 
+                && !alias.equals(VariantTableSchema.ALIAS_GT); // hack to fool chart into thinking numbers are categories
     }
 
     public String getName() {

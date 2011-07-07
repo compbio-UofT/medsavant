@@ -126,12 +126,13 @@ public class ChartView extends JPanel {
         addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_DNAID));
         addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_CHROM));
         addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_QUALITY));
+        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_GT));
         addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_DP));
         addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_AA));
         addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_AC));
         addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_AF));
         addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_AN));
-        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_BQ));
+        //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_BQ));
         //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_MQ));
         //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_MQ0));
         addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_REFERENCE));

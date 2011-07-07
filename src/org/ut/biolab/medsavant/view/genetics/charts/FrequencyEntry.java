@@ -10,7 +10,7 @@ package org.ut.biolab.medsavant.view.genetics.charts;
  */
 public class FrequencyEntry implements Comparable {
         private final int value;
-        private final String key;
+        private String key;
 
         public FrequencyEntry(String key, int value) {
             this.key = key;
@@ -31,5 +31,9 @@ public class FrequencyEntry implements Comparable {
             }
             return -1;
         }
+
+    void setKey(String string) {
+        this.key = string;
+    }
     }
 

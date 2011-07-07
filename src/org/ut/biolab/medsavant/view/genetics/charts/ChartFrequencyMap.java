@@ -113,6 +113,20 @@ public class ChartFrequencyMap {
         this.entries.add(new FrequencyEntry(key,value));
     }
     
+    /*
+    public void removeEntry(String key) {
+        FrequencyEntry toremove = null;
+        for (FrequencyEntry fe : this.entries) {
+            if (fe.getKey().equals(key)) {
+                toremove = fe;
+                break;
+            }
+        }
+        this.entries.remove(toremove);
+    }
+     * 
+     */
+    
     public List<FrequencyEntry> getEntries() {
         return entries;
     }

@@ -10,6 +10,7 @@ import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import org.ut.biolab.medsavant.db.table.SubjectTableSchema;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
+import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.Table;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
@@ -183,6 +184,32 @@ public class QueryUtil {
         
         return results;
     }
+    
+    private static List<Vector> getRecordsMatchingID(Connection conn, TableSchema t, DbColumn col, DbColumn orderby, String id, int limit) throws SQLException {
+        
+        SelectQuery q = new SelectQuery();
+        q.addAllColumns();
+        q.addFromTable(t.getTable());
+        q.addOrdering(orderby, Dir.ASCENDING);
+        
+        q.addCondition(new BinaryCondition(BinaryCondition.Op.EQUAL_TO,col,id));
+
+        Statement s = conn.createStatement();
+        
+        //System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
+        
+        ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
+        
+        List<Vector> results;
+        try {
+            results = DBUtil.parseResultSet(t.getColumnGrid(), rs);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new FatalDatabaseException(ex.getMessage());
+        }
+        
+        return results;
+    }
 
     public static List<String> getDistinctCohortNames() throws NonFatalDatabaseException, SQLException {
          return QueryUtil.getDistinctValuesForColumn(
@@ -211,6 +238,7 @@ public class QueryUtil {
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getGeneListViewTableSchema(),
                     MedSavantDatabase.getInstance().getGeneListViewTableSchema().getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETNAME),
+                    MedSavantDatabase.getInstance().getGeneListViewTableSchema().getDBColumn(GeneListViewTableSchema.ALIAS_DESCRIPTION),
                     regionName,
                     limit);
     }
