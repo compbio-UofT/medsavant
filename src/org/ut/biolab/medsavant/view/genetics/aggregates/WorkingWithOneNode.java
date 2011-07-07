@@ -69,10 +69,10 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
             try {
                 String additionalDesc = " [" + get() + " records in all]";
                 ((Node)node.getUserObject()).setTotalDescription(additionalDesc);
-                tree.repaint();
             }
             catch(Exception e){
-                e.printStackTrace();
+//                e.printStackTrace();
             }
+            tree.repaint();
       }
   }

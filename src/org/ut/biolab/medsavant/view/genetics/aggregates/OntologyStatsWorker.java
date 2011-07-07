@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JScrollPane;
@@ -37,10 +38,9 @@ public class OntologyStatsWorker extends SwingWorker{
     
     private OntologySubPanel subPanel;
     private WaitPanel waitPanel;
-    // Map of a tree to the tree itself so that it does not need to be loaded
-    // unnecessarily.
-    public static HashMap<String, JTree> mapNameToTree = 
-            new HashMap<String, JTree>();
+    
+    // Map of a tree to the tree itself so that it does not need to be loaded over and over again.
+    public static HashMap<String, JTree> mapNameToTree = new HashMap<String, JTree>();
     
     public OntologyStatsWorker(OntologySubPanel subPanel, WaitPanel waitPanel){
         this.subPanel = subPanel;
@@ -102,12 +102,35 @@ public class OntologyStatsWorker extends SwingWorker{
         // Change statistics for only the NEWLY visible nodes.
         changeStatistics(jTree, purgedVisibleNodes, subPanel.chromSplitIndex, 
                 subPanel.startSplitIndex, subPanel.endSplitIndex);
-            
+        
+        final JTree newjtree = jTree;     
+        
         // Do something when the tree is expanded.
         jTree.addTreeExpansionListener(new TreeExpansionListener() {
 
             public void treeExpanded(TreeExpansionEvent event) {
-                // TODO: Do something here when the tree is expanded. An idea would be to set more workers a-working?
+                
+                // Get all those nodes that are visible to the user.
+                List<DefaultMutableTreeNode> visibleNodes = getVisibleNodes(newjtree);
+                // Get only those nodes that used to be invisible to the user.
+                List<DefaultMutableTreeNode> purgedVisibleNodes = new ArrayList<DefaultMutableTreeNode>();
+
+                // First subtract all the nodes that were already visible from 
+                // that list (using the identifiers), and add the identifiers of 
+                // those nodes that are already visible to the hashset (This
+                // hypothetically works).
+                for (DefaultMutableTreeNode visibleNode: visibleNodes){
+
+                    Node node = (Node)visibleNode.getUserObject();
+                    if (!nodesThatWereAlreadyVisible.keySet().contains(node.getIdentifier())){
+                        purgedVisibleNodes.add(visibleNode);
+                        nodesThatWereAlreadyVisible.put(node.getIdentifier(), node);
+                    }
+                }
+
+                // Change statistics for only the NEWLY visible nodes.
+                changeStatistics(newjtree, purgedVisibleNodes, subPanel.chromSplitIndex, 
+                        subPanel.startSplitIndex, subPanel.endSplitIndex);
             }
 
             public void treeCollapsed(TreeExpansionEvent event) {
@@ -133,17 +156,12 @@ public class OntologyStatsWorker extends SwingWorker{
         
         mapLocToFreq.clear();
         
-        // Kill each of those threads from before.
-        for (WorkingWithOneNode thread: listIndividualThreads){
-            if (!thread.isDone()){
-                thread.cancel(true);
-            }
-//            System.out.println("Cancelling");
-        }
+        killIndividualThreads();
+        
         listIndividualThreads.clear();
         for (DefaultMutableTreeNode node: visibleNodes){
-            WorkingWithOneNode curr = 
-                    new WorkingWithOneNode(tree, node, chromIndex, startIndex, endIndex);
+            WorkingWithOneNode curr = new WorkingWithOneNode
+                    (tree, node, chromIndex, startIndex, endIndex);
             listIndividualThreads.add(curr);
             curr.execute();
         }
@@ -200,10 +218,21 @@ public class OntologyStatsWorker extends SwingWorker{
        * Remove all the stats from those nodes that used to be visible.
        */
       public static void removeStatsFromVisibleNodes(){
-//          Iterator<String> identifiersVisibleNodes = nodesThatWereAlreadyVisible.keySet().iterator();
-//          for (String identifier: nodesThatWereAlreadyVisible){
-//              
-//          }
+          Iterator<Node> ite = nodesThatWereAlreadyVisible.values().iterator();
+          while (ite.hasNext()){
+              Node node = ite.next();
+              node.setTotalDescription("");
+          }
       }
     
+      
+      public static void killIndividualThreads(){
+          // Kill each of those threads from before.
+          for (WorkingWithOneNode thread: listIndividualThreads){
+            if (!thread.isDone()){
+                thread.cancel(true);
+            }
+//            System.out.println("Cancelling");
+        }
+      }
 }

@@ -52,7 +52,7 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
         addPanel(new GOsubPanel());
         addPanel(new HPOsubPanel());
         // Add your panel here.
-        addPanel(new GeneListPanelGenerator());
+//        addPanel(new GeneListPanelGenerator());
     }
     
     private void addPanel(AggregatePanelGenerator p) {
@@ -125,7 +125,7 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
      * Stop updating all panels.
      */
     private void stopAll(){        
-        // Set all panels to not be updated except for the "default" one.
+        // Set all panels to not be updated.
         for (String panelName: panelMap.keySet()){
             panelMap.get(panelName).setUpdate(false);
         }

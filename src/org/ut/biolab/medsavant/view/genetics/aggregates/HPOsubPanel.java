@@ -21,7 +21,7 @@ import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
  */
 public class HPOsubPanel extends OntologySubPanel{
     
-    private boolean updatePanelUponFilterChanges;
+    private JTree jTree;
     
     public HPOsubPanel(){
         super(0, 1, 2);
@@ -45,12 +45,14 @@ public class HPOsubPanel extends OntologySubPanel{
     }
     
     public JTree getJTree(){
-        Tree tree = (Tree)FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
-        return ConstructJTree.getTree(tree, false, false);
-    }
-
-    public void setUpdate(boolean updatePanelUponFilterChanges) {
-        this.updatePanelUponFilterChanges = updatePanelUponFilterChanges;
+        if (jTree != null){
+            return jTree;
+        }
+        else {
+            Tree tree = (Tree)FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
+            jTree = ConstructJTree.getTree(tree, false, false);
+            return jTree;
+        }
     }
 
 }

@@ -43,6 +43,8 @@ public abstract class OntologySubPanel extends JPanel implements FiltersChangedL
     public final int endSplitIndex;
     
     private OntologyStatsWorker osw;
+    
+    private boolean updatePanelUponFilterChanges;
 
         
     public OntologySubPanel(int chromSplitIndex, int startSplitIndex, int endSplitIndex){
@@ -75,17 +77,35 @@ public abstract class OntologySubPanel extends JPanel implements FiltersChangedL
     protected abstract JTree getJTree();
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        // Do not use the same trees as were made earlier.
-        OntologyStatsWorker.removeStatsFromVisibleNodes();
-        OntologyStatsWorker.nodesThatWereAlreadyVisible.clear();
-        OntologyStatsWorker.mapNameToTree.clear();
-        OntologyStatsWorker.mapLocToFreq.clear();
+
+        stopEverything();
         this.update();
     }
     
+    public void stopEverything(){
+                
+        OntologyStatsWorker.killIndividualThreads();
+        OntologyStatsWorker.removeStatsFromVisibleNodes();
+        OntologyStatsWorker.nodesThatWereAlreadyVisible.clear();
+//        OntologyStatsWorker.mapNameToTree.clear();
+        OntologyStatsWorker.mapLocToFreq.clear();
+        if (getJTree() != null){
+            getJTree().repaint();
+            System.out.println("Tree has been repainted");
+        }
+        this.updateUI();
+    }
+    
     public JPanel getPanel(){
-        this.update();
         return this;
     }
+    
+    public void setUpdate(boolean updatePanelUponFilterChanges) {
+        this.updatePanelUponFilterChanges = updatePanelUponFilterChanges;
+        stopEverything();
+        if (updatePanelUponFilterChanges){
+            this.update();
+        }
+    }    
     
 }
