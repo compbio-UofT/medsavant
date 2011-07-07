@@ -12,6 +12,7 @@ import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.swing.RangeSlider;
 import com.jidesoft.utils.SwingWorker;
+import fiume.vcf.VariantRecord;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -26,6 +27,7 @@ import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -293,6 +295,12 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             DbColumn col = table.getDBColumn(columnAlias);
             boolean isNumeric = TableSchema.isNumeric(table.getColumnType(col));
             boolean isBoolean = TableSchema.isBoolean(table.getColumnType(col));
+            
+            //special cases (TODO: messy...)
+            if(columnAlias.equals(VariantTableSchema.ALIAS_GT)){
+                isNumeric = false;
+                isBoolean = false;
+            }
 
             if (isNumeric) {
                 Range extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
@@ -585,8 +593,15 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
                 Connection conn = ConnectionController.connect();
 
-                List<String> uniq = QueryUtil.getDistinctValuesForColumn(conn, table, col);
-
+                final List<String> uniq;
+                
+                if(columnAlias.equals(VariantTableSchema.ALIAS_GT)){
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(VariantRecord.ALIAS_ZYGOSITY));
+                } else {
+                    uniq = QueryUtil.getDistinctValuesForColumn(conn, table, col);
+                }
+                
                 if (columnAlias.equals(VariantTableSchema.ALIAS_CHROM)) {
                     Collections.sort(uniq,new ChromosomeComparator());
                 }
@@ -624,7 +639,11 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                                     Condition[] results = new Condition[acceptableValues.size()];
                                     int i = 0;
                                     for (String s : acceptableValues) {
-                                        results[i++] = BinaryCondition.equalTo(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), s);
+                                        if(columnAlias.equals(VariantTableSchema.ALIAS_GT)){
+                                            results[i++] = BinaryCondition.equalTo(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), uniq.indexOf(s));
+                                        } else {
+                                            results[i++] = BinaryCondition.equalTo(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), s);                                           
+                                        }
                                     }
                                     return results;
                                 }

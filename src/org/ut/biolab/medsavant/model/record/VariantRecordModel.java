@@ -239,7 +239,7 @@ public class VariantRecordModel {
                     v.add(r.getCustomInfo());
                     break;
                 case INDEX_OF_GT:
-                    v.add(r.getGT());
+                    v.add(VariantRecord.ALIAS_ZYGOSITY[r.getGT()]);
                     break;
                 case INDEX_OF_GPHASED:
                     v.add(r.getGPhased());
@@ -363,7 +363,7 @@ public class VariantRecordModel {
                     v.add(CLASS_OF_CUSTOMINFO);
                     break;
                 case INDEX_OF_GT:
-                    v.add(CLASS_OF_GT);
+                    v.add(String.class);
                     break;
                 case INDEX_OF_GPHASED:
                     v.add(CLASS_OF_GPHASED);

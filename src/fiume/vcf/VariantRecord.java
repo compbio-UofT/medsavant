@@ -130,6 +130,7 @@ public class VariantRecord implements Serializable {
     public static int ZYGOSITY_HOMOREF = 1;
     public static int ZYGOSITY_HOMOALT = 2;
     public static int ZYGOSITY_HETERO = 3;
+    public static String[] ALIAS_ZYGOSITY = {"Unknown", "HomoRef", "HomoAlt", "Hetero"};
     
     public static int PHASE_NA = 0;
     public static int PHASE_UNPHASED = 1;
