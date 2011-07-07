@@ -38,6 +38,7 @@ import org.ut.biolab.medsavant.db.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
@@ -93,7 +94,7 @@ public class DBUtil {
      * Given path to vcf file, add to database.
      * Return true iff success.
      */
-    public static void addVcfToDb(String filename, String genome_id, String pipeline_id) throws SQLException {
+    public static void addVcfToDb(String filename, int genome_id, int pipeline_id) throws SQLException {
 
         //get variants from file
         VariantSet variants = new VariantSet();
@@ -110,7 +111,7 @@ public class DBUtil {
         FilterController.fireFiltersChangedEvent();
     }
 
-    private static void addVariantsToDb(VariantSet variants, String genome_id, String pipeline_id) throws SQLException {
+    private static void addVariantsToDb(VariantSet variants, int genome_id, int pipeline_id) throws SQLException {
 
         Connection conn;
         try {
@@ -119,9 +120,11 @@ public class DBUtil {
             Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
-
+        
+        //TODO convert to proper query, rather than string
+        
         // Prepare a statement to insert a record
-        String sql = "INSERT INTO variant ("
+        String sql = "INSERT INTO " + VariantTableSchema.TABLE_NAME +  " ("
                 + "dna_id,"
                 + "chrom,"
                 + "position,"
@@ -130,7 +133,6 @@ public class DBUtil {
                 + "alt,"
                 + "qual,"
                 + "filter,"
-                //+ "info) "
                 + "aa,"
                 + "ac,"
                 + "af,"
@@ -149,8 +151,18 @@ public class DBUtil {
                 + "validated,"
                 + "custom_info,"
                 + "genome_id,"
-                + "pipeline_id) "
-                + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                + "pipeline_id,"
+                + "gt,"
+                + "gphased,"
+                + "gdp,"
+                + "gft,"
+                + "gl_homoref,"
+                + "gl_het,"
+                + "gl_homoalt,"
+                + "gq,"
+                + "hqa,"
+                + "hqb) "
+                + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement pstmt = conn.prepareStatement(sql);
 
         conn.setAutoCommit(false);
@@ -193,8 +205,18 @@ public class DBUtil {
             pstmt.setBoolean(23, record.getSomatic());
             pstmt.setBoolean(24, record.getValidated());
             pstmt.setString(25, record.getCustomInfo());
-            pstmt.setString(26, genome_id);
-            pstmt.setString(27, pipeline_id);
+            pstmt.setInt(26, genome_id);
+            pstmt.setInt(27, pipeline_id);
+            pstmt.setInt(28, record.getGT());
+            pstmt.setInt(29, record.getGPhased());
+            pstmt.setInt(30, record.getGDP());
+            pstmt.setString(31, record.getGFT());
+            pstmt.setFloat(32, record.getGLHomoRef());
+            pstmt.setFloat(33, record.getGLHet());
+            pstmt.setFloat(34, record.getGLHomoAlt());
+            pstmt.setFloat(35, record.getGQ());
+            pstmt.setFloat(36, record.getHQA());
+            pstmt.setFloat(37, record.getHQB());
 
             pstmt.executeUpdate();
         }

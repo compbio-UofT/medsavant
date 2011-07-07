@@ -94,7 +94,7 @@ public class VCFUploadForm extends javax.swing.JDialog {
 
         pipelineComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1" }));
 
-        jLabel3.setText("Output File: ");
+        jLabel3.setText("File(s) to Upload: ");
 
         outputFileField.setEditable(false);
         outputFileField.addActionListener(new java.awt.event.ActionListener() {
@@ -195,8 +195,8 @@ public class VCFUploadForm extends javax.swing.JDialog {
     
     private void uploadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadButtonActionPerformed
         
-        String g_id = genome_id.get(genomeComboBox.getSelectedIndex());
-        String p_id = pipelineComboBox.getSelectedItem().toString();
+        int g_id = Integer.parseInt(genome_id.get(genomeComboBox.getSelectedIndex()));
+        int p_id = Integer.parseInt(pipelineComboBox.getSelectedItem().toString());
         
         int currentfile = 0;
         int totalnumfiles = files.length;

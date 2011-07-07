@@ -6,6 +6,7 @@
 package fiume.vcf;
 
 import au.com.bytecode.opencsv.CSVReader;
+import fiume.vcf.VariantRecord.GenotypeField;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -139,7 +140,23 @@ public class VCFParser {
     public static void printVariants(File vcffile) throws IOException {
         printVariants(vcffile,defaultDelimiter);
     }
-
+       
+    public static GenotypeField[] parseFormat(String formatString){
+        formatString = formatString.trim();
+        String[] list = formatString.split(":");
+        GenotypeField[] result = new GenotypeField[list.length];
+        for(int i = 0; i < list.length; i++){
+            String s = list[i].toUpperCase();
+            try {
+                GenotypeField f = GenotypeField.valueOf(s);
+                result[i] = f;
+            } catch (IllegalArgumentException ex) {
+                result[i] = GenotypeField.NOTSTANDARD;
+            }
+        }
+        return result;
+    }
+      
     private static List<VariantRecord> parseRecord(String[] line, VCFHeader h) {
         int numMandatoryFields = VCFHeader.getNumMandatoryFields();
 
@@ -158,13 +175,16 @@ public class VCFParser {
         else {
             ids = h.getGenotypeLabels();
         }
-
+        
+        GenotypeField[] formatHeader = parseFormat(line[numMandatoryFields]);
+        
         List<VariantRecord> records = new ArrayList<VariantRecord>();
         VariantRecord r = new VariantRecord(line);
         for (int i = 0; i < ids.size(); i++) {
             String id = ids.get(i);
             VariantRecord r2 = new VariantRecord(r);
             r2.setDnaID(id);
+            r2.setGenotypeFields(formatHeader, line[numMandatoryFields+1+i]);
             //r2.setCallDetails(info);
             records.add(r2);
             //Logger.log(VCFParser.class, "Read " + r2.toString());

@@ -19,7 +19,6 @@ import fiume.vcf.VariantRecord;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 
 /**
@@ -38,7 +37,6 @@ public class VariantRecordModel {
     public static final int INDEX_OF_ALT = INDEX_OF_REF + 1;
     public static final int INDEX_OF_QUAL = INDEX_OF_ALT + 1;
     public static final int INDEX_OF_FILTER = INDEX_OF_QUAL + 1;
-    //public static final int INDEX_OF_INFO = INDEX_OF_FILTER + 1;
     public static final int INDEX_OF_AA = INDEX_OF_FILTER + 1;
     public static final int INDEX_OF_AC = INDEX_OF_AA + 1;
     public static final int INDEX_OF_AF = INDEX_OF_AC + 1;
@@ -56,6 +54,16 @@ public class VariantRecordModel {
     public static final int INDEX_OF_SOMATIC = INDEX_OF_SB + 1;
     public static final int INDEX_OF_VALIDATED = INDEX_OF_SOMATIC + 1;
     public static final int INDEX_OF_CUSTOMINFO = INDEX_OF_VALIDATED + 1;
+    public static final int INDEX_OF_GT = INDEX_OF_CUSTOMINFO + 1;
+    public static final int INDEX_OF_GPHASED = INDEX_OF_GT + 1;
+    public static final int INDEX_OF_GDP = INDEX_OF_GPHASED + 1;
+    public static final int INDEX_OF_GFT = INDEX_OF_GDP + 1;
+    public static final int INDEX_OF_GLHOMOREF = INDEX_OF_GFT + 1;
+    public static final int INDEX_OF_GLHET = INDEX_OF_GLHOMOREF + 1;
+    public static final int INDEX_OF_GLHOMOALT = INDEX_OF_GLHET + 1;
+    public static final int INDEX_OF_GQ = INDEX_OF_GLHOMOALT + 1;
+    public static final int INDEX_OF_HQA = INDEX_OF_GQ + 1;
+    public static final int INDEX_OF_HQB = INDEX_OF_HQA + 1;         
 
     private static final Class CLASS_OF_GENOMEID = String.class;
     private static final Class CLASS_OF_PIPELINEID = String.class;
@@ -67,7 +75,6 @@ public class VariantRecordModel {
     private static final Class CLASS_OF_ALT = VariantRecord.CLASS_OF_ALT;
     private static final Class CLASS_OF_QUAL = VariantRecord.CLASS_OF_QUAL;
     private static final Class CLASS_OF_FILTER = VariantRecord.CLASS_OF_FILTER;
-    //private static final Class CLASS_OF_INFO = VariantRecord.CLASS_OF_INFO;
     private static final Class CLASS_OF_AA = VariantRecord.CLASS_OF_AA;
     private static final Class CLASS_OF_AC = VariantRecord.CLASS_OF_AC;
     private static final Class CLASS_OF_AF = VariantRecord.CLASS_OF_AF;
@@ -85,6 +92,16 @@ public class VariantRecordModel {
     private static final Class CLASS_OF_SOMATIC = VariantRecord.CLASS_OF_SOMATIC;
     private static final Class CLASS_OF_VALIDATED = VariantRecord.CLASS_OF_VALIDATED;
     private static final Class CLASS_OF_CUSTOMINFO = VariantRecord.CLASS_OF_CUSTOMINFO;
+    private static final Class CLASS_OF_GT = VariantRecord.CLASS_OF_GT;
+    private static final Class CLASS_OF_GPHASED = VariantRecord.CLASS_OF_GPHASED;
+    private static final Class CLASS_OF_GDP = VariantRecord.CLASS_OF_GDP;
+    private static final Class CLASS_OF_GFT = VariantRecord.CLASS_OF_GFT;
+    private static final Class CLASS_OF_GLHOMOREF = VariantRecord.CLASS_OF_GLHOMOREF;
+    private static final Class CLASS_OF_GLHET = VariantRecord.CLASS_OF_GLHET;
+    private static final Class CLASS_OF_GLHOMOALT = VariantRecord.CLASS_OF_GLHOMOALT;
+    private static final Class CLASS_OF_GQ = VariantRecord.CLASS_OF_GQ;
+    private static final Class CLASS_OF_HQA = VariantRecord.CLASS_OF_HQA;
+    private static final Class CLASS_OF_HQB = VariantRecord.CLASS_OF_HQB;
 
     private static final boolean DEFAULT_GENOMEID = false;
     private static final boolean DEFAULT_PIPELINEID = false;
@@ -113,9 +130,19 @@ public class VariantRecordModel {
     private static final boolean DEFAULT_SOMATIC = false;
     private static final boolean DEFAULT_VALIDATED = false;
     private static final boolean DEFAULT_CUSTOMINFO = false;
+    private static final boolean DEFAULT_GT = false;
+    private static final boolean DEFAULT_GPHASED = false;
+    private static final boolean DEFAULT_GDP = false;
+    private static final boolean DEFAULT_GFT = false;
+    private static final boolean DEFAULT_GLHOMOREF = false;
+    private static final boolean DEFAULT_GLHET = false;
+    private static final boolean DEFAULT_GLHOMOALT = false;
+    private static final boolean DEFAULT_GQ = false;
+    private static final boolean DEFAULT_HQA = false;
+    private static final boolean DEFAULT_HQB = false;
 
 
-    private static final int NUM_FIELDS = INDEX_OF_CUSTOMINFO + 1; // index of the last field + 1
+    private static final int NUM_FIELDS = INDEX_OF_HQB + 1; // index of the last field + 1
 
     public static int getNumberOfFields() {
         return NUM_FIELDS;
@@ -160,9 +187,6 @@ public class VariantRecordModel {
                 case INDEX_OF_FILTER:
                     v.add(r.getFilter());
                     break;
-                //case INDEX_OF_INFO:
-                //    v.add(r.getInfo());
-                //    break;
                 case INDEX_OF_AA:
                     v.add(r.getAA());
                     break;
@@ -214,6 +238,36 @@ public class VariantRecordModel {
                 case INDEX_OF_CUSTOMINFO:
                     v.add(r.getCustomInfo());
                     break;
+                case INDEX_OF_GT:
+                    v.add(r.getGT());
+                    break;
+                case INDEX_OF_GPHASED:
+                    v.add(r.getGPhased());
+                    break;
+                case INDEX_OF_GDP:
+                    v.add(r.getGDP());
+                    break;
+                case INDEX_OF_GFT:
+                    v.add(r.getGFT());
+                    break;
+                case INDEX_OF_GLHOMOREF:
+                    v.add(r.getGLHomoRef());
+                    break;
+                case INDEX_OF_GLHET:
+                    v.add(r.getGLHet());
+                    break;
+                case INDEX_OF_GLHOMOALT:
+                    v.add(r.getGLHomoAlt());
+                    break;
+                case INDEX_OF_GQ:
+                    v.add(r.getGQ());
+                    break;
+                case INDEX_OF_HQA:
+                    v.add(r.getHQA());
+                    break;
+                case INDEX_OF_HQB:
+                    v.add(r.getHQB());
+                    break;                    
 
             }
         }
@@ -257,9 +311,6 @@ public class VariantRecordModel {
                 case INDEX_OF_FILTER:
                     v.add(CLASS_OF_FILTER);
                     break;
-                //case INDEX_OF_INFO:
-                //    v.add(CLASS_OF_INFO);
-                //    break;
                 case INDEX_OF_AA:
                     v.add(CLASS_OF_AA);
                     break;
@@ -311,6 +362,36 @@ public class VariantRecordModel {
                 case INDEX_OF_CUSTOMINFO:
                     v.add(CLASS_OF_CUSTOMINFO);
                     break;
+                case INDEX_OF_GT:
+                    v.add(CLASS_OF_GT);
+                    break;
+                case INDEX_OF_GPHASED:
+                    v.add(CLASS_OF_GPHASED);
+                    break;
+                case INDEX_OF_GDP:
+                    v.add(CLASS_OF_GDP);
+                    break;
+                case INDEX_OF_GFT:
+                    v.add(CLASS_OF_GFT);
+                    break;
+                case INDEX_OF_GLHOMOREF:
+                    v.add(CLASS_OF_GLHOMOREF);
+                    break;
+                case INDEX_OF_GLHET:
+                    v.add(CLASS_OF_GLHET);
+                    break;
+                case INDEX_OF_GLHOMOALT:
+                    v.add(CLASS_OF_GLHOMOALT);
+                    break;
+                case INDEX_OF_GQ:
+                    v.add(CLASS_OF_GQ);
+                    break;
+                case INDEX_OF_HQA:
+                    v.add(CLASS_OF_HQA);
+                    break;
+                case INDEX_OF_HQB:
+                    v.add(CLASS_OF_HQB);
+                    break;
             }
         }
         return v;
@@ -355,9 +436,6 @@ public class VariantRecordModel {
                 case INDEX_OF_FILTER:
                     v.add(VariantTableSchema.ALIAS_FILTER);
                     break;
-                //case INDEX_OF_INFO:
-                //    v.add(VariantTableSchema.ALIAS_INFORMATION);
-                //    break;
                 case INDEX_OF_AA:
                     v.add(VariantTableSchema.ALIAS_AA);
                     break;
@@ -409,6 +487,36 @@ public class VariantRecordModel {
                 case INDEX_OF_CUSTOMINFO:
                     v.add(VariantTableSchema.ALIAS_CUSTOMINFO);
                     break;
+                case INDEX_OF_GT:
+                    v.add(VariantTableSchema.ALIAS_GT);
+                    break;
+                case INDEX_OF_GPHASED:
+                    v.add(VariantTableSchema.ALIAS_GPHASED);
+                    break;
+                case INDEX_OF_GDP:
+                    v.add(VariantTableSchema.ALIAS_GDP);
+                    break;
+                case INDEX_OF_GFT:
+                    v.add(VariantTableSchema.ALIAS_GFT);
+                    break;
+                case INDEX_OF_GLHOMOREF:
+                    v.add(VariantTableSchema.ALIAS_GLHOMOREF);
+                    break;
+                case INDEX_OF_GLHET:
+                    v.add(VariantTableSchema.ALIAS_GLHET);
+                    break;
+                case INDEX_OF_GLHOMOALT:
+                    v.add(VariantTableSchema.ALIAS_GLHOMOALT);
+                    break;
+                case INDEX_OF_GQ:
+                    v.add(VariantTableSchema.ALIAS_GQ);
+                    break;
+                case INDEX_OF_HQA:
+                    v.add(VariantTableSchema.ALIAS_HQA);
+                    break;
+                case INDEX_OF_HQB:
+                    v.add(VariantTableSchema.ALIAS_HQB);
+                    break;
             }
         }
         return v;
@@ -438,8 +546,6 @@ public class VariantRecordModel {
                 return VariantTableSchema.ALIAS_QUALITY;
             case INDEX_OF_FILTER:
                 return VariantTableSchema.ALIAS_FILTER;
-            //case INDEX_OF_INFO:
-            //    return VariantTableSchema.ALIAS_INFORMATION;
             case INDEX_OF_AA:
                 return VariantTableSchema.ALIAS_AA;
             case INDEX_OF_AC:
@@ -474,6 +580,26 @@ public class VariantRecordModel {
                 return VariantTableSchema.ALIAS_VALIDATED;
             case INDEX_OF_CUSTOMINFO:
                 return VariantTableSchema.ALIAS_CUSTOMINFO;
+            case INDEX_OF_GT:
+                return VariantTableSchema.ALIAS_GT;
+            case INDEX_OF_GPHASED:
+                return VariantTableSchema.ALIAS_GPHASED;
+            case INDEX_OF_GDP:
+                return VariantTableSchema.ALIAS_GDP;
+            case INDEX_OF_GFT:
+                return VariantTableSchema.ALIAS_GFT;
+            case INDEX_OF_GLHOMOREF:
+                return VariantTableSchema.ALIAS_GLHOMOREF;
+            case INDEX_OF_GLHET:
+                return VariantTableSchema.ALIAS_GLHET;
+            case INDEX_OF_GLHOMOALT:
+                return VariantTableSchema.ALIAS_GLHOMOALT;
+            case INDEX_OF_GQ:
+                return VariantTableSchema.ALIAS_GQ;
+            case INDEX_OF_HQA:
+                return VariantTableSchema.ALIAS_HQA;
+            case INDEX_OF_HQB:
+                return VariantTableSchema.ALIAS_HQB;
             default:
                 return null;
         }
@@ -547,6 +673,26 @@ public class VariantRecordModel {
                 return r.getValidated();
             case INDEX_OF_CUSTOMINFO:
                 return r.getCustomInfo();
+            case INDEX_OF_GT:
+                return r.getGT();
+            case INDEX_OF_GPHASED:
+                return r.getGPhased();
+            case INDEX_OF_GDP:
+                return r.getGDP();
+            case INDEX_OF_GFT:
+                return r.getGFT();
+            case INDEX_OF_GLHOMOREF:
+                return r.getGLHomoRef();
+            case INDEX_OF_GLHET:
+                return r.getGLHet();
+            case INDEX_OF_GLHOMOALT:
+                return r.getGLHomoAlt();
+            case INDEX_OF_GQ:
+                return r.getGQ();
+            case INDEX_OF_HQA:
+                return r.getHQA();
+            case INDEX_OF_HQB:
+                return r.getHQB();
 
         }
 
@@ -613,9 +759,6 @@ public class VariantRecordModel {
                         v.add(i);
                     }
                     break;
-                //case INDEX_OF_INFO:
-                //    v.add(VariantTableSchema.ALIAS_INFORMATION);
-                //    break;
                 case INDEX_OF_AA:
                     if(!DEFAULT_AA){
                         v.add(i);
@@ -698,6 +841,56 @@ public class VariantRecordModel {
                     break;
                 case INDEX_OF_CUSTOMINFO:
                     if(!DEFAULT_CUSTOMINFO){
+                        v.add(i);
+                    }
+                    break;
+                case INDEX_OF_GT:
+                    if(!DEFAULT_GT){
+                        v.add(i);
+                    }
+                    break;
+                case INDEX_OF_GPHASED:
+                    if(!DEFAULT_GPHASED){
+                        v.add(i);
+                    }
+                    break;
+                case INDEX_OF_GDP:
+                    if(!DEFAULT_GDP){
+                        v.add(i);
+                    }
+                    break;
+                case INDEX_OF_GFT:
+                    if(!DEFAULT_GFT){
+                        v.add(i);
+                    }
+                    break;
+                case INDEX_OF_GLHOMOREF:
+                    if(!DEFAULT_GLHOMOREF){
+                        v.add(i);
+                    }
+                    break;
+                case INDEX_OF_GLHET:
+                    if(!DEFAULT_GLHET){
+                        v.add(i);
+                    }
+                    break;
+                case INDEX_OF_GLHOMOALT:
+                    if(!DEFAULT_GLHOMOALT){
+                        v.add(i);
+                    }
+                    break;
+                case INDEX_OF_GQ:
+                    if(!DEFAULT_GQ){
+                        v.add(i);
+                    }
+                    break;
+                case INDEX_OF_HQA:
+                    if(!DEFAULT_HQA){
+                        v.add(i);
+                    }
+                    break;
+                case INDEX_OF_HQB:
+                    if(!DEFAULT_HQB){
                         v.add(i);
                     }
                     break;

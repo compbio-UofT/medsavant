@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 /**
  *
- * @author mfiume
+ * @author mfiume, AndrewBrook
  */
 public class VariantRecord implements Serializable {
 
@@ -46,7 +46,6 @@ public class VariantRecord implements Serializable {
     public static final Class CLASS_OF_ALT = String.class;
     public static final Class CLASS_OF_QUAL = Float.class;
     public static final Class CLASS_OF_FILTER = String.class;
-    //public static final Class CLASS_OF_INFO = String.class;
     public static final Class CLASS_OF_AA = String.class;
     public static final Class CLASS_OF_AC = String.class;
     public static final Class CLASS_OF_AF = String.class;
@@ -64,11 +63,22 @@ public class VariantRecord implements Serializable {
     public static final Class CLASS_OF_SOMATIC = Boolean.class;
     public static final Class CLASS_OF_VALIDATED = Boolean.class;
     public static final Class CLASS_OF_CUSTOMINFO = String.class;
-
+    
+    public static final Class CLASS_OF_GT = Integer.class;
+    public static final Class CLASS_OF_GPHASED = Integer.class;
+    public static final Class CLASS_OF_GDP = Integer.class;
+    public static final Class CLASS_OF_GFT = String.class;
+    public static final Class CLASS_OF_GLHOMOREF = Float.class;
+    public static final Class CLASS_OF_GLHET = Float.class;
+    public static final Class CLASS_OF_GLHOMOALT = Float.class;
+    public static final Class CLASS_OF_GQ = Float.class;
+    public static final Class CLASS_OF_HQA = Float.class;
+    public static final Class CLASS_OF_HQB = Float.class;
+       
     public static final String nullString = ".";
 
-    private String genomeID;
-    private String pipelineID;
+    private int genomeID;
+    private int pipelineID;
     private String dnaID;
     private String chrom;
     private long pos;
@@ -77,32 +87,56 @@ public class VariantRecord implements Serializable {
     private String alt;
     private float qual;
     private String filter;
-    //private String info;
-    private String aa;// = ""; //TODO: default values!?
-    private String ac;// = "";
-    private String af;// = "";
-    private int an;// = -1;
-    private float bq;// = -1;
-    private String cigar;// = "";
-    private boolean db;// = false;
-    private int dp;// = -1;
-    private long end;// = "";
-    private boolean h2;// = false;
-    private float mq;// = "";
-    private int mq0;// = "";
-    private int ns;// = -1;
-    private float sb;// = "";
-    private boolean somatic;// = "";
-    private boolean validated;// = "";
-    private String customInfo;// = "";
+    private String aa;
+    private String ac;
+    private String af;
+    private int an;
+    private float bq;
+    private String cigar;
+    private boolean db;
+    private int dp;
+    private long end;
+    private boolean h2;
+    private float mq;
+    private int mq0;
+    private int ns;
+    private float sb;
+    private boolean somatic;
+    private boolean validated;
+    private String customInfo;
+    
+    private int gt;
+    private int gphased;
+    private int gdp;
+    private String gft;
+    private float glhomoref;
+    private float glhet;
+    private float glhomoalt;
+    private float gq;
+    private float hqa;
+    private float hqb;
+    
+    //private GenotypeField[] format;
 
     private enum CustomField {
         AA, AC, AF, AN, BQ, CIGAR, DB, DP, END, H2, MQ, MQ0, NS, SB, SOMATIC, VALIDATED;
     }
+    
+    public enum GenotypeField {
+        GT, DP, FT, GL, GQ, HQ, NOTSTANDARD;
+    }
+    
+    public static int ZYGOSITY_UNKNOWN = 0;
+    public static int ZYGOSITY_HOMOREF = 1;
+    public static int ZYGOSITY_HOMOALT = 2;
+    public static int ZYGOSITY_HETERO = 3;
+    
+    public static int PHASE_NA = 0;
+    public static int PHASE_UNPHASED = 1;
+    public static int PHASE_PHASED = 2;
+    
 
     public VariantRecord(String[] line) {
-        genomeID = null;
-        pipelineID = null;
         dnaID =  null;
         chrom =     (String)    parse(CLASS_OF_CHROM, line[FILE_INDEX_OF_CHROM]);
         pos =       (Long)      parse(CLASS_OF_POS, line[FILE_INDEX_OF_POS]);
@@ -111,13 +145,12 @@ public class VariantRecord implements Serializable {
         alt =       (String)    parse(CLASS_OF_ALT, line[FILE_INDEX_OF_ALT]);
         qual =      (Float)     parse(CLASS_OF_QUAL, line[FILE_INDEX_OF_QUAL]);
         filter =    (String)    parse(CLASS_OF_FILTER, line[FILE_INDEX_OF_FILTER]);
-        //info =      (String)    parse(CLASS_OF_INFO, line[FILE_INDEX_OF_INFO]);
-        parseInfo(line[FILE_INDEX_OF_INFO]);
+        parseInfo(line[FILE_INDEX_OF_INFO]);        
     }
 
     public VariantRecord(
-            String genomeID,
-            String pipelineID,
+            int genomeID,
+            int pipelineID,
             String dnaID,
             String chrom,
             long pos,
@@ -126,7 +159,6 @@ public class VariantRecord implements Serializable {
             String alt,
             float qual,
             String filter,
-            //String info,
             String aa,
             String ac,
             String af,
@@ -143,7 +175,17 @@ public class VariantRecord implements Serializable {
             float sb,
             boolean somatic,
             boolean validated,
-            String customInfo) {
+            String customInfo,
+            int gt,
+            int gphased,
+            int gdp,
+            String gft,
+            float glhomoref,
+            float glhet,
+            float glhomoalt,
+            float gq,
+            float hqa,
+            float hqb) {
         this.genomeID = genomeID;
         this.pipelineID = pipelineID;
         this.dnaID = dnaID;
@@ -154,7 +196,6 @@ public class VariantRecord implements Serializable {
         this.alt = alt;
         this.qual = qual;
         this.filter = filter;
-        //this.info = info;
         this.aa = aa;
         this.ac = ac;
         this.af = af;
@@ -172,10 +213,19 @@ public class VariantRecord implements Serializable {
         this.somatic = somatic;
         this.validated = validated;
         this.customInfo = customInfo;
+        this.gt = gt;
+        this.gphased = gphased;
+        this.gdp = gdp;
+        this.gft = gft;
+        this.glhomoref = glhomoref;
+        this.glhet = glhet;
+        this.glhomoalt = glhomoalt;
+        this.gq = gq;
+        this.hqa = hqa;
+        this.hqb = hqb;
     }
 
-
-    public VariantRecord(VariantRecord r) {
+    protected VariantRecord(VariantRecord r) {
         this.setDnaID(r.getDnaID());
         this.setGenomeID(r.getGenomeID());
         this.setPipelineID(r.getPipelineID());
@@ -186,7 +236,6 @@ public class VariantRecord implements Serializable {
         this.setAlt(r.getAlt());
         this.setQual(r.getQual());
         this.setFilter(r.getFilter());
-        //this.setInfo(r.getInfo());
         this.setAA(r.getAA());
         this.setAC(r.getAC());
         this.setAF(r.getAF());
@@ -204,6 +253,16 @@ public class VariantRecord implements Serializable {
         this.setSomatic(r.getSomatic());
         this.setValidated(r.getValidated());
         this.setCustomInfo(r.getCustomInfo());
+        this.setGT(r.getGT());
+        this.setGPhased(r.getGPhased());
+        this.setGDP(r.getGDP());
+        this.setGFT(r.getGFT());
+        this.setGLHomoRef(r.getGLHomoRef());
+        this.setGLHet(r.getGLHet());
+        this.setGLHomoAlt(r.getGLHomoAlt());
+        this.setGQ(r.getGQ());
+        this.setHQA(r.getHQA());
+        this.setHQB(r.getHQB());
     }
 
     private Object parse(Class c, String value) {
@@ -263,7 +322,6 @@ public class VariantRecord implements Serializable {
                 value = element.substring(equals+1);
             }
             try {
-                CustomField field = CustomField.valueOf(name.toUpperCase());
                 switch(CustomField.valueOf(name.toUpperCase())){
                     case AA:
                         aa =     (String)    parse(CLASS_OF_AA, value);
@@ -322,28 +380,167 @@ public class VariantRecord implements Serializable {
                 if(customInfo == null) customInfo = "";
                 customInfo += (element + ";");
             }
-
-            
         }
+    }
+            
+    public void setGenotypeFields(GenotypeField[] format, String s){
+        s = s.trim();
+        String[] list = s.split(":");
+        for(int i = 0; i < list.length; i++){
+            GenotypeField field = format[i];
+            String value = list[i];
+            switch(field){
+                case GT:
+                    parseGT(value);
+                    break;
+                case DP:
+                    parseGDP(value);
+                    break;
+                case FT:
+                    setGFT(value);
+                    break;
+                case GL:
+                    parseGL(value);
+                    break;
+                case GQ:
+                    parseGQ(value);
+                    break;
+                case HQ:
+                    parseHQ(value);
+                    break;
+                case NOTSTANDARD:
+                    break;
+                default:
+                    break;
+            }
+        }   
+    }
+    
+    private void parseHQ(String s){
+        String[] list = s.split(",");
+        for(int i = 0; i < list.length; i++){
+            try {
+                float value = Float.parseFloat(list[i]);
+                if(i == 0){
+                    this.setHQA(value);
+                } else if (i == 1){
+                    this.setHQB(value);
+                } 
+            } catch (NumberFormatException e){
+                //do nothing, leave as null
+            }
+        }
+    }
+    
+    private void parseGQ(String s){
+        try {
+            setGQ(Float.parseFloat(s));
+        } catch (NumberFormatException e){
+            //do nothing, leave as null
+        }
+    }
+    
+    private void parseGL(String s){
+        String[] list = s.split(",");
+        for(int i = 0; i < list.length; i++){
+            try {
+                float value = Float.parseFloat(list[i]);
+                if(i == 0){
+                    this.setGLHomoRef(value);
+                } else if (i == 1){
+                    this.setGLHet(value);
+                } else if (i == 2){
+                    this.setGLHomoAlt(value);
+                }
+            } catch (NumberFormatException e){
+                //do nothing, leave as null
+            }
+        }
+    }
+    
+    private void parseGDP(String s){
+        try {
+            setGDP(Integer.parseInt(s));
+        } catch (NumberFormatException e){
+            //do nothing, leave as null
+        }
+    }
+    
+    private void parseGT(String s){
+        
+        int num1 = -1;
+        int num2 = -1;
+        String separator = null;
+        
+        if(s.contains("|")){
+            separator = "|";
+            setGPhased(this.PHASE_PHASED);
+        } else if (s.contains("/")){
+            separator = "/";
+            setGPhased(this.PHASE_UNPHASED);
+        } else {
+            setGPhased(this.PHASE_NA);
+        }
+        
+        if(separator == null){
+            try {
+                num1 = Integer.parseInt(s);
+            } catch (NumberFormatException e){
+                setGT(ZYGOSITY_UNKNOWN);
+                return;
+            }
+        } else {
+            String[] numbers = s.split(separator);
+            if(numbers.length != 2) {
+                setGT(ZYGOSITY_UNKNOWN);
+                return;
+            }
+            try {
+                num1 = Integer.parseInt(numbers[0]);
+                num2 = Integer.parseInt(numbers[1]);
+            } catch (NumberFormatException e){
+                setGT(ZYGOSITY_UNKNOWN);
+                return;
+            }
+        }
+        
+        if(num1 != -1 && num2 == -1){
+            if(num1 == 0){
+                setGT(ZYGOSITY_HOMOREF);
+            } else {
+                setGT(ZYGOSITY_HOMOALT);
+            }
+        } else {
+            if(num1 == 0 && num2 == 0){
+                setGT(ZYGOSITY_HOMOREF);
+            } else if (num1 == 0 || num2 == 0){
+                setGT(ZYGOSITY_HETERO);
+            } else if (num1 != num2){
+                setGT(ZYGOSITY_HETERO);
+            } else {
+                setGT(ZYGOSITY_HOMOALT);
+            }
+        }
+        
     }
 
     private void reportErrorConverting(Class c, String value) {
         System.err.println("Error: parsing " + value + " as " + c);
     }
 
-    public String getGenomeID(){
+    public int getGenomeID(){
         return genomeID;
     }
 
-    public void setGenomeID(String genomeID) {
+    public void setGenomeID(int genomeID) {
         this.genomeID = genomeID;
     }
 
-    public String getPipelineID(){
+    public int getPipelineID(){
         return pipelineID;
     }
 
-    public void setPipelineID(String pipelineID){
+    public void setPipelineID(int pipelineID){
         this.pipelineID = pipelineID;
     }
 
@@ -378,14 +575,6 @@ public class VariantRecord implements Serializable {
     public void setFilter(String filter) {
         this.filter = filter;
     }
-
-    /*public String getInfo() {
-        return info;
-    }
-
-    public void setInfo(String info) {
-        this.info = info;
-    }*/
 
     public Long getPos() {
         return pos;
@@ -554,16 +743,96 @@ public class VariantRecord implements Serializable {
     public void setCustomInfo(String customInfo){
         this.customInfo = customInfo;
     }
+    
+    public int getGT(){
+        return gt;
+    }
+    
+    public void setGT(int gt){
+        this.gt = gt;
+    }
+    
+    public int getGPhased(){
+        return gphased;
+    }
+    
+    public void setGPhased(int gphased){
+        this.gphased = gphased;
+    }
+    
+    public int getGDP(){
+        return gdp;
+    }
+    
+    public void setGDP(int gdp){
+        this.gdp = gdp;
+    }
+    
+    public String getGFT(){
+        return gft;
+    }
+    
+    public void setGFT(String gft){
+        this.gft = gft;
+    }
+    
+    public float getGLHomoRef(){
+        return glhomoref;
+    }
+    
+    public void setGLHomoRef(float glhomoref){
+        this.glhomoref = glhomoref;
+    }
+    
+    public float getGLHet(){
+        return glhet;
+    }
+    
+    public void setGLHet(float glhet){
+        this.glhet = glhet;
+    }
+    
+    public float getGLHomoAlt(){
+        return glhomoalt;
+    }
+    
+    public void setGLHomoAlt(float glhomoalt){
+        this.glhomoalt = glhomoalt;
+    }
 
+    public float getGQ(){
+        return gq;
+    }
+    
+    public void setGQ(float gq){
+        this.gq = gq;
+    }
+    
+    public float getHQA(){
+        return hqa;
+    }
+    
+    public void setHQA(float hqa){
+        this.hqa = hqa;
+    }
+    
+    public float getHQB(){
+        return hqb;
+    }
+    
+    public void setHQB(float hqb){
+        this.hqb = hqb;
+    }
+    
     @Override
     public String toString() {
-        return "VariantRecord{" + "dnaID=" + dnaID + "chrom=" + chrom + "pos=" + pos + "id=" + id + "ref=" + ref + "alt=" + alt + "qual=" + qual + "filter=" + filter + '}';// "info=" + info + '}';
+        return "VariantRecord{" + "dnaID=" + dnaID + "chrom=" + chrom + "pos=" + pos + "id=" + id + "ref=" + ref + "alt=" + alt + "qual=" + qual + "filter=" + filter + '}';
     }
 
     private static String delim = "\t";
 
     public String toTabString() {
-        return dnaID + delim + chrom + delim + pos + delim + id + delim + ref + delim + alt + delim + qual + delim + filter + delim;// + info;
+        return dnaID + delim + chrom + delim + pos + delim + id + delim + ref + delim + alt + delim + qual + delim + filter + delim;
     }
 
 }

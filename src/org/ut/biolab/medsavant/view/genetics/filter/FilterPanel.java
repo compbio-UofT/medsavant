@@ -272,7 +272,17 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                     columnAlias.equals(VariantTableSchema.ALIAS_SOMATIC) ||
                     columnAlias.equals(VariantTableSchema.ALIAS_VALIDATED) ||
                     columnAlias.equals(VariantTableSchema.ALIAS_AN) ||
-                    columnAlias.equals(VariantTableSchema.ALIAS_BQ)
+                    columnAlias.equals(VariantTableSchema.ALIAS_BQ) ||
+                    //columnAlias.equals(VariantTableSchema.ALIAS_GT) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_GPHASED) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_GDP) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_GFT) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_GLHOMOREF) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_GLHET) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_GLHOMOALT) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_GQ) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_HQA) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_HQB)
                     ) {
                 continue;
             }
