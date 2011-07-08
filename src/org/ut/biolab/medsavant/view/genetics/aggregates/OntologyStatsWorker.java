@@ -66,7 +66,7 @@ public class OntologyStatsWorker extends SwingWorker{
 
 //                System.out.println("Ending of done");
         } catch (Exception ex){
-            ex.printStackTrace();                
+//            ex.printStackTrace();                
         }
     }    
     
