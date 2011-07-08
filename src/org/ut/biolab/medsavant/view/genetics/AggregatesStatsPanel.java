@@ -52,7 +52,7 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
         addPanel(new GOsubPanel());
         addPanel(new HPOsubPanel());
         // Add your panel here.
-//        addPanel(new GeneListPanelGenerator());
+        addPanel(new GeneListPanelGenerator());
     }
     
     private void addPanel(AggregatePanelGenerator p) {

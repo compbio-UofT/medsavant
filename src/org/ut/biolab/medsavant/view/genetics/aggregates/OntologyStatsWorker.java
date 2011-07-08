@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
+import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;

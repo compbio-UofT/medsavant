@@ -139,6 +139,9 @@ public class SplitScreenView extends JPanel {
                     detailedView.setMultipleSelections(selected);
                 }
             });
+            
+            stp.getTable().getSelectionModel().setSelectionInterval(0, 1);
+            //detailedView.setSelectedItem(data.get(0));
 
             showCard.add(stp, BorderLayout.CENTER);
         }

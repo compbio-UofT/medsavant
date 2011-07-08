@@ -264,7 +264,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                     columnAlias.equals(VariantTableSchema.ALIAS_ID) ||
                     columnAlias.equals(VariantTableSchema.ALIAS_GENOMEID) ||
                     columnAlias.equals(VariantTableSchema.ALIAS_FILTER) || 
-                    columnAlias.equals(VariantTableSchema.ALIAS_DNAID) || // remove this later
+                    //columnAlias.equals(VariantTableSchema.ALIAS_DNAID) || // remove this later
                     columnAlias.equals(VariantTableSchema.ALIAS_PIPELINEID) ||
                     columnAlias.equals(VariantTableSchema.ALIAS_END) ||
                     columnAlias.equals(VariantTableSchema.ALIAS_MQ0) || 
