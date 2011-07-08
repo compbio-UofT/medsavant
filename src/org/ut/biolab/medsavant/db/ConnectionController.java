@@ -27,7 +27,8 @@ public class ConnectionController {
     public static void disconnectAll() {
         for (Connection c : connections) {
             try {
-                c.close();
+                if (c != null)
+                    c.close();
             } catch (SQLException ex) {
                 Logger.getLogger(ConnectionController.class.getName()).log(Level.SEVERE, null, ex);
             }
