@@ -74,6 +74,55 @@ public class VariantRecord implements Serializable {
     public static final Class CLASS_OF_GQ = Float.class;
     public static final Class CLASS_OF_HQA = Float.class;
     public static final Class CLASS_OF_HQB = Float.class;
+    
+    public static final Class CLASS_OF_position_a = String.class;
+public static final Class CLASS_OF_position_b = String.class;
+public static final Class CLASS_OF_o_acc = String.class;
+public static final Class CLASS_OF_o_pos = Integer.class;
+public static final Class CLASS_OF_o_aa1 = String.class;
+public static final Class CLASS_OF_o_aa2 = String.class;
+public static final Class CLASS_OF_snp_id = String.class;
+public static final Class CLASS_OF_acc = String.class;
+public static final Class CLASS_OF_pos = String.class;
+public static final Class CLASS_OF_aa1 = String.class;
+public static final Class CLASS_OF_aa2 = String.class;
+public static final Class CLASS_OF_nt1 = String.class;
+public static final Class CLASS_OF_nt2 = String.class;
+public static final Class CLASS_OF_prediction = String.class;
+public static final Class CLASS_OF_pph2_class = String.class;
+public static final Class CLASS_OF_pph2_prob = Double.class;
+public static final Class CLASS_OF_pph2_FPR = Double.class;
+public static final Class CLASS_OF_pph2_TPR = Double.class;
+public static final Class CLASS_OF_pph2_FDR = Double.class;
+public static final Class CLASS_OF_Transv = Integer.class;
+public static final Class CLASS_OF_CodPos = Integer.class;
+public static final Class CLASS_OF_CpG = Integer.class;
+public static final Class CLASS_OF_MinDJnc = Double.class;
+public static final Class CLASS_OF_PfamHit = String.class;
+public static final Class CLASS_OF_IdPmax = Double.class;
+public static final Class CLASS_OF_IdPSNP = Double.class;
+public static final Class CLASS_OF_IdQmin = Double.class;
+public static final Class CLASS_OF_sift_prediction = Double.class;
+public static final Class CLASS_OF_name = String.class;
+public static final Class CLASS_OF_name2 = String.class;
+public static final Class CLASS_OF_transcriptStrand = String.class;
+public static final Class CLASS_OF_positionType = String.class;
+public static final Class CLASS_OF_frame = Integer.class;
+public static final Class CLASS_OF_mrnaCoord = Integer.class;
+public static final Class CLASS_OF_codonCoord = Integer.class;
+public static final Class CLASS_OF_spliceDist = Integer.class;
+public static final Class CLASS_OF_referenceCodon = String.class;
+public static final Class CLASS_OF_referenceAA = String.class;
+public static final Class CLASS_OF_variantCodon = String.class;
+public static final Class CLASS_OF_variantAA = String.class;
+public static final Class CLASS_OF_changesAA = String.class;
+public static final Class CLASS_OF_functionalClass = String.class;
+public static final Class CLASS_OF_codingCoordStr = String.class;
+public static final Class CLASS_OF_proteinCoordStr = String.class;
+public static final Class CLASS_OF_inCodingRegion = String.class;
+public static final Class CLASS_OF_spliceInfo = String.class;
+public static final Class CLASS_OF_uorfChange = String.class;
+
        
     public static final String nullString = ".";
 
@@ -81,7 +130,7 @@ public class VariantRecord implements Serializable {
     private int pipelineID;
     private String dnaID;
     private String chrom;
-    private long pos;
+    private long position;
     private String id;
     private String ref;
     private String alt;
@@ -116,6 +165,54 @@ public class VariantRecord implements Serializable {
     private float hqa;
     private float hqb;
     
+    private String position_a;
+private String position_b;
+private String o_acc;
+private int o_pos;
+private String o_aa1;
+private String o_aa2;
+private String snp_id;
+private String acc;
+private int pos;
+private String aa1;
+private String aa2;
+private String nt1;
+private String nt2;
+private String prediction;
+private String pph2_class;
+private double pph2_prob;
+private double pph2_FPR;
+private double pph2_TPR;
+private double pph2_FDR;
+private int Transv;
+private int CodPos;
+private int CpG;
+private double MinDJnc;
+private String PfamHit;
+private double IdPmax;
+private double IdPSNP;
+private double IdQmin;
+private double sift_prediction;
+private String name;
+private String name2;
+private String transcriptStrand;
+private String positionType;
+private int frame;
+private int mrnaCoord;
+private int codonCoord;
+private int spliceDist;
+private String referenceCodon;
+private String referenceAA;
+private String variantCodon;
+private String variantAA;
+private String changesAA;
+private String functionalClass;
+private String codingCoordStr;
+private String proteinCoordStr;
+private String inCodingRegion;
+private String spliceInfo;
+private String uorfChange;
+    
     //private GenotypeField[] format;
 
     private enum CustomField {
@@ -140,7 +237,7 @@ public class VariantRecord implements Serializable {
     public VariantRecord(String[] line) {
         dnaID =  null;
         chrom =     (String)    parse(CLASS_OF_CHROM, line[FILE_INDEX_OF_CHROM]);
-        pos =       (Long)      parse(CLASS_OF_POS, line[FILE_INDEX_OF_POS]);
+        position =       (Long)      parse(CLASS_OF_POS, line[FILE_INDEX_OF_POS]);
         id =        (String)    parse(CLASS_OF_ID, line[FILE_INDEX_OF_ID]);
         ref =       (String)    parse(CLASS_OF_REF, line[FILE_INDEX_OF_REF]);
         alt =       (String)    parse(CLASS_OF_ALT, line[FILE_INDEX_OF_ALT]);
@@ -154,7 +251,7 @@ public class VariantRecord implements Serializable {
             int pipelineID,
             String dnaID,
             String chrom,
-            long pos,
+            long position,
             String id,
             String ref,
             String alt,
@@ -186,12 +283,61 @@ public class VariantRecord implements Serializable {
             float glhomoalt,
             float gq,
             float hqa,
-            float hqb) {
+            float hqb,
+            String position_a,
+String position_b,
+String o_acc,
+int o_pos,
+String o_aa1,
+String o_aa2,
+String snp_id,
+String acc,
+int pos,
+String aa1,
+String aa2,
+String nt1,
+String nt2,
+String prediction,
+String pph2_class,
+double pph2_prob,
+double pph2_FPR,
+double pph2_TPR,
+double pph2_FDR,
+int Transv,
+int CodPos,
+int CpG,
+double MinDJnc,
+String PfamHit,
+double IdPmax,
+double IdPSNP,
+double IdQmin,
+double sift_prediction,
+String name,
+String name2,
+String transcriptStrand,
+String positionType,
+int frame,
+int mrnaCoord,
+int codonCoord,
+int spliceDist,
+String referenceCodon,
+String referenceAA,
+String variantCodon,
+String variantAA,
+String changesAA,
+String functionalClass,
+String codingCoordStr,
+String proteinCoordStr,
+String inCodingRegion,
+String spliceInfo,
+String uorfChange
+
+            ) {
         this.genomeID = genomeID;
         this.pipelineID = pipelineID;
         this.dnaID = dnaID;
         this.chrom = chrom;
-        this.pos = pos;
+        this.position = position;
         this.id = id;
         this.ref = ref;
         this.alt = alt;
@@ -224,6 +370,54 @@ public class VariantRecord implements Serializable {
         this.gq = gq;
         this.hqa = hqa;
         this.hqb = hqb;
+        this.position_a = position_a;
+this.position_b = position_b;
+this.o_acc = o_acc;
+this.o_pos = o_pos;
+this.o_aa1 = o_aa1;
+this.o_aa2 = o_aa2;
+this.snp_id = snp_id;
+this.acc = acc;
+this.pos = pos;
+this.aa1 = aa1;
+this.aa2 = aa2;
+this.nt1 = nt1;
+this.nt2 = nt2;
+this.prediction = prediction;
+this.pph2_class = pph2_class;
+this.pph2_prob = pph2_prob;
+this.pph2_FPR = pph2_FPR;
+this.pph2_TPR = pph2_TPR;
+this.pph2_FDR = pph2_FDR;
+this.Transv = Transv;
+this.CodPos = CodPos;
+this.CpG = CpG;
+this.MinDJnc = MinDJnc;
+this.PfamHit = PfamHit;
+this.IdPmax = IdPmax;
+this.IdPSNP = IdPSNP;
+this.IdQmin = IdQmin;
+this.sift_prediction = sift_prediction;
+this.name = name;
+this.name2 = name2;
+this.transcriptStrand = transcriptStrand;
+this.positionType = positionType;
+this.frame = frame;
+this.mrnaCoord = mrnaCoord;
+this.codonCoord = codonCoord;
+this.spliceDist = spliceDist;
+this.referenceCodon = referenceCodon;
+this.referenceAA = referenceAA;
+this.variantCodon = variantCodon;
+this.variantAA = variantAA;
+this.changesAA = changesAA;
+this.functionalClass = functionalClass;
+this.codingCoordStr = codingCoordStr;
+this.proteinCoordStr = proteinCoordStr;
+this.inCodingRegion = inCodingRegion;
+this.spliceInfo = spliceInfo;
+this.uorfChange = uorfChange;
+
     }
 
     protected VariantRecord(VariantRecord r) {
@@ -578,11 +772,11 @@ public class VariantRecord implements Serializable {
     }
 
     public Long getPos() {
-        return pos;
+        return position;
     }
 
     public void setPos(Long pos) {
-        this.pos = pos;
+        this.position = pos;
     }
 
     public Float getQual() {
@@ -825,15 +1019,66 @@ public class VariantRecord implements Serializable {
         this.hqb = hqb;
     }
     
+    public String getposition_a() { return this.position_a; }
+public String getposition_b() { return this.position_b; }
+public String geto_acc() { return this.o_acc; }
+public int geto_pos() { return this.o_pos; }
+public String geto_aa1() { return this.o_aa1; }
+public String geto_aa2() { return this.o_aa2; }
+public String getsnp_id() { return this.snp_id; }
+public String getacc() { return this.acc; }
+public int getpos() { return this.pos; }
+public String getaa1() { return this.aa1; }
+public String getaa2() { return this.aa2; }
+public String getnt1() { return this.nt1; }
+public String getnt2() { return this.nt2; }
+public String getprediction() { return this.prediction; }
+public String getpph2_class() { return this.pph2_class; }
+public double getpph2_prob() { return this.pph2_prob; }
+public double getpph2_FPR() { return this.pph2_FPR; }
+public double getpph2_TPR() { return this.pph2_TPR; }
+public double getpph2_FDR() { return this.pph2_FDR; }
+public int getTransv() { return this.Transv; }
+public int getCodPos() { return this.CodPos; }
+public int getCpG() { return this.CpG; }
+public double getMinDJnc() { return this.MinDJnc; }
+public String getPfamHit() { return this.PfamHit; }
+public double getIdPmax() { return this.IdPmax; }
+public double getIdPSNP() { return this.IdPSNP; }
+public double getIdQmin() { return this.IdQmin; }
+public double getsift_prediction() { return this.sift_prediction; }
+public String getname() { return this.name; }
+public String getname2() { return this.name2; }
+public String gettranscriptStrand() { return this.transcriptStrand; }
+public String getpositionType() { return this.positionType; }
+public int getframe() { return this.frame; }
+public int getmrnaCoord() { return this.mrnaCoord; }
+public int getcodonCoord() { return this.codonCoord; }
+public int getspliceDist() { return this.spliceDist; }
+public String getreferenceCodon() { return this.referenceCodon; }
+public String getreferenceAA() { return this.referenceAA; }
+public String getvariantCodon() { return this.variantCodon; }
+public String getvariantAA() { return this.variantAA; }
+public String getchangesAA() { return this.changesAA; }
+public String getfunctionalClass() { return this.functionalClass; }
+public String getcodingCoordStr() { return this.codingCoordStr; }
+public String getproteinCoordStr() { return this.proteinCoordStr; }
+public String getinCodingRegion() { return this.inCodingRegion; }
+public String getspliceInfo() { return this.spliceInfo; }
+public String getuorfChange() { return this.uorfChange; }
+
+    
+    
+    
     @Override
     public String toString() {
-        return "VariantRecord{" + "dnaID=" + dnaID + "chrom=" + chrom + "pos=" + pos + "id=" + id + "ref=" + ref + "alt=" + alt + "qual=" + qual + "filter=" + filter + '}';
+        return "VariantRecord{" + "dnaID=" + dnaID + "chrom=" + chrom + "pos=" + position + "id=" + id + "ref=" + ref + "alt=" + alt + "qual=" + qual + "filter=" + filter + '}';
     }
 
     private static String delim = "\t";
 
     public String toTabString() {
-        return dnaID + delim + chrom + delim + pos + delim + id + delim + ref + delim + alt + delim + qual + delim + filter + delim;
+        return dnaID + delim + chrom + delim + position + delim + id + delim + ref + delim + alt + delim + qual + delim + filter + delim;
     }
 
 }

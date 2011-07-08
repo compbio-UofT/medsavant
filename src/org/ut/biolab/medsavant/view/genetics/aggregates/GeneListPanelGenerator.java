@@ -4,7 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
-import org.ut.biolab.medsavant.model.BEDRecord;
+import org.ut.biolab.medsavant.model.record.BEDRecord;
 import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.Color;

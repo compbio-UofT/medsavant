@@ -14,6 +14,7 @@ import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.Table;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import com.jidesoft.swing.RangeSlider;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,7 +37,7 @@ import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.model.BEDRecord;
+import org.ut.biolab.medsavant.model.record.BEDRecord;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
@@ -128,7 +129,8 @@ public class QueryUtil {
                     break;
                 case DECIMAL:
                     min = rs.getDouble(1);
-                    min = rs.getDouble(2);
+                    max = rs.getDouble(2);
+                    break;
                 default:
                     throw new FatalDatabaseException("Unhandled column type: " + type);
             }
@@ -762,6 +764,33 @@ public class QueryUtil {
         }
         
         return results;
+    }
+
+    public static List<String> getPatientsWithIQScoresInRange(String alias_any_iq_field, Range r) throws NonFatalDatabaseException, SQLException {
+        
+        
+        PatientTableSchema t = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
+        DbColumn iq = t.getDBColumn(alias_any_iq_field);
+
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(t.getTable());
+        q.addColumns(t.getDBColumn(t.ALIAS_DNA1));
+        q.addCondition(BinaryCondition.greaterThan(iq, r.getMin(), true));
+        q.addCondition(BinaryCondition.lessThan(iq, r.getMax(), false));
+        
+        Statement s = ConnectionController.connect().createStatement();
+        
+        //System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
+        
+        ResultSet rs = s.executeQuery(q.toString());
+        
+        List<String> results = new ArrayList<String>();
+        while(rs.next()) {
+            results.add(rs.getString(1));
+        }
+        
+        return results;
+        
     }
        
 }

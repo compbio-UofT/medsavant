@@ -47,6 +47,8 @@ public class GenderFilterView {
 
         final JComboBox b = new JComboBox();
 
+        
+        
         b.addItem(FILTER_ALL);
         b.addItem(FILTER_MALE);
         b.addItem(FILTER_FEMALE);

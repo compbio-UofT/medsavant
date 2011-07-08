@@ -17,10 +17,10 @@ import java.util.Vector;
  */
 public class VariantTableSchema extends TableSchema {
 
-    public static final String TABLE_NAME = "variant1";
+    public static final String TABLE_NAME = "variant_sift_gatk";
 
-    public static final String DBFIELDNAME_GATKID = "annotation_gatk_id";
-    public static final String DBFIELDNAME_POLYPHENSIFTID = "annotation_polyphensift_id";
+    //public static final String DBFIELDNAME_GATKID = "annotation_gatk_id";
+    //public static final String DBFIELDNAME_POLYPHENSIFTID = "annotation_polyphensift_id";
     public static final String DBFIELDNAME_GENOMEID = "genome_id";
     public static final String DBFIELDNAME_PIPELINEID = "pipeline_id";
     public static final String DBFIELDNAME_DNAID = "dna_id";
@@ -58,6 +58,53 @@ public class VariantTableSchema extends TableSchema {
     public static final String DBFIELDNAME_GQ = "gq";
     public static final String DBFIELDNAME_HQA = "hqa";
     public static final String DBFIELDNAME_HQB = "hqb";
+    public static final String DBFIELDNAME_position_a = "position_a";
+    public static final String DBFIELDNAME_position_b = "position_b";
+    public static final String DBFIELDNAME_o_acc = "o_acc";
+    public static final String DBFIELDNAME_o_pos = "o_pos";
+    public static final String DBFIELDNAME_o_aa1 = "o_aa1";
+    public static final String DBFIELDNAME_o_aa2 = "o_aa2";
+    public static final String DBFIELDNAME_snp_id = "snp_id";
+    public static final String DBFIELDNAME_acc = "acc";
+    public static final String DBFIELDNAME_pos = "pos";
+    public static final String DBFIELDNAME_aa1 = "aa1";
+    public static final String DBFIELDNAME_aa2 = "aa2";
+    public static final String DBFIELDNAME_nt1 = "nt1";
+    public static final String DBFIELDNAME_nt2 = "nt2";
+    public static final String DBFIELDNAME_prediction = "prediction";
+    public static final String DBFIELDNAME_pph2_class = "pph2_class";
+    public static final String DBFIELDNAME_pph2_prob = "pph2_prob";
+    public static final String DBFIELDNAME_pph2_FPR = "pph2_FPR";
+    public static final String DBFIELDNAME_pph2_TPR = "pph2_TPR";
+    public static final String DBFIELDNAME_pph2_FDR = "pph2_FDR";
+    public static final String DBFIELDNAME_Transv = "Transv";
+    public static final String DBFIELDNAME_CodPos = "CodPos";
+    public static final String DBFIELDNAME_CpG = "CpG";
+    public static final String DBFIELDNAME_MinDJnc = "MinDJnc";
+    public static final String DBFIELDNAME_PfamHit = "PfamHit";
+    public static final String DBFIELDNAME_IdPmax = "IdPmax";
+    public static final String DBFIELDNAME_IdPSNP = "IdPSNP";
+    public static final String DBFIELDNAME_IdQmin = "IdQmin";
+    public static final String DBFIELDNAME_sift_prediction = "sift_prediction";
+    public static final String DBFIELDNAME_name = "name";
+    public static final String DBFIELDNAME_name2 = "name2";
+    public static final String DBFIELDNAME_transcriptStrand = "transcriptStrand";
+    public static final String DBFIELDNAME_positionType = "positionType";
+    public static final String DBFIELDNAME_frame = "frame";
+    public static final String DBFIELDNAME_mrnaCoord = "mrnaCoord";
+    public static final String DBFIELDNAME_codonCoord = "codonCoord";
+    public static final String DBFIELDNAME_spliceDist = "spliceDist";
+    public static final String DBFIELDNAME_referenceCodon = "referenceCodon";
+    public static final String DBFIELDNAME_referenceAA = "referenceAA";
+    public static final String DBFIELDNAME_variantCodon = "variantCodon";
+    public static final String DBFIELDNAME_variantAA = "variantAA";
+    public static final String DBFIELDNAME_changesAA = "changesAA";
+    public static final String DBFIELDNAME_functionalClass = "functionalClass";
+    public static final String DBFIELDNAME_codingCoordStr = "codingCoordStr";
+    public static final String DBFIELDNAME_proteinCoordStr = "proteinCoordStr";
+    public static final String DBFIELDNAME_inCodingRegion = "inCodingRegion";
+    public static final String DBFIELDNAME_spliceInfo = "spliceInfo";
+    public static final String DBFIELDNAME_uorfChange = "uorfChange";
 
     public static final String ALIAS_GATKID = "Gatk ID";
     public static final String ALIAS_POLYPHENSIFTID = "Polyphensift ID";
@@ -67,8 +114,8 @@ public class VariantTableSchema extends TableSchema {
     public static final String ALIAS_CHROM = "Chromosome";
     public static final String ALIAS_POSITION = "Position";
     public static final String ALIAS_ID = "ID";
-    public static final String ALIAS_REFERENCE = "Reference";
-    public static final String ALIAS_ALTERNATE = "Alternate";
+    public static final String ALIAS_REFERENCE = "Reference Nucleotide";
+    public static final String ALIAS_ALTERNATE = "Alternate Nucleotide";
     public static final String ALIAS_QUALITY = "Quality";
     public static final String ALIAS_FILTER = "Filter";
     public static final String ALIAS_AA = "Ancestral Allele";
@@ -98,6 +145,53 @@ public class VariantTableSchema extends TableSchema {
     public static final String ALIAS_GQ = "Genotype Quality";
     public static final String ALIAS_HQA = "Haplotype Quality A";
     public static final String ALIAS_HQB = "Haplotype Quality B";
+    public static final String ALIAS_position_a = "position_a";
+    public static final String ALIAS_position_b = "position_b";
+    public static final String ALIAS_o_acc = "Protein Identifier";
+    public static final String ALIAS_o_pos = "Position in Protein";
+    public static final String ALIAS_o_aa1 = "Reference AA";
+    public static final String ALIAS_o_aa2 = "Variant AA";
+    public static final String ALIAS_snp_id = "SNP ID";
+    public static final String ALIAS_acc = "UniProtKB Accession";
+    public static final String ALIAS_pos = "Substitution Positon";
+    public static final String ALIAS_aa1 = "Reference AA";
+    public static final String ALIAS_aa2 = "Variant AA";
+    public static final String ALIAS_nt1 = "Reference Nucleotide";
+    public static final String ALIAS_nt2 = "Variant Nucleotide";
+    public static final String ALIAS_prediction = "Polyphen-2 Prediction";
+    public static final String ALIAS_pph2_class = "Polyphen-2 Classifier";
+    public static final String ALIAS_pph2_prob = "Polyphen-2 Damage Probability";
+    public static final String ALIAS_pph2_FPR = "Polyphen-2 FRP";
+    public static final String ALIAS_pph2_TPR = "Polyphen-2 TRP";
+    public static final String ALIAS_pph2_FDR = "Polyphen-2 FDR";
+    public static final String ALIAS_Transv = "Transversion";
+    public static final String ALIAS_CodPos = "Codon Position";
+    public static final String ALIAS_CpG = "Changes CpG";
+    public static final String ALIAS_MinDJnc = "Distance to Intron-Exon Junction";
+    public static final String ALIAS_PfamHit = "Pfam of Protein";
+    public static final String ALIAS_IdPmax = "Max Congruency of Mutant AA (all)";
+    public static final String ALIAS_IdPSNP = "Max Congruency of Mutant AA (like)";
+    public static final String ALIAS_IdQmin = "Closest Homologue";
+    public static final String ALIAS_sift_prediction = "Sift Prediction";
+    public static final String ALIAS_name = "Gene Name";
+    public static final String ALIAS_name2 = "Secondary Gene Name";
+    public static final String ALIAS_transcriptStrand = "Transcript Strand";
+    public static final String ALIAS_positionType = "Position in Transcript";
+    public static final String ALIAS_frame = "Frame";
+    public static final String ALIAS_mrnaCoord = "mRNA Coordinate";
+    public static final String ALIAS_codonCoord = "Codon Coordinate";
+    public static final String ALIAS_spliceDist = "Distance to Splice Junction";
+    public static final String ALIAS_referenceCodon = "Reference Codon";
+    public static final String ALIAS_referenceAA = "Reference AA";
+    public static final String ALIAS_variantCodon = "Variant Codon";
+    public static final String ALIAS_variantAA = "Variant AA";
+    public static final String ALIAS_changesAA = "Changes AA";
+    public static final String ALIAS_functionalClass = "Functional Class";
+    public static final String ALIAS_codingCoordStr = "Coding Coordinate";
+    public static final String ALIAS_proteinCoordStr = "Protein Coordinate";
+    public static final String ALIAS_inCodingRegion = "Coding / Non-Coding";
+    public static final String ALIAS_spliceInfo = "Splice Information";
+    public static final String ALIAS_uorfChange = "5' UTR ORF Change";
 
     public static int INDEX_GATKID;
     public static int INDEX_POLYPHENSIFTID;
@@ -138,11 +232,57 @@ public class VariantTableSchema extends TableSchema {
     public static int INDEX_GQ;
     public static int INDEX_HQA;
     public static int INDEX_HQB;
-
+    public static int INDEX_position_a;
+    public static int INDEX_position_b;
+    public static int INDEX_o_acc;
+    public static int INDEX_o_pos;
+    public static int INDEX_o_aa1;
+    public static int INDEX_o_aa2;
+    public static int INDEX_snp_id;
+    public static int INDEX_acc;
+    public static int INDEX_pos;
+    public static int INDEX_aa1;
+    public static int INDEX_aa2;
+    public static int INDEX_nt1;
+    public static int INDEX_nt2;
+    public static int INDEX_prediction;
+    public static int INDEX_pph2_class;
+    public static int INDEX_pph2_prob;
+    public static int INDEX_pph2_FPR;
+    public static int INDEX_pph2_TPR;
+    public static int INDEX_pph2_FDR;
+    public static int INDEX_Transv;
+    public static int INDEX_CodPos;
+    public static int INDEX_CpG;
+    public static int INDEX_MinDJnc;
+    public static int INDEX_PfamHit;
+    public static int INDEX_IdPmax;
+    public static int INDEX_IdPSNP;
+    public static int INDEX_IdQmin;
+    public static int INDEX_sift_prediction;
+    public static int INDEX_name;
+    public static int INDEX_name2;
+    public static int INDEX_transcriptStrand;
+    public static int INDEX_positionType;
+    public static int INDEX_frame;
+    public static int INDEX_mrnaCoord;
+    public static int INDEX_codonCoord;
+    public static int INDEX_spliceDist;
+    public static int INDEX_referenceCodon;
+    public static int INDEX_referenceAA;
+    public static int INDEX_variantCodon;
+    public static int INDEX_variantAA;
+    public static int INDEX_changesAA;
+    public static int INDEX_functionalClass;
+    public static int INDEX_codingCoordStr;
+    public static int INDEX_proteinCoordStr;
+    public static int INDEX_inCodingRegion;
+    public static int INDEX_spliceInfo;
+    public static int INDEX_uorfChange;
 
     private void setIndexes() {
-        INDEX_GATKID = this.getFieldIndexInDB(DBFIELDNAME_GATKID);
-        INDEX_POLYPHENSIFTID = this.getFieldIndexInDB(DBFIELDNAME_POLYPHENSIFTID);
+        //INDEX_GATKID = this.getFieldIndexInDB(DBFIELDNAME_GATKID);
+        //INDEX_POLYPHENSIFTID = this.getFieldIndexInDB(DBFIELDNAME_POLYPHENSIFTID);
         INDEX_GENOMEID = this.getFieldIndexInDB(DBFIELDNAME_GENOMEID);
         INDEX_PIPELINEID = this.getFieldIndexInDB(DBFIELDNAME_PIPELINEID);
         INDEX_DNAID = this.getFieldIndexInDB(DBFIELDNAME_DNAID);
@@ -180,6 +320,8 @@ public class VariantTableSchema extends TableSchema {
         INDEX_GQ = this.getFieldIndexInDB(DBFIELDNAME_GQ);
         INDEX_HQA = this.getFieldIndexInDB(DBFIELDNAME_HQA);
         INDEX_HQB = this.getFieldIndexInDB(DBFIELDNAME_HQB);
+        
+        
     }
 
     public VariantTableSchema(DbSchema s) {
@@ -189,8 +331,8 @@ public class VariantTableSchema extends TableSchema {
     }
 
     private void addColumns() {
-        addColumn(DBFIELDNAME_GATKID, ALIAS_GATKID, TableSchema.ColumnType.INTEGER,11);
-        addColumn(DBFIELDNAME_POLYPHENSIFTID, ALIAS_POLYPHENSIFTID, TableSchema.ColumnType.INTEGER,11);
+        //addColumn(DBFIELDNAME_GATKID, ALIAS_GATKID, TableSchema.ColumnType.INTEGER,11);
+        //addColumn(DBFIELDNAME_POLYPHENSIFTID, ALIAS_POLYPHENSIFTID, TableSchema.ColumnType.INTEGER,11);
         addColumn(DBFIELDNAME_GENOMEID,ALIAS_GENOMEID,TableSchema.ColumnType.INTEGER,11);
         addColumn(DBFIELDNAME_PIPELINEID,ALIAS_PIPELINEID,TableSchema.ColumnType.INTEGER,11);
         addColumn(DBFIELDNAME_DNAID,ALIAS_DNAID,TableSchema.ColumnType.VARCHAR,10);
@@ -228,6 +370,55 @@ public class VariantTableSchema extends TableSchema {
         addColumn(DBFIELDNAME_GQ,ALIAS_GQ,TableSchema.ColumnType.FLOAT,11);
         addColumn(DBFIELDNAME_HQA,ALIAS_HQA,TableSchema.ColumnType.FLOAT,11);
         addColumn(DBFIELDNAME_HQB,ALIAS_HQB,TableSchema.ColumnType.FLOAT,11);
+        
+        addColumn(DBFIELDNAME_position_a,ALIAS_position_a,TableSchema.ColumnType.VARCHAR,75);
+addColumn(DBFIELDNAME_position_b,ALIAS_position_b,TableSchema.ColumnType.VARCHAR,75);
+addColumn(DBFIELDNAME_o_acc,ALIAS_o_acc,TableSchema.ColumnType.VARCHAR,75);
+addColumn(DBFIELDNAME_o_pos,ALIAS_o_pos,TableSchema.ColumnType.INTEGER,11);
+addColumn(DBFIELDNAME_o_aa1,ALIAS_o_aa1,TableSchema.ColumnType.VARCHAR,5);
+addColumn(DBFIELDNAME_o_aa2,ALIAS_o_aa2,TableSchema.ColumnType.VARCHAR,10);
+addColumn(DBFIELDNAME_snp_id,ALIAS_snp_id,TableSchema.ColumnType.VARCHAR,45);
+addColumn(DBFIELDNAME_acc,ALIAS_acc,TableSchema.ColumnType.VARCHAR,45);
+addColumn(DBFIELDNAME_pos,ALIAS_pos,TableSchema.ColumnType.INTEGER,11);
+addColumn(DBFIELDNAME_aa1,ALIAS_aa1,TableSchema.ColumnType.VARCHAR,5);
+addColumn(DBFIELDNAME_aa2,ALIAS_aa2,TableSchema.ColumnType.VARCHAR,20);
+addColumn(DBFIELDNAME_nt1,ALIAS_nt1,TableSchema.ColumnType.VARCHAR,5);
+addColumn(DBFIELDNAME_nt2,ALIAS_nt2,TableSchema.ColumnType.VARCHAR,20);
+addColumn(DBFIELDNAME_prediction,ALIAS_prediction,TableSchema.ColumnType.VARCHAR,45);
+addColumn(DBFIELDNAME_pph2_class,ALIAS_pph2_class,TableSchema.ColumnType.VARCHAR,45);
+addColumn(DBFIELDNAME_pph2_prob,ALIAS_pph2_prob,TableSchema.ColumnType.FLOAT,11);
+addColumn(DBFIELDNAME_pph2_FPR,ALIAS_pph2_FPR,TableSchema.ColumnType.FLOAT,11);
+addColumn(DBFIELDNAME_pph2_TPR,ALIAS_pph2_TPR,TableSchema.ColumnType.FLOAT,11);
+addColumn(DBFIELDNAME_pph2_FDR,ALIAS_pph2_FDR,TableSchema.ColumnType.FLOAT,11);
+addColumn(DBFIELDNAME_Transv,ALIAS_Transv,TableSchema.ColumnType.INTEGER,11);
+addColumn(DBFIELDNAME_CodPos,ALIAS_CodPos,TableSchema.ColumnType.INTEGER,11);
+addColumn(DBFIELDNAME_CpG,ALIAS_CpG,TableSchema.ColumnType.INTEGER,11);
+addColumn(DBFIELDNAME_MinDJnc,ALIAS_MinDJnc,TableSchema.ColumnType.FLOAT,11);
+addColumn(DBFIELDNAME_PfamHit,ALIAS_PfamHit,TableSchema.ColumnType.VARCHAR,45);
+addColumn(DBFIELDNAME_IdPmax,ALIAS_IdPmax,TableSchema.ColumnType.FLOAT,11);
+addColumn(DBFIELDNAME_IdPSNP,ALIAS_IdPSNP,TableSchema.ColumnType.FLOAT,11);
+addColumn(DBFIELDNAME_IdQmin,ALIAS_IdQmin,TableSchema.ColumnType.FLOAT,11);
+addColumn(DBFIELDNAME_sift_prediction,ALIAS_sift_prediction,TableSchema.ColumnType.FLOAT,45);
+addColumn(DBFIELDNAME_name,ALIAS_name,TableSchema.ColumnType.VARCHAR,30);
+addColumn(DBFIELDNAME_name2,ALIAS_name2,TableSchema.ColumnType.VARCHAR,30);
+addColumn(DBFIELDNAME_transcriptStrand,ALIAS_transcriptStrand,TableSchema.ColumnType.VARCHAR,1);
+addColumn(DBFIELDNAME_positionType,ALIAS_positionType,TableSchema.ColumnType.VARCHAR,50);
+addColumn(DBFIELDNAME_frame,ALIAS_frame,TableSchema.ColumnType.INTEGER,11);
+addColumn(DBFIELDNAME_mrnaCoord,ALIAS_mrnaCoord,TableSchema.ColumnType.INTEGER,11);
+addColumn(DBFIELDNAME_codonCoord,ALIAS_codonCoord,TableSchema.ColumnType.INTEGER,11);
+addColumn(DBFIELDNAME_spliceDist,ALIAS_spliceDist,TableSchema.ColumnType.INTEGER,11);
+addColumn(DBFIELDNAME_referenceCodon,ALIAS_referenceCodon,TableSchema.ColumnType.VARCHAR,5);
+addColumn(DBFIELDNAME_referenceAA,ALIAS_referenceAA,TableSchema.ColumnType.VARCHAR,50);
+addColumn(DBFIELDNAME_variantCodon,ALIAS_variantCodon,TableSchema.ColumnType.VARCHAR,5);
+addColumn(DBFIELDNAME_variantAA,ALIAS_variantAA,TableSchema.ColumnType.VARCHAR,50);
+addColumn(DBFIELDNAME_changesAA,ALIAS_changesAA,TableSchema.ColumnType.VARCHAR,255);
+addColumn(DBFIELDNAME_functionalClass,ALIAS_functionalClass,TableSchema.ColumnType.VARCHAR,30);
+addColumn(DBFIELDNAME_codingCoordStr,ALIAS_codingCoordStr,TableSchema.ColumnType.VARCHAR,30);
+addColumn(DBFIELDNAME_proteinCoordStr,ALIAS_proteinCoordStr,TableSchema.ColumnType.VARCHAR,20);
+addColumn(DBFIELDNAME_inCodingRegion,ALIAS_inCodingRegion,TableSchema.ColumnType.VARCHAR,255);
+addColumn(DBFIELDNAME_spliceInfo,ALIAS_spliceInfo,TableSchema.ColumnType.VARCHAR,30);
+addColumn(DBFIELDNAME_uorfChange,ALIAS_uorfChange,TableSchema.ColumnType.VARCHAR,10);
+
     }
 
     public static VariantRecord convertToVariantRecord(Vector dbResult) {
@@ -268,7 +459,55 @@ public class VariantTableSchema extends TableSchema {
                 (Float) dbResult.get(INDEX_GLHOMOALT-1),
                 (Float) dbResult.get(INDEX_GQ-1),
                 (Float) dbResult.get(INDEX_HQA-1),
-                (Float) dbResult.get(INDEX_HQB-1)              
+                (Float) dbResult.get(INDEX_HQB-1),
+                
+                (String) dbResult.get(INDEX_position_a-1),
+                (String) dbResult.get(INDEX_position_b-1),
+                (String) dbResult.get(INDEX_o_acc-1),
+                (Integer) dbResult.get(INDEX_o_pos-1),
+                (String) dbResult.get(INDEX_o_aa1-1),
+                (String) dbResult.get(INDEX_o_aa2-1),
+                (String) dbResult.get(INDEX_snp_id-1),
+                (String) dbResult.get(INDEX_acc-1),
+                (Integer) dbResult.get(INDEX_pos-1),
+                (String) dbResult.get(INDEX_aa1-1),
+                (String) dbResult.get(INDEX_aa2-1),
+                (String) dbResult.get(INDEX_nt1-1),
+                (String) dbResult.get(INDEX_nt2-1),
+                (String) dbResult.get(INDEX_prediction-1),
+                (String) dbResult.get(INDEX_pph2_class-1),
+                (Double) dbResult.get(INDEX_pph2_prob-1),
+                (Double) dbResult.get(INDEX_pph2_FPR-1),
+                (Double) dbResult.get(INDEX_pph2_TPR-1),
+                (Double) dbResult.get(INDEX_pph2_FDR-1),
+                (Integer) dbResult.get(INDEX_Transv-1),
+                (Integer) dbResult.get(INDEX_CodPos-1),
+                (Integer) dbResult.get(INDEX_CpG-1),
+                (Double) dbResult.get(INDEX_MinDJnc-1),
+                (String) dbResult.get(INDEX_PfamHit-1),
+                (Double) dbResult.get(INDEX_IdPmax-1),
+                (Double) dbResult.get(INDEX_IdPSNP-1),
+                (Double) dbResult.get(INDEX_IdQmin-1),
+                (Double) dbResult.get(INDEX_sift_prediction-1),
+                (String) dbResult.get(INDEX_name-1),
+                (String) dbResult.get(INDEX_name2-1),
+                (String) dbResult.get(INDEX_transcriptStrand-1),
+                (String) dbResult.get(INDEX_positionType-1),
+                (Integer) dbResult.get(INDEX_frame-1),
+                (Integer) dbResult.get(INDEX_mrnaCoord-1),
+                (Integer) dbResult.get(INDEX_codonCoord-1),
+                (Integer) dbResult.get(INDEX_spliceDist-1),
+                (String) dbResult.get(INDEX_referenceCodon-1),
+                (String) dbResult.get(INDEX_referenceAA-1),
+                (String) dbResult.get(INDEX_variantCodon-1),
+                (String) dbResult.get(INDEX_variantAA-1),
+                (String) dbResult.get(INDEX_changesAA-1),
+                (String) dbResult.get(INDEX_functionalClass-1),
+                (String) dbResult.get(INDEX_codingCoordStr-1),
+                (String) dbResult.get(INDEX_proteinCoordStr-1),
+                (String) dbResult.get(INDEX_inCodingRegion-1),
+                (String) dbResult.get(INDEX_spliceInfo-1),
+                (String) dbResult.get(INDEX_uorfChange-1)
                 );
     }
 

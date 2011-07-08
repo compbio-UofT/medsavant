@@ -63,7 +63,55 @@ public class VariantRecordModel {
     public static final int INDEX_OF_GLHOMOALT = INDEX_OF_GLHET + 1;
     public static final int INDEX_OF_GQ = INDEX_OF_GLHOMOALT + 1;
     public static final int INDEX_OF_HQA = INDEX_OF_GQ + 1;
-    public static final int INDEX_OF_HQB = INDEX_OF_HQA + 1;         
+    public static final int INDEX_OF_HQB = INDEX_OF_HQA + 1;
+    public static final int INDEX_OF_position_a = INDEX_OF_HQB + 1;
+public static final int INDEX_OF_position_b = INDEX_OF_position_a + 1;
+public static final int INDEX_OF_o_acc = INDEX_OF_position_b + 1;
+public static final int INDEX_OF_o_pos = INDEX_OF_o_acc + 1;
+public static final int INDEX_OF_o_aa1 = INDEX_OF_o_pos + 1;
+public static final int INDEX_OF_o_aa2 = INDEX_OF_o_aa1 + 1;
+public static final int INDEX_OF_snp_id = INDEX_OF_o_aa2 + 1;
+public static final int INDEX_OF_acc = INDEX_OF_snp_id + 1;
+public static final int INDEX_OF_pos = INDEX_OF_acc + 1;
+public static final int INDEX_OF_aa1 = INDEX_OF_pos + 1;
+public static final int INDEX_OF_aa2 = INDEX_OF_aa1 + 1;
+public static final int INDEX_OF_nt1 = INDEX_OF_aa2 + 1;
+public static final int INDEX_OF_nt2 = INDEX_OF_nt1 + 1;
+public static final int INDEX_OF_prediction = INDEX_OF_nt2 + 1;
+public static final int INDEX_OF_pph2_class = INDEX_OF_prediction + 1;
+public static final int INDEX_OF_pph2_prob = INDEX_OF_pph2_class + 1;
+public static final int INDEX_OF_pph2_FPR = INDEX_OF_pph2_prob + 1;
+public static final int INDEX_OF_pph2_TPR = INDEX_OF_pph2_FPR + 1;
+public static final int INDEX_OF_pph2_FDR = INDEX_OF_pph2_TPR + 1;
+public static final int INDEX_OF_Transv = INDEX_OF_pph2_FDR + 1;
+public static final int INDEX_OF_CodPos = INDEX_OF_Transv + 1;
+public static final int INDEX_OF_CpG = INDEX_OF_CodPos + 1;
+public static final int INDEX_OF_MinDJnc = INDEX_OF_CpG + 1;
+public static final int INDEX_OF_PfamHit = INDEX_OF_MinDJnc + 1;
+public static final int INDEX_OF_IdPmax = INDEX_OF_PfamHit + 1;
+public static final int INDEX_OF_IdPSNP = INDEX_OF_IdPmax + 1;
+public static final int INDEX_OF_IdQmin = INDEX_OF_IdPSNP + 1;
+public static final int INDEX_OF_sift_prediction = INDEX_OF_IdQmin + 1;
+public static final int INDEX_OF_name = INDEX_OF_sift_prediction + 1;
+public static final int INDEX_OF_name2 = INDEX_OF_name + 1;
+public static final int INDEX_OF_transcriptStrand = INDEX_OF_name2 + 1;
+public static final int INDEX_OF_positionType = INDEX_OF_transcriptStrand + 1;
+public static final int INDEX_OF_frame = INDEX_OF_positionType + 1;
+public static final int INDEX_OF_mrnaCoord = INDEX_OF_frame + 1;
+public static final int INDEX_OF_codonCoord = INDEX_OF_mrnaCoord + 1;
+public static final int INDEX_OF_spliceDist = INDEX_OF_codonCoord + 1;
+public static final int INDEX_OF_referenceCodon = INDEX_OF_spliceDist + 1;
+public static final int INDEX_OF_referenceAA = INDEX_OF_referenceCodon + 1;
+public static final int INDEX_OF_variantCodon = INDEX_OF_referenceAA + 1;
+public static final int INDEX_OF_variantAA = INDEX_OF_variantCodon + 1;
+public static final int INDEX_OF_changesAA = INDEX_OF_variantAA + 1;
+public static final int INDEX_OF_functionalClass = INDEX_OF_changesAA + 1;
+public static final int INDEX_OF_codingCoordStr = INDEX_OF_functionalClass + 1;
+public static final int INDEX_OF_proteinCoordStr = INDEX_OF_codingCoordStr + 1;
+public static final int INDEX_OF_inCodingRegion = INDEX_OF_proteinCoordStr + 1;
+public static final int INDEX_OF_spliceInfo = INDEX_OF_inCodingRegion + 1;
+public static final int INDEX_OF_uorfChange = INDEX_OF_spliceInfo + 1;
+
 
     private static final Class CLASS_OF_GENOMEID = String.class;
     private static final Class CLASS_OF_PIPELINEID = String.class;
@@ -102,6 +150,53 @@ public class VariantRecordModel {
     private static final Class CLASS_OF_GQ = VariantRecord.CLASS_OF_GQ;
     private static final Class CLASS_OF_HQA = VariantRecord.CLASS_OF_HQA;
     private static final Class CLASS_OF_HQB = VariantRecord.CLASS_OF_HQB;
+    private static final Class CLASS_OF_position_a = VariantRecord.CLASS_OF_position_a;
+    private static final Class CLASS_OF_position_b = VariantRecord.CLASS_OF_position_b;
+    private static final Class CLASS_OF_o_acc = VariantRecord.CLASS_OF_o_acc;
+    private static final Class CLASS_OF_o_pos = VariantRecord.CLASS_OF_o_pos;
+    private static final Class CLASS_OF_o_aa1 = VariantRecord.CLASS_OF_o_aa1;
+    private static final Class CLASS_OF_o_aa2 = VariantRecord.CLASS_OF_o_aa2;
+    private static final Class CLASS_OF_snp_id = VariantRecord.CLASS_OF_snp_id;
+    private static final Class CLASS_OF_acc = VariantRecord.CLASS_OF_acc;
+    private static final Class CLASS_OF_pos = VariantRecord.CLASS_OF_pos;
+    private static final Class CLASS_OF_aa1 = VariantRecord.CLASS_OF_aa1;
+    private static final Class CLASS_OF_aa2 = VariantRecord.CLASS_OF_aa2;
+    private static final Class CLASS_OF_nt1 = VariantRecord.CLASS_OF_nt1;
+    private static final Class CLASS_OF_nt2 = VariantRecord.CLASS_OF_nt2;
+    private static final Class CLASS_OF_prediction = VariantRecord.CLASS_OF_prediction;
+    private static final Class CLASS_OF_pph2_class = VariantRecord.CLASS_OF_pph2_class;
+    private static final Class CLASS_OF_pph2_prob = VariantRecord.CLASS_OF_pph2_prob;
+    private static final Class CLASS_OF_pph2_FPR = VariantRecord.CLASS_OF_pph2_FPR;
+    private static final Class CLASS_OF_pph2_TPR = VariantRecord.CLASS_OF_pph2_TPR;
+    private static final Class CLASS_OF_pph2_FDR = VariantRecord.CLASS_OF_pph2_FDR;
+    private static final Class CLASS_OF_Transv = VariantRecord.CLASS_OF_Transv;
+    private static final Class CLASS_OF_CodPos = VariantRecord.CLASS_OF_CodPos;
+    private static final Class CLASS_OF_CpG = VariantRecord.CLASS_OF_CpG;
+    private static final Class CLASS_OF_MinDJnc = VariantRecord.CLASS_OF_MinDJnc;
+    private static final Class CLASS_OF_PfamHit = VariantRecord.CLASS_OF_PfamHit;
+    private static final Class CLASS_OF_IdPmax = VariantRecord.CLASS_OF_IdPmax;
+    private static final Class CLASS_OF_IdPSNP = VariantRecord.CLASS_OF_IdPSNP;
+    private static final Class CLASS_OF_IdQmin = VariantRecord.CLASS_OF_IdQmin;
+    private static final Class CLASS_OF_sift_prediction = VariantRecord.CLASS_OF_sift_prediction;
+    private static final Class CLASS_OF_name = VariantRecord.CLASS_OF_name;
+    private static final Class CLASS_OF_name2 = VariantRecord.CLASS_OF_name2;
+    private static final Class CLASS_OF_transcriptStrand = VariantRecord.CLASS_OF_transcriptStrand;
+    private static final Class CLASS_OF_positionType = VariantRecord.CLASS_OF_positionType;
+    private static final Class CLASS_OF_frame = VariantRecord.CLASS_OF_frame;
+    private static final Class CLASS_OF_mrnaCoord = VariantRecord.CLASS_OF_mrnaCoord;
+    private static final Class CLASS_OF_codonCoord = VariantRecord.CLASS_OF_codonCoord;
+    private static final Class CLASS_OF_spliceDist = VariantRecord.CLASS_OF_spliceDist;
+    private static final Class CLASS_OF_referenceCodon = VariantRecord.CLASS_OF_referenceCodon;
+    private static final Class CLASS_OF_referenceAA = VariantRecord.CLASS_OF_referenceAA;
+    private static final Class CLASS_OF_variantCodon = VariantRecord.CLASS_OF_variantCodon;
+    private static final Class CLASS_OF_variantAA = VariantRecord.CLASS_OF_variantAA;
+    private static final Class CLASS_OF_changesAA = VariantRecord.CLASS_OF_changesAA;
+    private static final Class CLASS_OF_functionalClass = VariantRecord.CLASS_OF_functionalClass;
+    private static final Class CLASS_OF_codingCoordStr = VariantRecord.CLASS_OF_codingCoordStr;
+    private static final Class CLASS_OF_proteinCoordStr = VariantRecord.CLASS_OF_proteinCoordStr;
+    private static final Class CLASS_OF_inCodingRegion = VariantRecord.CLASS_OF_inCodingRegion;
+    private static final Class CLASS_OF_spliceInfo = VariantRecord.CLASS_OF_spliceInfo;
+    private static final Class CLASS_OF_uorfChange = VariantRecord.CLASS_OF_uorfChange;
 
     private static final boolean DEFAULT_GENOMEID = false;
     private static final boolean DEFAULT_PIPELINEID = false;
@@ -140,9 +235,56 @@ public class VariantRecordModel {
     private static final boolean DEFAULT_GQ = false;
     private static final boolean DEFAULT_HQA = false;
     private static final boolean DEFAULT_HQB = false;
+    private static final boolean DEFAULT_position_a = false;
+    private static final boolean DEFAULT_position_b = false;
+    private static final boolean DEFAULT_o_acc = false;
+    private static final boolean DEFAULT_o_pos = false;
+    private static final boolean DEFAULT_o_aa1 = false;
+    private static final boolean DEFAULT_o_aa2 = false;
+    private static final boolean DEFAULT_snp_id = false;
+    private static final boolean DEFAULT_acc = false;
+    private static final boolean DEFAULT_pos = false;
+    private static final boolean DEFAULT_aa1 = false;
+    private static final boolean DEFAULT_aa2 = false;
+    private static final boolean DEFAULT_nt1 = false;
+    private static final boolean DEFAULT_nt2 = false;
+    private static final boolean DEFAULT_prediction = false;
+    private static final boolean DEFAULT_pph2_class = false;
+    private static final boolean DEFAULT_pph2_prob = false;
+    private static final boolean DEFAULT_pph2_FPR = false;
+    private static final boolean DEFAULT_pph2_TPR = false;
+    private static final boolean DEFAULT_pph2_FDR = false;
+    private static final boolean DEFAULT_Transv = false;
+    private static final boolean DEFAULT_CodPos = false;
+    private static final boolean DEFAULT_CpG = false;
+    private static final boolean DEFAULT_MinDJnc = false;
+    private static final boolean DEFAULT_PfamHit = false;
+    private static final boolean DEFAULT_IdPmax = false;
+    private static final boolean DEFAULT_IdPSNP = false;
+    private static final boolean DEFAULT_IdQmin = false;
+    private static final boolean DEFAULT_sift_prediction = false;
+    private static final boolean DEFAULT_name = false;
+    private static final boolean DEFAULT_name2 = false;
+    private static final boolean DEFAULT_transcriptStrand = false;
+    private static final boolean DEFAULT_positionType = false;
+    private static final boolean DEFAULT_frame = false;
+    private static final boolean DEFAULT_mrnaCoord = false;
+    private static final boolean DEFAULT_codonCoord = false;
+    private static final boolean DEFAULT_spliceDist = false;
+    private static final boolean DEFAULT_referenceCodon = false;
+    private static final boolean DEFAULT_referenceAA = false;
+    private static final boolean DEFAULT_variantCodon = false;
+    private static final boolean DEFAULT_variantAA = false;
+    private static final boolean DEFAULT_changesAA = false;
+    private static final boolean DEFAULT_functionalClass = false;
+    private static final boolean DEFAULT_codingCoordStr = false;
+    private static final boolean DEFAULT_proteinCoordStr = false;
+    private static final boolean DEFAULT_inCodingRegion = false;
+    private static final boolean DEFAULT_spliceInfo = false;
+    private static final boolean DEFAULT_uorfChange = false;
 
 
-    private static final int NUM_FIELDS = INDEX_OF_HQB + 1; // index of the last field + 1
+    private static final int NUM_FIELDS = INDEX_OF_uorfChange + 1; // index of the last field + 1
 
     public static int getNumberOfFields() {
         return NUM_FIELDS;
@@ -268,6 +410,148 @@ public class VariantRecordModel {
                 case INDEX_OF_HQB:
                     v.add(r.getHQB());
                     break;                    
+case INDEX_OF_position_a:
+	v.add(r.getposition_a());
+	break;
+case INDEX_OF_position_b:
+	v.add(r.getposition_b());
+	break;
+case INDEX_OF_o_acc:
+	v.add(r.geto_acc());
+	break;
+case INDEX_OF_o_pos:
+	v.add(r.geto_pos());
+	break;
+case INDEX_OF_o_aa1:
+	v.add(r.geto_aa1());
+	break;
+case INDEX_OF_o_aa2:
+	v.add(r.geto_aa2());
+	break;
+case INDEX_OF_snp_id:
+	v.add(r.getsnp_id());
+	break;
+case INDEX_OF_acc:
+	v.add(r.getacc());
+	break;
+case INDEX_OF_pos:
+	v.add(r.getpos());
+	break;
+case INDEX_OF_aa1:
+	v.add(r.getaa1());
+	break;
+case INDEX_OF_aa2:
+	v.add(r.getaa2());
+	break;
+case INDEX_OF_nt1:
+	v.add(r.getnt1());
+	break;
+case INDEX_OF_nt2:
+	v.add(r.getnt2());
+	break;
+case INDEX_OF_prediction:
+	v.add(r.getprediction());
+	break;
+case INDEX_OF_pph2_class:
+	v.add(r.getpph2_class());
+	break;
+case INDEX_OF_pph2_prob:
+	v.add(r.getpph2_prob());
+	break;
+case INDEX_OF_pph2_FPR:
+	v.add(r.getpph2_FPR());
+	break;
+case INDEX_OF_pph2_TPR:
+	v.add(r.getpph2_TPR());
+	break;
+case INDEX_OF_pph2_FDR:
+	v.add(r.getpph2_FDR());
+	break;
+case INDEX_OF_Transv:
+	v.add(r.getTransv());
+	break;
+case INDEX_OF_CodPos:
+	v.add(r.getCodPos());
+	break;
+case INDEX_OF_CpG:
+	v.add(r.getCpG());
+	break;
+case INDEX_OF_MinDJnc:
+	v.add(r.getMinDJnc());
+	break;
+case INDEX_OF_PfamHit:
+	v.add(r.getPfamHit());
+	break;
+case INDEX_OF_IdPmax:
+	v.add(r.getIdPmax());
+	break;
+case INDEX_OF_IdPSNP:
+	v.add(r.getIdPSNP());
+	break;
+case INDEX_OF_IdQmin:
+	v.add(r.getIdQmin());
+	break;
+case INDEX_OF_sift_prediction:
+	v.add(r.getsift_prediction());
+	break;
+case INDEX_OF_name:
+	v.add(r.getname());
+	break;
+case INDEX_OF_name2:
+	v.add(r.getname2());
+	break;
+case INDEX_OF_transcriptStrand:
+	v.add(r.gettranscriptStrand());
+	break;
+case INDEX_OF_positionType:
+	v.add(r.getpositionType());
+	break;
+case INDEX_OF_frame:
+	v.add(r.getframe());
+	break;
+case INDEX_OF_mrnaCoord:
+	v.add(r.getmrnaCoord());
+	break;
+case INDEX_OF_codonCoord:
+	v.add(r.getcodonCoord());
+	break;
+case INDEX_OF_spliceDist:
+	v.add(r.getspliceDist());
+	break;
+case INDEX_OF_referenceCodon:
+	v.add(r.getreferenceCodon());
+	break;
+case INDEX_OF_referenceAA:
+	v.add(r.getreferenceAA());
+	break;
+case INDEX_OF_variantCodon:
+	v.add(r.getvariantCodon());
+	break;
+case INDEX_OF_variantAA:
+	v.add(r.getvariantAA());
+	break;
+case INDEX_OF_changesAA:
+	v.add(r.getchangesAA());
+	break;
+case INDEX_OF_functionalClass:
+	v.add(r.getfunctionalClass());
+	break;
+case INDEX_OF_codingCoordStr:
+	v.add(r.getcodingCoordStr());
+	break;
+case INDEX_OF_proteinCoordStr:
+	v.add(r.getproteinCoordStr());
+	break;
+case INDEX_OF_inCodingRegion:
+	v.add(r.getinCodingRegion());
+	break;
+case INDEX_OF_spliceInfo:
+	v.add(r.getspliceInfo());
+	break;
+case INDEX_OF_uorfChange:
+	v.add(r.getuorfChange());
+	break;
+
 
             }
         }
@@ -392,6 +676,148 @@ public class VariantRecordModel {
                 case INDEX_OF_HQB:
                     v.add(CLASS_OF_HQB);
                     break;
+                    case INDEX_OF_position_a:
+	v.add(CLASS_OF_position_a);
+	break;
+case INDEX_OF_position_b:
+	v.add(CLASS_OF_position_b);
+	break;
+case INDEX_OF_o_acc:
+	v.add(CLASS_OF_o_acc);
+	break;
+case INDEX_OF_o_pos:
+	v.add(CLASS_OF_o_pos);
+	break;
+case INDEX_OF_o_aa1:
+	v.add(CLASS_OF_o_aa1);
+	break;
+case INDEX_OF_o_aa2:
+	v.add(CLASS_OF_o_aa2);
+	break;
+case INDEX_OF_snp_id:
+	v.add(CLASS_OF_snp_id);
+	break;
+case INDEX_OF_acc:
+	v.add(CLASS_OF_acc);
+	break;
+case INDEX_OF_pos:
+	v.add(CLASS_OF_pos);
+	break;
+case INDEX_OF_aa1:
+	v.add(CLASS_OF_aa1);
+	break;
+case INDEX_OF_aa2:
+	v.add(CLASS_OF_aa2);
+	break;
+case INDEX_OF_nt1:
+	v.add(CLASS_OF_nt1);
+	break;
+case INDEX_OF_nt2:
+	v.add(CLASS_OF_nt2);
+	break;
+case INDEX_OF_prediction:
+	v.add(CLASS_OF_prediction);
+	break;
+case INDEX_OF_pph2_class:
+	v.add(CLASS_OF_pph2_class);
+	break;
+case INDEX_OF_pph2_prob:
+	v.add(CLASS_OF_pph2_prob);
+	break;
+case INDEX_OF_pph2_FPR:
+	v.add(CLASS_OF_pph2_FPR);
+	break;
+case INDEX_OF_pph2_TPR:
+	v.add(CLASS_OF_pph2_TPR);
+	break;
+case INDEX_OF_pph2_FDR:
+	v.add(CLASS_OF_pph2_FDR);
+	break;
+case INDEX_OF_Transv:
+	v.add(CLASS_OF_Transv);
+	break;
+case INDEX_OF_CodPos:
+	v.add(CLASS_OF_CodPos);
+	break;
+case INDEX_OF_CpG:
+	v.add(CLASS_OF_CpG);
+	break;
+case INDEX_OF_MinDJnc:
+	v.add(CLASS_OF_MinDJnc);
+	break;
+case INDEX_OF_PfamHit:
+	v.add(CLASS_OF_PfamHit);
+	break;
+case INDEX_OF_IdPmax:
+	v.add(CLASS_OF_IdPmax);
+	break;
+case INDEX_OF_IdPSNP:
+	v.add(CLASS_OF_IdPSNP);
+	break;
+case INDEX_OF_IdQmin:
+	v.add(CLASS_OF_IdQmin);
+	break;
+case INDEX_OF_sift_prediction:
+	v.add(CLASS_OF_sift_prediction);
+	break;
+case INDEX_OF_name:
+	v.add(CLASS_OF_name);
+	break;
+case INDEX_OF_name2:
+	v.add(CLASS_OF_name2);
+	break;
+case INDEX_OF_transcriptStrand:
+	v.add(CLASS_OF_transcriptStrand);
+	break;
+case INDEX_OF_positionType:
+	v.add(CLASS_OF_positionType);
+	break;
+case INDEX_OF_frame:
+	v.add(CLASS_OF_frame);
+	break;
+case INDEX_OF_mrnaCoord:
+	v.add(CLASS_OF_mrnaCoord);
+	break;
+case INDEX_OF_codonCoord:
+	v.add(CLASS_OF_codonCoord);
+	break;
+case INDEX_OF_spliceDist:
+	v.add(CLASS_OF_spliceDist);
+	break;
+case INDEX_OF_referenceCodon:
+	v.add(CLASS_OF_referenceCodon);
+	break;
+case INDEX_OF_referenceAA:
+	v.add(CLASS_OF_referenceAA);
+	break;
+case INDEX_OF_variantCodon:
+	v.add(CLASS_OF_variantCodon);
+	break;
+case INDEX_OF_variantAA:
+	v.add(CLASS_OF_variantAA);
+	break;
+case INDEX_OF_changesAA:
+	v.add(CLASS_OF_changesAA);
+	break;
+case INDEX_OF_functionalClass:
+	v.add(CLASS_OF_functionalClass);
+	break;
+case INDEX_OF_codingCoordStr:
+	v.add(CLASS_OF_codingCoordStr);
+	break;
+case INDEX_OF_proteinCoordStr:
+	v.add(CLASS_OF_proteinCoordStr);
+	break;
+case INDEX_OF_inCodingRegion:
+	v.add(CLASS_OF_inCodingRegion);
+	break;
+case INDEX_OF_spliceInfo:
+	v.add(CLASS_OF_spliceInfo);
+	break;
+case INDEX_OF_uorfChange:
+	v.add(CLASS_OF_uorfChange);
+	break;
+
             }
         }
         return v;
@@ -517,6 +943,148 @@ public class VariantRecordModel {
                 case INDEX_OF_HQB:
                     v.add(VariantTableSchema.ALIAS_HQB);
                     break;
+                    case INDEX_OF_position_a:
+	v.add(VariantTableSchema.ALIAS_position_a);
+	break;
+case INDEX_OF_position_b:
+	v.add(VariantTableSchema.ALIAS_position_b);
+	break;
+case INDEX_OF_o_acc:
+	v.add(VariantTableSchema.ALIAS_o_acc);
+	break;
+case INDEX_OF_o_pos:
+	v.add(VariantTableSchema.ALIAS_o_pos);
+	break;
+case INDEX_OF_o_aa1:
+	v.add(VariantTableSchema.ALIAS_o_aa1);
+	break;
+case INDEX_OF_o_aa2:
+	v.add(VariantTableSchema.ALIAS_o_aa2);
+	break;
+case INDEX_OF_snp_id:
+	v.add(VariantTableSchema.ALIAS_snp_id);
+	break;
+case INDEX_OF_acc:
+	v.add(VariantTableSchema.ALIAS_acc);
+	break;
+case INDEX_OF_pos:
+	v.add(VariantTableSchema.ALIAS_pos);
+	break;
+case INDEX_OF_aa1:
+	v.add(VariantTableSchema.ALIAS_aa1);
+	break;
+case INDEX_OF_aa2:
+	v.add(VariantTableSchema.ALIAS_aa2);
+	break;
+case INDEX_OF_nt1:
+	v.add(VariantTableSchema.ALIAS_nt1);
+	break;
+case INDEX_OF_nt2:
+	v.add(VariantTableSchema.ALIAS_nt2);
+	break;
+case INDEX_OF_prediction:
+	v.add(VariantTableSchema.ALIAS_prediction);
+	break;
+case INDEX_OF_pph2_class:
+	v.add(VariantTableSchema.ALIAS_pph2_class);
+	break;
+case INDEX_OF_pph2_prob:
+	v.add(VariantTableSchema.ALIAS_pph2_prob);
+	break;
+case INDEX_OF_pph2_FPR:
+	v.add(VariantTableSchema.ALIAS_pph2_FPR);
+	break;
+case INDEX_OF_pph2_TPR:
+	v.add(VariantTableSchema.ALIAS_pph2_TPR);
+	break;
+case INDEX_OF_pph2_FDR:
+	v.add(VariantTableSchema.ALIAS_pph2_FDR);
+	break;
+case INDEX_OF_Transv:
+	v.add(VariantTableSchema.ALIAS_Transv);
+	break;
+case INDEX_OF_CodPos:
+	v.add(VariantTableSchema.ALIAS_CodPos);
+	break;
+case INDEX_OF_CpG:
+	v.add(VariantTableSchema.ALIAS_CpG);
+	break;
+case INDEX_OF_MinDJnc:
+	v.add(VariantTableSchema.ALIAS_MinDJnc);
+	break;
+case INDEX_OF_PfamHit:
+	v.add(VariantTableSchema.ALIAS_PfamHit);
+	break;
+case INDEX_OF_IdPmax:
+	v.add(VariantTableSchema.ALIAS_IdPmax);
+	break;
+case INDEX_OF_IdPSNP:
+	v.add(VariantTableSchema.ALIAS_IdPSNP);
+	break;
+case INDEX_OF_IdQmin:
+	v.add(VariantTableSchema.ALIAS_IdQmin);
+	break;
+case INDEX_OF_sift_prediction:
+	v.add(VariantTableSchema.ALIAS_sift_prediction);
+	break;
+case INDEX_OF_name:
+	v.add(VariantTableSchema.ALIAS_name);
+	break;
+case INDEX_OF_name2:
+	v.add(VariantTableSchema.ALIAS_name2);
+	break;
+case INDEX_OF_transcriptStrand:
+	v.add(VariantTableSchema.ALIAS_transcriptStrand);
+	break;
+case INDEX_OF_positionType:
+	v.add(VariantTableSchema.ALIAS_positionType);
+	break;
+case INDEX_OF_frame:
+	v.add(VariantTableSchema.ALIAS_frame);
+	break;
+case INDEX_OF_mrnaCoord:
+	v.add(VariantTableSchema.ALIAS_mrnaCoord);
+	break;
+case INDEX_OF_codonCoord:
+	v.add(VariantTableSchema.ALIAS_codonCoord);
+	break;
+case INDEX_OF_spliceDist:
+	v.add(VariantTableSchema.ALIAS_spliceDist);
+	break;
+case INDEX_OF_referenceCodon:
+	v.add(VariantTableSchema.ALIAS_referenceCodon);
+	break;
+case INDEX_OF_referenceAA:
+	v.add(VariantTableSchema.ALIAS_referenceAA);
+	break;
+case INDEX_OF_variantCodon:
+	v.add(VariantTableSchema.ALIAS_variantCodon);
+	break;
+case INDEX_OF_variantAA:
+	v.add(VariantTableSchema.ALIAS_variantAA);
+	break;
+case INDEX_OF_changesAA:
+	v.add(VariantTableSchema.ALIAS_changesAA);
+	break;
+case INDEX_OF_functionalClass:
+	v.add(VariantTableSchema.ALIAS_functionalClass);
+	break;
+case INDEX_OF_codingCoordStr:
+	v.add(VariantTableSchema.ALIAS_codingCoordStr);
+	break;
+case INDEX_OF_proteinCoordStr:
+	v.add(VariantTableSchema.ALIAS_proteinCoordStr);
+	break;
+case INDEX_OF_inCodingRegion:
+	v.add(VariantTableSchema.ALIAS_inCodingRegion);
+	break;
+case INDEX_OF_spliceInfo:
+	v.add(VariantTableSchema.ALIAS_spliceInfo);
+	break;
+case INDEX_OF_uorfChange:
+	v.add(VariantTableSchema.ALIAS_uorfChange);
+	break;
+
             }
         }
         return v;
@@ -600,6 +1168,102 @@ public class VariantRecordModel {
                 return VariantTableSchema.ALIAS_HQA;
             case INDEX_OF_HQB:
                 return VariantTableSchema.ALIAS_HQB;
+                
+                case INDEX_OF_position_a:
+	return VariantTableSchema.ALIAS_position_a;
+case INDEX_OF_position_b:
+	return VariantTableSchema.ALIAS_position_b;
+case INDEX_OF_o_acc:
+	return VariantTableSchema.ALIAS_o_acc;
+case INDEX_OF_o_pos:
+	return VariantTableSchema.ALIAS_o_pos;
+case INDEX_OF_o_aa1:
+	return VariantTableSchema.ALIAS_o_aa1;
+case INDEX_OF_o_aa2:
+	return VariantTableSchema.ALIAS_o_aa2;
+case INDEX_OF_snp_id:
+	return VariantTableSchema.ALIAS_snp_id;
+case INDEX_OF_acc:
+	return VariantTableSchema.ALIAS_acc;
+case INDEX_OF_pos:
+	return VariantTableSchema.ALIAS_pos;
+case INDEX_OF_aa1:
+	return VariantTableSchema.ALIAS_aa1;
+case INDEX_OF_aa2:
+	return VariantTableSchema.ALIAS_aa2;
+case INDEX_OF_nt1:
+	return VariantTableSchema.ALIAS_nt1;
+case INDEX_OF_nt2:
+	return VariantTableSchema.ALIAS_nt2;
+case INDEX_OF_prediction:
+	return VariantTableSchema.ALIAS_prediction;
+case INDEX_OF_pph2_class:
+	return VariantTableSchema.ALIAS_pph2_class;
+case INDEX_OF_pph2_prob:
+	return VariantTableSchema.ALIAS_pph2_prob;
+case INDEX_OF_pph2_FPR:
+	return VariantTableSchema.ALIAS_pph2_FPR;
+case INDEX_OF_pph2_TPR:
+	return VariantTableSchema.ALIAS_pph2_TPR;
+case INDEX_OF_pph2_FDR:
+	return VariantTableSchema.ALIAS_pph2_FDR;
+case INDEX_OF_Transv:
+	return VariantTableSchema.ALIAS_Transv;
+case INDEX_OF_CodPos:
+	return VariantTableSchema.ALIAS_CodPos;
+case INDEX_OF_CpG:
+	return VariantTableSchema.ALIAS_CpG;
+case INDEX_OF_MinDJnc:
+	return VariantTableSchema.ALIAS_MinDJnc;
+case INDEX_OF_PfamHit:
+	return VariantTableSchema.ALIAS_PfamHit;
+case INDEX_OF_IdPmax:
+	return VariantTableSchema.ALIAS_IdPmax;
+case INDEX_OF_IdPSNP:
+	return VariantTableSchema.ALIAS_IdPSNP;
+case INDEX_OF_IdQmin:
+	return VariantTableSchema.ALIAS_IdQmin;
+case INDEX_OF_sift_prediction:
+	return VariantTableSchema.ALIAS_sift_prediction;
+case INDEX_OF_name:
+	return VariantTableSchema.ALIAS_name;
+case INDEX_OF_name2:
+	return VariantTableSchema.ALIAS_name2;
+case INDEX_OF_transcriptStrand:
+	return VariantTableSchema.ALIAS_transcriptStrand;
+case INDEX_OF_positionType:
+	return VariantTableSchema.ALIAS_positionType;
+case INDEX_OF_frame:
+	return VariantTableSchema.ALIAS_frame;
+case INDEX_OF_mrnaCoord:
+	return VariantTableSchema.ALIAS_mrnaCoord;
+case INDEX_OF_codonCoord:
+	return VariantTableSchema.ALIAS_codonCoord;
+case INDEX_OF_spliceDist:
+	return VariantTableSchema.ALIAS_spliceDist;
+case INDEX_OF_referenceCodon:
+	return VariantTableSchema.ALIAS_referenceCodon;
+case INDEX_OF_referenceAA:
+	return VariantTableSchema.ALIAS_referenceAA;
+case INDEX_OF_variantCodon:
+	return VariantTableSchema.ALIAS_variantCodon;
+case INDEX_OF_variantAA:
+	return VariantTableSchema.ALIAS_variantAA;
+case INDEX_OF_changesAA:
+	return VariantTableSchema.ALIAS_changesAA;
+case INDEX_OF_functionalClass:
+	return VariantTableSchema.ALIAS_functionalClass;
+case INDEX_OF_codingCoordStr:
+	return VariantTableSchema.ALIAS_codingCoordStr;
+case INDEX_OF_proteinCoordStr:
+	return VariantTableSchema.ALIAS_proteinCoordStr;
+case INDEX_OF_inCodingRegion:
+	return VariantTableSchema.ALIAS_inCodingRegion;
+case INDEX_OF_spliceInfo:
+	return VariantTableSchema.ALIAS_spliceInfo;
+case INDEX_OF_uorfChange:
+	return VariantTableSchema.ALIAS_uorfChange;
+                
             default:
                 return null;
         }
@@ -693,7 +1357,100 @@ public class VariantRecordModel {
                 return r.getHQA();
             case INDEX_OF_HQB:
                 return r.getHQB();
-
+case INDEX_OF_position_a:
+	return r.getposition_a();
+case INDEX_OF_position_b:
+	return r.getposition_b();
+case INDEX_OF_o_acc:
+	return r.geto_acc();
+case INDEX_OF_o_pos:
+	return r.geto_pos();
+case INDEX_OF_o_aa1:
+	return r.geto_aa1();
+case INDEX_OF_o_aa2:
+	return r.geto_aa2();
+case INDEX_OF_snp_id:
+	return r.getsnp_id();
+case INDEX_OF_acc:
+	return r.getacc();
+case INDEX_OF_pos:
+	return r.getpos();
+case INDEX_OF_aa1:
+	return r.getaa1();
+case INDEX_OF_aa2:
+	return r.getaa2();
+case INDEX_OF_nt1:
+	return r.getnt1();
+case INDEX_OF_nt2:
+	return r.getnt2();
+case INDEX_OF_prediction:
+	return r.getprediction();
+case INDEX_OF_pph2_class:
+	return r.getpph2_class();
+case INDEX_OF_pph2_prob:
+	return r.getpph2_prob();
+case INDEX_OF_pph2_FPR:
+	return r.getpph2_FPR();
+case INDEX_OF_pph2_TPR:
+	return r.getpph2_TPR();
+case INDEX_OF_pph2_FDR:
+	return r.getpph2_FDR();
+case INDEX_OF_Transv:
+	return r.getTransv();
+case INDEX_OF_CodPos:
+	return r.getCodPos();
+case INDEX_OF_CpG:
+	return r.getCpG();
+case INDEX_OF_MinDJnc:
+	return r.getMinDJnc();
+case INDEX_OF_PfamHit:
+	return r.getPfamHit();
+case INDEX_OF_IdPmax:
+	return r.getIdPmax();
+case INDEX_OF_IdPSNP:
+	return r.getIdPSNP();
+case INDEX_OF_IdQmin:
+	return r.getIdQmin();
+case INDEX_OF_sift_prediction:
+	return r.getsift_prediction();
+case INDEX_OF_name:
+	return r.getname();
+case INDEX_OF_name2:
+	return r.getname2();
+case INDEX_OF_transcriptStrand:
+	return r.gettranscriptStrand();
+case INDEX_OF_positionType:
+	return r.getpositionType();
+case INDEX_OF_frame:
+	return r.getframe();
+case INDEX_OF_mrnaCoord:
+	return r.getmrnaCoord();
+case INDEX_OF_codonCoord:
+	return r.getcodonCoord();
+case INDEX_OF_spliceDist:
+	return r.getspliceDist();
+case INDEX_OF_referenceCodon:
+	return r.getreferenceCodon();
+case INDEX_OF_referenceAA:
+	return r.getreferenceAA();
+case INDEX_OF_variantCodon:
+	return r.getvariantCodon();
+case INDEX_OF_variantAA:
+	return r.getvariantAA();
+case INDEX_OF_changesAA:
+	return r.getchangesAA();
+case INDEX_OF_functionalClass:
+	return r.getfunctionalClass();
+case INDEX_OF_codingCoordStr:
+	return r.getcodingCoordStr();
+case INDEX_OF_proteinCoordStr:
+	return r.getproteinCoordStr();
+case INDEX_OF_inCodingRegion:
+	return r.getinCodingRegion();
+case INDEX_OF_spliceInfo:
+	return r.getspliceInfo();
+case INDEX_OF_uorfChange:
+	return r.getuorfChange();
         }
 
         return null;
@@ -894,6 +1651,241 @@ public class VariantRecordModel {
                         v.add(i);
                     }
                     break;
+                    case INDEX_OF_position_a:
+	if(!DEFAULT_position_a){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_position_b:
+	if(!DEFAULT_position_b){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_o_acc:
+	if(!DEFAULT_o_acc){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_o_pos:
+	if(!DEFAULT_o_pos){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_o_aa1:
+	if(!DEFAULT_o_aa1){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_o_aa2:
+	if(!DEFAULT_o_aa2){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_snp_id:
+	if(!DEFAULT_snp_id){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_acc:
+	if(!DEFAULT_acc){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_pos:
+	if(!DEFAULT_pos){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_aa1:
+	if(!DEFAULT_aa1){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_aa2:
+	if(!DEFAULT_aa2){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_nt1:
+	if(!DEFAULT_nt1){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_nt2:
+	if(!DEFAULT_nt2){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_prediction:
+	if(!DEFAULT_prediction){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_pph2_class:
+	if(!DEFAULT_pph2_class){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_pph2_prob:
+	if(!DEFAULT_pph2_prob){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_pph2_FPR:
+	if(!DEFAULT_pph2_FPR){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_pph2_TPR:
+	if(!DEFAULT_pph2_TPR){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_pph2_FDR:
+	if(!DEFAULT_pph2_FDR){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_Transv:
+	if(!DEFAULT_Transv){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_CodPos:
+	if(!DEFAULT_CodPos){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_CpG:
+	if(!DEFAULT_CpG){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_MinDJnc:
+	if(!DEFAULT_MinDJnc){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_PfamHit:
+	if(!DEFAULT_PfamHit){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_IdPmax:
+	if(!DEFAULT_IdPmax){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_IdPSNP:
+	if(!DEFAULT_IdPSNP){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_IdQmin:
+	if(!DEFAULT_IdQmin){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_sift_prediction:
+	if(!DEFAULT_sift_prediction){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_name:
+	if(!DEFAULT_name){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_name2:
+	if(!DEFAULT_name2){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_transcriptStrand:
+	if(!DEFAULT_transcriptStrand){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_positionType:
+	if(!DEFAULT_positionType){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_frame:
+	if(!DEFAULT_frame){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_mrnaCoord:
+	if(!DEFAULT_mrnaCoord){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_codonCoord:
+	if(!DEFAULT_codonCoord){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_spliceDist:
+	if(!DEFAULT_spliceDist){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_referenceCodon:
+	if(!DEFAULT_referenceCodon){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_referenceAA:
+	if(!DEFAULT_referenceAA){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_variantCodon:
+	if(!DEFAULT_variantCodon){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_variantAA:
+	if(!DEFAULT_variantAA){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_changesAA:
+	if(!DEFAULT_changesAA){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_functionalClass:
+	if(!DEFAULT_functionalClass){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_codingCoordStr:
+	if(!DEFAULT_codingCoordStr){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_proteinCoordStr:
+	if(!DEFAULT_proteinCoordStr){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_inCodingRegion:
+	if(!DEFAULT_inCodingRegion){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_spliceInfo:
+	if(!DEFAULT_spliceInfo){
+		v.add(i);
+	}
+	break;
+case INDEX_OF_uorfChange:
+	if(!DEFAULT_uorfChange){
+		v.add(i);
+	}
+	break;
             }
         }
         return v;

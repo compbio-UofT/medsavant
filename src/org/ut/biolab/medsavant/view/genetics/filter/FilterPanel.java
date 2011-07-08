@@ -187,9 +187,12 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             List<FilterView> views = new ArrayList<FilterView>();
                        
             views.add(CohortFilterView.getCohortFilterView());
-            views.add(GenderFilterView.getGenderFilterView());
+                        views.add(GeneListFilterView.getFilterView());
+
+            views.add(GenderFilterView2.getGenderFilterView());
             views.add(EthnicityFilterView.getEthnicityFilterView());
-            views.add(GeneListFilterView.getFilterView());
+            views.add(IQVerbal.getFilterView());
+
             views.addAll(getVariantRecordFilterViews());
             views.add(GOFilter.getGOntologyFilterView());
             views.add(HPOFilter.getHPOntologyFilterView());                     
@@ -285,7 +288,36 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                     columnAlias.equals(VariantTableSchema.ALIAS_GLHOMOALT) ||
                     columnAlias.equals(VariantTableSchema.ALIAS_GQ) ||
                     columnAlias.equals(VariantTableSchema.ALIAS_HQA) ||
-                    columnAlias.equals(VariantTableSchema.ALIAS_HQB)
+                    columnAlias.equals(VariantTableSchema.ALIAS_HQB) ||
+                    
+                    
+                    columnAlias.equals(VariantTableSchema.ALIAS_snp_id) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_name) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_name2) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_spliceInfo) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_changesAA) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_referenceAA) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_variantAA) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_PfamHit) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_nt1) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_nt2) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_o_acc) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_codingCoordStr) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_proteinCoordStr) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_acc) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_position_a) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_position_b) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_mrnaCoord) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_codonCoord) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_frame) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_pph2_FDR) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_pph2_FPR) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_pph2_TPR) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_IdPSNP) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_IdPmax) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_IdQmin) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_MinDJnc) ||
+                    columnAlias.equals(VariantTableSchema.ALIAS_IdQmin)
                     ) {
                 continue;
             }
@@ -620,6 +652,72 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                                 "chr9","chr10","chr11","chr12","chr13","chr14","chr15","chr16",
                                 "chr17","chr18","chr19","chr20","chr21","chr22","chrX","chrY"
                             }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_uorfChange)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "","+1","-1"
+                            }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_functionalClass)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "","missense","nonsense","readthrough","silent"
+                            }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_inCodingRegion)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "","true","false"
+                            }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_positionType)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "","CDS","intron","utr3","utr5"
+                            }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_referenceCodon)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "","AAA","AAC","AAG","AAT","ACA","ACC","ACG","ACT","AGA","AGC","AGG","AGT","ATA","ATC","ATG","ATT","CAA","CAC","CAG","CAT","CCA","CCC","CCG","CCT","CGA","CGC","CGG","CGT","CTA","CTC","CTG","CTT","GAA","GAC","GAG","GAT","GCA","GCC","GCG","GCT","GGA","GGC","GGG","GGT","GTA","GTC","GTG","GTT","TAA","TAC","TAG","TAT","TCA","TCC","TCG","TCT","TGA","TGC","TGG","TGT","TTA","TTC","TTG","TTT"
+                            }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_variantCodon)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "","AAA","AAC","AAG","AAT","ACA","ACC","ACG","ACT","AGA","AGC","AGG","AGT","ATA","ATC","ATG","ATT","CAA","CAC","CAG","CAT","CCA","CCC","CCG","CCT","CGA","CGC","CGG","CGT","CTA","CTC","CTG","CTT","GAA","GAC","GAG","GAT","GCA","GCC","GCG","GCT","GGA","GGC","GGG","GGT","GTA","GTC","GTG","GTT","TAA","TAC","TAG","TAT","TCA","TCC","TCG","TCT","TGA","TGC","TGG","TGT","TTA","TTC","TTG","TTT"
+                            }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_pph2_class)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "","            benign","           unknown"," possibly damaging"," probably damaging"
+                            }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_AC)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "1","2"
+                            }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_AF)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "0.50","1.00"
+                            }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_prediction)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "","              none","           neutral","       deleterious"
+                            }));
+                } else if (columnAlias.equals(VariantTableSchema.ALIAS_transcriptStrand)) {
+                    uniq = new ArrayList<String>();
+                    uniq.addAll(Arrays.asList(
+                            new String[]{
+                                "","+","-"
+                            }));
                 } else if (columnAlias.equals(VariantTableSchema.ALIAS_REFERENCE)
                         || columnAlias.equals(VariantTableSchema.ALIAS_ALTERNATE)) {
                     uniq = new ArrayList<String>();
@@ -630,6 +728,15 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 } 
                 else {
                     uniq = QueryUtil.getDistinctValuesForColumn(conn, table, col);
+                    
+                    /*
+                    System.out.println();
+                    for (String val : uniq) {
+                        System.out.print("\"" + val + "\",");
+                    }
+                    System.out.println();
+                     * 
+                     */
                 }
                 
                 if (columnAlias.equals(VariantTableSchema.ALIAS_CHROM)) {
