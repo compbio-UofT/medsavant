@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
@@ -95,7 +96,13 @@ public abstract class OntologySubPanel extends JPanel implements AggregatePanelG
 //        OntologyStatsWorker.mapNameToTree.clear();
         OntologyStatsWorker.mapLocToFreq.clear();
         if (getJTree() != null){
-            getJTree().repaint();
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    getJTree().repaint();
+                }
+            });
+            
 //            System.out.println("Tree has been repainted");
         }
         this.updateUI();

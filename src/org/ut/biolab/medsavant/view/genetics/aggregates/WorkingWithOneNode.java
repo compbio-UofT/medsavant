@@ -24,15 +24,17 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
       private int startIndex;
       private int endIndex;
       private JTree tree;
+      OntologySubPanel subPanel;
 
       public WorkingWithOneNode
               (JTree tree, DefaultMutableTreeNode node, int chromIndex, 
-              int startIndex, int endIndex){
+              int startIndex, int endIndex, OntologySubPanel subPanel){
           this.node = node;
           this.chromIndex = chromIndex;
           this.startIndex = startIndex;
           this.endIndex = endIndex;
           this.tree = tree;
+          this.subPanel = subPanel;
       }
 
     @Override
@@ -44,6 +46,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 
             if (Thread.currentThread().isInterrupted()){
                 throw new java.util.concurrent.CancellationException();
+                // TODO: Not doing more here is probably creating tonnes of problems.
             }
             String[] split = loc.split("\t");
             String chrom = split[chromIndex].trim();
@@ -62,8 +65,15 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
             numVariants = numVariants + numCurr;
             ((Node)node.getUserObject()).setTotalDescription(" [>=" + numVariants + " records]");
 //                System.out.println(numVariants);
-            tree.repaint();
+//            tree.repaint();
 
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+//                    tree.repaint();
+                    tree.updateUI();
+                }
+            });
         }
 
         return numVariants;
@@ -76,8 +86,14 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
                 ((Node)node.getUserObject()).setTotalDescription(additionalDesc);
             }
             catch(Exception e){
-//                e.printStackTrace();
+                
+                subPanel.stopEverything();
             }
-            tree.repaint();
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    tree.repaint();
+                }
+        });
       }
   }

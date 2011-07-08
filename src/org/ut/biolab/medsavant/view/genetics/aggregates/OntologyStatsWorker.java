@@ -64,7 +64,13 @@ public class OntologyStatsWorker extends SwingWorker{
             subPanel.remove(waitPanel);
             subPanel.add(scrollPane);
 
-            subPanel.getJTree().repaint();
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    subPanel.getJTree().repaint();
+                }
+            });
+            
             
             subPanel.updateUI();
 
@@ -137,8 +143,13 @@ public class OntologyStatsWorker extends SwingWorker{
                 }
 
                 // Change statistics for only the NEWLY visible nodes.
-                changeStatistics(newjtree, purgedVisibleNodes, subPanel.chromSplitIndex, 
+                try{                
+                    changeStatistics(newjtree, purgedVisibleNodes, subPanel.chromSplitIndex, 
                         subPanel.startSplitIndex, subPanel.endSplitIndex);
+                }
+                catch(Exception e){
+                    subPanel.stopEverything();
+                }
             }
 
             public void treeCollapsed(TreeExpansionEvent event) {
@@ -160,7 +171,7 @@ public class OntologyStatsWorker extends SwingWorker{
      * @param endIndex index where the end position will be when the location info
      * is split.
      */
-    private static void changeStatistics
+    private void changeStatistics
             (JTree tree, List<DefaultMutableTreeNode> visibleNodes, int chromIndex, int startIndex, int endIndex) {
         
         mapLocToFreq.clear();
@@ -173,10 +184,10 @@ public class OntologyStatsWorker extends SwingWorker{
         for (DefaultMutableTreeNode node: visibleNodes){
             
             if (Thread.currentThread().isInterrupted()){
-                return;
+                throw new java.util.concurrent.CancellationException();
             }
             WorkingWithOneNode curr = new WorkingWithOneNode
-                    (tree, node, chromIndex, startIndex, endIndex);
+                    (tree, node, chromIndex, startIndex, endIndex, subPanel);
             listIndividualThreads.add(curr);
             curr.execute();
 //            System.out.println(node);

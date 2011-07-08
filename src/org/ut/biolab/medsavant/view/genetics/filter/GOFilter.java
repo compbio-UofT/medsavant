@@ -192,7 +192,7 @@ public class GOFilter {
         
         // Add this tree to the storer so that it does not need to be loaded 
         // again when dealing with statistics.
-        FilterObjectStorer.addObject(NAME_TREE, xtree.copyTree());
+        FilterObjectStorer.addObject(NAME_TREE, xtree.getCopyTree());
         
         // to keep track of the locations of the places selected.
         final HashSet<String> locations = new HashSet<String>();

@@ -158,7 +158,7 @@ public class HPOFilter {
         
         // Add this tree to the storer so that it does not need to be loaded 
         // again when dealing with statistics.
-        FilterObjectStorer.addObject(NAME_TREE, tree.copyTree());
+        FilterObjectStorer.addObject(NAME_TREE, tree.getCopyTree());
         
         jTree.getSelectionModel().setSelectionMode
                 (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);

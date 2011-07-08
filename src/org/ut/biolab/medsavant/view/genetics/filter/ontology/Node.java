@@ -123,6 +123,28 @@ public class Node implements Comparable{
     }
     
     /**
+     * Get a copy of this node.  Use this with great care.  All nodes created in
+     * this way have isSpecial being false.
+     * @return a copy of this node.
+     */
+    public Node getCopy(){
+        
+        Node copyNode = new Node(this.identifier, this.descriptionSpecialNode);
+        copyNode.description = this.description;
+        copyNode.hasBeenDiscovered = this.hasBeenDiscovered;
+        copyNode.hasBeenSelected = this.hasBeenSelected;
+        copyNode.locs = this.locs;
+        copyNode.specialCopyNode = this.specialCopyNode.getCopy();
+        copyNode.totalDescription = this.totalDescription;
+        
+        copyNode.children = new TreeSet<Node>();
+        for (Node node: this.children){
+            copyNode.children.add(node.getCopy());
+        }
+        return copyNode;
+    }
+    
+    /**
      * Set this node as the special node of this node. As a default, a node does
      * not have any children.
      * @param descriptionSpecialNode the description of this special node. If 

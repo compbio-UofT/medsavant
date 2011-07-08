@@ -24,7 +24,7 @@ public class Tree {
     /**
      * Fake root of the tree.  Useful since this is actually a forest of trees.
      */
-    protected final Node fakeRoot; 
+    protected Node fakeRoot; 
     
     /**
      * Dictionary from an identifier to a node.
@@ -55,11 +55,37 @@ public class Tree {
     }
     
     /**
-     * Returns a copy of this tree.
+     * Returns a copy of this tree. Caution: a copy of this tree does not 
+     * necessarily respond in the desired manner.  USE WITH CARE.
      * @return 
      */
-    public Tree copyTree(){
-        // TODO work on this one.
+    public Tree getCopyTree(){
+        
+        // TODO: get a copy of the tree.
+       
+//        Tree copyTree = new Tree();
+//        copyTree.fakeRoot = this.fakeRoot.getCopy();
+//        copyTree.idToLocs = this.idToLocs;
+//        copyTree.identifierToNode = new HashMap<String, Node>();
+//        
+//        List<Node> parentNodes = new ArrayList<Node>();
+//        parentNodes.add(this.fakeRoot);
+//        List<Node> parallelParentNodes = new ArrayList<Node>();
+//        parallelParentNodes.add(copyTree.fakeRoot);
+//        List<Node> childrenNodes = new ArrayList<Node>();
+//        
+//        int i = 0;
+//        for (Node parentNode: parentNodes){
+//            
+//            Node parallelParentNode = parallelParentNodes.get(i);
+//            TreeSet<Node> currChildren = parentNode.getChildren();
+//            for (Node currChild: currChildren){
+//                
+//                
+//            }
+//            i++;
+//        }
+        
         return this;
     }
     
