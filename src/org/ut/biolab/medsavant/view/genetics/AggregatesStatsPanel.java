@@ -64,9 +64,8 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
         this.removeAll();
         this.add(toolBarPanel, BorderLayout.NORTH);
 
-        stopAll();
+        stopAll(currentRegionStat);
         AggregatePanelGenerator panelObj = panelMap.get(currentRegionStat);
-        panelObj.setUpdate(true);
         
         this.add(panelObj.getPanel());    
         this.updateUI();
@@ -117,17 +116,23 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
     }
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        stopAll();
-        ((AggregatePanelGenerator)panelMap.firstEntry()).setUpdate(true);
+        stopAll(panelMap.firstKey());
+//        ((AggregatePanelGenerator)panelMap.firstEntry()).setUpdate(true);
     }
     
     /**
-     * Stop updating all panels.
+     * Stop updating all panels except for this panel.
+     * @param exceptThisPanel 
      */
-    private void stopAll(){        
+    private void stopAll(String exceptThisPanel){        
         // Set all panels to not be updated.
         for (String panelName: panelMap.keySet()){
-            panelMap.get(panelName).setUpdate(false);
+            if (!panelName.equals(exceptThisPanel)){
+                panelMap.get(panelName).setUpdate(false);
+            }
+            else{
+                panelMap.get(panelName).setUpdate(true);
+            }
         }
     }
       

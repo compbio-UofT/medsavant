@@ -6,6 +6,7 @@ package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import java.util.HashSet;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.ut.biolab.medsavant.db.ConnectionController;
@@ -41,6 +42,9 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
         int numVariants = 0;
         for (String loc: locs){
 
+            if (Thread.currentThread().isInterrupted()){
+                throw new java.util.concurrent.CancellationException();
+            }
             String[] split = loc.split("\t");
             String chrom = split[chromIndex].trim();
             int start = Integer.parseInt(split[startIndex].trim());
@@ -59,6 +63,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
             ((Node)node.getUserObject()).setTotalDescription(" [>=" + numVariants + " records]");
 //                System.out.println(numVariants);
             tree.repaint();
+
         }
 
         return numVariants;

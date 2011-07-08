@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -62,6 +63,9 @@ public class OntologyStatsWorker extends SwingWorker{
             // Remove the wait panel first.
             subPanel.remove(waitPanel);
             subPanel.add(scrollPane);
+
+            subPanel.getJTree().repaint();
+            
             subPanel.updateUI();
 
 //                System.out.println("Ending of done");
@@ -111,6 +115,9 @@ public class OntologyStatsWorker extends SwingWorker{
 
             public void treeExpanded(TreeExpansionEvent event) {
                 
+                if (!subPanel.getUpdateStatus()){
+                    return;
+                }
                 // Get all those nodes that are visible to the user.
                 List<DefaultMutableTreeNode> visibleNodes = getVisibleNodes(newjtree);
                 // Get only those nodes that used to be invisible to the user.
@@ -140,7 +147,8 @@ public class OntologyStatsWorker extends SwingWorker{
         });
             
         return jTree;
-    }    
+    }
+    
     
     /**
      * Change the statistics for the visible nodes given.
@@ -157,15 +165,23 @@ public class OntologyStatsWorker extends SwingWorker{
         
         mapLocToFreq.clear();
         
-        killIndividualThreads();
+//        System.out.println("WE ARE CHANGING THE STATISTICS.");
+//        killIndividualThreads();
         
-        listIndividualThreads.clear();
+//        System.out.println("\n\n-------------");
+//        listIndividualThreads.clear();
         for (DefaultMutableTreeNode node: visibleNodes){
+            
+            if (Thread.currentThread().isInterrupted()){
+                return;
+            }
             WorkingWithOneNode curr = new WorkingWithOneNode
                     (tree, node, chromIndex, startIndex, endIndex);
             listIndividualThreads.add(curr);
             curr.execute();
+//            System.out.println(node);
         }
+//        System.out.println("-------------\n\n");
     }
 
     /**
@@ -232,6 +248,7 @@ public class OntologyStatsWorker extends SwingWorker{
           for (WorkingWithOneNode thread: listIndividualThreads){
             if (!thread.isDone()){
                 thread.cancel(true);
+//                System.out.println("THIS IS NOW BEING CANCELLED.");
             }
 //            System.out.println("Cancelling");
         }

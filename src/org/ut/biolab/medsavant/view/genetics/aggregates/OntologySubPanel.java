@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -25,7 +26,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author Nirvana Nursimulu
  */
-public abstract class OntologySubPanel extends JPanel implements FiltersChangedListener, AggregatePanelGenerator{
+public abstract class OntologySubPanel extends JPanel implements AggregatePanelGenerator, FiltersChangedListener{
 
     
     private WaitPanel waitPanel;
@@ -44,11 +45,12 @@ public abstract class OntologySubPanel extends JPanel implements FiltersChangedL
     
     private OntologyStatsWorker osw;
     
-    private boolean updatePanelUponFilterChanges;
+    protected boolean updatePanelUponFilterChanges;
 
         
     public OntologySubPanel(int chromSplitIndex, int startSplitIndex, int endSplitIndex){
         
+        FilterController.addFilterListener(this);
         this.setLayout(new BorderLayout());
         waitPanel = new WaitPanel("Getting aggregate statistics");
         this.add(waitPanel, BorderLayout.CENTER);
@@ -79,7 +81,10 @@ public abstract class OntologySubPanel extends JPanel implements FiltersChangedL
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
 
         stopEverything();
-        this.update();
+        if (updatePanelUponFilterChanges){
+            this.update();
+        }
+//        System.out.println("Filters said to have been changed.");
     }
     
     public void stopEverything(){
@@ -91,7 +96,7 @@ public abstract class OntologySubPanel extends JPanel implements FiltersChangedL
         OntologyStatsWorker.mapLocToFreq.clear();
         if (getJTree() != null){
             getJTree().repaint();
-            System.out.println("Tree has been repainted");
+//            System.out.println("Tree has been repainted");
         }
         this.updateUI();
     }
@@ -106,6 +111,10 @@ public abstract class OntologySubPanel extends JPanel implements FiltersChangedL
         if (updatePanelUponFilterChanges){
             this.update();
         }
-    }    
+    }
+    
+    public boolean getUpdateStatus(){
+        return updatePanelUponFilterChanges;
+    }
     
 }

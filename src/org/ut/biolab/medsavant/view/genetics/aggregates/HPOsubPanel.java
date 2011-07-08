@@ -27,9 +27,6 @@ public class HPOsubPanel extends OntologySubPanel{
         super(0, 1, 2);
     }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        super.filtersChanged();
-    }
     
     @Override
     public String getName(){
@@ -54,5 +51,5 @@ public class HPOsubPanel extends OntologySubPanel{
             return jTree;
         }
     }
-
+    
 }

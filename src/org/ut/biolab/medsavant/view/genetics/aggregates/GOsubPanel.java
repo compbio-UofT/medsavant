@@ -29,9 +29,6 @@ public class GOsubPanel extends OntologySubPanel{
         super(1, 2, 3);
     }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        super.filtersChanged();
-    }
     
     @Override
     public String getName(){
