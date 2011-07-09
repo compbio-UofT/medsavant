@@ -84,41 +84,4 @@ public class ClassifiedPositionInfo {
         return map;
     }
     
-//    @Override
-//    public String toString(){
-//        String acc = "";
-//        for (String key: mapChrToLocations.keySet()){
-//            // If there is anything about this chromosome, add the corresponding ranges.
-//            List<Range> ranges = Range.merge(mapChrToLocations.get(key));
-//            // try to use library
-//            if (ranges.isEmpty())
-//                continue;
-//            
-//            if (acc.length() == 0){
-//                acc = CHROM_COL + "=" + key + " AND (";
-//            }
-//            else{
-//                acc = acc + " OR " + CHROM_COL + "=" + key + " AND (";
-//            }
-//            String rangeAcc = "";
-//            for (Range range: ranges){
-//                
-//                if (rangeAcc.length() == 0){
-//                    rangeAcc = "(" + POSITION_COL + ">" + range.getMin() + 
-//                            " AND " + POSITION_COL + "<" + range.getMax() + ")";
-//                }
-//                else{
-//                    rangeAcc = "OR (" + POSITION_COL + ">" + range.getMin() + 
-//                            " AND " + POSITION_COL + "<" + range.getMax() + ")";
-//                }
-//            }
-//            acc = rangeAcc + ") ";
-//        }
-//        
-//        if (allColumns){
-//            acc = "SELECT * FROM " + tableName + " " + acc;
-//        }
-//        return acc;
-//    }
-    
 }
