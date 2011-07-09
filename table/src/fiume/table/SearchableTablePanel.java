@@ -49,16 +49,13 @@ public class SearchableTablePanel extends JPanel {
     private SortableTable table;
     private JPanel fieldPanel;
     private JLabel amountLabel;
-    
     private static final int ROWSPERPAGE_1 = 100;
     private static final int ROWSPERPAGE_2 = 500;
     private static final int ROWSPERPAGE_3 = 1000;
     private static int ROWSPERPAGE_X;
-
     private int pageNum = 1;
     private int numRowsPerPage = ROWSPERPAGE_2;
     private final JComboBox rowsPerPageDropdown;
-    
     private List<List> data;
     private List<String> columnNames;
     private List<Class> columnClasses;
@@ -67,7 +64,6 @@ public class SearchableTablePanel extends JPanel {
     private final JButton gotoPrevious;
     private final JButton gotoNext;
     private final JButton gotoLast;
-    
     private ColumnChooser columnChooser;
     private List<Integer> hiddenColumns;
 
@@ -76,6 +72,7 @@ public class SearchableTablePanel extends JPanel {
     }
 
     public synchronized void updateData(Vector data) {
+        
         this.data = data;
         //updateView();
         this.setPageNumber(1); // updates the view
@@ -84,10 +81,12 @@ public class SearchableTablePanel extends JPanel {
     }
 
     public void updateView() {
-        
-        if (data == null) { return; }
 
-        List<List> pageData = getDataOnPage(this.getPageNumber(),data);
+        if (data == null) {
+            return;
+        }
+
+        List<List> pageData = getDataOnPage(this.getPageNumber(), data);
 
         boolean first = false;
         if (model == null) {
@@ -99,9 +98,9 @@ public class SearchableTablePanel extends JPanel {
         }
 
         this.gotoFirst.setEnabled(true);
-            this.gotoPrevious.setEnabled(true);
-            this.gotoNext.setEnabled(true);
-            this.gotoLast.setEnabled(true);
+        this.gotoPrevious.setEnabled(true);
+        this.gotoNext.setEnabled(true);
+        this.gotoLast.setEnabled(true);
 
         if (pageNum == 1 || pageNum == 0) {
             this.gotoFirst.setEnabled(false);
@@ -111,33 +110,35 @@ public class SearchableTablePanel extends JPanel {
             this.gotoNext.setEnabled(false);
             this.gotoLast.setEnabled(false);
         }
-            
+
 
         pageLabel.setText("Page " + this.getPageNumber() + " of " + this.getTotalNumPages());
-        int start = getTotalNumPages() == 0 ? 0 : (this.getPageNumber()-1)*this.getRowsPerPage()+1;
-        int end = getTotalNumPages() == 0 ? 0 : Math.min(start + this.getRowsPerPage()-1, this.getTotalRowCount());
+        int start = getTotalNumPages() == 0 ? 0 : (this.getPageNumber() - 1) * this.getRowsPerPage() + 1;
+        int end = getTotalNumPages() == 0 ? 0 : Math.min(start + this.getRowsPerPage() - 1, this.getTotalRowCount());
         amountLabel.setText("Showing " + start + " - " + end + " of " + data.size() + " records");
 
-        if(first) {       
+        if (first) {
             int[] columns = new int[columnNames.size()];
-            for (int i = 0; i < columns.length; i++) { columns[i] = i; }
+            for (int i = 0; i < columns.length; i++) {
+                columns[i] = i;
+            }
             filterField.setTableModel(model);
             filterField.setColumnIndices(columns);
             filterField.setObjectConverterManagerEnabled(true);
             table.setModel(new LuceneFilterableTableModel(filterField.getDisplayTableModel()));
             columnChooser.hideColumns(table, hiddenColumns);
-                       
+
             int[] favColumns = new int[columnNames.size() - hiddenColumns.size()];
             int pos = 0;
-            for(int i = 0; i < columnNames.size(); i++){
-                if(!hiddenColumns.contains(i)){
+            for (int i = 0; i < columnNames.size(); i++) {
+                if (!hiddenColumns.contains(i)) {
                     favColumns[pos] = i;
                     pos++;
-                }             
-            }                       
+                }
+            }
             columnChooser.setFavoriteColumns(favColumns);
         }
-        
+
     }
 
     private void setTableModel(List<List> data, List<String> columnNames, List<Class> columnClasses) {
@@ -155,8 +156,8 @@ public class SearchableTablePanel extends JPanel {
         List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
         boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection) {
 
-        this.ROWSPERPAGE_X = defaultRows;      
-        
+        this.ROWSPERPAGE_X = defaultRows;
+
         this.hiddenColumns = hiddenColumns;
         table = new SortableTable() {
 
@@ -192,11 +193,11 @@ public class SearchableTablePanel extends JPanel {
         //table.setFont(new Font("Times New Roman", Font.PLAIN, 14));
 
         table.setAutoResizeMode(SortableTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-        
+
         //column chooser
         TableHeaderPopupMenuInstaller installer = new TableHeaderPopupMenuInstaller(table);
-        installer.addTableHeaderPopupMenuCustomizer(new AutoResizePopupMenuCustomizer());      
-        columnChooser = new ColumnChooser();        
+        installer.addTableHeaderPopupMenuCustomizer(new AutoResizePopupMenuCustomizer());
+        columnChooser = new ColumnChooser();
         installer.addTableHeaderPopupMenuCustomizer(columnChooser);
 
         AutoFilterTableHeader header = new AutoFilterTableHeader(table);
@@ -211,8 +212,8 @@ public class SearchableTablePanel extends JPanel {
 
         this.setLayout(new BorderLayout(3, 3));
         fieldPanel = new JPanel();
-        
-        if(allowSearch){
+
+        if (allowSearch) {
             fieldPanel.add(filterField);
         }
 
@@ -230,21 +231,25 @@ public class SearchableTablePanel extends JPanel {
         gotoLast.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LAST));
 
         gotoFirst.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 goToFirstPage();
             }
         });
         gotoPrevious.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 goToPreviousPage();
             }
         });
         gotoNext.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 goToNextPage();
             }
         });
         gotoLast.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 goToLastPage();
             }
@@ -269,10 +274,12 @@ public class SearchableTablePanel extends JPanel {
 
         bottomPanel.add(new JLabel("Results per page:"));
 
+
         strut(bottomPanel);
-        
+
+
         boolean hasDefaultRowsPerPage = true;
-        if(ROWSPERPAGE_X == ROWSPERPAGE_1 || ROWSPERPAGE_X == ROWSPERPAGE_2 || ROWSPERPAGE_X == ROWSPERPAGE_3){
+        if (ROWSPERPAGE_X == ROWSPERPAGE_1 || ROWSPERPAGE_X == ROWSPERPAGE_2 || ROWSPERPAGE_X == ROWSPERPAGE_3) {
             hasDefaultRowsPerPage = false;
         }
         ArrayList<Integer> rowsList = new ArrayList<Integer>();
@@ -280,7 +287,7 @@ public class SearchableTablePanel extends JPanel {
         rowsList.add(ROWSPERPAGE_2);
         rowsList.add(ROWSPERPAGE_3);
         Integer[] finalList = new Integer[3];
-        if(hasDefaultRowsPerPage){
+        if (hasDefaultRowsPerPage) {
             rowsList.add(ROWSPERPAGE_X);
             Collections.sort(rowsList);
         }
@@ -290,20 +297,19 @@ public class SearchableTablePanel extends JPanel {
         rowsPerPageDropdown.setPrototypeDisplayValue(ROWSPERPAGE_3);
         rowsPerPageDropdown.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {               
-                JComboBox cb = (JComboBox)e.getSource();
+            public void actionPerformed(ActionEvent e) {
+                JComboBox cb = (JComboBox) e.getSource();
                 int rowsPerPage = (Integer) cb.getSelectedItem();
                 setNumRowsPerPage(rowsPerPage);
             }
-
         });
-        if(hasDefaultRowsPerPage){
+        if (hasDefaultRowsPerPage) {
             rowsPerPageDropdown.setSelectedIndex(rowsList.indexOf(ROWSPERPAGE_X));
         } else {
             rowsPerPageDropdown.setSelectedIndex(1);
-        }       
-        rowsPerPageDropdown.setPreferredSize(new Dimension(100,25));
-        rowsPerPageDropdown.setMaximumSize(new Dimension(100,25));
+        }
+        rowsPerPageDropdown.setPreferredSize(new Dimension(100, 25));
+        rowsPerPageDropdown.setMaximumSize(new Dimension(100, 25));
         bottomPanel.add(rowsPerPageDropdown);
 
         setTableModel(
@@ -312,12 +318,19 @@ public class SearchableTablePanel extends JPanel {
                 Util.listToVector(columnClasses));
 
         JPanel tablePanel = new JPanel(new BorderLayout(3, 3));
-        tablePanel.add(new JScrollPane(table));
+        JScrollPane jsp = new JScrollPane(table);
+        jsp.setBorder(null);
+        tablePanel.add(jsp);
 
-        this.add(fieldPanel, BorderLayout.BEFORE_FIRST_LINE);
-        this.add(bottomPanel,BorderLayout.AFTER_LAST_LINE);
+        if (allowSort) {
+            this.add(fieldPanel, BorderLayout.BEFORE_FIRST_LINE);
+        }
+        
+        if (allowPages) {
+            this.add(bottomPanel, BorderLayout.AFTER_LAST_LINE);
+        }
 
-        this.add(tablePanel);      
+        this.add(tablePanel);
     }
 
     private void setNumRowsPerPage(int num) {
@@ -331,9 +344,13 @@ public class SearchableTablePanel extends JPanel {
     }
 
     private void setPageNumber(int i) {
-        if (0 == getTotalNumPages()) { i = 0; }
-        else if (i > getTotalNumPages()) { i = getTotalNumPages(); }
-        else if(i < 1) { i = 1; }
+        if (0 == getTotalNumPages()) {
+            i = 0;
+        } else if (i > getTotalNumPages()) {
+            i = getTotalNumPages();
+        } else if (i < 1) {
+            i = 1;
+        }
         this.pageNum = i;
         this.updateView();
     }
@@ -351,20 +368,22 @@ public class SearchableTablePanel extends JPanel {
     }
 
     private void goToNextPage() {
-        setPageNumber(pageNum+1);
+        setPageNumber(pageNum + 1);
     }
 
     private void goToPreviousPage() {
-        setPageNumber(pageNum-1);
+        setPageNumber(pageNum - 1);
     }
 
     private int getTotalRowCount() {
-        if (data == null) { return 0; }
+        if (data == null) {
+            return 0;
+        }
         return data.size();
     }
 
     private int getTotalNumPages() {
-        return (int) Math.ceil(((double)getTotalRowCount())/getRowsPerPage());
+        return (int) Math.ceil(((double) getTotalRowCount()) / getRowsPerPage());
     }
 
     private int getRowsPerPage() {
@@ -375,10 +394,12 @@ public class SearchableTablePanel extends JPanel {
 
         List<List> result = new ArrayList<List>();
 
-        if (pageNumber == 0) { return result; }
+        if (pageNumber == 0) {
+            return result;
+        }
 
-        int start = (pageNumber-1)*this.getRowsPerPage();
-        int end = start+this.getRowsPerPage();
+        int start = (pageNumber - 1) * this.getRowsPerPage();
+        int end = start + this.getRowsPerPage();
 
         if (data != null) {
             for (int i = start; i < end && i < data.size(); i++) {
@@ -398,17 +419,14 @@ public class SearchableTablePanel extends JPanel {
 
     public void setSelectionMode(int selectionMode) {
         table.setSelectionMode(selectionMode);
-    }    
-    
+    }
+
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
-                  
-        public void hideColumns(JTable table, List<Integer> indices){
-            for(Integer i : indices){
+
+        public void hideColumns(JTable table, List<Integer> indices) {
+            for (Integer i : indices) {
                 hideColumn(table, i);
             }
         }
-
     }
 }
-
-
