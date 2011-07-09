@@ -52,13 +52,9 @@ public class ChartView extends JPanel {
 
     private void initToolBar() {
 
-        JPanel toolbar = ViewUtil.getBannerPanel();
-        toolbar.setBorder(ViewUtil.getMediumBorder());
+        JPanel toolbar = ViewUtil.getSubBannerPanel("Chart");
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
 
-        toolbar.add(Box.createHorizontalGlue());
-
-        toolbar.add(new JLabel("Field: "));
         chartChooser = new JComboBox();
         toolbar.add(chartChooser);
 
@@ -137,6 +133,13 @@ public class ChartView extends JPanel {
         //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_MQ0));
         addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_REFERENCE));
         addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_ALTERNATE));
+        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_Transv));
+        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_inCodingRegion));
+        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_prediction));
+        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_pph2_class));
+        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_functionalClass));
+        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_sift_prediction));
+        
     }
 
     private void initBottomBar() {

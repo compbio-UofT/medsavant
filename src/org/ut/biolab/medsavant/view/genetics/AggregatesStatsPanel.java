@@ -5,6 +5,7 @@
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
@@ -73,13 +74,9 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
     
     private void initToolBar(){
         
-        toolBarPanel = ViewUtil.getBannerPanel();
-        toolBarPanel.setBorder(ViewUtil.getMediumBorder());
-        toolBarPanel.setLayout(new BoxLayout(toolBarPanel, BoxLayout.X_AXIS));
+        toolBarPanel = ViewUtil.getSubBannerPanel("Aggregate variants by");
+        //toolBarPanel.setLayout(new BoxLayout(toolBarPanel, BoxLayout.X_AXIS));
 
-        toolBarPanel.add(Box.createHorizontalGlue());
-
-        toolBarPanel.add(new JLabel("Aggregate statistics by: "));      
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
         toolBarPanel.add(ViewUtil.clear(bar));

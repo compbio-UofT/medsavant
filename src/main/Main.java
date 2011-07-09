@@ -87,6 +87,9 @@ public class Main {
                 System.setProperty("apple.laf.useScreenMenuBar", "true");
                 System.setProperty("com.apple.mrj.application.apple.menu.about.name", "MedSavant");
             
+                
+                UIManager.put("TitledBorder.border", UIManager.getBorder("TitledBorder.aquaVariant"));
+                
                 Application macOSXApplication = Application.getApplication();
                 macOSXApplication.setAboutHandler(new AboutHandler() {
 

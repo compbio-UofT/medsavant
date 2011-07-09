@@ -125,7 +125,7 @@ public class VariantTableSchema extends TableSchema {
     public static final String ALIAS_BQ = "RMS Base Quality";
     public static final String ALIAS_CIGAR = "Cigar";
     public static final String ALIAS_DB = "dbSNP Membership";
-    public static final String ALIAS_DP = "Depth";
+    public static final String ALIAS_DP = "Coverage";
     public static final String ALIAS_END = "End Position";
     public static final String ALIAS_H2 = "HapMap2 Membership";
     public static final String ALIAS_MQ = "RMS Mapping Quality";

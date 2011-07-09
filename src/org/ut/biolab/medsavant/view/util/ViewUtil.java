@@ -27,7 +27,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
@@ -293,6 +295,31 @@ public class ViewUtil {
      * 
      */
 
+    public static JPanel getSubBannerPanel(String title) {
+        JPanel p = new JPanel();
+        boxXLayout(p);
+        p.setBackground(new Color(245,245,245));
+        //p.setBorder(new CompoundBorder(ViewUtil.getTinyLineBorder(),ViewUtil.getMediumBorder()));
+        p.setBorder(BorderFactory.createTitledBorder(title));
+        return p;
+    }
+
+    private static void boxXLayout(JPanel p) {
+        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+    }
+
+    /*
+    public static JPanel getSubSubBannerPanel(String title) {
+        JPanel p = new JPanel();
+        boxXLayout(p);
+        p.setBackground(new Color(250,250,250));
+        //Border aquaBorder = UIManager.getBorder( "InsetBorder.aquaVariant" );
+        p.setBorder(BorderFactory.createTitledBorder(title));
+        //p.setBorder(new CompoundBorder(ViewUtil.getTinyLineBorder(),ViewUtil.getMediumBorder()));
+        return p;
+    }
+     * 
+     */
     
     public enum OS { Unknown, Windows, Linux, Mac };
     

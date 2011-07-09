@@ -691,9 +691,9 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 } else if (columnAlias.equals(VariantTableSchema.ALIAS_pph2_class)) {
                     uniq = new ArrayList<String>();
                     uniq.addAll(Arrays.asList(
-                            new String[]{
-                                "","            benign","           unknown"," possibly damaging"," probably damaging"
-                            }));
+                            new String[]{"","              none","           neutral","       deleterious"
+                            
+                                }));
                 } else if (columnAlias.equals(VariantTableSchema.ALIAS_AC)) {
                     uniq = new ArrayList<String>();
                     uniq.addAll(Arrays.asList(
@@ -709,9 +709,9 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 } else if (columnAlias.equals(VariantTableSchema.ALIAS_prediction)) {
                     uniq = new ArrayList<String>();
                     uniq.addAll(Arrays.asList(
-                            new String[]{
-                                "","              none","           neutral","       deleterious"
-                            }));
+                            new String[]{"","            benign","           unknown"," possibly damaging"," probably damaging"
+                            
+                                }));
                 } else if (columnAlias.equals(VariantTableSchema.ALIAS_transcriptStrand)) {
                     uniq = new ArrayList<String>();
                     uniq.addAll(Arrays.asList(

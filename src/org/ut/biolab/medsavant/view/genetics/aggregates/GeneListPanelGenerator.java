@@ -38,7 +38,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
     }
 
     public String getName() {
-        return "Gene List";
+        return "Genomic Region";
     }
 
     public JPanel getPanel() {
@@ -62,9 +62,9 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
         public GeneListPanel() {
             this.setLayout(new BorderLayout());
-            banner = new JPanel();
-            banner.setLayout(new BoxLayout(banner,BoxLayout.X_AXIS));
-            banner.setBorder(ViewUtil.getMediumBorder());
+            banner = ViewUtil.getSubBannerPanel("Gene List");
+            //banner.setLayout(new BoxLayout(banner,BoxLayout.X_AXIS));
+            //banner.setBorder(ViewUtil.getMediumBorder());
 
             geneLister = new JComboBox();
             
@@ -74,8 +74,8 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             tablePanel.setBackground(Color.white);
             tablePanel.setLayout(new BorderLayout());
 
-            banner.add(Box.createHorizontalGlue());
-            banner.add(new JLabel("Gene list: "));
+            //banner.add(Box.createHorizontalGlue());
+            //banner.add(new JLabel("> Gene list: "));
             banner.add(geneLister);
             banner.add(ViewUtil.getMediumSeparator());
             banner.add(goButton);

@@ -87,7 +87,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
         ColumnType type = table.getColumnType(column);
         return TableSchema.isNumeric(type) 
-                && !alias.equals(VariantTableSchema.ALIAS_GT); // hack to fool chart into thinking numbers are categories
+                && !alias.equals(VariantTableSchema.ALIAS_GT) // hack to fool chart into thinking numbers are categories
+                && !alias.equals(VariantTableSchema.ALIAS_Transv);
     }
 
     public String getName() {
