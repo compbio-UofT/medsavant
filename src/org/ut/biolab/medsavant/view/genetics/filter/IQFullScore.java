@@ -43,9 +43,9 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-class IQVerbal {
+class IQFullScore {
 
-    private static final String FILTER_NAME = "IQ Verbal";
+    private static final String FILTER_NAME = "IQ Full Score";
 
     static FilterView getFilterView() {
         return new FilterView(FILTER_NAME, getContentPanel());
@@ -65,14 +65,12 @@ class IQVerbal {
         try {
             Range extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getPatientTableSchema(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_IQWVERB));
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_IQWFULL));
 
             final RangeSlider rs = new com.jidesoft.swing.RangeSlider();
 
             final int min = (int) Math.floor(extremeValues.getMin());
             final int max = (int) Math.ceil(extremeValues.getMax());
-
-            System.out.println("min and max " + min + " : " + max);
             
             rs.setMinimum(min);
             rs.setMaximum(max);
@@ -177,11 +175,11 @@ class IQVerbal {
 
                                 List<String> individuals = null;
                                 try {
-                                    individuals = QueryUtil.getPatientsWithIQScoresInRange(PatientTableSchema.ALIAS_IQWVERB, new Range(rs.getLowValue(),rs.getHighValue()));
+                                    individuals = QueryUtil.getPatientsWithIQScoresInRange(PatientTableSchema.ALIAS_IQWFULL, new Range(rs.getLowValue(),rs.getHighValue()));
                                 } catch (NonFatalDatabaseException ex) {
-                                    Logger.getLogger(IQVerbal.class.getName()).log(Level.SEVERE, null, ex);
+                                    Logger.getLogger(IQFullScore.class.getName()).log(Level.SEVERE, null, ex);
                                 } catch (SQLException ex) {
-                                    Logger.getLogger(IQVerbal.class.getName()).log(Level.SEVERE, null, ex);
+                                    Logger.getLogger(IQFullScore.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                                 
                                 Condition[] results = new Condition[individuals.size()];
@@ -235,9 +233,9 @@ class IQVerbal {
             container.add(bottomContainer);
 
         } catch (SQLException ex) {
-            Logger.getLogger(IQVerbal.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(IQFullScore.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NonFatalDatabaseException ex) {
-            Logger.getLogger(IQVerbal.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(IQFullScore.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return container;

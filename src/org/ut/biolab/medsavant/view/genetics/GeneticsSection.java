@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
 import org.ut.biolab.medsavant.view.dialog.VCFUploadForm;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 //import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
@@ -59,12 +60,34 @@ public class GeneticsSection extends SectionView {
 
         return button;
     }
+    
+    private JButton addShowInSavantButton(){
+        JButton button = new JButton("Show in Savant");
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new SavantExportForm();
+            }
+        }); 
+        return button;
+    }
+    
+    private JButton addSaveResultSetButton(){
+        JButton button = new JButton("Save Variants");
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //TODO
+            }
+        }); 
+        return button;
+    }
 
     @Override
     public Component[] getBanner() {
 
-        Component[] result = new Component[1];
-        result[0] = createVcfButton();
+        Component[] result = new Component[3];
+        result[2] = createVcfButton();
+        result[1] = addShowInSavantButton();
+        result[0] = addSaveResultSetButton();
         
         return result;
     }

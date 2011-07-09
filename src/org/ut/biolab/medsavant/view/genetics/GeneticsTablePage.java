@@ -79,29 +79,10 @@ public class GeneticsTablePage extends SubSectionView {
     }
 
     public Component[] getBanner() {
-        Component[] cs = new Component[2];
-        cs[0] = addSaveResultSetButton();
-        cs[1] = addShowInSavantButton();
-        return cs;
+        return null;
     }
     
-    private JButton addShowInSavantButton(){
-        JButton button = new JButton("Show in Savant");
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new SavantExportForm();
-            }
-        }); 
-        return button;
-    }
     
-    private JButton addSaveResultSetButton(){
-        JButton button = new JButton("Save Result Set");
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                //TODO
-            }
-        }); 
-        return button;
-    }
+    
+    
 }

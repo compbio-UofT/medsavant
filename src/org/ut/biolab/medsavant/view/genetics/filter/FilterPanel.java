@@ -93,17 +93,6 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
     private void initGUI() throws NonFatalDatabaseException {
 
-        /*
-        JPanel titlePanel = ViewUtil.getBannerPanel();
-        JLabel title = new JLabel("Filters");
-        ViewUtil.clear(title);
-        title.setFont(ViewUtil.getMediumTitleFont());
-        titlePanel.add(Box.createHorizontalGlue());
-        titlePanel.add(title);
-        titlePanel.add(Box.createHorizontalGlue());
-        this.add(titlePanel,BorderLayout.NORTH);
-         */
-
         JPanel statusPanel = ViewUtil.getBannerPanel();
         status = new JLabel();
 
@@ -192,7 +181,10 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             views.add(GenderFilterView2.getGenderFilterView());
             views.add(EthnicityFilterView.getEthnicityFilterView());
             views.add(IQVerbal.getFilterView());
+            views.add(IQPerformance.getFilterView());
+            views.add(IQFullScore.getFilterView());
 
+            
             views.addAll(getVariantRecordFilterViews());
             views.add(GOFilter.getGOntologyFilterView());
             views.add(HPOFilter.getHPOntologyFilterView());                     
