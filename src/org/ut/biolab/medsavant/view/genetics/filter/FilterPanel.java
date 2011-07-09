@@ -863,7 +863,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             // Get elapsed time in seconds
             float elapsedTimeSec = elapsedTimeMillis/1000F;
             
-            System.out.println("Took " + elapsedTimeSec + " seconds to make " + columnAlias + " filter");
+            //System.out.println("Took " + elapsedTimeSec + " seconds to make " + columnAlias + " filter");
         }
 
         return l;

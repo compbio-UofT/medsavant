@@ -161,7 +161,7 @@ public class FilterPanelFactory {
         // Get elapsed time in seconds
         float elapsedTimeSec = elapsedTimeMillis / 1000F;
 
-        System.out.println("Took " + elapsedTimeSec + " seconds to make " + name + " filter");
+        //System.out.println("Took " + elapsedTimeSec + " seconds to make " + name + " filter");
 
         return new FilterView(name, container);
     }

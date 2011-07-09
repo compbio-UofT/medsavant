@@ -71,8 +71,6 @@ class IQVerbal {
 
             final int min = (int) Math.floor(extremeValues.getMin());
             final int max = (int) Math.ceil(extremeValues.getMax());
-
-            System.out.println("min and max " + min + " : " + max);
             
             rs.setMinimum(min);
             rs.setMaximum(max);

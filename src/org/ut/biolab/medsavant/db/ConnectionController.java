@@ -76,9 +76,8 @@ public class ConnectionController {
         Connection c;
         try {
             Class.forName(SettingsController.getInstance().getDBDriver());
-            System.out.println("Connecting to DB url: " + SettingsController.getInstance().getDBURL());
             c = DriverManager.getConnection(SettingsController.getInstance().getDBURL(), LoginController.getUsername(), LoginController.getPassword());
-            System.out.println("Connection successful");
+            //System.out.println("Connection successful");
             return c;
         } catch (Exception e) {
             if (e.getMessage().startsWith("Access denied")) {

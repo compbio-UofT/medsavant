@@ -340,8 +340,6 @@ public class ViewUtil {
             } else if (osname.contains("linux")) {
                 thisOS = OS.Linux;
             }
-            
-            System.out.println("OS=" + thisOS);
         }
         
         return thisOS;

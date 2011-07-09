@@ -5,11 +5,14 @@
 
 package org.ut.biolab.medsavant.view.genetics;
 
+import java.util.concurrent.ExecutionException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.view.util.DialogUtil;
 import fiume.table.SearchableTablePanel;
+import fiume.vcf.VariantRecord;
 import java.awt.CardLayout;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,13 +76,18 @@ class TablePanel extends JPanel implements FiltersChangedListener {
     private class GetVariantsSwingWorker extends SwingWorker {
         @Override
         protected Object doInBackground() throws Exception {
-            tablePanel.updateData(Util.convertVariantRecordsToVectors(ResultController.getInstance().getFilteredVariantRecords()));
-            return null;
+            return Util.convertVariantRecordsToVectors(ResultController.getInstance().getFilteredVariantRecords());
         }
         
         @Override
         protected void done() {
-            showShowCard();
+            try {
+                tablePanel.updateData((Vector) get());
+                showShowCard();
+            } catch (InterruptedException ex) {
+            } catch (Exception e) {
+                System.err.println("Error updating table " + e.getMessage());
+            }
         }  
     }
 
