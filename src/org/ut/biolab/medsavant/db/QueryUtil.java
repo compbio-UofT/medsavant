@@ -324,6 +324,34 @@ public class QueryUtil {
         return numrows;
     }
     
+    public static int getNumPatientsWithVariantsInRange(Connection connect, String chrom, int start, int end) throws SQLException {
+        VariantTableSchema t = (VariantTableSchema) MedSavantDatabase.getInstance().getVariantTableSchema();
+
+        FunctionCall count = FunctionCall.count();
+        SelectQuery q = getCurrentBaseVariantFilterQuery();
+        q.addCustomColumns("COUNT(DISTINCT " + t.DBFIELDNAME_DNAID + ")");
+        //q.addColumns(t.getDBColumn(t.ALIAS_DNAID));
+        
+        Condition[] conditions = new Condition[3];
+        conditions[0] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_CHROM), chrom);
+        conditions[1] = new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_POSITION), start);
+        conditions[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, t.getDBColumn(VariantTableSchema.ALIAS_POSITION), end);       
+        q.addCondition(ComboCondition.and(conditions));        
+        
+        String query = q.toString();
+        query = query.replaceFirst("'", "").replaceFirst("'", "");
+        //System.out.println(query);
+        
+        Statement s = connect.createStatement();
+        ResultSet rs = s.executeQuery(query);
+        rs.next();
+
+        int numrows = rs.getInt(1);
+        s.close();
+        
+        return numrows;
+    }
+    
     public static int getNumFilteredVariants(Connection c) throws SQLException {
         FunctionCall count = FunctionCall.countAll();
         SelectQuery q = getCurrentBaseVariantFilterQuery();     
@@ -745,7 +773,10 @@ public class QueryUtil {
         q.addColumns(start);
         q.addColumns(end);
         q.addColumns(description);
+        q.addOrdering(description, Dir.ASCENDING);
         q.addCondition(BinaryCondition.equalTo(name, geneListName));
+        
+        System.out.println(q.toString());
         
         Statement s = ConnectionController.connect().createStatement();
         ResultSet rs = s.executeQuery(q.toString());
@@ -792,5 +823,7 @@ public class QueryUtil {
         return results;
         
     }
+
+    
        
 }

@@ -297,15 +297,18 @@ public class ViewUtil {
 
     public static JPanel getSubBannerPanel(String title) {
         JPanel p = new JPanel();
-        boxXLayout(p);
+        setBoxXLayout(p);
         p.setBackground(new Color(245,245,245));
         //p.setBorder(new CompoundBorder(ViewUtil.getTinyLineBorder(),ViewUtil.getMediumBorder()));
         p.setBorder(BorderFactory.createTitledBorder(title));
         return p;
     }
 
-    private static void boxXLayout(JPanel p) {
+    public static void setBoxXLayout(JPanel p) {
         p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+    }
+    public static void setBoxYLayout(JPanel p) {
+        p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
     }
 
     /*

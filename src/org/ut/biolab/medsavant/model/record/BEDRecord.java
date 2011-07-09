@@ -12,7 +12,7 @@ import java.util.Vector;
  *
  * @author mfiume
  */
-public class BEDRecord {
+public class BEDRecord implements Comparable {
     
     String name;
     String chrom;
@@ -72,6 +72,17 @@ public class BEDRecord {
     @Override
     public String toString() {
         return "BEDRecord{" + "name=" + name + ", chrom=" + chrom + ", start=" + start + ", end=" + end + '}';
+    }
+
+    public int compareTo(Object o) {
+        if(o.getClass() != this.getClass()) return -1;
+        BEDRecord other = (BEDRecord)o;
+        
+                if (!this.getName().equals(other.getName())) { return this.getName().compareTo(other.getName()); }
+                else if (!this.getChrom().equals(other.getChrom())) { return this.getChrom().compareTo(other.getChrom()); }
+        else if (this.getStart() != other.getStart()) { return ((Integer) this.getStart()).compareTo((Integer) other.getStart()); }
+        else { return ((Integer) this.getEnd()).compareTo((Integer) other.getEnd()); }
+        
     }
             
 }

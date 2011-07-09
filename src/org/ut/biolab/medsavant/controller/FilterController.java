@@ -7,17 +7,13 @@ package org.ut.biolab.medsavant.controller;
 
 import org.ut.biolab.medsavant.model.PostProcessFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.model.Filter;
-import org.ut.biolab.medsavant.model.Filter.FilterType;
 import org.ut.biolab.medsavant.model.QueryFilter;
 
 /**
