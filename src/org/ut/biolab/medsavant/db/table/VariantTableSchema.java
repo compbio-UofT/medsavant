@@ -193,8 +193,8 @@ public class VariantTableSchema extends TableSchema {
     public static final String ALIAS_spliceInfo = "Splice Information";
     public static final String ALIAS_uorfChange = "5' UTR ORF Change";
 
-    public static int INDEX_GATKID;
-    public static int INDEX_POLYPHENSIFTID;
+    //public static int INDEX_GATKID;
+    //public static int INDEX_POLYPHENSIFTID;
     public static int INDEX_GENOMEID;
     public static int INDEX_PIPELINEID;
     public static int INDEX_DNAID;
@@ -320,7 +320,53 @@ public class VariantTableSchema extends TableSchema {
         INDEX_GQ = this.getFieldIndexInDB(DBFIELDNAME_GQ);
         INDEX_HQA = this.getFieldIndexInDB(DBFIELDNAME_HQA);
         INDEX_HQB = this.getFieldIndexInDB(DBFIELDNAME_HQB);
-        
+        INDEX_position_a = this.getFieldIndexInDB(DBFIELDNAME_position_a);
+INDEX_position_b = this.getFieldIndexInDB(DBFIELDNAME_position_b);
+INDEX_o_acc = this.getFieldIndexInDB(DBFIELDNAME_o_acc);
+INDEX_o_pos = this.getFieldIndexInDB(DBFIELDNAME_o_pos);
+INDEX_o_aa1 = this.getFieldIndexInDB(DBFIELDNAME_o_aa1);
+INDEX_o_aa2 = this.getFieldIndexInDB(DBFIELDNAME_o_aa2);
+INDEX_snp_id = this.getFieldIndexInDB(DBFIELDNAME_snp_id);
+INDEX_acc = this.getFieldIndexInDB(DBFIELDNAME_acc);
+INDEX_pos = this.getFieldIndexInDB(DBFIELDNAME_pos);
+INDEX_aa1 = this.getFieldIndexInDB(DBFIELDNAME_aa1);
+INDEX_aa2 = this.getFieldIndexInDB(DBFIELDNAME_aa2);
+INDEX_nt1 = this.getFieldIndexInDB(DBFIELDNAME_nt1);
+INDEX_nt2 = this.getFieldIndexInDB(DBFIELDNAME_nt2);
+INDEX_prediction = this.getFieldIndexInDB(DBFIELDNAME_prediction);
+INDEX_pph2_class = this.getFieldIndexInDB(DBFIELDNAME_pph2_class);
+INDEX_pph2_prob = this.getFieldIndexInDB(DBFIELDNAME_pph2_prob);
+INDEX_pph2_FPR = this.getFieldIndexInDB(DBFIELDNAME_pph2_FPR);
+INDEX_pph2_TPR = this.getFieldIndexInDB(DBFIELDNAME_pph2_TPR);
+INDEX_pph2_FDR = this.getFieldIndexInDB(DBFIELDNAME_pph2_FDR);
+INDEX_Transv = this.getFieldIndexInDB(DBFIELDNAME_Transv);
+INDEX_CodPos = this.getFieldIndexInDB(DBFIELDNAME_CodPos);
+INDEX_CpG = this.getFieldIndexInDB(DBFIELDNAME_CpG);
+INDEX_MinDJnc = this.getFieldIndexInDB(DBFIELDNAME_MinDJnc);
+INDEX_PfamHit = this.getFieldIndexInDB(DBFIELDNAME_PfamHit);
+INDEX_IdPmax = this.getFieldIndexInDB(DBFIELDNAME_IdPmax);
+INDEX_IdPSNP = this.getFieldIndexInDB(DBFIELDNAME_IdPSNP);
+INDEX_IdQmin = this.getFieldIndexInDB(DBFIELDNAME_IdQmin);
+INDEX_sift_prediction = this.getFieldIndexInDB(DBFIELDNAME_sift_prediction);
+INDEX_name = this.getFieldIndexInDB(DBFIELDNAME_name);
+INDEX_name2 = this.getFieldIndexInDB(DBFIELDNAME_name2);
+INDEX_transcriptStrand = this.getFieldIndexInDB(DBFIELDNAME_transcriptStrand);
+INDEX_positionType = this.getFieldIndexInDB(DBFIELDNAME_positionType);
+INDEX_frame = this.getFieldIndexInDB(DBFIELDNAME_frame);
+INDEX_mrnaCoord = this.getFieldIndexInDB(DBFIELDNAME_mrnaCoord);
+INDEX_codonCoord = this.getFieldIndexInDB(DBFIELDNAME_codonCoord);
+INDEX_spliceDist = this.getFieldIndexInDB(DBFIELDNAME_spliceDist);
+INDEX_referenceCodon = this.getFieldIndexInDB(DBFIELDNAME_referenceCodon);
+INDEX_referenceAA = this.getFieldIndexInDB(DBFIELDNAME_referenceAA);
+INDEX_variantCodon = this.getFieldIndexInDB(DBFIELDNAME_variantCodon);
+INDEX_variantAA = this.getFieldIndexInDB(DBFIELDNAME_variantAA);
+INDEX_changesAA = this.getFieldIndexInDB(DBFIELDNAME_changesAA);
+INDEX_functionalClass = this.getFieldIndexInDB(DBFIELDNAME_functionalClass);
+INDEX_codingCoordStr = this.getFieldIndexInDB(DBFIELDNAME_codingCoordStr);
+INDEX_proteinCoordStr = this.getFieldIndexInDB(DBFIELDNAME_proteinCoordStr);
+INDEX_inCodingRegion = this.getFieldIndexInDB(DBFIELDNAME_inCodingRegion);
+INDEX_spliceInfo = this.getFieldIndexInDB(DBFIELDNAME_spliceInfo);
+INDEX_uorfChange = this.getFieldIndexInDB(DBFIELDNAME_uorfChange);
         
     }
 
@@ -422,6 +468,7 @@ addColumn(DBFIELDNAME_uorfChange,ALIAS_uorfChange,TableSchema.ColumnType.VARCHAR
     }
 
     public static VariantRecord convertToVariantRecord(Vector dbResult) {
+        
         return new VariantRecord(
                 (Integer) dbResult.get(INDEX_GENOMEID-1),
                 (Integer) dbResult.get(INDEX_PIPELINEID-1),
@@ -476,19 +523,19 @@ addColumn(DBFIELDNAME_uorfChange,ALIAS_uorfChange,TableSchema.ColumnType.VARCHAR
                 (String) dbResult.get(INDEX_nt2-1),
                 (String) dbResult.get(INDEX_prediction-1),
                 (String) dbResult.get(INDEX_pph2_class-1),
-                (Double) dbResult.get(INDEX_pph2_prob-1),
-                (Double) dbResult.get(INDEX_pph2_FPR-1),
-                (Double) dbResult.get(INDEX_pph2_TPR-1),
-                (Double) dbResult.get(INDEX_pph2_FDR-1),
+                (Float) dbResult.get(INDEX_pph2_prob-1),
+                (Float) dbResult.get(INDEX_pph2_FPR-1),
+                (Float) dbResult.get(INDEX_pph2_TPR-1),
+                (Float) dbResult.get(INDEX_pph2_FDR-1),
                 (Integer) dbResult.get(INDEX_Transv-1),
                 (Integer) dbResult.get(INDEX_CodPos-1),
                 (Integer) dbResult.get(INDEX_CpG-1),
-                (Double) dbResult.get(INDEX_MinDJnc-1),
+                (Float) dbResult.get(INDEX_MinDJnc-1),
                 (String) dbResult.get(INDEX_PfamHit-1),
-                (Double) dbResult.get(INDEX_IdPmax-1),
-                (Double) dbResult.get(INDEX_IdPSNP-1),
-                (Double) dbResult.get(INDEX_IdQmin-1),
-                (Double) dbResult.get(INDEX_sift_prediction-1),
+                (Float) dbResult.get(INDEX_IdPmax-1),
+                (Float) dbResult.get(INDEX_IdPSNP-1),
+                (Float) dbResult.get(INDEX_IdQmin-1),
+                (Float) dbResult.get(INDEX_sift_prediction-1),
                 (String) dbResult.get(INDEX_name-1),
                 (String) dbResult.get(INDEX_name2-1),
                 (String) dbResult.get(INDEX_transcriptStrand-1),
