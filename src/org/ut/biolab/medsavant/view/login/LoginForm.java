@@ -59,6 +59,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
 
         label_status.setText("");
         this.panel_title.add(Box.createVerticalGlue(),0); 
+        ptitle.add(Box.createHorizontalGlue()); 
         
         //this.panel_logonholder.add(Box.createHorizontalGlue());
         //this.panel_logonholder.add(Box.createHorizontalGlue(),this.panel_logonholder.getComponentCount()-1); 
@@ -83,18 +84,20 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         jPanel1 = new javax.swing.JPanel();
         cb_autosignin = new javax.swing.JCheckBox();
         cb_rememberpassword = new javax.swing.JCheckBox();
+        label_status = new javax.swing.JLabel();
         panel_logonholder = new javax.swing.JPanel();
         field_username = new javax.swing.JTextField();
         field_password = new javax.swing.JPasswordField();
         button_login = new javax.swing.JButton();
         panel_title = new javax.swing.JPanel();
+        ptitle = new javax.swing.JPanel();
         label_programtitle = new javax.swing.JLabel();
         label_versioninformation = new javax.swing.JLabel();
-        label_status = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 0, 0));
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         cb_autosignin.setText("Sign me in automatically");
         cb_autosignin.addActionListener(new java.awt.event.ActionListener() {
@@ -110,25 +113,30 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             }
         });
 
+        label_status.setForeground(new java.awt.Color(102, 102, 102));
+        label_status.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        label_status.setText("status");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(cb_autosignin)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(cb_rememberpassword, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cb_autosignin, javax.swing.GroupLayout.Alignment.LEADING))
-                .addContainerGap(529, Short.MAX_VALUE))
+                .addComponent(cb_rememberpassword)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 500, Short.MAX_VALUE)
+                .addComponent(label_status))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(cb_rememberpassword)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cb_autosignin)
-                .addContainerGap(179, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(cb_rememberpassword)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cb_autosignin))
+                    .addComponent(label_status))
+                .addContainerGap(185, Short.MAX_VALUE))
         );
 
         panel_logonholder.setBackground(new java.awt.Color(0, 119, 199));
@@ -168,37 +176,37 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         panel_title.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
         panel_title.setLayout(new javax.swing.BoxLayout(panel_title, javax.swing.BoxLayout.Y_AXIS));
 
+        ptitle.setBackground(new java.awt.Color(255, 255, 255));
+        ptitle.setLayout(new javax.swing.BoxLayout(ptitle, javax.swing.BoxLayout.LINE_AXIS));
+
         label_programtitle.setFont(new java.awt.Font("Trajan Pro", 1, 80)); // NOI18N
         label_programtitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_programtitle.setText("MedSavant");
-        panel_title.add(label_programtitle);
+        ptitle.add(label_programtitle);
 
         label_versioninformation.setFont(new java.awt.Font("Lucida Grande", 1, 18)); // NOI18N
         label_versioninformation.setForeground(new java.awt.Color(204, 204, 204));
         label_versioninformation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_versioninformation.setText("version information");
-        panel_title.add(label_versioninformation);
+        ptitle.add(label_versioninformation);
 
-        label_status.setForeground(new java.awt.Color(102, 102, 102));
-        label_status.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        label_status.setText("status");
-        panel_title.add(label_status);
+        panel_title.add(ptitle);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(panel_title, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 733, Short.MAX_VALUE)
-            .addComponent(panel_logonholder, javax.swing.GroupLayout.DEFAULT_SIZE, 733, Short.MAX_VALUE)
+            .addComponent(panel_title, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 764, Short.MAX_VALUE)
+            .addComponent(panel_logonholder, javax.swing.GroupLayout.DEFAULT_SIZE, 764, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(panel_title, javax.swing.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panel_title, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
                 .addComponent(panel_logonholder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -244,6 +252,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
     private javax.swing.JLabel label_versioninformation;
     private javax.swing.JPanel panel_logonholder;
     private javax.swing.JPanel panel_title;
+    private javax.swing.JPanel ptitle;
     // End of variables declaration//GEN-END:variables
 
     private void loginUsingEnteredUsernameAndPassword() {
