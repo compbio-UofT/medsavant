@@ -254,7 +254,7 @@ public class OntologyStatsWorker extends SwingWorker{
       }
     
       
-      public static void killIndividualThreads(){
+      public static void killIndividualThreads(){         
           // Kill each of those threads from before.
           for (WorkingWithOneNode thread: listIndividualThreads){
             if (!thread.isDone()){
@@ -262,6 +262,6 @@ public class OntologyStatsWorker extends SwingWorker{
 //                System.out.println("THIS IS NOW BEING CANCELLED.");
             }
 //            System.out.println("Cancelling");
-        }
+          }
       }
 }

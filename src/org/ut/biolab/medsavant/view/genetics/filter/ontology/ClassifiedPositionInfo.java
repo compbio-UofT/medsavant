@@ -68,7 +68,7 @@ public class ClassifiedPositionInfo {
         
     }
     
-    public HashMap getConditions(){
+    public HashMap<String, List<Range>> getConditions(){
         
         HashMap<String, List<Range>> map = new HashMap<String, List<Range>>();
         
@@ -82,6 +82,24 @@ public class ClassifiedPositionInfo {
             }
         }
         return map;
+    }
+    
+    public List<String> getAllMergedRanges(){
+        
+        List<String> mergedRanges = new ArrayList<String>();
+        HashMap<String, List<Range>> mapRanges = this.getConditions();
+        
+        for (String key: mapRanges.keySet()){
+            List<Range> ranges = mapRanges.get(key);
+            for (Range currRange: ranges){
+                
+                String formatted = 
+                        key.trim() + "\t" + (long)currRange.getMin() + "\t" + (long)currRange.getMax();
+                mergedRanges.add(formatted);
+//                System.out.println(formatted);
+            }
+        }
+        return mergedRanges;
     }
     
 }

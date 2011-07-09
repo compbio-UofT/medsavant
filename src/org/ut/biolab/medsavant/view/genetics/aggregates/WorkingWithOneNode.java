@@ -5,12 +5,14 @@
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import java.util.HashSet;
+import java.util.List;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.QueryUtil;
+import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 
 /**
@@ -42,25 +44,38 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 
         HashSet<String> locs = ((Node)(node.getUserObject())).getLocs();
         int numVariants = 0;
+        
+        ClassifiedPositionInfo cpi = new ClassifiedPositionInfo();
+        
         for (String loc: locs){
+            String[] split = loc.split("\t");
+            String chrom = split[chromIndex].trim();
+            int start = Integer.parseInt(split[startIndex].trim());
+            int end = Integer.parseInt(split[endIndex].trim());
+            cpi.addCondition(chrom, start, end);
+        }
+        
+        List<String> mergedRanges = cpi.getAllMergedRanges();
+        
+        for (String loc: mergedRanges){
 
             if (Thread.currentThread().isInterrupted()){
                 throw new java.util.concurrent.CancellationException();
                 // TODO: Not doing more here is probably creating tonnes of problems.
             }
             String[] split = loc.split("\t");
-            String chrom = split[chromIndex].trim();
-            int start = Integer.parseInt(split[startIndex].trim());
-            int end = Integer.parseInt(split[endIndex].trim());
+            String chrom = split[0].trim();
+            int start = Integer.parseInt(split[1].trim());
+            int end = Integer.parseInt(split[2].trim());
 
-            String key = chrom + "_" + start + "_" + end;
-            Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
-            if (numCurr == null){
-
-                numCurr = QueryUtil.getNumVariantsInRange
+//            String key = chrom + "_" + start + "_" + end;
+//            Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
+//            if (numCurr == null){
+//System.out.println("Reached here?");
+                int numCurr = QueryUtil.getNumVariantsInRange
                         (ConnectionController.connect(), chrom, start, end);
-                OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
-            }
+//                OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
+//            }
 
             numVariants = numVariants + numCurr;
             ((Node)node.getUserObject()).setTotalDescription(" [>=" + numVariants + " records]");

@@ -46,7 +46,7 @@ public class Range implements Comparable{
         range1.add(new Range(10, 11));
 
         List<Range> res = merge(range1, range2);
-        System.out.println(res);
+//        System.out.println(res);
     }
     
     /**
@@ -72,8 +72,8 @@ public class Range implements Comparable{
             allRangesInOrder.add(currRange);
         }
         
-        System.out.print("Arranging in order:\t");
-        System.out.println(allRangesInOrder);
+//        System.out.print("Arranging in order:\t");
+//        System.out.println(allRangesInOrder);
         
         // Merge now.
         Range currMerged = null;
