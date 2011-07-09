@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.login;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -26,22 +27,28 @@ public class LoginView extends JPanel {
     }
 
     private void initView() {
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        this.add(Box.createVerticalGlue());
-        JPanel p = new JPanel();
-        p.setOpaque(false);
-        p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
-        p.add(Box.createHorizontalGlue());
-        p.add(new LoginForm());
-        p.add(Box.createHorizontalGlue());
-        this.add(p);
-        this.add(Box.createVerticalGlue());
+        this.setLayout(new BorderLayout());
+        this.add(new LoginForm(),BorderLayout.CENTER);
+        //this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        //this.add(Box.createVerticalGlue());
+        //JPanel p = new JPanel();
+        //p.setOpaque(false);
+        //p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+        //p.add(Box.createHorizontalGlue());
+        //p.add(new LoginForm());
+        //p.add(new JPanel());
+        //p.add(Box.createHorizontalGlue());
+        //this.add(p);
+        //this.add(Box.createVerticalGlue());
     }
 
+    /*
     @Override
     public void paintComponent(Graphics g) {
         
-        PaintUtil.paintSky(g,this);
+        PaintUtil.paintMeBackground(g,this);
  
     }
+     * 
+     */
 }
