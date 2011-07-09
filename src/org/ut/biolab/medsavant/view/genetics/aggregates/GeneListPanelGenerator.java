@@ -279,7 +279,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                 value = numbersRetrieved*100/2/regionToVariantCountMap.keySet().size(); 
             }
             progress.setValue(value);
-            progress.setString(value + "% done aggregating");
+            progress.setString(value + "% done");
             
         }
 
