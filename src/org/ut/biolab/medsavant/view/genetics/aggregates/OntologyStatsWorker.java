@@ -32,7 +32,7 @@ public class OntologyStatsWorker extends SwingWorker{
     
     // Expecting only one such panel to be instantiated at a time.
     private static List<WorkingWithOneNode> listIndividualThreads = new ArrayList<WorkingWithOneNode>();
-//    public static HashMap<String, Integer> mapLocToFreq = new HashMap<String, Integer>();
+    public static HashMap<String, Integer> mapLocToFreq = new HashMap<String, Integer>();
     
     // We don't want to reload the information that has already been loaded.
     // Actually contains the identifiers of those nodes (unique).
@@ -91,23 +91,9 @@ public class OntologyStatsWorker extends SwingWorker{
             mapNameToTree.put(subPanel.getName(), jTree);           
         }
              
-        // Get all those nodes that are visible to the user.
-        List<DefaultMutableTreeNode> visibleNodes = getVisibleNodes(jTree);
         // Get only those nodes that used to be invisible to the user.
-        List<DefaultMutableTreeNode> purgedVisibleNodes = new ArrayList<DefaultMutableTreeNode>();
-                
-        // First subtract all the nodes that were already visible from 
-        // that list (using the identifiers), and add the identifiers of 
-        // those nodes that are already visible to the hashset (This
-        // hypothetically works).
-        for (DefaultMutableTreeNode visibleNode: visibleNodes){
-
-            Node node = (Node)visibleNode.getUserObject();
-            if (!nodesThatWereAlreadyVisible.keySet().contains(node.getIdentifier())){
-                purgedVisibleNodes.add(visibleNode);
-                nodesThatWereAlreadyVisible.put(node.getIdentifier(), node);
-            }
-        }
+        List<DefaultMutableTreeNode> purgedVisibleNodes = 
+                getPurgedVisibleNodes(jTree);
 
         // Change statistics for only the NEWLY visible nodes.
         changeStatistics(jTree, purgedVisibleNodes, subPanel.chromSplitIndex, 
@@ -115,32 +101,18 @@ public class OntologyStatsWorker extends SwingWorker{
         
         final JTree newjtree = jTree;     
         
-        // Do something when the tree is expanded.
         jTree.addTreeExpansionListener(new TreeExpansionListener() {
 
             public void treeExpanded(TreeExpansionEvent event) {
-                
+//                System.out.println("Tree has been expanded.");
+//                System.out.println(event.getSource());
                 if (!subPanel.getUpdateStatus()){
                     return;
                 }
-                // Get all those nodes that are visible to the user.
-                List<DefaultMutableTreeNode> visibleNodes = getVisibleNodes(newjtree);
                 // Get only those nodes that used to be invisible to the user.
-                List<DefaultMutableTreeNode> purgedVisibleNodes = new ArrayList<DefaultMutableTreeNode>();
-
-                // First subtract all the nodes that were already visible from 
-                // that list (using the identifiers), and add the identifiers of 
-                // those nodes that are already visible to the hashset (This
-                // hypothetically works).
-                for (DefaultMutableTreeNode visibleNode: visibleNodes){
-
-                    Node node = (Node)visibleNode.getUserObject();
-                    if (!nodesThatWereAlreadyVisible.keySet().contains(node.getIdentifier())){
-                        purgedVisibleNodes.add(visibleNode);
-                        nodesThatWereAlreadyVisible.put(node.getIdentifier(), node);
-                    }
-                }
-
+                List<DefaultMutableTreeNode> purgedVisibleNodes = 
+                        getPurgedVisibleNodes(newjtree);
+                
                 // Change statistics for only the NEWLY visible nodes.
                 try{                
                     changeStatistics(newjtree, purgedVisibleNodes, subPanel.chromSplitIndex, 
@@ -157,6 +129,30 @@ public class OntologyStatsWorker extends SwingWorker{
         });
             
         return jTree;
+    }
+    
+    private List<DefaultMutableTreeNode> getPurgedVisibleNodes(JTree newjtree){
+        // Get all those nodes that are visible to the user.
+        List<DefaultMutableTreeNode> visibleNodes = getVisibleNodes(newjtree);
+        // Get only those nodes that used to be invisible to the user.
+        List<DefaultMutableTreeNode> purgedVisibleNodes = new ArrayList<DefaultMutableTreeNode>();
+
+        // First subtract all the nodes that were already visible from 
+        // that list (using the identifiers), and add the identifiers of 
+        // those nodes that are already visible to the hashset (This
+        // hypothetically works).
+        for (DefaultMutableTreeNode visibleNode: visibleNodes){
+
+            Node node = (Node)visibleNode.getUserObject();
+            if (!nodesThatWereAlreadyVisible.keySet().contains(node.getIdentifier())){
+                purgedVisibleNodes.add(visibleNode);
+                nodesThatWereAlreadyVisible.put(node.getIdentifier(), node);
+            }
+        }
+
+//        System.out.println("Were not visible:\n" + purgedVisibleNodes);
+//        System.out.println("All being visible:\n" + nodesThatWereAlreadyVisible);
+        return purgedVisibleNodes;
     }
     
     

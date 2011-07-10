@@ -68,14 +68,13 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
             int start = Integer.parseInt(split[1].trim());
             int end = Integer.parseInt(split[2].trim());
 
-//            String key = chrom + "_" + start + "_" + end;
-//            Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
-//            if (numCurr == null){
-//System.out.println("Reached here?");
-                int numCurr = QueryUtil.getNumVariantsInRange
+            String key = chrom + "_" + start + "_" + end;
+            Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
+            if (numCurr == null){
+                numCurr = QueryUtil.getNumVariantsInRange
                         (ConnectionController.connect(), chrom, start, end);
-//                OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
-//            }
+                OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
+            }
 
             numVariants = numVariants + numCurr;
             ((Node)node.getUserObject()).setTotalDescription(" [>=" + numVariants + " records]");
@@ -85,7 +84,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-//                    tree.repaint();
+                    tree.repaint();
                     tree.updateUI();
                 }
             });

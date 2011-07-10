@@ -95,7 +95,7 @@ public abstract class OntologySubPanel extends JPanel implements AggregatePanelG
         OntologyStatsWorker.removeStatsFromVisibleNodes();
         OntologyStatsWorker.nodesThatWereAlreadyVisible.clear();
 //        OntologyStatsWorker.mapNameToTree.clear();
-//        OntologyStatsWorker.mapLocToFreq.clear();
+        OntologyStatsWorker.mapLocToFreq.clear();
         if (getJTree() != null){
             SwingUtilities.invokeLater(new Runnable() {
 
