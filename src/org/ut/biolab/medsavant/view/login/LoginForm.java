@@ -67,10 +67,9 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
 
         label_status.setText("");
         this.panel_title.add(Box.createVerticalGlue(),0); 
-        ptitle.add(Box.createHorizontalGlue()); 
         
-        //this.panel_logonholder.add(Box.createHorizontalGlue());
-        //this.panel_logonholder.add(Box.createHorizontalGlue(),this.panel_logonholder.getComponentCount()-1); 
+        ptitle.add(Box.createHorizontalGlue(),0);
+        ptitle.add(Box.createHorizontalGlue()); 
         
         //this.setBorder(ViewUtil.getGiganticBorder());
         //this.setBackground(Color.white);
