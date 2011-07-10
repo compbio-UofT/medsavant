@@ -25,28 +25,26 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
- *
+ * 
  * @author Nirvana Nursimulu
  */
 public class OntologyStatsWorker extends SwingWorker{
     
     // Expecting only one such panel to be instantiated at a time.
     private static List<WorkingWithOneNode> listIndividualThreads = new ArrayList<WorkingWithOneNode>();
-    public static HashMap<String, Integer> mapLocToFreq = new HashMap<String, Integer>();
+//    public static HashMap<String, Integer> mapLocToFreq = new HashMap<String, Integer>();
     
     // We don't want to reload the information that has already been loaded.
     // Actually contains the identifiers of those nodes (unique).
     public static HashMap<String, Node> nodesThatWereAlreadyVisible = new HashMap<String, Node>();
     
     private OntologySubPanel subPanel;
-    private WaitPanel waitPanel;
     
     // Map of a tree to the tree itself so that it does not need to be loaded over and over again.
     public static HashMap<String, JTree> mapNameToTree = new HashMap<String, JTree>();
     
-    public OntologyStatsWorker(OntologySubPanel subPanel, WaitPanel waitPanel){
+    public OntologyStatsWorker(OntologySubPanel subPanel){
         this.subPanel = subPanel;
-        this.waitPanel = waitPanel;
     }
 
     @Override
@@ -57,13 +55,14 @@ public class OntologyStatsWorker extends SwingWorker{
     @Override
     protected void done(){
         try {
-//                System.out.println("Beginning of done");
+
             JScrollPane scrollPane = new JScrollPane((JTree)get());
+//            subPanel.scrollPane = new JScrollPane((JTree)get());
 
             // Remove the wait panel first.
-            subPanel.remove(waitPanel);
+            subPanel.removeAll();
+//            subPanel.add(scrollPane);
             subPanel.add(scrollPane);
-
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
@@ -89,7 +88,7 @@ public class OntologyStatsWorker extends SwingWorker{
             while (!subPanel.treeIsReadyToBeFetched())
                 ;
             jTree = subPanel.getJTree();
-            mapNameToTree.put(subPanel.getName(), jTree);
+            mapNameToTree.put(subPanel.getName(), jTree);           
         }
              
         // Get all those nodes that are visible to the user.
@@ -174,7 +173,7 @@ public class OntologyStatsWorker extends SwingWorker{
     private void changeStatistics
             (JTree tree, List<DefaultMutableTreeNode> visibleNodes, int chromIndex, int startIndex, int endIndex) {
         
-        mapLocToFreq.clear();
+//        mapLocToFreq.clear();
         
 //        System.out.println("WE ARE CHANGING THE STATISTICS.");
 //        killIndividualThreads();

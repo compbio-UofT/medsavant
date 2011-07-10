@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -71,7 +72,7 @@ public abstract class OntologySubPanel extends JPanel implements AggregatePanelG
         // Kill any existing threads, if any.
         if (osw != null && !osw.isDone()){  osw.cancel(true);     }
         
-        osw = new OntologyStatsWorker(this, waitPanel);
+        osw = new OntologyStatsWorker(this);
         osw.execute();
     }
     
@@ -94,7 +95,7 @@ public abstract class OntologySubPanel extends JPanel implements AggregatePanelG
         OntologyStatsWorker.removeStatsFromVisibleNodes();
         OntologyStatsWorker.nodesThatWereAlreadyVisible.clear();
 //        OntologyStatsWorker.mapNameToTree.clear();
-        OntologyStatsWorker.mapLocToFreq.clear();
+//        OntologyStatsWorker.mapLocToFreq.clear();
         if (getJTree() != null){
             SwingUtilities.invokeLater(new Runnable() {
 
