@@ -40,6 +40,10 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         
         initComponents();
         
+        if (!ViewUtil.isMac()) {
+            this.label_programtitle.setFont(new Font("Georgia", Font.BOLD, 80));
+        }
+        
         field_username.setText(LoginController.getUsername());
         field_password.setText(LoginController.getPassword());
 
@@ -87,11 +91,14 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         label_status = new javax.swing.JLabel();
         panel_logonholder = new javax.swing.JPanel();
         field_username = new javax.swing.JTextField();
+        jPanel2 = new javax.swing.JPanel();
         field_password = new javax.swing.JPasswordField();
+        jPanel3 = new javax.swing.JPanel();
         button_login = new javax.swing.JButton();
         panel_title = new javax.swing.JPanel();
         ptitle = new javax.swing.JPanel();
         label_programtitle = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
         label_versioninformation = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(0, 0, 0));
@@ -124,7 +131,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             .addComponent(cb_autosignin)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(cb_rememberpassword)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 500, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 551, Short.MAX_VALUE)
                 .addComponent(label_status))
         );
         jPanel1Layout.setVerticalGroup(
@@ -144,7 +151,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         panel_logonholder.setLayout(new javax.swing.BoxLayout(panel_logonholder, javax.swing.BoxLayout.LINE_AXIS));
 
         field_username.setColumns(25);
-        field_username.setFont(new java.awt.Font("Lucida Grande", 1, 24)); // NOI18N
+        field_username.setFont(new java.awt.Font("Lucida Grande", 1, 24));
         field_username.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_username.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -152,6 +159,22 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             }
         });
         panel_logonholder.add(field_username);
+
+        jPanel2.setOpaque(false);
+        jPanel2.setPreferredSize(new java.awt.Dimension(20, 25));
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 5, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 38, Short.MAX_VALUE)
+        );
+
+        panel_logonholder.add(jPanel2);
 
         field_password.setColumns(25);
         field_password.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
@@ -164,6 +187,22 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         });
         panel_logonholder.add(field_password);
 
+        jPanel3.setOpaque(false);
+        jPanel3.setPreferredSize(new java.awt.Dimension(20, 25));
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 5, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 38, Short.MAX_VALUE)
+        );
+
+        panel_logonholder.add(jPanel3);
+
         button_login.setText("Login");
         button_login.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -172,19 +211,38 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         });
         panel_logonholder.add(button_login);
 
-        panel_title.setBackground(new java.awt.Color(255, 255, 255));
+        panel_title.setBackground(new java.awt.Color(0, 0, 0));
         panel_title.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
         panel_title.setLayout(new javax.swing.BoxLayout(panel_title, javax.swing.BoxLayout.Y_AXIS));
 
         ptitle.setBackground(new java.awt.Color(255, 255, 255));
+        ptitle.setOpaque(false);
         ptitle.setLayout(new javax.swing.BoxLayout(ptitle, javax.swing.BoxLayout.LINE_AXIS));
 
         label_programtitle.setFont(new java.awt.Font("Trajan Pro", 1, 80)); // NOI18N
+        label_programtitle.setForeground(new java.awt.Color(255, 255, 255));
         label_programtitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_programtitle.setText("MedSavant");
         ptitle.add(label_programtitle);
 
-        label_versioninformation.setFont(new java.awt.Font("Lucida Grande", 1, 18)); // NOI18N
+        jPanel4.setMaximumSize(new java.awt.Dimension(10, 10));
+        jPanel4.setOpaque(false);
+        jPanel4.setPreferredSize(new java.awt.Dimension(20, 25));
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 10, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 10, Short.MAX_VALUE)
+        );
+
+        ptitle.add(jPanel4);
+
+        label_versioninformation.setFont(new java.awt.Font("Lucida Grande", 1, 18));
         label_versioninformation.setForeground(new java.awt.Color(204, 204, 204));
         label_versioninformation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_versioninformation.setText("version information");
@@ -247,6 +305,9 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
     private javax.swing.JPasswordField field_password;
     private javax.swing.JTextField field_username;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JLabel label_programtitle;
     private javax.swing.JLabel label_status;
     private javax.swing.JLabel label_versioninformation;
