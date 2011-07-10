@@ -13,6 +13,9 @@ package org.ut.biolab.medsavant.view.login;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +38,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
 
     /** Creates new form LoginForm */
     public LoginForm() {
+        
         
         LoginController.addLoginListener(this);
         
@@ -97,7 +101,15 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         button_login = new javax.swing.JButton();
         panel_title = new javax.swing.JPanel();
         ptitle = new javax.swing.JPanel();
-        label_programtitle = new javax.swing.JLabel();
+        label_programtitle = new javax.swing.JLabel() {
+            public void paintComponent(Graphics g)
+            {
+                Graphics2D g2 = (Graphics2D)g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+                super.paintComponent(g2);
+            }
+        };
         jPanel4 = new javax.swing.JPanel();
         label_versioninformation = new javax.swing.JLabel();
 
