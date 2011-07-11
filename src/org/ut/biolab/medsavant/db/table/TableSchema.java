@@ -124,9 +124,17 @@ public class TableSchema {
 
         return result;
     }
-
+    
     public static boolean isNumeric(ColumnType columnType) {
-        return ColumnType.FLOAT == columnType || ColumnType.INTEGER == columnType || ColumnType.DECIMAL == columnType;
+        return ColumnType.INTEGER == columnType || ColumnType.FLOAT == columnType || ColumnType.DECIMAL == columnType;
+    }
+
+    public static boolean isInt(ColumnType columnType) {
+        return ColumnType.INTEGER == columnType;
+    }
+    
+    public static boolean isFloat(ColumnType columnType) {
+        return ColumnType.FLOAT == columnType || ColumnType.DECIMAL == columnType;        
     }
 
     public static boolean isBoolean(ColumnType columnType) {

@@ -81,6 +81,8 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     private JLabel status;
     private JPanel contentPlaceholder;
     private final HashMap<String, CollapsiblePane> filterToCPMap;
+    
+    public enum FilterWidgetType { INT, FLOAT, STRING, BOOLEAN };
 
     public FilterPanel() throws NonFatalDatabaseException {
         this.setName("Filters");
@@ -318,20 +320,26 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
             TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
             DbColumn col = table.getDBColumn(columnAlias);
-            boolean isNumeric = TableSchema.isNumeric(table.getColumnType(col));
-            boolean isBoolean = TableSchema.isBoolean(table.getColumnType(col));
-            
-            //special cases (TODO: messy...)
-            if(columnAlias.equals(VariantTableSchema.ALIAS_GT)){
-                isNumeric = false;
-                isBoolean = false;
-            } else if (columnAlias.equals(VariantTableSchema.ALIAS_Transv) || 
-                    columnAlias.equals(VariantTableSchema.ALIAS_pph2_prob)){
-                isNumeric = false;
-                isBoolean = true;
+            FilterWidgetType fwt;
+            if(TableSchema.isInt(table.getColumnType(col))){
+                fwt = FilterWidgetType.INT;
+            } else if (TableSchema.isFloat(table.getColumnType(col))){
+                fwt = FilterWidgetType.FLOAT;
+            } else if (TableSchema.isBoolean(table.getColumnType(col))){
+                fwt = FilterWidgetType.BOOLEAN;
+            } else {
+                fwt = FilterWidgetType.STRING;
             }
 
-            if (isNumeric) {
+            //special cases (TODO: messy...)
+            if(columnAlias.equals(VariantTableSchema.ALIAS_GT)){
+                fwt = FilterWidgetType.STRING;
+            } else if (columnAlias.equals(VariantTableSchema.ALIAS_Transv) || 
+                    columnAlias.equals(VariantTableSchema.ALIAS_pph2_prob)){
+                fwt = FilterWidgetType.BOOLEAN;
+            }
+
+            if (fwt == FilterWidgetType.INT || fwt == FilterWidgetType.FLOAT) {
                 
                 Range extremeValues = null;
                 
@@ -382,13 +390,20 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 container.add(tobox);
                 container.add(rangeContainer);
                 container.add(Box.createVerticalBox());
+                
+                final JButton applyButton = new JButton("Apply");
+                applyButton.setEnabled(false);
 
-                rs.addChangeListener(new ChangeListener() {
+                rs.addMouseListener(new MouseListener() {
 
-                    public void stateChanged(ChangeEvent e) {
+                    public void mouseClicked(MouseEvent e) {}
+                    public void mousePressed(MouseEvent e) {}
+                    public void mouseReleased(MouseEvent e) {
                         frombox.setText(ViewUtil.numToString(rs.getLowValue()));
                         tobox.setText(ViewUtil.numToString(rs.getHighValue()));
                     }
+                    public void mouseEntered(MouseEvent e) {}
+                    public void mouseExited(MouseEvent e) {}
                 });
                 
                 tobox.addKeyListener(new KeyListener() {
@@ -401,17 +416,14 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                     }
 
                     public void keyReleased(KeyEvent e) {
-                        int key = e.getKeyCode();
-                        if (key == KeyEvent.VK_ENTER) {
-                            try {
-                                int num = (int) Math.ceil(getNumber(tobox.getText()));
-                                rs.setHighValue(num);
-                                tobox.setText(ViewUtil.numToString(num));
-                            } catch (Exception e2) {
-                                e2.printStackTrace();
-                                tobox.requestFocus();
-                            }
-                        }
+                        try {
+                            int num = (int) Math.ceil(getNumber(tobox.getText().replaceAll(",", "")));
+                            rs.setHighValue(num);
+                            applyButton.setEnabled(true);
+                        } catch (Exception e2) {
+                            e2.printStackTrace();
+                            tobox.requestFocus();
+                        }       
                     }
                     
                 });
@@ -426,32 +438,25 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                     }
 
                     public void keyReleased(KeyEvent e) {
-                        int key = e.getKeyCode();
-                        if (key == KeyEvent.VK_ENTER) {
-                            try {
-                                int num = (int) Math.floor(getNumber(frombox.getText()));
-                                rs.setLowValue(num);
-                                frombox.setText(ViewUtil.numToString(num));
-                            } catch (Exception e2) {
-                                e2.printStackTrace();
-                                frombox.requestFocus();
-                            }
+                        try {
+                            int num = (int) Math.floor(getNumber(frombox.getText().replaceAll(",", "")));
+                            rs.setLowValue(num);
+                            applyButton.setEnabled(true);
+                        } catch (Exception e2) {
+                            e2.printStackTrace();
+                            frombox.requestFocus();
                         }
                     }
                     
                 });
                 
-
-                final JButton applyButton = new JButton("Apply");
-                applyButton.setEnabled(false);
-
                 applyButton.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
 
                         applyButton.setEnabled(false);
 
-                        Range acceptableRange = new Range(rs.getLowValue(), rs.getHighValue());
+                        Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
 
                         if (min == acceptableRange.getMin() && max == acceptableRange.getMax()) {
                             FilterController.removeFilter(VariantRecordModel.getFieldNameForIndex(fieldNum));
@@ -461,8 +466,8 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                                 @Override
                                 public Condition[] getConditions() {
                                     Condition[] results = new Condition[2];
-                                    results[0] = BinaryCondition.greaterThan(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), rs.getLowValue(), true);
-                                    results[1] = BinaryCondition.lessThan(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), rs.getHighValue(), true);
+                                    results[0] = BinaryCondition.greaterThan(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), getNumber(frombox.getText().replaceAll(",", "")), true);
+                                    results[1] = BinaryCondition.lessThan(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), getNumber(tobox.getText().replaceAll(",", "")), true);
 
                                     Condition[] resultsCombined = new Condition[1];
                                     resultsCombined[0] = ComboCondition.and(results);
@@ -513,7 +518,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 final FilterView fv = new FilterView(columnAlias, container);
                 l.add(fv);
 
-            } else if (isBoolean) {
+            } else if (fwt == FilterWidgetType.BOOLEAN) {
 
                 List<String> uniq = new ArrayList<String>();
                 uniq.add("True");
@@ -631,7 +636,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 l.add(fv);
 
 
-            } else {
+            } else if (fwt == FilterWidgetType.STRING) {
 
                 Connection conn = ConnectionController.connect();
 
