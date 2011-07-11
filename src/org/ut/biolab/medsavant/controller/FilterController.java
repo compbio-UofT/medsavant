@@ -31,6 +31,7 @@ public class FilterController {
        
     private static Filter lastFilter;
     private static FilterAction lastAction;
+    private static Thread firingThread;
     public static enum FilterAction {ADDED, REMOVED, MODIFIED};
 
     public static void addFilter(Filter filter) {
@@ -88,14 +89,26 @@ public class FilterController {
         filterSetID++;
         filterMapHistory.put(filterSetID,filterMap);
         
-        //printFilters();
-        for (FiltersChangedListener l : listeners) {
-            try {
-                l.filtersChanged();
-            } catch (Exception e) {
-                Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage());
-            }
+        if (firingThread != null && firingThread.isAlive() && !firingThread.isInterrupted()) {
+            firingThread.interrupt();
         }
+        
+        firingThread = new Thread(new Runnable() {
+
+            public void run() {
+                //printFilters();
+                for (FiltersChangedListener l : listeners) {
+                    try {
+                        l.filtersChanged();
+                    } catch (Exception e) {
+                        Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage());
+                    }
+                }
+            }
+            
+        });
+        
+        
     }
 
     /*
