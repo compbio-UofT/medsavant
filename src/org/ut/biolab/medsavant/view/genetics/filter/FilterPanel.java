@@ -325,6 +325,10 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             if(columnAlias.equals(VariantTableSchema.ALIAS_GT)){
                 isNumeric = false;
                 isBoolean = false;
+            } else if (columnAlias.equals(VariantTableSchema.ALIAS_Transv) || 
+                    columnAlias.equals(VariantTableSchema.ALIAS_pph2_prob)){
+                isNumeric = false;
+                isBoolean = true;
             }
 
             if (isNumeric) {
