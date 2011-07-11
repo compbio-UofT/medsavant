@@ -4,6 +4,8 @@
  */
 package fiume.table;
 
+import com.jidesoft.filter.AbstractFilter;
+import com.jidesoft.filter.Filter;
 import com.jidesoft.grid.AutoFilterTableHeader;
 import com.jidesoft.grid.AutoResizePopupMenuCustomizer;
 import com.jidesoft.grid.QuickTableFilterField;
@@ -123,8 +125,11 @@ public class SearchableTablePanel extends JPanel {
                 columns[i] = i;
             }
             filterField.setTableModel(model);
-            filterField.setColumnIndices(columns);
+            filterField.setColumnIndices(columns);           
             filterField.setObjectConverterManagerEnabled(true);
+            //filterField.setSearchingColumnIndices(columns);
+            //filterField.setTable(table);
+
             table.setModel(new LuceneFilterableTableModel(filterField.getDisplayTableModel()));
             columnChooser.hideColumns(table, hiddenColumns);
 
@@ -206,7 +211,7 @@ public class SearchableTablePanel extends JPanel {
         header.setShowFilterName(true);
         table.setTableHeader(header);
 
-        filterField = new LuceneQuickTableFilterField(model);
+        filterField = new QuickTableFilterField(model);
         //filterField.setColumns(50);
         filterField.setHintText("Type to search");
 
