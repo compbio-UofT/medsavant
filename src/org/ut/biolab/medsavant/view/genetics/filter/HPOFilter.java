@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -137,12 +138,13 @@ public class HPOFilter {
         }
     }
     
+    
     /**
      * Display the jTree in the container, once it has been loaded.
      * @param container JPanel object
      * @param tree the tree containing the ontology information.
      */
-    private static void showTree(JPanel container, Tree tree){
+    private static void showTree(JPanel container, final Tree tree){
         
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
@@ -156,9 +158,25 @@ public class HPOFilter {
         // Enable multiple discontinuous selection.
         final JTree jTree = ConstructJTree.getTree(tree, false, true);
         
+        class ThreadTree extends Thread{
+            @Override
+            public void run(){
+                FilterObjectStorer.addObject(NAME_TREE, tree.getCopyTree());
+            }
+        }
         // Add this tree to the storer so that it does not need to be loaded 
         // again when dealing with statistics.
-        FilterObjectStorer.addObject(NAME_TREE, tree.getCopyTree());
+//        SwingUtilities.invokeLater(new Runnable() {
+//
+//            public void run() {
+//                FilterObjectStorer.addObject(NAME_TREE, tree.getCopyTree());
+//            }
+//        });
+        ThreadTree thread = new ThreadTree();
+        thread.start();
+        
+        
+
         
         jTree.getSelectionModel().setSelectionMode
                 (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);

@@ -30,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -177,7 +178,7 @@ public class GOFilter {
      * @param container
      * @param xtree 
      */
-    private static void showTree(JPanel container, GOTree xtree){
+    private static void showTree(JPanel container, final GOTree xtree){
         
         final JButton applyButton = new JButton("Apply");
 
@@ -190,9 +191,22 @@ public class GOFilter {
         
         final JTree jTree = ConstructJTree.getTree(xtree, true, true);
         
+        class ThreadTree extends Thread{
+            @Override
+            public void run(){
+                FilterObjectStorer.addObject(NAME_TREE, xtree.getCopyTree());
+            }
+        }
         // Add this tree to the storer so that it does not need to be loaded 
         // again when dealing with statistics.
-        FilterObjectStorer.addObject(NAME_TREE, xtree.getCopyTree());
+//        SwingUtilities.invokeLater(new Runnable() {
+//
+//            public void run() {
+//                FilterObjectStorer.addObject(NAME_TREE, xtree.getCopyTree());
+//            }
+//        });
+        ThreadTree thread = new ThreadTree();
+        thread.start();
         
         // to keep track of the locations of the places selected.
         final HashSet<String> locations = new HashSet<String>();

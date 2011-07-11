@@ -72,7 +72,7 @@ public class Node implements Comparable{
     /**
      * Is this node special to a certain node?
      */
-    public final boolean isSpecial;
+    private boolean isSpecial;
     
     /**
      * Says whether this node has been discovered while performing a tree 
@@ -130,11 +130,14 @@ public class Node implements Comparable{
     public Node getCopy(){
         
         Node copyNode = new Node(this.identifier, this.descriptionSpecialNode);
+        copyNode.isSpecial = this.isSpecial;
         copyNode.description = this.description;
         copyNode.hasBeenDiscovered = this.hasBeenDiscovered;
         copyNode.hasBeenSelected = this.hasBeenSelected;
         copyNode.locs = this.locs;
-        copyNode.specialCopyNode = this.specialCopyNode.getCopy();
+        if (this.specialCopyNode != null){
+            copyNode.specialCopyNode = this.specialCopyNode.getCopy();
+        }
         copyNode.totalDescription = this.totalDescription;
         
         copyNode.children = new TreeSet<Node>();
@@ -171,6 +174,9 @@ public class Node implements Comparable{
         }
     }
     
+    public boolean isSpecialNode(){
+        return this.isSpecial;
+    }
     
     /**
      * Set a special node for this node

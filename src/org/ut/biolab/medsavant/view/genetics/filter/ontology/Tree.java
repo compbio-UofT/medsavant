@@ -61,31 +61,63 @@ public class Tree {
      */
     public Tree getCopyTree(){
         
-        // TODO: get a copy of the tree.
        
 //        Tree copyTree = new Tree();
 //        copyTree.fakeRoot = this.fakeRoot.getCopy();
 //        copyTree.idToLocs = this.idToLocs;
 //        copyTree.identifierToNode = new HashMap<String, Node>();
+//        copyTree.identifierToNode.put(NAME_OF_ROOT, copyTree.fakeRoot);
 //        
 //        List<Node> parentNodes = new ArrayList<Node>();
 //        parentNodes.add(this.fakeRoot);
 //        List<Node> parallelParentNodes = new ArrayList<Node>();
 //        parallelParentNodes.add(copyTree.fakeRoot);
-//        List<Node> childrenNodes = new ArrayList<Node>();
 //        
-//        int i = 0;
-//        for (Node parentNode: parentNodes){
+//        List<Node> childrenNodes = new ArrayList<Node>();
+//        List<Node> parallelChildrenNodes = new ArrayList<Node>();
+//        
+//        while (!parentNodes.isEmpty()){
+//            int i = 0;
 //            
-//            Node parallelParentNode = parallelParentNodes.get(i);
-//            TreeSet<Node> currChildren = parentNode.getChildren();
-//            for (Node currChild: currChildren){
+//            childrenNodes.clear();
+//            parallelChildrenNodes.clear();
+//            
+//            for (Node parentNode: parentNodes){
+//
+//                Node parallelParentNode = parallelParentNodes.get(i);
+//                TreeSet<Node> currChildren = parentNode.getChildren();
 //                
-//                
+//                for (Node currChild: currChildren){
+//
+//                    if (currChild.isSpecialNode()){
+//                        continue;
+//                    }
+//                    Node currParallelChild = copyTree.identifierToNode.get(currChild.getIdentifier());
+//
+//                    if (currParallelChild == null){
+//                        
+//                        currParallelChild = currChild.getCopy();
+//                        copyTree.identifierToNode.put(currParallelChild.getIdentifier(), currParallelChild);
+//                        childrenNodes.add(currChild);
+//                        parallelChildrenNodes.add(currParallelChild);              
+//                    }
+//                    parallelParentNode.addChild(currParallelChild);
+//                }
+//                i++;
 //            }
-//            i++;
+//            parentNodes.clear();
+//            parallelParentNodes.clear();
+//            
+//            for (Node n: childrenNodes){
+//                parentNodes.add(n);
+//            }
+//            for (Node n: parallelChildrenNodes){
+//                parallelParentNodes.add(n);
+//            }
+//
 //        }
-        
+//        System.out.println(copyTree.identifierToNode.keySet().size());
+//        System.out.println(this.identifierToNode.keySet().size());
         return this;
     }
     
@@ -254,7 +286,7 @@ public class Tree {
             // If this node is special, there is no need to do anything (as
             // the gene locations of this child are exactly the same as those of
             // the parent at this point in time.
-            if (child.isSpecial){
+            if (child.isSpecialNode()){
                 continue;
             }
             
