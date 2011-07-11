@@ -80,6 +80,28 @@ public class QueryUtil {
         return distinctValues;
     }
     
+    public static List<Vector> getDistinctValuesForColumns(Connection conn, TableSchema t, DbColumn[] cols, Object[][] columnTypeIndices, DbColumn orderColumn, Dir dir) throws SQLException {
+
+        SelectQuery q = new SelectQuery();
+        q.setIsDistinct(true);
+        q.addColumns(cols);
+        q.addFromTable(t.getTable());
+        q.addOrdering(orderColumn, dir);
+        
+        Statement s = conn.createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<Vector> results;
+        try {
+            results = DBUtil.parseResultSet(columnTypeIndices, rs);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new FatalDatabaseException(ex.getMessage());
+        }
+
+        return results;
+    }
+    
 
     public static int getNumRowsInTable(Connection c, Table t) throws SQLException {
 
@@ -823,7 +845,18 @@ public class QueryUtil {
         return results;
         
     }
-
     
-       
+    public static List<Vector> getDistinctBasicPatientInfo() throws SQLException, NonFatalDatabaseException {
+        TableSchema t = MedSavantDatabase.getInstance().getPatientTableSchema();
+        Object[][] columnTypeIndices = {{1,null,ColumnType.VARCHAR},{2,null,ColumnType.VARCHAR},{3,null,ColumnType.VARCHAR}};
+        DbColumn[] cols = {t.getDBColumn(PatientTableSchema.ALIAS_INDEXID), t.getDBColumn(PatientTableSchema.ALIAS_DNA1), t.getDBColumn(PatientTableSchema.ALIAS_FAMNUM)};
+        return QueryUtil.getDistinctValuesForColumns(
+            ConnectionController.connect(),
+            t,
+            cols,
+            columnTypeIndices,
+            t.getDBColumn(PatientTableSchema.ALIAS_INDEXID),
+            Dir.ASCENDING);
+    }
+    
 }

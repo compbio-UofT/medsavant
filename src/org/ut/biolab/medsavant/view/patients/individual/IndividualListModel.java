@@ -18,7 +18,7 @@ public class IndividualListModel implements DetailedListModel {
 
     public List<Vector> getList() throws Exception {
 
-        List<Vector> table = new ArrayList<Vector>();
+        /*List<Vector> table = new ArrayList<Vector>();
 
         List<String> dbresults = QueryUtil.getDistinctPatientIDs();
 
@@ -26,8 +26,9 @@ public class IndividualListModel implements DetailedListModel {
             Vector v = new Vector();
             v.add(s);
             table.add(v);
-        }
-
+        }*/
+        
+        List<Vector> table = QueryUtil.getDistinctBasicPatientInfo();
 
         return table;
     }
@@ -35,11 +36,15 @@ public class IndividualListModel implements DetailedListModel {
     public List<String> getColumnNames() {
         List<String> result = new ArrayList<String>();
         result.add("Patient");
+        result.add("DNA ID");
+        result.add("Family ID");
         return result;
     }
 
     public List<Class> getColumnClasses() {
         List<Class> result = new ArrayList<Class>();
+        result.add(String.class);
+        result.add(String.class);
         result.add(String.class);
         return result;
     }
