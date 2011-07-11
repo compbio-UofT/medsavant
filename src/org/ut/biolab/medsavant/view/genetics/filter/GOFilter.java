@@ -319,7 +319,8 @@ public class GOFilter {
                 classifiedPosInfo = new ClassifiedPositionInfo();
 
                 System.out.println("Pressed apply for gene ontology filter");
-                TreePath[] paths = jTree.getSelectionPaths();
+                TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
+                System.out.println("N: " + paths);
                 
                 for (String location: locations){
 
@@ -333,7 +334,8 @@ public class GOFilter {
                 // anything (most intuitive). So, create bogus condition that 
                 // will never be satisfied.
                 if (classifiedPosInfo.getConditions().isEmpty() && paths != null){
-                    classifiedPosInfo.addCondition("chr1", 23, 22); 
+                    classifiedPosInfo.addCondition("chr1", 23.0, 22.0); 
+                    System.out.println("DONE!");
                 }
                 final HashMap<String, List<Range>> map = classifiedPosInfo.getConditions();
                 

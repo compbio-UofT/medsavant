@@ -271,7 +271,7 @@ public class HPOFilter {
                 classifiedPos = new ClassifiedPositionInfo();
 
                 System.out.println("Pressed apply for gene ontology filter");
-                TreePath[] paths = jTree.getSelectionPaths();
+                TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
                 
                 for (String location: locations){
 
