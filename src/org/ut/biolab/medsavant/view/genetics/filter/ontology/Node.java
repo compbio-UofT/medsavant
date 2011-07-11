@@ -365,7 +365,19 @@ public class Node implements Comparable{
     }
     
     @Override
+    /**
+     * Returns entire description.
+     */
     public String toString(){
+        
+        return this.description;
+    }
+    
+    /**
+     * Returns only the original description, WITHOUT the additional description
+     * @return 
+     */
+    public String toValue(){
         
         return this.totalDescription;
     }

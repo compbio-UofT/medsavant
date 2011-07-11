@@ -26,29 +26,32 @@ public class ConstructJTree {
      * default root is created. Note that there is a packageToAdd, and isForest
      * is true, the root will not have a child with the package to be added.
      * @param isCheckBoxTree true iff the tree is to be a check box tree.
+     * @param useToString true if you want the toString part of the node to be
+     * returned, false if you want the toValue part.
      * @return the jTree object made.
      */
-    public static JTree getTree(Tree tree, boolean isForest, boolean isCheckBoxTree){
+    public static JTree getTree(Tree tree, boolean isForest, boolean isCheckBoxTree, boolean useToString){
 
         if (tree == null){
             return null;
         }
-        DefaultMutableTreeNode actualRoot;
+        MutableTreeNode actualRoot;
         if (isForest){
             // "dummy" root of the tree.  No special node here...
 //            Node root = new Node("...", null);
 //            root.setDescription("...");
             Node root = tree.fakeRoot;
-            actualRoot = new DefaultMutableTreeNode(root);
+            actualRoot = new MutableTreeNode(root);
         }
         else{
             actualRoot = 
-                    new DefaultMutableTreeNode(tree.getRootNodes().toArray(new Node[1])[0]);
+                    new MutableTreeNode(tree.getRootNodes().toArray(new Node[1])[0]);
         }
+        actualRoot.setToString(useToString);
         
         
         // Add the nodes beneath the root node to this tree.
-        addNodes(actualRoot, tree, isForest);
+        addNodes(actualRoot, tree, isForest, useToString);
         JTree displayedTree = null;
         
         if (!isCheckBoxTree){
@@ -69,7 +72,7 @@ public class ConstructJTree {
      * @param isForest true iff the tree has multiple roots.
      */
     private static void addNodes
-            (DefaultMutableTreeNode actualRoot, Tree tree, boolean isForest){
+            (MutableTreeNode actualRoot, Tree tree, boolean isForest, boolean useToString){
         
         Set<Node> roots;
         // To contain the roots of the tree.
@@ -84,23 +87,24 @@ public class ConstructJTree {
         TreeSet<Node> children;
         
         // The child in consideration in context.
-        DefaultMutableTreeNode child;
+        MutableTreeNode child;
         
         // To contain the parent nodes (to be used when displaying) in question.
-        List<DefaultMutableTreeNode> parentNodes = 
-                new ArrayList<DefaultMutableTreeNode>();
+        List<MutableTreeNode> parentNodes = 
+                new ArrayList<MutableTreeNode>();
         
         
         // To contain the children nodes in question.
-        List<DefaultMutableTreeNode> childrenNodes = 
-                new ArrayList<DefaultMutableTreeNode>();
+        List<MutableTreeNode> childrenNodes = 
+                new ArrayList<MutableTreeNode>();
         
         
         // Add all roots to the tree.
         for (Node root: roots){
         
             // Connect the root to its children.
-            child = new DefaultMutableTreeNode(root);
+            child = new MutableTreeNode(root); 
+            child.setToString(useToString);
             actualRoot.add(child);
             // The future parents to be considered.
             parentNodes.add(child);
@@ -110,7 +114,7 @@ public class ConstructJTree {
         while(!parentNodes.isEmpty()){
             
             // Go through the tree in a breadth-first manner.
-            for (DefaultMutableTreeNode parent: parentNodes){
+            for (MutableTreeNode parent: parentNodes){
 
                 // Get the set of children, and have the parents accept their
                 // children.
@@ -119,7 +123,8 @@ public class ConstructJTree {
 
                 for (Node child2: children){
 
-                    child = new DefaultMutableTreeNode(child2);                   
+                    child = new MutableTreeNode(child2); 
+                    child.setToString(useToString);
                     childrenNodes.add(child);
                     parent.add(child);
                 }

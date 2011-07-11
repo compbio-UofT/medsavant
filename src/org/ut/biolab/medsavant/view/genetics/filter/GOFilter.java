@@ -189,7 +189,7 @@ public class GOFilter {
         // For the tree, we want to use a checkboxtree, a dummy root, and to add 
         // a package we will be calling "genes" to every single node.
         
-        final JTree jTree = ConstructJTree.getTree(xtree, true, true);
+        final JTree jTree = ConstructJTree.getTree(xtree, true, true, true);
         
         class ThreadTree extends Thread{
             @Override

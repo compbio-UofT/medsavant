@@ -156,7 +156,7 @@ public class HPOFilter {
         
         // Now that we have the tree, construct jTree, and display it.
         // Enable multiple discontinuous selection.
-        final JTree jTree = ConstructJTree.getTree(tree, false, true);
+        final JTree jTree = ConstructJTree.getTree(tree, false, true, true);
         
         class ThreadTree extends Thread{
             @Override
