@@ -10,6 +10,7 @@ import javax.swing.JTree;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.view.genetics.OntologyPanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.filter.HPOFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
@@ -22,15 +23,17 @@ import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
 public class HPOsubPanel extends OntologySubPanel{
     
     private JTree jTree;
+    OntologyPanelGenerator.OntologyPanel panel;
     
-    public HPOsubPanel(){
-        super(0, 1, 2);
+    public HPOsubPanel(OntologyPanelGenerator.OntologyPanel panel){
+        super(panel, 0, 1, 2);
+        this.panel = super.panel;
     }
 
     
     @Override
     public String getName(){
-        return "Human Phenotype";
+        return "Human Phenotype Ontology";
     }
     
     public boolean treeIsReadyToBeFetched(){
@@ -51,5 +54,6 @@ public class HPOsubPanel extends OntologySubPanel{
             return jTree;
         }
     }
+    
     
 }

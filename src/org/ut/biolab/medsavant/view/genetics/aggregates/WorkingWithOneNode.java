@@ -98,6 +98,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
             try {
                 String additionalDesc = " [" + get() + " records in all]";
                 ((Node)node.getUserObject()).setTotalDescription(additionalDesc);
+                OntologyStatsWorker.setTotalProgressInPanel(subPanel);
             }
             catch(Exception e){
                 
@@ -110,4 +111,5 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
                 }
         });
       }
+        
   }

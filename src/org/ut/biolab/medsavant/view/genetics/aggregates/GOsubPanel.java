@@ -11,6 +11,7 @@ import javax.swing.JTree;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.view.genetics.OntologyPanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.filter.GOFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
@@ -24,9 +25,11 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
 public class GOsubPanel extends OntologySubPanel{
     
     private JTree jTree;
-    
-    public GOsubPanel(){
-        super(1, 2, 3);
+    OntologyPanelGenerator.OntologyPanel panel;
+
+    public GOsubPanel(OntologyPanelGenerator.OntologyPanel panel){
+        super(panel, 1, 2, 3);
+        this.panel = super.panel;
     }
 
     
@@ -49,6 +52,5 @@ public class GOsubPanel extends OntologySubPanel{
             return jTree;
         }
     }
-    
-    
+
 }

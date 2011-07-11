@@ -29,7 +29,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author Nirvana Nursimulu
  */
 public class OntologyStatsWorker extends SwingWorker{
-    
+      
     // Expecting only one such panel to be instantiated at a time.
     private static List<WorkingWithOneNode> listIndividualThreads = new ArrayList<WorkingWithOneNode>();
     public static HashMap<String, Integer> mapLocToFreq = new HashMap<String, Integer>();
@@ -43,8 +43,32 @@ public class OntologyStatsWorker extends SwingWorker{
     // Map of a tree to the tree itself so that it does not need to be loaded over and over again.
     public static HashMap<String, JTree> mapNameToTree = new HashMap<String, JTree>();
     
+    public static float getTotalLoaded(){
+        int counter = 0;
+        for (WorkingWithOneNode thread: listIndividualThreads){
+            if (thread.isDone()){
+                counter += 1;
+            }
+        }
+        System.out.println("Get total already loaded: " + counter);
+        return counter;
+    }
+    
+    public static float getTotalToLoad(){
+        System.out.println("Get total to load: " + listIndividualThreads.size());
+        return listIndividualThreads.size();
+    }
+    
+    public static void setTotalProgressInPanel(OntologySubPanel subPanel){ 
+        float totalLoaded = OntologyStatsWorker.getTotalLoaded();
+        float totalToLoad = OntologyStatsWorker.getTotalToLoad();
+        int percentage = Math.round(totalLoaded/totalToLoad * 100);
+        subPanel.setProgress(percentage);
+    }
+    
     public OntologyStatsWorker(OntologySubPanel subPanel){
         this.subPanel = subPanel;
+        OntologyStatsWorker.listIndividualThreads.clear();
     }
 
     @Override
@@ -188,6 +212,7 @@ public class OntologyStatsWorker extends SwingWorker{
 //            System.out.println(node);
         }
 //        System.out.println("-------------\n\n");
+        OntologyStatsWorker.setTotalProgressInPanel(subPanel);
     }
 
     /**

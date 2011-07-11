@@ -8,6 +8,8 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -22,8 +24,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-class OntologyPanelGenerator implements AggregatePanelGenerator {
-
+public class OntologyPanelGenerator implements AggregatePanelGenerator {
+    
     private OntologyPanel panel;
 
     public OntologyPanelGenerator() {
@@ -89,8 +91,10 @@ class OntologyPanelGenerator implements AggregatePanelGenerator {
                 }
             });
 
-            addOntologyAggregator("GO Ontology", new GOsubPanel());
-            addOntologyAggregator("HPO Ontology", new HPOsubPanel());
+            GOsubPanel gopanel = new GOsubPanel(this);
+            HPOsubPanel hpopanel = new HPOsubPanel(this);
+            addOntologyAggregator(gopanel.getName(), gopanel);
+            addOntologyAggregator(hpopanel.getName(), hpopanel);
         }
 
         private void showOntology(String ontology) {
@@ -108,7 +112,7 @@ class OntologyPanelGenerator implements AggregatePanelGenerator {
             this.content.updateUI();
         }
 
-        private void updateProgess(int value) {
+        public void updateProgess(int value) {
             progress.setValue(value);
             progress.setString(value + "% done");
         }

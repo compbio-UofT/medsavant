@@ -19,6 +19,7 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.view.genetics.OntologyPanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.filter.GOFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
 import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
@@ -48,9 +49,11 @@ public abstract class OntologySubPanel extends JPanel implements AggregatePanelG
     private OntologyStatsWorker osw;
     
     protected boolean updatePanelUponFilterChanges;
+    
+    protected OntologyPanelGenerator.OntologyPanel panel;
 
         
-    public OntologySubPanel(int chromSplitIndex, int startSplitIndex, int endSplitIndex){
+    public OntologySubPanel(OntologyPanelGenerator.OntologyPanel panel, int chromSplitIndex, int startSplitIndex, int endSplitIndex){
         
         FilterController.addFilterListener(this);
         this.setLayout(new BorderLayout());
@@ -60,7 +63,9 @@ public abstract class OntologySubPanel extends JPanel implements AggregatePanelG
         this.chromSplitIndex = chromSplitIndex;
         this.startSplitIndex = startSplitIndex;
         this.endSplitIndex = endSplitIndex;
+        this.panel = panel;
     }
+    
     
     /**
      * Start to gather info into the tree.
@@ -125,4 +130,11 @@ public abstract class OntologySubPanel extends JPanel implements AggregatePanelG
         return updatePanelUponFilterChanges;
     }
     
+    /**
+     * Set the progress in the progress bar.
+     * @param value 
+     */
+    public void setProgress(int value){
+        panel.updateProgess(value);
+    }    
 }
