@@ -51,6 +51,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class HPOFilter {
     
+    public static String NAME_FILTER = "Human Phenotype";
+    
     public static String NAME_TREE = "HPO TREE";
     
     private static ClassifiedPositionInfo classifiedPos;
@@ -64,7 +66,7 @@ public class HPOFilter {
         
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        FilterView hpontologyView = new FilterView("Human Phenotype", container);
+        FilterView hpontologyView = new FilterView(NAME_FILTER, container);
         loadData(container);
         return hpontologyView;
     }

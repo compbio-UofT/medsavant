@@ -57,6 +57,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class GOFilter {
     
+    public static String NAME_FILTER = "Gene Ontology";
+    
     public static String NAME_TREE = "GO TREE";
     
     private static ClassifiedPositionInfo classifiedPosInfo;
@@ -69,7 +71,7 @@ public class GOFilter {
         
         final JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        FilterView gontologyFilterView = new FilterView("Gene Ontology", container);
+        FilterView gontologyFilterView = new FilterView(NAME_FILTER, container);
         // Add button to ask whether the person wants to see the tree.
 //        final JButton buttonShowTree = new JButton("Show tree");
 //        container.add(buttonShowTree);
