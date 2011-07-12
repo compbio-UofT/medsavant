@@ -28,7 +28,9 @@ public class FilterController {
     private static Map<Integer,Map<String,Filter>> filterMapHistory = new TreeMap<Integer,Map<String,Filter>>();
     private static Map<String,Filter> filterMap = new TreeMap<String,Filter>();
     private static List<FiltersChangedListener> listeners = new ArrayList<FiltersChangedListener>();
-       
+    private static List<FiltersChangedListener> activeListeners = new ArrayList<FiltersChangedListener>();
+    
+    
     private static Filter lastFilter;
     private static FilterAction lastAction;
     public static enum FilterAction {ADDED, REMOVED, MODIFIED};
@@ -75,6 +77,10 @@ public class FilterController {
         listeners.add(l);
     }
     
+    public static void addActiveFilterListener(FiltersChangedListener l) {
+        activeListeners.add(l);
+    }
+    
     public static int getCurrentFilterSetID() {
         return filterSetID;
     }
@@ -88,12 +94,24 @@ public class FilterController {
         filterSetID++;
         filterMapHistory.put(filterSetID,filterMap);
         
-        //printFilters();
+        //cancel any running workers from last filter
+        for (FiltersChangedListener l : activeListeners) {
+            try {
+                l.filtersChanged();
+            } catch (Exception e) {
+                Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        activeListeners.clear();
+        
+        //start new filter change
         for (FiltersChangedListener l : listeners) {
             try {
                 l.filtersChanged();
             } catch (Exception e) {
                 Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage());
+                e.printStackTrace();
             }
         }
     }
