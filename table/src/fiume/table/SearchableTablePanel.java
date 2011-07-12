@@ -363,7 +363,7 @@ public class SearchableTablePanel extends JPanel {
         this.updateView();
     }
 
-    private int getPageNumber() {
+    public int getPageNumber() {
         return this.pageNum;
     }
 
@@ -394,7 +394,7 @@ public class SearchableTablePanel extends JPanel {
         return (int) Math.ceil(((double) getTotalRowCount()) / getRowsPerPage());
     }
 
-    private int getRowsPerPage() {
+    public int getRowsPerPage() {
         return this.numRowsPerPage;
     }
 

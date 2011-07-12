@@ -127,16 +127,18 @@ public class SplitScreenView extends JPanel {
                 public void valueChanged(ListSelectionEvent e) {
                     //set last selection
                     int row = stp.getTable().getSelectedRow();    
-                    if(row != -1)
-                        detailedView.setSelectedItem(data.get(row));
+                    if(row != -1){
+                        detailedView.setSelectedItem(data.get(row + ((stp.getPageNumber() - 1) * stp.getRowsPerPage())));
+                    }
                     
                     //set all selected
+                    //TODO: adjust for page
                     int[] allRows = stp.getTable().getSelectedRows();
                     int length = allRows.length;
                     if(allRows.length > 0 && allRows[allRows.length-1] >= data.size()) length--;
                     Vector[] selected = new Vector[length];
                     for(int i = 0; i < length; i++){
-                        selected[i] = data.get(allRows[i]);
+                        selected[i] = data.get(allRows[i] + ((stp.getPageNumber() - 1) * stp.getRowsPerPage()));
                     }
                     detailedView.setMultipleSelections(selected);
                 }
