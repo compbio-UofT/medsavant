@@ -322,7 +322,7 @@ public class HPOFilter {
 
                     @Override
                     public String getName() {
-                        return " position gene Ont";
+                        return NAME_FILTER;
                     }
                 };
                 System.out.println("Adding Filter " + f.getName());

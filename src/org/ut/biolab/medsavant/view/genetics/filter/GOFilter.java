@@ -383,7 +383,7 @@ public class GOFilter {
 
                     @Override
                     public String getName() {
-                        return "position Gene Ont";
+                        return NAME_FILTER;
                     }
                 };
                 System.out.println("Adding Filter " + f.getName());
