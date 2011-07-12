@@ -503,6 +503,8 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                     public void actionPerformed(ActionEvent e) {
                         rs.setLowValue(min);
                         rs.setHighValue(max);
+                        frombox.setText(ViewUtil.numToString(min));
+                        tobox.setText(ViewUtil.numToString(max));
                     }
                 });
 
