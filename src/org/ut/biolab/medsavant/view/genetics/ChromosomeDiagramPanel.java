@@ -110,9 +110,7 @@ public class ChromosomeDiagramPanel extends JPanel {
     }*/
     
     public int createBins(int totalNum, int binsize) {
-        
-        System.out.println(chr.getName());
- 
+       
         binValues = new ArrayList<Integer>();       
         try {
             if(binsize > AMAXBINSIZE){
