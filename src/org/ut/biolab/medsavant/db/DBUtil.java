@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.table.CohortTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema;
@@ -357,6 +358,21 @@ public class DBUtil {
             conn.setAutoCommit(true);
 
         } catch (Exception ex) {
+            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public static void addCohort(String cohort_name) {
+        //TODO: make sure name doesn't already exist.
+        TableSchema t = MedSavantDatabase.getInstance().getCohortTableSchema();
+        InsertQuery is = new InsertQuery(t.getTable());
+        is.addColumn(t.getDBColumn(CohortTableSchema.ALIAS_COHORTNAME), cohort_name);        
+        try {
+            Statement s = ConnectionController.connect().createStatement();
+            s.executeUpdate(is.toString());
+        } catch (NonFatalDatabaseException ex) {
+            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
             Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

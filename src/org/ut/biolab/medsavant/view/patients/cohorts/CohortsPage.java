@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.db.importfile.BedFormat;
 import org.ut.biolab.medsavant.db.importfile.ImportFileView;
+import org.ut.biolab.medsavant.view.dialog.AddCohortForm;
 import org.ut.biolab.medsavant.view.patients.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -22,15 +23,17 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
 public class CohortsPage extends SubSectionView {
 
     public CohortsPage(SectionView parent) { super(parent); }
+    private SplitScreenView view;
     
     public String getName() {
         return "Cohorts";
     }
 
     public JPanel getView() {
-        return new SplitScreenView(
+        view =  new SplitScreenView(
                 new CohortListModel(), 
                 new CohortDetailedView());
+        return view;
     }
     
     public Component[] getBanner() {
@@ -38,9 +41,15 @@ public class CohortsPage extends SubSectionView {
         result[0] = getAddCohortButton();
         return result;
     }
-
-    private Component getAddCohortButton() {
-        JButton b = new JButton("Add cohort");        
-        return b;
+    
+    private JButton getAddCohortButton(){
+        JButton button = new JButton("Add cohort");
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new AddCohortForm();
+                if(view != null) view.refresh();
+            }
+        }); 
+        return button;
     }
 }
