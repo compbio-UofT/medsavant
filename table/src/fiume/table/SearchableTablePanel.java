@@ -142,6 +142,8 @@ public class SearchableTablePanel extends JPanel {
                 }
             }
             columnChooser.setFavoriteColumns(favColumns);
+        } else {
+            model.fireTableDataChanged();
         }
 
     }
