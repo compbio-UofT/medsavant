@@ -49,5 +49,13 @@ public class ChromosomePanel extends JPanel {
     public void update(int totalNum){
         cdp.update(totalNum);
     }
+    
+    /*public int getNumBins(int binsize){
+        return (int)(chr.getLength()/binsize + 1);
+    }
+    
+    public String getChrName(){
+        return chr.getName();
+    }*/
 
 }

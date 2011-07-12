@@ -346,6 +346,46 @@ public class QueryUtil {
         return numrows;
     }
     
+    public static int[] getNumVariantsForBins(Connection c, String chrom, int binsize, int numbins) throws SQLException, NonFatalDatabaseException {
+        
+        TableSchema t = MedSavantDatabase.getInstance().getVariantTableSchema();
+
+        SelectQuery base = getCurrentBaseVariantFilterQuery();
+        base.addColumns(t.getDBColumn(VariantTableSchema.ALIAS_POSITION));
+        base.addCondition(new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_CHROM), chrom)); 
+
+        String q1 = base.toString();
+        
+        String q = "select y.range as `range`, count(*) as `number of occurences` "
+                + "from ("
+                + "select case ";
+        int pos = 0;
+        for(int i = 0; i < numbins; i++){
+            q += "when `position` between " + pos + " and " + (pos+binsize) + " then " + i + " ";
+            pos += binsize;
+        }
+        
+        q += "end as `range` "
+                + "from (";
+        q += q1;
+        q += ") x ) y "
+                + "group by y.`range`";
+        
+        Statement s = c.createStatement();
+        ResultSet rs = s.executeQuery(q);
+        
+        int[] numRows = new int[numbins];
+        for(int i = 0; i < numbins; i++) numRows[i] = 0;
+        while(rs.next()){
+            int index = rs.getInt(1);
+            numRows[index] = rs.getInt(2);
+        }
+              
+        s.close();
+        
+        return numRows;
+    }
+    
     public static int getNumPatientsWithVariantsInRange(Connection connect, String chrom, int start, int end) throws SQLException {
         VariantTableSchema t = (VariantTableSchema) MedSavantDatabase.getInstance().getVariantTableSchema();
 

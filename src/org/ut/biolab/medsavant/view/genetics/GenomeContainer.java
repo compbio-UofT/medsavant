@@ -10,7 +10,11 @@ import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
@@ -19,9 +23,11 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Chromosome;
 import org.ut.biolab.medsavant.model.record.Genome;
+import org.ut.biolab.medsavant.util.MedSwingWorker;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -99,22 +105,43 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         gnv.execute();
     }
     
-    private class GetNumVariantsSwingWorker extends SwingWorker {
+    private class GetNumVariantsSwingWorker extends MedSwingWorker {
 
         public GetNumVariantsSwingWorker() {}
         
         @Override
-        protected Object doInBackground() throws Exception {
-            int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect());
-            for(ChromosomePanel p : chrViews){
-                p.update(totalNum);
-            }     
-            return null;            
+        protected Object doInBackground() {           
+            try {
+                int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect());
+                for(ChromosomePanel p : chrViews){
+                    if(this.isCancelled()) return false;
+                    p.update(totalNum);
+                } 
+            } catch (SQLException ex) {
+                Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
+            } catch(NonFatalDatabaseException ex){
+                Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            return true;            
         }
         
         @Override
         protected void done() {
-            showShowCard();
+            if (this.isCancelled()) {
+                return;
+            } else {
+                showShowCard();
+            }
+            /*try {
+                boolean result = (Boolean)get();
+                if(result) showShowCard();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
+            }*/
+                        
         }      
     }
 }
