@@ -38,6 +38,10 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
           this.tree = tree;
           this.subPanel = subPanel;
       }
+      
+      public DefaultMutableTreeNode getNode(){
+          return node;
+      }
 
     @Override
     protected Object doInBackground() throws Exception {
@@ -60,6 +64,8 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
         for (String loc: mergedRanges){
 
             if (Thread.currentThread().isInterrupted()){
+//                System.out.println(node);
+//                System.out.println("So, it would appear that we've been interrupted.");
                 throw new java.util.concurrent.CancellationException();
                 // TODO: Not doing more here is probably creating tonnes of problems.
             }
@@ -77,6 +83,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
             }
 
             numVariants = numVariants + numCurr;
+//            System.out.println(node + "\t" + numVariants);
             ((Node)node.getUserObject()).setTotalDescription(" [>=" + numVariants + " records]");
 //                System.out.println(numVariants);
 //            tree.repaint();

@@ -274,13 +274,18 @@ public class OntologyStatsWorker extends SwingWorker{
       }
     
       
-      public static void killIndividualThreads(){         
+      public static void killIndividualThreads(OntologySubPanel subPanel){         
           // Kill each of those threads from before.
           for (WorkingWithOneNode thread: listIndividualThreads){
-            if (!thread.isDone()){
-                thread.cancel(true);
-//                System.out.println("THIS IS NOW BEING CANCELLED.");
-            }
+                if (!thread.isDone()){
+                    thread.cancel(true);
+    //                System.out.println("THIS IS NOW BEING CANCELLED.");
+                }
+                ((Node)thread.getNode().getUserObject()).setTotalDescription("");
+                if (subPanel.getJTree() != null){
+                    subPanel.getJTree().repaint();
+                }
+                subPanel.updateUI();
 //            System.out.println("Cancelling");
           }
       }

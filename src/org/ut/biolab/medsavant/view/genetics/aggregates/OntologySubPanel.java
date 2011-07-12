@@ -96,7 +96,7 @@ public abstract class OntologySubPanel extends JPanel implements AggregatePanelG
     
     public void stopEverything(){
                 
-        OntologyStatsWorker.killIndividualThreads();
+        OntologyStatsWorker.killIndividualThreads(this);
         OntologyStatsWorker.removeStatsFromVisibleNodes();
         OntologyStatsWorker.nodesThatWereAlreadyVisible.clear();
 //        OntologyStatsWorker.mapNameToTree.clear();
