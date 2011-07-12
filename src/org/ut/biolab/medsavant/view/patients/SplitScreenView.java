@@ -132,8 +132,10 @@ public class SplitScreenView extends JPanel {
                     
                     //set all selected
                     int[] allRows = stp.getTable().getSelectedRows();
-                    Vector[] selected = new Vector[allRows.length];
-                    for(int i = 0; i < allRows.length; i++){
+                    int length = allRows.length;
+                    if(allRows.length > 0 && allRows[allRows.length-1] >= data.size()) length--;
+                    Vector[] selected = new Vector[length];
+                    for(int i = 0; i < length; i++){
                         selected[i] = data.get(allRows[i]);
                     }
                     detailedView.setMultipleSelections(selected);
