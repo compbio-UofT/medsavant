@@ -46,10 +46,17 @@ public class ChromosomePanel extends JPanel {
         cdp.setScaleWithRespectToLength(len);
     }
     
-    public void update(int totalNum){
+    /*public void update(int totalNum){
         cdp.update(totalNum);
+    }*/
+    
+    public int createBins(int totalNum, int binsize){
+        return cdp.createBins(totalNum, binsize);
     }
     
+    public void updateAnnotations(int max, int binsize){
+        cdp.updateAnnotations(max, binsize);
+    }
     /*public int getNumBins(int binsize){
         return (int)(chr.getLength()/binsize + 1);
     }

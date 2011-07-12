@@ -43,6 +43,8 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
     private static final String CARD_WAIT = "wait";
     private static final String CARD_SHOW = "show";
     private CardLayout cl;
+    private static final int MINBINSIZE = 10000000;
+    private static final int BINMULTIPLIER = 25;
 
     public GenomeContainer() {
         cl = new CardLayout();
@@ -110,19 +112,26 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         public GetNumVariantsSwingWorker() {}
         
         @Override
-        protected Object doInBackground() {           
+        protected Object doInBackground() {  
             try {
-                int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect());
+                int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect());                 
+                int binsize = (int)Math.min(249250621, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
+                int maxRegion = 0;
                 for(ChromosomePanel p : chrViews){
                     if(this.isCancelled()) return false;
-                    p.update(totalNum);
+                    int region = p.createBins(totalNum, binsize);
+                    if(region > maxRegion) maxRegion = region;
+                } 
+                for(ChromosomePanel p : chrViews){
+                    if(this.isCancelled()) return false;
+                    p.updateAnnotations(maxRegion, binsize);
                 } 
             } catch (SQLException ex) {
                 Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
             } catch(NonFatalDatabaseException ex){
                 Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+             
             return true;            
         }
         

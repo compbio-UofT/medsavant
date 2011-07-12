@@ -34,10 +34,9 @@ public class ChromosomeDiagramPanel extends JPanel {
     private long scaleWRTLength;
     private final Chromosome chr;
     private List<RangeAnnotation> annotations;
-    //private static final int BINSIZE = 15000000;
-    private static final int MINBINSIZE = 10000000;
-    private static final int BINMULTIPLIER = 25;
+    //private static final int BINSIZE = 15000000;    
     private static final int AMAXBINSIZE = 60000000;
+    private List<Integer> binValues;
 
     public ChromosomeDiagramPanel(Chromosome c) {
         this.chr = c;
@@ -106,32 +105,24 @@ public class ChromosomeDiagramPanel extends JPanel {
         repaint();
     }
     
-    public void update(int totalNum){
-        updateAnnotations(totalNum);
-    }
+    /*public int update(int totalNum){
+        return updateAnnotations(totalNum);
+    }*/
     
-    private void updateAnnotations(int totalNum) {
+    public int createBins(int totalNum, int binsize) {
         
-        int binsize = (int)Math.min(Integer.MAX_VALUE, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
-        
-        List<RangeAnnotation> as = new ArrayList<RangeAnnotation>();
-        
+        System.out.println(chr.getName());
+ 
+        binValues = new ArrayList<Integer>();       
         try {
             if(binsize > AMAXBINSIZE){
-
-                List<Integer> nums = new ArrayList<Integer>();
-
                 for(int i = 0; i < chr.getLength(); i += binsize){
                     int numVariants = QueryUtil.getNumVariantsInRange(                  
                             ConnectionController.connect(),
                             chr.getName(),
                             i,
                             i + binsize);
-                    nums.add(numVariants); 
-                    if(numVariants > 0 && totalNum >= 1){
-                        float alpha = 0.15f + (0.85f * (float)((double)numVariants / (double)totalNum));                 
-                        as.add(new RangeAnnotation(i, i + binsize, new Color(0.0f, 0.7f, 0.87f, alpha)));
-                    }
+                    binValues.add(numVariants);
                 }           
             } else {
                 int[] a = QueryUtil.getNumVariantsForBins(                  
@@ -139,13 +130,8 @@ public class ChromosomeDiagramPanel extends JPanel {
                             chr.getName(),
                             binsize,
                             (int)(chr.getLength()/binsize + 1));
-                int pos = 0;
-                for(int i = 0; i < chr.getLength(); i += binsize){
-                    if(a[pos] > 0 && totalNum >= 1){
-                        float alpha = 0.15f + (0.85f * (float)((double)a[pos] / (double)totalNum));                 
-                        as.add(new RangeAnnotation(i, i + binsize, new Color(0.0f, 0.7f, 0.87f, alpha)));
-                    }
-                    pos++;
+                for(Integer i : a){
+                    binValues.add(i);
                 }
             }
         } catch (NonFatalDatabaseException ex) {
@@ -154,7 +140,31 @@ public class ChromosomeDiagramPanel extends JPanel {
             Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
                  
-        setAnnotations(as);      
+        int max = 0;
+        for(Integer i : binValues){
+            if(i > max) max = i;
+        }
+        return max;
+    }
+    
+    public void updateAnnotations(int max, int binsize){
+        
+        List<RangeAnnotation> as = new ArrayList<RangeAnnotation>();
+                   
+        int pos = 0;
+        for(int i = 0; i < chr.getLength(); i += binsize){
+            if(binValues.get(pos) > 0){
+                int newMax = max;
+                if(i + binsize > chr.getLength()){
+                    newMax = (int)((double)max * ((double)(chr.getLength() - i) / (double)binsize));
+                }
+                float alpha = 0.15f + (0.85f * (float)Math.min(1.0, (double)binValues.get(pos) / (double) newMax));
+                as.add(new RangeAnnotation(i, i + binsize, new Color(0.0f, 0.7f, 0.87f, alpha)));
+            }
+            pos++;
+        }
+        
+        setAnnotations(as);
     }
     
 }
