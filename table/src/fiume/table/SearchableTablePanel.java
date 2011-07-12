@@ -8,6 +8,7 @@ import com.jidesoft.filter.AbstractFilter;
 import com.jidesoft.filter.Filter;
 import com.jidesoft.grid.AutoFilterTableHeader;
 import com.jidesoft.grid.AutoResizePopupMenuCustomizer;
+import com.jidesoft.grid.FilterableTableModel;
 import com.jidesoft.grid.QuickTableFilterField;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableColumnChooserPopupMenuCustomizer;
@@ -130,7 +131,7 @@ public class SearchableTablePanel extends JPanel {
             //filterField.setSearchingColumnIndices(columns);
             //filterField.setTable(table);
 
-            table.setModel(new LuceneFilterableTableModel(filterField.getDisplayTableModel()));
+            table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
             columnChooser.hideColumns(table, hiddenColumns);
 
             int[] favColumns = new int[columnNames.size() - hiddenColumns.size()];
