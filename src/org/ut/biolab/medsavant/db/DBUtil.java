@@ -402,8 +402,6 @@ public class DBUtil {
 
         Connection conn = ConnectionController.connect();
 
-
-
         // create gene list
         TableSchema geneListTable = MedSavantDatabase.getInstance().getGeneListTableSchema();
         InsertQuery q0 = new InsertQuery(geneListTable.getTable());
@@ -445,6 +443,8 @@ public class DBUtil {
         TableSchema glmembership = MedSavantDatabase.getInstance().getGeneListMembershipTableSchema();
 
         while (i.hasNext()) {
+
+                    System.out.println("Sending region member");
 
             String[] line = i.next();
 

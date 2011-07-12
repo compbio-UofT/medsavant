@@ -49,7 +49,7 @@ public class ImportFileView extends javax.swing.JDialog {
     private boolean importAccepted;
     private PathField pathField;
     private JComboBox formatComboBox;
-    private int numHeaderLines = 1;
+    private int numHeaderLines = 0;
     private final HashMap<String, FileFormat> formatMap;
     private JPanel previewPanel;
     private JPanel waitPanel = new WaitPanel("Generating preview");
@@ -322,6 +322,9 @@ public class ImportFileView extends javax.swing.JDialog {
                 
                 List<String[]> header = (List<String[]>) preview[0];
                 List<String[]> rest = (List<String[]>) preview[1];
+                
+                
+
                 
                 setPreview(header,rest);
 

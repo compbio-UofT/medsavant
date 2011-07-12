@@ -28,9 +28,9 @@ public class BedFormat extends FileFormat {
     public TreeMap<Integer, Class> getFieldNumberToClassMap() {
         TreeMap<Integer,Class> map = new TreeMap<Integer,Class>();
         map.put(0, String.class);
-        map.put(1, String.class);
-        map.put(3, Integer.class);
-        map.put(4, Integer.class);
+        map.put(1, String.class); // todo: 1 and 2 should be ints!!
+        map.put(2, String.class);
+        map.put(3, String.class);
         return map;
     }
     

@@ -46,8 +46,9 @@ public class ImportDelimitedFile {
                         } else {
                             nextLine = getOnlyRequiredFields(reader.readNext(), fields);
                         }
+                        //System.out.println("Next line: " + nextLine.toString());
                         return true;
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         try {
                             reader.close();
                         } catch (IOException ex1) {
@@ -96,7 +97,7 @@ public class ImportDelimitedFile {
         return i;
     }
 
-    static Object getPreview(
+    static Object[] getPreview(
             String path,
             char separator,
             int numHeaderLines,
@@ -114,7 +115,7 @@ public class ImportDelimitedFile {
 
         List<String[]> headerLines = getLinesFromReader(reader, numHeaderLines);
         List<String[]> previewLines = getLinesFromReader(reader, numLines, fields);
-
+        
         Object[] lines = new Object[2];
         lines[0] = headerLines;
         lines[1] = previewLines;
@@ -122,6 +123,8 @@ public class ImportDelimitedFile {
         return lines;
     }
 
+    
+    /*
     public static Object[] getPreview(
             String path,
             char separator,
@@ -139,6 +142,8 @@ public class ImportDelimitedFile {
 
         return lines;
     }
+     * 
+     */
 
     private static List<String[]> getLinesFromReader(CSVReader reader, int numLines) {
         return getLinesFromReader(reader, numLines, null);
@@ -168,9 +173,12 @@ public class ImportDelimitedFile {
 
     private static String[] getOnlyRequiredFields(String[] line, int[] fields) {
         String[] result = new String[fields.length];
+
         for (int i = 0; i < fields.length; i++) {
             result[i] = line[fields[i]];
+            System.out.print(result[i] + "\t");
         }
+        System.out.println();
         return result;
     }
 
