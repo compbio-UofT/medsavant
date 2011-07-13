@@ -322,7 +322,7 @@ public class GOFilter {
 
                 System.out.println("Pressed apply for gene ontology filter");
                 TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
-                System.out.println("N: " + paths);
+//                System.out.println("N: " + paths);
                 
                 for (String location: locations){
 
