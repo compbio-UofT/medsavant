@@ -25,6 +25,7 @@ public class ConnectionController {
     private static Random random;
 
     public static void disconnectAll() {
+        if(connections == null) return;
         for (Connection c : connections) {
             try {
                 if (c != null)

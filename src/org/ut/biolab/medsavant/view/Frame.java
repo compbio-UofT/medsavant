@@ -5,6 +5,7 @@
 
 package org.ut.biolab.medsavant.view;
 
+import java.awt.event.WindowEvent;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
@@ -12,15 +13,19 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.io.File;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.WindowConstants;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.login.LoginView;
 import org.ut.biolab.medsavant.view.thread.ThreadManagerDialog;
@@ -29,7 +34,7 @@ import org.ut.biolab.medsavant.view.thread.ThreadManagerDialog;
  *
  * @author mfiume
  */
-public class Frame extends JFrame implements LoginListener {
+public class Frame extends JFrame implements LoginListener{
 
     private final JPanel view;
     private final CardLayout viewCardLayout;
@@ -134,7 +139,13 @@ public class Frame extends JFrame implements LoginListener {
 
         this.add(BottomBar.getInstance(),BorderLayout.SOUTH);
 
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                requestClose();
+            }
+        });
 
         if (SettingsController.getInstance().getAutoLogin()) {
             LoginController.login(SettingsController.getInstance().getUsername(), SettingsController.getInstance().getPassword());
@@ -143,8 +154,19 @@ public class Frame extends JFrame implements LoginListener {
         }
     }
 
-    public void requestClose() {
-        System.exit(0);
+    public void requestClose() {   
+       int confirm = JOptionPane.showConfirmDialog(
+               this, 
+               "Are you sure you want to quit?", 
+               "Exit MedSavant?", 
+               JOptionPane.YES_NO_OPTION, 
+               JOptionPane.QUESTION_MESSAGE);   
+       
+       if(confirm == JOptionPane.YES_OPTION){
+           ConnectionController.disconnectAll();
+           LoginController.logout();
+           System.exit(0);
+       }       
     }
 
     public void loginEvent(LoginEvent evt) {
