@@ -46,6 +46,8 @@ public class Frame extends JFrame implements LoginListener{
     private LoginView loginView;
     private String currentCard;
     private ThreadManagerDialog threadManager;
+    
+    private boolean queuedForExit = false;
 
     public void switchToSessionView() {
          System.out.println("Requesting switch to session view");
@@ -163,6 +165,7 @@ public class Frame extends JFrame implements LoginListener{
                JOptionPane.QUESTION_MESSAGE);   
        
        if(confirm == JOptionPane.YES_OPTION){
+           queuedForExit = true; //sometimes logout aborts this exit, so wait for event
            ConnectionController.disconnectAll();
            LoginController.logout();
            System.exit(0);
@@ -178,5 +181,6 @@ public class Frame extends JFrame implements LoginListener{
                 switchToLoginView();
                 break;
         }
+        if(queuedForExit)System.exit(0);
     }
 }
