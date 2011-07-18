@@ -5,6 +5,7 @@
 
 package org.ut.biolab.medsavant.view.dialog;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -14,10 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.DBUtil;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -84,6 +89,7 @@ public class VCFUploadForm extends javax.swing.JDialog {
         outputFileField = new javax.swing.JTextField();
         chooseFileButton = new javax.swing.JButton();
         uploadButton = new javax.swing.JButton();
+        progressLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Add VCF File to Database");
@@ -117,6 +123,9 @@ public class VCFUploadForm extends javax.swing.JDialog {
             }
         });
 
+        progressLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        progressLabel.setText(" ");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -133,7 +142,10 @@ public class VCFUploadForm extends javax.swing.JDialog {
                         .addComponent(chooseFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(genomeComboBox, 0, 380, Short.MAX_VALUE)
                     .addComponent(pipelineComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 380, Short.MAX_VALUE)
-                    .addComponent(uploadButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(progressLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(uploadButton, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -154,7 +166,9 @@ public class VCFUploadForm extends javax.swing.JDialog {
                     .addComponent(outputFileField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(chooseFileButton))
                 .addGap(18, 18, 18)
-                .addComponent(uploadButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(uploadButton)
+                    .addComponent(progressLabel))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -195,23 +209,57 @@ public class VCFUploadForm extends javax.swing.JDialog {
     
     private void uploadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadButtonActionPerformed
         
-        int g_id = Integer.parseInt(genome_id.get(genomeComboBox.getSelectedIndex()));
-        int p_id = Integer.parseInt(pipelineComboBox.getSelectedItem().toString());
-        
-        int currentfile = 0;
-        int totalnumfiles = files.length;
-        for (File f : files) {
-            currentfile++;
-            try {
-                System.out.println("Importing file " + currentfile + " of " + totalnumfiles);
-                DBUtil.addVcfToDb(f.getAbsolutePath(), g_id, p_id);
-                System.gc();
-            } catch (SQLException ex) {
-                Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
-                this.dispose();
+        final JDialog instance = this;
+        this.setVisible(false);
+     
+        final JDialog dialog = new JDialog();
+        dialog.setTitle("Import VCF");
+        final JLabel progressLabel = new JLabel("Beginning import of VCF files. ");
+        progressLabel.setHorizontalTextPosition(JLabel.CENTER);
+        progressLabel.setHorizontalAlignment(JLabel.CENTER);
+        progressLabel.setMinimumSize(new Dimension(300,70));
+        progressLabel.setPreferredSize(new Dimension(300,70));
+        progressLabel.setFont(ViewUtil.getMediumTitleFont());
+        dialog.setContentPane(progressLabel);
+        dialog.setDefaultCloseOperation(
+            JDialog.DO_NOTHING_ON_CLOSE);
+        dialog.setMinimumSize(new Dimension(200,50));
+        dialog.pack();
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
+           
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                int g_id = Integer.parseInt(genome_id.get(genomeComboBox.getSelectedIndex()));
+                int p_id = Integer.parseInt(pipelineComboBox.getSelectedItem().toString());
+
+                int currentfile = 0;
+                int totalnumfiles = files.length;
+                for (File f : files) {
+                    currentfile++;
+                    try {
+                        String progress = "Importing file " + currentfile + " of " + totalnumfiles;
+                        progressLabel.setText(progress);
+                        System.out.println(progress);
+                        DBUtil.addVcfToDb(f.getAbsolutePath(), g_id, p_id);
+                        System.gc();
+                    } catch (SQLException ex) {
+                        Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
+                        dialog.dispose();
+                        JOptionPane.showMessageDialog(
+                                null, 
+                                "<HTML>There was an error importing file<BR>" + f.getAbsolutePath() + "</HTML>", 
+                                "Error", 
+                                JOptionPane.ERROR_MESSAGE);
+                        instance.dispose();                     
+                    }
+                }
+                instance.dispose();
+                dialog.dispose();
             }
-        }
-        this.dispose();
+        };
+        thread.start(); 
     }//GEN-LAST:event_uploadButtonActionPerformed
 
     /**
@@ -233,6 +281,7 @@ public class VCFUploadForm extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JTextField outputFileField;
     private javax.swing.JComboBox pipelineComboBox;
+    private javax.swing.JLabel progressLabel;
     private javax.swing.JButton uploadButton;
     // End of variables declaration//GEN-END:variables
 }
