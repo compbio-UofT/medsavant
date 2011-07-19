@@ -39,6 +39,23 @@ public class EthnicityFilterView {
         return new FilterView(FILTER_NAME, getContentPanel());
     }
     
+    private static List<String> getDefaultValues() {
+        List<String> list = FilterCache.getDefaultValues(FILTER_NAME);
+        if(list == null){
+            //System.out.println("ETHNICITY - retrieving");
+            try {
+                list = QueryUtil.getDistinctEthnicNames();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            //System.out.println("ETHNICITY - found cache");
+        }
+        FilterCache.addDefaultValues(FILTER_NAME, list);
+        return list;
+    }
+    
     private static JComponent getContentPanel() {
 
         JPanel p = new JPanel();
@@ -47,8 +64,12 @@ public class EthnicityFilterView {
         final JComboBox b = new JComboBox();
 
         b.addItem(FILTER_ALL);
-        List<String> ethnicNames;
-        try {
+        List<String> ethnicNames = getDefaultValues();
+        for (String ethnicName : ethnicNames) {
+            b.addItem(ethnicName);
+        }
+        
+        /*try {
             ethnicNames = QueryUtil.getDistinctEthnicNames();
 
             for (String ethnicName : ethnicNames) {
@@ -58,7 +79,7 @@ public class EthnicityFilterView {
         } catch (Exception ex) {
             ex.printStackTrace();
             Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
 
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);

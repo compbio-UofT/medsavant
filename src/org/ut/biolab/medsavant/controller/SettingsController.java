@@ -302,4 +302,8 @@ public class SettingsController {
         return "jdbc:mysql://" + getValue(KEY_DB_HOST) + ":" + getValue(KEY_DB_PORT) + "/" + getValue(KEY_DB_NAME);
     }
     
+    public String getDBName() {
+        return getValue(SettingsController.KEY_DB_NAME);
+    }
+    
 }

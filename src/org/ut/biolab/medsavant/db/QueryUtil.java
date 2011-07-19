@@ -16,6 +16,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.Table;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.swing.RangeSlider;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.db.table.AlignmentTableSchema;
 import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListTableSchema;
@@ -897,6 +899,40 @@ public class QueryUtil {
             columnTypeIndices,
             t.getDBColumn(PatientTableSchema.ALIAS_INDEXID),
             Dir.ASCENDING);
+    }
+    
+    public static Date getUpdateTimeForTable(String dbName, String tableName) throws SQLException, NonFatalDatabaseException {  
+        String query = 
+                "SELECT UPDATE_TIME " +
+                "FROM information_schema.tables " +
+                "WHERE TABLE_SCHEMA = '" + dbName + "' " +
+                "AND TABLE_NAME = '" + tableName + "'";
+        
+        Statement s = ConnectionController.connect().createStatement();             
+        ResultSet rs = s.executeQuery(query);
+        
+        rs.next();
+        Date date = rs.getDate(1);
+        return date;
+    }
+    
+    public static Date getMaxUpdateTime() throws SQLException, NonFatalDatabaseException {  
+        
+        String query = 
+                "SELECT MAX(UPDATE_TIME) " +
+                "FROM information_schema.tables " +
+                "WHERE TABLE_SCHEMA = '" + SettingsController.getInstance().getDBName() + "' " +
+                "AND (" + 
+                "TABLE_NAME = '" + MedSavantDatabase.getInstance().getPatientTableSchema().getTable().getTableNameSQL() + "' " + 
+                "OR TABLE_NAME = '" + MedSavantDatabase.getInstance().getVariantTableSchema().getTable().getTableNameSQL() + "' " + 
+                ")";
+        
+        Statement s = ConnectionController.connect().createStatement();             
+        ResultSet rs = s.executeQuery(query);
+        
+        rs.next();
+        Date date = rs.getDate(1);
+        return date;
     }
     
 }

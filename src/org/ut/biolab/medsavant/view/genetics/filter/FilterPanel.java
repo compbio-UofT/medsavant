@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -174,24 +175,44 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
     public class FilterViewGenerator extends SwingWorker {
 
-        private List<FilterView> getFilterViews() throws SQLException, NonFatalDatabaseException {
+        private List<FilterView> getFilterViews() throws SQLException, NonFatalDatabaseException {     
             List<FilterView> views = new ArrayList<FilterView>();
                        
+            //cohort filters
+            long nano1 = System.nanoTime();
             views.add(CohortFilterView.getCohortFilterView());
                         views.add(GeneListFilterView.getFilterView());
 
+            //filters on individuals  
+            long nano2 = System.nanoTime();            
             views.add(GenderFilterView2.getGenderFilterView());
             views.add(EthnicityFilterView.getEthnicityFilterView());
             views.add(IQVerbal.getFilterView());
             views.add(IQPerformance.getFilterView());
             views.add(IQFullScore.getFilterView());
-
-            
+               
+            //variant table filters
+            long nano3 = System.nanoTime();
             views.addAll(getVariantRecordFilterViews());
+            
+            //custom filters
+            long nano4 = System.nanoTime();
             views.add(GOFilter.getGOntologyFilterView());
             views.add(HPOFilter.getHPOntologyFilterView());                     
             views.add(new FilterView("WikiPathways", new PathwaysPanel()));
-
+            long nano5 = System.nanoTime();
+            
+            System.out.println();
+            System.out.println("A: " + (nano2 - nano1));
+            System.out.println("B: " + (nano3 - nano2));
+            System.out.println("C: " + (nano4 - nano3));
+            System.out.println("D: " + (nano5 - nano4));
+            System.out.println("TOTAL: " + (nano5-nano1));
+            System.out.println();
+  
+            //save and dispose of cache
+            FilterCache.saveAndDispose();
+            
             return views;
         }
 
@@ -348,7 +369,14 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 } else if (columnAlias.equals(VariantTableSchema.ALIAS_SB)) {
                     extremeValues = new Range(-100,100);
                 } else {
-                    extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
+                    extremeValues = FilterCache.getDefaultValuesRange(columnAlias);
+                    if(extremeValues == null){
+                        //System.out.println(columnAlias + " - retrieving");
+                        extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
+                    } else {
+                        //System.out.println(columnAlias + " - found cache");
+                    }
+                    FilterCache.addDefaultValues(columnAlias, extremeValues);
                 }
                 
                 if (columnAlias.equals(VariantTableSchema.ALIAS_DP)) {
@@ -730,8 +758,16 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                             }));
                 } 
                 else {
-                    uniq = QueryUtil.getDistinctValuesForColumn(conn, table, col);
-                    
+                    List<String> tmp = FilterCache.getDefaultValues(columnAlias);
+                    if(tmp == null){
+                        tmp = QueryUtil.getDistinctValuesForColumn(conn, table, col);
+                        //System.out.println(columnAlias + " - retrieving");
+                    } else {
+                        //System.out.println(columnAlias + " - found cache");
+                    }
+                    FilterCache.addDefaultValues(columnAlias, tmp);
+                    uniq = tmp;
+                              
                     /*
                     System.out.println();
                     for (String val : uniq) {

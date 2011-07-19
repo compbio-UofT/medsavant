@@ -15,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,6 +51,18 @@ class IQVerbal {
     static FilterView getFilterView() {
         return new FilterView(FILTER_NAME, getContentPanel());
     }
+    
+    private static Range getDefaultValues() throws SQLException, NonFatalDatabaseException {      
+        Range extremeValues = FilterCache.getDefaultValuesRange(FILTER_NAME);
+        if(extremeValues == null){
+            extremeValues = QueryUtil.getExtremeValuesForColumn(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_IQWVERB));
+        } 
+        FilterCache.addDefaultValues(FILTER_NAME, extremeValues);
+        return extremeValues;
+    }
 
     public static double getNumber(String s) {
         return Double.parseDouble(s);
@@ -63,10 +76,8 @@ class IQVerbal {
 
 
         try {
-            Range extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_IQWVERB));
-
+            Range extremeValues = getDefaultValues();
+            
             final RangeSlider rs = new com.jidesoft.swing.RangeSlider();
 
             final int min = (int) Math.floor(extremeValues.getMin());

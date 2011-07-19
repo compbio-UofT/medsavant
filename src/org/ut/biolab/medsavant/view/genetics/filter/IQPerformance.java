@@ -5,11 +5,8 @@
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.swing.RangeSlider;
-import com.mysql.jdbc.Connection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -36,7 +33,6 @@ import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -49,6 +45,18 @@ class IQPerformance {
 
     static FilterView getFilterView() {
         return new FilterView(FILTER_NAME, getContentPanel());
+    }
+    
+    private static Range getDefaultValues() throws SQLException, NonFatalDatabaseException {      
+        Range extremeValues = FilterCache.getDefaultValuesRange(FILTER_NAME);
+        if(extremeValues == null){
+            extremeValues = QueryUtil.getExtremeValuesForColumn(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_IQWPERF));
+        } 
+        FilterCache.addDefaultValues(FILTER_NAME, extremeValues);
+        return extremeValues;
     }
 
     public static double getNumber(String s) {
@@ -63,9 +71,7 @@ class IQPerformance {
 
 
         try {
-            Range extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_IQWPERF));
+            Range extremeValues = getDefaultValues();
 
             final RangeSlider rs = new com.jidesoft.swing.RangeSlider();
 
