@@ -202,13 +202,13 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             views.add(new FilterView("WikiPathways", new PathwaysPanel()));
             long nano5 = System.nanoTime();
             
-            System.out.println();
+            /*System.out.println();
             System.out.println("A: " + (nano2 - nano1));
             System.out.println("B: " + (nano3 - nano2));
             System.out.println("C: " + (nano4 - nano3));
             System.out.println("D: " + (nano5 - nano4));
             System.out.println("TOTAL: " + (nano5-nano1));
-            System.out.println();
+            System.out.println();*/
   
             //save and dispose of cache
             FilterCache.saveAndDispose();
