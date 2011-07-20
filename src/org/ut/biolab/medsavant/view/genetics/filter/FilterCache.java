@@ -42,7 +42,7 @@ public class FilterCache {
         //last date db was modified
         lastDate = Date.valueOf("3000-01-01"); //unreachable date, ensures always new
         try {          
-            lastDate = QueryUtil.getMaxUpdateTime();
+            lastDate = QueryUtil.getMaxUpdateTimeForCache();
         } catch (SQLException ex) {
             Logger.getLogger(FilterCache.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NonFatalDatabaseException ex) {

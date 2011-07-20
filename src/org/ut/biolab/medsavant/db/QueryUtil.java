@@ -257,7 +257,6 @@ public class QueryUtil {
     }
 
     public static List<String> getDistinctCohortNames() throws NonFatalDatabaseException, SQLException {
-        System.out.println("QUERY - COHORT");        
          return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getCohortTableSchema(),
@@ -297,7 +296,6 @@ public class QueryUtil {
     }
 
     public static List<String> getDistinctRegionLists() throws NonFatalDatabaseException, SQLException {
-        System.out.println("QUERY - REGIONS");
         return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getGeneListTableSchema(),
@@ -891,7 +889,6 @@ public class QueryUtil {
     }
     
     public static List<Vector> getDistinctBasicPatientInfo() throws SQLException, NonFatalDatabaseException {
-        System.out.println("QUERY - INDIVIDUALS");
         TableSchema t = MedSavantDatabase.getInstance().getPatientTableSchema();
         Object[][] columnTypeIndices = {{1,null,ColumnType.VARCHAR},{2,null,ColumnType.VARCHAR},{3,null,ColumnType.VARCHAR}};
         DbColumn[] cols = {t.getDBColumn(PatientTableSchema.ALIAS_INDEXID), t.getDBColumn(PatientTableSchema.ALIAS_DNA1), t.getDBColumn(PatientTableSchema.ALIAS_FAMNUM)};
@@ -919,7 +916,10 @@ public class QueryUtil {
         return date;
     }
     
-    public static Date getMaxUpdateTime() throws SQLException, NonFatalDatabaseException {  
+    /*
+     * Check the latest update time for any table that is used in FilterCache. 
+     */
+    public static Date getMaxUpdateTimeForCache() throws SQLException, NonFatalDatabaseException {  
         
         String query = 
                 "SELECT MAX(UPDATE_TIME) " +
@@ -928,6 +928,7 @@ public class QueryUtil {
                 "AND (" + 
                 "TABLE_NAME = '" + MedSavantDatabase.getInstance().getPatientTableSchema().getTable().getTableNameSQL() + "' " + 
                 "OR TABLE_NAME = '" + MedSavantDatabase.getInstance().getVariantTableSchema().getTable().getTableNameSQL() + "' " + 
+                "OR TABLE_NAME = '" + MedSavantDatabase.getInstance().getCohortTableSchema().getTable().getTableNameSQL() + "' " + 
                 ")";
         
         Statement s = ConnectionController.connect().createStatement();             
