@@ -4,8 +4,6 @@
  */
 package fiume.table;
 
-import com.jidesoft.filter.AbstractFilter;
-import com.jidesoft.filter.Filter;
 import com.jidesoft.grid.AutoFilterTableHeader;
 import com.jidesoft.grid.AutoResizePopupMenuCustomizer;
 import com.jidesoft.grid.FilterableTableModel;
@@ -13,9 +11,6 @@ import com.jidesoft.grid.QuickTableFilterField;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableColumnChooserPopupMenuCustomizer;
 import com.jidesoft.grid.TableHeaderPopupMenuInstaller;
-import com.jidesoft.lucene.LuceneFilterableTableModel;
-import com.jidesoft.lucene.LuceneQuickTableFilterField;
-import com.jidesoft.swing.JideButton;
 import fiume.table.images.IconFactory;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -23,8 +18,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,9 +29,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTable;
-import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
 
 /**
@@ -59,7 +50,7 @@ public class SearchableTablePanel extends JPanel {
     private int pageNum = 1;
     private int numRowsPerPage = ROWSPERPAGE_2;
     private final JComboBox rowsPerPageDropdown;
-    private List<List> data;
+    private Vector data;
     private List<String> columnNames;
     private List<Class> columnClasses;
     private final JLabel pageLabel;
@@ -75,9 +66,7 @@ public class SearchableTablePanel extends JPanel {
     }
 
     public synchronized void updateData(Vector data) {
-        
         this.data = data;
-        //updateView();
         this.setPageNumber(1); // updates the view
         model.fireTableDataChanged();
         table.repaint();
@@ -146,22 +135,21 @@ public class SearchableTablePanel extends JPanel {
         } else {
             model.fireTableDataChanged();
         }
-
     }
 
-    private void setTableModel(List<List> data, List<String> columnNames, List<Class> columnClasses) {
+    private void setTableModel(Vector data, List<String> columnNames, List<Class> columnClasses) {
         this.data = data;
         this.columnNames = columnNames;
         this.columnClasses = columnClasses;
         updateView();
     }
     
-    public SearchableTablePanel(List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns) {
+    public SearchableTablePanel(Vector data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns) {
         this(data, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true);
     }
 
     public SearchableTablePanel(
-        List<Vector> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
+        Vector data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
         boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection) {
 
         this.ROWSPERPAGE_X = defaultRows;
@@ -321,7 +309,7 @@ public class SearchableTablePanel extends JPanel {
         bottomPanel.add(rowsPerPageDropdown);
 
         setTableModel(
-                Util.listToVector(data),
+                data,
                 Util.listToVector(columnNames),
                 Util.listToVector(columnClasses));
 
@@ -339,6 +327,8 @@ public class SearchableTablePanel extends JPanel {
         }
 
         this.add(tablePanel);
+        
+        this.updateData(data);
     }
 
     private void setNumRowsPerPage(int num) {

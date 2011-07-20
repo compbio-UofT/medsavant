@@ -282,7 +282,7 @@ public class ImportFileView extends javax.swing.JDialog {
         }
         
         SearchableTablePanel searchableTablePanel = new SearchableTablePanel(
-                data,columnNames,columnClasses,new ArrayList<Integer>(),
+                Util.listToVector(data),columnNames,columnClasses,new ArrayList<Integer>(),
                 false,false,50,false,false);
         
         //boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection
@@ -290,7 +290,7 @@ public class ImportFileView extends javax.swing.JDialog {
         this.previewPanel.add(searchableTablePanel,BorderLayout.CENTER);
         this.previewPanel.updateUI();
         
-        searchableTablePanel.updateData(Util.listToVector(data));
+        //searchableTablePanel.updateData(Util.listToVector(data));
     }
     
     class PreviewSwingWorker extends SwingWorker {
