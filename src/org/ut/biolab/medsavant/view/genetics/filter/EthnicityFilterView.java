@@ -42,16 +42,13 @@ public class EthnicityFilterView {
     private static List<String> getDefaultValues() {
         List<String> list = FilterCache.getDefaultValues(FILTER_NAME);
         if(list == null){
-            //System.out.println("ETHNICITY - retrieving");
             try {
                 list = QueryUtil.getDistinctEthnicNames();
             } catch (Exception ex) {
                 ex.printStackTrace();
-                Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(EthnicityFilterView.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } else {
-            //System.out.println("ETHNICITY - found cache");
-        }
+        } 
         FilterCache.addDefaultValues(FILTER_NAME, list);
         return list;
     }
@@ -67,19 +64,7 @@ public class EthnicityFilterView {
         List<String> ethnicNames = getDefaultValues();
         for (String ethnicName : ethnicNames) {
             b.addItem(ethnicName);
-        }
-        
-        /*try {
-            ethnicNames = QueryUtil.getDistinctEthnicNames();
-
-            for (String ethnicName : ethnicNames) {
-                b.addItem(ethnicName);
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
+        }     
 
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);

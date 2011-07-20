@@ -44,6 +44,20 @@ class CohortFilterView {
     static FilterView getCohortFilterView() {
         return new FilterView("Cohort", getContentPanel());
     }
+    
+    private static List<String> getDefaultValues() {
+        List<String> list = FilterCache.getDefaultValues(FILTER_NAME);
+        if(list == null){
+            try {
+                list = QueryUtil.getDistinctCohortNames();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } 
+        FilterCache.addDefaultValues(FILTER_NAME, list);
+        return list;
+    }   
 
     private static JComponent getContentPanel() {
 
@@ -53,17 +67,9 @@ class CohortFilterView {
         final JComboBox b = new JComboBox();
 
         b.addItem(COHORT_ALL);
-        List<String> cohortNames;
-        try {
-            cohortNames = QueryUtil.getDistinctCohortNames();
-
-            for (String cohortName : cohortNames) {
-                b.addItem(cohortName);
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
+        List<String> cohortNames = getDefaultValues();
+        for (String cohortName : cohortNames) {
+            b.addItem(cohortName);
         }
 
         final JButton applyButton = new JButton("Apply");

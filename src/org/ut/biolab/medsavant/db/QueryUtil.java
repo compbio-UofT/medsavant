@@ -257,6 +257,7 @@ public class QueryUtil {
     }
 
     public static List<String> getDistinctCohortNames() throws NonFatalDatabaseException, SQLException {
+        System.out.println("QUERY - COHORT");        
          return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getCohortTableSchema(),
@@ -296,6 +297,7 @@ public class QueryUtil {
     }
 
     public static List<String> getDistinctRegionLists() throws NonFatalDatabaseException, SQLException {
+        System.out.println("QUERY - REGIONS");
         return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getGeneListTableSchema(),
@@ -889,6 +891,7 @@ public class QueryUtil {
     }
     
     public static List<Vector> getDistinctBasicPatientInfo() throws SQLException, NonFatalDatabaseException {
+        System.out.println("QUERY - INDIVIDUALS");
         TableSchema t = MedSavantDatabase.getInstance().getPatientTableSchema();
         Object[][] columnTypeIndices = {{1,null,ColumnType.VARCHAR},{2,null,ColumnType.VARCHAR},{3,null,ColumnType.VARCHAR}};
         DbColumn[] cols = {t.getDBColumn(PatientTableSchema.ALIAS_INDEXID), t.getDBColumn(PatientTableSchema.ALIAS_DNA1), t.getDBColumn(PatientTableSchema.ALIAS_FAMNUM)};

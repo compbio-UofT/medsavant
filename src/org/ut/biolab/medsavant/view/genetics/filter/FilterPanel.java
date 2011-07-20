@@ -181,7 +181,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             //cohort filters
             long nano1 = System.nanoTime();
             views.add(CohortFilterView.getCohortFilterView());
-                        views.add(GeneListFilterView.getFilterView());
+            views.add(GeneListFilterView.getFilterView());
 
             //filters on individuals  
             long nano2 = System.nanoTime();            

@@ -46,6 +46,20 @@ class GeneListFilterView {
     static FilterView getFilterView() {
         return new FilterView(FILTER_NAME, getContentPanel());
     }
+    
+    private static List<String> getDefaultValues() {
+        List<String> list = FilterCache.getDefaultValues(FILTER_NAME);
+        if(list == null){
+            try {
+                list = QueryUtil.getDistinctGeneListNames();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Logger.getLogger(GeneListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } 
+        FilterCache.addDefaultValues(FILTER_NAME, list);
+        return list;
+    }   
 
     private static JComponent getContentPanel() {
 
@@ -55,19 +69,11 @@ class GeneListFilterView {
         final JComboBox b = new JComboBox();
 
         b.addItem(GENELIST_NONE);
-        List<String> geneListNames;
-        try {
-            geneListNames = QueryUtil.getDistinctGeneListNames();
-
-            for (String name : geneListNames) {
-                b.addItem(name);
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Logger.getLogger(GeneListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+        List<String> geneListNames = getDefaultValues();
+        for (String name : geneListNames) {
+            b.addItem(name);
         }
-
+        
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
 
