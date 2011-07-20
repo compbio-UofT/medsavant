@@ -6,24 +6,29 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -31,10 +36,8 @@ import org.ut.biolab.medsavant.model.QueryFilter;
  */
 public class EthnicityFilterView {
     
-    private static final String FILTER_NAME = "Ethnicity";
-    private static final String FILTER_ALL = "All Ethnicities";
+    private static final String FILTER_NAME = "Ethnic Group";
     
-
     static FilterView getEthnicityFilterView() {
         return new FilterView(FILTER_NAME, getContentPanel());
     }
@@ -54,20 +57,18 @@ public class EthnicityFilterView {
     }
     
     private static JComponent getContentPanel() {
+        
+        List<String> uniq = getDefaultValues();
+        
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
-        JPanel p = new JPanel();
-        p.setLayout(new BorderLayout());
-
-        final JComboBox b = new JComboBox();
-
-        b.addItem(FILTER_ALL);
-        List<String> ethnicNames = getDefaultValues();
-        for (String ethnicName : ethnicNames) {
-            b.addItem(ethnicName);
-        }     
+        JPanel bottomContainer = new JPanel();
+        bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
 
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
+        final List<JCheckBox> boxes = new ArrayList<JCheckBox>();
 
         applyButton.addActionListener(new ActionListener() {
 
@@ -75,21 +76,24 @@ public class EthnicityFilterView {
 
                 applyButton.setEnabled(false);
 
-                if (((String) b.getSelectedItem()).equals(FILTER_ALL)) {
+                final List<String> acceptableValues = new ArrayList<String>();
+                for (JCheckBox b : boxes) {
+                    if (b.isSelected()) {
+                        acceptableValues.add(b.getText());
+                    }
+                }
+
+                if (acceptableValues.size() == boxes.size()) {
                     FilterController.removeFilter(FILTER_NAME);
                 } else {
                     Filter f = new QueryFilter() {
 
                         @Override
                         public Condition[] getConditions() {
-
-                            String ethnicName = (String) b.getSelectedItem();
-
                             try {
 
-                                List<String> individuals = QueryUtil.getDNAIdsForEthnicity(ethnicName);
+                                List<String> individuals = QueryUtil.getDNAIdsForEthnicities(acceptableValues);
                                 
-
                                 Condition[] results = new Condition[individuals.size()];
                                 int i = 0;
                                 for (String ind : individuals) {
@@ -113,30 +117,61 @@ public class EthnicityFilterView {
                     System.out.println("Adding filter: " + f.getName());
                     FilterController.addFilter(f);
                 }
-
-                //TODO: why does this not work? Freezes GUI
-                //apply.setEnabled(false);
             }
         });
 
-        b.addActionListener(new ActionListener() {
+        for (String s : uniq) {
+            JCheckBox b = new JCheckBox(s);
+            b.setSelected(true);
+            b.addChangeListener(new ChangeListener() {
+
+                public void stateChanged(ChangeEvent e) {
+                    AbstractButton abstractButton =
+                            (AbstractButton) e.getSource();
+                    ButtonModel buttonModel = abstractButton.getModel();
+                    boolean pressed = buttonModel.isPressed();
+                    if (pressed) {                       
+                        applyButton.setEnabled(true);
+                    }
+                }
+            });
+            b.setAlignmentX(0F);
+            container.add(b);
+            boxes.add(b);
+        }
+
+        JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
+        selectAll.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                applyButton.setEnabled(true);
+                for (JCheckBox c : boxes) {
+                    c.setSelected(true);
+                    applyButton.setEnabled(true);
+                }
             }
         });
+        bottomContainer.add(selectAll);
 
+        JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
 
+        selectNone.addActionListener(new ActionListener() {
 
-        JPanel bottomContainer = new JPanel();
-        bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
+            public void actionPerformed(ActionEvent e) {
+                for (JCheckBox c : boxes) {
+                    c.setSelected(false);
+                    applyButton.setEnabled(true);
+                }
+            }
+        });
+        bottomContainer.add(selectNone);
 
-        bottomContainer.add(Box.createHorizontalGlue());
+        bottomContainer.add(Box.createGlue());
+
         bottomContainer.add(applyButton);
 
-        p.add(b, BorderLayout.CENTER);
-        p.add(bottomContainer, BorderLayout.SOUTH);
+        bottomContainer.setAlignmentX(0F);
+        container.add(bottomContainer);
 
-        return p;
+        return container;
     }
 }

@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +81,42 @@ public class QueryUtil {
         Collections.sort(distinctValues);
 
         return distinctValues;
+    }
+    
+    /*
+     * Only use this if you are sure the numeric column has a small number of values. 
+     */
+    public static List<String> getDistinctNumericValuesForColumn(Connection conn, TableSchema t, DbColumn col) throws SQLException {
+
+        SelectQuery q = new SelectQuery();
+        q.setIsDistinct(true);
+        q.addColumns(col);
+        q.addFromTable(t.getTable());
+        
+        Statement s = conn.createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<Integer> distinctValues = new ArrayList<Integer>();
+
+        while(rs.next()) {
+            distinctValues.add(rs.getInt(1));
+        }
+        
+        Comparator c = new Comparator() {
+            public int compare(Object o1, Object o2) {
+                if((Integer) o1 < (Integer) o2) return -1;
+                return 1;
+            }
+        };
+
+        Collections.sort(distinctValues, c);
+        
+        List<String> distinctStringValues = new ArrayList<String>();
+        for(Integer i : distinctValues){
+            distinctStringValues.add(i.toString());
+        }
+
+        return distinctStringValues;
     }
     
     public static List<Vector> getDistinctValuesForColumns(Connection conn, TableSchema t, DbColumn[] cols, Object[][] columnTypeIndices, DbColumn orderColumn, Dir dir) throws SQLException {
@@ -264,10 +301,10 @@ public class QueryUtil {
     }
     
     public static List<String> getDistinctEthnicNames() throws NonFatalDatabaseException, SQLException {
-         return QueryUtil.getDistinctValuesForColumn(
+         return QueryUtil.getDistinctNumericValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getPatientTableSchema(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_RACEORIG));
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_ETHGROUP));
     }
     
     public static List<String> getDistinctGeneListNames() throws SQLException, NonFatalDatabaseException {
@@ -679,7 +716,7 @@ public class QueryUtil {
         
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
         DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
-        DbColumn subjectEthnicity = tsubject.getDBColumn(PatientTableSchema.ALIAS_RACEORIG);
+        DbColumn subjectEthnicity = tsubject.getDBColumn(PatientTableSchema.ALIAS_ETHGROUP);
         
         SelectQuery q = new SelectQuery();
         q.addColumns(currentDNAId);
@@ -692,6 +729,33 @@ public class QueryUtil {
 
         //System.out.println("Querying for: " + q.toString());
 
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<String> results = new ArrayList<String>();
+        while (rs.next()) {
+            results.add(rs.getString(1));
+        }
+        
+        return results;      
+    }
+    
+    public static List<String> getDNAIdsForEthnicities(List<String> ethnicities)  throws NonFatalDatabaseException, SQLException {
+        
+        PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
+        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
+        DbColumn subjectEthnicity = tsubject.getDBColumn(PatientTableSchema.ALIAS_ETHGROUP);
+        
+        SelectQuery q = new SelectQuery();
+        q.addColumns(currentDNAId);
+        q.setIsDistinct(true);
+        q.addFromTable(tsubject.getTable());
+        Condition[] conditions = new Condition[ethnicities.size()];
+        for(int i = 0; i < ethnicities.size(); i++){
+            conditions[i] = BinaryCondition.equalTo(subjectEthnicity, ethnicities.get(i));
+        }
+        q.addCondition(ComboCondition.or(conditions));    
+        
+        Statement s = ConnectionController.connect().createStatement();
         ResultSet rs = s.executeQuery(q.toString());
 
         List<String> results = new ArrayList<String>();
