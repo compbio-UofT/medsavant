@@ -139,4 +139,4 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
         return isDoneWorking;
     }
         
-  }
+}
