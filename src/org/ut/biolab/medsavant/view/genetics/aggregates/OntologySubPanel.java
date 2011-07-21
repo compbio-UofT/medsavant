@@ -4,32 +4,23 @@
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
-import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.OntologyPanelGenerator;
-import org.ut.biolab.medsavant.view.genetics.filter.GOFilter;
-import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
-import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
  *
  * @author Nirvana Nursimulu
  */
-public abstract class OntologySubPanel extends JPanel implements AggregatePanelGenerator, FiltersChangedListener{
+public abstract class OntologySubPanel extends JPanel implements 
+        AggregatePanelGenerator, FiltersChangedListener{
 
     
     private WaitPanel waitPanel;
@@ -46,14 +37,13 @@ public abstract class OntologySubPanel extends JPanel implements AggregatePanelG
      */
     public final int endSplitIndex;
     
-    private OntologyStatsWorker osw;
-    
     protected boolean updatePanelUponFilterChanges;
     
     protected OntologyPanelGenerator.OntologyPanel panel;
 
         
-    public OntologySubPanel(OntologyPanelGenerator.OntologyPanel panel, int chromSplitIndex, int startSplitIndex, int endSplitIndex){
+    public OntologySubPanel(OntologyPanelGenerator.OntologyPanel panel, 
+            int chromSplitIndex, int startSplitIndex, int endSplitIndex){
         
         FilterController.addFilterListener(this);
         this.setLayout(new BorderLayout());
@@ -71,47 +61,18 @@ public abstract class OntologySubPanel extends JPanel implements AggregatePanelG
      * Start to gather info into the tree.
      */
     public void update(){
-        
-        // There are some threads that we are not doing anything about here...
-                
-        // Kill any existing threads, if any.
-        if (osw != null && !osw.isDone()){  osw.cancel(true);     }
-        
-        osw = new OntologyStatsWorker(this);
-        osw.execute();
+        OntologyStatsWorker.getNewInstance(this);
     }
     
     protected abstract boolean treeIsReadyToBeFetched(); 
     
     protected abstract JTree getJTree();
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-
-        stopEverything();
+    public void filtersChanged() throws SQLException, FatalDatabaseException, 
+            NonFatalDatabaseException {
         if (updatePanelUponFilterChanges){
             this.update();
         }
-//        System.out.println("Filters said to have been changed.");
-    }
-    
-    public void stopEverything(){
-                
-        OntologyStatsWorker.killIndividualThreads(this);
-        OntologyStatsWorker.removeStatsFromVisibleNodes();
-        OntologyStatsWorker.nodesThatWereAlreadyVisible.clear();
-//        OntologyStatsWorker.mapNameToTree.clear();
-        OntologyStatsWorker.mapLocToFreq.clear();
-        if (getJTree() != null){
-            SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
-                    getJTree().repaint();
-                }
-            });
-            
-//            System.out.println("Tree has been repainted");
-        }
-        this.updateUI();
     }
     
     public JPanel getPanel(){
@@ -120,7 +81,6 @@ public abstract class OntologySubPanel extends JPanel implements AggregatePanelG
     
     public void setUpdate(boolean updatePanelUponFilterChanges) {
         this.updatePanelUponFilterChanges = updatePanelUponFilterChanges;
-        stopEverything();
         if (updatePanelUponFilterChanges){
             this.update();
         }

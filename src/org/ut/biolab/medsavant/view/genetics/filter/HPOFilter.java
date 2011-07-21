@@ -51,7 +51,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class HPOFilter {
     
-    public static String NAME_FILTER = "Human Phenotype";
+    public static final String NAME_FILTER = "Human Phenotype";
     
     public static String NAME_TREE = "HPO TREE";
     

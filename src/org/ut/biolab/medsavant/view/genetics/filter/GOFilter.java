@@ -57,7 +57,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class GOFilter {
     
-    public static String NAME_FILTER = "Gene Ontology";
+    public static final String NAME_FILTER = "Gene Ontology";
     
     public static String NAME_TREE = "GO TREE";
     
