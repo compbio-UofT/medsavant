@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -53,6 +54,7 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
         private final JComboBox options;
         private final HashMap<String, OntologySubPanel> map;
         private OntologySubPanel currentOntology;
+        private JButton applyButton;
 
         public OntologyPanel() {
 
@@ -70,10 +72,26 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
             content.setLayout(new BorderLayout());
 
             banner.add(options);
+            
+            /**
+             * @author mfiume
+             */
+            /*
             banner.add(ViewUtil.getMediumSeparator());
             
             //banner.add(goButton);
             banner.add(Box.createHorizontalGlue());
+             */
+            
+            /**
+             * @author nnursimulu
+             */
+            banner.add(ViewUtil.getMediumSeparator());
+            banner.add(Box.createHorizontalGlue());
+            applyButton = new JButton("Apply");
+            banner.add(applyButton);            
+            banner.add(Box.createHorizontalGlue());
+            banner.add(ViewUtil.getMediumSeparator());
             
             progress = new JProgressBar();
             progress.setStringPainted(true);
@@ -95,6 +113,11 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
             HPOsubPanel hpopanel = new HPOsubPanel(this);
             addOntologyAggregator(gopanel.getName(), gopanel);
             addOntologyAggregator(hpopanel.getName(), hpopanel);
+        }
+        
+        // @author nnursimulu
+        public JButton getApplyButton(){
+            return applyButton;
         }
 
         private void showOntology(String ontology) {
