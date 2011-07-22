@@ -14,7 +14,7 @@ import org.ut.biolab.medsavant.db.DBUtil;
 
 /**
  *
- * @author Andrew
+ * @author AndrewBrook
  */
 public class AddCohortForm extends javax.swing.JDialog {
 
@@ -41,6 +41,7 @@ public class AddCohortForm extends javax.swing.JDialog {
         jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Add Cohort");
 
         jLabel1.setText("Enter name for new cohort: ");
 
