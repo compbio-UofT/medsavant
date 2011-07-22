@@ -25,6 +25,7 @@ import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
+import org.ut.biolab.medsavant.db.table.PatientTableSchema;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
@@ -92,7 +93,7 @@ public class FamilyFilter {
                         public Condition[] getConditions() {
                             try {
 
-                                List<String> individuals = QueryUtil.getDNAIdsForFamilies(acceptableValues);
+                                List<String> individuals = QueryUtil.getDNAIdsForList(acceptableValues, PatientTableSchema.ALIAS_FAMNUM);
                                 
                                 Condition[] results = new Condition[individuals.size()];
                                 int i = 0;

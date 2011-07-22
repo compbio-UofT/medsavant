@@ -719,46 +719,19 @@ public class QueryUtil {
         return results;      
     }
     
-    public static List<String> getDNAIdsForEthnicity(String ethnicity) throws NonFatalDatabaseException, SQLException {
+    public static List<String> getDNAIdsForList(List<String> list, String columnAlias) throws NonFatalDatabaseException, SQLException {
         
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
         DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
-        DbColumn subjectEthnicity = tsubject.getDBColumn(PatientTableSchema.ALIAS_ETHGROUP);
+        DbColumn subjectColumn = tsubject.getDBColumn(columnAlias);
         
         SelectQuery q = new SelectQuery();
         q.addColumns(currentDNAId);
         q.setIsDistinct(true);
         q.addFromTable(tsubject.getTable());
-        //q.addJoin(SelectQuery.JoinType.INNER, tsubject.getTable(), tcohort.getTable(), BinaryCondition.equalTo(subjecthospitalId, cohorthospitalId));
-        q.addCondition(BinaryCondition.equalTo(subjectEthnicity, ethnicity));
-        
-        Statement s = ConnectionController.connect().createStatement();
-
-        //System.out.println("Querying for: " + q.toString());
-
-        ResultSet rs = s.executeQuery(q.toString());
-
-        List<String> results = new ArrayList<String>();
-        while (rs.next()) {
-            results.add(rs.getString(1));
-        }
-        
-        return results;      
-    }
-    
-    public static List<String> getDNAIdsForEthnicities(List<String> ethnicities)  throws NonFatalDatabaseException, SQLException {
-        
-        PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
-        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
-        DbColumn subjectEthnicity = tsubject.getDBColumn(PatientTableSchema.ALIAS_ETHGROUP);
-        
-        SelectQuery q = new SelectQuery();
-        q.addColumns(currentDNAId);
-        q.setIsDistinct(true);
-        q.addFromTable(tsubject.getTable());
-        Condition[] conditions = new Condition[ethnicities.size()];
-        for(int i = 0; i < ethnicities.size(); i++){
-            conditions[i] = BinaryCondition.equalTo(subjectEthnicity, ethnicities.get(i));
+        Condition[] conditions = new Condition[list.size()];
+        for(int i = 0; i < list.size(); i++){
+            conditions[i] = BinaryCondition.equalTo(subjectColumn, list.get(i));
         }
         q.addCondition(ComboCondition.or(conditions));    
         
@@ -770,36 +743,9 @@ public class QueryUtil {
             results.add(rs.getString(1));
         }
         
-        return results;      
+        return results;  
     }
-    
-    public static List<String> getDNAIdsForFamilies(List<String> families)  throws NonFatalDatabaseException, SQLException {
-        
-        PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
-        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
-        DbColumn subjectEthnicity = tsubject.getDBColumn(PatientTableSchema.ALIAS_FAMNUM);
-        
-        SelectQuery q = new SelectQuery();
-        q.addColumns(currentDNAId);
-        q.setIsDistinct(true);
-        q.addFromTable(tsubject.getTable());
-        Condition[] conditions = new Condition[families.size()];
-        for(int i = 0; i < families.size(); i++){
-            conditions[i] = BinaryCondition.equalTo(subjectEthnicity, families.get(i));
-        }
-        q.addCondition(ComboCondition.or(conditions));    
-        
-        Statement s = ConnectionController.connect().createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
-
-        List<String> results = new ArrayList<String>();
-        while (rs.next()) {
-            results.add(rs.getString(1));
-        }
-        
-        return results;      
-    }
-      
+ 
     public static List<String> getAllDNAIds() throws NonFatalDatabaseException, SQLException {
         
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
