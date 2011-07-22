@@ -300,13 +300,6 @@ public class QueryUtil {
                     MedSavantDatabase.getInstance().getCohortTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME));
     }
     
-    public static List<String> getDistinctEthnicNames() throws NonFatalDatabaseException, SQLException {
-         return QueryUtil.getDistinctNumericValuesForColumn(
-                    ConnectionController.connect(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_ETHGROUP));
-    }
-    
     public static List<String> getDistinctGeneListNames() throws SQLException, NonFatalDatabaseException {
         return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
@@ -339,11 +332,18 @@ public class QueryUtil {
                     MedSavantDatabase.getInstance().getGeneListTableSchema().getDBColumn(GeneListTableSchema.ALIAS_NAME));
     }
     
-    public static List<String> getDistinctFamilyIDs() throws NonFatalDatabaseException, SQLException {
-         return QueryUtil.getDistinctValuesForColumn(
+    public static List<String> getDistinctValuesFromPatientTable(String columnAlias, boolean isNumeric) throws NonFatalDatabaseException, SQLException {
+        if(isNumeric){
+            return QueryUtil.getDistinctNumericValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getPatientTableSchema(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_FAMNUM));
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(columnAlias));
+        } else {
+            return QueryUtil.getDistinctValuesForColumn(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(columnAlias));
+        }
     }
 
     public static int getNumRegionsInRegionSet(String regionName) throws NonFatalDatabaseException, SQLException {
@@ -601,62 +601,6 @@ public class QueryUtil {
 
         return ComboCondition.and(results);
     }
-
-    /*public static List<String> getDNAIdsForIndividualsInCohort(String cohortName) throws NonFatalDatabaseException, SQLException {
-        
-        SubjectTableSchema tsubject = (SubjectTableSchema) MedSavantDatabase.getInstance().getSubjectTableSchema();
-        DbColumn currentDNAId = tsubject.getDBColumn(SubjectTableSchema.ALIAS_CURRENTDNAID);
-        DbColumn subjecthospitalId = tsubject.getDBColumn(SubjectTableSchema.ALIAS_HOSPITALID);
-        
-        CohortViewTableSchema tcohort = (CohortViewTableSchema) MedSavantDatabase.getInstance().getCohortViewTableSchema();
-        DbColumn cohorthospitalId = tcohort.getDBColumn(CohortViewTableSchema.ALIAS_HOSPITALID);
-        DbColumn cohortNameField = tcohort.getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME);
-        
-        
-        SelectQuery q = new SelectQuery();
-        q.addColumns(currentDNAId);
-        q.setIsDistinct(true);
-        q.addFromTable(tsubject.getTable());
-        q.addJoin(SelectQuery.JoinType.INNER, tsubject.getTable(), tcohort.getTable(), BinaryCondition.equalTo(subjecthospitalId, cohorthospitalId));
-        q.addCondition(BinaryCondition.equalTo(cohortNameField, cohortName));
-        
-        Statement s = ConnectionController.connect().createStatement();
-
-        //System.out.println("Querying for: " + q.toString());
-
-        ResultSet rs = s.executeQuery(q.toString());
-
-        List<String> results = new ArrayList<String>();
-        while (rs.next()) {
-            results.add(rs.getString(1));
-        }
-        
-        return results;
-    }
-    
-    public static List<String> getAllDNAIds() throws NonFatalDatabaseException, SQLException {
-        
-        SubjectTableSchema tsubject = (SubjectTableSchema) MedSavantDatabase.getInstance().getSubjectTableSchema();
-        DbColumn currentDNAId = tsubject.getDBColumn(SubjectTableSchema.ALIAS_CURRENTDNAID);     
-
-        SelectQuery q = new SelectQuery();
-        q.addColumns(currentDNAId);
-        q.setIsDistinct(true);
-        q.addFromTable(tsubject.getTable());
-        
-        Statement s = ConnectionController.connect().createStatement();
-
-        //System.out.println("Querying for: " + q.toString());
-
-        ResultSet rs = s.executeQuery(q.toString());
-
-        List<String> results = new ArrayList<String>();
-        while (rs.next()) {
-            results.add(rs.getString(1));
-        }
-        
-        return results;
-    }*/
     
     public static List<String> getDNAIdsForIndividualsInCohort(String cohortName) throws NonFatalDatabaseException, SQLException {
         
@@ -667,8 +611,7 @@ public class QueryUtil {
         CohortViewTableSchema tcohort = (CohortViewTableSchema) MedSavantDatabase.getInstance().getCohortViewTableSchema();
         DbColumn cohorthospitalId = tcohort.getDBColumn(CohortViewTableSchema.ALIAS_HOSPITALID);
         DbColumn cohortNameField = tcohort.getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME);
-        
-        
+               
         SelectQuery q = new SelectQuery();
         q.addColumns(currentDNAId);
         q.setIsDistinct(true);
@@ -677,9 +620,6 @@ public class QueryUtil {
         q.addCondition(BinaryCondition.equalTo(cohortNameField, cohortName));
         
         Statement s = ConnectionController.connect().createStatement();
-
-        //System.out.println("Querying for: " + q.toString());
-
         ResultSet rs = s.executeQuery(q.toString());
 
         List<String> results = new ArrayList<String>();
@@ -689,9 +629,7 @@ public class QueryUtil {
         
         return results;
     }
-    
-    //TODO: following few functions very similar. Refactor.
-    
+
     public static List<String> getDNAIdsForGender(int gender) throws NonFatalDatabaseException, SQLException {
         
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
@@ -702,13 +640,9 @@ public class QueryUtil {
         q.addColumns(currentDNAId);
         q.setIsDistinct(true);
         q.addFromTable(tsubject.getTable());
-        //q.addJoin(SelectQuery.JoinType.INNER, tsubject.getTable(), tcohort.getTable(), BinaryCondition.equalTo(subjecthospitalId, cohorthospitalId));
         q.addCondition(BinaryCondition.equalTo(subjectGender, gender));
         
         Statement s = ConnectionController.connect().createStatement();
-
-        //System.out.println("Querying for: " + q.toString());
-
         ResultSet rs = s.executeQuery(q.toString());
 
         List<String> results = new ArrayList<String>();
@@ -757,9 +691,6 @@ public class QueryUtil {
         q.addFromTable(tsubject.getTable());
         
         Statement s = ConnectionController.connect().createStatement();
-
-        //System.out.println("Querying for: " + q.toString());
-
         ResultSet rs = s.executeQuery(q.toString());
 
         List<String> results = new ArrayList<String>();

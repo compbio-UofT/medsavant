@@ -25,41 +25,40 @@ import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
-import org.ut.biolab.medsavant.db.table.PatientTableSchema;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
- *
+ * Create a FilterView with a list of checkboxes, which in turn filter based
+ * on DNA Id. For example: ethnic group, family id, ...
+ * 
  * @author AndrewBrook
  */
-public class FamilyFilter {
+public class StringListFilterView {
     
-    private static final String FILTER_NAME = "Family ID";
-    
-    static FilterView getFamilyFilterView() {
-        return new FilterView(FILTER_NAME, getContentPanel());
+    public static FilterView createFilterView(String filterName, String patientDbCol, boolean isNumeric){
+        return new FilterView(filterName, getContentPanel(filterName, patientDbCol, isNumeric));
     }
     
-    private static List<String> getDefaultValues() {
-        List<String> list = FilterCache.getDefaultValues(FILTER_NAME);
+    private static List<String> getDefaultValues(String filterName, String patientDbCol, boolean isNumeric) {
+        List<String> list = FilterCache.getDefaultValues(filterName);
         if(list == null){
             try {
-                list = QueryUtil.getDistinctFamilyIDs();
+                list = QueryUtil.getDistinctValuesFromPatientTable(patientDbCol, isNumeric);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                Logger.getLogger(FamilyFilter.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
             }
         } 
-        FilterCache.addDefaultValues(FILTER_NAME, list);
+        FilterCache.addDefaultValues(filterName, list);
         return list;
     }
     
-    private static JComponent getContentPanel() {
+    private static JComponent getContentPanel(final String filterName, final String patientDbCol, boolean isNumeric) {
         
-        List<String> uniq = getDefaultValues();
+        List<String> uniq = getDefaultValues(filterName, patientDbCol, isNumeric);
         
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
@@ -85,7 +84,7 @@ public class FamilyFilter {
                 }
 
                 if (acceptableValues.size() == boxes.size()) {
-                    FilterController.removeFilter(FILTER_NAME);
+                    FilterController.removeFilter(filterName);
                 } else {
                     Filter f = new QueryFilter() {
 
@@ -93,7 +92,7 @@ public class FamilyFilter {
                         public Condition[] getConditions() {
                             try {
 
-                                List<String> individuals = QueryUtil.getDNAIdsForList(acceptableValues, PatientTableSchema.ALIAS_FAMNUM);
+                                List<String> individuals = QueryUtil.getDNAIdsForList(acceptableValues, patientDbCol);
                                 
                                 Condition[] results = new Condition[individuals.size()];
                                 int i = 0;
@@ -112,7 +111,7 @@ public class FamilyFilter {
 
                         @Override
                         public String getName() {
-                            return FILTER_NAME;
+                            return filterName;
                         }
                     };
                     System.out.println("Adding filter: " + f.getName());
@@ -175,4 +174,5 @@ public class FamilyFilter {
 
         return container;
     }
+  
 }

@@ -58,6 +58,7 @@ import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
+import org.ut.biolab.medsavant.db.table.PatientTableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
@@ -185,9 +186,11 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
             //filters on individuals  
             long nano2 = System.nanoTime();            
-            views.add(FamilyFilter.getFamilyFilterView());
+            //views.add(FamilyFilter.getFamilyFilterView());
+            views.add(StringListFilterView.createFilterView("Family ID", PatientTableSchema.ALIAS_FAMNUM, false));
             views.add(GenderFilterView2.getGenderFilterView());
-            views.add(EthnicityFilterView.getEthnicityFilterView());
+            //views.add(EthnicityFilterView.getEthnicityFilterView());
+            views.add(StringListFilterView.createFilterView("Ethnic Group", PatientTableSchema.ALIAS_ETHGROUP, true));
             views.add(IQVerbal.getFilterView());
             views.add(IQPerformance.getFilterView());
             views.add(IQFullScore.getFilterView());
