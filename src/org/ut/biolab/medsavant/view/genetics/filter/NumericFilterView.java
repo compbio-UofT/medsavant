@@ -27,7 +27,6 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
-import org.ut.biolab.medsavant.db.table.PatientTableSchema;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Filter;
@@ -37,33 +36,31 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
- * @author mfiume
+ * @author AndrewBrook
  */
-class IQFullScore {
-
-    private static final String FILTER_NAME = "IQ Full Score";
-
-    static FilterView getFilterView() {
-        return new FilterView(FILTER_NAME, getContentPanel());
+public class NumericFilterView {
+    
+    public static FilterView createFilterView(String filterName, String patientDbCol) {
+        return new FilterView(filterName, getContentPanel(filterName, patientDbCol));
     }
     
-    private static Range getDefaultValues() throws SQLException, NonFatalDatabaseException {      
-        Range extremeValues = FilterCache.getDefaultValuesRange(FILTER_NAME);
+    private static Range getDefaultValues(String filterName, String patientDbCol) throws SQLException, NonFatalDatabaseException {      
+        Range extremeValues = FilterCache.getDefaultValuesRange(filterName);
         if(extremeValues == null){
             extremeValues = QueryUtil.getExtremeValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getPatientTableSchema(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_IQWFULL));
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(patientDbCol));
         } 
-        FilterCache.addDefaultValues(FILTER_NAME, extremeValues);
+        FilterCache.addDefaultValues(filterName, extremeValues);
         return extremeValues;
     }
-
+    
     public static double getNumber(String s) {
         return Double.parseDouble(s);
     }
-
-    private static JPanel getContentPanel() {
+    
+    private static JPanel getContentPanel(final String filterName, final String patientDbCol) {
 
         JPanel container = new JPanel();
         container.setBorder(ViewUtil.getMediumBorder());
@@ -71,12 +68,14 @@ class IQFullScore {
 
 
         try {
-            Range extremeValues = getDefaultValues();
-
+            Range extremeValues = getDefaultValues(filterName, patientDbCol);
+            
             final RangeSlider rs = new com.jidesoft.swing.RangeSlider();
 
             final int min = (int) Math.floor(extremeValues.getMin());
             final int max = (int) Math.ceil(extremeValues.getMax());
+
+            System.out.println("min and max " + min + " : " + max);
             
             rs.setMinimum(min);
             rs.setMaximum(max);
@@ -172,7 +171,7 @@ class IQFullScore {
                     Range acceptableRange = new Range(rs.getLowValue(), rs.getHighValue());
 
                     if (min == acceptableRange.getMin() && max == acceptableRange.getMax()) {
-                        FilterController.removeFilter(FILTER_NAME);
+                        FilterController.removeFilter(filterName);
                     } else {
                         Filter f = new QueryFilter() {
 
@@ -181,11 +180,11 @@ class IQFullScore {
 
                                 List<String> individuals = null;
                                 try {
-                                    individuals = QueryUtil.getPatientsWithIQScoresInRange(PatientTableSchema.ALIAS_IQWFULL, new Range(rs.getLowValue(),rs.getHighValue()));
+                                    individuals = QueryUtil.getPatientsWithValuesInRange(patientDbCol, new Range(rs.getLowValue(),rs.getHighValue()));
                                 } catch (NonFatalDatabaseException ex) {
-                                    Logger.getLogger(IQFullScore.class.getName()).log(Level.SEVERE, null, ex);
+                                    Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
                                 } catch (SQLException ex) {
-                                    Logger.getLogger(IQFullScore.class.getName()).log(Level.SEVERE, null, ex);
+                                    Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                                 
                                 Condition[] results = new Condition[individuals.size()];
@@ -200,16 +199,12 @@ class IQFullScore {
 
                             @Override
                             public String getName() {
-                                return FILTER_NAME;
+                                return filterName;
                             }
                         };
-                        //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
                         System.out.println("Adding filter: " + f.getName());
                         FilterController.addFilter(f);
                     }
-
-                    //TODO: why does this not work? Freezes GUI
-                    //apply.setEnabled(false);
                 }
             });
 
@@ -239,9 +234,9 @@ class IQFullScore {
             container.add(bottomContainer);
 
         } catch (SQLException ex) {
-            Logger.getLogger(IQFullScore.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NonFatalDatabaseException ex) {
-            Logger.getLogger(IQFullScore.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return container;

@@ -14,8 +14,6 @@ import com.jidesoft.swing.RangeSlider;
 import com.jidesoft.utils.SwingWorker;
 import fiume.vcf.VariantRecord;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,12 +27,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -57,7 +52,6 @@ import org.ut.biolab.medsavant.db.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.table.PatientTableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
@@ -65,9 +59,7 @@ import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.view.filter.pathways.PathwaysPanel;
-import org.ut.biolab.medsavant.view.filter.pathways.PathwaysTab;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterView.FilterViewType;
-import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
@@ -186,15 +178,14 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
             //filters on individuals  
             long nano2 = System.nanoTime();            
-            //views.add(FamilyFilter.getFamilyFilterView());
             views.add(StringListFilterView.createFilterView("Family ID", PatientTableSchema.ALIAS_FAMNUM, false));
             views.add(GenderFilterView2.getGenderFilterView());
-            //views.add(EthnicityFilterView.getEthnicityFilterView());
             views.add(StringListFilterView.createFilterView("Ethnic Group", PatientTableSchema.ALIAS_ETHGROUP, true));
-            views.add(IQVerbal.getFilterView());
-            views.add(IQPerformance.getFilterView());
-            views.add(IQFullScore.getFilterView());
-               
+            views.add(NumericFilterView.createFilterView("IQ Verbal", PatientTableSchema.ALIAS_IQWVERB));
+            views.add(NumericFilterView.createFilterView("IQ Performance", PatientTableSchema.ALIAS_IQWPERF));
+            views.add(NumericFilterView.createFilterView("IQ Full Score", PatientTableSchema.ALIAS_IQWFULL));
+            
+            
             //variant table filters
             long nano3 = System.nanoTime();
             views.addAll(getVariantRecordFilterViews());

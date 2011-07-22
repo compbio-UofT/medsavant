@@ -835,23 +835,19 @@ public class QueryUtil {
         
         return results;
     }
-
-    public static List<String> getPatientsWithIQScoresInRange(String alias_any_iq_field, Range r) throws NonFatalDatabaseException, SQLException {
-        
-        
+    
+    public static List<String> getPatientsWithValuesInRange(String alias_any_numeric_field, Range r) throws NonFatalDatabaseException, SQLException {
+             
         PatientTableSchema t = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
-        DbColumn iq = t.getDBColumn(alias_any_iq_field);
+        DbColumn col = t.getDBColumn(alias_any_numeric_field);
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(t.getTable());
         q.addColumns(t.getDBColumn(t.ALIAS_DNA1));
-        q.addCondition(BinaryCondition.greaterThan(iq, r.getMin(), true));
-        q.addCondition(BinaryCondition.lessThan(iq, r.getMax(), false));
+        q.addCondition(BinaryCondition.greaterThan(col, r.getMin(), true));
+        q.addCondition(BinaryCondition.lessThan(col, r.getMax(), false));
         
         Statement s = ConnectionController.connect().createStatement();
-        
-        //System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
-        
         ResultSet rs = s.executeQuery(q.toString());
         
         List<String> results = new ArrayList<String>();
@@ -859,8 +855,7 @@ public class QueryUtil {
             results.add(rs.getString(1));
         }
         
-        return results;
-        
+        return results;     
     }
     
     public static List<Vector> getDistinctBasicPatientInfo() throws SQLException, NonFatalDatabaseException {
