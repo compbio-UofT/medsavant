@@ -338,6 +338,13 @@ public class QueryUtil {
                     MedSavantDatabase.getInstance().getGeneListTableSchema(),
                     MedSavantDatabase.getInstance().getGeneListTableSchema().getDBColumn(GeneListTableSchema.ALIAS_NAME));
     }
+    
+    public static List<String> getDistinctFamilyIDs() throws NonFatalDatabaseException, SQLException {
+         return QueryUtil.getDistinctValuesForColumn(
+                    ConnectionController.connect(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema(),
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_FAMNUM));
+    }
 
     public static int getNumRegionsInRegionSet(String regionName) throws NonFatalDatabaseException, SQLException {
         
@@ -459,7 +466,7 @@ public class QueryUtil {
         q.addCustomColumns(count);
        
         Statement s = c.createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
+        ResultSet rs = s.executeQuery(q.toString());      
         rs.next();
 
         int numrows = rs.getInt(1);
@@ -752,6 +759,33 @@ public class QueryUtil {
         Condition[] conditions = new Condition[ethnicities.size()];
         for(int i = 0; i < ethnicities.size(); i++){
             conditions[i] = BinaryCondition.equalTo(subjectEthnicity, ethnicities.get(i));
+        }
+        q.addCondition(ComboCondition.or(conditions));    
+        
+        Statement s = ConnectionController.connect().createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+
+        List<String> results = new ArrayList<String>();
+        while (rs.next()) {
+            results.add(rs.getString(1));
+        }
+        
+        return results;      
+    }
+    
+    public static List<String> getDNAIdsForFamilies(List<String> families)  throws NonFatalDatabaseException, SQLException {
+        
+        PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
+        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
+        DbColumn subjectEthnicity = tsubject.getDBColumn(PatientTableSchema.ALIAS_FAMNUM);
+        
+        SelectQuery q = new SelectQuery();
+        q.addColumns(currentDNAId);
+        q.setIsDistinct(true);
+        q.addFromTable(tsubject.getTable());
+        Condition[] conditions = new Condition[families.size()];
+        for(int i = 0; i < families.size(); i++){
+            conditions[i] = BinaryCondition.equalTo(subjectEthnicity, families.get(i));
         }
         q.addCondition(ComboCondition.or(conditions));    
         

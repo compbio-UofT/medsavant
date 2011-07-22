@@ -185,6 +185,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
             //filters on individuals  
             long nano2 = System.nanoTime();            
+            views.add(FamilyFilter.getFamilyFilterView());
             views.add(GenderFilterView2.getGenderFilterView());
             views.add(EthnicityFilterView.getEthnicityFilterView());
             views.add(IQVerbal.getFilterView());
