@@ -50,7 +50,7 @@ public class HPOsubPanel extends OntologySubPanel{
         }
         else {
             Tree tree = (Tree)FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
-            jTree = ConstructJTree.getTree(tree, false, false, false);
+            jTree = ConstructJTree.getTree(tree, false, true, false);
             return jTree;
         }
     }

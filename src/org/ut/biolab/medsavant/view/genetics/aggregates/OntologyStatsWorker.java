@@ -197,7 +197,7 @@ public  class OntologyStatsWorker extends SwingWorker{
         // If we are to look at selected nodes, look at them PLUS at children
         // nodes that happen to be visible at the time.
         if (userProvPath == null){
-            selectedPaths = jtree.getSelectionPaths();
+            selectedPaths = ((CheckBoxTree)jtree).getCheckBoxTreeSelectionModel().getSelectionPaths();
             List<TreePath> allSelectedPaths = new ArrayList<TreePath>();
             for (TreePath selectedPath: selectedPaths){
                 getPaths(jtree, selectedPath, true, allSelectedPaths);
