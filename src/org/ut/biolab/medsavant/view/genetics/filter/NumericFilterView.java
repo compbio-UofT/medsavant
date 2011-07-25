@@ -112,29 +112,6 @@ public class NumericFilterView {
                 }
             });
 
-            tobox.addKeyListener(new KeyListener() {
-
-                public void keyTyped(KeyEvent e) {
-                }
-
-                public void keyPressed(KeyEvent e) {
-                }
-
-                public void keyReleased(KeyEvent e) {
-                    int key = e.getKeyCode();
-                    if (key == KeyEvent.VK_ENTER) {
-                        try {
-                            int num = (int) Math.ceil(getNumber(tobox.getText()));
-                            rs.setHighValue(num);
-                            tobox.setText(ViewUtil.numToString(num));
-                        } catch (Exception e2) {
-                            e2.printStackTrace();
-                            tobox.requestFocus();
-                        }
-                    }
-                }
-            });
-
             frombox.addKeyListener(new KeyListener() {
 
                 public void keyTyped(KeyEvent e) {
@@ -147,14 +124,43 @@ public class NumericFilterView {
                     int key = e.getKeyCode();
                     if (key == KeyEvent.VK_ENTER) {
                         try {
-                            int num = (int) Math.floor(getNumber(frombox.getText()));
-                            rs.setLowValue(num);
-                            frombox.setText(ViewUtil.numToString(num));
+                            Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
+                            acceptableRange.bound(min, max, true);                     
+                            frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
+                            tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
+                            rs.setLowValue((int)acceptableRange.getMin());
+                            rs.setHighValue((int)acceptableRange.getMax());           
                         } catch (Exception e2) {
                             e2.printStackTrace();
                             frombox.requestFocus();
                         }
                     }
+                }
+            });
+            
+             tobox.addKeyListener(new KeyListener() {
+
+                public void keyTyped(KeyEvent e) {
+                }
+
+                public void keyPressed(KeyEvent e) {
+                }
+
+                public void keyReleased(KeyEvent e) {
+                    int key = e.getKeyCode();
+                    if (key == KeyEvent.VK_ENTER) {
+                        try {
+                            Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
+                            acceptableRange.bound(min, max, false);                     
+                            frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
+                            tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
+                            rs.setLowValue((int)acceptableRange.getMin());
+                            rs.setHighValue((int)acceptableRange.getMax());      
+                        } catch (Exception e2) {
+                            e2.printStackTrace();
+                            frombox.requestFocus();
+                        }
+                    }   
                 }
             });
 
@@ -168,7 +174,12 @@ public class NumericFilterView {
 
                     applyButton.setEnabled(false);
 
-                    Range acceptableRange = new Range(rs.getLowValue(), rs.getHighValue());
+                    Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
+                    acceptableRange.bound(min, max, true);                     
+                    frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
+                    tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
+                    rs.setLowValue((int)acceptableRange.getMin());
+                    rs.setHighValue((int)acceptableRange.getMax());
 
                     if (min == acceptableRange.getMin() && max == acceptableRange.getMax()) {
                         FilterController.removeFilter(filterName);
