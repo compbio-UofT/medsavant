@@ -429,58 +429,63 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                     public void mouseExited(MouseEvent e) {}
                 });
                 
-                tobox.addKeyListener(new KeyListener() {
-
-                    public void keyTyped(KeyEvent e) {
-                        
-                    }
-
-                    public void keyPressed(KeyEvent e) {
-                    }
-
-                    public void keyReleased(KeyEvent e) {
-                        try {
-                            int num = (int) Math.ceil(getNumber(tobox.getText().replaceAll(",", "")));
-                            rs.setHighValue(num);
-                            applyButton.setEnabled(true);
-                        } catch (Exception e2) {
-                            e2.printStackTrace();
-                            tobox.requestFocus();
-                        }       
-                    }
-                    
-                });
-                
                 frombox.addKeyListener(new KeyListener() {
-
-                    public void keyTyped(KeyEvent e) {
-                        
-                    }
-
-                    public void keyPressed(KeyEvent e) {
-                    }
-
+                    public void keyTyped(KeyEvent e) {}
+                    public void keyPressed(KeyEvent e) {}
                     public void keyReleased(KeyEvent e) {
-                        try {
-                            int num = (int) Math.floor(getNumber(frombox.getText().replaceAll(",", "")));
-                            rs.setLowValue(num);
-                            applyButton.setEnabled(true);
-                        } catch (Exception e2) {
-                            e2.printStackTrace();
-                            frombox.requestFocus();
+                        int key = e.getKeyCode();
+                        if (key == KeyEvent.VK_ENTER) {
+                            try {
+                                Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
+                                acceptableRange.bound(min, max, true);                     
+                                frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
+                                tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
+                                rs.setLowValue((int)acceptableRange.getMin());
+                                rs.setHighValue((int)acceptableRange.getMax());           
+                                applyButton.setEnabled(true);
+                            } catch (Exception e2) {
+                                e2.printStackTrace();
+                                frombox.requestFocus();
+                            }
                         }
-                    }
-                    
+                    }                
                 });
                 
+                tobox.addKeyListener(new KeyListener() {
+                    public void keyTyped(KeyEvent e) {}
+                    public void keyPressed(KeyEvent e) {}
+                    public void keyReleased(KeyEvent e) {
+                        int key = e.getKeyCode();
+                        if (key == KeyEvent.VK_ENTER) {
+                            try {
+                                Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
+                                acceptableRange.bound(min, max, false);                     
+                                frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
+                                tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
+                                rs.setLowValue((int)acceptableRange.getMin());
+                                rs.setHighValue((int)acceptableRange.getMax());      
+                                applyButton.setEnabled(true);
+                            } catch (Exception e2) {
+                                e2.printStackTrace();
+                                frombox.requestFocus();
+                            }
+                        }   
+                    }                   
+                });
+                        
                 applyButton.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
 
                         applyButton.setEnabled(false);
-
+                        
                         Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
-
+                        acceptableRange.bound(min, max, true);                     
+                        frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
+                        tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
+                        rs.setLowValue((int)acceptableRange.getMin());
+                        rs.setHighValue((int)acceptableRange.getMax());
+                        
                         if (min == acceptableRange.getMin() && max == acceptableRange.getMax()) {
                             FilterController.removeFilter(VariantRecordModel.getFieldNameForIndex(fieldNum));
                         } else {
@@ -913,6 +918,10 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
     }
     
     public double getNumber(String s) {
-        return Double.parseDouble(s);
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException ex){
+            return 0;
+        }
     }
 }

@@ -179,4 +179,23 @@ public class Range implements Comparable{
         return ViewUtil.numToString(min) + " - " + ViewUtil.numToString(max);
     }
     
+    /**
+     * Forces proper ordering and limits. 
+     */
+    public void bound(int min, int max, boolean defaultMin){
+        if(this.min > this.max){
+            if(defaultMin){
+                this.max = this.min;
+            } else {
+                this.min = this.max;
+            }
+        }
+        if(this.min < min || this.min > max){
+            this.min = Math.min(max, Math.max(min, this.min));
+        }
+        if(this.max > max || this.max < min){
+            this.max = Math.max(min, Math.min(max, this.max));
+        }
+    }
+    
 }
