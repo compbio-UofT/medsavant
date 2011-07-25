@@ -109,8 +109,7 @@ public abstract class OntologySubPanel extends JPanel implements
                 if (!curr.updatePanelUponFilterChanges){
                     return;
                 }
-                // TODO: do something smart here.
-                
+                OntologyStatsWorker.updateStatistics(null);
             }
         });
     }

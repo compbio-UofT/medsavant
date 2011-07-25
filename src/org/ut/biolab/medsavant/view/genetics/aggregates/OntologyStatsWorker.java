@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
+import com.jidesoft.swing.CheckBoxTree;
 import java.awt.BorderLayout;
 import java.lang.Thread.State;
 import java.util.ArrayList;
@@ -39,8 +40,8 @@ public  class OntologyStatsWorker extends SwingWorker{
     public static volatile HashMap<String, Integer> mapLocToFreq = 
             new HashMap<String, Integer>();
     
-    public static volatile HashMap<String, Node> nodesThatWereAlreadyVisible = 
-            new HashMap<String, Node>();    
+    private static volatile HashMap<String, Node> nodesThatWereAlreadySelected = 
+            new HashMap<String, Node>();   
     
     private volatile OntologySubPanel subPanel;    
     
@@ -93,7 +94,32 @@ public  class OntologyStatsWorker extends SwingWorker{
             OntologyStatsWorker.mapLocToFreq.clear();
             OntologyStatsWorker.removeStatsFromVisibleNodes();
         }
-    }    
+    }
+    
+    /**
+     * Update statistics for nodes that have been selected or for nodes which 
+     * are children of nodes which have previously been selected.
+     * @param userProvPath null if we want to look at nodes which have been
+     * selected; otherwise, give the path of the tree which has been expanded.
+     */
+    public static void updateStatistics(TreePath userProvPath){
+        
+        if (singleWorker == null){
+            return;
+        }
+
+        List<DefaultMutableTreeNode> purgedSelectedNodes = 
+                singleWorker.getPurgedSelectedNodes(singleWorker.jTree, userProvPath);
+        // Change statistics for only the NEWLY visible nodes.
+        try{
+            singleWorker.changeStatistics(singleWorker.jTree, purgedSelectedNodes, 
+                    singleWorker.subPanel.chromSplitIndex, 
+                    singleWorker.subPanel.startSplitIndex, 
+                    singleWorker.subPanel.endSplitIndex);
+        }
+        catch(Exception e){
+        } 
+    }
     
     private JTree getOntologyStats(){
       
@@ -107,36 +133,25 @@ public  class OntologyStatsWorker extends SwingWorker{
             jTree = subPanel.getJTree();
             mapNameToTree.put(subPanel.getName(), jTree);           
         }
-             
-        List<DefaultMutableTreeNode> purgedVisibleNodes = 
-                getPurgedVisibleNodes(jTree);
-        // Change statistics for only the NEWLY visible nodes.
-        try{
-            changeStatistics(jTree, purgedVisibleNodes, subPanel.chromSplitIndex, 
-                    subPanel.startSplitIndex, subPanel.endSplitIndex);
-        }
-        catch(Exception e){
-        }     
         
         jTree.addTreeExpansionListener(new TreeExpansionListener() {
 
-            public void treeExpanded(TreeExpansionEvent event) {
-                if (!subPanel.getUpdateStatus()){
+            public void treeExpanded(TreeExpansionEvent event) {               
+                
+                DefaultMutableTreeNode lastElem = 
+                        (DefaultMutableTreeNode)event.getPath().getLastPathComponent();
+                Node lastNode = (Node)lastElem.getUserObject();
+                
+                // Only if this node has been selected earlier do we update
+                // statistics for it and for its children.
+                if (!nodesThatWereAlreadySelected.containsKey(lastNode.getIdentifier())){
                     return;
                 }
-                List<DefaultMutableTreeNode> purgedVisibleNodes = 
-                        getPurgedVisibleNodes(jTree);
-                
-                // Change statistics for only the NEWLY visible nodes.
-                try{                
-                    changeStatistics(jTree, purgedVisibleNodes, subPanel.chromSplitIndex, 
-                        subPanel.startSplitIndex, subPanel.endSplitIndex);
-                }
-                catch(Exception e){
-                }
+                        
+                updateStatistics(event.getPath());
             }
-            
-            // Don't do anything. Just let whatever's been happening keep going on.
+
+            // Don't do anything here, just let whatever's been happening keep going on.
             public void treeCollapsed(TreeExpansionEvent event) {
             }
         });
@@ -144,27 +159,66 @@ public  class OntologyStatsWorker extends SwingWorker{
         return jTree;
     }
     
-    private List<DefaultMutableTreeNode> getPurgedVisibleNodes(JTree newjtree){
-        // Get all those nodes that are visible to the user.
-        List<DefaultMutableTreeNode> visibleNodes = getVisibleNodes(newjtree);
+    private static List<DefaultMutableTreeNode> getPurgedSelectedNodes
+            (JTree newjtree, TreePath userProvPath){
         
-        // Get only those nodes that used to be invisible to the user.
-        List<DefaultMutableTreeNode> purgedVisibleNodes = new ArrayList<DefaultMutableTreeNode>();
+        List<DefaultMutableTreeNode> selectedNodes = null;
+
+        selectedNodes = getSelectedNodes(newjtree, userProvPath);
+        
+        // Get only those nodes that used to be invisible to the user, also, 
+        // consider those nodes that are children of the selected or user provided
+        // nodes.
+        List<DefaultMutableTreeNode> purgedSelectedNodes = new ArrayList<DefaultMutableTreeNode>();
 
         // First subtract all the nodes that were already visible from 
         // that list (using the identifiers), and add the identifiers of 
-        // those nodes that are already visible to the hashset (This
-        // hypothetically works).
-        for (DefaultMutableTreeNode visibleNode: visibleNodes){
+        // those nodes that are already visible to the hashset.
+        for (DefaultMutableTreeNode selectedNode: selectedNodes){
 
-            Node node = (Node)visibleNode.getUserObject();
-            if (!nodesThatWereAlreadyVisible.keySet().contains(node.getIdentifier())){
-                purgedVisibleNodes.add(visibleNode);
-                nodesThatWereAlreadyVisible.put(node.getIdentifier(), node);
+            Node node = (Node)selectedNode.getUserObject();
+            
+            // Update only nodes which have not been updated yet.
+            if (!nodesThatWereAlreadySelected.keySet().contains(node.getIdentifier())){
+                purgedSelectedNodes.add(selectedNode);
+                nodesThatWereAlreadySelected.put(node.getIdentifier(), node);
             }
         }
 
-        return purgedVisibleNodes;
+        return purgedSelectedNodes;
+    }
+    
+    private static List<DefaultMutableTreeNode> getSelectedNodes
+            (JTree jtree, TreePath userProvPath){
+        
+        List<DefaultMutableTreeNode> selectedNodes = new ArrayList<DefaultMutableTreeNode>();
+        TreePath[] selectedPaths = null;
+        
+        // If we are to look at selected nodes, look at them PLUS at children
+        // nodes that happen to be visible at the time.
+        if (userProvPath == null){
+            selectedPaths = jtree.getSelectionPaths();
+            List<TreePath> allSelectedPaths = new ArrayList<TreePath>();
+            for (TreePath selectedPath: selectedPaths){
+                getPaths(jtree, selectedPath, true, allSelectedPaths);
+            }
+            selectedPaths = allSelectedPaths.toArray(new TreePath[0]);
+        }
+        // Otherwise, look at user provided path, PLUS any nodes that happen to 
+        // be visible under the user provided path.
+        else{
+            List<TreePath> visiblePaths = new ArrayList<TreePath>();
+            getPaths(singleWorker.jTree, userProvPath, true, visiblePaths);
+            selectedPaths = visiblePaths.toArray(new TreePath[0]);
+        }
+        
+        if (selectedPaths == null){
+            return selectedNodes;
+        }
+        for (TreePath selectedPath: selectedPaths){
+            selectedNodes.add((DefaultMutableTreeNode)selectedPath.getLastPathComponent());
+        }
+        return selectedNodes;
     }
     
     
@@ -195,7 +249,8 @@ public  class OntologyStatsWorker extends SwingWorker{
     }
 
     /**
-     * Get the nodes that are visible in this tree.
+     * Get the nodes that are visible in this tree.  This used to be used under 
+     * the old regime: populate stats for all visible nodes.
      * @param tree
      * @return a listPaths containing all those nodes that are visible.
      */
@@ -245,7 +300,7 @@ public  class OntologyStatsWorker extends SwingWorker{
        * Remove all the stats from those nodes that used to be visible.
        */
       private static void removeStatsFromVisibleNodes(){
-          Iterator<Node> ite = nodesThatWereAlreadyVisible.values().iterator();
+          Iterator<Node> ite = nodesThatWereAlreadySelected.values().iterator();
           while (ite.hasNext()){
               Node node = ite.next();
               node.setTotalDescription("");
@@ -311,7 +366,7 @@ public  class OntologyStatsWorker extends SwingWorker{
                     subPanel.removeAll();
                     subPanel.add(new WaitPanel("Getting aggregate statistics"));
                     OntologyStatsWorker.killIndividualThreads(subPanel);          
-                    OntologyStatsWorker.nodesThatWereAlreadyVisible.clear();
+                    OntologyStatsWorker.nodesThatWereAlreadySelected.clear();
                     OntologyStatsWorker.mapLocToFreq.clear();
                     OntologyStatsWorker.listIndividualThreads.clear();
                     OntologyStatsWorker.removeStatsFromVisibleNodes();
