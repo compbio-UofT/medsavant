@@ -5,11 +5,17 @@
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import com.jidesoft.swing.CheckBoxTree;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingWorker;
@@ -19,6 +25,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
@@ -77,7 +84,20 @@ public  class OntologyStatsWorker extends SwingWorker{
 
             JScrollPane scrollPane = new JScrollPane((JTree)get());
             subPanel.removeAll();
-            subPanel.add(scrollPane);
+            
+            JPanel topPanel = ViewUtil.getClearPanel();
+            topPanel.setLayout(new BorderLayout());
+            subPanel.add(topPanel, BorderLayout.NORTH);
+            JButton applyButton = new JButton("Apply");
+            applyButton.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    singleWorker.updateStatistics(null);
+                }
+            });
+            topPanel.add(applyButton, BorderLayout.EAST);
+            
+            subPanel.add(scrollPane, BorderLayout.CENTER);
             subPanel.getJTree().repaint();
             subPanel.updateUI();
         } 

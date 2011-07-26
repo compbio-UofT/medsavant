@@ -54,7 +54,7 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
         private final JComboBox options;
         private final HashMap<String, OntologySubPanel> map;
         private OntologySubPanel currentOntology;
-        private JButton applyButton;
+//        private JButton applyButton;
 
         public OntologyPanel() {
 
@@ -76,22 +76,22 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
             /**
              * @author mfiume
              */
-            /*
+            
             banner.add(ViewUtil.getMediumSeparator());
             
             //banner.add(goButton);
             banner.add(Box.createHorizontalGlue());
-             */
+             
             
             /**
              * @author nnursimulu
              */
-            banner.add(ViewUtil.getMediumSeparator());
-            banner.add(Box.createHorizontalGlue());
-            applyButton = new JButton("Apply");
-            banner.add(applyButton);            
-            banner.add(Box.createHorizontalGlue());
-            banner.add(ViewUtil.getMediumSeparator());
+//            banner.add(ViewUtil.getMediumSeparator());
+//            banner.add(Box.createHorizontalGlue());
+//            applyButton = new JButton("Apply");
+//            banner.add(applyButton);            
+//            banner.add(Box.createHorizontalGlue());
+//            banner.add(ViewUtil.getMediumSeparator());
             
             progress = new JProgressBar();
             progress.setStringPainted(true);
@@ -116,9 +116,9 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
         }
         
         // @author nnursimulu
-        public JButton getApplyButton(){
-            return applyButton;
-        }
+//        public JButton getApplyButton(){
+//            return applyButton;
+//        }
 
         private void showOntology(String ontology) {
             OntologySubPanel o = map.get(ontology);

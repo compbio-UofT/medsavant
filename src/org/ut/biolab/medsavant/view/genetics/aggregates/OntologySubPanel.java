@@ -56,7 +56,7 @@ public abstract class OntologySubPanel extends JPanel implements
         this.startSplitIndex = startSplitIndex;
         this.endSplitIndex = endSplitIndex;
         this.panel = panel;
-        this.setActionUponApply();
+//        this.setActionUponApply();
     }
     
     
@@ -101,16 +101,16 @@ public abstract class OntologySubPanel extends JPanel implements
         panel.updateProgess(value);
     }
     
-    protected void setActionUponApply(){
-        final OntologySubPanel curr = this;
-        panel.getApplyButton().addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                if (!curr.updatePanelUponFilterChanges){
-                    return;
-                }
-                OntologyStatsWorker.updateStatistics(null);
-            }
-        });
-    }
+//    protected void setActionUponApply(){
+//        final OntologySubPanel curr = this;
+//        panel.getApplyButton().addActionListener(new ActionListener() {
+//
+//            public void actionPerformed(ActionEvent e) {
+//                if (!curr.updatePanelUponFilterChanges){
+//                    return;
+//                }
+//                OntologyStatsWorker.updateStatistics(null);
+//            }
+//        });
+//    }
 }
