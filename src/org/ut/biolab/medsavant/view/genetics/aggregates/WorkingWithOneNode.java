@@ -102,13 +102,12 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
             else{
                 ((Node)node.getUserObject()).setTotalDescription(" [>=" + numVariants + " records]");
             }
-
+                    
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
                     tree.repaint();
                     tree.updateUI();
-                }
+                }     
             });
         }
         String additionalDesc = null;
@@ -121,6 +120,13 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
         ((Node)node.getUserObject()).setTotalDescription(additionalDesc);
         isDoneWorking = true;
         OntologyStatsWorker.setTotalProgressInPanel(subPanel);
+        
+        SwingUtilities.invokeLater(new Runnable(){
+            public void run(){
+                tree.repaint();
+                tree.updateUI();
+            }
+        });
         
         return numVariants;
     }
