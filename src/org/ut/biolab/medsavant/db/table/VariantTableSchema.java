@@ -153,7 +153,7 @@ public class VariantTableSchema extends TableSchema {
     public static final String ALIAS_o_aa2 = "Variant AA";
     public static final String ALIAS_snp_id = "SNP ID";
     public static final String ALIAS_acc = "UniProtKB Accession";
-    public static final String ALIAS_pos = "Substitution Positon";
+    public static final String ALIAS_pos = "Substitution Position";
     public static final String ALIAS_aa1 = "Reference AA";
     public static final String ALIAS_aa2 = "Variant AA";
     public static final String ALIAS_nt1 = "Reference Nucleotide";
