@@ -18,6 +18,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +32,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.TableCellRenderer;
 
 /**
@@ -50,6 +53,9 @@ public class SearchableTablePanel extends JPanel {
     private int pageNum = 1;
     private int numRowsPerPage = ROWSPERPAGE_2;
     private final JComboBox rowsPerPageDropdown;
+    private JTextField rowsRetrievedBox;
+    private int DEFAULT_ROWS_RETRIEVED = 1000;
+    private static final int MAX_ROWS_RETRIEVED = 100000;
     private Vector data;
     private List<String> columnNames;
     private List<Class> columnClasses;
@@ -144,15 +150,16 @@ public class SearchableTablePanel extends JPanel {
         updateView();
     }
     
-    public SearchableTablePanel(Vector data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns) {
-        this(data, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true);
+    public SearchableTablePanel(Vector data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, int defaultRowsRetrieved) {
+        this(data, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true, defaultRowsRetrieved);
     }
 
     public SearchableTablePanel(
         Vector data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
-        boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection) {
+        boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection, int defaultRowsRetrieved) {
 
         this.ROWSPERPAGE_X = defaultRows;
+        this.DEFAULT_ROWS_RETRIEVED = defaultRowsRetrieved;
 
         this.hiddenColumns = hiddenColumns;
         table = new SortableTable() {
@@ -304,10 +311,28 @@ public class SearchableTablePanel extends JPanel {
         } else {
             rowsPerPageDropdown.setSelectedIndex(1);
         }
-        rowsPerPageDropdown.setPreferredSize(new Dimension(100, 25));
-        rowsPerPageDropdown.setMaximumSize(new Dimension(100, 25));
+        rowsPerPageDropdown.setPreferredSize(new Dimension(50, 25));
+        rowsPerPageDropdown.setMaximumSize(new Dimension(50, 25));       
         bottomPanel.add(rowsPerPageDropdown);
 
+        bottomPanel.add(new JLabel("   Results retrieved: "));
+        rowsRetrievedBox = new JTextField();
+        rowsRetrievedBox.setColumns(5);
+        rowsRetrievedBox.setMaximumSize(new Dimension(50,25));
+        rowsRetrievedBox.setText(String.valueOf(DEFAULT_ROWS_RETRIEVED));
+        bottomPanel.add(rowsRetrievedBox);
+        
+        rowsRetrievedBox.addKeyListener(new KeyListener() {
+            public void keyTyped(KeyEvent e) {}
+            public void keyPressed(KeyEvent e) {}
+            public void keyReleased(KeyEvent e) {
+                int key = e.getKeyCode();
+                if (key == KeyEvent.VK_ENTER) {
+                    forceRefreshData();
+                }
+            }                
+        });
+        
         setTableModel(
                 data,
                 Util.listToVector(columnNames),
@@ -419,6 +444,25 @@ public class SearchableTablePanel extends JPanel {
         table.setSelectionMode(selectionMode);
     }
 
+    public int getRetrievalLimit(){
+        int limit;
+        try {
+            limit = Integer.parseInt(this.rowsRetrievedBox.getText());
+        } catch (NumberFormatException ex){
+            rowsRetrievedBox.setText(String.valueOf(DEFAULT_ROWS_RETRIEVED));
+            return DEFAULT_ROWS_RETRIEVED;
+        }
+        if(limit > MAX_ROWS_RETRIEVED){
+            rowsRetrievedBox.setText(String.valueOf(MAX_ROWS_RETRIEVED));
+            return MAX_ROWS_RETRIEVED;
+        }
+        return limit;
+    }
+    
+    public void forceRefreshData(){
+        //override this in parent
+    }
+    
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
 
         public void hideColumns(JTable table, List<Integer> indices) {
