@@ -3,6 +3,7 @@
  * and open the template in the editor.
  */
 
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.db.DBUtil;
@@ -59,7 +60,7 @@ public class TestSimpleQueries {
 
 
     @Test
-    public void testVariantQueries() throws SQLException, FatalDatabaseException {
+    public void testVariantQueries() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
         Connection c = ConnectionController.connect();
 
         TableSchema t = MedSavantDatabase.getInstance().getVariantTableSchema();

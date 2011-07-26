@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 
 /**
  *
@@ -44,7 +45,7 @@ public class TestConnectionController {
     // public void hello() {}
 
     @Test
-    public void testConnect() {
+    public void testConnect() throws NonFatalDatabaseException {
         Connection c = ConnectionController.connect();
         /**
          * Connection is successful
