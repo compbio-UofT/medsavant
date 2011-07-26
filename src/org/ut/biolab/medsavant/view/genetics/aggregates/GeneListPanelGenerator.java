@@ -17,6 +17,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -90,7 +91,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         private GenePatientIntersectionWorker gpiw;
         private final JProgressBar progress;
         private int numbersRetrieved;
-        private int DEFAULT_LIMIT = 10000;
+        private int limit = 10000;
 
         public GeneListPanel() {
 
@@ -149,7 +150,13 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             List<String> columnNames = Arrays.asList(new String[]{"Name", "Chromosome", "Start", "End", "Variants", "Patients"});
             List<Class> columnClasses = Arrays.asList(new Class[]{String.class, String.class, Integer.class, Integer.class, Integer.class, Integer.class});
-            stp = new SearchableTablePanel(new Vector(), columnNames, columnClasses, new ArrayList<Integer>(), DEFAULT_LIMIT);//TODO: actual limit 
+            stp = new SearchableTablePanel(new Vector(), columnNames, columnClasses, new ArrayList<Integer>(), limit){
+                @Override
+                public void forceRefreshData(){
+                    limit = stp.getRetrievalLimit();
+                    updateGeneTable();
+                }
+            };
 
             regionToVariantCountMap.clear();
             regionToIndividualCountMap.clear();
@@ -198,12 +205,14 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         public synchronized void updateData() {
             
             Vector data = new Vector();
-            
+
+            int i = 0;
             for (BEDRecord r : regionToVariantCountMap.keySet()) {
-                 data.add(BEDToVector(r, regionToVariantCountMap.get(r), regionToIndividualCountMap.get(r)));
+                if(i >= limit) break;
+                data.add(BEDToVector(r, regionToVariantCountMap.get(r), regionToIndividualCountMap.get(r)));
+                i++;
             }
             
-
             stp.updateData(data);
             stp.updateUI();
             stp.updateView();
@@ -277,8 +286,9 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         private void updateProgess() {
             int value = 0;
             if (regionToVariantCountMap.size() != 0) { 
-                value = numbersRetrieved*100/2/regionToVariantCountMap.keySet().size(); 
+                value = numbersRetrieved*100/2/Math.min(regionToVariantCountMap.keySet().size(), limit); 
             }
+            value = Math.min(value, 100);
             progress.setValue(value);
             progress.setString(value + "% done ");
             
@@ -308,7 +318,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected Object doInBackground() throws Exception {
-                final List<BEDRecord> genes = QueryUtil.getRegionsInRegionList(geneListName);
+                final List<BEDRecord> genes = QueryUtil.getRegionsInRegionList(geneListName, limit);
                 return genes;
             }
 
@@ -330,7 +340,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected Object doInBackground() throws Exception {
-                List<String> geneLists = QueryUtil.getDistinctRegionLists(DEFAULT_LIMIT);
+                List<String> geneLists = QueryUtil.getDistinctRegionLists(100);
                 return geneLists;
             }
 
@@ -357,7 +367,8 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected Object doInBackground() throws Exception {
-                for (BEDRecord r : records) {
+                for(int i = 0; i < Math.min(records.size(), limit); i++){
+                    BEDRecord r = records.get(i);
                     int recordsInRegion = QueryUtil.getNumVariantsInRange(
                             ConnectionController.connect(),
                             r.getChrom(),
@@ -383,7 +394,8 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected Object doInBackground() throws Exception {
-                for (BEDRecord r : records) {
+                for(int i = 0; i < Math.min(records.size(), limit); i++){
+                    BEDRecord r = records.get(i);
                     int recordsInRegion = QueryUtil.getNumPatientsWithVariantsInRange(
                             ConnectionController.connect(),
                             r.getChrom(),
