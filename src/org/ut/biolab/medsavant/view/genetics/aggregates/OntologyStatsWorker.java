@@ -393,6 +393,7 @@ public  class OntologyStatsWorker extends SwingWorker{
                     subPanel.removeAll();                    
                     subPanel.updateUI();
                     subPanel.repaint();
+                    subPanel.setProgress(0);
                     singleWorker = new OntologyStatsWorker(subPanel);
                     singleWorker.execute();
             }
