@@ -5,6 +5,7 @@
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import com.jidesoft.swing.CheckBoxTree;
+import com.jidesoft.tree.QuickTreeFilterField;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,7 +15,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -24,6 +24,7 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
@@ -48,7 +49,12 @@ public  class OntologyStatsWorker extends SwingWorker{
     public static volatile HashMap<String, JTree> mapNameToTree = 
             new HashMap<String, JTree>();
     
+    public static volatile HashMap<String, JPanel> mapNameToTopPanel = 
+            new HashMap<String, JPanel>();
+    
     private volatile JTree jTree;
+    
+    private volatile JPanel topPanel;
     
     private static volatile OntologyStatsWorker singleWorker;
     
@@ -85,18 +91,7 @@ public  class OntologyStatsWorker extends SwingWorker{
             JScrollPane scrollPane = new JScrollPane((JTree)get());
             subPanel.removeAll();
             
-            JPanel topPanel = ViewUtil.getClearPanel();
-            topPanel.setLayout(new BorderLayout());
             subPanel.add(topPanel, BorderLayout.NORTH);
-            JButton applyButton = new JButton("Apply");
-            applyButton.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    singleWorker.updateStatistics(null);
-                }
-            });
-            topPanel.add(applyButton, BorderLayout.EAST);
-            
             subPanel.add(scrollPane, BorderLayout.CENTER);
             subPanel.getJTree().repaint();
             subPanel.updateUI();
@@ -135,16 +130,37 @@ public  class OntologyStatsWorker extends SwingWorker{
     }
     
     private JTree getOntologyStats(){
-      
+            
         // Get the tree if it is available.
         jTree = mapNameToTree.get(subPanel.getName());
+        topPanel = mapNameToTopPanel.get(subPanel.getName());
         if (jTree == null){
             
             // TODO: change this approach: what if the tree is never loaded? Then, we're stuck in an infinite loop!
             while (!subPanel.treeIsReadyToBeFetched())
                 ;
             jTree = subPanel.getJTree();
-            mapNameToTree.put(subPanel.getName(), jTree);           
+            
+            topPanel = ViewUtil.getClearPanel();
+            topPanel.setLayout(new BorderLayout());
+
+            JButton applyButton = new JButton("Apply");
+            applyButton.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    singleWorker.updateStatistics(null);
+                }
+            });
+            topPanel.add(applyButton, BorderLayout.EAST);
+            QuickTreeFilterField filterField = new QuickTreeFilterField(jTree.getModel());
+            filterField.setHintText("Type to search");
+            topPanel.add(filterField, BorderLayout.CENTER);
+
+            jTree = new CheckBoxTreeNew(filterField.getDisplayTreeModel());
+            filterField.setTree(jTree);
+            
+            mapNameToTree.put(subPanel.getName(), jTree); 
+            mapNameToTopPanel.put(subPanel.getName(), topPanel);
         }
         
         jTree.addTreeExpansionListener(new TreeExpansionListener() {

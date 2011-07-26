@@ -4,14 +4,11 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter.ontology;
 
-import com.jidesoft.swing.CheckBoxTree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.JTree;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
 
 /**
  *
@@ -53,7 +50,7 @@ public class ConstructJTree {
         // Add the nodes beneath the root node to this tree.
         addNodes(actualRoot, tree, isForest, useToString);
         JTree displayedTree = null;
-        
+
         if (!isCheckBoxTree){
             displayedTree = new JTree(actualRoot);
         }

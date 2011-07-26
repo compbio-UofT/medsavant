@@ -8,6 +8,7 @@ import com.jidesoft.swing.CheckBoxTree;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -22,6 +23,14 @@ public class CheckBoxTreeNew extends CheckBoxTree{
     public CheckBoxTreeNew(TreeNode root){
 
         super(root);
+        super.setClickInCheckBoxOnly(false);
+        super.setDigIn(true);
+        super.getSelectionModel().setSelectionMode
+                (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+    }
+    
+    public CheckBoxTreeNew(TreeModel model){
+        super(model);
         super.setClickInCheckBoxOnly(false);
         super.setDigIn(true);
         super.getSelectionModel().setSelectionMode
