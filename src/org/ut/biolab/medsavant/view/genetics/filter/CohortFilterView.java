@@ -49,7 +49,7 @@ class CohortFilterView {
         List<String> list = FilterCache.getDefaultValues(FILTER_NAME);
         if(list == null){
             try {
-                list = QueryUtil.getDistinctCohortNames();
+                list = QueryUtil.getDistinctCohortNames(-1);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);

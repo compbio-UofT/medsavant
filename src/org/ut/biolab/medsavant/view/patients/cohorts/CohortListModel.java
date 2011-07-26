@@ -17,11 +17,11 @@ import org.ut.biolab.medsavant.view.patients.DetailedListModel;
  */
 public class CohortListModel implements DetailedListModel {
 
-    public List<Vector> getList() throws Exception {
+    public List<Vector> getList(int limit) throws Exception {
 
         List<Vector> table = new ArrayList<Vector>();
 
-        List<String> dbresults = QueryUtil.getDistinctCohortNames();
+        List<String> dbresults = QueryUtil.getDistinctCohortNames(limit);
 
         for (String s : dbresults) {
             Vector v = new Vector();

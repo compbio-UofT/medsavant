@@ -17,11 +17,11 @@ import org.ut.biolab.medsavant.view.patients.DetailedListModel;
  */
 public class IntervalListModel implements DetailedListModel {
 
-    public List<Vector> getList() throws Exception {
+    public List<Vector> getList(int limit) throws Exception {
 
         List<Vector> table = new ArrayList<Vector>();
 
-        List<String> dbresults = QueryUtil.getDistinctRegionLists();
+        List<String> dbresults = QueryUtil.getDistinctRegionLists(limit);
 
         for (String s : dbresults) {
             Vector v = new Vector();

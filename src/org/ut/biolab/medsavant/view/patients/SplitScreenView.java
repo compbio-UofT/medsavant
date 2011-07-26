@@ -49,6 +49,8 @@ public class SplitScreenView extends JPanel {
         private List<Vector> list;
         private final JPanel showCard;
         private final DetailedView detailedView;
+        private SearchableTablePanel stp;
+        private int limit = 10000;
 
         private ListView(DetailedListModel listModel, DetailedView detailedView) {
             this.listModel = listModel;
@@ -90,7 +92,7 @@ public class SplitScreenView extends JPanel {
 
                 @Override
                 protected Object doInBackground() throws Exception {
-                    return listModel.getList();
+                    return listModel.getList(limit);
                 }
 
                 @Override
@@ -118,7 +120,13 @@ public class SplitScreenView extends JPanel {
             List<Class> columnClasses = listModel.getColumnClasses();
             List<Integer> columnVisibility = listModel.getHiddenColumns();
 
-            final SearchableTablePanel stp = new SearchableTablePanel(Util.listToVector(data), columnNames, columnClasses, columnVisibility);
+            stp = new SearchableTablePanel(Util.listToVector(data), columnNames, columnClasses, columnVisibility, limit){
+                @Override
+                public void forceRefreshData(){
+                    limit = stp.getRetrievalLimit();
+                    refreshList();
+                }
+            };
 
             //stp.updateData(Util.listToVector(data));
 

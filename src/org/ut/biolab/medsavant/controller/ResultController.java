@@ -30,12 +30,14 @@ import org.ut.biolab.medsavant.util.Util;
 public class ResultController {
 
     private List<VariantRecord> filteredVariants;
+    private static final int DEFAULT_LIMIT = 1000;
+    private int limit = -1;
     private int filterSetId = -1;
 
     private static ResultController instance;
     
     public ResultController() throws NonFatalDatabaseException {
-        updateFilteredVariantDBResults();
+        updateFilteredVariantDBResults(DEFAULT_LIMIT);
     }
 
     public static ResultController getInstance() throws NonFatalDatabaseException {
@@ -50,10 +52,11 @@ public class ResultController {
         return filteredVariants;
     }
 
-    public List<VariantRecord> getFilteredVariantRecords() {
-        if(filterSetId != FilterController.getCurrentFilterSetID()){
+    public List<VariantRecord> getFilteredVariantRecords(int limit) {
+        if(filterSetId != FilterController.getCurrentFilterSetID() || this.limit < limit){
             try {
-                updateFilteredVariantDBResults();
+                updateFilteredVariantDBResults(limit);
+                this.limit = limit;
             } catch (NonFatalDatabaseException ex) {
                 ex.printStackTrace();
             }
@@ -61,7 +64,7 @@ public class ResultController {
         return filteredVariants;
     }
 
-    private void updateFilteredVariantDBResults() throws NonFatalDatabaseException {
+    private void updateFilteredVariantDBResults(int limit) throws NonFatalDatabaseException {
         
         filterSetId = FilterController.getCurrentFilterSetID();
 
@@ -76,7 +79,7 @@ public class ResultController {
             query.addCondition(ComboCondition.or(f.getConditions()));
         }
         
-        String queryString = query.toString() + " LIMIT 1000";
+        String queryString = query.toString() + " LIMIT " + limit;
         System.out.println(queryString);
 
         ResultSet r1;

@@ -52,8 +52,11 @@ import org.ut.biolab.medsavant.model.Range;
  */
 public class QueryUtil {
 
-    
     public static List<String> getDistinctValuesForColumn(Connection conn, TableSchema t, DbColumn col) throws SQLException {
+        return getDistinctValuesForColumn(conn, t, col, -1);
+    }
+    
+    public static List<String> getDistinctValuesForColumn(Connection conn, TableSchema t, DbColumn col, int limit) throws SQLException {
 
         if (t.isNumeric(t.getColumnType(t.getColumnIndex(col)))) {
             throw new FatalDatabaseException("Can't get distinct values for numeric field : " + col.getAbsoluteName());
@@ -64,9 +67,11 @@ public class QueryUtil {
         q.addColumns(col);
         q.addFromTable(t.getTable());
         
-        Statement s = conn.createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
-
+        Statement s = conn.createStatement();    
+        String queryString = q.toString();
+        if(limit > 0) queryString = queryString + " LIMIT " + limit;
+        ResultSet rs = s.executeQuery(queryString);
+        
         List<String> distinctValues = new ArrayList<String>();
 
         while(rs.next()) {
@@ -119,7 +124,7 @@ public class QueryUtil {
         return distinctStringValues;
     }
     
-    public static List<Vector> getDistinctValuesForColumns(Connection conn, TableSchema t, DbColumn[] cols, Object[][] columnTypeIndices, DbColumn orderColumn, Dir dir) throws SQLException {
+    public static List<Vector> getDistinctValuesForColumns(Connection conn, TableSchema t, DbColumn[] cols, Object[][] columnTypeIndices, DbColumn orderColumn, Dir dir, int limit) throws SQLException {
 
         SelectQuery q = new SelectQuery();
         q.setIsDistinct(true);
@@ -128,7 +133,9 @@ public class QueryUtil {
         q.addOrdering(orderColumn, dir);
         
         Statement s = conn.createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
+        String queryString = q.toString();
+        if(limit > 0) queryString = queryString + " LIMIT " + limit;
+        ResultSet rs = s.executeQuery(queryString);
 
         List<Vector> results;
         try {
@@ -293,11 +300,12 @@ public class QueryUtil {
         return results;
     }
 
-    public static List<String> getDistinctCohortNames() throws NonFatalDatabaseException, SQLException {
+    public static List<String> getDistinctCohortNames(int limit) throws NonFatalDatabaseException, SQLException {
          return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getCohortTableSchema(),
-                    MedSavantDatabase.getInstance().getCohortTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME));
+                    MedSavantDatabase.getInstance().getCohortTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME),
+                    limit);
     }
     
     public static List<String> getDistinctGeneListNames() throws SQLException, NonFatalDatabaseException {
@@ -325,11 +333,12 @@ public class QueryUtil {
                     limit);
     }
 
-    public static List<String> getDistinctRegionLists() throws NonFatalDatabaseException, SQLException {
+    public static List<String> getDistinctRegionLists(int limit) throws NonFatalDatabaseException, SQLException {
         return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getGeneListTableSchema(),
-                    MedSavantDatabase.getInstance().getGeneListTableSchema().getDBColumn(GeneListTableSchema.ALIAS_NAME));
+                    MedSavantDatabase.getInstance().getGeneListTableSchema().getDBColumn(GeneListTableSchema.ALIAS_NAME),
+                    limit);
     }
     
     public static List<String> getDistinctValuesFromPatientTable(String columnAlias, boolean isNumeric) throws NonFatalDatabaseException, SQLException {
@@ -858,7 +867,7 @@ public class QueryUtil {
         return results;     
     }
     
-    public static List<Vector> getDistinctBasicPatientInfo() throws SQLException, NonFatalDatabaseException {
+    public static List<Vector> getDistinctBasicPatientInfo(int limit) throws SQLException, NonFatalDatabaseException {
         TableSchema t = MedSavantDatabase.getInstance().getPatientTableSchema();
         Object[][] columnTypeIndices = {{1,null,ColumnType.VARCHAR},{2,null,ColumnType.VARCHAR},{3,null,ColumnType.VARCHAR}};
         DbColumn[] cols = {t.getDBColumn(PatientTableSchema.ALIAS_INDEXID), t.getDBColumn(PatientTableSchema.ALIAS_DNA1), t.getDBColumn(PatientTableSchema.ALIAS_FAMNUM)};
@@ -868,7 +877,8 @@ public class QueryUtil {
             cols,
             columnTypeIndices,
             t.getDBColumn(PatientTableSchema.ALIAS_INDEXID),
-            Dir.ASCENDING);
+            Dir.ASCENDING,
+            limit);
     }
     
     public static Date getUpdateTimeForTable(String dbName, String tableName) throws SQLException, NonFatalDatabaseException {  

@@ -13,7 +13,7 @@ import java.util.Vector;
  */
 public interface DetailedListModel {
     
-    public List<Vector> getList() throws Exception;
+    public List<Vector> getList(int limit) throws Exception;
 
     public List<String> getColumnNames();
 

@@ -42,7 +42,18 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         cl = new CardLayout();
         this.setLayout(cl);
         
-        tablePanel = new SearchableTablePanel(new Vector(), VariantRecordModel.getFieldNames(), VariantRecordModel.getFieldClasses(), VariantRecordModel.getDefaultColumns());
+        tablePanel = new SearchableTablePanel(new Vector(), VariantRecordModel.getFieldNames(), VariantRecordModel.getFieldClasses(), VariantRecordModel.getDefaultColumns(), 1000){
+            @Override
+            public void forceRefreshData(){
+                try {
+                    updateTable();
+                } catch (Exception ex) {
+                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                    DialogUtil.displayErrorMessage("Problem getting data.", ex);
+                }
+            }
+        };
+        
         this.add(tablePanel, CARD_SHOW);             
         this.add(new WaitPanel("Generating List View"), CARD_WAIT);
 
@@ -76,7 +87,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
     private class GetVariantsSwingWorker extends SwingWorker {
         @Override
         protected Object doInBackground() throws Exception {
-            return Util.convertVariantRecordsToVectors(ResultController.getInstance().getFilteredVariantRecords());
+            return Util.convertVariantRecordsToVectors(ResultController.getInstance().getFilteredVariantRecords(tablePanel.getRetrievalLimit()));
         }
         
         @Override

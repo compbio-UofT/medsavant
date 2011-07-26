@@ -283,7 +283,7 @@ public class ImportFileView extends javax.swing.JDialog {
         
         SearchableTablePanel searchableTablePanel = new SearchableTablePanel(
                 Util.listToVector(data),columnNames,columnClasses,new ArrayList<Integer>(),
-                false,false,50,false,false);
+                false,false,50,false,false, 1000);
         
         //boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection
         this.previewPanel.remove(waitPanel);

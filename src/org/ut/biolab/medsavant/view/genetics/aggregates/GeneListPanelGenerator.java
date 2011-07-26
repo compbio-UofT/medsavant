@@ -90,6 +90,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         private GenePatientIntersectionWorker gpiw;
         private final JProgressBar progress;
         private int numbersRetrieved;
+        private int DEFAULT_LIMIT = 10000;
 
         public GeneListPanel() {
 
@@ -148,7 +149,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             List<String> columnNames = Arrays.asList(new String[]{"Name", "Chromosome", "Start", "End", "Variants", "Patients"});
             List<Class> columnClasses = Arrays.asList(new Class[]{String.class, String.class, Integer.class, Integer.class, Integer.class, Integer.class});
-            stp = new SearchableTablePanel(new Vector(), columnNames, columnClasses, new ArrayList<Integer>());
+            stp = new SearchableTablePanel(new Vector(), columnNames, columnClasses, new ArrayList<Integer>(), DEFAULT_LIMIT);//TODO: actual limit 
 
             regionToVariantCountMap.clear();
             regionToIndividualCountMap.clear();
@@ -329,7 +330,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected Object doInBackground() throws Exception {
-                List<String> geneLists = QueryUtil.getDistinctRegionLists();
+                List<String> geneLists = QueryUtil.getDistinctRegionLists(DEFAULT_LIMIT);
                 return geneLists;
             }
 
