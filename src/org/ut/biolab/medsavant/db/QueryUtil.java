@@ -805,7 +805,7 @@ public class QueryUtil {
         
     }
 
-    public static List<BEDRecord> getRegionsInRegionList(String geneListName) throws NonFatalDatabaseException, SQLException {
+    public static List<BEDRecord> getRegionsInRegionList(String geneListName, int limit) throws NonFatalDatabaseException, SQLException {
         //select chrom,start,end,description from region_set_view where name = 'ASD Genes';
         GeneListViewTableSchema t = (GeneListViewTableSchema) MedSavantDatabase.getInstance().getGeneListViewTableSchema();
         
@@ -823,11 +823,14 @@ public class QueryUtil {
         q.addColumns(description);
         q.addOrdering(description, Dir.ASCENDING);
         q.addCondition(BinaryCondition.equalTo(name, geneListName));
-        
-        System.out.println(q.toString());
-        
+         
         Statement s = ConnectionController.connect().createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
+        String queryString = q.toString();
+        if(limit > 0) queryString = queryString + " LIMIT " + limit;
+        
+        System.out.println(queryString);
+        
+        ResultSet rs = s.executeQuery(queryString);
         
         List<BEDRecord> results = new ArrayList<BEDRecord>();
         
