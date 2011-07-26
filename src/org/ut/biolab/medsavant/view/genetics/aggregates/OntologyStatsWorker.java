@@ -5,20 +5,13 @@
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import com.jidesoft.swing.CheckBoxTree;
-import java.awt.BorderLayout;
-import java.lang.Thread.State;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -198,9 +191,11 @@ public  class OntologyStatsWorker extends SwingWorker{
         // nodes that happen to be visible at the time.
         if (userProvPath == null){
             selectedPaths = ((CheckBoxTree)jtree).getCheckBoxTreeSelectionModel().getSelectionPaths();
-            List<TreePath> allSelectedPaths = new ArrayList<TreePath>();
-            for (TreePath selectedPath: selectedPaths){
-                getPaths(jtree, selectedPath, true, allSelectedPaths);
+            List<TreePath> allSelectedPaths = new ArrayList<TreePath>();            
+            if (selectedPaths != null){
+                for (TreePath selectedPath: selectedPaths){
+                    getPaths(jtree, selectedPath, true, allSelectedPaths);
+                }
             }
             selectedPaths = allSelectedPaths.toArray(new TreePath[0]);
         }
