@@ -59,10 +59,10 @@ public class ChromosomePanel extends JPanel {
     }
     /*public int getNumBins(int binsize){
         return (int)(chr.getLength()/binsize + 1);
-    }
+    }*/
     
     public String getChrName(){
         return chr.getName();
-    }*/
+    }
 
 }

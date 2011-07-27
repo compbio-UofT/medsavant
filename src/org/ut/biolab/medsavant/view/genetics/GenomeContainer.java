@@ -109,19 +109,53 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
     
     private class GetNumVariantsSwingWorker extends MedSwingWorker {
 
+        private int maxRegion = 0;
+        private int regionsDone = 0;
+        private int activeThreads = 0;
+        private final Object workerLock = new Object();
+        
         public GetNumVariantsSwingWorker() {}
         
         @Override
         protected Object doInBackground() {  
             try {
-                int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect());                 
-                int binsize = (int)Math.min(249250621, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
-                int maxRegion = 0;
-                for(ChromosomePanel p : chrViews){
+                final int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect());                 
+                final int binsize = (int)Math.min(249250621, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
+
+                for(final ChromosomePanel p : chrViews){
                     if(this.isCancelled()) return false;
-                    int region = p.createBins(totalNum, binsize);
-                    if(region > maxRegion) maxRegion = region;
+                    
+                    //limit of 5 threads at a time
+                    synchronized(workerLock){
+                        while(activeThreads > 5){
+                            workerLock.wait();
+                        }
+                        activeThreads++;
+                    }
+
+                    Thread thread = new Thread() {
+                        @Override
+                        public void run() {
+                            int region = p.createBins(totalNum, binsize);
+                            synchronized(workerLock){
+                                if(region > maxRegion) maxRegion = region;
+                                regionsDone++;
+                                activeThreads--;
+                                workerLock.notifyAll();
+                            }              
+                        }
+                    };
+                    thread.start();
                 } 
+
+                //wait until all threads completed
+                synchronized(workerLock){
+                    while(regionsDone < chrViews.size()){
+                        workerLock.wait();
+                    }
+                }
+
+                //actually draw chromosomes
                 for(ChromosomePanel p : chrViews){
                     if(this.isCancelled()) return false;
                     p.updateAnnotations(maxRegion, binsize);
@@ -130,8 +164,10 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
                 Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
             } catch(NonFatalDatabaseException ex){
                 Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                //
             }
-             
+
             return true;            
         }
         
@@ -141,16 +177,7 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
                 return;
             } else {
                 showShowCard();
-            }
-            /*try {
-                boolean result = (Boolean)get();
-                if(result) showShowCard();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ExecutionException ex) {
-                Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
-            }*/
-                        
+            }                        
         }      
     }
 }
