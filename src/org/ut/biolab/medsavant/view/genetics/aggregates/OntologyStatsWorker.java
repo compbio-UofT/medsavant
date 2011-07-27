@@ -5,6 +5,8 @@
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import com.jidesoft.swing.CheckBoxTree;
+import com.jidesoft.swing.CheckBoxTreeSelectionModel;
+import com.jidesoft.tree.FilterableCheckBoxTreeSelectionModel;
 import com.jidesoft.tree.QuickTreeFilterField;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -22,6 +24,7 @@ import javax.swing.SwingWorker;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
@@ -156,9 +159,14 @@ public  class OntologyStatsWorker extends SwingWorker{
             filterField.setHintText("Type to search");
             topPanel.add(filterField, BorderLayout.CENTER);
 
-            jTree = new CheckBoxTreeNew(filterField.getDisplayTreeModel());
+            jTree = new CheckBoxTreeNew(filterField.getDisplayTreeModel()){
+                @Override
+                protected CheckBoxTreeSelectionModel createCheckBoxTreeSelectionModel(TreeModel model) {
+                    return new FilterableCheckBoxTreeSelectionModel(model);
+                }
+            };
             filterField.setTree(jTree);
-            
+                        
             mapNameToTree.put(subPanel.getName(), jTree); 
             mapNameToTopPanel.put(subPanel.getName(), topPanel);
         }
