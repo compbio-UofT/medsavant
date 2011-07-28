@@ -5,9 +5,6 @@
 package org.ut.biolab.medsavant.view.genetics.filter.ontology;
 
 import com.jidesoft.swing.CheckBoxTree;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -21,7 +18,6 @@ public class CheckBoxTreeNew extends CheckBoxTree{
     
 
     public CheckBoxTreeNew(TreeNode root){
-
         super(root);
         super.setClickInCheckBoxOnly(false);
         super.setDigIn(true);
