@@ -30,10 +30,10 @@ public class CheckBoxTreeNew extends CheckBoxTree{
         super(root);
         this.selectedPaths = new HashSet<TreePath>();
         super.setClickInCheckBoxOnly(false);
-        super.setDigIn(false);
+        super.setDigIn(true);
         super.getSelectionModel().setSelectionMode
                 (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-        this.initListeners();
+//        this.initListeners();
     }
     
     public CheckBoxTreeNew(TreeModel model){
