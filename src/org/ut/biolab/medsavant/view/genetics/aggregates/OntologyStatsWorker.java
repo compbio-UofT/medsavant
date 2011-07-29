@@ -12,7 +12,6 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -25,8 +24,8 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.ut.biolab.medsavant.view.genetics.filter.ontology.TreeUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -238,7 +237,7 @@ public  class OntologyStatsWorker extends SwingWorker{
             List<TreePath> allSelectedPaths = new ArrayList<TreePath>();            
             if (selectedPaths != null){
                 for (TreePath selectedPath: selectedPaths){
-                    getPaths(jtree, selectedPath, true, allSelectedPaths);
+                    TreeUtils.getPaths(jtree, selectedPath, true, allSelectedPaths);
                 }
             }
             selectedPaths = allSelectedPaths.toArray(new TreePath[0]);
@@ -247,7 +246,7 @@ public  class OntologyStatsWorker extends SwingWorker{
         // be visible under the user provided path.
         else{
             List<TreePath> visiblePaths = new ArrayList<TreePath>();
-            getPaths(singleWorker.jTree, userProvPath, true, visiblePaths);
+            TreeUtils.getPaths(singleWorker.jTree, userProvPath, true, visiblePaths);
             selectedPaths = visiblePaths.toArray(new TreePath[0]);
         }
         
@@ -286,54 +285,6 @@ public  class OntologyStatsWorker extends SwingWorker{
         }
         OntologyStatsWorker.setTotalProgressInPanel(subPanel);
     }
-
-    /**
-     * Get the nodes that are visible in this tree.  This used to be used under 
-     * the old regime: populate stats for all visible nodes.
-     * @param tree
-     * @return a listPaths containing all those nodes that are visible.
-     */
-    private static List<DefaultMutableTreeNode> getVisibleNodes(JTree tree){
-        
-        List<TreePath> listPaths = new ArrayList<TreePath>();
-        // path of the root.
-        TreePath rootPath = tree.getPathForRow(1).getParentPath();
-        getPaths(tree, rootPath, true, listPaths);
-        
-        List<DefaultMutableTreeNode> nodes = 
-                new ArrayList<DefaultMutableTreeNode>();
-        for (TreePath path: listPaths){
-            DefaultMutableTreeNode jnode = 
-                    (DefaultMutableTreeNode) path.getLastPathComponent();
-            nodes.add(jnode);
-        }
-        return nodes;
-    }
-    
-    /**
-     * Get all the visible paths.
-     * @param tree the tree in question
-     * @param parent the parent of this node
-     * @param expanded true iff we want the expanded nodes
-     * @param list the list to contain all the paths.
-     */
-      private static void getPaths
-              (JTree tree, TreePath parent, boolean expanded, List<TreePath> list) {
-        
-          if (expanded && !tree.isVisible(parent)) {
-              return;
-          }
-          list.add(parent);
-          TreeNode node = (TreeNode) parent.getLastPathComponent();
-        
-          if (node.getChildCount() >= 0) {          
-              for (Enumeration e = node.children(); e.hasMoreElements();) {            
-                  TreeNode n = (TreeNode) e.nextElement();            
-                  TreePath path = parent.pathByAddingChild(n);            
-                  getPaths(tree, path, expanded, list);          
-              }        
-          }  
-      }
       
       /**
        * Remove all the stats from those nodes that used to be visible.
