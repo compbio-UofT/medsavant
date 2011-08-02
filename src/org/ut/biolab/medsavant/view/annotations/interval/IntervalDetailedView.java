@@ -17,6 +17,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.ut.biolab.medsavant.db.QueryUtil;
+import org.ut.biolab.medsavant.db.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -95,7 +96,7 @@ public class IntervalDetailedView extends DetailedView {
         for (Vector v : regions) {
             //JLabel l = new JLabel(v.get(1).toString()); 
             //l.setForeground(Color.white);
-            lm.addElement((String) v.get(6));
+            lm.addElement((String) v.get(GeneListViewTableSchema.INDEX_DESCRIPTION-1));
         }
         JList list = (JList) ViewUtil.clear(new JList(lm));
         list.setBackground(ViewUtil.getDetailsBackgroundColor());

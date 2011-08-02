@@ -8,13 +8,11 @@ package org.ut.biolab.medsavant.db;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-//import org.ut.biolab.medsavant.db.table.SubjectTableSchema;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.Table;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.jidesoft.swing.RangeSlider;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -30,6 +28,7 @@ import java.util.Vector;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.db.table.AlignmentTableSchema;
+import org.ut.biolab.medsavant.db.table.CohortTableSchema;
 import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListViewTableSchema;
@@ -48,7 +47,7 @@ import org.ut.biolab.medsavant.model.Range;
 
 /**
  *
- * @author mfiume
+ * @author mfiume, AndrewBrook
  */
 public class QueryUtil {
 
@@ -234,18 +233,22 @@ public class QueryUtil {
                 return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getPatientTableSchema(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_INDEXID));
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_PATIENTID));
     }
 
     public static List<Vector> getPatientRecord(String pid) throws NonFatalDatabaseException, SQLException {
         return QueryUtil.getRecordsMatchingID(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getPatientTableSchema(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_INDEXID),
+                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_PATIENTID),
                     pid);
     }
     
     private static List<Vector> getRecordsMatchingID(Connection conn, TableSchema t, DbColumn col, String id) throws SQLException {
+        return getRecordsMatchingID(conn,t,col,id,-1);
+    }
+    
+    private static List<Vector> getRecordsMatchingID(Connection conn, TableSchema t, DbColumn col, int id) throws SQLException {
         return getRecordsMatchingID(conn,t,col,id,-1);
     }
 
@@ -254,6 +257,57 @@ public class QueryUtil {
         SelectQuery q = new SelectQuery();
         q.addAllColumns();
         q.addFromTable(t.getTable());
+        
+        q.addCondition(new BinaryCondition(BinaryCondition.Op.EQUAL_TO,col,id));
+
+        Statement s = conn.createStatement();
+        
+        //System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
+        
+        ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
+        
+        List<Vector> results;
+        try {
+            results = DBUtil.parseResultSet(t.getColumnGrid(), rs);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new FatalDatabaseException(ex.getMessage());
+        }
+        
+        return results;
+    }
+    
+    private static List<Vector> getRecordsMatchingID(Connection conn, TableSchema t, DbColumn col, int id, int limit) throws SQLException {
+        
+        SelectQuery q = new SelectQuery();
+        q.addAllColumns();
+        q.addFromTable(t.getTable());
+        
+        q.addCondition(new BinaryCondition(BinaryCondition.Op.EQUAL_TO,col,id));
+
+        Statement s = conn.createStatement();
+        
+        //System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
+        
+        ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
+        
+        List<Vector> results;
+        try {
+            results = DBUtil.parseResultSet(t.getColumnGrid(), rs);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new FatalDatabaseException(ex.getMessage());
+        }
+        
+        return results;
+    }
+    
+    private static List<Vector> getRecordsMatchingID(Connection conn, TableSchema t, DbColumn col, DbColumn orderby, int id, int limit) throws SQLException {
+        
+        SelectQuery q = new SelectQuery();
+        q.addAllColumns();
+        q.addFromTable(t.getTable());
+        q.addOrdering(orderby, Dir.ASCENDING);
         
         q.addCondition(new BinaryCondition(BinaryCondition.Op.EQUAL_TO,col,id));
 
@@ -304,7 +358,7 @@ public class QueryUtil {
          return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getCohortTableSchema(),
-                    MedSavantDatabase.getInstance().getCohortTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME),
+                    MedSavantDatabase.getInstance().getCohortTableSchema().getDBColumn(CohortTableSchema.ALIAS_COHORTNAME),
                     limit);
     }
     
@@ -316,20 +370,22 @@ public class QueryUtil {
     }
 
     public static List<Vector> getPatientsInCohort(String cohortName) throws SQLException, NonFatalDatabaseException {
+        int cohortId = getCohortIdFromCohortName(cohortName);
         return QueryUtil.getRecordsMatchingID(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getCohortViewTableSchema(),
-                    MedSavantDatabase.getInstance().getCohortViewTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME),
-                    cohortName);
+                    MedSavantDatabase.getInstance().getCohortViewTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTID),
+                    cohortId);
     }
     
     public static List<Vector> getRegionsInRegionSet(String regionName, int limit) throws SQLException, NonFatalDatabaseException {
+        int regionId = getRegionIdFromRegionName(regionName);
         return QueryUtil.getRecordsMatchingID(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getGeneListViewTableSchema(),
-                    MedSavantDatabase.getInstance().getGeneListViewTableSchema().getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETNAME),
+                    MedSavantDatabase.getInstance().getGeneListViewTableSchema().getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETID),
                     MedSavantDatabase.getInstance().getGeneListViewTableSchema().getDBColumn(GeneListViewTableSchema.ALIAS_DESCRIPTION),
-                    regionName,
+                    regionId,
                     limit);
     }
 
@@ -357,13 +413,15 @@ public class QueryUtil {
 
     public static int getNumRegionsInRegionSet(String regionName) throws NonFatalDatabaseException, SQLException {
         
+        int regionId = getRegionIdFromRegionName(regionName);
+        
         TableSchema t = MedSavantDatabase.getInstance().getGeneListViewTableSchema();
 
         FunctionCall count = FunctionCall.countAll();
         SelectQuery q = new SelectQuery();
         q.addFromTable(t.getTable());
         q.addCustomColumns(count);
-        q.addCondition(BinaryCondition.equalTo(t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETNAME), regionName));
+        q.addCondition(BinaryCondition.equalTo(t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETID), regionId));
         
         System.out.println("Querying: " + q);
         
@@ -613,20 +671,22 @@ public class QueryUtil {
     
     public static List<String> getDNAIdsForIndividualsInCohort(String cohortName) throws NonFatalDatabaseException, SQLException {
         
+        int cohortId = getCohortIdFromCohortName(cohortName);
+        
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
-        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
-        DbColumn subjecthospitalId = tsubject.getDBColumn(PatientTableSchema.ALIAS_INDEXID);
+        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNAID);
+        DbColumn subjecthospitalId = tsubject.getDBColumn(PatientTableSchema.ALIAS_PATIENTID);
         
         CohortViewTableSchema tcohort = (CohortViewTableSchema) MedSavantDatabase.getInstance().getCohortViewTableSchema();
         DbColumn cohorthospitalId = tcohort.getDBColumn(CohortViewTableSchema.ALIAS_HOSPITALID);
-        DbColumn cohortNameField = tcohort.getDBColumn(CohortViewTableSchema.ALIAS_COHORTNAME);
+        DbColumn cohortIdField = tcohort.getDBColumn(CohortViewTableSchema.ALIAS_COHORTID);
                
         SelectQuery q = new SelectQuery();
         q.addColumns(currentDNAId);
         q.setIsDistinct(true);
         q.addFromTable(tsubject.getTable());
         q.addJoin(SelectQuery.JoinType.INNER, tsubject.getTable(), tcohort.getTable(), BinaryCondition.equalTo(subjecthospitalId, cohorthospitalId));
-        q.addCondition(BinaryCondition.equalTo(cohortNameField, cohortName));
+        q.addCondition(BinaryCondition.equalTo(cohortIdField, cohortId));
         
         Statement s = ConnectionController.connect().createStatement();
         ResultSet rs = s.executeQuery(q.toString());
@@ -642,7 +702,7 @@ public class QueryUtil {
     public static List<String> getDNAIdsForGender(int gender) throws NonFatalDatabaseException, SQLException {
         
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
-        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
+        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNAID);
         DbColumn subjectGender = tsubject.getDBColumn(PatientTableSchema.ALIAS_GENDER);
         
         SelectQuery q = new SelectQuery();
@@ -665,7 +725,7 @@ public class QueryUtil {
     public static List<String> getDNAIdsForList(List<String> list, String columnAlias) throws NonFatalDatabaseException, SQLException {
         
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
-        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);
+        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNAID);
         DbColumn subjectColumn = tsubject.getDBColumn(columnAlias);
         
         SelectQuery q = new SelectQuery();
@@ -692,7 +752,7 @@ public class QueryUtil {
     public static List<String> getAllDNAIds() throws NonFatalDatabaseException, SQLException {
         
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
-        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNA1);     
+        DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNAID);     
 
         SelectQuery q = new SelectQuery();
         q.addColumns(currentDNAId);
@@ -712,15 +772,17 @@ public class QueryUtil {
 
     public static List<GenomicRegion> getGenomicRangesForRegionList(String geneListName) throws SQLException, NonFatalDatabaseException {
         
+        int regionId = getRegionIdFromRegionName(geneListName);
+        
         GeneListViewTableSchema t = (GeneListViewTableSchema) MedSavantDatabase.getInstance().getGeneListViewTableSchema();
-        DbColumn name = t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETNAME);     
+        DbColumn name = t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETID);     
 
         SelectQuery q = new SelectQuery();
         q.addColumns(t.getDBColumn(GeneListViewTableSchema.ALIAS_CHROM));
         q.addColumns(t.getDBColumn(GeneListViewTableSchema.ALIAS_START));
         q.addColumns(t.getDBColumn(GeneListViewTableSchema.ALIAS_END));
         q.addFromTable(t.getTable());
-        q.addCondition(BinaryCondition.equalTo(name, geneListName)); 
+        q.addCondition(BinaryCondition.equalTo(name, regionId)); 
         
         Statement s = ConnectionController.connect().createStatement();
 
@@ -806,6 +868,9 @@ public class QueryUtil {
     }
 
     public static List<BEDRecord> getRegionsInRegionList(String geneListName, int limit) throws NonFatalDatabaseException, SQLException {
+        
+        int regionId = getRegionIdFromRegionName(geneListName);
+        
         //select chrom,start,end,description from region_set_view where name = 'ASD Genes';
         GeneListViewTableSchema t = (GeneListViewTableSchema) MedSavantDatabase.getInstance().getGeneListViewTableSchema();
         
@@ -813,7 +878,7 @@ public class QueryUtil {
         DbColumn start = t.getDBColumn(GeneListViewTableSchema.ALIAS_START);
         DbColumn end = t.getDBColumn(GeneListViewTableSchema.ALIAS_END);
         DbColumn description = t.getDBColumn(GeneListViewTableSchema.ALIAS_DESCRIPTION);
-        DbColumn name = t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETNAME);
+        DbColumn name = t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETID);
         
         SelectQuery q = new SelectQuery();
         q.addFromTable(t.getTable());
@@ -822,7 +887,7 @@ public class QueryUtil {
         q.addColumns(end);
         q.addColumns(description);
         q.addOrdering(description, Dir.ASCENDING);
-        q.addCondition(BinaryCondition.equalTo(name, geneListName));
+        q.addCondition(BinaryCondition.equalTo(name, regionId));
          
         Statement s = ConnectionController.connect().createStatement();
         String queryString = q.toString();
@@ -855,7 +920,7 @@ public class QueryUtil {
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(t.getTable());
-        q.addColumns(t.getDBColumn(t.ALIAS_DNA1));
+        q.addColumns(t.getDBColumn(t.ALIAS_DNAID));
         q.addCondition(BinaryCondition.greaterThan(col, r.getMin(), true));
         q.addCondition(BinaryCondition.lessThan(col, r.getMax(), false));
         
@@ -873,13 +938,14 @@ public class QueryUtil {
     public static List<Vector> getDistinctBasicPatientInfo(int limit) throws SQLException, NonFatalDatabaseException {
         TableSchema t = MedSavantDatabase.getInstance().getPatientTableSchema();
         Object[][] columnTypeIndices = {{1,null,ColumnType.VARCHAR},{2,null,ColumnType.VARCHAR},{3,null,ColumnType.VARCHAR}};
-        DbColumn[] cols = {t.getDBColumn(PatientTableSchema.ALIAS_INDEXID), t.getDBColumn(PatientTableSchema.ALIAS_DNA1), t.getDBColumn(PatientTableSchema.ALIAS_FAMNUM)};
+        //DbColumn[] cols = {t.getDBColumn(PatientTableSchema.ALIAS_INDEXID), t.getDBColumn(PatientTableSchema.ALIAS_DNA1), t.getDBColumn(PatientTableSchema.ALIAS_FAMNUM)};
+        DbColumn[] cols = {t.getDBColumn(PatientTableSchema.ALIAS_PATIENTID), t.getDBColumn(PatientTableSchema.ALIAS_DNAID), t.getDBColumn(PatientTableSchema.ALIAS_FAMILYID)};
         return QueryUtil.getDistinctValuesForColumns(
             ConnectionController.connect(),
             t,
             cols,
             columnTypeIndices,
-            t.getDBColumn(PatientTableSchema.ALIAS_INDEXID),
+            t.getDBColumn(PatientTableSchema.ALIAS_PATIENTID),
             Dir.ASCENDING,
             limit);
     }
@@ -921,5 +987,61 @@ public class QueryUtil {
         Date date = rs.getDate(1);
         return date;
     }
+    
+    
+    //TODO: should really be using join instead of two separate queries
+    public static int getIdFromName(TableSchema t, DbColumn nameColumn, DbColumn idColumn, String name) throws SQLException, NonFatalDatabaseException {
+        
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(t.getTable());
+        q.addColumns(idColumn);
+        q.addCondition(BinaryCondition.equalTo(nameColumn, name));
+        
+        Statement s = ConnectionController.connect().createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+        if(rs.next()){
+            return rs.getInt(1);
+        } else {
+            return -1;
+        }
+    }
+    
+    public static int getCohortIdFromCohortName(String cohortName) throws SQLException, NonFatalDatabaseException {
+        TableSchema t = MedSavantDatabase.getInstance().getCohortTableSchema();
+        return getIdFromName(
+                t, 
+                t.getDBColumn(CohortTableSchema.ALIAS_COHORTNAME),
+                t.getDBColumn(CohortTableSchema.ALIAS_COHORTID),
+                cohortName);
+    }
+    
+    public static int getRegionIdFromRegionName(String regionName) throws SQLException, NonFatalDatabaseException {
+        TableSchema t = MedSavantDatabase.getInstance().getGeneListTableSchema();
+        return getIdFromName(
+                t, 
+                t.getDBColumn(GeneListTableSchema.ALIAS_NAME),
+                t.getDBColumn(GeneListTableSchema.ALIAS_ID),
+                regionName);
+    }
+    
+    
+    /*public static int getCohortIdFromCohortName(String cohortName) throws SQLException, NonFatalDatabaseException {       
+        TableSchema t = MedSavantDatabase.getInstance().getCohortTableSchema();
+        
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(t.getTable());
+        q.addColumns(t.getDBColumn(CohortTableSchema.ALIAS_COHORTID));
+        q.addCondition(BinaryCondition.equalTo(t.getDBColumn(CohortTableSchema.ALIAS_COHORTNAME), cohortName));
+        
+        Statement s = ConnectionController.connect().createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+        if(rs.next()){
+            return rs.getInt(1);
+        } else {
+            return -1;
+        }
+    }*/
+    
+    
     
 }

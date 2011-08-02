@@ -17,7 +17,7 @@ import java.util.Vector;
  */
 public class VariantTableSchema extends TableSchema {
 
-    public static final String TABLE_NAME = "variant_sift_gatk";
+    public static final String TABLE_NAME = "medsavant.variant_sift_gatk";
 
     //public static final String DBFIELDNAME_GATKID = "annotation_gatk_id";
     //public static final String DBFIELDNAME_POLYPHENSIFTID = "annotation_polyphensift_id";

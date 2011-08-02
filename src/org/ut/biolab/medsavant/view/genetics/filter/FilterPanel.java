@@ -178,12 +178,12 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
             //filters on individuals  
             long nano2 = System.nanoTime();            
-            views.add(StringListFilterView.createFilterView("Family ID", PatientTableSchema.ALIAS_FAMNUM, false));
+            views.add(StringListFilterView.createFilterView("Family ID", PatientTableSchema.ALIAS_FAMILYID, false));
             views.add(GenderFilterView2.getGenderFilterView());
-            views.add(StringListFilterView.createFilterView("Ethnic Group", PatientTableSchema.ALIAS_ETHGROUP, true));
-            views.add(NumericFilterView.createFilterView("IQ Verbal", PatientTableSchema.ALIAS_IQWVERB));
-            views.add(NumericFilterView.createFilterView("IQ Performance", PatientTableSchema.ALIAS_IQWPERF));
-            views.add(NumericFilterView.createFilterView("IQ Full Score", PatientTableSchema.ALIAS_IQWFULL));
+            //views.add(StringListFilterView.createFilterView("Ethnic Group", PatientTableSchema.ALIAS_ETHGROUP, true));
+            //views.add(NumericFilterView.createFilterView("IQ Verbal", PatientTableSchema.ALIAS_IQWVERB));
+            //views.add(NumericFilterView.createFilterView("IQ Performance", PatientTableSchema.ALIAS_IQWPERF));
+            //views.add(NumericFilterView.createFilterView("IQ Full Score", PatientTableSchema.ALIAS_IQWFULL));
             
             
             //variant table filters

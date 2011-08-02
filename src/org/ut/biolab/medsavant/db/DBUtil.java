@@ -5,21 +5,15 @@
 package org.ut.biolab.medsavant.db;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import fiume.vcf.VCFParser;
 import fiume.vcf.VariantRecord;
 import fiume.vcf.VariantSet;
-import java.awt.Dialog.ModalityType;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,12 +25,11 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.table.CohortTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListTableSchema;
+import org.ut.biolab.medsavant.db.table.ModifiableColumn;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
@@ -287,7 +280,7 @@ public class DBUtil {
         try {
             Connection conn = ConnectionController.connect();
 
-            String sql1 = "SELECT id FROM cohort WHERE name=\"" + cohort_name + "\"";
+            String sql1 = "SELECT cohort_id FROM cohort WHERE name=\"" + cohort_name + "\"";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql1);
             int cohort_id = -1;
@@ -360,6 +353,49 @@ public class DBUtil {
         } catch (Exception ex) {
             Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public static void addPatient(List<ModifiableColumn> cols, List<String> values){
+        //TODO: make sure row doesn't already exist.
+        TableSchema t = MedSavantDatabase.getInstance().getPatientTableSchema();
+        InsertQuery is = new InsertQuery(t.getTable());
+        
+        for(int i = 0; i < cols.size(); i++){
+            ModifiableColumn c = cols.get(i);
+            String s = values.get(i);          
+            if(s == null || s.equals("")){
+                continue;
+            }
+            switch(c.getType()){
+                case BOOLEAN:
+                    is.addColumn(t.getDBColumn(c.getShortName()), Boolean.getBoolean(s));
+                    break;
+                case DATE:
+                    is.addColumn(t.getDBColumn(c.getShortName()), Date.valueOf(s));
+                    break;
+                case DECIMAL:
+                    is.addColumn(t.getDBColumn(c.getShortName()), Double.parseDouble(s));
+                    break;
+                case FLOAT:
+                    is.addColumn(t.getDBColumn(c.getShortName()), Float.parseFloat(s));
+                    break;
+                case INTEGER:
+                    is.addColumn(t.getDBColumn(c.getShortName()), Integer.parseInt(s));
+                    break;
+                case VARCHAR:
+                    is.addColumn(t.getDBColumn(c.getShortName()), s);
+                    break;                
+            }
+        }
+        
+        try {
+            Statement s = ConnectionController.connect().createStatement();
+            s.executeUpdate(is.toString());
+        } catch (NonFatalDatabaseException ex) {
+            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }   
     }
     
     public static void addCohort(String cohort_name) {
@@ -525,5 +561,11 @@ public class DBUtil {
         // put genes into gene list
          * 
          */
+    }
+    
+    public static void executeUpdate(String sql) throws SQLException, NonFatalDatabaseException {
+        Connection conn = ConnectionController.connect();
+        Statement s = conn.createStatement();
+        s.executeUpdate(sql);
     }
 }

@@ -14,10 +14,10 @@ import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.db.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.db.table.GenomeTableSchema;
-import org.ut.biolab.medsavant.db.table.PatientTableSchema;
-import org.ut.biolab.medsavant.db.table.SubjectTableSchema;
 import org.ut.biolab.medsavant.db.table.TableSchema;
 import org.ut.biolab.medsavant.db.table.VariantTableSchema;
+import org.ut.biolab.medsavant.db.table.ModifiableTableSchema;
+import org.ut.biolab.medsavant.db.table.PatientTableSchema;
 
 /**
  *
@@ -29,9 +29,7 @@ public class MedSavantDatabase {
     private final DbSchema schema;
     private static MedSavantDatabase instance;
 
-    private VariantTableSchema variantTableSchema;
-    //private SubjectTableSchema subjectTableSchema;
-    private PatientTableSchema patientTableSchema;
+    private VariantTableSchema variantTableSchema;  
     private AlignmentTableSchema alignmentTableSchema;
     private CohortViewTableSchema cohortviewTableSchema;
     private CohortTableSchema cohortTableSchema;
@@ -39,7 +37,13 @@ public class MedSavantDatabase {
     private GeneListViewTableSchema geneListViewTableSchema;
     private GeneListMembershipTableSchema geneListMembershipTableSchema;
     private GenomeTableSchema genomeTableSchema;
-
+    //private PatientTableSchema patientTableSchema;
+    
+    private PatientTableSchema patientTableSchema;
+    private ModifiableTableSchema phenotypeTableSchema;
+    
+    //private String[] patientDefaults = {"dnaid", "patientid", "familyid", "name", "dob", "dod", "gender"};
+    private String[] phenotypeDefaults = {"patientid", "doa"}; 
     
     public static void main(String[] argv) {
         getInstance();
@@ -63,9 +67,7 @@ public class MedSavantDatabase {
     }
 
     private void initTableSchemas() {
-        variantTableSchema = new VariantTableSchema(schema);
-        //subjectTableSchema = new SubjectTableSchema(schema);
-        patientTableSchema = new PatientTableSchema(schema);
+        variantTableSchema = new VariantTableSchema(schema);     
         cohortviewTableSchema = new CohortViewTableSchema(schema);
         cohortTableSchema = new CohortTableSchema(schema);
         geneListTableSchema = new GeneListTableSchema(schema);
@@ -73,17 +75,19 @@ public class MedSavantDatabase {
         geneListMembershipTableSchema = new GeneListMembershipTableSchema(schema);
         alignmentTableSchema = new AlignmentTableSchema(schema);
         genomeTableSchema = new GenomeTableSchema(schema);
+        //patientTableSchema = new PatientTableSchema(schema);
+        
+        //patientTableSchema1 = new ModifiableTableSchema(schema, "patient", patientDefaults);
+        //patientTableSchema = new PatientTableSchema(schema);
+        //phenotypeTableSchema = new ModifiableTableSchema(schema, "phenotype", phenotypeDefaults);
+        refreshModifiableTables();
     }
 
     public TableSchema getVariantTableSchema() {
         return this.variantTableSchema;
     }
     
-    /*public TableSchema getSubjectTableSchema() {
-        return this.subjectTableSchema;
-    }*/
-    
-    public TableSchema getPatientTableSchema() {
+    public PatientTableSchema getPatientTableSchema() {
         return this.patientTableSchema;
     }
     
@@ -114,6 +118,14 @@ public class MedSavantDatabase {
     public TableSchema getGenomeTableSchema() {
         return genomeTableSchema;
     }
+    
+    public ModifiableTableSchema[] getModifiableTables(){
+        return new ModifiableTableSchema[]{patientTableSchema,phenotypeTableSchema};
+    }
    
+    public void refreshModifiableTables(){
+        patientTableSchema = new PatientTableSchema(schema);
+        phenotypeTableSchema = new ModifiableTableSchema(schema, "phenotype", phenotypeDefaults);
+    }
     
 }

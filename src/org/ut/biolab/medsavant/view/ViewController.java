@@ -235,4 +235,7 @@ public class ViewController extends JPanel {
         menu.addSection(section);
     }
     
+    public void refreshView(){
+        menu.refreshSelection();
+    }
 }

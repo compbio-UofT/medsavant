@@ -9,10 +9,8 @@ import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -29,7 +27,7 @@ public class TableSchema {
     private final LinkedHashMap<String,Integer> dbNameToIndex;
     private final LinkedHashMap<String, String> aliasToDBName;
 
-    private static String getColumnTypeString(ColumnType t) {
+    public static String getColumnTypeString(ColumnType t) {
         switch (t) {
             case INTEGER:
                 return COLUMN_INTEGER;
@@ -91,7 +89,7 @@ public class TableSchema {
         assert (aliasToColumn.containsKey(alias));
         return aliasToColumn.get(alias);
     }
-
+    
     public int getFieldIndexInDB(String dbName) {
         assert (dbNameToIndex.containsKey(dbName));
         return dbNameToIndex.get(dbName);
