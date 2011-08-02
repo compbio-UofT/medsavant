@@ -1,6 +1,6 @@
 db.driver=com.mysql.jdbc.Driver
 db.host=127.0.0.1
-db.name=medsavantdb
+db.name=medsavant
 db.port=5030
 general.autologin=false
 medsavant.version=1.0
