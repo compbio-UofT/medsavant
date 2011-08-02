@@ -26,7 +26,6 @@ import javax.swing.JScrollPane;
 import org.ut.biolab.medsavant.db.DBUtil;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.QueryUtil;
-import org.ut.biolab.medsavant.db.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -82,9 +81,9 @@ public class CohortDetailedView extends DetailedView {
         details.add(ViewUtil.getKeyValuePairPanel("Patients in cohort", patients.size() + ""), BorderLayout.NORTH);
         DefaultListModel lm = new DefaultListModel();
         for (Vector v : patients) {
-            JLabel l = new JLabel(v.get(CohortViewTableSchema.INDEX_HOSPITALID-1).toString()); l.setForeground(Color.white);
+            JLabel l = new JLabel(v.get(2).toString()); l.setForeground(Color.white);
             //details.add(l);
-            lm.addElement((String) v.get(CohortViewTableSchema.INDEX_HOSPITALID-1));
+            lm.addElement((String) v.get(2));
         }
         list = (JList) ViewUtil.clear(new JList(lm));
         list.setBackground(ViewUtil.getDetailsBackgroundColor());

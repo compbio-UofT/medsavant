@@ -245,12 +245,7 @@ public class Menu extends JPanel implements MenuItemSelected {
         contentContainer.add(v.getView(), BorderLayout.CENTER);
         contentContainer.updateUI();
     }
-    
-    public void refreshSelection(){
-        if(itemGroup.lastSelected != null){
-            itemSelected(itemGroup.lastSelected);
-        }
-    }
+
 }
 
 

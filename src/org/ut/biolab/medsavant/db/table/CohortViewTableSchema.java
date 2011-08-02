@@ -12,17 +12,17 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
  */
 public class CohortViewTableSchema extends TableSchema {
     
-    public static final String TABLE_NAME = "cohort_membership";
+    public static final String TABLE_NAME = "cohort_view";
 
     
     public static int INDEX_COHORTID;
-    //public static int INDEX_COHORTNAME;
+    public static int INDEX_COHORTNAME;
     public static int INDEX_HOSPITALID;
 
 
     private void setIndexes() {
         INDEX_COHORTID = this.getFieldIndexInDB(DBFIELDNAME_COHORTID);
-        //INDEX_COHORTNAME = this.getFieldIndexInDB(DBFIELDNAME_COHORTNAME);
+        INDEX_COHORTNAME = this.getFieldIndexInDB(DBFIELDNAME_COHORTNAME);
         INDEX_HOSPITALID = this.getFieldIndexInDB(DBFIELDNAME_HOSPITALID);
     }
 
@@ -34,17 +34,17 @@ public class CohortViewTableSchema extends TableSchema {
    
     
     public static final String ALIAS_COHORTID = "Cohort ID";
-   // public static final String ALIAS_COHORTNAME = "Cohort Name";
+    public static final String ALIAS_COHORTNAME = "Cohort Name";
     public static final String ALIAS_HOSPITALID = "Hospital ID";
 
     
     public static final String DBFIELDNAME_COHORTID = "cohort_id";
-   // public static final String DBFIELDNAME_COHORTNAME = "cohort_name";
+    public static final String DBFIELDNAME_COHORTNAME = "cohort_name";
     public static final String DBFIELDNAME_HOSPITALID = "hospital_id";
  
     private void addColumns() {
         addColumn(DBFIELDNAME_COHORTID,ALIAS_COHORTID,TableSchema.ColumnType.INTEGER,11);
-      //  addColumn(DBFIELDNAME_COHORTNAME,ALIAS_COHORTNAME,TableSchema.ColumnType.VARCHAR,10);
+        addColumn(DBFIELDNAME_COHORTNAME,ALIAS_COHORTNAME,TableSchema.ColumnType.VARCHAR,10);
         addColumn(DBFIELDNAME_HOSPITALID,ALIAS_HOSPITALID,TableSchema.ColumnType.VARCHAR,20);
     }
 

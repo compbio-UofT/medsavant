@@ -12,9 +12,10 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
  */
 public class GeneListViewTableSchema extends TableSchema {
 
-    public static final String TABLE_NAME = "region_set_membership";
+    public static final String TABLE_NAME = "region_set_view";
     
     public static int INDEX_REGIONSETID;
+    public static int INDEX_REGIONSETNAME;
     public static int INDEX_GENOMEID;
     public static int INDEX_CHROM;
     public static int INDEX_START;
@@ -22,13 +23,15 @@ public class GeneListViewTableSchema extends TableSchema {
     public static int INDEX_DESCRIPTION;
     
     public static final String ALIAS_REGIONSETID = "Region Set ID";
+    public static final String ALIAS_REGIONSETNAME = "Region Set Name";
     public static final String ALIAS_GENOMEID = "Genome ID";
     public static final String ALIAS_CHROM = "Chromosome";
     public static final String ALIAS_START = "Start";
     public static final String ALIAS_END = "End";
     public static final String ALIAS_DESCRIPTION = "Description";
     
-    public static final String DBFIELDNAME_REGIONSETID = "regionset_id";
+    public static final String DBFIELDNAME_REGIONSETID = "id";
+    public static final String DBFIELDNAME_REGIONSETNAME = "name";
     public static final String DBFIELDNAME_GENOMEID = "genome_id";
     public static final String DBFIELDNAME_CHROM = "chrom";
     public static final String DBFIELDNAME_START = "start";
@@ -43,6 +46,7 @@ public class GeneListViewTableSchema extends TableSchema {
 
     private void setIndexes() {
         INDEX_REGIONSETID = this.getFieldIndexInDB(DBFIELDNAME_REGIONSETID);
+        INDEX_REGIONSETNAME = this.getFieldIndexInDB(DBFIELDNAME_REGIONSETNAME);
         INDEX_GENOMEID = this.getFieldIndexInDB(DBFIELDNAME_GENOMEID);
         INDEX_CHROM = this.getFieldIndexInDB(DBFIELDNAME_CHROM);
         INDEX_START = this.getFieldIndexInDB(DBFIELDNAME_START);
@@ -52,6 +56,7 @@ public class GeneListViewTableSchema extends TableSchema {
 
     private void addColumns() {
         addColumn(DBFIELDNAME_REGIONSETID, ALIAS_REGIONSETID, TableSchema.ColumnType.INTEGER, 11);
+        addColumn(DBFIELDNAME_REGIONSETNAME, ALIAS_REGIONSETNAME, TableSchema.ColumnType.VARCHAR, 255);
         addColumn(DBFIELDNAME_GENOMEID, ALIAS_GENOMEID, TableSchema.ColumnType.INTEGER, 11);
         addColumn(DBFIELDNAME_CHROM, ALIAS_CHROM, TableSchema.ColumnType.VARCHAR, 255);
         addColumn(DBFIELDNAME_START, ALIAS_START, TableSchema.ColumnType.INTEGER, 11);

@@ -20,7 +20,7 @@ public class CohortTableSchema extends TableSchema {
     public static final String ALIAS_COHORTID = "Cohort ID";
     public static final String ALIAS_COHORTNAME = "Cohort Name";
 
-    public static final String DBFIELDNAME_COHORTID = "cohort_id";
+    public static final String DBFIELDNAME_COHORTID = "id";
     public static final String DBFIELDNAME_COHORTNAME = "name";
 
     public CohortTableSchema(DbSchema s) {

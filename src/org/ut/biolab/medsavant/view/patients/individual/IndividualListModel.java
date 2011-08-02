@@ -35,7 +35,7 @@ public class IndividualListModel implements DetailedListModel {
 
     public List<String> getColumnNames() {
         List<String> result = new ArrayList<String>();
-        result.add("Patient ID");
+        result.add("Patient");
         result.add("DNA ID");
         result.add("Family ID");
         return result;

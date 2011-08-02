@@ -32,7 +32,7 @@ public class GeneListTableSchema extends TableSchema {
     public static final String ALIAS_ID = "Region Set ID";
     public static final String ALIAS_NAME = "Region Set Name";
     
-    public static final String DBFIELDNAME_ID = "regionset_id";
+    public static final String DBFIELDNAME_ID = "id";
     public static final String DBFIELDNAME_NAME = "name";
  
     private void addColumns() {
