@@ -230,7 +230,7 @@ public class GOFilter {
  
                     for (TreePath path: paths){
                         
-                        System.out.println(path);
+//                        System.out.println(path);
 //                        if (path.getPathCount() == 1){
 //                            
 //                            continue;
@@ -337,7 +337,7 @@ public class GOFilter {
                 // will never be satisfied.
                 if (classifiedPosInfo.getConditions().isEmpty() && paths != null){
                     classifiedPosInfo.addCondition("chr1", 23.0, 22.0); 
-                    System.out.println("DONE!");
+//                    System.out.println("DONE!");
                 }
                 final HashMap<String, List<Range>> map = classifiedPosInfo.getConditions();
                 

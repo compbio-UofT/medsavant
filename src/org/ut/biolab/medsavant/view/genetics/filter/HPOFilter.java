@@ -194,7 +194,7 @@ public class HPOFilter {
                 
                 if (paths != null){
                     for (TreePath path: paths){
-                        System.out.println(path);
+//                        System.out.println(path);
                         DefaultMutableTreeNode currVisualNode = 
                                 (DefaultMutableTreeNode)path.getLastPathComponent();
                         Node currNode = (Node)currVisualNode.getUserObject();
