@@ -63,6 +63,40 @@ public class TreeUtils {
                   getPaths(tree, path, expanded, list);          
               }        
           }  
-      }    
+      } 
+      
+      /**
+       * Get the height of this jTree.
+       * @param jtree
+       * @return 
+       */
+      public static int getHeight(JTree jtree){
+        int height = 0;
+        DefaultMutableTreeNode root = 
+                (DefaultMutableTreeNode)jtree.getModel().getRoot();
+        List<DefaultMutableTreeNode> listParents = new ArrayList<DefaultMutableTreeNode>();
+        listParents.add(root);
+        
+        List<DefaultMutableTreeNode> children = new ArrayList<DefaultMutableTreeNode>();
+        
+        while (!listParents.isEmpty()){
+            
+            children.clear();
+            for (DefaultMutableTreeNode parent: listParents){
+                for (Enumeration e = parent.children(); e.hasMoreElements();){
+                    children.add((DefaultMutableTreeNode)e.nextElement());
+                }
+            }
+            listParents.clear();
+            
+            for (DefaultMutableTreeNode child: children){
+                listParents.add(child);
+            }
+            
+            height = height + 1;
+        }
+        
+        return height;
+    }
     
 }

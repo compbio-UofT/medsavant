@@ -4,19 +4,12 @@
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
-import java.awt.BorderLayout;
-import java.sql.SQLException;
-import javax.swing.JPanel;
 import javax.swing.JTree;
-import org.ut.biolab.medsavant.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.OntologyPanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.filter.GOFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
 import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
-import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
  *
@@ -49,8 +42,9 @@ public class GOsubPanel extends OntologySubPanel{
         else{
             Tree tree = (Tree)FilterObjectStorer.getObject(GOFilter.NAME_TREE);
             jTree = ConstructJTree.getTree(tree, true, true, false);
+//            System.out.println("Height of GO tree: " + TreeUtils.getHeight(jTree));
             return jTree;
         }
     }
-
+    
 }
