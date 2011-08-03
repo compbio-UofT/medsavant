@@ -30,10 +30,10 @@ public class CheckBoxTreeNew extends CheckBoxTree{
         super(root);
         this.selectedPaths = new HashSet<TreePath>();
         super.setClickInCheckBoxOnly(false);
-        super.setDigIn(true);
+        super.setDigIn(false);
         super.getSelectionModel().setSelectionMode
                 (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-//        this.initListeners();
+        this.initListeners();
     }
     
     public CheckBoxTreeNew(TreeModel model){
@@ -104,8 +104,9 @@ public class CheckBoxTreeNew extends CheckBoxTree{
             TreeUtils.getPaths(tree, sourcePath, true, listPaths);
             for (TreePath path: listPaths){
                 tree.selectedPaths.add(path);                
-                tree.getCheckBoxTreeSelectionModel().addSelectionPath(path);
+//                tree.getCheckBoxTreeSelectionModel().addSelectionPath(path);
             }
+            tree.getCheckBoxTreeSelectionModel().addSelectionPaths(listPaths.toArray(new TreePath[0]));
         }
         else{
             HashSet<TreePath> removedPaths = new HashSet<TreePath>();
