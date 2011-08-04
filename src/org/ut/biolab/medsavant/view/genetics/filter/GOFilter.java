@@ -108,16 +108,21 @@ public class GOFilter {
                 @Override
                 protected Object doInBackground() throws Exception {
                     setProgress(0);
-                    // Create the mappings file at a certain destination 
-                    // then show the tree.
-                    try{
-                        String destination = CreateMappingsFile.getMappings();
-                        xtree = XMLontology.makeTree(destination);
-                    }
-                    catch(Exception e){
-                        System.out.println("Encountered some kind of problem");
-                        e.printStackTrace();
-                    }
+//                    // Create the mappings file at a certain destination 
+//                    // then show the tree.
+//                    try{
+//                        String destination = CreateMappingsFile.getMappings();
+//                        xtree = XMLontology.makeTree(destination);
+//                    }
+//                    catch(Exception e){
+//                        System.out.println("Encountered some kind of problem");
+//                        e.printStackTrace();
+//                    }
+                    
+                    Object o = null;
+                    while ((o = FilterObjectStorer.getObject(NAME_TREE)) == null)
+                        ;
+                    xtree = (GOTree)o;
                     setProgress(100);
                     return xtree;
                 }
@@ -193,12 +198,12 @@ public class GOFilter {
         
         final JTree jTree = ConstructJTree.getTree(xtree, true, true, true);
         
-        class ThreadTree extends Thread{
-            @Override
-            public void run(){
-                FilterObjectStorer.addObject(NAME_TREE, xtree);
-            }
-        }
+//        class ThreadTree extends Thread{
+//            @Override
+//            public void run(){
+//                FilterObjectStorer.addObject(NAME_TREE, xtree);
+//            }
+//        }
         // Add this tree to the storer so that it does not need to be loaded 
         // again when dealing with statistics.
 //        SwingUtilities.invokeLater(new Runnable() {
@@ -207,8 +212,8 @@ public class GOFilter {
 //                FilterObjectStorer.addObject(NAME_TREE, xtree.getCopyTree());
 //            }
 //        });
-        ThreadTree thread = new ThreadTree();
-        thread.start();
+//        ThreadTree thread = new ThreadTree();
+//        thread.start();
         
         // to keep track of the locations of the places selected.
         final HashSet<String> locations = new HashSet<String>();

@@ -91,12 +91,16 @@ public class HPOFilter {
                 protected Object doInBackground() throws Exception {
                     setProgress(0);
                     // get the tree here.
-                    try{
-                        tree = HPOParser.getHPOTree();
-                    }
-                    catch(Exception e){
-                    }
-//                    Thread.sleep(10000);
+//                    try{
+//                        tree = HPOParser.getHPOTree();
+//                    }
+//                    catch(Exception e){
+//                    }
+                    
+                    Object o = null;
+                    while ((o = FilterObjectStorer.getObject(NAME_TREE)) == null)
+                        ;
+                    tree = (Tree)o;
                     setProgress(100);
                     return null;
                 }  
