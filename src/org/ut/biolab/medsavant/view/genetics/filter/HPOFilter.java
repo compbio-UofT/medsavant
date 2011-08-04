@@ -163,7 +163,7 @@ public class HPOFilter {
         class ThreadTree extends Thread{
             @Override
             public void run(){
-                FilterObjectStorer.addObject(NAME_TREE, tree.getCopyTree());
+                FilterObjectStorer.addObject(NAME_TREE, tree);
             }
         }
         // Add this tree to the storer so that it does not need to be loaded 

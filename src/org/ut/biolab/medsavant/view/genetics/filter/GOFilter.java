@@ -196,7 +196,7 @@ public class GOFilter {
         class ThreadTree extends Thread{
             @Override
             public void run(){
-                FilterObjectStorer.addObject(NAME_TREE, xtree.getCopyTree());
+                FilterObjectStorer.addObject(NAME_TREE, xtree);
             }
         }
         // Add this tree to the storer so that it does not need to be loaded 
