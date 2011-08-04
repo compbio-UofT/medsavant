@@ -17,10 +17,11 @@ import org.ut.biolab.medsavant.view.genetics.filter.GOFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.HPOFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.geneontology.CreateMappingsFile;
 import org.ut.biolab.medsavant.view.genetics.filter.geneontology.GOTree;
+import org.ut.biolab.medsavant.view.genetics.filter.geneontology.GOTreeReadyController;
 import org.ut.biolab.medsavant.view.genetics.filter.geneontology.XMLontology;
 import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOParser;
+import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOTreeReadyController;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
-import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
 import org.ut.biolab.medsavant.view.patients.PatientsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
@@ -52,7 +53,7 @@ public class LoggedInView extends JPanel {
      */
     private void initGO(){
         
-        class Task extends SwingWorker{
+        class GOTask extends SwingWorker{
             
             private boolean doneGettingTree;
 
@@ -68,8 +69,8 @@ public class LoggedInView extends JPanel {
             protected void done(){
                 while (!doneGettingTree){
                     try {
-                        FilterObjectStorer.addObject(GOFilter.NAME_TREE, get());
                         doneGettingTree = true;
+                        GOTreeReadyController.addGOTree((GOTree)get());
                         System.out.println("Done constructing GO tree.");
                     } catch (Exception ex) {
                         // Keep trying to fetch the tree.  
@@ -84,7 +85,7 @@ public class LoggedInView extends JPanel {
             
         }
         
-        Task task = new Task();
+        GOTask task = new GOTask();
         task.execute();
     }
     
@@ -93,7 +94,7 @@ public class LoggedInView extends JPanel {
      */
     private void initHPO(){
         
-        class Task extends SwingWorker{
+        class HPOTask extends SwingWorker{
             
             private boolean doneGettingTree = false;
 
@@ -108,8 +109,8 @@ public class LoggedInView extends JPanel {
             protected void done(){
                 while (!doneGettingTree){
                     try{
-                        FilterObjectStorer.addObject(HPOFilter.NAME_TREE, get());
                         doneGettingTree = true;
+                        HPOTreeReadyController.addHPOTree((Tree)get());
                         System.out.println("Done constructing HPO tree.");
                     } catch(Exception e){
                         // Keep trying to fetch the tree. 
@@ -124,7 +125,7 @@ public class LoggedInView extends JPanel {
             
         }
         
-        Task task = new Task();
+        HPOTask task = new HPOTask();
         task.execute();
     }
 

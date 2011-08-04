@@ -192,8 +192,8 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             
             //custom filters
             long nano4 = System.nanoTime();
-            views.add(GOFilter.getGOntologyFilterView());
-            views.add(HPOFilter.getHPOntologyFilterView());                     
+            views.add(GOFilter.getInstance().getGOntologyFilterView());
+            views.add(HPOFilter.getInstance().getHPOntologyFilterView());                     
             views.add(new FilterView("WikiPathways", new PathwaysPanel()));
             long nano5 = System.nanoTime();
             

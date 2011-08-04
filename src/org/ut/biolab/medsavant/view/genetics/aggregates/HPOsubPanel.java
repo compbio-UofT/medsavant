@@ -4,23 +4,18 @@
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
-import java.sql.SQLException;
-import javax.swing.JPanel;
 import javax.swing.JTree;
-import org.ut.biolab.medsavant.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.OntologyPanelGenerator;
-import org.ut.biolab.medsavant.view.genetics.filter.HPOFilter;
+import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOTreeReadyController;
+import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOTreeReadyListener;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
-import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
 
 /**
  *
  * @author Nirvana Nursimulu
  */
-public class HPOsubPanel extends OntologySubPanel{
+public class HPOsubPanel extends OntologySubPanel implements HPOTreeReadyListener{
     
     private JTree jTree;
     OntologyPanelGenerator.OntologyPanel panel;
@@ -28,6 +23,7 @@ public class HPOsubPanel extends OntologySubPanel{
     public HPOsubPanel(OntologyPanelGenerator.OntologyPanel panel){
         super(panel, 0, 1, 2);
         this.panel = super.panel;
+        HPOTreeReadyController.addHPOTreeReadyListener(this);
     }
 
     
@@ -37,21 +33,27 @@ public class HPOsubPanel extends OntologySubPanel{
     }
     
     public boolean treeIsReadyToBeFetched(){
-        return FilterObjectStorer.containsObjectWithName(HPOFilter.NAME_TREE);
+        return HPOTreeReadyController.getHPOTree() != null;
     } 
     
-    public Tree getTree(){
-        return (Tree)FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
-    }
     
     public JTree getJTree(){
-        if (jTree != null){
-            return jTree;
-        }
-        else {
-            Tree tree = (Tree)FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
-            jTree = ConstructJTree.getTree(tree, false, true, false);
-            return jTree;
+//        if (jTree != null){
+//            return jTree;
+//        }
+//        else {
+//            Tree tree = (Tree)FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
+//            jTree = ConstructJTree.getTree(tree, false, true, false);
+//            return jTree;
+//        }
+        return jTree;
+    }
+
+    public void hpoTreeReady() {
+        Tree tree = HPOTreeReadyController.getHPOTree();
+        jTree = ConstructJTree.getTree(tree, false, true, false);
+        if (this.updatePanelUponFilterChanges){
+            this.update();
         }
     }
     

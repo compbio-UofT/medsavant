@@ -36,112 +36,65 @@ import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOParser;
+import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOTreeReadyController;
+import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOTreeReadyListener;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
-import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
  * @author Nirvana Nursimulu
  */
-public class HPOFilter {
+public class HPOFilter implements HPOTreeReadyListener{
     
     public static final String NAME_FILTER = "Human Phenotype";
     
     public static String NAME_TREE = "HPO TREE";
     
-    private static ClassifiedPositionInfo classifiedPos;
+    private ClassifiedPositionInfo classifiedPos;
+    
+    private JPanel container;
+    
+    private static HPOFilter instance;
+    
+    private HPOFilter(){
+        HPOTreeReadyController.addHPOTreeReadyListener(this);
+    }
+    
+    public static HPOFilter getInstance(){
+        if (instance == null){
+            instance = new HPOFilter();
+        }
+        return instance;
+    }
             
     /**
      * Returns the filterview object associated with the human phenotype 
      * ontology.
      * @return 
      */
-    public static FilterView getHPOntologyFilterView(){
+    public FilterView getHPOntologyFilterView(){
         
-        JPanel container = new JPanel();
+        container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         FilterView hpontologyView = new FilterView(NAME_FILTER, container);
-        loadData(container);
+        showProgressBar();
         return hpontologyView;
     }
     
-    /**
-     * Load the tree to the JPanel container.
-     * @param container the JPanel cto contain the tree.
-     */
-    private static void loadData(final JPanel container){
-        
-        // Add progress bar.
-        final JProgressBar progressBar = new JProgressBar();
-        progressBar.setIndeterminate(false);
+    private void showProgressBar(){
+        Tree hpTree;
+        if ((hpTree = HPOTreeReadyController.getHPOTree()) != null){
+            showTree(hpTree);
+            return;
+        }
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
         container.add(progressBar);
-        
-        // the task of loading info.
-            class Task extends SwingWorker{
-                
-                Tree tree;
-
-                @Override
-                protected Object doInBackground() throws Exception {
-                    setProgress(0);
-                    // get the tree here.
-//                    try{
-//                        tree = HPOParser.getHPOTree();
-//                    }
-//                    catch(Exception e){
-//                    }
-                    
-                    Object o = null;
-                    while ((o = FilterObjectStorer.getObject(NAME_TREE)) == null)
-                        ;
-                    tree = (Tree)o;
-                    setProgress(100);
-                    return null;
-                }  
-            } // end of Task class.
-
-        try{    
-            final Task task = new Task();
-            task.execute();
-
-            task.addPropertyChangeListener(new PropertyChangeListener() {
-
-                public void propertyChange(PropertyChangeEvent evt) {
-
-                    if (task.getState() == Task.StateValue.DONE){
-
-                        progressBar.setIndeterminate(false);
-                        progressBar.setVisible(false);
-                        container.remove(progressBar);
-                        // When we're done loading the information, show tree.
-                        try{
-                            showTree(container, task.tree);
-                        }
-                        catch(Exception e){
-                            container.remove(progressBar);
-                            container.add(new JLabel("Could not display the tree"));
-                            System.out.println("Could not display the tree.");                            
-                        }
-                        task.removePropertyChangeListener(this);
-                    }   
-                    else {
-
-                        progressBar.setIndeterminate(true);
-                    }                
-                }
-            });
-        }
-        catch (Exception e){
-            container.remove(progressBar);
-            container.add(new JLabel("Could not display the tree"));
-            System.out.println("Could not display the tree.");            
-        }
     }
     
     
@@ -150,7 +103,7 @@ public class HPOFilter {
      * @param container JPanel object
      * @param tree the tree containing the ontology information.
      */
-    private static void showTree(JPanel container, final Tree tree){
+    private void showTree(final Tree tree){
         
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
@@ -162,28 +115,8 @@ public class HPOFilter {
         
         // Now that we have the tree, construct jTree, and display it.
         // Enable multiple discontinuous selection.
-        final JTree jTree = ConstructJTree.getTree(tree, false, true, true);
-        
-        class ThreadTree extends Thread{
-            @Override
-            public void run(){
-                FilterObjectStorer.addObject(NAME_TREE, tree);
-            }
-        }
-        // Add this tree to the storer so that it does not need to be loaded 
-        // again when dealing with statistics.
-//        SwingUtilities.invokeLater(new Runnable() {
-//
-//            public void run() {
-//                FilterObjectStorer.addObject(NAME_TREE, tree.getCopyTree());
-//            }
-//        });
-        ThreadTree thread = new ThreadTree();
-        thread.start();
-        
-        
-
-        
+        final JTree jTree = ConstructJTree.getTree(tree, false, true, true);   
+                
         jTree.getSelectionModel().setSelectionMode
                 (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
@@ -333,6 +266,11 @@ public class HPOFilter {
                 FilterController.addFilter(f);
             }
         });
+    }
+
+    public void hpoTreeReady() {
+        container.removeAll();
+        showTree(HPOTreeReadyController.getHPOTree());
     }
     
 }

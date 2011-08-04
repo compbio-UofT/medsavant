@@ -47,136 +47,61 @@ import org.ut.biolab.medsavant.view.genetics.filter.geneontology.*;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
-import org.ut.biolab.medsavant.view.genetics.storer.FilterJComponentStorer;
-import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
  * @author Nirvana Nursimulu
  */
-public class GOFilter {
+public class GOFilter implements GOTreeReadyListener{
     
     public static final String NAME_FILTER = "Gene Ontology";
     
     public static String NAME_TREE = "GO TREE";
     
-    private static ClassifiedPositionInfo classifiedPosInfo;
+    private ClassifiedPositionInfo classifiedPosInfo;
+    
+    private JPanel container;
+    
+    private static GOFilter instance;
+    
+    private GOFilter(){
+        GOTreeReadyController.addGOTreeReadyListener(this);
+    }
+    
+    public static GOFilter getInstance(){
+        if (instance == null){
+            instance = new GOFilter();
+        }
+        return instance;
+    }
         
     /**
      * Return the filter view for the gene ontology filter.
      * @return 
      */
-    public static FilterView getGOntologyFilterView(){
+    public FilterView getGOntologyFilterView(){
         
-        final JPanel container = new JPanel();
+        container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         FilterView gontologyFilterView = new FilterView(NAME_FILTER, container);
-        // Add button to ask whether the person wants to see the tree.
-//        final JButton buttonShowTree = new JButton("Show tree");
-//        container.add(buttonShowTree);
-//        buttonShowTree.addActionListener(new ActionListener() {
-//
-//            public void actionPerformed(ActionEvent e) { 
-//                container.remove(buttonShowTree);
-//                // show progress bar while loading data, and then show the tree.
-//                loadData(container);
-//            }
-//        });
         
         // Start loading the information at the beginning.
-        loadData(container);
+        showProgressBar();
 
         return gontologyFilterView;
     }
     
-    /**
-     * Load data once the user has indicated the wish to show the tree (ie, 
-     * pressed on the button asking to show the tree).
-     * @param container 
-     */
-    private static void loadData(final JPanel container){
-                
-        final JProgressBar progressBar = new JProgressBar();
-        progressBar.setIndeterminate(false);
-        container.add(progressBar);
+    private void showProgressBar(){
         
-          class Task extends SwingWorker{
-              
-              GOTree xtree;
-
-                @Override
-                protected Object doInBackground() throws Exception {
-                    setProgress(0);
-//                    // Create the mappings file at a certain destination 
-//                    // then show the tree.
-//                    try{
-//                        String destination = CreateMappingsFile.getMappings();
-//                        xtree = XMLontology.makeTree(destination);
-//                    }
-//                    catch(Exception e){
-//                        System.out.println("Encountered some kind of problem");
-//                        e.printStackTrace();
-//                    }
-                    
-                    Object o = null;
-                    while ((o = FilterObjectStorer.getObject(NAME_TREE)) == null)
-                        ;
-                    xtree = (GOTree)o;
-                    setProgress(100);
-                    return xtree;
-                }
-            }
-
-        try{
-
-            final Task task = new Task();
-            
-            task.addPropertyChangeListener(new PropertyChangeListener() {
-
-                // To detect progress with the loading of the tree.
-                public void propertyChange(PropertyChangeEvent evt) {
-
-//                    System.out.println("Event name: " + evt.getPropertyName());
-//                    System.out.println("Event value: " + evt.getNewValue());
-
-//                    if ("state".equals(evt.getPropertyName()) && 
-//                            "DONE".equals(evt.getNewValue() + "")){
-                    if (task.getState() == Task.StateValue.DONE){
-
-                        progressBar.setIndeterminate(false);
-                        progressBar.setVisible(false);
-                        container.remove(progressBar);
-                        // When we're done loading the information, show tree.
-                        try{
-                            showTree(container, task.xtree);
-                        }
-                        catch(Exception e){
-                            container.remove(progressBar);
-                            container.add(new JLabel("Could not display the tree"));
-                            System.out.println("Could not display the tree.");
-                            e.printStackTrace();
-                        }
-                        task.removePropertyChangeListener(this);
-                    }   
-                    else {
-
-                        progressBar.setIndeterminate(true);
-                    }
-                }
-            });
-            
-            // Try to load the information into the tree (i.e., download XML 
-            // file etc)
-            task.execute();
+        GOTree goTree;
+        if ((goTree = GOTreeReadyController.getGOTree()) != null){
+            showTree(goTree);
+            return;
         }
-        // If we could not show the tree (load data), say that we could not.
-        catch(Exception e){
-
-            container.remove(progressBar);
-            container.add(new JLabel("Could not display the tree"));
-            System.out.println("Could not display the tree.");
-        }
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        container.add(progressBar);
     }
     
     /**
@@ -185,7 +110,7 @@ public class GOFilter {
      * @param container
      * @param xtree 
      */
-    private static void showTree(JPanel container, final GOTree xtree){
+    private void showTree(final GOTree xtree){
         
         final JButton applyButton = new JButton("Apply");
 
@@ -197,23 +122,6 @@ public class GOFilter {
         // a package we will be calling "genes" to every single node.
         
         final JTree jTree = ConstructJTree.getTree(xtree, true, true, true);
-        
-//        class ThreadTree extends Thread{
-//            @Override
-//            public void run(){
-//                FilterObjectStorer.addObject(NAME_TREE, xtree);
-//            }
-//        }
-        // Add this tree to the storer so that it does not need to be loaded 
-        // again when dealing with statistics.
-//        SwingUtilities.invokeLater(new Runnable() {
-//
-//            public void run() {
-//                FilterObjectStorer.addObject(NAME_TREE, xtree.getCopyTree());
-//            }
-//        });
-//        ThreadTree thread = new ThreadTree();
-//        thread.start();
         
         // to keep track of the locations of the places selected.
         final HashSet<String> locations = new HashSet<String>();
@@ -234,12 +142,7 @@ public class GOFilter {
                 if (paths != null){
  
                     for (TreePath path: paths){
-                        
-//                        System.out.println(path);
-//                        if (path.getPathCount() == 1){
-//                            
-//                            continue;
-//                        }
+                   
                         DefaultMutableTreeNode currNode = 
                                 (DefaultMutableTreeNode)path.getLastPathComponent();
                         Node currXnode = (Node) currNode.getUserObject();
@@ -395,6 +298,11 @@ public class GOFilter {
                 FilterController.addFilter(f);
             }
         });        
+    }
+
+    public void goTreeReady() {
+        container.removeAll();
+        showTree(GOTreeReadyController.getGOTree());
     }
     
 }

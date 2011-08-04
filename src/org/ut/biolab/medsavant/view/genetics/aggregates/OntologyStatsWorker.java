@@ -90,6 +90,9 @@ public  class OntologyStatsWorker extends SwingWorker{
     protected void done(){
         try {
 
+            if (get() == null){
+                return;
+            }
             JScrollPane scrollPane = new JScrollPane((JTree)get());
             subPanel.removeAll();
             
@@ -139,8 +142,9 @@ public  class OntologyStatsWorker extends SwingWorker{
         if (jTree == null){
             
             // TODO: change this approach: what if the tree is never loaded? Then, we're stuck in an infinite loop!
-            while (!subPanel.treeIsReadyToBeFetched())
-                ;
+            if (!subPanel.treeIsReadyToBeFetched()){
+                return null;
+            }
             jTree = subPanel.getJTree();
             
             topPanel = ViewUtil.getClearPanel();
