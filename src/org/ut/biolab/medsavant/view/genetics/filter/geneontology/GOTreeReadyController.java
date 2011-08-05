@@ -27,8 +27,7 @@ public class GOTreeReadyController {
         fireGOTreeReady();
     }
     
-    // Synchronized
-    public static synchronized GOTree getGOTree(){
+    public static GOTree getGOTree(){
         return goTree;
     }
     

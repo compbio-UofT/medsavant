@@ -28,8 +28,7 @@ public class HPOTreeReadyController {
         fireHPOTreeReady();
     }
     
-    // Synchronized
-    public static synchronized Tree getHPOTree(){
+    public static Tree getHPOTree(){
         return hpoTree;
     }
     
