@@ -117,7 +117,7 @@ public class XMLontology {
          */
         private String stringAcc;
         
-        private StringBuilder strBuilder;
+//        private StringBuilder strBuilder;
         
         Handler(GOTree tree, String locationOfFile){
             
@@ -128,7 +128,7 @@ public class XMLontology {
             this.haveSeenTerm = false;
             this.isRoot = false;
             stringAcc = "";
-            strBuilder = new StringBuilder();
+//            strBuilder = new StringBuilder();
         }
         
         @Override
@@ -145,7 +145,7 @@ public class XMLontology {
                 haveSeenTerm = true;
             }
 
-            strBuilder = new StringBuilder();
+//            strBuilder = new StringBuilder();
             stringAcc = "";
         }
         
