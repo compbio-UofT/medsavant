@@ -17,7 +17,8 @@ public class GOTreeReadyController {
     
     public static List<GOTreeReadyListener> listListeners = new ArrayList<GOTreeReadyListener>();
     
-    public static void addGOTreeReadyListener(GOTreeReadyListener l){
+    // Synchronized
+    public static synchronized void addGOTreeReadyListener(GOTreeReadyListener l){
         listListeners.add(l);
     }
     
@@ -26,7 +27,8 @@ public class GOTreeReadyController {
         fireGOTreeReady();
     }
     
-    public static GOTree getGOTree(){
+    // Synchronized
+    public static synchronized GOTree getGOTree(){
         return goTree;
     }
     

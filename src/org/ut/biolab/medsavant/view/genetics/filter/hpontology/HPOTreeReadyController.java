@@ -18,7 +18,8 @@ public class HPOTreeReadyController {
     
     public static List<HPOTreeReadyListener> listListeners = new ArrayList<HPOTreeReadyListener>();
     
-    public static void addHPOTreeReadyListener(HPOTreeReadyListener l){
+    // Synchronized
+    public static synchronized void addHPOTreeReadyListener(HPOTreeReadyListener l){
         listListeners.add(l);
     }
     
@@ -27,7 +28,8 @@ public class HPOTreeReadyController {
         fireHPOTreeReady();
     }
     
-    public static Tree getHPOTree(){
+    // Synchronized
+    public static synchronized Tree getHPOTree(){
         return hpoTree;
     }
     
