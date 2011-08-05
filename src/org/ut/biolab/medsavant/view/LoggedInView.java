@@ -67,7 +67,11 @@ public class LoggedInView extends JPanel {
                         doneGettingTree = true;
                         GOTreeReadyController.addGOTree(goTree);
                     }  catch(Exception e){
+                        
                         System.out.println("Problem with constructing GO tree:\n" + e);
+                        e.printStackTrace();
+                        System.out.println("\n");
+                        
                         try{
                             // Let's just wait for a while.
                             Thread.sleep(3000);
@@ -101,7 +105,11 @@ public class LoggedInView extends JPanel {
                         doneGettingTree = true;
                         HPOTreeReadyController.addHPOTree(tree);
                     } catch(Exception e){
+                        
                         System.out.println("Problem with constructing HPO tree:\n" + e);
+                        e.printStackTrace();
+                        System.out.println("\n");
+                        
                         try{
                             // Let's just wait for a while.
                             Thread.sleep(3000);
