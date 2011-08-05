@@ -60,29 +60,23 @@ public class LoggedInView extends JPanel {
             @Override
             protected Object doInBackground() throws Exception {
                 doneGettingTree = false;
-                String destination = CreateMappingsFile.getMappings();
-                GOTree xtree = XMLontology.makeTree(destination);
-                return xtree;
-            }
-            
-            @Override
-            protected void done(){
                 while (!doneGettingTree){
-                    try {
+                    try{
+                        String destination = CreateMappingsFile.getMappings();
+                        GOTree goTree = XMLontology.makeTree(destination);
                         doneGettingTree = true;
-                        GOTreeReadyController.addGOTree((GOTree)get());
-                        System.out.println("Done constructing GO tree.");
-                    } catch (Exception ex) {
-                        // Keep trying to fetch the tree.  
-                        System.out.println("Problem with constructing GO tree:\n" + ex);
-                        try {
+                        GOTreeReadyController.addGOTree(goTree);
+                    }  catch(Exception e){
+                        System.out.println("Problem with constructing GO tree:\n" + e);
+                        try{
+                            // Let's just wait for a while.
                             Thread.sleep(3000);
-                        } catch (InterruptedException ex1) {
+                        } catch(InterruptedException ex){
                         }
                     }
                 }
-            }
-            
+                return null;
+            }            
         }
         
         GOTask task = new GOTask();
@@ -101,28 +95,22 @@ public class LoggedInView extends JPanel {
             @Override
             protected Object doInBackground() throws Exception {
                 doneGettingTree = false;
-                Tree tree = HPOParser.getHPOTree();
-                return tree;
-            }
-            
-            @Override
-            protected void done(){
                 while (!doneGettingTree){
                     try{
+                        Tree tree = HPOParser.getHPOTree();
                         doneGettingTree = true;
-                        HPOTreeReadyController.addHPOTree((Tree)get());
-                        System.out.println("Done constructing HPO tree.");
+                        HPOTreeReadyController.addHPOTree(tree);
                     } catch(Exception e){
-                        // Keep trying to fetch the tree. 
                         System.out.println("Problem with constructing HPO tree:\n" + e);
-                        try {
+                        try{
+                            // Let's just wait for a while.
                             Thread.sleep(3000);
-                        } catch (InterruptedException ex) {
+                        } catch(InterruptedException ex){                        
                         }
                     }
-                }
-            }
-            
+                }                
+                return null;
+            }            
         }
         
         HPOTask task = new HPOTask();
