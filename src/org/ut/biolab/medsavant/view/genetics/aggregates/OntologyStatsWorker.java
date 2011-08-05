@@ -141,7 +141,6 @@ public  class OntologyStatsWorker extends SwingWorker{
         topPanel = mapNameToTopPanel.get(subPanel.getName());
         if (jTree == null){
             
-            // TODO: change this approach: what if the tree is never loaded? Then, we're stuck in an infinite loop!
             if (!subPanel.treeIsReadyToBeFetched()){
                 return null;
             }
