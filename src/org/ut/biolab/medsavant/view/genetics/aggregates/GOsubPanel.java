@@ -37,15 +37,12 @@ public class GOsubPanel extends OntologySubPanel implements GOTreeReadyListener{
     }
     
     public JTree getJTree(){
-//        if (jTree != null){
-//            return jTree;
-//        }
-//        else{
-//            Tree tree = (Tree)FilterObjectStorer.getObject(GOFilter.NAME_TREE);
-//            jTree = ConstructJTree.getTree(tree, true, true, false);
-////            System.out.println("Height of GO tree: " + TreeUtils.getHeight(jTree));
-//            return jTree;
-//        }
+        if (jTree == null){
+            Tree tree = GOTreeReadyController.getGOTree();
+            if (tree != null){
+                jTree = ConstructJTree.getTree(tree, true, true, false);
+            }
+        }
         return jTree;
     }
 

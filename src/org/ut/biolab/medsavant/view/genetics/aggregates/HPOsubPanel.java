@@ -38,14 +38,12 @@ public class HPOsubPanel extends OntologySubPanel implements HPOTreeReadyListene
     
     
     public JTree getJTree(){
-//        if (jTree != null){
-//            return jTree;
-//        }
-//        else {
-//            Tree tree = (Tree)FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
-//            jTree = ConstructJTree.getTree(tree, false, true, false);
-//            return jTree;
-//        }
+        if (jTree == null){
+            Tree tree = HPOTreeReadyController.getHPOTree();
+            if (tree != null){
+                jTree = ConstructJTree.getTree(tree, false, true, false);
+            }
+        }
         return jTree;
     }
 
