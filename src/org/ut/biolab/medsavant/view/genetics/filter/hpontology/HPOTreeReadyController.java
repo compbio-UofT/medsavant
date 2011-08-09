@@ -16,7 +16,7 @@ public class HPOTreeReadyController {
     
     private static Tree hpoTree;
     
-    public static List<HPOTreeReadyListener> listListeners = new ArrayList<HPOTreeReadyListener>();
+    public static volatile List<HPOTreeReadyListener> listListeners = new ArrayList<HPOTreeReadyListener>();
     
     // Synchronized
     public static synchronized void addHPOTreeReadyListener(HPOTreeReadyListener l){

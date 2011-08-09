@@ -15,7 +15,7 @@ public class GOTreeReadyController {
     
     private static GOTree goTree;
     
-    public static List<GOTreeReadyListener> listListeners = new ArrayList<GOTreeReadyListener>();
+    public static volatile List<GOTreeReadyListener> listListeners = new ArrayList<GOTreeReadyListener>();
     
     // Synchronized
     public static synchronized void addGOTreeReadyListener(GOTreeReadyListener l){
