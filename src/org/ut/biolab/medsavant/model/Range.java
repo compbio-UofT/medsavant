@@ -57,7 +57,7 @@ public class Range implements Comparable{
      * @param range1 the first list of ranges.
      * @param range2 the second list of ranges.
      * @return the merged list.
-     * @author Nirvana
+     * @author nnursimulu
      */
     public static List<Range> merge(List<Range> range1, List<Range> range2){
 
@@ -102,7 +102,7 @@ public class Range implements Comparable{
      * Get the list you get by merging the Range objects in this list.
      * @param range
      * @return the merged list.
-     * @author Nirvana
+     * @author nnursimulu
      */
     public static List<Range> merge(List<Range> range){
         
@@ -116,7 +116,7 @@ public class Range implements Comparable{
      * the same, differentiate by ending point.
      * @param rangeObj
      * @return 
-     * @author Nirvana
+     * @author nnursimulu
      */
     public int compareTo(Object rangeObj) {
         Range range = (Range) rangeObj;
@@ -145,7 +145,7 @@ public class Range implements Comparable{
      * This range object equals another object iff the other is a range object,
      * and has the same min and max as this object.  This complies with the 
      * comparator method (compareTo).
-     * @author Nirvana
+     * @author nnursimulu
      */
     public boolean equals(Object r){
         try{
@@ -162,7 +162,7 @@ public class Range implements Comparable{
      * merged).
      * @param range
      * @return 
-     * @author Nirvana
+     * @author nnursimulu
      */
     public boolean canBeMergedWith(Range range){
         return (this.min <= range.max && range.max <= this.max) || 
@@ -173,11 +173,22 @@ public class Range implements Comparable{
     
     @Override
     /**
-     * @author Nirvana
+     * @author nnursimulu
      */
     public String toString(){
         return ViewUtil.numToString(min) + " - " + ViewUtil.numToString(max);
     }
+    
+    /**
+     * Return intersection among ranges.
+     * @author nnursimulu
+     * @param ranges ranges to be intersected upon.
+     * @return 
+     */
+    public static List<Range> intersect(List<Range> ranges){
+        // TODO: intersection amongst ranges
+        throw new UnsupportedOperationException("Not yet implemented");
+    } 
     
     /**
      * Forces proper ordering and limits. 
