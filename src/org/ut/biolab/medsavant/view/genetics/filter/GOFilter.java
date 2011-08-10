@@ -169,11 +169,11 @@ public class GOFilter implements GOTreeReadyListener{
                         }
                     }
                     if (locations.size() != 1){
-                        numberSelected.setText(locations.size() + 
+                        numberSelected.setText(ViewUtil.numToString(locations.size()) + 
                                 " transcript location ranges selected");
                     }
                     else{
-                        numberSelected.setText(locations.size() + 
+                        numberSelected.setText(ViewUtil.numToString(locations.size()) + 
                                 " transcript location range selected");
                     }
                 }

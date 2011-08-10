@@ -153,11 +153,11 @@ public class HPOFilter implements HPOTreeReadyListener{
                     }
                     
                     if (locations.size() != 1){
-                        numberSelected.setText(locations.size() + 
+                        numberSelected.setText(ViewUtil.numToString(locations.size()) + 
                                 " gene location ranges selected");
                     }
                     else{
-                        numberSelected.setText(locations.size() + 
+                        numberSelected.setText(ViewUtil.numToString(locations.size()) + 
                                 " gene location range selected");                        
                     }
                 }
