@@ -16,6 +16,7 @@ import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.QueryUtil;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
 /**
@@ -97,10 +98,10 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
             }
             numVariants = numVariants + numCurr;
             if (numVariants == 1){
-                ((Node)node.getUserObject()).setTotalDescription(" {>=" + numVariants + " record}");
+                ((Node)node.getUserObject()).setTotalDescription(" {>=" + ViewUtil.numToString(numVariants) + " record}");
             }
             else{
-                ((Node)node.getUserObject()).setTotalDescription(" {>=" + numVariants + " records}");
+                ((Node)node.getUserObject()).setTotalDescription(" {>=" + ViewUtil.numToString(numVariants) + " records}");
             }
                     
             SwingUtilities.invokeLater(new Runnable() {
@@ -112,10 +113,10 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
         }
         String additionalDesc = null;
         if (numVariants == 1){
-            additionalDesc = " {" + numVariants + " record in all}";
+            additionalDesc = " {" + ViewUtil.numToString(numVariants) + " record in all}";
         }
         else{
-            additionalDesc = " {" + numVariants + " records in all}";
+            additionalDesc = " {" + ViewUtil.numToString(numVariants) + " records in all}";
         }
         ((Node)node.getUserObject()).setTotalDescription(additionalDesc);
         isDoneWorking = true;
