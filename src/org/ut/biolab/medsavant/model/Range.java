@@ -1,6 +1,8 @@
 package org.ut.biolab.medsavant.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -35,18 +37,28 @@ public class Range implements Comparable{
     
     public static void main(String[] args){
         
-        List<Range> range1 = new ArrayList<Range>();
-        List<Range> range2 = new ArrayList<Range>();
-        range1.add(new Range(2, 6));
-        range1.add(new Range(2, 5));        
-        range1.add(new Range(1, 3));
-        range2.add(new Range(7, 8));
-        range2.add(new Range(4, 6));
-        range2.add(new Range(9, 12));
-        range1.add(new Range(10, 11));
-
-        List<Range> res = merge(range1, range2);
+//        List<Range> range1 = new ArrayList<Range>();
+//        List<Range> range2 = new ArrayList<Range>();
+//        range1.add(new Range(2, 6));
+//        range1.add(new Range(2, 5));        
+//        range1.add(new Range(1, 3));
+//        range2.add(new Range(7, 8));
+//        range2.add(new Range(4, 6));
+//        range2.add(new Range(9, 12));
+//        range1.add(new Range(10, 11));
+//
+//        List<Range> res = merge(range1, range2);
 //        System.out.println(res);
+        
+        // Very crude test of whether intersecting method works.
+        List<Range> ls = new ArrayList<Range>();
+        ls.add(new Range(1, 6));
+        ls.add(new Range(2, 8));
+        ls.add(new Range(5, 10));
+        ls.add(new Range(4, 9));
+        ls.add(new Range(3, 7));
+        ls.add(new Range(1, 5));
+        System.out.println(Range.getIntersection(ls));
     }
     
     /**
@@ -84,7 +96,7 @@ public class Range implements Comparable{
                 currMerged = new Range(currRange.min, currRange.max);
                 mergedList.add(currMerged);
             }
-            else if (currMerged.canBeMergedWith(currRange)){
+            else if (currMerged.intersectsWith(currRange)){
                 // merge them here
                 currMerged.max = Math.max(currMerged.max, currRange.max);
                 currMerged.min = Math.min(currMerged.min, currRange.min);
@@ -164,7 +176,7 @@ public class Range implements Comparable{
      * @return 
      * @author nnursimulu
      */
-    public boolean canBeMergedWith(Range range){
+    public boolean intersectsWith(Range range){
         return (this.min <= range.max && range.max <= this.max) || 
                 (range.min <= this.max && this.max <= range.max) || 
                 (this.min >= range.min && this.max <= range.max) ||
@@ -180,15 +192,85 @@ public class Range implements Comparable{
     }
     
     /**
-     * Return intersection among ranges.
+     * Return intersection among ranges. This is just the one range common to 
+     * many ranges.
      * @author nnursimulu
      * @param ranges ranges to be intersected upon.
      * @return 
      */
-    public static List<Range> intersect(List<Range> ranges){
-        // TODO: intersection amongst ranges
-        throw new UnsupportedOperationException("Not yet implemented");
-    } 
+    public static Range getIntersection(List<Range> ranges){
+        
+        // Sort the intervals in the ranges list (size = n) by decreasing size.
+        // Henceforth, interval 1 > interval 2 > ... > interval n
+        List<Range> sortedByDecreasingSize = sortByDecreasingSize(ranges);
+        
+        // Initialise intersectingRange to be a copy of interval 1.
+        Range intersectingRange = 
+                new Range(sortedByDecreasingSize.get(0).min, 
+                sortedByDecreasingSize.get(0).max);
+        
+        Range curr;
+        // For interval i = 2 ... n:
+        for (int i = 1; i < sortedByDecreasingSize.size(); i++){            
+            curr = sortedByDecreasingSize.get(i); 
+            
+            // intersectingRange = intersect(interval i, intersectingRange)        
+            // if intersectingRange is empty: return null.
+            intersectingRange = getIntersection(curr, intersectingRange);
+            
+            if (intersectingRange == null){
+                return null;
+            }
+        }
+        // Return intersectingRange.
+        return intersectingRange;
+    }
+    
+    /**
+     * Get the intersection between range1, and range2.  null in case they don't
+     * intersect.
+     * @param range1
+     * @param range2
+     * @return the intersection.
+     */
+    public static Range getIntersection(Range range1, Range range2){
+        // No intersection.
+        if (!range1.intersectsWith(range2)){
+            return null;
+        }
+        return new Range(Math.max(range1.min, range2.min), Math.min(range1.max, range2.max));
+    }
+    
+    private static List<Range> sortByDecreasingSize(List<Range> ranges){
+        
+        TreeSet<Double> sortedLengths = new TreeSet<Double>();
+        List<Range> sortedByDecreasingSize = new ArrayList<Range>();
+        
+        HashMap<Double, List<Range>> map = new HashMap<Double, List<Range>>();
+        for (Range range: ranges){
+            Double length = range.getLength();
+            List<Range> ls = map.get(length);
+            
+            if (ls == null){
+                ls = new ArrayList<Range>();
+                map.put(length, ls);
+            }
+            ls.add(range);
+            sortedLengths.add(length);
+        }
+        
+        Iterator ite = sortedLengths.descendingIterator();
+        
+        while (ite.hasNext()){
+            Double length = (Double)ite.next();
+            sortedByDecreasingSize.addAll(map.get(length));
+        }
+        return sortedByDecreasingSize;
+    }
+    
+    public double getLength(){
+        return this.max - this.min;
+    }
     
     /**
      * Forces proper ordering and limits. 
