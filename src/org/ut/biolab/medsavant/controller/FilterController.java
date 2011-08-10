@@ -15,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.model.RangeFilter;
 
 /**
  *
@@ -141,10 +142,23 @@ public class FilterController {
 
     public static List<QueryFilter> getQueryFilters() {
         List<QueryFilter> qfs = new ArrayList<QueryFilter>();
+        RangeFilter rf = new RangeFilter() {
+            @Override
+            public String getName() {
+                return "Range Filters";
+            }
+        };
+        boolean hasRangeFilter = false;
         for (Filter f : filterMap.values()) {
-            if (f instanceof QueryFilter) {
+            if (f instanceof RangeFilter) {
+                rf.merge(((RangeFilter)f).getRangeSet());
+                hasRangeFilter = true;
+            } else if (f instanceof QueryFilter) {
                 qfs.add((QueryFilter) f);
             }
+        }
+        if(hasRangeFilter){
+            qfs.add((QueryFilter)rf);
         }
         return qfs;
     }
