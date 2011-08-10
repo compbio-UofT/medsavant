@@ -98,10 +98,10 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
             }
             numVariants = numVariants + numCurr;
             if (numVariants == 1){
-                ((Node)node.getUserObject()).setTotalDescription(" {>=" + ViewUtil.numToString(numVariants) + " record}");
+                ((Node)node.getUserObject()).setTotalDescription("   {>=" + ViewUtil.numToString(numVariants) + " record}");
             }
             else{
-                ((Node)node.getUserObject()).setTotalDescription(" {>=" + ViewUtil.numToString(numVariants) + " records}");
+                ((Node)node.getUserObject()).setTotalDescription("   {>=" + ViewUtil.numToString(numVariants) + " records}");
             }
                     
             SwingUtilities.invokeLater(new Runnable() {
@@ -113,10 +113,10 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
         }
         String additionalDesc = null;
         if (numVariants == 1){
-            additionalDesc = " {" + ViewUtil.numToString(numVariants) + " record in all}";
+            additionalDesc = "   {" + ViewUtil.numToString(numVariants) + " record in all}";
         }
         else{
-            additionalDesc = " {" + ViewUtil.numToString(numVariants) + " records in all}";
+            additionalDesc = "   {" + ViewUtil.numToString(numVariants) + " records in all}";
         }
         ((Node)node.getUserObject()).setTotalDescription(additionalDesc);
         isDoneWorking = true;
