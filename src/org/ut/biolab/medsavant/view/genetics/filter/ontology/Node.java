@@ -351,7 +351,7 @@ public class Node implements Comparable{
     public void setDescription(String description){
         
         this.description = description;
-        this.totalDescription = this.description;
+        setTotalDescription("");
         // change of description does not affect special node.
     }
     
@@ -363,7 +363,13 @@ public class Node implements Comparable{
      */
     public void setTotalDescription(String additionalDescription){
         
-        this.totalDescription = this.description + additionalDescription;
+        if (this.includeIdentifierInDescr){
+            this.totalDescription = this.description + 
+                    " [" + this.identifier + "]" + additionalDescription;
+        }
+        else{
+            this.totalDescription = this.description + additionalDescription;
+        }
     }
     
     /**
@@ -395,12 +401,7 @@ public class Node implements Comparable{
      */
     public String toValue(){
         
-        if (this.includeIdentifierInDescr){
-            return this.totalDescription + " [" + this.identifier + "]";
-        }
-        else{
-            return this.totalDescription;
-        }
+        return this.totalDescription;
     }
 
     
