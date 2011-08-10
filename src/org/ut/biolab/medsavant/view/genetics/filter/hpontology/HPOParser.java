@@ -155,7 +155,7 @@ public class HPOParser {
                     description = description.substring(1);
                 }
             }
-            Node node = new Node(identifier, NAME_EXTRA_GENES);
+            Node node = new Node(identifier, NAME_EXTRA_GENES, true);
             node.setDescription(description);
             return node;
         }
