@@ -189,7 +189,7 @@ public class XMLontology {
                     // Create a node if we have seen the id.
                     if (qName.equals("id")){
 
-                        currNode = new Node(stringAcc, NAME_EXTRA_GENES);
+                        currNode = new Node(stringAcc, NAME_EXTRA_GENES, true);
                     }
                     // Set the description of the node.
                     else if (qName.equals("name")){

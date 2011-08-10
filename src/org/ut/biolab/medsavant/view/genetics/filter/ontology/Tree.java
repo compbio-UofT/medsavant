@@ -216,7 +216,7 @@ public class Tree {
             Node parentRef = identifierToNode.get(parentID);
             if (parentRef == null){
                 
-                parentRef = new Node(parentID, descriptionSpecialNode);
+                parentRef = new Node(parentID, descriptionSpecialNode, true);
                 identifierToNode.put(parentID, parentRef);
             }
             

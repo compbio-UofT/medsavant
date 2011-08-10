@@ -81,10 +81,16 @@ public class Node implements Comparable{
     private boolean hasBeenDiscovered;
     
     /**
+     * To showcase GO and HPO IDs. If not set when constructing node, 
+     * will be taken to be false.
+     */
+    private boolean includeIdentifierInDescr = false;
+    
+    /**
      * Constructor of this node given an identifier.
      * @param identifier  "key" of this node.
      */
-    public Node(String identifier, String descriptionSpecialNode){
+    public Node(String identifier, String descriptionSpecialNode, boolean includeIdentifierInDescr){
         
         this.children = new TreeSet<Node>();
 //        this.parents = new HashSet<Node>();
@@ -99,6 +105,11 @@ public class Node implements Comparable{
         // By default, no node is special.
         this.isSpecial = false;
         this.hasBeenDiscovered = false;
+        this.includeIdentifierInDescr = includeIdentifierInDescr;
+    }
+    
+    public Node(String identifier, String descriptionSpecialNode){
+        this(identifier, descriptionSpecialNode, false);
     }
     
     /**
@@ -129,7 +140,7 @@ public class Node implements Comparable{
      */
     public Node getCopy(){
         
-        Node copyNode = new Node(this.identifier, this.descriptionSpecialNode);
+        Node copyNode = new Node(this.identifier, this.descriptionSpecialNode, this.includeIdentifierInDescr);
         copyNode.isSpecial = this.isSpecial;
         copyNode.description = this.description;
         copyNode.hasBeenDiscovered = this.hasBeenDiscovered;
@@ -370,7 +381,12 @@ public class Node implements Comparable{
      */
     public String toString(){
         
-        return this.description;
+        if (this.includeIdentifierInDescr){
+            return this.description + " [" + this.identifier + "]";
+        }
+        else{
+            return this.description;
+        }
     }
     
     /**
@@ -379,7 +395,12 @@ public class Node implements Comparable{
      */
     public String toValue(){
         
-        return this.totalDescription;
+        if (this.includeIdentifierInDescr){
+            return this.totalDescription + " [" + this.identifier + "]";
+        }
+        else{
+            return this.totalDescription;
+        }
     }
 
     
