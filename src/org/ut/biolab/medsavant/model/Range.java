@@ -192,6 +192,15 @@ public class Range implements Comparable{
     }
     
     /**
+     * @author nnursimulu
+     * @param listRanges
+     * @return 
+     */
+    public static List<Range> getIntersectionList(List<List<Range>> listRanges){
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    /**
      * Return intersection among ranges. This is just the one range common to 
      * many ranges.
      * @author nnursimulu
