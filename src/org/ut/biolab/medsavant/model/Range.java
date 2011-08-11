@@ -48,12 +48,12 @@ public class Range implements Comparable{
         
 //        List<Range> range1 = new ArrayList<Range>();
 //        List<Range> range2 = new ArrayList<Range>();
-//        range1.add(new Range(2, 6));
-//        range1.add(new Range(2, 5));        
-//        range1.add(new Range(1, 3));
-//        range2.add(new Range(7, 8));
+//        range1.add(new Range(2, 3));
+//        range1.add(new Range(9, 12));        
+//        range1.add(new Range(5, 8));
+//        range2.add(new Range(1, 2));
 //        range2.add(new Range(4, 6));
-//        range2.add(new Range(9, 12));
+//        range2.add(new Range(12, 13));
 //        range1.add(new Range(10, 11));
 //
 //        List<Range> res = merge(range1, range2);
@@ -66,11 +66,32 @@ public class Range implements Comparable{
 //        ls.add(new Range(5, 10));
 //        ls.add(new Range(4, 9));
 //        ls.add(new Range(3, 7));
-//        ls.add(new Range(1, 5));
+//        ls.add(new Range(1, 6));
 //        System.out.println(Range.getIntersection(ls));
         
         // Very very crude test that the other (more complicated BUT useful) intersection method works.
 //        List<List<Range>> listRangeSet = new ArrayList<List<Range>>();
+//        
+//        List<Range> list = new ArrayList<Range>();
+//        list.add(new Range(1, 3));
+//        list.add(new Range(4, 5));
+//        list.add(new Range(9, 11));
+//        list.add(new Range(13, 15));
+//        listRangeSet.add(list);
+//        
+//        list = new ArrayList<Range>();
+//        list.add(new Range(0, 2));
+//        list.add(new Range(5, 7));
+//        list.add(new Range(10, 14));
+//        listRangeSet.add(list);
+//        
+//        list = new ArrayList<Range>();
+//        list.add(new Range(0, 2));
+//        list.add(new Range(4, 6));
+//        list.add(new Range(8, 12));
+//        list.add(new Range(13, 15));
+//        listRangeSet.add(list);
+//        
 //        List<Range> ls = new ArrayList<Range>();
 //        ls.add(new Range(3, 7));
 //        ls.add(new Range(9, 15));
@@ -128,7 +149,6 @@ public class Range implements Comparable{
         for (Range currRange: range2){
             allRangesInOrder.add(currRange);
         }
-        
 //        System.out.print("Arranging in order:\t");
 //        System.out.println(allRangesInOrder);
         
@@ -136,18 +156,15 @@ public class Range implements Comparable{
         Range currMerged = null;
 
         for (Range currRange: allRangesInOrder){
-            // To detect the beginning:
-            if (currMerged == null){
+            if (currMerged == null || !currMerged.canBeMergedWith(currRange)){
                 currMerged = new Range(currRange.min, currRange.max);
                 mergedList.add(currMerged);
-            }
-            else if (currMerged.intersectsWith(currRange)){
-                // merge them here
-                currMerged = merge(currRange, currMerged);
             }
             else{
-                currMerged = new Range(currRange.min, currRange.max);
-                mergedList.add(currMerged);
+                // merge them here; do not use the merge method because
+                // we need to be using the same object.
+                currMerged.min = Math.min(currRange.min, currMerged.min);
+                currMerged.max = Math.max(currRange.max, currMerged.max);
             }
         }
         return mergedList;
@@ -166,7 +183,7 @@ public class Range implements Comparable{
     }
     
     public static Range merge(Range range1, Range range2){
-        if (!range1.intersectsWith(range2)){
+        if (!range1.canBeMergedWith(range2)){
             return null;
         }
         else{
@@ -225,16 +242,28 @@ public class Range implements Comparable{
     
     /**
      * Returns true iff this range and the range given intersect (ie, can be
-     * merged).
+     * merged).  Note the assumption that BED formatting is in use.
      * @param range
      * @return 
      * @author nnursimulu
      */
     public boolean intersectsWith(Range range){
-        return (this.min <= range.max && range.max <= this.max) || 
-                (range.min <= this.max && this.max <= range.max) || 
-                (this.min >= range.min && this.max <= range.max) ||
-                (range.min >= this.min && range.max <= this.max);
+        if (this.max == range.min || this.min == range.max){
+            return false;
+        }
+        return (this.min <= range.max && range.min <= this.max) || 
+                (range.min <= this.max && this.min <= range.max);
+    }
+    
+    /**
+     * Merging and intersection criteria are different!  For example, 1 - 2 and 
+     * 2 - 3 do not intersect, but can certainly be merged to get 1 - 3.
+     * @param range
+     * @return 
+     */
+    public boolean canBeMergedWith(Range range){
+        return (this.min <= range.max && range.min <= this.max) || 
+                (range.min <= this.max && this.min <= range.max);
     }
     
     @Override
