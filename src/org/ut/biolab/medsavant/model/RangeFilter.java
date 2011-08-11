@@ -53,11 +53,11 @@ public abstract class RangeFilter extends QueryFilter {
         return conditions;
     }
     
-    public void merge(RangeSet newRanges){
+    public void intersectAdd(RangeSet newRanges){
         if(this.ranges == null){
             this.ranges = newRanges;
         } else {
-            this.ranges.merge(newRanges);            
+            this.ranges.intersectAdd(newRanges);            
         }
     }
 

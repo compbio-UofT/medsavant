@@ -151,7 +151,7 @@ public class FilterController {
         boolean hasRangeFilter = false;
         for (Filter f : filterMap.values()) {
             if (f instanceof RangeFilter) {
-                rf.merge(((RangeFilter)f).getRangeSet());
+                rf.intersectAdd(((RangeFilter)f).getRangeSet());
                 hasRangeFilter = true;
             } else if (f instanceof QueryFilter) {
                 qfs.add((QueryFilter) f);
