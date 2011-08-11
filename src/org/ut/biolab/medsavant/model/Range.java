@@ -21,6 +21,15 @@ public class Range implements Comparable{
     private double min;
     private double max;
 
+    /**
+     * Declare a Range object.  (1) Note that we are assuming BED-formatting. In 
+     * other words, min uses 0-indexing, max uses 1-indexing.  (2) Make sure
+     * that min is less than max. Use "illegal" ranges (max less than min) at 
+     * your own risk and peril. No guarantee that this code will work at all if
+     * you do that.
+     * @param min the min defining this Range object
+     * @param max the max defining this Range object.
+     */
     public Range(double min, double max) {
         this.min = min;
         this.max = max;
@@ -51,14 +60,50 @@ public class Range implements Comparable{
 //        System.out.println(res);
         
         // Very crude test of whether intersecting method works.
-        List<Range> ls = new ArrayList<Range>();
-        ls.add(new Range(1, 6));
-        ls.add(new Range(2, 8));
-        ls.add(new Range(5, 10));
-        ls.add(new Range(4, 9));
-        ls.add(new Range(3, 7));
-        ls.add(new Range(1, 5));
-        System.out.println(Range.getIntersection(ls));
+//        List<Range> ls = new ArrayList<Range>();
+//        ls.add(new Range(1, 6));
+//        ls.add(new Range(2, 8));
+//        ls.add(new Range(5, 10));
+//        ls.add(new Range(4, 9));
+//        ls.add(new Range(3, 7));
+//        ls.add(new Range(1, 5));
+//        System.out.println(Range.getIntersection(ls));
+        
+        // Very very crude test that the other (more complicated BUT useful) intersection method works.
+//        List<List<Range>> listRangeSet = new ArrayList<List<Range>>();
+//        List<Range> ls = new ArrayList<Range>();
+//        ls.add(new Range(3, 7));
+//        ls.add(new Range(9, 15));
+//        ls.add(new Range(23, 27));
+//        ls.add(new Range(29.5, 33.5));
+//        listRangeSet.add(ls);
+//        
+//        ls = new ArrayList<Range>();
+//        ls.add(new Range(1, 4));
+//        ls.add(new Range(5, 11));
+//        ls.add(new Range(18, 21));
+//        ls.add(new Range(22, 35)); 
+//        listRangeSet.add(ls);
+//        
+//        ls = new ArrayList<Range>();
+//        ls.add(new Range(2, 8));
+//        ls.add(new Range(10, 13));
+//        ls.add(new Range(16, 17));
+//        ls.add(new Range(20, 24));
+//        ls.add(new Range(26, 28));
+//        ls.add(new Range(31, 32));
+//        ls.add(new Range(34, 36));
+//        listRangeSet.add(ls);
+//        
+//        ls = new ArrayList<Range>();
+//        ls.add(new Range(6, 12));
+//        ls.add(new Range(14, 19));
+//        ls.add(new Range(22, 25));
+//        ls.add(new Range(29, 30));
+//        ls.add(new Range(33, 33.6));
+//        listRangeSet.add(ls);
+//        System.out.println(Range.getIntersectionList(listRangeSet));
+        
     }
     
     /**
@@ -98,8 +143,7 @@ public class Range implements Comparable{
             }
             else if (currMerged.intersectsWith(currRange)){
                 // merge them here
-                currMerged.max = Math.max(currMerged.max, currRange.max);
-                currMerged.min = Math.min(currMerged.min, currRange.min);
+                currMerged = merge(currRange, currMerged);
             }
             else{
                 currMerged = new Range(currRange.min, currRange.max);
@@ -121,6 +165,16 @@ public class Range implements Comparable{
         return merge(range, new ArrayList());
     }
     
+    public static Range merge(Range range1, Range range2){
+        if (!range1.intersectsWith(range2)){
+            return null;
+        }
+        else{
+            return new Range
+                    (Math.min(range1.min, range2.min), 
+                    Math.max(range1.max, range2.max));
+        }
+    }
 
 
     /**
@@ -184,20 +238,80 @@ public class Range implements Comparable{
     }
     
     @Override
-    /**
-     * @author nnursimulu
-     */
     public String toString(){
         return ViewUtil.numToString(min) + " - " + ViewUtil.numToString(max);
     }
     
     /**
+     * Get the intersection between many lists.  Note the key assumption 
+     * that the intervals within each list have already been merged beforehand.
      * @author nnursimulu
      * @param listRanges
-     * @return 
+     * @return a list containing conflicting intervals.
      */
     public static List<Range> getIntersectionList(List<List<Range>> listRanges){
-        throw new UnsupportedOperationException("Not yet implemented");
+        
+        if (listRanges.isEmpty()){
+            return new ArrayList<Range>();
+        }
+        
+        // List to contain conflicting intervals.
+        List<Range> conflictingList = new ArrayList<Range>();
+        
+        // Starts off being the first list.
+        for (Range range: listRanges.get(0)){
+            conflictingList.add(range);
+        }
+        
+        List<Range> list1 = new ArrayList<Range>();
+        
+        // For each pair of lists...
+        // Start with list 1 and list 2; then, conflict. list and list 3; then
+        // conflict. list and list 4 etc.  Note that the conflict. list 
+        // is expected to change at each iteration of this for loop.
+        for (int indexList = 1; indexList < listRanges.size(); indexList++){
+            list1.clear();
+            list1.addAll(conflictingList);
+            List<Range> list2 = listRanges.get(indexList); 
+            conflictingList.clear();
+
+            // Do the following until we are done for all lists.
+            // Take the first list and the second list and sort the ranges within by start order.
+            TreeSet<Range> sortedRanges = new TreeSet<Range>();
+            for (Range range: list1){
+                Range rangeCopy = new Range(range.min, range.max);
+                sortedRanges.add(rangeCopy);
+            }
+            for (Range range: list2){
+                Range rangeCopy = new Range(range.min, range.max);
+                sortedRanges.add(rangeCopy);
+            }
+
+//            System.out.println("Sorted Ranges");
+//            System.out.println(sortedRanges);
+//            System.out.println();
+            
+            Range mergedRange = null;
+            Range newConflictingRange;
+            Iterator<Range> ite = sortedRanges.iterator();
+            
+            // For each sorted element, ask yourself the following:
+            // Does this interval intersect with the big merged interval.
+            //      Yes : take the conflict, and keep track of it.
+            //      No  : only make the merged interval be this interval. Then, carry on.
+            while (ite.hasNext()){
+                Range curr = ite.next();
+                if (mergedRange == null || !curr.intersectsWith(mergedRange)){
+                    mergedRange = new Range(curr.min, curr.max);
+                }
+                else{
+                    newConflictingRange = getIntersection(mergedRange, curr);
+                    mergedRange = merge(mergedRange, curr);
+                    conflictingList.add(newConflictingRange);
+                }
+            }
+        }
+        return conflictingList;
     }
     
     /**
