@@ -9,7 +9,6 @@ import com.jidesoft.swing.CheckBoxTreeSelectionModel;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -25,6 +24,9 @@ import javax.swing.tree.TreeSelectionModel;
  */
 public class CheckBoxTreeNew extends CheckBoxTree{
     
+    /**
+     * The set of all currently selected paths.
+     */
     private HashSet<TreePath> selectedPaths;
     
     /**
@@ -71,25 +73,22 @@ public class CheckBoxTreeNew extends CheckBoxTree{
      */
     private void initListeners(){
         
-        final JTree tree = this;
+        final CheckBoxTreeNew tree = this;
         // Add a selection listener to this tree.
         this.addTreeExpansionListener(new TreeExpansionListener() {
 
             // Upon expansion, look at nodes which have been selected.
-            public void treeExpanded(TreeExpansionEvent event) {
+            public void treeExpanded(TreeExpansionEvent event) {                
                 
                 // Look at the path which has been expanded, and see if the
                 // last node in that path has been selected.
-                // If so, select all its visible children nodes.
-                
+                // If so, select all its visible children nodes.                
                 if (!selectedPaths.contains(event.getPath())){
                     return;
-                }
-                
-                CheckBoxTreeNew.changeSelections(true, event.getPath(), (CheckBoxTreeNew)tree);    
+                }                
+                CheckBoxTreeNew.changeSelections(true, event.getPath(), tree);    
             }
 
-            // So far, nothing will be done here.
             public void treeCollapsed(TreeExpansionEvent event) {
             }
         });
@@ -100,26 +99,25 @@ public class CheckBoxTreeNew extends CheckBoxTree{
                 
                 boolean pathWasAdded = e.isAddedPath();
                 // If the change is not programmatic, then go ahead.
-                if (!((CheckBoxTreeNew)tree).undergoingProgrammaticChange){
-                    CheckBoxTreeNew.changeSelections(pathWasAdded, e.getPath(), (CheckBoxTreeNew)tree);
+                if (!tree.undergoingProgrammaticChange){
+                    CheckBoxTreeNew.changeSelections(pathWasAdded, e.getPath(), tree);
                 }
                 else{
-                    ((CheckBoxTreeNew)tree).undergoingProgrammaticChange = false;
                     if (pathWasAdded){
-                        ((CheckBoxTreeNew)tree).selectedPaths.add(e.getPath());
+                        tree.selectedPaths.add(e.getPath());
                     }
                     else{
                         HashSet<TreePath> removedPaths = new HashSet<TreePath>();
                         TreePath selectedPath = e.getPath();
-                        for (TreePath path: ((CheckBoxTreeNew)tree).selectedPaths){
+                        for (TreePath path: tree.selectedPaths){
                             if (selectedPath.isDescendant(path)){
                                 removedPaths.add(path);
                             }
                         }
                         for (TreePath path: removedPaths){
-                            ((CheckBoxTreeNew)tree).selectedPaths.remove(path);
+                            tree.selectedPaths.remove(path);
                         }
-                        ((CheckBoxTreeNew)tree).selectedPaths.remove(e.getPath());
+                        tree.selectedPaths.remove(e.getPath());
                     }
                 }
             }
@@ -133,6 +131,8 @@ public class CheckBoxTreeNew extends CheckBoxTree{
      */
     private static void changeSelections(boolean pathWasAdded, TreePath sourcePath, CheckBoxTreeNew tree){
         
+        tree.undergoingProgrammaticChange = true;
+        
         if (pathWasAdded){
             List<TreePath> listPaths = new ArrayList<TreePath>();       
             TreeUtils.getPaths(tree, sourcePath, true, listPaths);
@@ -142,8 +142,7 @@ public class CheckBoxTreeNew extends CheckBoxTree{
             }
             
             CheckBoxTreeSelectionModel model = tree.getCheckBoxTreeSelectionModel();
-            
-            tree.undergoingProgrammaticChange = true;
+                     
 //            TreeSelectionListener[] listSelectionListeners = 
 //                    model.getTreeSelectionListeners();
 //            System.out.println(listSelectionListeners.length);
@@ -167,7 +166,6 @@ public class CheckBoxTreeNew extends CheckBoxTree{
                 tree.selectedPaths.remove(removedPath);
             }
             CheckBoxTreeSelectionModel model = tree.getCheckBoxTreeSelectionModel();
-            tree.undergoingProgrammaticChange = true;
 //            TreeSelectionListener[] listSelectionListeners = 
 //                    model.getTreeSelectionListeners();
 //            System.out.println(listSelectionListeners.length);
@@ -178,7 +176,8 @@ public class CheckBoxTreeNew extends CheckBoxTree{
             model.removeSelectionPaths(removedPaths.toArray(new TreePath[0]));
 //            for (TreeSelectionListener l: listSelectionListeners){
 //                tree.addTreeSelectionListener(l);
-//            }            
+//            }     
         }
+        tree.undergoingProgrammaticChange = false;
     }
 }

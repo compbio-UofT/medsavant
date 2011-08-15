@@ -59,6 +59,8 @@ public class HPOFilter implements HPOTreeReadyListener{
     
     private JPanel container;
     
+    private boolean pathHasBeenRemoved = false;
+    
     private static HPOFilter instance;
     
     private HPOFilter(){
@@ -124,10 +126,12 @@ public class HPOFilter implements HPOTreeReadyListener{
             public void valueChanged(TreeSelectionEvent e) {
                 
                 // If elements were added programmatically, do NOT do anything AND paths have been added...
-                if (((CheckBoxTreeNew)jTree).undergoingProgrammaticChange() && e.isAddedPath()){
+                if (((CheckBoxTreeNew)jTree).undergoingProgrammaticChange() && e.isAddedPath() || HPOFilter.instance.pathHasBeenRemoved){
+                    HPOFilter.instance.pathHasBeenRemoved = false;
                     return;
                 }
                 
+                HPOFilter.instance.pathHasBeenRemoved = true;
                 locations.clear();
                 System.out.println("Selected elements from the Human Phenotype Filter.");
                 TreePath[] paths = 

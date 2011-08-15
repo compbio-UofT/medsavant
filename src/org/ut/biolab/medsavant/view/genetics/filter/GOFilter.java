@@ -61,6 +61,8 @@ public class GOFilter implements GOTreeReadyListener{
     
     private ClassifiedPositionInfo classifiedPosInfo;
     
+    private boolean pathHasBeenRemoved = false;
+    
     private JPanel container;
     
     private static GOFilter instance;
@@ -134,10 +136,12 @@ public class GOFilter implements GOTreeReadyListener{
             public void valueChanged(TreeSelectionEvent e) {
                 
                 // If values were added programmatically, do NOT do anything AND paths have been added.
-                if (((CheckBoxTreeNew)jTree).undergoingProgrammaticChange() && e.isAddedPath()){
+                if (((CheckBoxTreeNew)jTree).undergoingProgrammaticChange() && e.isAddedPath() || GOFilter.instance.pathHasBeenRemoved){
+                    GOFilter.instance.pathHasBeenRemoved = false;
                     return;
                 }
 
+                GOFilter.instance.pathHasBeenRemoved = true;
                 locations.clear();
                 System.out.println("Selected elements for gene ontology filter.");
 //                TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
@@ -180,7 +184,7 @@ public class GOFilter implements GOTreeReadyListener{
                 else{
                     numberSelected.setText("");
                 }
-                applyButton.setEnabled(true);
+                applyButton.setEnabled(true);                
             }
         }); 
 
