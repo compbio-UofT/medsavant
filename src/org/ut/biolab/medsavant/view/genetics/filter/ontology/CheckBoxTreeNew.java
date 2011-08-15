@@ -30,11 +30,11 @@ public class CheckBoxTreeNew extends CheckBoxTree{
     /**
      * True iff the change in selections is programmatic.
      */
-//    private boolean undergoingProgrammaticChange;
+    private boolean undergoingProgrammaticChange;
 
     public CheckBoxTreeNew(TreeNode root){
         super(root);
-//        this.undergoingProgrammaticChange = false;
+        this.undergoingProgrammaticChange = false;
         this.selectedPaths = new HashSet<TreePath>();
         super.setClickInCheckBoxOnly(false);
         super.setDigIn(false);
@@ -45,7 +45,7 @@ public class CheckBoxTreeNew extends CheckBoxTree{
     
     public CheckBoxTreeNew(TreeModel model){
         super(model);
-//        this.undergoingProgrammaticChange = false;
+        this.undergoingProgrammaticChange = false;
         this.selectedPaths = new HashSet<TreePath>();
         super.setClickInCheckBoxOnly(false);
         super.setDigIn(false);
@@ -62,9 +62,9 @@ public class CheckBoxTreeNew extends CheckBoxTree{
          ((CheckBoxTree)this).getCheckBoxTreeSelectionModel().addSelectionPath(rootPath);
     }
     
-//    public boolean undergoingProgrammaticChange(){
-//        return undergoingProgrammaticChange;
-//    }
+    public boolean undergoingProgrammaticChange(){
+        return undergoingProgrammaticChange;
+    }
     
     /**
      * Initialise listeners for special dig-in appearance.
@@ -100,12 +100,28 @@ public class CheckBoxTreeNew extends CheckBoxTree{
                 
                 boolean pathWasAdded = e.isAddedPath();
                 // If the change is not programmatic, then go ahead.
-//                if (!((CheckBoxTreeNew)tree).undergoingProgrammaticChange){
+                if (!((CheckBoxTreeNew)tree).undergoingProgrammaticChange){
                     CheckBoxTreeNew.changeSelections(pathWasAdded, e.getPath(), (CheckBoxTreeNew)tree);
-//                }
-//                else{
-//                    ((CheckBoxTreeNew)tree).undergoingProgrammaticChange = false;
-//                }
+                }
+                else{
+                    ((CheckBoxTreeNew)tree).undergoingProgrammaticChange = false;
+                    if (pathWasAdded){
+                        ((CheckBoxTreeNew)tree).selectedPaths.add(e.getPath());
+                    }
+                    else{
+                        HashSet<TreePath> removedPaths = new HashSet<TreePath>();
+                        TreePath selectedPath = e.getPath();
+                        for (TreePath path: ((CheckBoxTreeNew)tree).selectedPaths){
+                            if (selectedPath.isDescendant(path)){
+                                removedPaths.add(path);
+                            }
+                        }
+                        for (TreePath path: removedPaths){
+                            ((CheckBoxTreeNew)tree).selectedPaths.remove(path);
+                        }
+                        ((CheckBoxTreeNew)tree).selectedPaths.remove(e.getPath());
+                    }
+                }
             }
         });
     }
@@ -127,7 +143,7 @@ public class CheckBoxTreeNew extends CheckBoxTree{
             
             CheckBoxTreeSelectionModel model = tree.getCheckBoxTreeSelectionModel();
             
-//            tree.undergoingProgrammaticChange = true;;
+            tree.undergoingProgrammaticChange = true;
 //            TreeSelectionListener[] listSelectionListeners = 
 //                    model.getTreeSelectionListeners();
 //            System.out.println(listSelectionListeners.length);
@@ -138,8 +154,8 @@ public class CheckBoxTreeNew extends CheckBoxTree{
             model.addSelectionPaths(listPaths.toArray(new TreePath[0]));
 //            for (TreeSelectionListener l: listSelectionListeners){
 //                tree.addTreeSelectionListener(l);
-            }
-//        }
+//            }
+        }
         else{
             HashSet<TreePath> removedPaths = new HashSet<TreePath>();
             for (TreePath selectedPath: tree.selectedPaths){
@@ -151,7 +167,7 @@ public class CheckBoxTreeNew extends CheckBoxTree{
                 tree.selectedPaths.remove(removedPath);
             }
             CheckBoxTreeSelectionModel model = tree.getCheckBoxTreeSelectionModel();
-//            tree.undergoingProgrammaticChange = true;
+            tree.undergoingProgrammaticChange = true;
 //            TreeSelectionListener[] listSelectionListeners = 
 //                    model.getTreeSelectionListeners();
 //            System.out.println(listSelectionListeners.length);

@@ -124,9 +124,9 @@ public class HPOFilter implements HPOTreeReadyListener{
             public void valueChanged(TreeSelectionEvent e) {
                 
                 // If elements were added programmatically, do NOT do anything AND paths have been added...
-//                if (((CheckBoxTreeNew)jTree).undergoingProgrammaticChange() && e.isAddedPath()){
-//                    return;
-//                }
+                if (((CheckBoxTreeNew)jTree).undergoingProgrammaticChange() && e.isAddedPath()){
+                    return;
+                }
                 
                 locations.clear();
                 System.out.println("Selected elements from the Human Phenotype Filter.");

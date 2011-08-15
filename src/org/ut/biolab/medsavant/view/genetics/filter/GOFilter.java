@@ -134,9 +134,9 @@ public class GOFilter implements GOTreeReadyListener{
             public void valueChanged(TreeSelectionEvent e) {
                 
                 // If values were added programmatically, do NOT do anything AND paths have been added.
-//                if (((CheckBoxTreeNew)jTree).undergoingProgrammaticChange() && e.isAddedPath()){
-//                    return;
-//                }
+                if (((CheckBoxTreeNew)jTree).undergoingProgrammaticChange() && e.isAddedPath()){
+                    return;
+                }
 
                 locations.clear();
                 System.out.println("Selected elements for gene ontology filter.");
