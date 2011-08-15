@@ -128,8 +128,18 @@ public class CheckBoxTreeNew extends CheckBoxTree{
             CheckBoxTreeSelectionModel model = tree.getCheckBoxTreeSelectionModel();
             
 //            tree.undergoingProgrammaticChange = true;;
+//            TreeSelectionListener[] listSelectionListeners = 
+//                    model.getTreeSelectionListeners();
+//            System.out.println(listSelectionListeners.length);
+//            
+//            for (TreeSelectionListener l: listSelectionListeners){
+//                tree.removeTreeSelectionListener(l);
+//            }
             model.addSelectionPaths(listPaths.toArray(new TreePath[0]));
-        }
+//            for (TreeSelectionListener l: listSelectionListeners){
+//                tree.addTreeSelectionListener(l);
+            }
+//        }
         else{
             HashSet<TreePath> removedPaths = new HashSet<TreePath>();
             for (TreePath selectedPath: tree.selectedPaths){
@@ -142,7 +152,17 @@ public class CheckBoxTreeNew extends CheckBoxTree{
             }
             CheckBoxTreeSelectionModel model = tree.getCheckBoxTreeSelectionModel();
 //            tree.undergoingProgrammaticChange = true;
+//            TreeSelectionListener[] listSelectionListeners = 
+//                    model.getTreeSelectionListeners();
+//            System.out.println(listSelectionListeners.length);
+//            
+//            for (TreeSelectionListener l: listSelectionListeners){
+//                tree.removeTreeSelectionListener(l);
+//            }
             model.removeSelectionPaths(removedPaths.toArray(new TreePath[0]));
+//            for (TreeSelectionListener l: listSelectionListeners){
+//                tree.addTreeSelectionListener(l);
+//            }            
         }
     }
 }
