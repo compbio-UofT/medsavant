@@ -69,7 +69,7 @@ public class CheckBoxTreeNew extends CheckBoxTree{
     }
     
     /**
-     * Initialise listeners for special dig-in appearance.
+     * Initialize listeners for special dig-in appearance.
      */
     private void initListeners(){
         
@@ -106,7 +106,7 @@ public class CheckBoxTreeNew extends CheckBoxTree{
                     if (pathWasAdded){
                         tree.selectedPaths.add(e.getPath());
                     }
-                    else{
+                    else{                        
                         HashSet<TreePath> removedPaths = new HashSet<TreePath>();
                         TreePath selectedPath = e.getPath();
                         for (TreePath path: tree.selectedPaths){
@@ -135,49 +135,43 @@ public class CheckBoxTreeNew extends CheckBoxTree{
         
         if (pathWasAdded){
             List<TreePath> listPaths = new ArrayList<TreePath>();       
-            TreeUtils.getPaths(tree, sourcePath, true, listPaths);
-            for (TreePath path: listPaths){
-                tree.selectedPaths.add(path);                
-//                tree.getCheckBoxTreeSelectionModel().addSelectionPath(path);
-            }
-            
-            CheckBoxTreeSelectionModel model = tree.getCheckBoxTreeSelectionModel();
+            TreeUtils.getPaths(tree, sourcePath, true, listPaths);            
                      
-//            TreeSelectionListener[] listSelectionListeners = 
-//                    model.getTreeSelectionListeners();
-//            System.out.println(listSelectionListeners.length);
-//            
-//            for (TreeSelectionListener l: listSelectionListeners){
-//                tree.removeTreeSelectionListener(l);
-//            }
-            model.addSelectionPaths(listPaths.toArray(new TreePath[0]));
-//            for (TreeSelectionListener l: listSelectionListeners){
-//                tree.addTreeSelectionListener(l);
-//            }
+            tree.addPaths(listPaths.toArray(new TreePath[0]));
         }
         else{
+            // Unselect any ancestors of the node which has just been unselected.
             HashSet<TreePath> removedPaths = new HashSet<TreePath>();
+            for (TreePath path: tree.selectedPaths){
+                if (path.isDescendant(sourcePath)){
+                    removedPaths.add(path);
+                }
+            }
+
             for (TreePath selectedPath: tree.selectedPaths){
                 if (sourcePath.isDescendant(selectedPath)){
                     removedPaths.add(selectedPath);
                 }
             }
-            for (TreePath removedPath: removedPaths){
-                tree.selectedPaths.remove(removedPath);
-            }
-            CheckBoxTreeSelectionModel model = tree.getCheckBoxTreeSelectionModel();
-//            TreeSelectionListener[] listSelectionListeners = 
-//                    model.getTreeSelectionListeners();
-//            System.out.println(listSelectionListeners.length);
-//            
-//            for (TreeSelectionListener l: listSelectionListeners){
-//                tree.removeTreeSelectionListener(l);
-//            }
-            model.removeSelectionPaths(removedPaths.toArray(new TreePath[0]));
-//            for (TreeSelectionListener l: listSelectionListeners){
-//                tree.addTreeSelectionListener(l);
-//            }     
+            removedPaths.add(sourcePath);
+            tree.removePaths(removedPaths.toArray(new TreePath[0]));
         }
         tree.undergoingProgrammaticChange = false;
+    }
+    
+    private void addPaths(TreePath[] pathsToAdd){
+        for (TreePath path: pathsToAdd){
+            this.selectedPaths.add(path);
+        }        
+        CheckBoxTreeSelectionModel model = this.getCheckBoxTreeSelectionModel();
+        model.addSelectionPaths(pathsToAdd);
+    }
+    
+    private void removePaths(TreePath[] pathsToRemove){
+        for (TreePath path: pathsToRemove){
+            this.selectedPaths.remove(path);
+        }
+        CheckBoxTreeSelectionModel model = this.getCheckBoxTreeSelectionModel();
+        model.removeSelectionPaths(pathsToRemove);
     }
 }
