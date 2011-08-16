@@ -33,11 +33,18 @@ public class CheckBoxTreeNew extends CheckBoxTree{
      * True iff the change in selections is programmatic.
      */
     private boolean undergoingProgrammaticChange;
+    
+    /**
+     * The set of those ancestors which are to be removed programmatically 
+     * during the progression of the program.
+     */
+    private HashSet<TreePath> ancestorsBeingRemoved;
 
     public CheckBoxTreeNew(TreeNode root){
         super(root);
         this.undergoingProgrammaticChange = false;
         this.selectedPaths = new HashSet<TreePath>();
+        this.ancestorsBeingRemoved = new HashSet<TreePath>();
         super.setClickInCheckBoxOnly(false);
         super.setDigIn(false);
         super.getSelectionModel().setSelectionMode
@@ -49,6 +56,7 @@ public class CheckBoxTreeNew extends CheckBoxTree{
         super(model);
         this.undergoingProgrammaticChange = false;
         this.selectedPaths = new HashSet<TreePath>();
+        this.ancestorsBeingRemoved = new HashSet<TreePath>();
         super.setClickInCheckBoxOnly(false);
         super.setDigIn(false);
         super.getSelectionModel().setSelectionMode
@@ -83,7 +91,7 @@ public class CheckBoxTreeNew extends CheckBoxTree{
                 // Look at the path which has been expanded, and see if the
                 // last node in that path has been selected.
                 // If so, select all its visible children nodes.                
-                if (!selectedPaths.contains(event.getPath())){
+                if (!tree.selectedPaths.contains(event.getPath())){
                     return;
                 }                
                 CheckBoxTreeNew.changeSelections(true, event.getPath(), tree);    
@@ -106,7 +114,13 @@ public class CheckBoxTreeNew extends CheckBoxTree{
                     if (pathWasAdded){
                         tree.selectedPaths.add(e.getPath());
                     }
-                    else{                        
+                    else{
+                        // If an ancestor is being removed and that is why we are
+                        // progr. unselecting this node, don't do anything.
+                        if (tree.ancestorsBeingRemoved.contains(e.getPath())){
+                            tree.ancestorsBeingRemoved.remove(e.getPath());
+                            return;
+                        }
                         HashSet<TreePath> removedPaths = new HashSet<TreePath>();
                         TreePath selectedPath = e.getPath();
                         for (TreePath path: tree.selectedPaths){
@@ -145,6 +159,9 @@ public class CheckBoxTreeNew extends CheckBoxTree{
             for (TreePath path: tree.selectedPaths){
                 if (path.isDescendant(sourcePath)){
                     removedPaths.add(path);
+                    // Keep track of these so that we do not fire an actionchanged
+                    // event when we deselect the ancestors.
+                    tree.ancestorsBeingRemoved.add(path);
                 }
             }
 
@@ -153,7 +170,6 @@ public class CheckBoxTreeNew extends CheckBoxTree{
                     removedPaths.add(selectedPath);
                 }
             }
-            removedPaths.add(sourcePath);
             tree.removePaths(removedPaths.toArray(new TreePath[0]));
         }
         tree.undergoingProgrammaticChange = false;
