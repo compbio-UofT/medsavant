@@ -94,7 +94,7 @@ public class CheckBoxTreeNew extends CheckBoxTree{
                 if (!tree.selectedPaths.contains(event.getPath())){
                     return;
                 }                
-                CheckBoxTreeNew.changeSelections(true, event.getPath(), tree);    
+                tree.changeSelections(true, event.getPath());    
             }
 
             public void treeCollapsed(TreeExpansionEvent event) {
@@ -108,7 +108,7 @@ public class CheckBoxTreeNew extends CheckBoxTree{
                 boolean pathWasAdded = e.isAddedPath();
                 // If the change is not programmatic, then go ahead.
                 if (!tree.undergoingProgrammaticChange){
-                    CheckBoxTreeNew.changeSelections(pathWasAdded, e.getPath(), tree);
+                    tree.changeSelections(pathWasAdded, e.getPath());
                 }
                 else{
                     if (pathWasAdded){
@@ -140,39 +140,41 @@ public class CheckBoxTreeNew extends CheckBoxTree{
     
     /**
      * Change selections in the tree.
-     * @param addPaths if paths have been added.
+     * @param pathWasAdded if paths have been added.
      * @param sourcePath the source from which selection are to be changed
      */
-    private static void changeSelections(boolean pathWasAdded, TreePath sourcePath, CheckBoxTreeNew tree){
+    private void changeSelections(boolean pathWasAdded, TreePath sourcePath){
         
-        tree.undergoingProgrammaticChange = true;
-        
+        this.undergoingProgrammaticChange = true;
         if (pathWasAdded){
+
             List<TreePath> listPaths = new ArrayList<TreePath>();       
-            TreeUtils.getPaths(tree, sourcePath, true, listPaths);            
+            TreeUtils.getPaths(this, sourcePath, true, listPaths);            
                      
-            tree.addPaths(listPaths.toArray(new TreePath[0]));
+            this.addPaths(listPaths.toArray(new TreePath[0]));
+
         }
         else{
-            // Unselect any ancestors of the node which has just been unselected.
+            // Unselect any ancestors of the recently unselected node.
             HashSet<TreePath> removedPaths = new HashSet<TreePath>();
-            for (TreePath path: tree.selectedPaths){
+            for (TreePath path: this.selectedPaths){
                 if (path.isDescendant(sourcePath)){
                     removedPaths.add(path);
                     // Keep track of these so that we do not fire an actionchanged
                     // event when we deselect the ancestors.
-                    tree.ancestorsBeingRemoved.add(path);
+                    this.ancestorsBeingRemoved.add(path);
                 }
             }
 
-            for (TreePath selectedPath: tree.selectedPaths){
+            for (TreePath selectedPath: this.selectedPaths){
                 if (sourcePath.isDescendant(selectedPath)){
                     removedPaths.add(selectedPath);
                 }
             }
-            tree.removePaths(removedPaths.toArray(new TreePath[0]));
+            this.removePaths(removedPaths.toArray(new TreePath[0]));
         }
-        tree.undergoingProgrammaticChange = false;
+        this.undergoingProgrammaticChange = false;
+        
     }
     
     private void addPaths(TreePath[] pathsToAdd){

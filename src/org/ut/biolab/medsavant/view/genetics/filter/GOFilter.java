@@ -55,6 +55,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class GOFilter implements GOTreeReadyListener{
     
+    public static int integer = 0;
+    
     public static final String NAME_FILTER = "Gene Ontology";
     
     public static String NAME_TREE = "GO TREE";
@@ -139,7 +141,7 @@ public class GOFilter implements GOTreeReadyListener{
                 }
 
                 locations.clear();
-                System.out.println("Selected elements for gene ontology filter.");
+                System.out.println("Selected elements for gene ontology filter. " + GOFilter.integer++);
 //                TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
                 TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
                
