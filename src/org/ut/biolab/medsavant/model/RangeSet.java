@@ -98,4 +98,8 @@ public class RangeSet {
         return result;
     }
     
+    public boolean isEmpty(){
+        return this.ranges.isEmpty();
+    }
+    
 }
