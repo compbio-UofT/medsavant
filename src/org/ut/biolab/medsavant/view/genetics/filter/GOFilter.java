@@ -144,7 +144,7 @@ public class GOFilter implements GOTreeReadyListener{
                             String[] split = arrayLoc.split("\t"); 
                             // Need to subtract 1 because of BED format.
                             int formattedEnd = 
-                                    Integer.parseInt(split[3].trim()) - 1;
+                                    Integer.parseInt(split[3].trim());
 
                             String str = split[1].trim() + "_" + 
                                     split[2].trim() + "_" + formattedEnd;

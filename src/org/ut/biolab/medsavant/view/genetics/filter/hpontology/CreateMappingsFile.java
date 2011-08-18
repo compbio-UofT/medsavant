@@ -210,7 +210,7 @@ public class CreateMappingsFile {
             }
             String key = split[3];
             // Fix the end value (bed file)
-            int end = Integer.parseInt(split[2].trim()) - 1;
+            int end = Integer.parseInt(split[2].trim());
             String value = split[0].trim() + "\t" + split[1].trim() + "\t" + end;
             
             TreeSet<String> listValue = mapHPOtoGenes.get(key);
