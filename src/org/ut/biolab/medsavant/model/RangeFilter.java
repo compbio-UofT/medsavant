@@ -28,6 +28,7 @@ public abstract class RangeFilter extends QueryFilter {
     
     public RangeFilter() {
         super();
+        this.ranges = new RangeSet();
     }
     
     public RangeSet getRangeSet(){

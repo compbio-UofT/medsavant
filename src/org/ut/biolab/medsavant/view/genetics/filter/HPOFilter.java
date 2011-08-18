@@ -4,18 +4,10 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.swing.CheckBoxTree;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -24,18 +16,16 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.model.Filter;
-import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.model.RangeFilter;
+import org.ut.biolab.medsavant.model.RangeSet;
 import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOTreeReadyController;
 import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOTreeReadyListener;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
@@ -217,56 +207,61 @@ public class HPOFilter implements HPOTreeReadyListener{
                 System.out.println("Pressed apply for gene ontology filter");
                 TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
                 
-                for (String location: locations){
+                Filter f = new RangeFilter() {
 
-                    String[] split = location.split("\t");
-                    Double start = Integer.parseInt(split[1]) + 0.0;
-                    Double end = Integer.parseInt(split[2]) + 0.0;
-                    classifiedPos.addCondition(split[0], start, end);
-                } 
-
-                // If there are no conditions at all, do not display
-                // anything (most intuitive). So, create bogus condition that 
-                // will never be satisfied.
-                if (classifiedPos.getConditions().isEmpty() && paths != null){
-                    classifiedPos.addCondition("chr1", 23, 22); 
-                }
-                final HashMap<String, List<Range>> map = classifiedPos.getConditions();
-                
-                Filter f = new QueryFilter() {
-
-                    @Override
-                    public Condition[] getConditions() {
-                        
-                        Condition[] conds = new Condition[map.keySet().size()];
-                        int i = 0;
-                       
-                        for (String key: map.keySet()){
-                            
-                            List<ComboCondition> listInnerCond = 
-                                    new ArrayList<ComboCondition>();
-                            List<Range> ranges = map.get(key);
-                            for (Range range: ranges){
-
-                                BinaryCondition innerCond1 = BinaryCondition.greaterThan
-                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMin(), true);
-                                BinaryCondition innerCond2 = BinaryCondition.lessThan
-                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMax(), true);
-                                BinaryCondition[] condTogether = {innerCond1, innerCond2};
-                                listInnerCond.add(ComboCondition.and(condTogether));
-                            } // for each range for the chromosome of interest.
-                            BinaryCondition chrCond = BinaryCondition.equalTo
-                                    (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
-                            conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
-                        } // for each chromosome.
-                        return conds;
-                    }
+//                    @Override
+//                    public Condition[] getConditions() {
+//                        
+//                        Condition[] conds = new Condition[map.keySet().size()];
+//                        int i = 0;
+//                       
+//                        for (String key: map.keySet()){
+//                            
+//                            List<ComboCondition> listInnerCond = 
+//                                    new ArrayList<ComboCondition>();
+//                            List<Range> ranges = map.get(key);
+//                            for (Range range: ranges){
+//
+//                                BinaryCondition innerCond1 = BinaryCondition.greaterThan
+//                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMin(), true);
+//                                BinaryCondition innerCond2 = BinaryCondition.lessThan
+//                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMax(), true);
+//                                BinaryCondition[] condTogether = {innerCond1, innerCond2};
+//                                listInnerCond.add(ComboCondition.and(condTogether));
+//                            } // for each range for the chromosome of interest.
+//                            BinaryCondition chrCond = BinaryCondition.equalTo
+//                                    (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
+//                            conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
+//                        } // for each chromosome.
+//                        return conds;
+//                    }
 
                     @Override
                     public String getName() {
                         return NAME_FILTER;
                     }
                 };
+                
+                RangeSet rangeSet = ((RangeFilter)f).getRangeSet();
+                
+                for (String location: locations){
+
+                    String[] split = location.split("\t");
+                    String chrom = split[0];
+                    Double start = Integer.parseInt(split[1]) + 0.0;
+                    Double end = Integer.parseInt(split[2]) + 0.0;
+                    Range range = new Range(start, end);
+                    rangeSet.addRange(chrom, range);
+                } 
+
+                // If there are no conditions at all, do not display
+                // anything (most intuitive). So, create bogus condition that 
+                // will never be satisfied.
+                if (rangeSet.isEmpty() && paths != null){
+                    Range range = new Range(23.0, 22.0);
+                    rangeSet.addRange("chr1", range); 
+                }
+                
                 System.out.println("Adding Filter " + f.getName());
                 FilterController.addFilter(f);
             }
