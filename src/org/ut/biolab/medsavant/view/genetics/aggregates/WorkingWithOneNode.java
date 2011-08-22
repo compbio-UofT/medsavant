@@ -6,15 +6,13 @@ package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.ut.biolab.medsavant.db.ConnectionController;
 import org.ut.biolab.medsavant.db.QueryUtil;
-import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
+import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.model.RangeSet;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -57,60 +55,112 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
         HashSet<String> locs = ((Node)(node.getUserObject())).getLocs();
         int numVariants = 0;
         
-        ClassifiedPositionInfo cpi = new ClassifiedPositionInfo();
-        
+        RangeSet rangeSet = new RangeSet();
+//        ClassifiedPositionInfo cpi = new ClassifiedPositionInfo();
+      
         for (String loc: locs){
             String[] split = loc.split("\t");
             String chrom = split[chromIndex].trim();
             int start = Integer.parseInt(split[startIndex].trim());
             int end = Integer.parseInt(split[endIndex].trim());
             
+            Range range = new Range(start, end);
+            rangeSet.addRange(chrom, range);
+            
             // Note that we're adding one here.  Works for both GO and HPO since
             // the locations are not in BED format.
-            cpi.addCondition(chrom, start, end + 1);
+//            cpi.addCondition(chrom, start, end + 1);
         }
         
-        List<String> mergedRanges = cpi.getAllMergedRanges();
+//        List<String> mergedRanges = cpi.getAllMergedRanges();
+        
+        Object[] chromsObject = rangeSet.getChrs();
+        for (Object chromO: chromsObject){
+            
+            String chrom = chromO + "";
+            // ranges for this chromosome
+            List<Range> rangesChrom = rangeSet.getRanges(chrom);
+            
+            for (Range rangeChrom: rangesChrom){
+            
+                if (this.isInterrupted() || this.stop){
+                    throw new java.util.concurrent.CancellationException();
+                }
+                
+                long start = Math.round(rangeChrom.getMin());
+                long end = Math.round(rangeChrom.getMax());
 
-        for (String loc: mergedRanges){
+                String key = chrom + "_" + start + "_" + end;
+                Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
+                if (numCurr == null){;
+                    numCurr = QueryUtil.getNumVariantsInRange
+                            (ConnectionController.connect(), chrom, start, end);
+                    OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
+                }
+                else{
+                    OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
+                }
 
-            if (this.isInterrupted() || this.stop){
-                throw new java.util.concurrent.CancellationException();
-            }
-            String[] split = loc.split("\t");
-            String chrom = split[0].trim();
-            int start = Integer.parseInt(split[1].trim());
-            int end = Integer.parseInt(split[2].trim());
+                if (this.isInterrupted() || this.stop){
+                    throw new java.util.concurrent.CancellationException();
+                }
+                numVariants = numVariants + numCurr;
+                if (numVariants == 1){
+                    ((Node)node.getUserObject()).setTotalDescription("   {>=" + ViewUtil.numToString(numVariants) + " record}");
+                }
+                else{
+                    ((Node)node.getUserObject()).setTotalDescription("   {>=" + ViewUtil.numToString(numVariants) + " records}");
+                }
 
-            String key = chrom + "_" + start + "_" + end;
-            Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
-            if (numCurr == null){;
-                numCurr = QueryUtil.getNumVariantsInRange
-                        (ConnectionController.connect(), chrom, start, end);
-                OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        tree.repaint();
+                        tree.updateUI();
+                    }     
+                });
             }
-            else{
-                OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
-            }
-
-            if (this.isInterrupted() || this.stop){
-                throw new java.util.concurrent.CancellationException();
-            }
-            numVariants = numVariants + numCurr;
-            if (numVariants == 1){
-                ((Node)node.getUserObject()).setTotalDescription("   {>=" + ViewUtil.numToString(numVariants) + " record}");
-            }
-            else{
-                ((Node)node.getUserObject()).setTotalDescription("   {>=" + ViewUtil.numToString(numVariants) + " records}");
-            }
-                    
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    tree.repaint();
-                    tree.updateUI();
-                }     
-            });
         }
+
+//        for (String loc: mergedRanges){
+//
+//            if (this.isInterrupted() || this.stop){
+//                throw new java.util.concurrent.CancellationException();
+//            }
+//            String[] split = loc.split("\t");
+//            String chrom = split[0].trim();
+//            int start = Integer.parseInt(split[1].trim());
+//            int end = Integer.parseInt(split[2].trim());
+//
+//            String key = chrom + "_" + start + "_" + end;
+//            Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
+//            if (numCurr == null){;
+//                numCurr = QueryUtil.getNumVariantsInRange2
+//                        (ConnectionController.connect(), chrom, start, end);
+//                System.out.println(chrom + "\t" + start + "\t" + end);
+//                OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
+//            }
+//            else{
+//                OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
+//            }
+//
+//            if (this.isInterrupted() || this.stop){
+//                throw new java.util.concurrent.CancellationException();
+//            }
+//            numVariants = numVariants + numCurr;
+//            if (numVariants == 1){
+//                ((Node)node.getUserObject()).setTotalDescription("   {>=" + ViewUtil.numToString(numVariants) + " record}");
+//            }
+//            else{
+//                ((Node)node.getUserObject()).setTotalDescription("   {>=" + ViewUtil.numToString(numVariants) + " records}");
+//            }
+//                    
+//            SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {
+//                    tree.repaint();
+//                    tree.updateUI();
+//                }     
+//            });
+//        }
         String additionalDesc = null;
         if (numVariants == 1){
             additionalDesc = "   {" + ViewUtil.numToString(numVariants) + " record in all}";
