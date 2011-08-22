@@ -121,46 +121,6 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
             }
         }
 
-//        for (String loc: mergedRanges){
-//
-//            if (this.isInterrupted() || this.stop){
-//                throw new java.util.concurrent.CancellationException();
-//            }
-//            String[] split = loc.split("\t");
-//            String chrom = split[0].trim();
-//            int start = Integer.parseInt(split[1].trim());
-//            int end = Integer.parseInt(split[2].trim());
-//
-//            String key = chrom + "_" + start + "_" + end;
-//            Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
-//            if (numCurr == null){;
-//                numCurr = QueryUtil.getNumVariantsInRange2
-//                        (ConnectionController.connect(), chrom, start, end);
-//                System.out.println(chrom + "\t" + start + "\t" + end);
-//                OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
-//            }
-//            else{
-//                OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
-//            }
-//
-//            if (this.isInterrupted() || this.stop){
-//                throw new java.util.concurrent.CancellationException();
-//            }
-//            numVariants = numVariants + numCurr;
-//            if (numVariants == 1){
-//                ((Node)node.getUserObject()).setTotalDescription("   {>=" + ViewUtil.numToString(numVariants) + " record}");
-//            }
-//            else{
-//                ((Node)node.getUserObject()).setTotalDescription("   {>=" + ViewUtil.numToString(numVariants) + " records}");
-//            }
-//                    
-//            SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {
-//                    tree.repaint();
-//                    tree.updateUI();
-//                }     
-//            });
-//        }
         String additionalDesc = null;
         if (numVariants == 1){
             additionalDesc = "   {" + ViewUtil.numToString(numVariants) + " record in all}";

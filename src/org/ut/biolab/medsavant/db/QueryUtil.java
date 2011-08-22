@@ -401,6 +401,25 @@ public class QueryUtil {
         return numrows;
     }
     
+    // For aggregate queries (uses intersection).
+    public static int getNumVariantsInRange2(Connection c, String chrom, long start, long end) throws SQLException{
+        
+        FunctionCall count = FunctionCall.countAll();
+        SelectQuery q = getCurrentBaseVariantFilterQuery(chrom, start, end);
+        q.addCustomColumns(count);
+        
+        Statement s = c.createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+        
+        rs.next();
+        
+        int numrows = rs.getInt(1);
+        s.close();
+        
+        return numrows;
+    }
+    
+    
     public static int[] getNumVariantsForBins(Connection c, String chrom, int binsize, int numbins) throws SQLException, NonFatalDatabaseException {
         
         TableSchema t = MedSavantDatabase.getInstance().getVariantTableSchema();
@@ -496,6 +515,24 @@ public class QueryUtil {
         
         //System.out.println("Base filter: " + q.toString());
         
+        return q;
+    }
+    
+    /**
+     * Get the current base variant filter query with restrictions if there
+     * are any range filters available.
+     * @param chrom the name of the chromosome
+     * @param start the start position on the chromosome in question
+     * @param end the end position on the chromosome in question
+     * @return current filter query with intersections for range filter
+     */
+    public static SelectQuery getCurrentBaseVariantFilterQuery(String chrom, long start, long end){
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(MedSavantDatabase.getInstance().getVariantTableSchema().getTable());
+        List<QueryFilter> filters = FilterController.getQueryFilters(chrom, start, end);
+        for (QueryFilter f: filters){
+            q.addCondition(ComboCondition.or(f.getConditions()));
+        }
         return q;
     }
     

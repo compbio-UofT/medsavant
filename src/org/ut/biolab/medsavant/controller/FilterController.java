@@ -15,7 +15,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RangeFilter;
+import org.ut.biolab.medsavant.model.RangeSet;
 
 /**
  *
@@ -161,6 +163,51 @@ public class FilterController {
             qfs.add((QueryFilter)rf);
         }
         return qfs;
+    }
+    
+    /**
+     * Intersects the current range filter with the given restrictions 
+     * intersecting with any range filter available.
+     * @param chrom the chromosome in question
+     * @param start the start position on the chromosome
+     * @param end the end position on the chromosome
+     * @return all query filters with an intersection with the current query 
+     * filters.
+     */
+    public static List<QueryFilter> getQueryFilters(String chrom, double start, double end){
+        
+        List<QueryFilter> new_qfs = new ArrayList<QueryFilter>();
+        
+        // Get all query filters, with range filters merged as necessary.
+        List<QueryFilter> qfs = FilterController.getQueryFilters();
+        
+        // The range filter to be added.
+        RangeFilter rf = new RangeFilter(){
+            @Override
+            public String getName(){
+                return "Range Filters";
+            }        
+        };
+        Range range = new Range(start, end);
+        RangeSet rangeSet = new RangeSet();
+        rangeSet.addRange(chrom, range);
+        rf.intersectAdd(rangeSet);
+        
+        // Look amongst all the query filters and find any range filters.
+        // Intersect with the given restriction.
+
+        for (QueryFilter f: qfs){
+            if (f instanceof RangeFilter){
+                rf.intersectAdd(((RangeFilter)f).getRangeSet());
+            }
+            else if (f instanceof QueryFilter){
+                new_qfs.add((QueryFilter)f);
+            }
+        }
+           
+        new_qfs.add((QueryFilter)rf);
+       
+        return new_qfs;
     }
     
     private static void setLastFilter(Filter filter, FilterAction action){
