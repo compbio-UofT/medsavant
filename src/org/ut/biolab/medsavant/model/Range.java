@@ -125,6 +125,21 @@ public class Range implements Comparable{
 //        listRangeSet.add(ls);
 //        System.out.println(Range.getIntersectionList(listRangeSet));
         
+        List<List<Range>> listOfLists = new ArrayList<List<Range>>();
+        
+        List<Range> ls = new ArrayList<Range>();
+        ls.add(new Range(1, 2));
+        ls.add(new Range(3, 4));
+        
+        listOfLists.add(ls);
+        
+        ls = new ArrayList<Range>();
+        ls.add(new Range(1, 2));
+        ls.add(new Range(3, 4));
+        
+        listOfLists.add(ls); 
+        
+        System.out.println(Range.getIntersectionList(listOfLists));
     }
     
     /**
@@ -218,22 +233,28 @@ public class Range implements Comparable{
                 return 1;
             }
             else{
-                return 0;
+                if (this.hashCode() == range.hashCode()){
+                    return 0;
+                }
+                else if (this.hashCode() < range.hashCode()){
+                    return -1;
+                }
+                else{
+                    return 1;
+                }
             }
         }
     }
     
     @Override
     /**
-     * This range object equals another object iff the other is a range object,
-     * and has the same min and max as this object.  This complies with the 
-     * comparator method (compareTo).
+     * Generic equal.  May need to be revised because of merging?!?!
      * @author nnursimulu
      */
     public boolean equals(Object r){
         try{
             Range range = (Range)r;
-            return range.min == this.min && range.max == this.max;
+            return range == r;
         }
         catch(Exception e){
             return false;

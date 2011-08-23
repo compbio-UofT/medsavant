@@ -35,7 +35,7 @@ public class RangeSet {
     
     /*
      * Find only ranges that exist in both this rangeset and this new rangeset.
-     * nn: potentially unstable
+     * nn: actually this is incorrect; see intersectAdd2
      */
     public void intersectAdd(RangeSet newRangeSet){
         // Get all the chromosomes we have in all.
@@ -65,6 +65,63 @@ public class RangeSet {
                 this.ranges.put(chr, intersectingRanges);
             }
         }
+    }
+    
+    public void intersectAdd2(RangeSet newRangeSet){
+        
+        if (this.isEmpty()){
+            this.ranges = newRangeSet.ranges;
+            return;
+        }
+        System.out.println("This here is the other map:\t" + newRangeSet.ranges);
+        System.out.println("This here is this map:\t" + this.ranges);
+        
+        // This will be the new dictionary/map for this rangeset.
+        Map<String, List<Range>> newRanges = new HashMap<String, List<Range>>();
+        
+        // Get only the chromosomes between this range set and the other rangeset.
+        HashSet<String> chrsInCommon = new HashSet<String>();
+        Object[] thisChrs = this.getChrs();
+        Object[] newChrs = newRangeSet.getChrs();
+        
+        HashSet<String> thisChrSet = new HashSet<String>();
+        for (Object o: thisChrs){
+            thisChrSet.add(o + "");
+        }
+        
+        for (Object o: newChrs){
+            if (thisChrSet.contains(o + "")){
+                chrsInCommon.add(o + "");
+            }
+        }
+        
+        System.out.println("The chromosomes in common:\t" +chrsInCommon);
+        
+        // Find only the ranges for chromosomes in common.
+        for (String chr: chrsInCommon){                        
+            List<Range> thisList = this.getRanges(chr);
+            List<Range> newList = newRangeSet.getRanges(chr);
+            List<List<Range>> allRanges = new ArrayList<List<Range>>();
+            allRanges.add(thisList);
+            allRanges.add(newList);
+            
+            List<Range> intersectingRanges = Range.getIntersectionList(allRanges);
+            System.out.println("***Getting the intersection!!!");
+            System.out.println("This list for " + chr + " is: " + thisList);
+            System.out.println("The other list for " + chr + " is: " + newList);
+            System.out.println("Intersecting ranges is: " + intersectingRanges);
+            if (!intersectingRanges.isEmpty()){
+                newRanges.put(chr, intersectingRanges);
+            }
+        }
+        
+        if (newRanges.isEmpty()){
+            Range range = new Range(23.0, 22.0);
+            List<Range> ls = new ArrayList<Range>();
+            ls.add(range);
+            newRanges.put("chr1", ls);
+        }        
+        this.ranges = newRanges;
     }
     
     public Object[] getChrs(){
