@@ -159,7 +159,9 @@ public  class OntologyStatsWorker extends SwingWorker{
             topPanel.add(applyButton, BorderLayout.EAST);
             QuickTreeFilterField filterField = new QuickTreeFilterField(jTree.getModel());
             filterField.setHintText("Type to search");
-            topPanel.add(filterField, BorderLayout.CENTER);
+            
+            // TODO: fix the slow filtering...then, un-comment the following line.
+//            topPanel.add(filterField, BorderLayout.CENTER);
 
             jTree = new CheckBoxTreeNew(filterField.getDisplayTreeModel()){
                 @Override
