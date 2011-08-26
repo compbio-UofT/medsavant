@@ -159,4 +159,9 @@ public class RangeSet {
         return this.ranges.isEmpty();
     }
     
+    @Override
+    public String toString(){
+        return this.ranges + "";
+    }
+    
 }
