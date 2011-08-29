@@ -4,7 +4,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import com.jidesoft.swing.CheckBoxTree;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -38,13 +37,9 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class GOFilter implements GOTreeReadyListener{
     
-    public static int integer = 0;
-    
     public static final String NAME_FILTER = "Gene Ontology";
     
     public static String NAME_TREE = "GO TREE";
-    
-    private ClassifiedPositionInfo classifiedPosInfo;
     
     private JPanel container;
     
@@ -124,7 +119,7 @@ public class GOFilter implements GOTreeReadyListener{
                 }
 
                 locations.clear();
-                System.out.println("Selected elements for gene ontology filter. " + GOFilter.integer++);
+                System.out.println("Selected elements for gene ontology filter.");
 //                TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
                 TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
                
@@ -215,52 +210,12 @@ public class GOFilter implements GOTreeReadyListener{
             public void actionPerformed(ActionEvent e) {
             
                 applyButton.setEnabled(false); 
-                // Select query statement for GO.
-                classifiedPosInfo = new ClassifiedPositionInfo();
 
                 System.out.println("Pressed apply for gene ontology filter");
                 TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
 //                System.out.println("N: " + paths);
                 
                 Filter f = new RangeFilter() {
-
-//                    @Override
-//                    public Condition[] getConditions() {
-//                        
-//                        Condition[] conds = new Condition[map.keySet().size()];
-//                        int i = 0;
-//                        List<SelectQuery> list = new ArrayList<SelectQuery>();
-//                        
-//                        for (String key: map.keySet()){
-//                            
-//                            List<ComboCondition> listInnerCond = 
-//                                    new ArrayList<ComboCondition>();
-//                            List<Range> ranges = map.get(key);
-//                            BinaryCondition chrCond = BinaryCondition.equalTo
-//                                    (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
-//                            for (Range range: ranges){
-//
-//                                BinaryCondition innerCond1 = BinaryCondition.greaterThan
-//                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMin(), true);
-//                                BinaryCondition innerCond2 = BinaryCondition.lessThan
-//                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMax(), true);
-//                                BinaryCondition[] condTogether = {innerCond1, innerCond2};
-//                                listInnerCond.add(ComboCondition.and(condTogether));
-//                                
-//                                
-//                            SelectQuery q = new SelectQuery();
-//                            q.addAllColumns();
-//                            list.add(q.addCondition(ComboCondition.and(chrCond, ComboCondition.and(condTogether))));
-//                                
-//                            } // for each range for the chromosome of interest.
-//                            conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
-//                            
-//                            
-//                        } // for each chromosome.
-////                        System.out.println(UnionQuery.unionAll(list.toArray(new SelectQuery[1])));
-////                        System.out.println("\n\n\n");
-//                        return conds;
-//                    }
 
                     @Override
                     public String getName() {
@@ -285,12 +240,16 @@ public class GOFilter implements GOTreeReadyListener{
                 // will never be satisfied.
                 if (rangeSet.isEmpty() && paths != null){
                     Range range = new Range(23.0, 22.0);
-                    rangeSet.addRange("chr1", range); 
-//                    System.out.println("DONE!");
+                    rangeSet.addRange("chr1", range);
                 }
                 
-                System.out.println("Adding Filter " + f.getName());
-                FilterController.addFilter(f);
+                if (rangeSet.isEmpty() && paths == null){
+                    FilterController.removeFilter(NAME_FILTER);
+                }
+                else{
+                    FilterController.addFilter(f);
+                    System.out.println("Adding Filter " + f.getName());
+                }
             }
         });        
     }

@@ -29,7 +29,6 @@ import org.ut.biolab.medsavant.model.RangeSet;
 import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOTreeReadyController;
 import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOTreeReadyListener;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
-import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
@@ -44,8 +43,6 @@ public class HPOFilter implements HPOTreeReadyListener{
     public static final String NAME_FILTER = "Human Phenotype";
     
     public static String NAME_TREE = "HPO TREE";
-    
-    private ClassifiedPositionInfo classifiedPos;
     
     private JPanel container;
     
@@ -201,40 +198,11 @@ public class HPOFilter implements HPOTreeReadyListener{
             public void actionPerformed(ActionEvent e) {
                 
                 applyButton.setEnabled(false); 
-                // Select query statement for GO.
-                classifiedPos = new ClassifiedPositionInfo();
 
                 System.out.println("Pressed apply for gene ontology filter");
                 TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
                 
                 Filter f = new RangeFilter() {
-
-//                    @Override
-//                    public Condition[] getConditions() {
-//                        
-//                        Condition[] conds = new Condition[map.keySet().size()];
-//                        int i = 0;
-//                       
-//                        for (String key: map.keySet()){
-//                            
-//                            List<ComboCondition> listInnerCond = 
-//                                    new ArrayList<ComboCondition>();
-//                            List<Range> ranges = map.get(key);
-//                            for (Range range: ranges){
-//
-//                                BinaryCondition innerCond1 = BinaryCondition.greaterThan
-//                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMin(), true);
-//                                BinaryCondition innerCond2 = BinaryCondition.lessThan
-//                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMax(), true);
-//                                BinaryCondition[] condTogether = {innerCond1, innerCond2};
-//                                listInnerCond.add(ComboCondition.and(condTogether));
-//                            } // for each range for the chromosome of interest.
-//                            BinaryCondition chrCond = BinaryCondition.equalTo
-//                                    (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
-//                            conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
-//                        } // for each chromosome.
-//                        return conds;
-//                    }
 
                     @Override
                     public String getName() {
@@ -259,11 +227,16 @@ public class HPOFilter implements HPOTreeReadyListener{
                 // will never be satisfied.
                 if (rangeSet.isEmpty() && paths != null){
                     Range range = new Range(23.0, 22.0);
-                    rangeSet.addRange("chr1", range); 
+                    rangeSet.addRange("chr1", range);
                 }
                 
-                System.out.println("Adding Filter " + f.getName());
-                FilterController.addFilter(f);
+                if (rangeSet.isEmpty() && paths == null){
+                    FilterController.removeFilter(NAME_FILTER);
+                }
+                else{
+                    FilterController.addFilter(f);
+                    System.out.println("Adding Filter " + f.getName());
+                }
             }
         });
     }
