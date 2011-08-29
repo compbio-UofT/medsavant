@@ -24,7 +24,7 @@ public class Range implements Comparable{
     /**
      * Declare a Range object.  (1) Note that we are assuming BED-formatting. In 
      * other words, min uses 0-indexing, max uses 1-indexing.  (2) Make sure
-     * that min is less than max. Use "illegal" ranges (max less than min) at 
+     * that min is less than max. Use "illegal" ranges (min >= max) at 
      * your own risk and peril. No guarantee that this code will work at all if
      * you do that.
      * @param min the min defining this Range object
@@ -269,6 +269,9 @@ public class Range implements Comparable{
      * @author nnursimulu
      */
     public boolean intersectsWith(Range range){
+        if (!this.isProperRange() || !range.isProperRange()){
+            return false;
+        }
         if (this.max == range.min || this.min == range.max){
             return false;
         }
@@ -462,6 +465,13 @@ public class Range implements Comparable{
         if(this.max > max || this.max < min){
             this.max = Math.max(min, Math.min(max, this.max));
         }
+    }
+    
+    /**
+     * Says whether this range is proper (min < max)
+     */
+    public boolean isProperRange(){
+        return this.min < this.max;
     }
     
 }

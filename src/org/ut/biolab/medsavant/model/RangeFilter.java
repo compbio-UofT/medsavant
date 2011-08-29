@@ -58,7 +58,7 @@ public abstract class RangeFilter extends QueryFilter {
         if(this.ranges == null){
             this.ranges = newRanges;
         } else {
-            this.ranges.intersectAdd(newRanges);            
+            this.ranges.intersectAdd2(newRanges);            
         }
     }
 
