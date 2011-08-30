@@ -406,10 +406,19 @@ public class QueryUtil {
         // TODO: try to prevent unnecessary queries (for example, when clearly, you won't get any results back)
         FunctionCall count = FunctionCall.countAll();
         SelectQuery q = getCurrentBaseVariantFilterQuery(chrom, start, end);
+        
+        // If the query statement is null, meaning that it is "logically invalid",
+        // return 0.
+        if (q == null){
+            return 0;
+        }
+        
         q.addCustomColumns(count);
         
         Statement s = c.createStatement();
         ResultSet rs = s.executeQuery(q.toString());
+        
+System.out.println("This here line 421\n\t" + q);      
         
         rs.next();
         
@@ -530,10 +539,16 @@ public class QueryUtil {
         SelectQuery q = new SelectQuery();
         q.addFromTable(MedSavantDatabase.getInstance().getVariantTableSchema().getTable());
         List<QueryFilter> filters = FilterController.getQueryFilters(chrom, start, end);
+        
+        // If all the filters are range filters and none are valid, return null.
+        if (filters == null){
+            return null;
+        }
+        
         for (QueryFilter f: filters){
             q.addCondition(ComboCondition.or(f.getConditions()));
         }
-        System.out.println("This line 536:\n\t" + q);
+        System.out.println("This line 551:\n\t" + q);
         return q;
     }
     

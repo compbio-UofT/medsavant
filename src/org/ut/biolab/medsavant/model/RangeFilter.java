@@ -61,5 +61,13 @@ public abstract class RangeFilter extends QueryFilter {
             this.ranges.intersectAdd2(newRanges);            
         }
     }
+    
+    /**
+     * Does this range filter make sense from a logical point of view?
+     * @return 
+     */
+    public boolean isValidRangeFilter(){
+        return this.ranges.isValidRangeSet();
+    }
 
 }

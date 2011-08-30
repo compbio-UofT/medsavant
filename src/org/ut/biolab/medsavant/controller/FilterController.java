@@ -205,6 +205,10 @@ public class FilterController {
             }
         }
            
+        if (!rf.isValidRangeFilter()){
+            return null;
+        }
+        
         new_qfs.add((QueryFilter)rf);
        
         return new_qfs;

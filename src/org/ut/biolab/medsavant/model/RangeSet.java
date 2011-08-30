@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -164,4 +165,21 @@ public class RangeSet {
         return this.ranges + "";
     }
     
+    /**
+     * Does this range set make sense from a logical point of view?
+     * @return 
+     */
+    public boolean isValidRangeSet(){
+        
+        Set<String> chroms = this.ranges.keySet();
+        for (String chrom: chroms){
+            List<Range> rangeList = this.ranges.get(chrom);
+            for (Range range: rangeList){
+                if (!range.isProperRange()){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }
