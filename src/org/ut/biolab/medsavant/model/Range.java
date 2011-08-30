@@ -286,6 +286,9 @@ public class Range implements Comparable{
      * @return 
      */
     public boolean canBeMergedWith(Range range){
+        if (!this.isProperRange() || !range.isProperRange()){
+            return false;
+        }
         return (this.min <= range.max && range.min <= this.max) || 
                 (range.min <= this.max && this.min <= range.max);
     }
