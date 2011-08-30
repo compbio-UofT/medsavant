@@ -61,6 +61,12 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
         for (String loc: locs){
             String[] split = loc.split("\t");
             String chrom = split[chromIndex].trim();
+            
+            // Disregard chromosomes of the kind .*_.*
+            if (chrom.matches(".*_.*")){
+                continue;
+            }
+            
             int start = Integer.parseInt(split[startIndex].trim());
             int end = Integer.parseInt(split[endIndex].trim());
             

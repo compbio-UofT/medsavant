@@ -403,7 +403,7 @@ public class QueryUtil {
     
     // For aggregate queries (uses intersection).
     public static int getNumVariantsInRange2(Connection c, String chrom, long start, long end) throws SQLException{
-        
+        // TODO: try to prevent unnecessary queries (for example, when clearly, you won't get any results back)
         FunctionCall count = FunctionCall.countAll();
         SelectQuery q = getCurrentBaseVariantFilterQuery(chrom, start, end);
         q.addCustomColumns(count);
@@ -533,6 +533,7 @@ public class QueryUtil {
         for (QueryFilter f: filters){
             q.addCondition(ComboCondition.or(f.getConditions()));
         }
+        System.out.println("This line 536:\n\t" + q);
         return q;
     }
     
