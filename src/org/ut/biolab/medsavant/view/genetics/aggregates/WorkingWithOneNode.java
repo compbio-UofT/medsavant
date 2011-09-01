@@ -99,7 +99,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
                 String key = chrom + "_" + start + "_" + end;
                 Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
                 if (numCurr == null){;
-                    numCurr = QueryUtil.getNumVariantsInRange
+                    numCurr = QueryUtil.getNumVariantsInRange2
                             (ConnectionController.connect(), chrom, start, end);
                     OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
                 }

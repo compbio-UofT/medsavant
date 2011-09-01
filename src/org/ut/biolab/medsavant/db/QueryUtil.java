@@ -410,6 +410,8 @@ public class QueryUtil {
         // If the query statement is null, meaning that it is "logically invalid",
         // return 0.
         if (q == null){
+            // Connection has been unused.
+            c.close();
             return 0;
         }
         
