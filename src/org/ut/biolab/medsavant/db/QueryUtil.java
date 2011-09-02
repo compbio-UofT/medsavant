@@ -402,7 +402,7 @@ public class QueryUtil {
     }
     
     // For aggregate queries (uses intersection).
-    public static int getNumVariantsInRange2(Connection c, String chrom, long start, long end) throws SQLException{
+    public static int getNumVariantsInRange2(String chrom, long start, long end) throws SQLException, NonFatalDatabaseException{
         // TODO: try to prevent unnecessary queries (for example, when clearly, you won't get any results back)
         FunctionCall count = FunctionCall.countAll();
         SelectQuery q = getCurrentBaseVariantFilterQuery(chrom, start, end);
@@ -411,21 +411,21 @@ public class QueryUtil {
         // return 0.
         if (q == null){
             // Connection has been unused.
-            c.close();
+            System.out.println("What is the bug?????????");
             return 0;
         }
-        
+        Connection c = ConnectionController.connect();
         q.addCustomColumns(count);
         
         Statement s = c.createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
-        
-System.out.println("This here line 421\n\t" + q);      
+        ResultSet rs = s.executeQuery(q.toString());   
         
         rs.next();
         
         int numrows = rs.getInt(1);
         s.close();
+        
+        c.close();
         
         return numrows;
     }
