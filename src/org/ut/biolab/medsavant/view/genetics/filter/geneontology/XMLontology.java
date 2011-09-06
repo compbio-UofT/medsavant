@@ -28,7 +28,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class XMLontology {
     
-    public static final String NAME_EXTRA_GENES = "Miscellaneous genes";
+    public static final String NAME_EXTRA_GENES = "Miscellaneous transcripts";
     
     public static final String LOCATION_OF_GO_XML_FILE = "http://archive."
             + "geneontology.org/latest-termdb/go_daily-termdb.obo-xml.gz";
