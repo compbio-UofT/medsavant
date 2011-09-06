@@ -401,17 +401,29 @@ public class QueryUtil {
         return numrows;
     }
     
-    // For aggregate queries (uses intersection).
-    public static int getNumVariantsInRange2(String chrom, long start, long end) throws SQLException, NonFatalDatabaseException{
-        // TODO: try to prevent unnecessary queries (for example, when clearly, you won't get any results back)
+    /**
+     * This version tries to make only necessary calls to the database.  Unlike
+     * the #2 version of getNumVariantsInRange, a connection is only made for 
+     * necessary calls.  This is not used in the WorkingWithOneNode class
+     * because for some reason that has yet to be determined, using this method
+     * causes the UI to crash.
+     * @param chrom
+     * @param start
+     * @param end
+     * @return
+     * @throws SQLException
+     * @throws NonFatalDatabaseException 
+     */
+    public static int getNumVariantsInRange3(String chrom, long start, long end) throws SQLException, NonFatalDatabaseException{
+        // TODO: try to find why using this causes the UI to freeze.
+        
         FunctionCall count = FunctionCall.countAll();
         SelectQuery q = getCurrentBaseVariantFilterQuery(chrom, start, end);
-        
+
         // If the query statement is null, meaning that it is "logically invalid",
         // return 0.
         if (q == null){
             // Connection has been unused.
-            System.out.println("What is the bug?????????");
             return 0;
         }
         Connection c = ConnectionController.connect();
@@ -426,6 +438,43 @@ public class QueryUtil {
         s.close();
         
         c.close();
+        
+        return numrows;
+    }
+    
+    /**
+     * This version tries to make only necessary calls to the database.  For those
+     * "queries" which logically return a count of 0, the connection is just
+     * closed.
+     * @param c
+     * @param chrom
+     * @param start
+     * @param end
+     * @return
+     * @throws SQLException 
+     */
+    public static int getNumVariantsInRange2(Connection c, String chrom, long start, long end) throws SQLException{
+        // TODO: try to prevent unnecessary queries (for example, when clearly, you won't get any results back)
+        FunctionCall count = FunctionCall.countAll();
+        SelectQuery q = getCurrentBaseVariantFilterQuery(chrom, start, end);
+
+        // If the query statement is null, meaning that it is "logically invalid",
+        // return 0.
+        if (q == null){
+            // Connection has been unused.
+            c.close();
+            return 0;
+        }
+        
+        q.addCustomColumns(count);
+        
+        Statement s = c.createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+        
+        rs.next();
+        
+        int numrows = rs.getInt(1);
+        s.close();
         
         return numrows;
     }
@@ -550,7 +599,7 @@ public class QueryUtil {
         for (QueryFilter f: filters){
             q.addCondition(ComboCondition.or(f.getConditions()));
         }
-        System.out.println("This line 551:\n\t" + q);
+
         return q;
     }
     
