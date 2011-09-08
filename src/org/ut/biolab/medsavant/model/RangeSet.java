@@ -74,8 +74,6 @@ public class RangeSet {
             this.ranges = newRangeSet.ranges;
             return;
         }
-        System.out.println("This here is the other map:\t" + newRangeSet.ranges);
-        System.out.println("This here is this map:\t" + this.ranges);
         
         // This will be the new dictionary/map for this rangeset.
         Map<String, List<Range>> newRanges = new HashMap<String, List<Range>>();
@@ -96,8 +94,6 @@ public class RangeSet {
             }
         }
         
-        System.out.println("The chromosomes in common:\t" +chrsInCommon);
-        
         // Find only the ranges for chromosomes in common.
         for (String chr: chrsInCommon){                        
             List<Range> thisList = this.getRanges(chr);
@@ -107,10 +103,6 @@ public class RangeSet {
             allRanges.add(newList);
             
             List<Range> intersectingRanges = Range.getIntersectionList(allRanges);
-            System.out.println("***Getting the intersection!!!");
-            System.out.println("This list for " + chr + " is: " + thisList);
-            System.out.println("The other list for " + chr + " is: " + newList);
-            System.out.println("Intersecting ranges is: " + intersectingRanges);
             if (!intersectingRanges.isEmpty()){
                 newRanges.put(chr, intersectingRanges);
             }
