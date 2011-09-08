@@ -63,13 +63,22 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
     
     private void updateRegionStats(){
         
-        this.removeAll();
-        this.add(toolBarPanel, BorderLayout.NORTH);
-
+//        System.out.println("Entered updateRegionStats");
+//        System.out.println("About to stop all region stats");
         stopAll(currentRegionStat);
+//        System.out.println("Getting from dictionary...");
         AggregatePanelGenerator panelObj = panelMap.get(currentRegionStat);
+//        System.out.println("Gotten object!");
+        // TODO: figure out why UI is frozen at all after the last line has been executed.
         
-        this.add(panelObj.getPanel());    
+        this.removeAll();
+//        System.out.println("Was able to remove all...");
+        // When UI froze, NN noticed that the above line was not printed?! Is that right?
+        this.add(toolBarPanel, BorderLayout.NORTH);
+//        System.out.println("Able to add...");
+        
+        this.add(panelObj.getPanel()); 
+//        System.out.println("So, now we've added the object: " + currentRegionStat);
         this.updateUI();
     }    
     
@@ -99,6 +108,8 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
                 JComboBox cb = (JComboBox) e.getSource();
                 String regionStatsName = (String) cb.getSelectedItem();
                 setCurrentRegionStats(regionStatsName);
+                
+//                System.out.println("setCurrentRegionStats  " + regionStatsName);
                 updateRegionStats();
             }
         });

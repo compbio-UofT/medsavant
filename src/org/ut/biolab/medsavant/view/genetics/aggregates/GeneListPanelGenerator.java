@@ -14,6 +14,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -357,9 +358,11 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             }
         }
 
+        // Modified slightly by nnursimulu
         private class GeneVariantIntersectionWorker extends SwingWorker {
 
             private final List<BEDRecord> records;
+            private Connection c;
 
             public GeneVariantIntersectionWorker(List<BEDRecord> records) {
                 this.records = records;
@@ -369,12 +372,22 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             protected Object doInBackground() throws Exception {
                 for(int i = 0; i < Math.min(records.size(), limit); i++){
                     BEDRecord r = records.get(i);
+                    if (Thread.currentThread().isInterrupted()){
+                        break;
+                    }
+                    c = ConnectionController.connect();
+                    
+                    if (Thread.currentThread().isInterrupted()){
+                        c.close();
+                        break;
+                    }                    
                     int recordsInRegion = QueryUtil.getNumVariantsInRange(
-                            ConnectionController.connect(),
+                            c,
                             r.getChrom(),
                             r.getStart(),
-                            r.getEnd());
-                    if (!Thread.interrupted()) {
+                            r.getEnd());                   
+                    c.close();                    
+                    if (!Thread.currentThread().isInterrupted()) {
                         updateBEDRecordVariantValue(r, recordsInRegion);
                     } else {
                         break;
@@ -382,11 +395,23 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                 }
                 return null;
             }
+            
+            @Override
+            protected void done(){
+                if (c != null){
+                    try {
+                        c.close();
+                    } catch (SQLException ex) {
+                    }
+                }
+            }
         }
         
+        // Also modified slightly by nnursimulu
         private class GenePatientIntersectionWorker extends SwingWorker {
 
             private final List<BEDRecord> records;
+            private Connection c;
 
             public GenePatientIntersectionWorker(List<BEDRecord> records) {
                 this.records = records;
@@ -396,11 +421,24 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             protected Object doInBackground() throws Exception {
                 for(int i = 0; i < Math.min(records.size(), limit); i++){
                     BEDRecord r = records.get(i);
+                    if (Thread.currentThread().isInterrupted()){
+                        break;
+                    }
+                    c = ConnectionController.connect();
+                    
+                    if (Thread.currentThread().isInterrupted()){
+                        c.close();
+                        break;
+                    }
+                    
                     int recordsInRegion = QueryUtil.getNumPatientsWithVariantsInRange(
-                            ConnectionController.connect(),
+                            c,
                             r.getChrom(),
                             r.getStart(),
                             r.getEnd());
+                    
+                    c.close();
+                    
                     if (!Thread.interrupted()) {
                         updateBEDRecordPatientValue(r, recordsInRegion);
                     } else {
@@ -408,6 +446,16 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                     }
                 }
                 return null;
+            }
+            
+            @Override
+            protected void done(){
+                if (c != null){
+                    try {
+                        c.close();
+                    } catch (SQLException ex) {
+                    }
+                }
             }
         }
     }
