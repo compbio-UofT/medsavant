@@ -153,10 +153,20 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 
     @Override
     public void run() {
-        try {
-            doTheWork();
-        } catch (Exception ex) {
-//            System.out.println("Destroyed!\t" + node);
+        boolean completed = false;
+        
+        while (!completed){
+            try {
+                doTheWork();
+                completed = true;
+            } catch (Exception ex) {
+                if (ex instanceof java.util.concurrent.CancellationException){
+                    completed = true;
+                }
+                else{
+                    // TODO: this shouldn't be happening...why is it happening?
+                }
+            }
         }
     }
     
