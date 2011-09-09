@@ -142,6 +142,9 @@ public  class OntologyStatsWorker extends SwingWorker{
         if (jTree == null){
             
             if (!subPanel.treeIsReadyToBeFetched()){
+                subPanel.removeAll();
+                subPanel.add(new WaitPanel("Getting aggregate statistics"));
+                subPanel.updateUI();
                 return null;
             }
             jTree = subPanel.getJTree();
