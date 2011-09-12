@@ -30,7 +30,7 @@ public class CreateMappingsFile {
     /**
      * The location of the XML file containing the location of the mapping file.
      */
-    public static String LOCATION_XML = "http://savantbrowser.com/nirvana/HPOmap.xml";
+    public static String LOCATION_XML = "http://genomesavant.com/nirvana/HPOmap.xml";
     
     /**
      * The location of the file mapping from HPO ID to gene name.
