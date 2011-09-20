@@ -3,6 +3,8 @@ package org.ut.biolab.medsavant.controller;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil;
 
 /**
@@ -42,10 +44,21 @@ public class ProjectController {
         return org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil.getProjectId(projectName);
     }
 
+    public void removeVariantTable(int project_id, int ref_id) {
+        try {
+            org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil.removeReferenceForProject(project_id,ref_id);
+            fireProjectTableRemovedEvent(project_id,ref_id);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public static interface ProjectListener {
         public void projectAdded(String projectName);
         public void projectRemoved(String projectName);
         public void projectChanged(String projectName);
+
+        public void projectTableRemoved(int projid, int refid);
     }
     
     private int currentProjectId;
@@ -74,6 +87,13 @@ public class ProjectController {
         ProjectController pc = getInstance();
         for (ProjectListener l : pc.projectListeners) {
             l.projectAdded(projectName);
+        }
+    }
+    
+    public void fireProjectTableRemovedEvent(int projid, int refid) {
+        ProjectController pc = getInstance();
+        for (ProjectListener l : pc.projectListeners) {
+            l.projectTableRemoved(projid, refid);
         }
     }
     

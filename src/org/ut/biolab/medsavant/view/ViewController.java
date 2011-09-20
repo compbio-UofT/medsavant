@@ -170,6 +170,9 @@ public class ViewController extends JPanel {
 
         public void projectChanged(String projectName) {
         }
+
+        public void projectTableRemoved(int projid, int refid) {
+        }
     }
 
     private static class SectionHeader extends JPanel {

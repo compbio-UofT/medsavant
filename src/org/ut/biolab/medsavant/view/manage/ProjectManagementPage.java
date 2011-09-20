@@ -14,6 +14,10 @@ import org.ut.biolab.medsavant.view.genetics.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
@@ -21,13 +25,16 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
@@ -62,7 +69,10 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         panel.refresh();
     }
 
-    private static class ProjectsDetailedView extends DetailedView {
+    public void projectTableRemoved(int projid, int refid) {
+    }
+
+    private static class ProjectsDetailedView extends DetailedView implements ProjectListener {
 
         private final JPanel menu;
         private final static JPanel details = ViewUtil.getClearPanel();
@@ -72,12 +82,13 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
         public ProjectsDetailedView() {
 
+            
             content = this.getContentPanel();
 
             menu = ViewUtil.getButtonPanel();
 
-            menu.add(changeReferenceGenomeButton());
             menu.add(deleteProjectButton());
+            menu.add(addTableButton());
 
             menu.setVisible(false);
 
@@ -85,6 +96,20 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
             content.add(details, BorderLayout.CENTER);
             content.add(menu, BorderLayout.SOUTH);
+            
+                        ProjectController.getInstance().addProjectListener(this);
+
+        }
+        
+        public final JButton addTableButton() {
+            JButton b = new JButton("Add Variant Table");
+            b.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent ae) {
+                    //TODO
+                }
+            });
+            return b;
         }
 
         public final JButton deleteProjectButton() {
@@ -104,14 +129,30 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             return b;
         }
 
-        public final JButton changeReferenceGenomeButton() {
-            JButton b = new JButton("Change Reference");
-            return b;
-        }
 
         @Override
         public void setSelectedItem(Vector item) {
+            
             projectName = (String) item.get(0);
+            refreshSelectedProject();
+
+            
+        }
+
+        public void projectAdded(String projectName) {
+        }
+
+        public void projectRemoved(String projectName) {
+        }
+
+        public void projectChanged(String projectName) {
+        }
+
+        public void projectTableRemoved(int projid, int refid) {
+            refreshSelectedProject();
+        }
+
+        private void refreshSelectedProject() {
             setTitle(projectName);
 
             details.removeAll();
@@ -135,30 +176,113 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             public ProjectDetailsSW(String projectName) {
                 this.projectName = projectName;
             }
+            
+            Dimension buttonDim = new Dimension(100,23);
 
             @Override
             protected Object doInBackground() throws Exception {
                 int projectId = ProjectController.getInstance().getProjectId(projectName);
 
-                ResultSet rs = org.ut.biolab.medsavant.db.util.ConnectionController.connect().createStatement().executeQuery("SELECT name FROM " + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_VARIANTTABLEINFO
+                ResultSet rs = org.ut.biolab.medsavant.db.util.ConnectionController.connect().createStatement().executeQuery(
+                        "SELECT * FROM " + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_VARIANTTABLEINFO
                         + " LEFT JOIN " + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_REFERENCE + " ON "
                         + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_VARIANTTABLEINFO + ".reference_id = "
                         + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_REFERENCE + ".reference_id "
                         + "WHERE project_id=" + projectId + ";");
 
-                System.out.println("Reference tables: ");
+                JPanel p = ViewUtil.getClearPanel();
+                ViewUtil.applyVerticalBoxLayout(p);
+
+                int numTables = 0;
+                p.add(ViewUtil.getLeftAlignedComponent(ViewUtil.getDetailHeaderLabel("Variant Tables:")));
+                
+                //JComboBox defaultTableBox = new JComboBox();
+                
+                JPanel tablePanel = ViewUtil.getClearPanel();
+                tablePanel.setLayout(new GridBagLayout());
+                GridBagConstraints c = new GridBagConstraints();
+                c.gridx = 0;
+                c.gridy = 0;
+                c.ipadx = 10;
+                
                 while (rs.next()) {
-                    System.out.println(rs.getString(1));
+                    numTables++;
+                    
+                    c.gridx = 0;
+                  
+                    //defaultTableBox.addItem(rs.getString("name"));
+                    
+                    //tablePanel.add(ViewUtil.getDetailLabel("  " + ));
+                    
+                    tablePanel.add(ViewUtil.getDetailLabel(rs.getString("name")),c);
+                    c.gridx++;
+                    //tablePanel.add(Box.createHorizontalGlue());
+                    
+                    int numAnnotations = 0;
+                    String annotationIds = rs.getString("annotation_ids");
+                    if (annotationIds != null) {
+                        numAnnotations = annotationIds.length() - annotationIds.replaceAll(",", "").length() + 1;
+                    }
+                    
+                    tablePanel.add(ViewUtil.getDetailLabel(numAnnotations + " annotation(s) applied"),c);
+                    c.gridx++;
+                    
+                    JButton editTable = new JButton("Change");
+                    editTable.setPreferredSize(buttonDim);
+                    editTable.setMaximumSize(buttonDim);
+                    
+                    final int project_id = rs.getInt("project_id");
+                    final int ref_id = rs.getInt("reference_id");
+                    
+                    tablePanel.add(editTable,c);
+                    c.gridx++;
+                    
+                    //tablePanel.add(Box.createHorizontalStrut(strutwidth));
+                    
+                    JButton removeTable = new JButton("Delete");
+                    removeTable.setPreferredSize(buttonDim);
+                    removeTable.setMaximumSize(buttonDim);
+                    
+                    removeTable.addActionListener(new ActionListener() {
+
+                        public void actionPerformed(ActionEvent ae) {
+                            ProjectController.getInstance().removeVariantTable(project_id,ref_id);
+                        }
+                        
+                    });
+                    
+                    tablePanel.add(removeTable,c);
+                    
+                    c.gridy++;
                 }
-                return null;
+                
+                
+                if (numTables == 0) {
+                    p.add(ViewUtil.alignLeft(ViewUtil.getDetailLabel("No variant tables")));
+                } else {
+                    
+                    //JPanel defaultP = ViewUtil.getClearPanel();
+                    //ViewUtil.applyHorizontalBoxLayout(defaultP);
+                    
+                    //defaultP.add(ViewUtil.getDetailLabel("Default reference: "));
+                    //defaultP.add(defaultTableBox);
+                    //defaultP.add(Box.createHorizontalGlue()); 
+                    //tablePanel.add(Box.createVerticalGlue());
+                    //p.add(defaultP);
+                    p.add(ViewUtil.alignLeft(tablePanel));
+                }
+
+                
+                p.add(Box.createVerticalGlue());
+                
+                return p;
             }
 
             @Override
             protected void done() {
                 try {
                     JPanel p = (JPanel) get();
-                    updateDetails(ViewUtil.getMessagePanel("No problem getting project details"));
-                    //updateDetails(p);
+                    updateDetails(p);
                 } catch (java.util.concurrent.CancellationException ex1) {
                 } catch (Exception ex) {
                     ex.printStackTrace();

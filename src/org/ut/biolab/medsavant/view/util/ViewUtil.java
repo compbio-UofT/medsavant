@@ -108,6 +108,12 @@ public class ViewUtil {
         return new Color(20,20,20);
     }
     
+    public static JLabel getDetailLabel(String txt) {
+        JLabel l = new JLabel(txt);
+        l.setForeground(Color.white);
+        return l;
+    }
+    
     public static JPanel getTertiaryBannerPanel() {
         JPanel p = new JPanel() {
 
@@ -321,6 +327,14 @@ public class ViewUtil {
         return p;
     }
 
+    public static void applyVerticalBoxLayout(JPanel p) {
+        p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+    }
+
+    public static void applyHorizontalBoxLayout(JPanel p) {
+        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+    }
+
     /*
     public static JPanel getSubSubBannerPanel(String title) {
         JPanel p = new JPanel();
@@ -395,6 +409,12 @@ public class ViewUtil {
         l.setForeground(Color.white);
         l.setFont(new Font("Arial",Font.BOLD,36));
         return l; 
+    }
+    
+    public static JLabel getDetailHeaderLabel(String s) {
+        JLabel l = getDetailLabel(s);
+        l.setFont(new Font(l.getFont().getFamily(),Font.BOLD,l.getFont().getSize()));
+        return l;
     }
     
     public static JPanel getKeyValuePairPanel(String key, String val) {
