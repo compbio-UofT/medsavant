@@ -15,15 +15,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.UserController;
 
 /**
  *
  * @author mfiume
  */
-public class NewProjectDialog extends javax.swing.JDialog {
+public class NewUserDialog extends javax.swing.JDialog {
 
     /** Creates new form NewProjectDialog */
-    public NewProjectDialog(java.awt.Frame parent, boolean modal) {
+    public NewUserDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         this.getRootPane().setDefaultButton(this.button_ok);
@@ -40,19 +41,23 @@ public class NewProjectDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        text_project_name = new javax.swing.JTextField();
+        text_username = new javax.swing.JTextField();
         button_cancel = new javax.swing.JButton();
         button_ok = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        text_password = new javax.swing.JPasswordField();
+        cb_admin = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
         setResizable(false);
 
-        jLabel1.setText("Project Name: ");
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jLabel1.setText("Username: ");
 
-        text_project_name.addActionListener(new java.awt.event.ActionListener() {
+        text_username.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                text_project_nameActionPerformed(evt);
+                text_usernameActionPerformed(evt);
             }
         });
 
@@ -70,6 +75,11 @@ public class NewProjectDialog extends javax.swing.JDialog {
             }
         });
 
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jLabel2.setText("Password: ");
+
+        cb_admin.setText("Grant user administrative privileges");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -77,14 +87,19 @@ public class NewProjectDialog extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(text_project_name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(button_ok)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(button_cancel)))
+                        .add(button_cancel))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(text_username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
+                            .add(text_password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)))
+                    .add(cb_admin))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -93,7 +108,13 @@ public class NewProjectDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(text_project_name, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(text_username, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(text_password, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(cb_admin)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(button_cancel)
@@ -104,9 +125,9 @@ public class NewProjectDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void text_project_nameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_text_project_nameActionPerformed
+    private void text_usernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_text_usernameActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_text_project_nameActionPerformed
+    }//GEN-LAST:event_text_usernameActionPerformed
 
     private void button_cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_cancelActionPerformed
         this.setVisible(false);
@@ -114,13 +135,16 @@ public class NewProjectDialog extends javax.swing.JDialog {
 
     private void button_okActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_okActionPerformed
         try {
-            String projectName = this.text_project_name.getText();
+            String username = this.text_username.getText();
 
-            if (org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil.containsProject(projectName)) {
-                JOptionPane.showMessageDialog(this, "Project already exists");
+            if (org.ut.biolab.medsavant.db.util.jobject.UserQueryUtil.containsUser(username)) {
+                JOptionPane.showMessageDialog(this, "User already exists");
             } else {
-                ProjectController.getInstance().addProject(projectName);
+                if (UserController.getInstance().addUser(username,this.text_password.getText(),this.cb_admin.isSelected())) {
                 this.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Problem adding user");
+                }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -135,7 +159,7 @@ public class NewProjectDialog extends javax.swing.JDialog {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                NewProjectDialog dialog = new NewProjectDialog(new javax.swing.JFrame(), true);
+                NewUserDialog dialog = new NewUserDialog(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -149,7 +173,10 @@ public class NewProjectDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton button_cancel;
     private javax.swing.JButton button_ok;
+    private javax.swing.JCheckBox cb_admin;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField text_project_name;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPasswordField text_password;
+    private javax.swing.JTextField text_username;
     // End of variables declaration//GEN-END:variables
 }

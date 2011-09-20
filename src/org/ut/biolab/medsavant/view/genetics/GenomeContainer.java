@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.oldcontroller.FilterController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;

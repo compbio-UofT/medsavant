@@ -22,7 +22,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class LoginView extends JPanel {
 
     public LoginView() {
-        this.setBackground(ViewUtil.getDarkColor());
+        //this.setBackground(ViewUtil.getDarkColor());
         initView();
     }
 

@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ExternalAnnotationController;
 import org.ut.biolab.medsavant.db.util.jobject.Annotation;
+import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.patients.SplitScreenView;
@@ -70,6 +72,10 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(MainFrame.getInstance(), 
+                        "Annotations can only be added using the \n"
+                        + "MedSavant Database Utility.", 
+                        "",JOptionPane.INFORMATION_MESSAGE);
                 //NewReferenceDialog npd = new ADialog(MainFrame.getInstance(), true);
                 //npd.setVisible(true);
             }
@@ -152,13 +158,28 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
             //menu.add(setDefaultCaseButton());
             //menu.add(setDefaultControlButton());
             //menu.add(removeIndividualsButton());
-            //menu.add(deleteCohortButton());
+            menu.add(deleteButton());
             menu.setVisible(false);
 
             content.setLayout(new BorderLayout());
 
             content.add(details, BorderLayout.CENTER);
             content.add(menu, BorderLayout.SOUTH);
+        }
+        
+        public JButton deleteButton() {
+            JButton b = new JButton("Delete Annotation");
+            b.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent ae) {
+                    JOptionPane.showMessageDialog(MainFrame.getInstance(), 
+                        "Annotations can only be deleted using the \n"
+                        + "MedSavant Database Utility.", 
+                        "",JOptionPane.INFORMATION_MESSAGE);
+                }
+            });
+             
+            return b;
         }
 
         @Override

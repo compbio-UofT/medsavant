@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.controller;
+package org.ut.biolab.medsavant.oldcontroller;
 
 import org.ut.biolab.medsavant.model.PostProcessFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;

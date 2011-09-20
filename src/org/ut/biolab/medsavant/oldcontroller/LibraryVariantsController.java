@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.controller;
+package org.ut.biolab.medsavant.oldcontroller;
 
 import java.io.File;
 import java.io.IOException;

@@ -21,7 +21,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.ut.biolab.medsavant.controller.LibraryVariantsController;
+import org.ut.biolab.medsavant.oldcontroller.LibraryVariantsController;
 import org.ut.biolab.medsavant.model.record.FileRecord;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.util.Util;

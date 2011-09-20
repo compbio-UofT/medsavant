@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.oldcontroller.FilterController;
 import org.ut.biolab.medsavant.olddb.table.ModifiableColumn;
 import org.ut.biolab.medsavant.olddb.table.PatientTableSchema;
 import org.ut.biolab.medsavant.olddb.table.PhenotypeTableSchema;

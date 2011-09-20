@@ -6,7 +6,7 @@ package org.ut.biolab.medsavant.view.util;
 
 import java.awt.Insets;
 import javax.swing.JTabbedPane;
-import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.oldcontroller.SettingsController;
 
 /**
  *

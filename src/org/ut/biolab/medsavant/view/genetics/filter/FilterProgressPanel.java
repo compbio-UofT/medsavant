@@ -24,7 +24,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
-import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.oldcontroller.FilterController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;

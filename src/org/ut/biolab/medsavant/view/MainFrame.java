@@ -11,6 +11,7 @@ import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -23,13 +24,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.oldcontroller.LoginController;
+import org.ut.biolab.medsavant.oldcontroller.SettingsController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.ManageDB;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.login.LoginView;
-import org.ut.biolab.medsavant.view.thread.ThreadManagerDialog;
 
 /**
  *
@@ -47,7 +47,6 @@ public class MainFrame extends JFrame implements LoginListener{
     private final JMenuItem manageDBItem;
     private LoginView loginView;
     private String currentCard;
-    private ThreadManagerDialog threadManager;
     
     private boolean queuedForExit = false;
     private static MainFrame instance;
@@ -103,6 +102,7 @@ public class MainFrame extends JFrame implements LoginListener{
         super("MedSavant");
 
         this.setLayout(new BorderLayout());
+        this.setMinimumSize(new Dimension(500,500));
         
         LoginController.addLoginListener(this);
 

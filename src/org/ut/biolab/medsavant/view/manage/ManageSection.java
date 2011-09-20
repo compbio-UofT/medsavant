@@ -29,7 +29,7 @@ public class ManageSection extends SectionView {
     @Override
     public SubSectionView[] getSubSections() {
         SubSectionView[] pages = new SubSectionView[2];
-        pages[0] = new AccountManagementPage(this);
+        pages[0] = new UserManagementPage(this);
         pages[1] = new ProjectManagementPage(this);
         return pages;
     }

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.controller;
+package org.ut.biolab.medsavant.oldcontroller;
 
 import java.util.ArrayList;
 import java.util.List;

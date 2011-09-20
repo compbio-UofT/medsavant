@@ -43,7 +43,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.swing.gvt.GVTTreeRendererAdapter;
 import org.apache.batik.swing.gvt.GVTTreeRendererEvent;
-import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.oldcontroller.FilterController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.w3c.dom.*;

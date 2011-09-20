@@ -38,6 +38,10 @@ public class ProjectController {
         }
     }
 
+    public int getProjectId(String projectName) throws SQLException {
+        return org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil.getProjectId(projectName);
+    }
+
     public static interface ProjectListener {
         public void projectAdded(String projectName);
         public void projectRemoved(String projectName);

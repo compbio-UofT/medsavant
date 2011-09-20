@@ -18,8 +18,8 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.controller.ThreadController;
+import org.ut.biolab.medsavant.oldcontroller.SettingsController;
+import org.ut.biolab.medsavant.oldcontroller.ThreadController;
 import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 

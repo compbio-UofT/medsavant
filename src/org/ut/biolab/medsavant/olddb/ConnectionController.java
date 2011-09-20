@@ -11,8 +11,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Random;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.oldcontroller.LoginController;
+import org.ut.biolab.medsavant.oldcontroller.SettingsController;
 
 /**
  *
