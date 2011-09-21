@@ -27,7 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.oldcontroller.LoginController;
 import org.ut.biolab.medsavant.oldcontroller.SettingsController;
-import main.ProgramInformation;
+import org.ut.biolab.medsavant.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
@@ -75,7 +75,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         this.cb_rememberpassword.setSelected(SettingsController.getInstance().getRememberPassword());
         this.cb_autosignin.setSelected(SettingsController.getInstance().getAutoLogin());
 
-        this.label_versioninformation.setText(ProgramInformation.getVersion() + " " + ProgramInformation.getReleaseType().toUpperCase());
+        this.label_versioninformation.setText(MedSavantProgramInformation.getVersion() + " " + MedSavantProgramInformation.getReleaseType().toUpperCase());
 
         ViewUtil.clear(this.cb_autosignin);
         ViewUtil.clear(this.cb_rememberpassword);

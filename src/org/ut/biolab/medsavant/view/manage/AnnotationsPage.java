@@ -50,7 +50,7 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
     }
 
     public String getName() {
-        return "Annotation Files";
+        return "Annotations";
     }
 
     public JPanel getView() {

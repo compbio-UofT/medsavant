@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package main;
+package org.ut.biolab.medsavant;
 
 import com.apple.eawt.AboutHandler;
 import com.apple.eawt.AppEvent;
@@ -83,8 +83,8 @@ public class Main {
                     @Override
                     public void handleAbout(AppEvent.AboutEvent evt) {
                         JOptionPane.showMessageDialog(frame, "MedSavant " + 
-                                ProgramInformation.getVersion() + " " + 
-                                ProgramInformation.getReleaseType() + 
+                                MedSavantProgramInformation.getVersion() + " " + 
+                                MedSavantProgramInformation.getReleaseType() + 
                                 "\nCreated by Biolab at University of Toronto.");
                     }
                 });
