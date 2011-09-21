@@ -5,6 +5,7 @@
 package org.ut.biolab.medsavant.view.manage;
 
 import com.jidesoft.utils.SwingWorker;
+import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -20,6 +21,8 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +41,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
+import org.ut.biolab.medsavant.db.Manage;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.model.record.Chromosome;
@@ -183,7 +187,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             }
         }
 
-        private static class ProjectDetailsSW extends SwingWorker {
+        private class ProjectDetailsSW extends SwingWorker {
 
             private String projectName;
 
@@ -194,7 +198,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
             @Override
             protected Object doInBackground() throws Exception {
-                int projectId = ProjectController.getInstance().getProjectId(projectName);
+                final int projectId = ProjectController.getInstance().getProjectId(projectName);
 
                 ResultSet rs = org.ut.biolab.medsavant.db.util.ConnectionController.connect().createStatement().executeQuery(
                         "SELECT * FROM " + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_VARIANTTABLEINFO
@@ -226,14 +230,15 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                     //defaultTableBox.addItem(rs.getString("name"));
 
                     //tablePanel.add(ViewUtil.getDetailLabel("  " + ));
-                    final String refname = rs.getString("name");
-
-                    tablePanel.add(ViewUtil.getDetailLabel(refname), c);
+                    
+                    final int refId = rs.getInt("reference_id");
+                    final String refName = rs.getString("name");
+                    tablePanel.add(ViewUtil.getDetailLabel(refName),c);
                     c.gridx++;
                     //tablePanel.add(Box.createHorizontalGlue());
 
                     int numAnnotations = 0;
-                    String annotationIds = rs.getString("annotation_ids");
+                    final String annotationIds = rs.getString("annotation_ids");
                     if (annotationIds != null) {
                         numAnnotations = annotationIds.length() - annotationIds.replaceAll(",", "").length() + 1;
                     }
@@ -242,11 +247,20 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                     c.gridx++;
 
                     JButton editTable = new JButton("Change");
+                    editTable.addMouseListener(new MouseAdapter() {
+                        public void mouseReleased(MouseEvent e) {
+                            try {
+                                new ChangeVariantDialog(MainFrame.getInstance(), true, projectId, refId, refName, annotationIds).setVisible(true);
+                                refreshSelectedProject();
+                            } catch (SQLException ex) {
+                                Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    });
                     editTable.setPreferredSize(buttonDim);
                     editTable.setMaximumSize(buttonDim);
 
-                    final int project_id = rs.getInt("project_id");
-                    final int ref_id = rs.getInt("reference_id");
+                    //final int project_id = rs.getInt("project_id");
 
                     tablePanel.add(editTable, c);
                     c.gridx++;
@@ -262,10 +276,10 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
                         public void actionPerformed(ActionEvent ae) {
                             int result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
-                                    "Are you sure you want to delete " + refname + "?\nThis cannot be undone.",
+                                    "Are you sure you want to delete " + refName + "?\nThis cannot be undone.",
                                     "Confirm", JOptionPane.YES_NO_OPTION);
                             if (result == JOptionPane.YES_OPTION) {
-                                ProjectController.getInstance().removeVariantTable(project_id, ref_id);
+                                ProjectController.getInstance().removeVariantTable(projectId, refId);
                             }
                         }
                     });
