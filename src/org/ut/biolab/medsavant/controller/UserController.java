@@ -31,7 +31,7 @@ public class UserController {
 
     public boolean addUser(String name, String pass, boolean admin) {
         try {
-            org.ut.biolab.medsavant.db.Manage.addUser(name,pass,admin);
+            org.ut.biolab.medsavant.db.util.jobject.UserQueryUtil.addUser(name,pass,admin);
             UserController.getInstance().fireUserAddedEvent(name);
             return true;
         } catch (SQLException ex) {

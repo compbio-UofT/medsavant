@@ -75,7 +75,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
                 public void actionPerformed(ActionEvent ae) {
                     
                     int result = JOptionPane.showConfirmDialog(MainFrame.getInstance(), 
-                             "Are you sure you want to delete \n" + name + "? This cannot be undone.",
+                             "Are you sure you want to delete " + name + "?\nThis cannot be undone.",
                              "Confirm", JOptionPane.YES_NO_OPTION);
                     if (result == JOptionPane.YES_OPTION) {
                         UserController.getInstance().removeUser(name);

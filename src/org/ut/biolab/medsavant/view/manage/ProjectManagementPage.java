@@ -82,7 +82,6 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
         public ProjectsDetailedView() {
 
-            
             content = this.getContentPanel();
 
             menu = ViewUtil.getButtonPanel();
@@ -96,19 +95,31 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
             content.add(details, BorderLayout.CENTER);
             content.add(menu, BorderLayout.SOUTH);
-            
-                        ProjectController.getInstance().addProjectListener(this);
+
+            ProjectController.getInstance().addProjectListener(this);
 
         }
-        
+
         public final JButton addTableButton() {
+
             JButton b = new JButton("Add Variant Table");
             b.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    //TODO
+                    try {
+                        int projectid = ProjectController.getInstance().getProjectId(projectName);
+
+                        NewVariantTableDialog d = new NewVariantTableDialog(projectid, MainFrame.getInstance(), true);
+                        d.setVisible(true);
+                        
+                        refreshSelectedProject();
+                        
+                    } catch (SQLException ex) {
+                        Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             });
+            
             return b;
         }
 
@@ -119,7 +130,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                 public void actionPerformed(ActionEvent ae) {
 
                     int result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
-                            "Are you sure you want to delete \n" + projectName + "? This cannot be undone.",
+                            "Are you sure you want to delete " + projectName + "?\nThis cannot be undone.",
                             "Confirm", JOptionPane.YES_NO_OPTION);
                     if (result == JOptionPane.YES_OPTION) {
                         ProjectController.getInstance().removeProject(projectName);
@@ -129,14 +140,13 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             return b;
         }
 
-
         @Override
         public void setSelectedItem(Vector item) {
-            
+
             projectName = (String) item.get(0);
             refreshSelectedProject();
 
-            
+
         }
 
         public void projectAdded(String projectName) {
@@ -166,6 +176,10 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
             if (menu != null) {
                 menu.setVisible(true);
+
+
+
+
             }
         }
 
@@ -176,8 +190,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             public ProjectDetailsSW(String projectName) {
                 this.projectName = projectName;
             }
-            
-            Dimension buttonDim = new Dimension(100,23);
+            Dimension buttonDim = new Dimension(100, 23);
 
             @Override
             protected Object doInBackground() throws Exception {
@@ -195,75 +208,81 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
                 int numTables = 0;
                 p.add(ViewUtil.getLeftAlignedComponent(ViewUtil.getDetailHeaderLabel("Variant Tables:")));
-                
+
                 //JComboBox defaultTableBox = new JComboBox();
-                
+
                 JPanel tablePanel = ViewUtil.getClearPanel();
                 tablePanel.setLayout(new GridBagLayout());
                 GridBagConstraints c = new GridBagConstraints();
                 c.gridx = 0;
                 c.gridy = 0;
                 c.ipadx = 10;
-                
+
                 while (rs.next()) {
                     numTables++;
-                    
+
                     c.gridx = 0;
-                  
+
                     //defaultTableBox.addItem(rs.getString("name"));
-                    
+
                     //tablePanel.add(ViewUtil.getDetailLabel("  " + ));
-                    
-                    tablePanel.add(ViewUtil.getDetailLabel(rs.getString("name")),c);
+                    final String refname = rs.getString("name");
+
+                    tablePanel.add(ViewUtil.getDetailLabel(refname), c);
                     c.gridx++;
                     //tablePanel.add(Box.createHorizontalGlue());
-                    
+
                     int numAnnotations = 0;
                     String annotationIds = rs.getString("annotation_ids");
                     if (annotationIds != null) {
                         numAnnotations = annotationIds.length() - annotationIds.replaceAll(",", "").length() + 1;
                     }
-                    
-                    tablePanel.add(ViewUtil.getDetailLabel(numAnnotations + " annotation(s) applied"),c);
+
+                    tablePanel.add(ViewUtil.getDetailLabel(numAnnotations + " annotation(s) applied"), c);
                     c.gridx++;
-                    
+
                     JButton editTable = new JButton("Change");
                     editTable.setPreferredSize(buttonDim);
                     editTable.setMaximumSize(buttonDim);
-                    
+
                     final int project_id = rs.getInt("project_id");
                     final int ref_id = rs.getInt("reference_id");
-                    
-                    tablePanel.add(editTable,c);
+
+                    tablePanel.add(editTable, c);
                     c.gridx++;
-                    
+
                     //tablePanel.add(Box.createHorizontalStrut(strutwidth));
-                    
+
                     JButton removeTable = new JButton("Delete");
                     removeTable.setPreferredSize(buttonDim);
                     removeTable.setMaximumSize(buttonDim);
-                    
+
+
                     removeTable.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent ae) {
-                            ProjectController.getInstance().removeVariantTable(project_id,ref_id);
+                            int result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                                    "Are you sure you want to delete " + refname + "?\nThis cannot be undone.",
+                                    "Confirm", JOptionPane.YES_NO_OPTION);
+                            if (result == JOptionPane.YES_OPTION) {
+                                ProjectController.getInstance().removeVariantTable(project_id, ref_id);
+                            }
                         }
-                        
                     });
-                    
-                    tablePanel.add(removeTable,c);
-                    
+
+                    tablePanel.add(removeTable, c);
+
                     c.gridy++;
                 }
-                
-                
+
+
                 if (numTables == 0) {
                     p.add(ViewUtil.alignLeft(ViewUtil.getDetailLabel("No variant tables")));
                 } else {
-                    
+
                     //JPanel defaultP = ViewUtil.getClearPanel();
                     //ViewUtil.applyHorizontalBoxLayout(defaultP);
-                    
+
                     //defaultP.add(ViewUtil.getDetailLabel("Default reference: "));
                     //defaultP.add(defaultTableBox);
                     //defaultP.add(Box.createHorizontalGlue()); 
@@ -272,9 +291,9 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                     p.add(ViewUtil.alignLeft(tablePanel));
                 }
 
-                
+
                 p.add(Box.createVerticalGlue());
-                
+
                 return p;
             }
 
@@ -297,8 +316,10 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         }
 
         public static synchronized void updateDetails(JPanel p) {
-            
-            if (details == null) { return; }
+
+            if (details == null) {
+                return;
+            }
             details.removeAll();
 
             details.setLayout(new BorderLayout());
@@ -321,6 +342,10 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             //list.setOpaque(false);
 
             details.updateUI();
+
+
+
+
 
         }
     }

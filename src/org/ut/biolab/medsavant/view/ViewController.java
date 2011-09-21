@@ -117,6 +117,7 @@ public class ViewController extends JPanel {
 
     private static class Banner extends JPanel implements ProjectListener {
         private final JComboBox projectDropDown;
+        private final JComboBox referenceDropDown;
 
         public Banner() {
             this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -124,8 +125,10 @@ public class ViewController extends JPanel {
             //this.add(ViewUtil.getTitleLabel("MedSavant"));
             //this.add(Box.createHorizontalGlue());
             projectDropDown = new JComboBox();
-            updateDropDown();
+            referenceDropDown = new JComboBox();
+            refreshProjectDropDown();
             this.add(projectDropDown);
+            this.add(referenceDropDown);
             this.add(Box.createHorizontalGlue());
             
             ProjectController.getInstance().addProjectListener(this);
@@ -135,7 +138,7 @@ public class ViewController extends JPanel {
             PaintUtil.paintDarkMenu(g, this);
         }
 
-        private void updateDropDown() {
+        private void refreshProjectDropDown() {
             try {
                 projectDropDown.removeAllItems();
                 
@@ -147,7 +150,8 @@ public class ViewController extends JPanel {
                 projectDropDown.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
-                        //viewController.setProject(b.getSelectedItem().toString());
+                        ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
+                        refreshReferenceDropDown();
                     }
                 });
                 
@@ -159,19 +163,47 @@ public class ViewController extends JPanel {
             }
 
         }
+        
+        private void refreshReferenceDropDown() {
+            try {
+                referenceDropDown.removeAllItems();
+                
+                List<String> references = ProjectController.getInstance()
+                        .getReferencesForProject(
+                        ProjectController.getInstance().getProjectId((String) projectDropDown.getSelectedItem()));
+
+                for (String s : references) {
+                    referenceDropDown.addItem(s);
+                }
+                referenceDropDown.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
+                    }
+                });
+                
+                referenceDropDown.setMinimumSize(new Dimension(210,23));
+                referenceDropDown.setPreferredSize(new Dimension(210,23));
+                referenceDropDown.setMaximumSize(new Dimension(210,23));
+                
+            } catch (SQLException ex) {
+            }
+
+        }
 
         public void projectAdded(String projectName) {
-            updateDropDown();
+            refreshProjectDropDown();
         }
 
         public void projectRemoved(String projectName) {
-            updateDropDown();
+            refreshProjectDropDown();
         }
 
         public void projectChanged(String projectName) {
         }
 
         public void projectTableRemoved(int projid, int refid) {
+            refreshProjectDropDown();
         }
     }
 

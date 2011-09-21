@@ -1,17 +1,30 @@
 package org.ut.biolab.medsavant.controller;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil;
+import org.ut.biolab.medsavant.db.util.jobject.ReferenceQueryUtil;
 
 /**
  *
  * @author mfiume
  */
 public class ProjectController {
+    
+    private String currentProjectName;
+    private int currentProjectId;
+        private String currentReferenceName;
+
+    private int currentReferenceId;
+    private String currentPatientTable;
+    private String currentVariantTable;
+    
+    private static ProjectController instance;
+    
     
     private final ArrayList<ProjectListener> projectListeners;
 
@@ -53,6 +66,55 @@ public class ProjectController {
         }
     }
 
+    public String getProjectName(int projectid) throws SQLException {
+        return org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil.getProjectName(projectid);
+    }
+
+    public void setProject(String projectName) {
+        try {
+            if (ProjectQueryUtil.containsProject(projectName)) {
+                this.currentProjectId = this.getProjectId(projectName);
+                this.currentProjectName = projectName;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void setReference(String refName) {
+        try {
+            if (ReferenceQueryUtil.containsReference(refName)) {
+                this.currentReferenceId = this.getReferenceId(refName);
+                this.currentReferenceName = refName;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private int getReferenceId(String refName) throws SQLException {
+        return org.ut.biolab.medsavant.db.util.jobject.ReferenceQueryUtil.getReferenceId(refName);
+    }
+
+    public List<String> getReferencesForProject(int projectid) throws SQLException {
+        
+        ResultSet rs = org.ut.biolab.medsavant.db.util.ConnectionController.connect().createStatement().executeQuery(
+                        "SELECT reference.name FROM " + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_VARIANTTABLEINFO
+                        + " LEFT JOIN " + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_REFERENCE + " ON "
+                        + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_VARIANTTABLEINFO + ".reference_id = "
+                        + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_REFERENCE + ".reference_id "
+                        + "WHERE project_id=" + projectid + ";");
+        
+        List<String> references = new ArrayList<String>();
+        while (rs.next()) {
+            references.add(rs.getString(1));
+        }
+        
+        return references;
+    }
+
     public static interface ProjectListener {
         public void projectAdded(String projectName);
         public void projectRemoved(String projectName);
@@ -61,13 +123,7 @@ public class ProjectController {
         public void projectTableRemoved(int projid, int refid);
     }
     
-    private int currentProjectId;
-    private int currentReferenceId;
-    private String currentPatientTable;
-    private String currentVariantTable;
-    
-    private static ProjectController instance;
-    
+   
     private ProjectController() {
         projectListeners = new ArrayList<ProjectListener>();
     }
