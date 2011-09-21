@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.view.annotations;
+package org.ut.biolab.medsavant.view.manage;
 
 import java.awt.Component;
 import javax.swing.JPanel;
@@ -22,7 +22,7 @@ public class PerPositionPage extends SubSectionView {
 
     
     public String getName() {
-        return "Positional Annotations";
+        return "Annotations";
     }
 
     public JPanel getView() {

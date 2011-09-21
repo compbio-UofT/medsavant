@@ -1,4 +1,4 @@
-package org.ut.biolab.medsavant.view.annotations.interval;
+package org.ut.biolab.medsavant.view.manage;
 
 /*
  * To change this template, choose Tools | Templates

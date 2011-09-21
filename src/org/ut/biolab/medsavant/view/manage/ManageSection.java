@@ -28,9 +28,12 @@ public class ManageSection extends SectionView {
 
     @Override
     public SubSectionView[] getSubSections() {
-        SubSectionView[] pages = new SubSectionView[2];
+        SubSectionView[] pages = new SubSectionView[5];
         pages[0] = new UserManagementPage(this);
         pages[1] = new ProjectManagementPage(this);
+        pages[2] = new PerPositionPage(this);
+        pages[3] = new ReferenceGenomePage(this);
+        pages[4] = new IntervalPage(this);
         return pages;
     }
 
