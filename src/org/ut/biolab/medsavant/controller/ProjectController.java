@@ -94,6 +94,10 @@ public class ProjectController {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    public String getCurrentReferenceName(){
+        return this.currentReferenceName;
+    }
 
     public int getReferenceId(String refName) throws SQLException {
         return org.ut.biolab.medsavant.db.util.jobject.ReferenceQueryUtil.getReferenceId(refName);

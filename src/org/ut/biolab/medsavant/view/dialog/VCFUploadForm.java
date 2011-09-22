@@ -7,20 +7,13 @@ package org.ut.biolab.medsavant.view.dialog;
 
 import java.awt.Dimension;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.DBUtil;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -29,10 +22,11 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author AndrewBrook
  */
 public class VCFUploadForm extends javax.swing.JDialog {
+
+    private int projectId;
+    private int referenceId;
     
-    private List<String> genome_id = new ArrayList<String>();
-    private List<String> species = new ArrayList<String>();
-    private List<String> version = new ArrayList<String>();
+    
     private String path;
     private File[] files;
 
@@ -40,36 +34,18 @@ public class VCFUploadForm extends javax.swing.JDialog {
     public VCFUploadForm() {
         
         this.setModalityType(ModalityType.APPLICATION_MODAL);
-        
-        Connection conn;
-        try {
-            conn = ConnectionController.connect();
-            Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM genome");
-    
-            while(rs.next()) {
-                genome_id.add(rs.getString(1));
-                species.add(rs.getString(2));
-                version.add(rs.getString(3));
-            }
-            
-        } catch (Exception ex) {
-            Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
-            return; //TODO
-        }
-
         initComponents();          
-        
-        for(int i = 0; i < genome_id.size(); i++){
-            genomeComboBox.addItem(species.get(i) + " - " + version.get(i));
-        }
-        pipelineComboBox.setEditable(false);
+             
+        //TODO:
+        //projectLabel.setText(ProjectController.getInstance().getCurrentProjectName());
+        //referenceLabel.setText(ProjectController.getInstance().getCurrentReferenceName());
+        projectLabel.setText("TODO (default 1)");
+        referenceLabel.setText("TODO (default 1)");
         
         uploadButton.setEnabled(false);
         
         this.setLocationRelativeTo(null);
-        this.setVisible(true);          
-        
+        this.setVisible(true);                
     }
     
     /** This method is called from within the constructor to
@@ -81,24 +57,22 @@ public class VCFUploadForm extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        genomeComboBox = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        pipelineComboBox = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
         outputFileField = new javax.swing.JTextField();
         chooseFileButton = new javax.swing.JButton();
         uploadButton = new javax.swing.JButton();
         progressLabel = new javax.swing.JLabel();
+        referenceLabel = new javax.swing.JLabel();
+        projectLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Add VCF File to Database");
 
-        jLabel1.setText("Genome: ");
+        jLabel1.setText("Project: ");
 
-        jLabel2.setText("Pipeline:");
-
-        pipelineComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1" }));
+        jLabel2.setText("Reference: ");
 
         jLabel3.setText("File(s) to Upload: ");
 
@@ -126,6 +100,10 @@ public class VCFUploadForm extends javax.swing.JDialog {
         progressLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         progressLabel.setText(" ");
 
+        referenceLabel.setText("jLabel4");
+
+        projectLabel.setText("jLabel5");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -133,33 +111,40 @@ public class VCFUploadForm extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel3)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(outputFileField, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(chooseFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(genomeComboBox, 0, 380, Short.MAX_VALUE)
-                    .addComponent(pipelineComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 380, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(referenceLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                            .addComponent(projectLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE))
+                        .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(progressLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(uploadButton, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(outputFileField, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(chooseFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(progressLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(uploadButton, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(projectLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(genomeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pipelineComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(referenceLabel))
+                .addGap(18, 18, 18)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -231,9 +216,7 @@ public class VCFUploadForm extends javax.swing.JDialog {
         Thread thread = new Thread() {
             @Override
             public void run() {
-                int g_id = Integer.parseInt(genome_id.get(genomeComboBox.getSelectedIndex()));
-                int p_id = Integer.parseInt(pipelineComboBox.getSelectedItem().toString());
-
+                
                 int currentfile = 0;
                 int totalnumfiles = files.length;
                 for (File f : files) {
@@ -242,7 +225,7 @@ public class VCFUploadForm extends javax.swing.JDialog {
                         String progress = "Importing file " + currentfile + " of " + totalnumfiles;
                         progressLabel.setText(progress);
                         System.out.println(progress);
-                        DBUtil.addVcfToDb(f.getAbsolutePath(), g_id, p_id);
+                        //DBUtil.addVcfToDb(f.getAbsolutePath(), g_id, p_id);
                         System.gc();
                     } catch (SQLException ex) {
                         ex.printStackTrace();
@@ -257,32 +240,21 @@ public class VCFUploadForm extends javax.swing.JDialog {
                     }
                 }
                 instance.dispose();
-                dialog.dispose();
+                dialog.dispose();               
             }
         };
         thread.start(); 
     }//GEN-LAST:event_uploadButtonActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                new VCFUploadForm().setVisible(true);
-            }
-        });
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooseFileButton;
-    private javax.swing.JComboBox genomeComboBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JTextField outputFileField;
-    private javax.swing.JComboBox pipelineComboBox;
     private javax.swing.JLabel progressLabel;
+    private javax.swing.JLabel projectLabel;
+    private javax.swing.JLabel referenceLabel;
     private javax.swing.JButton uploadButton;
     // End of variables declaration//GEN-END:variables
 }
