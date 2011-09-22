@@ -75,6 +75,7 @@ public class ProjectController {
             if (ProjectQueryUtil.containsProject(projectName)) {
                 this.currentProjectId = this.getProjectId(projectName);
                 this.currentProjectName = projectName;
+                this.fireProjectChangedEvent(projectName);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -115,6 +116,14 @@ public class ProjectController {
         return references;
     }
 
+    public int getCurrentProjectId() {
+        return this.currentProjectId;
+    }
+    
+    public String getCurrentProjectName() {
+        return this.currentProjectName;
+    }
+
     public static interface ProjectListener {
         public void projectAdded(String projectName);
         public void projectRemoved(String projectName);
@@ -143,6 +152,13 @@ public class ProjectController {
         ProjectController pc = getInstance();
         for (ProjectListener l : pc.projectListeners) {
             l.projectAdded(projectName);
+        }
+    }
+    
+    public void fireProjectChangedEvent(String projectName) {
+        ProjectController pc = getInstance();
+        for (ProjectListener l : pc.projectListeners) {
+            l.projectChanged(projectName);
         }
     }
     

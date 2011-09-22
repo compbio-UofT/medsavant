@@ -26,6 +26,7 @@ public class NewUserDialog extends javax.swing.JDialog {
     /** Creates new form NewProjectDialog */
     public NewUserDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
+        setTitle("Create user");
         initComponents();
         this.getRootPane().setDefaultButton(this.button_ok);
         this.setLocationRelativeTo(parent);

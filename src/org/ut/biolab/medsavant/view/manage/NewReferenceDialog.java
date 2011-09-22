@@ -23,6 +23,7 @@ public class NewReferenceDialog extends javax.swing.JDialog {
     /** Creates new form NewProjectDialog */
     public NewReferenceDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
+        setTitle("Create a reference");
         initComponents();
         this.getRootPane().setDefaultButton(this.button_ok);
         this.setLocationRelativeTo(parent);

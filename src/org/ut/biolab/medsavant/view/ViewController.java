@@ -117,18 +117,18 @@ public class ViewController extends JPanel {
 
     private static class Banner extends JPanel implements ProjectListener {
         private final JComboBox projectDropDown;
-        private final JComboBox referenceDropDown;
 
         public Banner() {
             this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
             this.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getEndzoneLineBorder(), ViewUtil.getMediumBorder()));
-            //this.add(ViewUtil.getTitleLabel("MedSavant"));
-            //this.add(Box.createHorizontalGlue());
             projectDropDown = new JComboBox();
-            referenceDropDown = new JComboBox();
+            
+            projectDropDown.setMinimumSize(new Dimension(210,23));
+                projectDropDown.setPreferredSize(new Dimension(210,23));
+                projectDropDown.setMaximumSize(new Dimension(210,23));
+
             refreshProjectDropDown();
             this.add(projectDropDown);
-            this.add(referenceDropDown);
             this.add(Box.createHorizontalGlue());
             
             ProjectController.getInstance().addProjectListener(this);
@@ -151,40 +151,9 @@ public class ViewController extends JPanel {
 
                     public void actionPerformed(ActionEvent e) {
                         ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
-                        refreshReferenceDropDown();
                     }
                 });
                 
-                projectDropDown.setMinimumSize(new Dimension(210,23));
-                projectDropDown.setPreferredSize(new Dimension(210,23));
-                projectDropDown.setMaximumSize(new Dimension(210,23));
-                
-            } catch (SQLException ex) {
-            }
-
-        }
-        
-        private void refreshReferenceDropDown() {
-            try {
-                referenceDropDown.removeAllItems();
-                
-                List<String> references = ProjectController.getInstance()
-                        .getReferencesForProject(
-                        ProjectController.getInstance().getProjectId((String) projectDropDown.getSelectedItem()));
-
-                for (String s : references) {
-                    referenceDropDown.addItem(s);
-                }
-                referenceDropDown.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
-                    }
-                });
-                
-                referenceDropDown.setMinimumSize(new Dimension(210,23));
-                referenceDropDown.setPreferredSize(new Dimension(210,23));
-                referenceDropDown.setMaximumSize(new Dimension(210,23));
                 
             } catch (SQLException ex) {
             }

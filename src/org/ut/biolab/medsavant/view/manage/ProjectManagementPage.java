@@ -61,16 +61,33 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class ProjectManagementPage extends SubSectionView implements ProjectListener {
 
     public void projectAdded(String projectName) {
-        System.out.println("Project added: " + projectName);
-        panel.refresh();
+        if (panel != null) {
+            try {
+                int projectid = ProjectController.getInstance().getProjectId(projectName);
+
+                NewVariantTableDialog d = new NewVariantTableDialog(projectid, MainFrame.getInstance(), true);
+                d.setCancellable(false);
+                d.setVisible(true);
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            panel.refresh();
+        }
     }
 
     public void projectRemoved(String projectName) {
-        panel.refresh();
+        if (panel != null) {
+            panel.refresh();
+        }
     }
 
     public void projectChanged(String projectName) {
-        panel.refresh();
+        if (panel != null) {
+            panel.refresh();
+        }
     }
 
     public void projectTableRemoved(int projid, int refid) {
@@ -106,7 +123,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
         public final JButton addTableButton() {
 
-            JButton b = new JButton("Add Variant Table");
+            JButton b = new JButton("Add table for different reference");
             b.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
@@ -115,15 +132,15 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
                         NewVariantTableDialog d = new NewVariantTableDialog(projectid, MainFrame.getInstance(), true);
                         d.setVisible(true);
-                        
+
                         refreshSelectedProject();
-                        
+
                     } catch (SQLException ex) {
                         Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             });
-            
+
             return b;
         }
 
@@ -221,6 +238,8 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                 c.gridx = 0;
                 c.gridy = 0;
                 c.ipadx = 10;
+                
+                JButton removeTable = null;
 
                 while (rs.next()) {
                     numTables++;
@@ -267,7 +286,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
                     //tablePanel.add(Box.createHorizontalStrut(strutwidth));
 
-                    JButton removeTable = new JButton("Delete");
+                    removeTable = new JButton("Delete");
                     removeTable.setPreferredSize(buttonDim);
                     removeTable.setMaximumSize(buttonDim);
 
@@ -292,8 +311,12 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
                 if (numTables == 0) {
                     p.add(ViewUtil.alignLeft(ViewUtil.getDetailLabel("No variant tables")));
+                    
                 } else {
 
+                    if (numTables == 1 && removeTable != null) {
+                        removeTable.setEnabled(false);
+                    }
                     //JPanel defaultP = ViewUtil.getClearPanel();
                     //ViewUtil.applyHorizontalBoxLayout(defaultP);
 

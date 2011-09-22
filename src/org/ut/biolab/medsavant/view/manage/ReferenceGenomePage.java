@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ReferenceController.ReferenceListener;
@@ -31,15 +32,18 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class ReferenceGenomePage extends SubSectionView implements ReferenceListener {
 
     public void referenceAdded(String name) {
-        panel.refresh();
+        if (panel != null)
+            panel.refresh();    
     }
 
     public void referenceRemoved(String name) {
-        panel.refresh();
+        if (panel != null)
+            panel.refresh();
     }
 
     public void referenceChanged(String name) {
-        panel.refresh();
+        if (panel != null)
+            panel.refresh();
     }
     private SplitScreenView panel;
 
@@ -127,6 +131,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
         private final JPanel details;
         private final JPanel menu;
         private final JPanel content;
+        private String refName;
 
         public ReferenceDetailedView() {
 
@@ -137,8 +142,9 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
             //menu.add(setDefaultCaseButton());
             //menu.add(setDefaultControlButton());
-            //menu.add(removeIndividualsButton());
+            menu.add(deleteButton());
             //menu.add(deleteCohortButton());
+            
             menu.setVisible(false);
 
             content.setLayout(new BorderLayout());
@@ -149,8 +155,8 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
         @Override
         public void setSelectedItem(Vector item) {
-            String annotationName = (String) item.get(0);
-            setTitle(annotationName);
+            refName = (String) item.get(0);
+            setTitle(refName);
 
             details.removeAll();
             details.setLayout(new BorderLayout());
@@ -160,6 +166,26 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             if (menu != null) {
                 menu.setVisible(true);
             }
+        }
+        
+        public final JButton deleteButton() {
+            JButton b = new JButton("Delete Reference");
+            b.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent ae) {
+
+                    int result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                            "Are you sure you want to delete " + refName + "?\nThis cannot be undone.",
+                            "Confirm", JOptionPane.YES_NO_OPTION);
+                    if (result == JOptionPane.YES_OPTION) {
+                        boolean refRemoved = ReferenceController.getInstance().removeReference(refName);
+                        if (!refRemoved) {
+                            JOptionPane.showMessageDialog(MainFrame.getInstance(), "Cannot remove this reference because projects\nor annotations still refer to it.", "", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
+            });
+            return b;
         }
 
         @Override

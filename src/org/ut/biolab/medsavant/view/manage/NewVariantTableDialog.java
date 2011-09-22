@@ -17,8 +17,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController.ReferenceListener;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.jobject.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.view.MainFrame;
@@ -27,18 +31,29 @@ import org.ut.biolab.medsavant.view.MainFrame;
  *
  * @author mfiume
  */
-public class NewVariantTableDialog extends javax.swing.JDialog {
+public class NewVariantTableDialog extends javax.swing.JDialog implements ReferenceListener {
     private Map<Integer, String> refIdToNameMap;
     private final int projectid;
 
     /** Creates new form NewProjectDialog */
     public NewVariantTableDialog(int projectid, java.awt.Frame parent, boolean modal) {
         super(parent, modal);
+        setTitle("Create variant table for reference");
         initComponents();
         this.projectid = projectid;
         initForm(projectid);
         this.getRootPane().setDefaultButton(this.button_ok);
         this.setLocationRelativeTo(parent);
+        ReferenceController.getInstance().addReferenceListener(this);
+    }
+    
+    public void setCancellable(boolean b) {
+        this.button_cancel.setEnabled(b);
+        if (!b) {
+            this.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        } else {
+            this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -56,11 +71,13 @@ public class NewVariantTableDialog extends javax.swing.JDialog {
         cb_references = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         label_projectname = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
         setResizable(false);
 
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabel1.setText("Project: ");
 
         button_cancel.setText("Cancel");
@@ -77,9 +94,17 @@ public class NewVariantTableDialog extends javax.swing.JDialog {
             }
         });
 
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabel2.setText("Reference: ");
 
         label_projectname.setText("projName");
+
+        jButton1.setText("New Reference");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -89,17 +114,19 @@ public class NewVariantTableDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(button_ok)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(button_cancel))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel1)
-                            .add(jLabel2))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(label_projectname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, cb_references, 0, 283, Short.MAX_VALUE))))
+                            .add(label_projectname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
+                            .add(cb_references, 0, 169, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButton1))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(button_ok)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(button_cancel)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -112,7 +139,8 @@ public class NewVariantTableDialog extends javax.swing.JDialog {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cb_references, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2))
+                    .add(jLabel2)
+                    .add(jButton1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 7, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(button_cancel)
@@ -141,6 +169,11 @@ public class NewVariantTableDialog extends javax.swing.JDialog {
 
     }//GEN-LAST:event_button_okActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        NewReferenceDialog d = new NewReferenceDialog(MainFrame.getInstance(),true);
+        d.setVisible(true);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -163,6 +196,7 @@ public class NewVariantTableDialog extends javax.swing.JDialog {
     private javax.swing.JButton button_cancel;
     private javax.swing.JButton button_ok;
     private javax.swing.JComboBox cb_references;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel label_projectname;
@@ -172,24 +206,13 @@ public class NewVariantTableDialog extends javax.swing.JDialog {
         try {
             String name = ProjectController.getInstance().getProjectName(projectid);
             this.label_projectname.setText(name);
-            
-            refIdToNameMap = getReferencesWithoutTablesInProject(projectid);
-            
-            if (refIdToNameMap.isEmpty()) {
-                JOptionPane.showMessageDialog(MainFrame.getInstance(), "Variant tables exist for all references.", "", JOptionPane.INFORMATION_MESSAGE);
-                this.dispose();
-            } else {
-                
-                for (Integer i : refIdToNameMap.keySet()) {
-                    this.cb_references.addItem(refIdToNameMap.get(i));
-                }
-            }
-            
-            
         } catch (SQLException ex) {
             ex.printStackTrace();
             this.dispose();
         }
+        
+        refreshReferenceList();
+
     }
 
     private Map<Integer, String> getReferencesWithoutTablesInProject(int projectid) throws SQLException {
@@ -209,5 +232,56 @@ public class NewVariantTableDialog extends javax.swing.JDialog {
         
         return result;
         
+    }
+
+    public void referenceAdded(String name) {
+        refreshReferenceList();
+    }
+
+    public void referenceRemoved(String name) {
+        refreshReferenceList();
+    }
+
+    public void referenceChanged(String prnameojectName) {
+    }
+
+    private void refreshReferenceList() {
+        try {
+            cb_references.removeAllItems();
+            
+            refIdToNameMap = getReferencesWithoutTablesInProject(projectid);
+                
+                //if (refIdToNameMap.isEmpty()) {
+                //    JOptionPane.showMessageDialog(MainFrame.getInstance(), "Variant tables exist for all references.", "", JOptionPane.INFORMATION_MESSAGE);
+                //    this.dispose();
+                //} else {
+                    for (Integer i : refIdToNameMap.keySet()) {
+                        this.cb_references.addItem(refIdToNameMap.get(i));
+                    }
+                //}
+        } catch (SQLException ex) {
+            this.dispose();
+            ex.printStackTrace();
+            Logger.getLogger(NewVariantTableDialog.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    @Override
+    public void setVisible(boolean b) {
+        if (b) {
+            try {
+                if (getReferencesWithoutTablesInProject(projectid).isEmpty()) {
+                    JOptionPane.showMessageDialog(MainFrame.getInstance(), "Variant tables exist for all references.", "", JOptionPane.INFORMATION_MESSAGE);
+                    super.setVisible(false);
+                } else {
+                    super.setVisible(true);
+                }
+            } catch (SQLException ex) {
+                super.setVisible(false);
+                ex.printStackTrace();
+            }
+        } else {
+            super.setVisible(false);
+        }
     }
 }

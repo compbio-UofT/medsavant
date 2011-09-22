@@ -8,7 +8,14 @@ package org.ut.biolab.medsavant.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.util.List;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
 import org.ut.biolab.medsavant.view.manage.ManageSection;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.patients.PatientsSection;
@@ -46,6 +53,7 @@ public class LoggedInView extends JPanel {
     private void initTabs() {
         if (!initiated) {
             addSection(new PatientsSection());
+            
             addSection(new GeneticsSection());
             
             JPanel p = new JPanel();
@@ -60,4 +68,5 @@ public class LoggedInView extends JPanel {
         }
         initiated = true;
     }
+    
 }

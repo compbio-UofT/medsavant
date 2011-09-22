@@ -3,6 +3,8 @@ package org.ut.biolab.medsavant.controller;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.util.jobject.ReferenceQueryUtil;
 
 /**
@@ -36,11 +38,24 @@ public class ReferenceController {
 
     public void addReference(String name) {
         try {
-            org.ut.biolab.medsavant.db.Manage.addReference(name);
+            org.ut.biolab.medsavant.db.util.jobject.ReferenceQueryUtil.addReference(name);
             System.out.println("Firing reference added event...");
             fireReferenceAddedEvent(name);
         } catch (SQLException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    public boolean removeReference(String refName) {
+        try {
+            boolean success = ReferenceQueryUtil.removeReference(ReferenceQueryUtil.getReferenceId(refName));
+            if (success) {
+                this.fireReferenceRemovedEvent(refName);
+            }
+            return success;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
         }
     }
 
@@ -71,6 +86,13 @@ public class ReferenceController {
         ReferenceController pc = getInstance();
         for (ReferenceListener l : pc.referenceListeners) {
             l.referenceAdded(projectName);
+        }
+    }
+    
+    public void fireReferenceRemovedEvent(String projectName) {
+        ReferenceController pc = getInstance();
+        for (ReferenceListener l : pc.referenceListeners) {
+            l.referenceRemoved(projectName);
         }
     }
     
