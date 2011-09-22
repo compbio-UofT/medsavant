@@ -6,8 +6,8 @@ package org.ut.biolab.medsavant.view.patients;
 
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 import com.jidesoft.utils.SwingWorker;
-import fiume.table.SearchableTablePanel;
-import fiume.table.Util;
+import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
+import org.ut.biolab.medsavant.view.component.Util;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;

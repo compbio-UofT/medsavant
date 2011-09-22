@@ -6,7 +6,7 @@ package org.ut.biolab.medsavant.olddb.importfile;
 
 import au.com.bytecode.opencsv.CSVReader;
 import com.jidesoft.utils.SwingWorker;
-import fiume.table.SearchableTablePanel;
+import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;

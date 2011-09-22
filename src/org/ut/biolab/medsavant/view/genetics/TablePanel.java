@@ -8,7 +8,7 @@ package org.ut.biolab.medsavant.view.genetics;
 import java.util.concurrent.ExecutionException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.view.util.DialogUtil;
-import fiume.table.SearchableTablePanel;
+import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import fiume.vcf.VariantRecord;
 import java.awt.CardLayout;
 import java.sql.SQLException;

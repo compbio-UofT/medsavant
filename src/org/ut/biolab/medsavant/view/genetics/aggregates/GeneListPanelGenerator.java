@@ -9,7 +9,7 @@ import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.record.BEDRecord;
 import com.jidesoft.utils.SwingWorker;
-import fiume.table.SearchableTablePanel;
+import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
