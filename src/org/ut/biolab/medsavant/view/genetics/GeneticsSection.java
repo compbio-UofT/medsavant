@@ -8,6 +8,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JButton;
@@ -123,7 +125,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         referenceDropDown.setMinimumSize(new Dimension(140, 23));
         referenceDropDown.setPreferredSize(new Dimension(140, 23));
         referenceDropDown.setMaximumSize(new Dimension(140, 23));
-
+        
         ProjectController.getInstance().addProjectListener(this);
 
         return referenceDropDown;

@@ -71,11 +71,9 @@ public class ViewController extends JPanel {
             JPanel[] persistentPanels = parent.getPersistentPanels();
             if (persistentPanels != null) {
                 peekRight.setVisible(true);
-                //buttonSectionPanelController.setEnabled(true);
                 sectionPanel.setSectionPersistencePanels(persistentPanels);
             } else {
                 peekRight.setVisible(false);
-                //buttonSectionPanelController.setVisible(false);
             }
         }
         currentSection = parent;
