@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.oldcontroller;
+package org.ut.biolab.medsavant.controller;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
@@ -19,6 +20,7 @@ public class LoginController {
 
     private static String username;
     private static String password;
+    private static boolean isAdmin; 
 
     public static String getPassword() {
         return password;
@@ -26,6 +28,10 @@ public class LoginController {
 
     public static String getUsername() {
         return username;
+    }
+    
+    public static boolean isAdmin() {
+        return isAdmin;
     }
 
     private static boolean loggedIn = false;
@@ -54,6 +60,13 @@ public class LoginController {
         
         username = un;
         password = pw;
+        
+        try {
+            isAdmin = org.ut.biolab.medsavant.db.util.jobject.UserQueryUtil.isUserAdmin(username);
+        } catch (SQLException ex) {
+            isAdmin = false;
+            ex.printStackTrace();
+        }
         
         SettingsController.getInstance().setUsername(un);
         if (SettingsController.getInstance().getRememberPassword()) {

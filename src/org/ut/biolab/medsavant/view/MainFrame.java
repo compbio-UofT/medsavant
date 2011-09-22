@@ -24,8 +24,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
-import org.ut.biolab.medsavant.oldcontroller.LoginController;
-import org.ut.biolab.medsavant.oldcontroller.SettingsController;
+import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.ManageDB;
 import org.ut.biolab.medsavant.model.event.LoginListener;
@@ -106,8 +106,6 @@ public class MainFrame extends JFrame implements LoginListener{
         
         LoginController.addLoginListener(this);
 
-        //initVariantCollection();
-
         view = new JPanel();
         viewCardLayout = new CardLayout();
         view.setLayout(viewCardLayout);
@@ -140,24 +138,6 @@ public class MainFrame extends JFrame implements LoginListener{
         fileMenu.add(logOutItem);
         fileMenu.add(closeItem);
         menu.add(fileMenu);
-        
-        final MainFrame parent = this;
-        /*
-        JMenu viewMenu = new JMenu("View");
-        JMenuItem threadManagerItem = new JMenuItem("Threads");
-        threadManagerItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (threadManager == null) {
-                    threadManager = new ThreadManagerDialog(parent,false);
-                }
-                threadManager.setVisible(true);
-            }
-        });
-        viewMenu.add(threadManagerItem);
-        
-        menu.add(viewMenu);
-         * 
-         */
         
         setJMenuBar(menu);
 

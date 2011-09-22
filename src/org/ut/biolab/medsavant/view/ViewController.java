@@ -23,8 +23,11 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.border.MatteBorder;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
+import org.ut.biolab.medsavant.model.event.LoginEvent;
+import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.util.view.PeekingPanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -80,6 +83,10 @@ public class ViewController extends JPanel {
 
     void setProject(String projectname) {
         System.out.println("Setting project to : " + projectname);
+    }
+
+    void clearMenu() {
+        menu.removeAll();
     }
 
     private static class SidePanel extends JPanel {

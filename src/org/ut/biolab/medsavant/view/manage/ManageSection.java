@@ -8,6 +8,7 @@ import org.ut.biolab.medsavant.view.genetics.*;
 
 import java.awt.Component;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
@@ -28,12 +29,18 @@ public class ManageSection extends SectionView {
 
     @Override
     public SubSectionView[] getSubSections() {
-        SubSectionView[] pages = new SubSectionView[5];
-        pages[0] = new UserManagementPage(this);
-        pages[1] = new ProjectManagementPage(this);
-        pages[2] = new AnnotationsPage(this);
-        pages[3] = new ReferenceGenomePage(this);
-        pages[4] = new IntervalPage(this);
+        SubSectionView[] pages;
+        if (LoginController.isAdmin()) {
+            pages = new SubSectionView[5];
+            pages[0] = new UserManagementPage(this);
+            pages[1] = new ProjectManagementPage(this);
+            pages[2] = new AnnotationsPage(this);
+            pages[3] = new ReferenceGenomePage(this);
+            pages[4] = new IntervalPage(this);
+        } else {
+            pages = new SubSectionView[1];
+            pages[0] = new IntervalPage(this);
+        }
         return pages;
     }
 

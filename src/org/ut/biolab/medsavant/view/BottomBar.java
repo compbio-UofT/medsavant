@@ -25,7 +25,7 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.oldcontroller.FilterController;
-import org.ut.biolab.medsavant.oldcontroller.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.oldcontroller.ResultController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;

@@ -51,7 +51,10 @@ public class LoggedInView extends JPanel {
     }
 
     private void initTabs() {
-        if (!initiated) {
+        
+        viewController.clearMenu();
+        
+        //if (!initiated) {
             addSection(new PatientsSection());
             
             addSection(new GeneticsSection());
@@ -65,8 +68,8 @@ public class LoggedInView extends JPanel {
             
             //addSection(new AnnotationsSection());
             addSection(new ManageSection());
-        }
-        initiated = true;
+        //}
+        //initiated = true;
     }
     
 }
