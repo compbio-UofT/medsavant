@@ -122,9 +122,9 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     private Component getReferenceDropDown() {
         referenceDropDown = new JComboBox();
 
-        referenceDropDown.setMinimumSize(new Dimension(140, 23));
-        referenceDropDown.setPreferredSize(new Dimension(140, 23));
-        referenceDropDown.setMaximumSize(new Dimension(140, 23));
+        referenceDropDown.setMinimumSize(new Dimension(200, 23));
+        referenceDropDown.setPreferredSize(new Dimension(200, 23));
+        referenceDropDown.setMaximumSize(new Dimension(200, 23));
         
         ProjectController.getInstance().addProjectListener(this);
 
@@ -138,8 +138,13 @@ public class GeneticsSection extends SectionView implements ProjectListener {
             List<String> references = ProjectController.getInstance().getReferencesForProject(
                     ProjectController.getInstance().getCurrentProjectId());
 
-            for (String s : references) {
-                referenceDropDown.addItem(s);
+            for (String refname : references) {
+                
+                int refid = ProjectController.getInstance().getReferenceId(refname);
+                
+                int numVariantsInTable = ProjectController.getInstance().getNumVariantsInTable(ProjectController.getInstance().getCurrentProjectId(),refid);
+                
+                referenceDropDown.addItem(refname + " (" + numVariantsInTable + " variants)");
             }
             referenceDropDown.addActionListener(new ActionListener() {
 
@@ -149,6 +154,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
             });
 
         } catch (SQLException ex) {
+            ex.printStackTrace();
         }
 
     }

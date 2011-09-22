@@ -95,7 +95,7 @@ public class ProjectController {
         }
     }
 
-    private int getReferenceId(String refName) throws SQLException {
+    public int getReferenceId(String refName) throws SQLException {
         return org.ut.biolab.medsavant.db.util.jobject.ReferenceQueryUtil.getReferenceId(refName);
     }
 
@@ -122,6 +122,10 @@ public class ProjectController {
     
     public String getCurrentProjectName() {
         return this.currentProjectName;
+    }
+
+    public int getNumVariantsInTable(int projectid, int refid) throws SQLException {
+        return ProjectQueryUtil.getNumberOfRecordsInVariantTable(projectid,refid);
     }
 
     public static interface ProjectListener {
