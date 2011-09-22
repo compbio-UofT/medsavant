@@ -216,7 +216,7 @@ public class VCFUploadForm extends javax.swing.JDialog {
         Thread thread = new Thread() {
             @Override
             public void run() {
-                
+               /* 
                 int currentfile = 0;
                 int totalnumfiles = files.length;
                 for (File f : files) {
@@ -240,7 +240,7 @@ public class VCFUploadForm extends javax.swing.JDialog {
                     }
                 }
                 instance.dispose();
-                dialog.dispose();               
+                dialog.dispose();   */            
             }
         };
         thread.start(); 
