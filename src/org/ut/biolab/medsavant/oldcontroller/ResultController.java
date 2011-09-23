@@ -8,7 +8,7 @@ package org.ut.biolab.medsavant.oldcontroller;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
-import fiume.vcf.VariantRecord;
+import org.ut.biolab.medsavant.vcf.VariantRecord;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;

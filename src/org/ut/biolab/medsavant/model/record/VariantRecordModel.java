@@ -15,7 +15,7 @@
  */
 package org.ut.biolab.medsavant.model.record;
 
-import fiume.vcf.VariantRecord;
+import org.ut.biolab.medsavant.vcf.VariantRecord;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;

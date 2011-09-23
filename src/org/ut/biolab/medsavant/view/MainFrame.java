@@ -44,7 +44,7 @@ public class MainFrame extends JFrame implements LoginListener{
     private static final String SESSION_VIEW_CARD_NAME = "main";
     private JPanel sessionView;
     private final JMenuItem logOutItem;
-    private final JMenuItem manageDBItem;
+    //private final JMenuItem manageDBItem;
     private LoginView loginView;
     private String currentCard;
     
@@ -63,7 +63,7 @@ public class MainFrame extends JFrame implements LoginListener{
             view.add(sessionView, SESSION_VIEW_CARD_NAME);
         //}
         logOutItem.setEnabled(true);
-        manageDBItem.setEnabled(true);
+        //manageDBItem.setEnabled(true);
         BottomBar.getInstance().updateLoginStatus();
         switchToView(SESSION_VIEW_CARD_NAME);
     }
@@ -81,7 +81,7 @@ public class MainFrame extends JFrame implements LoginListener{
         //}
         
         logOutItem.setEnabled(false);
-        manageDBItem.setEnabled(false);
+        //manageDBItem.setEnabled(false);
         BottomBar.getInstance().updateLoginStatus();
         switchToView(LOGIN_CARD_NAME);
     }
@@ -114,6 +114,7 @@ public class MainFrame extends JFrame implements LoginListener{
 
         JMenuBar menu = new JMenuBar();   
         JMenu fileMenu = new JMenu("File");
+        /*
         manageDBItem = new JMenuItem("Manage Database");
         manageDBItem.setEnabled(false);
         final MainFrame instance = this;
@@ -122,6 +123,8 @@ public class MainFrame extends JFrame implements LoginListener{
                 new ManageDB(instance, true);
             }
         });
+         * 
+         */
         logOutItem = new JMenuItem("Sign out");
         logOutItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -134,7 +137,7 @@ public class MainFrame extends JFrame implements LoginListener{
                 instance.requestClose();
             }
         });
-        fileMenu.add(manageDBItem);
+        //fileMenu.add(manageDBItem);
         fileMenu.add(logOutItem);
         fileMenu.add(closeItem);
         menu.add(fileMenu);

@@ -6,7 +6,7 @@
 package org.ut.biolab.medsavant.util;
 
 import com.jidesoft.swing.JideButton;
-import fiume.vcf.VariantRecord;
+import org.ut.biolab.medsavant.vcf.VariantRecord;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;

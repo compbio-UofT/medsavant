@@ -20,7 +20,7 @@ import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
 import com.jidesoft.utils.SwingWorker;
-import fiume.vcf.VariantRecord;
+import org.ut.biolab.medsavant.vcf.VariantRecord;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;

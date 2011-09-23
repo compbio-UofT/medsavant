@@ -63,9 +63,11 @@ public class LoginController {
         
         try {
             isAdmin = org.ut.biolab.medsavant.db.util.jobject.UserQueryUtil.isUserAdmin(username);
+        
         } catch (SQLException ex) {
-            isAdmin = false;
-            ex.printStackTrace();
+            setLoggedIn(false);
+            setLoginException(ex);
+            return;
         }
         
         SettingsController.getInstance().setUsername(un);
@@ -98,7 +100,7 @@ public class LoginController {
         setLoggedIn(false);
     }
 
-    private static void setLoginException(NonFatalDatabaseException ex) {
+    private static void setLoginException(Exception ex) {
         fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED,ex));
     }
 }

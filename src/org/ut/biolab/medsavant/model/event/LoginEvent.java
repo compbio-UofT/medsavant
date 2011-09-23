@@ -17,7 +17,7 @@ public class LoginEvent {
     
     private final boolean isLoggedIn;
     private final EventType type;
-    private NonFatalDatabaseException exception;
+    private Exception exception;
 
     public LoginEvent(EventType type) {
         this.isLoggedIn = type == EventType.LOGGED_IN;
@@ -25,13 +25,13 @@ public class LoginEvent {
         this.exception = null;
     }
     
-    public LoginEvent(EventType type, NonFatalDatabaseException e) {
+    public LoginEvent(EventType type, Exception e) {
         this.isLoggedIn = type == EventType.LOGGED_IN;
         this.type = type;
         this.exception = e;
     }
 
-    public NonFatalDatabaseException getException() {
+    public Exception getException() {
         return exception;
     }
 

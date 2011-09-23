@@ -31,12 +31,13 @@ public class ManageSection extends SectionView {
     public SubSectionView[] getSubSections() {
         SubSectionView[] pages;
         if (LoginController.isAdmin()) {
-            pages = new SubSectionView[5];
+            pages = new SubSectionView[6];
             pages[0] = new UserManagementPage(this);
             pages[1] = new ProjectManagementPage(this);
-            pages[2] = new AnnotationsPage(this);
-            pages[3] = new ReferenceGenomePage(this);
-            pages[4] = new IntervalPage(this);
+            pages[2] = new PatientsPage(this);
+            pages[3] = new AnnotationsPage(this);
+            pages[4] = new ReferenceGenomePage(this);
+            pages[5] = new IntervalPage(this);
         } else {
             pages = new SubSectionView[1];
             pages[0] = new IntervalPage(this);

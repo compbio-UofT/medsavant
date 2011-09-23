@@ -4,7 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import fiume.vcf.VariantRecord;
+import org.ut.biolab.medsavant.vcf.VariantRecord;
 import java.util.ArrayList;
 import java.util.List;
 import org.ut.biolab.medsavant.model.PostProcessFilter;

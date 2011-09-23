@@ -297,17 +297,29 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         }
     }
 
-    public void notifyOfUnsuccessfulLogin(NonFatalDatabaseException ex) {
-        System.out.println("Notified of exception " + ex.getMessage() + " of type " + ex.getExceptionType());
+    public void notifyOfUnsuccessfulLogin(Exception ex) {
+        
+        if (ex instanceof NonFatalDatabaseException) {
+        
+            NonFatalDatabaseException ex0 = (NonFatalDatabaseException) ex;
+        System.out.println("Notified of exception " + ex.getMessage() + " of type " + ex0.getExceptionType());
         if (!LoginController.isLoggedIn()) {
-            if (ex.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_ACCESS_DENIED) {
+            if (ex0.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_ACCESS_DENIED) {
                 this.label_status.setText("login incorrect");
-            } else if (ex.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_DB_CONNECTION_FAILURE
+            } else if (ex0.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_DB_CONNECTION_FAILURE
                     ) {
                 this.label_status.setText("error accessing database");
-            } else if (ex.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_UNKNOWN) {
+            } else if (ex0.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_UNKNOWN) {
                 this.label_status.setText("login failure");
             }
+            this.label_status.setFont(new Font("Tahoma", Font.PLAIN, 14));
+            this.label_status.setForeground(Color.red);
+            this.field_username.requestFocus();
+            this.button_login.setEnabled(true);
+        }
+        } else {
+            ex.printStackTrace();
+            this.label_status.setText("error accessing database");
             this.label_status.setFont(new Font("Tahoma", Font.PLAIN, 14));
             this.label_status.setForeground(Color.red);
             this.field_username.requestFocus();

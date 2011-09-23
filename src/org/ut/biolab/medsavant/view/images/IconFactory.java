@@ -37,7 +37,11 @@ public class IconFactory {
         SPIRAL,
         TAB_LEFT,
         TAB_RIGHT,
-        LOGO
+        LOGO,
+        FIRST,
+        LAST,
+        NEXT,
+        PREVIOUS
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/view/images/icon/";
 
@@ -55,6 +59,14 @@ public class IconFactory {
                 return getIcon(iconroot + "spiral_green.png");
                 case LOGO:
                 return getIcon(iconroot + "medsavantlogo.png");
+                    case FIRST:
+                return getIcon(iconroot + "first.png");
+            case PREVIOUS:
+                return getIcon(iconroot + "previous.png");
+            case NEXT:
+                return getIcon(iconroot + "next.png");
+            case LAST:
+                return getIcon(iconroot + "last.png");
             case TAB_LEFT:
                 
                 
