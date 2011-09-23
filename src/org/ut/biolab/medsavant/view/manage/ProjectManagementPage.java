@@ -109,6 +109,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
             menu.add(deleteProjectButton());
             menu.add(addTableButton());
+            menu.add(editPatientButton());
 
             menu.setVisible(false);
 
@@ -120,6 +121,30 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             ProjectController.getInstance().addProjectListener(this);
 
         }
+        
+        public final JButton editPatientButton() {
+
+            JButton b = new JButton("Edit patient fields");
+            b.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent ae) {
+                    try {
+                        int projectid = ProjectController.getInstance().getProjectId(projectName);
+
+                        EditPatientTableDialog d = new EditPatientTableDialog(projectid, MainFrame.getInstance(), true);
+                        d.setVisible(true);
+
+                        //refreshSelectedProject();
+
+                    } catch (SQLException ex) {
+                        Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            });
+
+            return b;
+        }
+        
 
         public final JButton addTableButton() {
 
@@ -229,8 +254,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
                 int numTables = 0;
                 p.add(ViewUtil.getLeftAlignedComponent(ViewUtil.getDetailHeaderLabel("Variant Tables:")));
-
-                //JComboBox defaultTableBox = new JComboBox();
+                
 
                 JPanel tablePanel = ViewUtil.getClearPanel();
                 tablePanel.setLayout(new GridBagLayout());
@@ -238,6 +262,10 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                 c.gridx = 0;
                 c.gridy = 0;
                 c.ipadx = 10;
+                c.anchor = GridBagConstraints.WEST;
+                c.fill = GridBagConstraints.NONE;
+                c.weightx = 0;
+                c.weighty = 0;
                 
                 JButton removeTable = null;
 
@@ -305,29 +333,31 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
                     tablePanel.add(removeTable, c);
 
+                    c.gridx++;
+                    
+                    tablePanel.add(Box.createHorizontalGlue(),c);
+                    
                     c.gridy++;
                 }
 
 
                 if (numTables == 0) {
                     p.add(ViewUtil.alignLeft(ViewUtil.getDetailLabel("No variant tables")));
-                    
                 } else {
 
                     if (numTables == 1 && removeTable != null) {
                         removeTable.setEnabled(false);
                     }
-                    //JPanel defaultP = ViewUtil.getClearPanel();
-                    //ViewUtil.applyHorizontalBoxLayout(defaultP);
-
-                    //defaultP.add(ViewUtil.getDetailLabel("Default reference: "));
-                    //defaultP.add(defaultTableBox);
-                    //defaultP.add(Box.createHorizontalGlue()); 
-                    //tablePanel.add(Box.createVerticalGlue());
-                    //p.add(defaultP);
-                    p.add(ViewUtil.alignLeft(tablePanel));
+                    
+                    // TODO: this isn't the best way to force GridBagLayout to top-left
+                    JPanel p0 = ViewUtil.getClearPanel();
+                    p0.setLayout(new BorderLayout());
+                    p0.add(tablePanel,BorderLayout.WEST);
+                    JPanel p1 = ViewUtil.getClearPanel();
+                    p1.setLayout(new BorderLayout());
+                    p1.add(p0,BorderLayout.NORTH);
+                    p.add(p1);
                 }
-
 
                 p.add(Box.createVerticalGlue());
 

@@ -4,9 +4,9 @@
  */
 
 /*
- * PatientsManagementPanel.java
+ * NewProjectDialog.java
  *
- * Created on Sep 23, 2011, 9:14:38 AM
+ * Created on Sep 19, 2011, 12:29:03 PM
  */
 package org.ut.biolab.medsavant.view.manage;
 
@@ -34,96 +34,116 @@ import org.ut.biolab.medsavant.olddb.table.TableSchema.ColumnType;
  *
  * @author mfiume
  */
-public class PatientsManagementPanel extends javax.swing.JPanel {
+public class EditPatientTableDialog extends javax.swing.JDialog {
 
-     private String tableComboDefault = "Choose table to modify";
-    private ModifiableTableSchema currentSchema; 
+    private String tableComboDefault = "Choose table to modify";
+    private ModifiableTableSchema currentSchema;
     private ModifiableColumn currentColumn;
 
-    
-    /** Creates new form PatientsManagementPanel */
-    public PatientsManagementPanel() {
+    /** Creates new form NewProjectDialog */
+    public EditPatientTableDialog(int projectid, java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
+        setTitle("Edit Patient Tables");
         initComponents();
-        
-         
+
+
+
         //listeners
         columnList.addListSelectionListener(new ListSelectionListener() {
+
             public void valueChanged(ListSelectionEvent e) {
                 Object o = columnList.getSelectedValue();
-                if(o != null){
-                    populateDetails((ModifiableColumn)o);
-                }      
+                if (o != null) {
+                    populateDetails((ModifiableColumn) o);
+                }
             }
         });
         columnNameField.addFocusListener(new FocusListener() {
-            public void focusGained(FocusEvent e) {}
+
+            public void focusGained(FocusEvent e) {
+            }
+
             public void focusLost(FocusEvent e) {
-                if(currentColumn != null){
+                if (currentColumn != null) {
                     currentColumn.setColumnName(columnNameField.getText());
                 }
             }
         });
         shortNameField.addFocusListener(new FocusListener() {
-            public void focusGained(FocusEvent e) {}
+
+            public void focusGained(FocusEvent e) {
+            }
+
             public void focusLost(FocusEvent e) {
-                if(currentColumn != null){
+                if (currentColumn != null) {
                     currentColumn.setShortName(shortNameField.getText());
                 }
             }
         });
         descriptionField.addFocusListener(new FocusListener() {
-            public void focusGained(FocusEvent e) {}
+
+            public void focusGained(FocusEvent e) {
+            }
+
             public void focusLost(FocusEvent e) {
-                if(currentColumn != null){
+                if (currentColumn != null) {
                     currentColumn.setDescription(descriptionField.getText());
                 }
             }
         });
         typeCombo.addItemListener(new ItemListener() {
+
             public void itemStateChanged(ItemEvent e) {
-                if(currentColumn != null){
-                    currentColumn.setType((ColumnType)typeCombo.getSelectedItem());
+                if (currentColumn != null) {
+                    currentColumn.setType((ColumnType) typeCombo.getSelectedItem());
                 }
             }
         });
         lengthField.addFocusListener(new FocusListener() {
-            public void focusGained(FocusEvent e) {}
+
+            public void focusGained(FocusEvent e) {
+            }
+
             public void focusLost(FocusEvent e) {
-                if(currentColumn == null) return;
+                if (currentColumn == null) {
+                    return;
+                }
                 try {
                     currentColumn.setLength(Integer.parseInt(lengthField.getText()));
-                } catch (NumberFormatException ex){
+                } catch (NumberFormatException ex) {
                     lengthField.setText(String.valueOf(currentColumn.getLength()));
-                }             
+                }
             }
-        });       
+        });
         useAsFilterCheckBox.addChangeListener(new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
-                if(currentColumn != null){
+                if (currentColumn != null) {
                     currentColumn.setIsFilter(useAsFilterCheckBox.isSelected());
                 }
             }
         });
-        
+
         //set up visibility
         setMandatory(true);
         mandatoryLabel.setVisible(false);
         addButton.setEnabled(false);
         removeButton.setEnabled(false);
         applyButton.setEnabled(false);
-        
+
         //fill tableCombo
         tableCombo.addItem(tableComboDefault);
-        for(ModifiableTableSchema m : MedSavantDatabase.getInstance().getModifiableTables()){
+        for (ModifiableTableSchema m : MedSavantDatabase.getInstance().getModifiableTables()) {
             tableCombo.addItem(m);
         }
-        
+
         //fill typeCombo
-        for(ColumnType ct : ColumnType.values()){
+        for (ColumnType ct : ColumnType.values()) {
             typeCombo.addItem(ct);
         }
-        
-        this.setVisible(true);
+
+        this.getRootPane().setDefaultButton(this.okButton);
+        this.setLocationRelativeTo(parent);
     }
 
     /** This method is called from within the constructor to
@@ -135,6 +155,7 @@ public class PatientsManagementPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        tableCombo = new javax.swing.JComboBox();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -154,10 +175,19 @@ public class PatientsManagementPanel extends javax.swing.JPanel {
         removeButton = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
         useAsFilterCheckBox = new javax.swing.JCheckBox();
-        tableCombo = new javax.swing.JComboBox();
         applyButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setModal(true);
+        setResizable(false);
+
+        tableCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tableComboActionPerformed(evt);
+            }
+        });
 
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153)));
 
@@ -277,23 +307,10 @@ public class PatientsManagementPanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        tableCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tableComboActionPerformed(evt);
-            }
-        });
-
         applyButton.setText("Apply");
         applyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 applyButtonActionPerformed(evt);
-            }
-        });
-
-        cancelButton.setText("Cancel");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
             }
         });
 
@@ -304,29 +321,36 @@ public class PatientsManagementPanel extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 792, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(tableCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 362, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(522, Short.MAX_VALUE)
-                .add(okButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cancelButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(applyButton)
-                .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(tableCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 362, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 502, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(okButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cancelButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(applyButton)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 496, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(tableCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -339,40 +363,62 @@ public class PatientsManagementPanel extends javax.swing.JPanel {
                     .add(okButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void tableComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableComboActionPerformed
+        Object o = tableCombo.getSelectedItem();
+        if (!o.equals(tableComboDefault)) {
+            populateColumnList((ModifiableTableSchema) o, null);
+            this.currentSchema = (ModifiableTableSchema) o;
+        }
+}//GEN-LAST:event_tableComboActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         addNewColumn();
 }//GEN-LAST:event_addButtonActionPerformed
 
     private void columnNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnNameFieldActionPerformed
-        
 }//GEN-LAST:event_columnNameFieldActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         removeSelectedColumn();
 }//GEN-LAST:event_removeButtonActionPerformed
 
-    private void tableComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableComboActionPerformed
-        Object o = tableCombo.getSelectedItem();
-        if(!o.equals(tableComboDefault)){
-            populateColumnList((ModifiableTableSchema)o, null);
-            this.currentSchema = (ModifiableTableSchema)o;
-        }
-}//GEN-LAST:event_tableComboActionPerformed
-
     private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
         apply();
+        this.dispose();
 }//GEN-LAST:event_applyButtonActionPerformed
-
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        cancel();
-}//GEN-LAST:event_cancelButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         apply();
+        this.dispose();
 }//GEN-LAST:event_okButtonActionPerformed
 
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        cancel();
+        this.dispose();
+}//GEN-LAST:event_cancelButtonActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                EditPatientTableDialog dialog = new EditPatientTableDialog(1, new javax.swing.JFrame(), true);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
+            }
+        });
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton applyButton;
@@ -399,20 +445,19 @@ public class PatientsManagementPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox useAsFilterCheckBox;
     // End of variables declaration//GEN-END:variables
 
-
-
-    private void populateColumnList(ModifiableTableSchema m, ModifiableColumn select){
+    private void populateColumnList(ModifiableTableSchema m, ModifiableColumn select) {
         currentColumn = null;
         List<ModifiableColumn> columns = m.getModColumns();
-        DefaultListModel model = new DefaultListModel();        
-        for(ModifiableColumn col : columns){
-            if(!col.isRemoved())
+        DefaultListModel model = new DefaultListModel();
+        for (ModifiableColumn col : columns) {
+            if (!col.isRemoved()) {
                 model.addElement(col);
+            }
         }
         columnList.setModel(model);
-        if(select != null){
+        if (select != null) {
             int index = model.indexOf(select);
-            if(index >= 0){
+            if (index >= 0) {
                 columnList.setSelectedIndex(index);
             }
         }
@@ -420,9 +465,8 @@ public class PatientsManagementPanel extends javax.swing.JPanel {
         addButton.setEnabled(true);
         removeButton.setEnabled(true);
     }
-    
-    
-    private void setMandatory(boolean mandatory){
+
+    private void setMandatory(boolean mandatory) {
         mandatoryLabel.setVisible(mandatory);
         columnNameField.setEnabled(!mandatory);
         shortNameField.setEnabled(!mandatory);
@@ -431,8 +475,8 @@ public class PatientsManagementPanel extends javax.swing.JPanel {
         lengthField.setEnabled(!mandatory);
         useAsFilterCheckBox.setEnabled(!mandatory);
     }
-    
-    private void populateDetails(ModifiableColumn c){
+
+    private void populateDetails(ModifiableColumn c) {
         currentColumn = null;
         columnNameField.setText(c.getColumnName());
         shortNameField.setText(c.getShortName());
@@ -441,14 +485,14 @@ public class PatientsManagementPanel extends javax.swing.JPanel {
         lengthField.setText(String.valueOf(c.getLength()));
         useAsFilterCheckBox.setSelected(c.isFilter());
         setMandatory(c.isMandatory());
-        if(!c.isNew()){
+        if (!c.isNew()) {
             typeCombo.setEnabled(false);
             lengthField.setEnabled(false);
-        } 
+        }
         currentColumn = c;
     }
-    
-    private void clearDetails(){
+
+    private void clearDetails() {
         columnNameField.setText("");
         shortNameField.setText("");
         descriptionField.setText("");
@@ -457,28 +501,28 @@ public class PatientsManagementPanel extends javax.swing.JPanel {
         mandatoryLabel.setVisible(false);
     }
 
-    private void addNewColumn(){
+    private void addNewColumn() {
         String tempName = currentSchema.getUntitledString();
         ModifiableColumn c = new ModifiableColumn(tempName, tempName, "", ColumnType.VARCHAR, 250, false, false, true);
         currentSchema.addModColumn(c);
         populateColumnList(currentSchema, c);
         populateDetails(c);
     }
-    
-    private void removeSelectedColumn(){
-        if(currentColumn != null && !currentColumn.isMandatory()){
+
+    private void removeSelectedColumn() {
+        if (currentColumn != null && !currentColumn.isMandatory()) {
             currentColumn.setRemoved(true);
             populateColumnList(currentSchema, null);
             clearDetails();
             currentColumn = null;
         }
     }
-    
-    private void apply(){
-        
+
+    private void apply() {
+
         //TODO: error checking on updates!!!
-        
-        for(ModifiableTableSchema m : MedSavantDatabase.getInstance().getModifiableTables()){
+
+        for (ModifiableTableSchema m : MedSavantDatabase.getInstance().getModifiableTables()) {
             try {
                 m.applyChanges();
             } catch (SQLException ex) {
@@ -488,11 +532,10 @@ public class PatientsManagementPanel extends javax.swing.JPanel {
             }
         }
     }
-    
-    private void cancel(){
-        for(ModifiableTableSchema m : MedSavantDatabase.getInstance().getModifiableTables()){
+
+    private void cancel() {
+        for (ModifiableTableSchema m : MedSavantDatabase.getInstance().getModifiableTables()) {
             m.removeChanges();
         }
     }
-    
 }
