@@ -5,15 +5,18 @@
 
 package org.ut.biolab.medsavant.view.dialog;
 
+import org.ut.biolab.medsavant.vcf.VCFParser;
 import java.awt.Dimension;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+import org.ut.biolab.medsavant.db.util.ImportVariantSet;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -23,8 +26,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class VCFUploadForm extends javax.swing.JDialog {
 
-    private int projectId;
-    private int referenceId;
+    private int projectId = 20;
+    private int referenceId = 20;
     
     
     private String path;
@@ -216,31 +219,31 @@ public class VCFUploadForm extends javax.swing.JDialog {
         Thread thread = new Thread() {
             @Override
             public void run() {
-               /* 
                 int currentfile = 0;
                 int totalnumfiles = files.length;
                 for (File f : files) {
                     currentfile++;
+                    File outfile = new File("temp_tdf"); //TODO: we should have a temporary file directory or something
+                    
+                    String progress = "Importing file " + currentfile + " of " + totalnumfiles;
+                    progressLabel.setText(progress);
+                    System.out.println(progress);
                     try {
-                        String progress = "Importing file " + currentfile + " of " + totalnumfiles;
-                        progressLabel.setText(progress);
-                        System.out.println(progress);
-                        //DBUtil.addVcfToDb(f.getAbsolutePath(), g_id, p_id);
-                        System.gc();
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
+                        VCFParser.parseVariants(f, outfile);
+                    } catch (FileNotFoundException ex) {
                         Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
-                        dialog.dispose();
-                        JOptionPane.showMessageDialog(
-                                null, 
-                                "<HTML>There was an error importing file<BR>" + f.getAbsolutePath() + "</HTML>", 
-                                "Error", 
-                                JOptionPane.ERROR_MESSAGE);
-                        instance.dispose();                     
+                    } catch (IOException ex) {
+                        Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
                     }
+                    try {
+                        ImportVariantSet.performImport(outfile, projectId, referenceId);
+                    } catch (SQLException ex) {
+                        Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    System.gc();                   
                 }
                 instance.dispose();
-                dialog.dispose();   */            
+                dialog.dispose();            
             }
         };
         thread.start(); 
