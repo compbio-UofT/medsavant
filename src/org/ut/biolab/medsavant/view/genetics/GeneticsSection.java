@@ -127,6 +127,8 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         referenceDropDown.setMaximumSize(new Dimension(200, 23));
         
         ProjectController.getInstance().addProjectListener(this);
+        
+        refreshReferenceDropDown();
 
         return referenceDropDown;
     }
@@ -152,6 +154,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
                     ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
                 }
             });
+            ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
 
         } catch (SQLException ex) {
             ex.printStackTrace();

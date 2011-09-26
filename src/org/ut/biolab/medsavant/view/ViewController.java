@@ -158,7 +158,7 @@ public class ViewController extends JPanel {
                         ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
                     }
                 });
-                
+                ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
                 
             } catch (SQLException ex) {
             }
