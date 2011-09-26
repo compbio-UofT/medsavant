@@ -95,6 +95,10 @@ public class ProjectController {
         }
     }
     
+    public int getCurrentReferenceId(){
+        return this.currentReferenceId;
+    }
+    
     public String getCurrentReferenceName(){
         return this.currentReferenceName;
     }

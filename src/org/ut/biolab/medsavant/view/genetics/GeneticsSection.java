@@ -146,7 +146,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
                 
                 int numVariantsInTable = ProjectController.getInstance().getNumVariantsInTable(ProjectController.getInstance().getCurrentProjectId(),refid);
                 
-                referenceDropDown.addItem(refname + " (" + numVariantsInTable + " variants)");
+                referenceDropDown.addItem(refname);// + " (" + numVariantsInTable + " variants)");
             }
             referenceDropDown.addActionListener(new ActionListener() {
 
