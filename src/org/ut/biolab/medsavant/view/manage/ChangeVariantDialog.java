@@ -171,9 +171,7 @@ public class ChangeVariantDialog extends javax.swing.JDialog {
             
             Manage manage = new Manage();
             manage.setAnnotations(projectId, refId, annotationIds);
-            
-            //TODO: create new variant table!!
-            
+                        
         } catch (SQLException ex) {
             Logger.getLogger(ChangeVariantDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
