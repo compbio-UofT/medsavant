@@ -1,11 +1,13 @@
 package org.ut.biolab.medsavant.controller;
 
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.jobject.ReferenceQueryUtil;
 
@@ -183,6 +185,19 @@ public class ProjectController {
     
     public void addProjectListener(ProjectListener l) {
         this.projectListeners.add(l);
+    }
+    
+    public String getCurrentTableName(){
+        return DBUtil.getVariantTableName(currentProjectId, currentReferenceId);
+    }
+    
+    public DbTable getCurrentTable(){
+        try {
+            return DBUtil.importTable(getCurrentTableName());
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
     
 }

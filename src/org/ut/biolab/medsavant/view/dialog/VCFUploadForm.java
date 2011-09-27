@@ -41,7 +41,6 @@ public class VCFUploadForm extends javax.swing.JDialog {
         this.setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();          
              
-        //TODO:
         this.projectId = ProjectController.getInstance().getCurrentProjectId();
         this.referenceId = ProjectController.getInstance().getCurrentReferenceId();
         projectLabel.setText(ProjectController.getInstance().getCurrentProjectName());
