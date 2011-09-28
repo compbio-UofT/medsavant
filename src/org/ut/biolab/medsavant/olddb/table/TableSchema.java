@@ -5,7 +5,7 @@
 
 package org.ut.biolab.medsavant.olddb.table;
 
-import org.ut.biolab.medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.util.ArrayList;

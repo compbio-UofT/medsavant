@@ -8,7 +8,7 @@ package org.ut.biolab.medsavant.controller;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 

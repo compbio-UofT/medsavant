@@ -28,7 +28,7 @@ import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.table.ModifiableColumn;
 import org.ut.biolab.medsavant.olddb.table.ModifiableTableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema.ColumnType;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.view.ViewController;
 
 /**

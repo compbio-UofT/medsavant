@@ -7,8 +7,8 @@ package org.ut.biolab.medsavant.util;
 import java.sql.SQLException;
 import javax.swing.SwingWorker;
 import org.ut.biolab.medsavant.oldcontroller.FilterController;
-import org.ut.biolab.medsavant.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 
 /**

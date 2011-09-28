@@ -5,8 +5,8 @@
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import java.sql.SQLException;
-import org.ut.biolab.medsavant.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.record.BEDRecord;
 import com.jidesoft.utils.SwingWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;

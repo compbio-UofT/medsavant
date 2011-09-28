@@ -20,10 +20,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.util.jobject.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.record.Chromosome;
+import org.ut.biolab.medsavant.oldcontroller.FilterController;
 
 /**
  *
@@ -115,19 +118,32 @@ public class ChromosomeDiagramPanel extends JPanel {
         try {
             if(binsize > AMAXBINSIZE){
                 for(int i = 0; i < chr.getLength(); i += binsize){
-                    int numVariants = QueryUtil.getNumVariantsInRange(                  
+                    int numVariants = VariantQueryUtil.getNumVariantsInRange(
+                            ProjectController.getInstance().getCurrentProjectId(), 
+                            ProjectController.getInstance().getCurrentReferenceId(), 
+                            FilterController.getQueryFilterConditions(), 
+                            chr.getName(), 
+                            i, i+binsize);       
+                    /*int numVariants = QueryUtil.getNumVariantsInRange(                  
                             ConnectionController.connect(),
                             chr.getName(),
                             i,
-                            i + binsize);
+                            i + binsize);*/
                     binValues.add(numVariants);
                 }           
             } else {
-                int[] a = QueryUtil.getNumVariantsForBins(                  
+                int[] a = VariantQueryUtil.getNumVariantsForBins(
+                        ProjectController.getInstance().getCurrentProjectId(), 
+                        ProjectController.getInstance().getCurrentReferenceId(), 
+                        FilterController.getQueryFilterConditions(), 
+                        chr.getName(), 
+                        binsize, 
+                        (int)(chr.getLength()/binsize + 1));               
+                /*int[] a = QueryUtil.getNumVariantsForBins(                  
                             ConnectionController.connect(),
                             chr.getName(),
                             binsize,
-                            (int)(chr.getLength()/binsize + 1));
+                            (int)(chr.getLength()/binsize + 1));*/
                 for(Integer i : a){
                     binValues.add(i);
                 }

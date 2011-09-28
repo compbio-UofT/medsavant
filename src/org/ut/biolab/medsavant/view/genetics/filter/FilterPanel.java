@@ -36,8 +36,8 @@ import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.oldcontroller.FilterController;
 import org.ut.biolab.medsavant.olddb.table.ModifiableColumn;
 import org.ut.biolab.medsavant.olddb.table.PatientTableSchema;
@@ -67,9 +67,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener, Proje
 
     public void projectRemoved(String projectName) {}
 
-    public void projectChanged(String projectName) {
-        //refreshFilters();
-    }
+    public void projectChanged(String projectName) {}
 
     public void projectTableRemoved(int projid, int refid) {}
 

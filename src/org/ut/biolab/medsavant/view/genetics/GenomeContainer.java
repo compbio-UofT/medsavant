@@ -22,7 +22,7 @@ import org.ut.biolab.medsavant.db.util.jobject.VariantQueryUtil;
 import org.ut.biolab.medsavant.oldcontroller.FilterController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Chromosome;
 import org.ut.biolab.medsavant.model.record.Genome;
@@ -138,15 +138,13 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
                     Thread thread = new Thread() {
                         @Override
                         public void run() {
-                            //TODO
-                            
-                            /*int region = p.createBins(totalNum, binsize);
+                            int region = p.createBins(totalNum, binsize);
                             synchronized(workerLock){
                                 if(region > maxRegion) maxRegion = region;
                                 regionsDone++;
                                 activeThreads--;
                                 workerLock.notifyAll();
-                            } */             
+                            }          
                         }
                     };
                     thread.start();

@@ -6,7 +6,7 @@ package org.ut.biolab.medsavant.olddb;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

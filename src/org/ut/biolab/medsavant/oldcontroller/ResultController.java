@@ -23,8 +23,8 @@ import org.ut.biolab.medsavant.olddb.table.VariantAnnotationGatkTableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantAnnotationPolyphenTableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantAnnotationSiftTableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.util.Util;
 

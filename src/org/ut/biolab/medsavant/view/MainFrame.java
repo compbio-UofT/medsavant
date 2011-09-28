@@ -7,7 +7,7 @@ package org.ut.biolab.medsavant.view;
 
 import java.awt.event.WindowEvent;
 import java.util.logging.Logger;
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;

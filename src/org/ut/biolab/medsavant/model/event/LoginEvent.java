@@ -5,7 +5,7 @@
 
 package org.ut.biolab.medsavant.model.event;
 
-import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 
 /**
  *
