@@ -24,6 +24,11 @@ public class Range implements Comparable{
         this.max = max;
     }
     
+    public Range(double[] rangeArray){
+        this.min = rangeArray[0];
+        this.max = rangeArray[1];
+    }
+    
     
     public double getMin(){
         return min;

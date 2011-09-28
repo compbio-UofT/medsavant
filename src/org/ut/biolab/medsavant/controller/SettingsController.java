@@ -204,10 +204,11 @@ public class SettingsController {
 
             //System.out.println("Saving map file: " + pFile.getAbsolutePath());
             
-            if (pFile.exists()) {
+            /*if (pFile.exists()) {
                 pFile.delete();
-            }
+            }*/
             bw = new BufferedWriter(new FileWriter(pFile));
+            bw.write("");
             for (String key : persistenceMap.keySet()) {
                 bw.write(key + DELIM + persistenceMap.get(key) + "\n");
             }

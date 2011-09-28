@@ -28,6 +28,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
+import org.ut.biolab.medsavant.db.util.jobject.VariantQueryUtil;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
@@ -52,13 +55,23 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume, AndrewBrook
  */
-public class FilterPanel extends JPanel implements FiltersChangedListener {
+public class FilterPanel extends JPanel implements FiltersChangedListener, ProjectListener {
     
     private ArrayList<FilterView> filterViews;
     private CollapsiblePanes filterContainer;
     private JLabel status;
     private JPanel contentPlaceholder;
     private HashMap<String, CollapsiblePane> filterToCPMap;
+
+    public void projectAdded(String projectName) {}
+
+    public void projectRemoved(String projectName) {}
+
+    public void projectChanged(String projectName) {
+        refreshFilters();
+    }
+
+    public void projectTableRemoved(int projid, int refid) {}
     
     public enum FilterWidgetType { INT, FLOAT, STRING, BOOLEAN };
 
@@ -69,6 +82,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         filterToCPMap = new HashMap<String,CollapsiblePane>();
         FilterController.addFilterListener(this);
         initGUI();
+        ProjectController.getInstance().addProjectListener(this);
     }
 
     private void initGUI() throws NonFatalDatabaseException {
@@ -99,7 +113,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
        
         (new FilterViewGenerator()).execute();
         
-        this.setPreferredSize(new Dimension(400, 999));
+        this.setPreferredSize(new Dimension(400, 999));       
     }
 
     public void addFilterViews(List<FilterView> filterViews) {
@@ -154,9 +168,18 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         
         private List<FilterView> getFilterViews() throws SQLException, NonFatalDatabaseException {  
             List<FilterView> views = new ArrayList<FilterView>();
-                       
+            
+            String tablename = ProjectController.getInstance().getCurrentTableName();
+            
+            views.add(VariantStringListFilterView.createFilterView(tablename, "dna_id"));
+            views.add(VariantStringListFilterView.createFilterView(tablename, "chrom"));
+            views.add(VariantNumericFilterView.createFilterView(tablename, "position")); 
+            views.add(VariantNumericFilterView.createFilterView(tablename, "qual"));    
+            views.add(VariantStringListFilterView.createFilterView(tablename, "ref")); 
+            views.add(VariantStringListFilterView.createFilterView(tablename, "alt"));
+            
             //COHORT FILTERS////////////////////////////////////////////////////
-            views.add(CohortFilterView.getCohortFilterView());
+            /*views.add(CohortFilterView.getCohortFilterView());
             views.add(GeneListFilterView.getFilterView());
 
             //INDIVIDUAL FILTERS////////////////////////////////////////////////           
@@ -190,7 +213,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
             views.add(new FilterView("WikiPathways", new PathwaysPanel()));
   
             //save and dispose of cache
-            FilterCache.saveAndDispose();
+            FilterCache.saveAndDispose();*/
                         
             return views;
         }
@@ -290,7 +313,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         });
     }
     
-    private FilterView createVariantRecordFilter(TableSchema table, String columnAlias) throws SQLException, NonFatalDatabaseException {     
+    /*private FilterView createVariantRecordFilter(TableSchema table, String columnAlias) throws SQLException, NonFatalDatabaseException {     
         DbColumn col = table.getDBColumn(columnAlias);
         FilterWidgetType fwt;
         if(TableSchema.isInt(table.getColumnType(col)) || TableSchema.isFloat(table.getColumnType(col))){
@@ -413,14 +436,18 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         }
 
         return l;     
-    }
+    }*/
     
     private void setStatus(String status) {
         this.status.setText(status);
     }
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect())) + " records pass filters");
+        //setStatus(ViewUtil.numToString(QueryUtil.getNumFilteredVariants(ConnectionController.connect())) + " records pass filters");
+        setStatus(ViewUtil.numToString(VariantQueryUtil.getNumFilteredVariants(
+                ProjectController.getInstance().getCurrentProjectId(), 
+                ProjectController.getInstance().getCurrentReferenceId(), 
+                FilterController.getQueryFilterConditions())));
         updatePaneEmphasis();
     }
    

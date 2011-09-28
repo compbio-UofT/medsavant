@@ -19,11 +19,13 @@ public class ProjectController {
     
     private String currentProjectName;
     private int currentProjectId;
-        private String currentReferenceName;
+    private String currentReferenceName;
 
     private int currentReferenceId;
     private String currentPatientTable;
     private String currentVariantTable;
+    
+    private DbTable currentTable;
     
     private static ProjectController instance;
     
@@ -76,8 +78,8 @@ public class ProjectController {
         try {
             if (ProjectQueryUtil.containsProject(projectName)) {
                 this.currentProjectId = this.getProjectId(projectName);
-                this.currentProjectName = projectName;
-                this.fireProjectChangedEvent(projectName);
+                this.currentProjectName = projectName;                
+                this.fireProjectChangedEvent(projectName);              
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -90,6 +92,7 @@ public class ProjectController {
             if (ReferenceQueryUtil.containsReference(refName)) {
                 this.currentReferenceId = this.getReferenceId(refName);
                 this.currentReferenceName = refName;
+                setCurrentTable();
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -192,12 +195,15 @@ public class ProjectController {
     }
     
     public DbTable getCurrentTable(){
+        return currentTable;
+    }
+    
+    private void setCurrentTable(){
         try {
-            return DBUtil.importTable(getCurrentTableName());
+            this.currentTable = DBUtil.importTable(getCurrentTableName());
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
     }
     
 }

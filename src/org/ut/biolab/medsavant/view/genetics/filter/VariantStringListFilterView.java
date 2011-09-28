@@ -7,6 +7,7 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -24,6 +25,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.jobject.VariantQueryUtil;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.oldcontroller.FilterController;
@@ -42,28 +45,29 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class VariantStringListFilterView {
     
-    public static FilterView createFilterView(final TableSchema table, final String columnAlias) throws SQLException, NonFatalDatabaseException {
-        
-        DbColumn col = table.getDBColumn(columnAlias);
+    //public static FilterView createFilterView(final TableSchema table, final String columnAlias) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createFilterView(String tablename, final String columnname) throws SQLException, NonFatalDatabaseException {
+    
+        //DbColumn col = table.getDBColumn(columnAlias);
         Connection conn = ConnectionController.connect();
-        boolean isVariantTableSchema = table.getTable().getTableNameSQL().equals(VariantTableSchema.TABLE_NAME);
+        //boolean isVariantTableSchema = table.getTable().getTableNameSQL().equals(VariantTableSchema.TABLE_NAME);
 
         final List<String> uniq;
 
-        if (isVariantTableSchema && columnAlias.equals(VariantTableSchema.ALIAS_AC)) {
+        if (columnname.equals("ac")) {
             uniq = new ArrayList<String>();
             uniq.addAll(Arrays.asList(
                     new String[]{
                         "1","2"
                     }));
-        } else if (isVariantTableSchema && columnAlias.equals(VariantTableSchema.ALIAS_AF)) {
+        } else if (columnname.equals("af")) {
             uniq = new ArrayList<String>();
             uniq.addAll(Arrays.asList(
                     new String[]{
                         "0.50","1.00"
                     }));
-        } else if (isVariantTableSchema && (columnAlias.equals(VariantTableSchema.ALIAS_REFERENCE)
-                || columnAlias.equals(VariantTableSchema.ALIAS_ALTERNATE))) {
+        } else if (columnname.equals("ref")
+                || columnname.equals("alt")) {
             uniq = new ArrayList<String>();
             uniq.addAll(Arrays.asList(
                     new String[]{
@@ -71,19 +75,19 @@ public class VariantStringListFilterView {
                     }));
         } 
         else {
-            List<String> tmp = FilterCache.getDefaultValues(columnAlias);
-            if(tmp == null){
-                tmp = QueryUtil.getDistinctValuesForColumn(conn, table, col);
+            //List<String> tmp = FilterCache.getDefaultValues(columnAlias);
+            //if(tmp == null){
+                //tmp = QueryUtil.getDistinctValuesForColumn(conn, table, col);
                 //System.out.println(columnAlias + " - retrieving");
-            } else {
+            //} else {
                 //System.out.println(columnAlias + " - found cache");
-            }
-            FilterCache.addDefaultValues(table.getTable().getTableNameSQL(), columnAlias, tmp);
-            uniq = tmp;
-
+            //}
+            //FilterCache.addDefaultValues(table.getTable().getTableNameSQL(), columnAlias, tmp);
+            //uniq = tmp;
+            uniq = VariantQueryUtil.getDistinctValuesForColumn(tablename, columnname);
         }
 
-        if (isVariantTableSchema && columnAlias.equals(VariantTableSchema.ALIAS_CHROM)) {
+        if (columnname.equals("chrom")) {
             Collections.sort(uniq,new ChromosomeComparator());
         }
 
@@ -111,7 +115,7 @@ public class VariantStringListFilterView {
                 }
 
                 if (acceptableValues.size() == boxes.size()) {
-                    FilterController.removeFilter(columnAlias);
+                    FilterController.removeFilter(columnname);
                 } else {
                     Filter f = new QueryFilter() {
 
@@ -119,20 +123,21 @@ public class VariantStringListFilterView {
                         public Condition[] getConditions() {
                             Condition[] results = new Condition[acceptableValues.size()];
                             int i = 0;
-                            DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnAlias));
+                            //DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnAlias));
                             for (String s : acceptableValues) {
                                 //if(columnAlias.equals(VariantTableSchema.ALIAS_GT)){
                                 //    results[i++] = BinaryCondition.equalTo(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), uniq.indexOf(s));
                                 //} else {
-                                    results[i++] = BinaryCondition.equalTo(tempCol, s);                                           
+                                    //results[i++] = BinaryCondition.equalTo(tempCol, s);                                           
                                 //}
+                                results[i++] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "varchar", 1), s);
                             }
                             return results;
                         }
 
                         @Override
                         public String getName() {
-                            return columnAlias;
+                            return columnname;
                         }
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
@@ -198,6 +203,6 @@ public class VariantStringListFilterView {
         bottomContainer.setAlignmentX(0F);
         container.add(bottomContainer); 
         
-        return new FilterView(columnAlias, container);
+        return new FilterView(columnname, container);
     }
 }

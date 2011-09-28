@@ -5,6 +5,8 @@
 
 package org.ut.biolab.medsavant.oldcontroller;
 
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import org.ut.biolab.medsavant.model.PostProcessFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import java.util.ArrayList;
@@ -162,6 +164,14 @@ public class FilterController {
             qfs.add((QueryFilter)rf);
         }
         return qfs;
+    }
+    
+    public static List<Condition> getQueryFilterConditions() {
+        List<Condition> conditions = new ArrayList<Condition>();
+        for(QueryFilter f : FilterController.getQueryFilters()){
+            conditions.add(ComboCondition.or(f.getConditions()));
+        }
+        return conditions;
     }
     
     private static void setLastFilter(Filter filter, FilterAction action){

@@ -24,6 +24,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.jobject.VariantQueryUtil;
 import org.ut.biolab.medsavant.oldcontroller.FilterController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
@@ -102,7 +104,10 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
         this.add(scrollPane, BorderLayout.CENTER);
         
         try {
-            maxRecords = QueryUtil.getNumFilteredVariants(ConnectionController.connect());
+            maxRecords = VariantQueryUtil.getNumFilteredVariants(
+                ProjectController.getInstance().getCurrentProjectId(), 
+                ProjectController.getInstance().getCurrentReferenceId(), 
+                FilterController.getQueryFilterConditions());
         } catch (Exception ex) {
             Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
         }      
@@ -122,7 +127,10 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
     }
     
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        addFilterSet(QueryUtil.getNumFilteredVariants(ConnectionController.connect()));
+        addFilterSet(VariantQueryUtil.getNumFilteredVariants(
+                        ProjectController.getInstance().getCurrentProjectId(), 
+                        ProjectController.getInstance().getCurrentReferenceId(), 
+                        FilterController.getQueryFilterConditions()));
     }
     
     private void addFilterSet(int numRecords){

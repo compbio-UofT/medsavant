@@ -547,7 +547,8 @@ public class QueryUtil {
     }
     
     public static int getNumFilteredVariants(Connection c) throws SQLException {
-        FunctionCall count = FunctionCall.countAll();
+        return 1;
+        /*FunctionCall count = FunctionCall.countAll();
         SelectQuery q = getCurrentBaseVariantFilterQuery();   
         q.addCustomColumns(count);
        
@@ -558,7 +559,7 @@ public class QueryUtil {
         int numrows = rs.getInt(1);
         s.close();
         
-        return numrows;
+        return numrows;*/
     }
     
     public static SelectQuery getCurrentBaseVariantFilterQuery() {

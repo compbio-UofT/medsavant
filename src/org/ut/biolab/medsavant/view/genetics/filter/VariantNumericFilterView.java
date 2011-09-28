@@ -25,6 +25,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.jobject.VariantQueryUtil;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
@@ -43,30 +45,32 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class VariantNumericFilterView {
     
-    public static FilterView createFilterView(final TableSchema table, final String columnAlias) throws SQLException, NonFatalDatabaseException {
+    //public static FilterView createFilterView(final TableSchema table, final String columnAlias) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createFilterView(String tablename, final String columnname) throws SQLException, NonFatalDatabaseException {
         
-        DbColumn col = table.getDBColumn(columnAlias);
+        //DbColumn col = table.getDBColumn(columnAlias);
         
-        boolean isVariantTableSchema = table.getTable().getTableNameSQL().equals(VariantTableSchema.TABLE_NAME);
+        //boolean isVariantTableSchema = table.getTable().getTableNameSQL().equals(VariantTableSchema.TABLE_NAME);
         
         Range extremeValues = null;
 
-        if (isVariantTableSchema && columnAlias.equals(VariantTableSchema.ALIAS_POSITION)) {
+        if (columnname.equals("position")) {
             extremeValues = new Range(1,250000000);
-        } else if (isVariantTableSchema && columnAlias.equals(VariantTableSchema.ALIAS_SB)) {
+        } else if (columnname.equals("sb")) {
             extremeValues = new Range(-100,100);
         } else {
-            extremeValues = FilterCache.getDefaultValuesRange(columnAlias);
-            if(extremeValues == null){
+            //extremeValues = FilterCache.getDefaultValuesRange(columnAlias);
+            //if(extremeValues == null){
                 //System.out.println(columnAlias + " - retrieving");
-                extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
-            } else {
+                //extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
+            //} else {
                 //System.out.println(columnAlias + " - found cache");
-            }
-            FilterCache.addDefaultValues(table.getTable().getTableNameSQL(), columnAlias, extremeValues);
+            //}
+            extremeValues = new Range(VariantQueryUtil.getExtremeValuesForColumn(tablename, columnname));
+            //FilterCache.addDefaultValues(table.getTable().getTableNameSQL(), columnAlias, extremeValues);
         }
 
-        if (isVariantTableSchema && columnAlias.equals(VariantTableSchema.ALIAS_DP)) {
+        if (columnname.equals("dp")) {
             extremeValues = new Range(Math.min(0, extremeValues.getMin()),extremeValues.getMax());
         }
 
@@ -178,7 +182,7 @@ public class VariantNumericFilterView {
             rs.setHighValue((int)acceptableRange.getMax());
 
             if (min == acceptableRange.getMin() && max == acceptableRange.getMax()) {
-                FilterController.removeFilter(columnAlias);
+                FilterController.removeFilter(columnname);
             } else {
                 Filter f = new QueryFilter() {
 
@@ -187,9 +191,11 @@ public class VariantNumericFilterView {
                         Condition[] results = new Condition[2];
                         //results[0] = BinaryCondition.greaterThan(table.getDBColumn(columnAlias), getNumber(frombox.getText().replaceAll(",", "")), true);
                         //results[1] = BinaryCondition.lessThan(table.getDBColumn(columnAlias), getNumber(tobox.getText().replaceAll(",", "")), true);
-                        DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnAlias));
-                        results[0] = BinaryCondition.greaterThan(tempCol, getNumber(frombox.getText().replaceAll(",", "")), true);
-                        results[1] = BinaryCondition.lessThan(tempCol, getNumber(tobox.getText().replaceAll(",", "")), true);
+                        //DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnname));
+                        //results[0] = BinaryCondition.greaterThan(tempCol, getNumber(frombox.getText().replaceAll(",", "")), true);
+                        //results[1] = BinaryCondition.lessThan(tempCol, getNumber(tobox.getText().replaceAll(",", "")), true);
+                        results[0] = BinaryCondition.greaterThan(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "decimal", 1), getNumber(frombox.getText().replaceAll(",", "")), true);
+                        results[1] = BinaryCondition.lessThan(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "decimal", 1), getNumber(tobox.getText().replaceAll(",", "")), true);
                         
                         Condition[] resultsCombined = new Condition[1];
                         resultsCombined[0] = ComboCondition.and(results);
@@ -199,7 +205,7 @@ public class VariantNumericFilterView {
 
                     @Override
                     public String getName() {
-                        return columnAlias;
+                        return columnname;
                     }
                 };
                 //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
@@ -238,7 +244,7 @@ public class VariantNumericFilterView {
 
         container.add(bottomContainer);
 
-        return new FilterView(columnAlias, container);
+        return new FilterView(columnname, container);
     }
     
     public static double getNumber(String s) {

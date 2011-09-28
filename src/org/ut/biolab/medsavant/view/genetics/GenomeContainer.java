@@ -17,6 +17,8 @@ import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.jobject.VariantQueryUtil;
 import org.ut.biolab.medsavant.oldcontroller.FilterController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
@@ -116,7 +118,10 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         @Override
         protected Object doInBackground() {  
             try {
-                final int totalNum = QueryUtil.getNumFilteredVariants(ConnectionController.connect());                 
+                final int totalNum = VariantQueryUtil.getNumFilteredVariants(
+                                        ProjectController.getInstance().getCurrentProjectId(), 
+                                        ProjectController.getInstance().getCurrentReferenceId(), 
+                                        FilterController.getQueryFilterConditions());           
                 final int binsize = (int)Math.min(249250621, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
 
                 for(final ChromosomePanel p : chrViews){
@@ -133,13 +138,15 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
                     Thread thread = new Thread() {
                         @Override
                         public void run() {
-                            int region = p.createBins(totalNum, binsize);
+                            //TODO
+                            
+                            /*int region = p.createBins(totalNum, binsize);
                             synchronized(workerLock){
                                 if(region > maxRegion) maxRegion = region;
                                 regionsDone++;
                                 activeThreads--;
                                 workerLock.notifyAll();
-                            }              
+                            } */             
                         }
                     };
                     thread.start();
@@ -158,8 +165,6 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
                     p.updateAnnotations(maxRegion, binsize);
                 } 
             } catch (SQLException ex) {
-                Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
-            } catch(NonFatalDatabaseException ex){
                 Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
             } catch (InterruptedException ex) {
                 //
