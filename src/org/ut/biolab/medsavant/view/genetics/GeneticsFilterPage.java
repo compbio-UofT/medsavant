@@ -32,7 +32,7 @@ public class GeneticsFilterPage extends SubSectionView {
         return "Filter";
     }
 
-    public JPanel getView() {
+    public JPanel getView(boolean update) {
         if (view == null) {
             try {
                 view = new JPanel();

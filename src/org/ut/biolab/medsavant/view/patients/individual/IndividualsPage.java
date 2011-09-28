@@ -26,7 +26,7 @@ public class IndividualsPage extends SubSectionView {
         return "Individuals";
     }
 
-    public JPanel getView() { 
+    public JPanel getView(boolean update) { 
         return new SplitScreenView(
                 new IndividualListModel(), 
                 new IndividualDetailedView());

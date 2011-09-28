@@ -68,10 +68,14 @@ public class FilterPanel extends JPanel implements FiltersChangedListener, Proje
     public void projectRemoved(String projectName) {}
 
     public void projectChanged(String projectName) {
-        refreshFilters();
+        //refreshFilters();
     }
 
     public void projectTableRemoved(int projid, int refid) {}
+
+    public void referenceChanged(String referenceName) {
+        refreshFilters();
+    }
     
     public enum FilterWidgetType { INT, FLOAT, STRING, BOOLEAN };
 

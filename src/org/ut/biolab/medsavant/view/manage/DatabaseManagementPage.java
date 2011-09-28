@@ -25,7 +25,7 @@ public class DatabaseManagementPage extends SubSectionView {
         return "Database";
     }
 
-    public JPanel getView() {
+    public JPanel getView(boolean update) {
         if (panel == null) {
             setPanel();
         }

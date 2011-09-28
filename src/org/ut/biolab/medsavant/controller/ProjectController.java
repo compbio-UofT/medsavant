@@ -93,6 +93,7 @@ public class ProjectController {
                 this.currentReferenceId = this.getReferenceId(refName);
                 this.currentReferenceName = refName;
                 setCurrentTable();
+                this.fireReferenceChangedEvent(refName);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -147,6 +148,8 @@ public class ProjectController {
         public void projectChanged(String projectName);
 
         public void projectTableRemoved(int projid, int refid);
+        
+        public void referenceChanged(String referenceName);
     }
     
    
@@ -183,6 +186,13 @@ public class ProjectController {
         ProjectController pc = getInstance();
         for (ProjectListener l : pc.projectListeners) {
             l.projectTableRemoved(projid, refid);
+        }
+    }
+    
+    public void fireReferenceChangedEvent(String referenceName){
+        ProjectController pc = getInstance();
+        for (ProjectListener l : pc.projectListeners){
+            l.referenceChanged(referenceName);
         }
     }
     

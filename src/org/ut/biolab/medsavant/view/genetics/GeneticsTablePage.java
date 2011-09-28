@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.model.record.Chromosome;
@@ -27,14 +29,16 @@ public class GeneticsTablePage extends SubSectionView {
 
     private JPanel panel;
 
-    public GeneticsTablePage(SectionView parent) { super(parent); }
+    public GeneticsTablePage(SectionView parent) { 
+        super(parent);       
+    }
 
     public String getName() {
         return "  Table";
     }
 
-    public JPanel getView() {
-        if (panel == null) {
+    public JPanel getView(boolean update) {
+        if (panel == null || update) {
             setPanel();
         }
         return panel;
@@ -90,7 +94,5 @@ public class GeneticsTablePage extends SubSectionView {
     @Override
     public void viewDidUnload() {
     }
-    
-    
-    
+
 }

@@ -25,7 +25,7 @@ public abstract class SubSectionView {
     
     public abstract String getName();
 
-    public abstract JPanel getView();
+    public abstract JPanel getView(boolean update);
 
     public Component[] getBanner() { return null; }
 

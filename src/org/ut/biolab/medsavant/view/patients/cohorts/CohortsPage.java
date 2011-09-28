@@ -29,7 +29,7 @@ public class CohortsPage extends SubSectionView {
         return "Cohorts";
     }
 
-    public JPanel getView() {
+    public JPanel getView(boolean update) {
         view =  new SplitScreenView(
                 new CohortListModel(), 
                 new CohortDetailedView());

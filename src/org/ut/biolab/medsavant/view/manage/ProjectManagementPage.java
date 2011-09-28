@@ -90,8 +90,9 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         }
     }
 
-    public void projectTableRemoved(int projid, int refid) {
-    }
+    public void projectTableRemoved(int projid, int refid) {}
+
+    public void referenceChanged(String referenceName) {}
 
     private static class ProjectsDetailedView extends DetailedView implements ProjectListener {
 
@@ -227,6 +228,9 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
 
             }
+        }
+
+        public void referenceChanged(String referenceName) {
         }
 
         private class ProjectDetailsSW extends SwingWorker {
@@ -471,7 +475,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         return "Projects";
     }
 
-    public JPanel getView() {
+    public JPanel getView(boolean update) {
         if (panel == null) {
             setPanel();
         }

@@ -44,8 +44,8 @@ public class GeneticsChartPage extends SubSectionView {
         return "  Chart";
     }
 
-    public JPanel getView() {
-        if (panel == null) {
+    public JPanel getView(boolean update) {
+        if (panel == null || update) {
             try {
                 setPanel();
             } catch (NonFatalDatabaseException ex) {

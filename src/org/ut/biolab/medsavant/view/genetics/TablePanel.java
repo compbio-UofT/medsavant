@@ -36,7 +36,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-class TablePanel extends JPanel implements FiltersChangedListener, ProjectListener {
+class TablePanel extends JPanel implements FiltersChangedListener {
     
     private final SearchableTablePanel tablePanel;
     private static final String CARD_WAIT = "wait";
@@ -56,7 +56,7 @@ class TablePanel extends JPanel implements FiltersChangedListener, ProjectListen
         
         for(DbColumn col : table.getColumns()){
             fieldNames.add(col.getName());
-            fieldClasses.add(String.class);
+            //fieldClasses.add(String.class);
             
             String type = col.getTypeNameSQL().toLowerCase();
             if (type.contains("int")){
@@ -105,7 +105,7 @@ class TablePanel extends JPanel implements FiltersChangedListener, ProjectListen
             DialogUtil.displayErrorMessage("Problem getting data.", ex);
         }
         FilterController.addFilterListener(this);
-        ProjectController.getInstance().addProjectListener(this);
+        //ProjectController.getInstance().addProjectListener(this);
     }
     
     private synchronized void showWaitCard() {
@@ -126,19 +126,27 @@ class TablePanel extends JPanel implements FiltersChangedListener, ProjectListen
         updateTable();
     }
 
-    public void projectAdded(String projectName) {}
+    //public void projectAdded(String projectName) {}
 
-    public void projectRemoved(String projectName) {}
+    //public void projectRemoved(String projectName) {}
 
-    public void projectChanged(String projectName) {
+    //public void projectChanged(String projectName) {
+        /*try {
+            updateTable();
+        } catch (Exception e){
+            e.printStackTrace();
+        }*/
+    //}
+
+    /*public void projectTableRemoved(int projid, int refid) {}
+
+    public void referenceChanged(String referenceName) {
         try {
             updateTable();
         } catch (Exception e){
             e.printStackTrace();
         }
-    }
-
-    public void projectTableRemoved(int projid, int refid) {}
+    }*/
     
     private class GetVariantsSwingWorker extends SwingWorker {
         @Override

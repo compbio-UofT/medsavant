@@ -56,7 +56,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
         return "Reference Genomes";
     }
 
-    public JPanel getView() {
+    public JPanel getView(boolean update) {
         panel = new SplitScreenView(
                 new ReferenceGenomeListModel(),
                 new ReferenceDetailedView());

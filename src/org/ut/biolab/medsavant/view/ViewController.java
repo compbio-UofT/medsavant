@@ -179,6 +179,8 @@ public class ViewController extends JPanel {
         public void projectTableRemoved(int projid, int refid) {
             refreshProjectDropDown();
         }
+
+        public void referenceChanged(String referenceName) {}
     }
 
     private static class SectionHeader extends JPanel {

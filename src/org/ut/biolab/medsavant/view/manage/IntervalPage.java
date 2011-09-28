@@ -41,7 +41,7 @@ public class IntervalPage extends SubSectionView {
         return "Region Lists";
     }
 
-    public JPanel getView() {
+    public JPanel getView(boolean update) {
         return new SplitScreenView(
                 new IntervalListModel(), 
                 new IntervalDetailedView());

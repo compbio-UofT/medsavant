@@ -110,7 +110,7 @@ public class SplitView extends JPanel {
         bg.add(b);
         left.add(b);
         //bannerCard.add(view.getBanner(), subsectionName);
-        pageCard.add(view.getView(),subsectionName);
+        pageCard.add(view.getView(false),subsectionName);
         b.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JRadioButton b2 = (JRadioButton) e.getSource();

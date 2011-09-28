@@ -16,6 +16,8 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
@@ -25,7 +27,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class Menu extends JPanel implements MenuItemSelected {
+public class Menu extends JPanel implements MenuItemSelected, ProjectListener {
 
     public static class MenuItem extends JPanel {
 
@@ -193,7 +195,7 @@ public class Menu extends JPanel implements MenuItemSelected {
         }
     }
 
-    
+    private SubSectionView currentView;
     private final JPanel contentContainer;
     private Component glue = Box.createVerticalGlue();
     private final MenuItemGroup itemGroup;
@@ -203,7 +205,23 @@ public class Menu extends JPanel implements MenuItemSelected {
         this.setOpaque(false);
         this.contentContainer = contentContainer;
         itemGroup = new MenuItemGroup();
+        ProjectController.getInstance().addProjectListener(this);
     }
+    
+    public void projectAdded(String projectName) {}
+
+    public void projectRemoved(String projectName) {}
+
+    public void projectChanged(String projectName) {}
+
+    public void projectTableRemoved(int projid, int refid) {}
+
+    public void referenceChanged(String referenceName) {
+        if(currentView != null){
+            setContentTo(currentView, true);
+        }
+    }
+
     
     public void addComponent(Component c) {
         this.remove(glue);
@@ -233,12 +251,13 @@ public class Menu extends JPanel implements MenuItemSelected {
     }
     
     public void itemSelected(MenuItem mi) {
-        setContentTo(mi.getView());
+        setContentTo(mi.getView(), false);
     }
     
-    private void setContentTo(SubSectionView v) {
+    private void setContentTo(SubSectionView v, boolean update) {
+        currentView = v;
         contentContainer.removeAll();
-        contentContainer.add(v.getView(), BorderLayout.CENTER);
+        contentContainer.add(v.getView(update), BorderLayout.CENTER);
         contentContainer.updateUI();
     }
     

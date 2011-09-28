@@ -34,7 +34,7 @@ public class AggregatePage extends SubSectionView {
         return "  Aggregate";
     }
 
-    public JPanel getView() {
+    public JPanel getView(boolean update) {
         if (panel == null) {
             try {
                 setPanel();

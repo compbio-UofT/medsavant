@@ -177,7 +177,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         return "Users";
     }
 
-    public JPanel getView() {
+    public JPanel getView(boolean update) {
         if (panel == null) {
             setPanel();
         }

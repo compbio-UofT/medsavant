@@ -7,6 +7,8 @@ package org.ut.biolab.medsavant.view.genetics.charts;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.sql.SQLException;
 import java.util.Collections;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.jobject.VariantQueryUtil;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
@@ -15,6 +17,7 @@ import org.ut.biolab.medsavant.olddb.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.oldcontroller.FilterController;
 
 /**
  *
@@ -45,7 +48,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
             
             if (isNumeric()) {
 
-                Range r = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, column);
+                //Range r = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, column);
+                Range r = new Range(VariantQueryUtil.getExtremeValuesForColumn(ProjectController.getInstance().getCurrentTableName(), column.getColumnNameSQL()));
                 
                 int numBins = 15;//getNumberOfQuantitativeCategories();
                 
@@ -58,13 +62,25 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                     Range binrange = new Range((int) (min + i * step), (int) (min + (i + 1) * step));
                     chartMap.addEntry(
                             binrange.toString(), 
-                            QueryUtil.getFilteredFrequencyValuesForColumnInRange(ConnectionController.connect(), column, binrange)
+                            VariantQueryUtil.getFilteredFrequencyValuesForColumnInRange(
+                                ProjectController.getInstance().getCurrentProjectId(), 
+                                ProjectController.getInstance().getCurrentReferenceId(), 
+                                FilterController.getQueryFilterConditions(), 
+                                column.getColumnNameSQL(), 
+                                binrange.getMin(),
+                                binrange.getMax()) 
+                            //QueryUtil.getFilteredFrequencyValuesForColumnInRange(ConnectionController.connect(), column, binrange)
                             );
                 }
 
             } else {
                 try {
-                    chartMap.addAll(QueryUtil.getFilteredFrequencyValuesForColumn(ConnectionController.connect(), column));
+                    chartMap.addAll(VariantQueryUtil.getFilteredFrequencyValuesForColumn(
+                            ProjectController.getInstance().getCurrentProjectId(), 
+                            ProjectController.getInstance().getCurrentReferenceId(), 
+                            FilterController.getQueryFilterConditions(), 
+                            column.getColumnNameSQL()));
+                    //chartMap.addAll(QueryUtil.getFilteredFrequencyValuesForColumn(ConnectionController.connect(), column));
                     
                     /*if (alias.equals(VariantTableSchema.ALIAS_GT)) {
                         for (FrequencyEntry fe : chartMap.getEntries()) {

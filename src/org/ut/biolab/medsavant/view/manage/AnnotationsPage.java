@@ -53,7 +53,7 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
         return "Annotations";
     }
 
-    public JPanel getView() {
+    public JPanel getView(boolean update) {
         panel = new SplitScreenView(
                 new ExternalAnnotationListModel(),
                 new ExternalAnnotationDetailedView());

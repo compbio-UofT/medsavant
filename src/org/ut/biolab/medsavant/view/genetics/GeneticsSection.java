@@ -10,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JButton;
@@ -99,7 +101,11 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
         Component[] result = new Component[4];
         result[0] = new JLabel("Reference:");
-        result[1] = getReferenceDropDown();
+        if(referenceDropDown == null){
+            result[1] = getReferenceDropDown();
+        } else {
+            result[1] = referenceDropDown;
+        }        
         result[2] = addShowInSavantButton();
         result[3] = createVcfButton();
         //result[0] = addSaveResultSetButton();
@@ -125,16 +131,19 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         referenceDropDown.setMinimumSize(new Dimension(200, 23));
         referenceDropDown.setPreferredSize(new Dimension(200, 23));
         referenceDropDown.setMaximumSize(new Dimension(200, 23));
+    
+        refreshReferenceDropDown();
         
         ProjectController.getInstance().addProjectListener(this);
-        
-        refreshReferenceDropDown();
 
         return referenceDropDown;
     }
 
     private void refreshReferenceDropDown() {
         try {
+            for(ActionListener l : referenceDropDown.getActionListeners()){
+                referenceDropDown.removeActionListener(l);
+            }
             referenceDropDown.removeAllItems();
 
             List<String> references = ProjectController.getInstance().getReferencesForProject(
@@ -154,7 +163,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
                     ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
                 }
             });
-            ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
+           ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
 
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -177,4 +186,6 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     public void projectTableRemoved(int projid, int refid) {
         refreshReferenceDropDown();
     }
+
+    public void referenceChanged(String referenceName) {}
 }
