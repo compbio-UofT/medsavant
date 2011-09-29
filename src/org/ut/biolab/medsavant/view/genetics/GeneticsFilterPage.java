@@ -33,7 +33,7 @@ public class GeneticsFilterPage extends SubSectionView {
     }
 
     public JPanel getView(boolean update) {
-        if (view == null) {
+        if (view == null || update) {
             try {
                 view = new JPanel();
                 view.setLayout(new BorderLayout());

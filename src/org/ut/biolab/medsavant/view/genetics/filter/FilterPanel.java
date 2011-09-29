@@ -55,25 +55,13 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume, AndrewBrook
  */
-public class FilterPanel extends JPanel implements FiltersChangedListener, ProjectListener {
+public class FilterPanel extends JPanel implements FiltersChangedListener {
     
     private ArrayList<FilterView> filterViews;
     private CollapsiblePanes filterContainer;
     private JLabel status;
     private JPanel contentPlaceholder;
     private HashMap<String, CollapsiblePane> filterToCPMap;
-
-    public void projectAdded(String projectName) {}
-
-    public void projectRemoved(String projectName) {}
-
-    public void projectChanged(String projectName) {}
-
-    public void projectTableRemoved(int projid, int refid) {}
-
-    public void referenceChanged(String referenceName) {
-        refreshFilters();
-    }
     
     public enum FilterWidgetType { INT, FLOAT, STRING, BOOLEAN };
 
@@ -84,7 +72,6 @@ public class FilterPanel extends JPanel implements FiltersChangedListener, Proje
         filterToCPMap = new HashMap<String,CollapsiblePane>();
         FilterController.addFilterListener(this);
         initGUI();
-        ProjectController.getInstance().addProjectListener(this);
     }
 
     private void initGUI() throws NonFatalDatabaseException {
