@@ -105,7 +105,7 @@ public class DBUtil {
 
     }
     
-    public static void addVcfToDb(String filename, int genome_id, int pipeline_id) throws SQLException {
+    /*public static void addVcfToDb(String filename, int genome_id, int pipeline_id) throws SQLException {
         
         
         long totalStart = System.nanoTime();
@@ -197,7 +197,7 @@ public class DBUtil {
         System.out.println("TOTAL TIME FOR " + records.size() + " RECORDS: " + (totalEnd-totalStart));
        
         
-    }
+    }*/
     
     private enum AnnotationName {GATK, SIFT, POLYPHEN};
     

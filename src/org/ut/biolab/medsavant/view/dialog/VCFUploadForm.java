@@ -17,7 +17,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.util.ImportVariantSet;
+import org.ut.biolab.medsavant.db.util.ImportVariants;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -222,31 +222,13 @@ public class VCFUploadForm extends javax.swing.JDialog {
         Thread thread = new Thread() {
             @Override
             public void run() {
-                int currentfile = 0;
-                int totalnumfiles = files.length;
-                for (File f : files) {
-                    currentfile++;
-                    File outfile = new File("temp_tdf"); //TODO: we should have a temporary file directory or something
-                    
-                    String progress = "Importing file " + currentfile + " of " + totalnumfiles;
-                    progressLabel.setText(progress);
-                    System.out.println(progress);
-                    try {
-                        VCFParser.parseVariants(f, outfile);
-                    } catch (FileNotFoundException ex) {
-                        Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (IOException ex) {
-                        Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    try {
-                        ImportVariantSet.performImport(outfile, projectId, referenceId);
-                    } catch (SQLException ex) {
-                        Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    System.gc();                   
+                try {
+                    ImportVariants.performImport(files, projectId, referenceId, progressLabel);
+                } catch (SQLException ex){
+                    Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 instance.dispose();
-                dialog.dispose();            
+                dialog.dispose();        
             }
         };
         thread.start(); 
