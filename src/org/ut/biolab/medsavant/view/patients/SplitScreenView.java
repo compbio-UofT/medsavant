@@ -19,6 +19,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -177,8 +178,11 @@ public class SplitScreenView extends JPanel {
 
         listView = new ListView(detailedListModel,detailedView);
         
-        this.add(detailedView, BorderLayout.NORTH);
-        this.add(listView, BorderLayout.CENTER);
+        this.add(new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                           detailedView, listView),BorderLayout.CENTER);
+        
+        //this.add(detailedView, BorderLayout.NORTH);
+        //this.add(listView, BorderLayout.CENTER);
     }
     
     public void refresh(){

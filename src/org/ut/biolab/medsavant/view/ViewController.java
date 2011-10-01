@@ -44,7 +44,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class ViewController extends JPanel {
 
-    private Banner banner;
+    //private Banner banner;
     private SectionHeader sectionHeader;
     private SidePanel leftPanel;
     private Menu menu;
@@ -120,69 +120,6 @@ public class ViewController extends JPanel {
         }
     }
 
-    private static class Banner extends JPanel implements ProjectListener {
-        private final JComboBox projectDropDown;
-
-        public Banner() {
-            this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-            this.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getEndzoneLineBorder(), ViewUtil.getMediumBorder()));
-            projectDropDown = new JComboBox();
-            
-            projectDropDown.setMinimumSize(new Dimension(210,23));
-                projectDropDown.setPreferredSize(new Dimension(210,23));
-                projectDropDown.setMaximumSize(new Dimension(210,23));
-
-            refreshProjectDropDown();
-            this.add(projectDropDown);
-            this.add(Box.createHorizontalGlue());
-            
-            ProjectController.getInstance().addProjectListener(this);
-        }
-
-        public void paintComponent(Graphics g) {
-            PaintUtil.paintDarkMenu(g, this);
-        }
-
-        private void refreshProjectDropDown() {
-            try {
-                projectDropDown.removeAllItems();
-                
-                List<String> projects = ProjectController.getInstance().getProjectNames();
-
-                for (String s : projects) {
-                    projectDropDown.addItem(s);
-                }
-                projectDropDown.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
-                    }
-                });
-                ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
-                
-            } catch (SQLException ex) {
-            }
-
-        }
-
-        public void projectAdded(String projectName) {
-            refreshProjectDropDown();
-        }
-
-        public void projectRemoved(String projectName) {
-            refreshProjectDropDown();
-        }
-
-        public void projectChanged(String projectName) {
-        }
-
-        public void projectTableRemoved(int projid, int refid) {
-            refreshProjectDropDown();
-        }
-
-        public void referenceChanged(String referenceName) {}
-    }
-
     private static class SectionHeader extends JPanel {
 
         private final JLabel title;
@@ -225,7 +162,7 @@ public class ViewController extends JPanel {
         public void paintComponent(Graphics g) {
             PaintUtil.paintLightMenu(g, this);
         }
-
+        
         private void setTitle(String sectionName, String subsectionName) {
             title.setText(sectionName.toUpperCase() + " › " + subsectionName);
         }
@@ -299,7 +236,7 @@ public class ViewController extends JPanel {
         this.setLayout(new BorderLayout());
 
         // create the banner
-        banner = new Banner();
+        //banner = new Banner();
         JPanel h1 = new JPanel();
         h1.setLayout(new BorderLayout());
 
@@ -325,7 +262,7 @@ public class ViewController extends JPanel {
         h1.add(peekRight, BorderLayout.EAST);
 
         // add it all to the view
-        this.add(banner, BorderLayout.NORTH);
+        //this.add(banner, BorderLayout.NORTH);
         this.add(h1, BorderLayout.CENTER);
 
         PeekingPanel peekLeft = new PeekingPanel("Menu", BorderLayout.EAST, leftPanel, true, 210);

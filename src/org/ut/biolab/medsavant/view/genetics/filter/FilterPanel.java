@@ -9,6 +9,7 @@ import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -95,7 +96,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
         
         
         contentPlaceholder = new JPanel();
-        contentPlaceholder.setBackground(ViewUtil.getMenuColor());
+        //contentPlaceholder.setBackground(Color.white);
         contentPlaceholder.setLayout(new BorderLayout());
         contentPlaceholder.add(new WaitPanel("Generating filters"), BorderLayout.CENTER);
         this.add(contentPlaceholder,BorderLayout.CENTER);
@@ -242,7 +243,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                 Object o = get();
 
                 filterContainer = new CollapsiblePanes();
-                filterContainer.setBackground(ViewUtil.getMenuColor());
+                //filterContainer.setBackground(ViewUtil.getMenuColor());
 
                 JScrollPane p1 = new JScrollPane(filterContainer);
                 p1.setBorder(null);

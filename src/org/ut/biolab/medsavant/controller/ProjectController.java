@@ -50,7 +50,7 @@ public class ProjectController {
 
     public void addProject(String projectName) {
         try {
-            org.ut.biolab.medsavant.db.Manage.addProject(projectName);
+            ProjectQueryUtil.addProject(projectName);
             ProjectController.getInstance().fireProjectAddedEvent(projectName);
         } catch (SQLException ex) {
             ex.printStackTrace();

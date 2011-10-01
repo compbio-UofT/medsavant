@@ -23,9 +23,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
-import org.ut.biolab.medsavant.db.Manage;
 import org.ut.biolab.medsavant.db.util.jobject.Annotation;
 import org.ut.biolab.medsavant.db.util.jobject.AnnotationQueryUtil;
+import org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil;
 
 /**
  *
@@ -169,8 +169,7 @@ public class ChangeVariantDialog extends javax.swing.JDialog {
                 annotationIds = annotationIds.substring(0, annotationIds.length()-1);
             }
             
-            Manage manage = new Manage();
-            manage.setAnnotations(projectId, refId, annotationIds);
+            ProjectQueryUtil.setAnnotations(projectId, refId, annotationIds);
                         
         } catch (SQLException ex) {
             Logger.getLogger(ChangeVariantDialog.class.getName()).log(Level.SEVERE, null, ex);
