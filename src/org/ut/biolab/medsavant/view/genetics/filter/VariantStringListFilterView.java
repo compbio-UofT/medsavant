@@ -78,9 +78,7 @@ public class VariantStringListFilterView {
             //List<String> tmp = FilterCache.getDefaultValues(columnAlias);
             //if(tmp == null){
                 //tmp = QueryUtil.getDistinctValuesForColumn(conn, table, col);
-                //System.out.println(columnAlias + " - retrieving");
             //} else {
-                //System.out.println(columnAlias + " - found cache");
             //}
             //FilterCache.addDefaultValues(table.getTable().getTableNameSQL(), columnAlias, tmp);
             //uniq = tmp;
@@ -141,7 +139,6 @@ public class VariantStringListFilterView {
                         }
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    System.out.println("Adding filter: " + f.getName());
                     FilterController.addFilter(f);
                 }
 
@@ -163,7 +160,6 @@ public class VariantStringListFilterView {
                     if (pressed) {
                         applyButton.setEnabled(true);
                     }
-                    //System.out.println("Changed: a=" + armed + "/p=" + pressed + "/s=" + selected);
                 }
             });
             b.setAlignmentX(0F);

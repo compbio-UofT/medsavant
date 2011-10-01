@@ -204,16 +204,6 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         //this.add(bottombar, BorderLayout.SOUTH);
     }
 
-    private static void printHist(Map<String, Integer> chartMap) {
-        if (true) {
-            return;
-        }
-        System.out.println("Printing hist: ");
-        for (String s : chartMap.keySet()) {
-            System.out.println(s + ": " + chartMap.get(s));
-        }
-    }
-
     void setIsSortedKaryotypically(boolean b) {
         this.isSortedKaryotypically = b;
     }

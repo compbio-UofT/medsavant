@@ -319,7 +319,6 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         if (ex instanceof NonFatalDatabaseException) {
         
             NonFatalDatabaseException ex0 = (NonFatalDatabaseException) ex;
-        System.out.println("Notified of exception " + ex.getMessage() + " of type " + ex0.getExceptionType());
         if (!LoginController.isLoggedIn()) {
             if (ex0.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_ACCESS_DENIED) {
                 this.label_status.setText("login incorrect");

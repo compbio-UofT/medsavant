@@ -281,8 +281,6 @@ public class QueryUtil {
 
         Statement s = conn.createStatement();
         
-        //System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
-        
         ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
         
         List<Vector> results;
@@ -305,8 +303,6 @@ public class QueryUtil {
         q.addCondition(new BinaryCondition(BinaryCondition.Op.EQUAL_TO,col,id));
 
         Statement s = conn.createStatement();
-        
-        //System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
         
         ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
         
@@ -332,8 +328,6 @@ public class QueryUtil {
 
         Statement s = conn.createStatement();
         
-        //System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
-        
         ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
         
         List<Vector> results;
@@ -357,8 +351,6 @@ public class QueryUtil {
         q.addCondition(new BinaryCondition(BinaryCondition.Op.EQUAL_TO,col,id));
 
         Statement s = conn.createStatement();
-        
-        //System.out.println("Querying for: " + q.toString()  + ((limit == -1) ? "" : (" LIMIT " + limit)));
         
         ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
         
@@ -441,8 +433,6 @@ public class QueryUtil {
         q.addFromTable(t.getTable());
         q.addCustomColumns(count);
         q.addCondition(BinaryCondition.equalTo(t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETID), regionId));
-        
-        System.out.println("Querying: " + q);
         
         Statement s = ConnectionController.connect().createStatement();
         ResultSet rs = s.executeQuery(q.toString());
@@ -534,7 +524,6 @@ public class QueryUtil {
         
         String query = q.toString();
         query = query.replaceFirst("'", "").replaceFirst("'", "");
-        //System.out.println(query);
         
         Statement s = connect.createStatement();
         ResultSet rs = s.executeQuery(query);
@@ -596,8 +585,6 @@ public class QueryUtil {
             q.addCondition(ComboCondition.or(f.getConditions()));
         }
         
-        System.out.println("Base filter: " + q.toString());
-        
         return q;
     }
      * 
@@ -614,8 +601,6 @@ public class QueryUtil {
         q.addGroupings(col);
 
         Statement s = conn.createStatement();
-
-        //System.out.println("Querying for: " + q.toString());
 
         ResultSet rs = s.executeQuery(q.toString());
 
@@ -638,8 +623,6 @@ public class QueryUtil {
 
         Statement s = conn.createStatement();
 
-        //System.out.println("Querying for: " + q.toString());
-
         ResultSet rs = s.executeQuery(q.toString());
 
         rs.next();
@@ -657,8 +640,6 @@ public class QueryUtil {
         q.addGroupings(col);
 
         Statement s = conn.createStatement();
-
-        //System.out.println("Querying for: " + q.toString());
 
         ResultSet rs = s.executeQuery(q.toString());
 
@@ -679,8 +660,6 @@ public class QueryUtil {
         q.addCondition(getRangeCondition(col,r));
 
         Statement s = conn.createStatement();
-
-        //System.out.println("Querying for: " + q.toString());
 
         ResultSet rs = s.executeQuery(q.toString());
 
@@ -848,8 +827,6 @@ public class QueryUtil {
         
         Statement s = ConnectionController.connect().createStatement();
 
-        //System.out.println("Querying for: " + q.toString());
-
         ResultSet rs = s.executeQuery(q.toString());
 
         List<GenomicRegion> results = new ArrayList<GenomicRegion>();
@@ -955,8 +932,6 @@ public class QueryUtil {
         String queryString = q.toString();
         if(limit > 0) queryString = queryString + " LIMIT " + limit;
         
-        System.out.println(queryString);
-        
         ResultSet rs = s.executeQuery(queryString);
         
         List<BEDRecord> results = new ArrayList<BEDRecord>();
@@ -969,7 +944,6 @@ public class QueryUtil {
                     rs.getInt(3),
                     rs.getString(4)
                     ));
-            //System.out.println(results.get(results.size()-1));
         }
         
         return results;

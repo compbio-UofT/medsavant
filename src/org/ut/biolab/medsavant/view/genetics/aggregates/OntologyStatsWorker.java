@@ -307,9 +307,6 @@ public  class OntologyStatsWorker extends SwingWorker{
           }
           
           for (WorkingWithOneNode thread: listIndividualThreads){
-              while (thread.isAlive()){
-//                  System.out.println("Trying to destroy " + thread.getNode());
-              }
               ((Node)thread.getNode().getUserObject()).setTotalDescription("");
           }
             if (subPanel.getJTree() != null){
@@ -326,12 +323,10 @@ public  class OntologyStatsWorker extends SwingWorker{
                   counter += 1;
               }
           }            
-//          System.out.println("Get total already loaded: " + counter);
           return counter;
       }
 
       private static float getTotalToLoad(){
-//          System.out.println("Get total to load: " + listIndividualThreads.size());
           return listIndividualThreads.size();
       }
 

@@ -76,7 +76,6 @@ public class PatientNumericFilterView {
             final int min = (int) Math.floor(extremeValues.getMin());
             final int max = (int) Math.ceil(extremeValues.getMax());
 
-            System.out.println("min and max " + min + " : " + max);
             
             rs.setMinimum(min);
             rs.setMaximum(max);
@@ -214,7 +213,6 @@ public class PatientNumericFilterView {
                                 return filterName;
                             }
                         };
-                        System.out.println("Adding filter: " + f.getName());
                         FilterController.addFilter(f);
                     }
                 }

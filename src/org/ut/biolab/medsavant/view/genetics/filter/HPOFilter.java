@@ -122,7 +122,6 @@ public class HPOFilter {
                         catch(Exception e){
                             container.remove(progressBar);
                             container.add(new JLabel("Could not display the tree"));
-                            System.out.println("Could not display the tree.");                            
                         }
                         task.removePropertyChangeListener(this);
                     }   
@@ -136,7 +135,6 @@ public class HPOFilter {
         catch (Exception e){
             container.remove(progressBar);
             container.add(new JLabel("Could not display the tree"));
-            System.out.println("Could not display the tree.");            
         }
     }
     
@@ -187,20 +185,17 @@ public class HPOFilter {
             public void valueChanged(TreeSelectionEvent e) {
                 
                 locations.clear();
-                System.out.println("Selected elements from the Human Phenotype Filter.");
                 TreePath[] paths = 
                         ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().
                         getSelectionPaths();
                 
                 if (paths != null){
                     for (TreePath path: paths){
-                        System.out.println(path);
                         DefaultMutableTreeNode currVisualNode = 
                                 (DefaultMutableTreeNode)path.getLastPathComponent();
                         Node currNode = (Node)currVisualNode.getUserObject();
                         
                         HashSet<String> arrayLocs = currNode.getLocs();
-//                        System.out.println("For this path\n" + arrayLocs);
                         for (String arrayLoc: arrayLocs){
                             
                             String[] split = arrayLoc.split("\t");
@@ -224,7 +219,6 @@ public class HPOFilter {
                 }
                 
                 applyButton.setEnabled(true); 
-//                System.out.println("Locations\n" + locations);
             }
         });
         
@@ -242,7 +236,6 @@ public class HPOFilter {
         selectAll.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // select all the nodes in the tree.
-                System.out.println("All nodes in the tree selected");
                 ((CheckBoxTreeNew)jTree).selectAllFromRoot();
             }
         });
@@ -272,7 +265,6 @@ public class HPOFilter {
                 // Select query statement for GO.
                 classifiedPos = new ClassifiedPositionInfo();
 
-                System.out.println("Pressed apply for gene ontology filter");
                 TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
                 
                 for (String location: locations){
@@ -325,7 +317,6 @@ public class HPOFilter {
                         return NAME_FILTER;
                     }
                 };
-                System.out.println("Adding Filter " + f.getName());
                 FilterController.addFilter(f);
             }
         });

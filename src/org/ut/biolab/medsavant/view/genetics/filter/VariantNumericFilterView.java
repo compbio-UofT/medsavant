@@ -61,10 +61,8 @@ public class VariantNumericFilterView {
         } else {
             //extremeValues = FilterCache.getDefaultValuesRange(columnAlias);
             //if(extremeValues == null){
-                //System.out.println(columnAlias + " - retrieving");
                 //extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
             //} else {
-                //System.out.println(columnAlias + " - found cache");
             //}
             extremeValues = new Range(VariantQueryUtil.getExtremeValuesForColumn(tablename, columnname));
             //FilterCache.addDefaultValues(table.getTable().getTableNameSQL(), columnAlias, extremeValues);
@@ -209,7 +207,6 @@ public class VariantNumericFilterView {
                     }
                 };
                 //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                System.out.println("Adding filter: " + f.getName());
                 FilterController.addFilter(f);
             }
 

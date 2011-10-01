@@ -116,8 +116,6 @@ public class Tree {
 //            }
 //
 //        }
-//        System.out.println(copyTree.identifierToNode.keySet().size());
-//        System.out.println(this.identifierToNode.keySet().size());
         return this;
     }
     
@@ -259,7 +257,6 @@ public class Tree {
      * optional operation.  
      */
     public void propagateUp(){
-        System.out.println("Propagating up the locations in this tree.");
         // send to recursive function.  
         setLocations(fakeRoot);
     }
@@ -274,8 +271,6 @@ public class Tree {
         // get all the children of the present node.
         TreeSet<Node> children = curr.getChildren();
 //        TreeSet<Node> children = this.getChildrenNodes(curr.getIdentifier()); 
-//        System.out.println(curr);
-//        System.out.println("\t" + children);
         
         // locations for this node.
         HashSet<String> currLocs = curr.getLocs();

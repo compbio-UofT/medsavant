@@ -129,7 +129,6 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
             o.setUpdate(true);
             currentOntology = o;
 
-            System.out.println("Showing ontology: " + ontology);
             this.content.removeAll();
             this.content.add(o,BorderLayout.CENTER);
             this.content.updateUI();

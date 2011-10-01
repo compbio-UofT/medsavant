@@ -96,15 +96,12 @@ public class ResultController {
         query.addAllColumns();
 
         List<QueryFilter> filters = FilterController.getQueryFilters();
-        System.out.println("Number of query filters: " + filters.size());
         for (QueryFilter f : filters) {
             query.addCondition(ComboCondition.or(f.getConditions()));
         }
         
         String queryString = query.toString() + " LIMIT " + limit;
         
-        System.out.println(queryString);
-
         ResultSet r1;
         try {
             r1 = ConnectionController.connect().createStatement().executeQuery(queryString);

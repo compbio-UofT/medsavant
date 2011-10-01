@@ -49,7 +49,6 @@ public class HPOParser {
         URL url = new URL(LOCATION_FILE);
         BufferedReader reader = new BufferedReader
                 (new InputStreamReader(url.openStream()));
-//        System.out.println("Was able to open the file");
         
         String line;
         String accumulatedString = "";
@@ -73,7 +72,6 @@ public class HPOParser {
                     }
                      // Time to accumulate a new string.
                     accumulatedString = "";
-//                    System.out.println(currNode.getIdentifier() + "\t" + currNode.getDescription());
                 }
             }
             if (startSeeingTerm){
@@ -91,10 +89,8 @@ public class HPOParser {
                 List<String> parentIDs = getParentIDs(accumulatedString);
                 tree.addNode(currNode, parentIDs, NAME_EXTRA_GENES);
             }
-//            System.out.println(currNode.getIdentifier() + "\t" + currNode.getDescription());
         }
         
-//        System.out.println(tree.getSize());
         // Propagate up the gene location info.
         tree.propagateUp();
         return tree;
@@ -132,12 +128,10 @@ public class HPOParser {
         }
         else{
             String[] split = accumulatedString.split("\n");
-//            System.out.println("\nNEW--");
             String identifier = "";
             String description = "";
             
             for (String part: split){
-//                System.out.println(part);
                 String[] insideSplit = part.split(":");
                 if (insideSplit.length < 2){
                     continue;

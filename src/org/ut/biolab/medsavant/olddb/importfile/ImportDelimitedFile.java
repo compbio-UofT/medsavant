@@ -46,7 +46,6 @@ public class ImportDelimitedFile {
                         } else {
                             nextLine = getOnlyRequiredFields(reader.readNext(), fields);
                         }
-                        //System.out.println("Next line: " + nextLine.toString());
                         return true;
                     } catch (Exception ex) {
                         try {
@@ -159,7 +158,6 @@ public class ImportDelimitedFile {
                 if (fields == null) {
                     lines.add(line);
                 } else {
-                    //System.out.print("Parsed: "); print(getOnlyRequiredFields(line, fields));
                     lines.add(getOnlyRequiredFields(line, fields));
                 }
             } catch (IOException ex) {
@@ -176,16 +174,7 @@ public class ImportDelimitedFile {
 
         for (int i = 0; i < fields.length; i++) {
             result[i] = line[fields[i]];
-            System.out.print(result[i] + "\t");
         }
-        System.out.println();
         return result;
-    }
-
-    private static void print(String[] line) {
-        for (String s : line) {
-            System.out.print(s + "\t");
-        }
-        System.out.println();
     }
 }

@@ -39,7 +39,6 @@ public class ReferenceController {
     public void addReference(String name) {
         try {
             org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil.addReference(name);
-            System.out.println("Firing reference added event...");
             fireReferenceAddedEvent(name);
         } catch (SQLException ex) {
             ex.printStackTrace();

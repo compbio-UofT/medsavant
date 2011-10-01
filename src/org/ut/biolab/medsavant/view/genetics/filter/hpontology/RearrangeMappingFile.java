@@ -91,7 +91,6 @@ public class RearrangeMappingFile {
             valueFromChrom.add(range);
         }
         
-        System.out.println(map);
         reader.close();
         
         // Write the info from the map into 

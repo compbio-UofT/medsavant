@@ -23,7 +23,6 @@ public class HPTree extends Tree{
         public HPTree() throws Exception{
             super();
             super.idToLocs = CreateMappingsFile.getMappings();
-//            System.out.println(idToLocs);
 //            this.idToLocs = super.idToLocs;
         }
     

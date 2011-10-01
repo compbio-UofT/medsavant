@@ -114,7 +114,6 @@ public class PatientBooleanFilterView {
                             return filterName;
                         }
                     };
-                    System.out.println("Adding filter: " + f.getName());
                     FilterController.addFilter(f);
                 }
             }

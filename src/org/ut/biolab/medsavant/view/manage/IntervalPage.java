@@ -126,14 +126,9 @@ public class IntervalPage extends SubSectionView {
         @Override
         protected Object doInBackground() throws Exception {
             
-            System.out.println("Importing in the background: " + path + " " + delim + " " + numHeaderLines + " " + fileFormat);
-            
             Iterator<String[]> i = ImportDelimitedFile.getFileIterator(path, delim, numHeaderLines,fileFormat);
             
             DBUtil.addGeneListToDatabase(geneListName,i);
-            
-            System.out.println("Done importing in the background");
-            
             
             return null;
             

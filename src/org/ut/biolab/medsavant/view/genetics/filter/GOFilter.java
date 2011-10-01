@@ -115,7 +115,6 @@ public class GOFilter {
                         xtree = XMLontology.makeTree(destination);
                     }
                     catch(Exception e){
-                        System.out.println("Encountered some kind of problem");
                         e.printStackTrace();
                     }
                     setProgress(100);
@@ -132,8 +131,6 @@ public class GOFilter {
                 // To detect progress with the loading of the tree.
                 public void propertyChange(PropertyChangeEvent evt) {
 
-//                    System.out.println("Event name: " + evt.getPropertyName());
-//                    System.out.println("Event value: " + evt.getNewValue());
 
 //                    if ("state".equals(evt.getPropertyName()) && 
 //                            "DONE".equals(evt.getNewValue() + "")){
@@ -149,7 +146,6 @@ public class GOFilter {
                         catch(Exception e){
                             container.remove(progressBar);
                             container.add(new JLabel("Could not display the tree"));
-                            System.out.println("Could not display the tree.");
                             e.printStackTrace();
                         }
                         task.removePropertyChangeListener(this);
@@ -170,7 +166,6 @@ public class GOFilter {
 
             container.remove(progressBar);
             container.add(new JLabel("Could not display the tree"));
-            System.out.println("Could not display the tree.");
         }
     }
     
@@ -221,7 +216,6 @@ public class GOFilter {
             public void valueChanged(TreeSelectionEvent e) {
 
                 locations.clear();
-                System.out.println("Selected elements for gene ontology filter.");
 //                TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
                 TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
                
@@ -230,7 +224,6 @@ public class GOFilter {
  
                     for (TreePath path: paths){
                         
-                        System.out.println(path);
 //                        if (path.getPathCount() == 1){
 //                            
 //                            continue;
@@ -286,7 +279,6 @@ public class GOFilter {
 
             public void actionPerformed(ActionEvent e) {
                 // select all the nodes in the tree.
-                System.out.println("All nodes in the tree selected");
                 ((CheckBoxTreeNew)jTree).selectAllFromRoot();
             }
         });
@@ -320,9 +312,7 @@ public class GOFilter {
                 // Select query statement for GO.
                 classifiedPosInfo = new ClassifiedPositionInfo();
 
-                System.out.println("Pressed apply for gene ontology filter");
                 TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
-//                System.out.println("N: " + paths);
                 
                 for (String location: locations){
 
@@ -337,7 +327,6 @@ public class GOFilter {
                 // will never be satisfied.
                 if (classifiedPosInfo.getConditions().isEmpty() && paths != null){
                     classifiedPosInfo.addCondition("chr1", 23.0, 22.0); 
-                    System.out.println("DONE!");
                 }
                 final HashMap<String, List<Range>> map = classifiedPosInfo.getConditions();
                 
@@ -376,8 +365,6 @@ public class GOFilter {
                             
                             
                         } // for each chromosome.
-//                        System.out.println(UnionQuery.unionAll(list.toArray(new SelectQuery[1])));
-//                        System.out.println("\n\n\n");
                         return conds;
                     }
 
@@ -386,7 +373,6 @@ public class GOFilter {
                         return NAME_FILTER;
                     }
                 };
-                System.out.println("Adding Filter " + f.getName());
                 FilterController.addFilter(f);
             }
         });        

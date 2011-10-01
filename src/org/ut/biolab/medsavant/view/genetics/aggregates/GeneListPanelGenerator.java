@@ -63,8 +63,6 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
     public void setUpdate(boolean update) {
         
-        System.out.println("Received message update " + update);
-        
         if (panel == null) { return; }
         
         if (update) {
@@ -131,7 +129,6 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             geneLister.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
-                    System.out.println("=== " + (String) geneLister.getSelectedItem() + "===");
                     showGeneAggregates((String) geneLister.getSelectedItem());
                 }
             });
@@ -173,12 +170,9 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             
             tablePanel.add(stp, BorderLayout.CENTER);
 
-            System.out.println("showing table");
             tablePanel.updateUI();
 
-            System.out.println("Updating table data");
             updateData();
-            System.out.println("Done updating table data");
 
             tablePanel.updateUI();
 
@@ -329,11 +323,9 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                     List<BEDRecord> genes = (List<BEDRecord>) get();
                     initGeneTable(genes);
                 } catch (java.util.concurrent.CancellationException ex) {
-                    System.err.println("Gene list " + geneListName + " cancelled");
                 } catch (InterruptedException ex) {
                 } catch (ExecutionException ex) {
                 } catch (Exception e) {
-                    System.err.println("Error initializing table: " + e.getMessage());
                 }
             }
         }

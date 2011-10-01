@@ -39,6 +39,7 @@ import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.oldcontroller.FilterController;
 import org.ut.biolab.medsavant.olddb.table.ModifiableColumn;
 import org.ut.biolab.medsavant.olddb.table.PatientTableSchema;
@@ -223,7 +224,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                         return PatientBooleanFilterView.createFilterView(table, m.getShortName(), m.getShortName()); //TINYINT
                     }
                 case DATE:
-                    System.err.println("Date field filters are not supported yet. ");
+                    ClientLogger.log("Date field filters are not supported yet.",Level.SEVERE);
                 default:
                     return null;
             }

@@ -162,7 +162,6 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                 showShowCard();
             } catch (InterruptedException ex) {
             } catch (Exception e) {
-                System.err.println("Error updating table " + e.getMessage());
                 e.printStackTrace();
             }
         }  

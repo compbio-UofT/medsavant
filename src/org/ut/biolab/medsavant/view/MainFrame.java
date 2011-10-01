@@ -47,7 +47,6 @@ public class MainFrame extends JFrame implements LoginListener{
     private static MainFrame instance;
 
     public void switchToSessionView() {
-         //System.out.println("Requesting switch to session view");
         if (!LoginController.isLoggedIn() || (currentCard != null && currentCard.equals(SESSION_VIEW_CARD_NAME))) { return; }
         if (loginView != null) {
             view.remove(loginView);
@@ -64,7 +63,6 @@ public class MainFrame extends JFrame implements LoginListener{
     }
 
     public void switchToLoginView() {
-        //System.out.println("Requesting switch to login view");
         if (currentCard != null && currentCard.equals(LOGIN_CARD_NAME)) { return; }
         if (sessionView != null) {
             view.remove(sessionView);

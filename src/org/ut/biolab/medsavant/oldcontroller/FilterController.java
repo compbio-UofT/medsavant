@@ -56,27 +56,6 @@ public class FilterController {
         fireFiltersChangedEvent();
     }
 
-    /*
-    private static void printSQLSelect() {
-
-        SelectQuery q = new SelectQuery();
-        q.addAllTableColumns(MedSavantDatabase.getInstance().getVariantTableSchema().getTable());
-
-        for (Filter f : filterMap.values()) {
-            if (f.getType() == FilterType.QUERY) {
-                QueryFilter qf = (QueryFilter) f;
-                
-                    for (Condition c : qf.getConditions()) {
-                        q.addCondition(c);
-                    }
-            }
-        }
-
-        System.out.println(q);
-    }
-     * 
-     */
-
     public static void addFilterListener(FiltersChangedListener l) {
         listeners.add(l);
     }
@@ -119,15 +98,6 @@ public class FilterController {
             }
         }
     }
-
-    /*
-    private static void printFilters() {
-        for (Filter f : filterMap.values()) {
-            System.out.println(f);
-        }
-    }
-     *
-     */
 
     public static Filter getFilter(String title) {
         return filterMap.get(title);

@@ -144,7 +144,6 @@ class GenderFilterView2 {
                     if (pressed) {
                         applyButton.setEnabled(true);
                     }
-                    //System.out.println("Changed: a=" + armed + "/p=" + pressed + "/s=" + selected);
                 }
             });
             b.setAlignmentX(0F);

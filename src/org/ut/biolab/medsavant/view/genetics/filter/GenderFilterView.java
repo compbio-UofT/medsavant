@@ -102,7 +102,6 @@ public class GenderFilterView {
                         return FILTER_NAME;
                     }
                 };
-                System.out.println("Adding filter: " + f.getName());
                 FilterController.addFilter(f);
 
                 //TODO: why does this not work? Freezes GUI

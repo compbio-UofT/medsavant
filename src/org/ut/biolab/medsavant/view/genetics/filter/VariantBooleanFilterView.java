@@ -88,7 +88,6 @@ public class VariantBooleanFilterView {
                         }
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    System.out.println("Adding filter: " + f.getName());
                     FilterController.addFilter(f);
                 }
 
@@ -110,7 +109,6 @@ public class VariantBooleanFilterView {
                     if (pressed) {
                         applyButton.setEnabled(true);
                     }
-                    //System.out.println("Changed: a=" + armed + "/p=" + pressed + "/s=" + selected);
                 }
             });
             b.setAlignmentX(0F);

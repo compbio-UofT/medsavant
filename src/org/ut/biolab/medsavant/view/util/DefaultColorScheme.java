@@ -61,7 +61,6 @@ class DefaultColorScheme implements ColorScheme {
     }
     
     public Color getColor(int index, int total) {
-        //System.out.println(index + " of " + total + " = " + ((int) Math.floor(((double) index / total)*total)));
         return getColor((int) Math.floor(((double) index / total)*colors.size()));
     }
 }
