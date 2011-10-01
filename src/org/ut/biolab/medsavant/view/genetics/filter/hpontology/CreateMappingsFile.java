@@ -21,12 +21,7 @@ import org.jdom.input.SAXBuilder;
  * @author Nirvana Nursimulu
  */
 public class CreateMappingsFile {
-    
-//    public static void main(String[] args) throws Exception{
-//        HashMap<String, HashSet<String>> map = getMappings();
-////        System.out.println(map);
-//    }
-    
+
     /**
      * The location of the XML file containing the location of the mapping file.
      */
@@ -84,13 +79,11 @@ public class CreateMappingsFile {
             // If the locations are available from gene name, carry on; 
             // otherwise, it's pointless to even think of proceeding.
             if (locsFromName == null){
-//                System.out.println(geneName);
                 continue;
             }
             
             // Get the HPO Ids associated with this gene name.
             List<String> listHPOids = getHPOIDs(split[2]);
-//            System.out.println(listHPOids);
             
             // For each HPO id associated with this gene name...
             for (String hPOid: listHPOids){

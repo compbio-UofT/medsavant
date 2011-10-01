@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.Random;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.log.ClientLogger;
 
 /**
  *
@@ -78,7 +79,6 @@ public class ConnectionController {
         try {
             Class.forName(SettingsController.getInstance().getDBDriver());
             c = DriverManager.getConnection(SettingsController.getInstance().getDBURL(), LoginController.getUsername(), LoginController.getPassword());
-            //System.out.println("Connection successful");
             return c;
         } catch (Exception e) {
             if (e.getMessage().startsWith("Access denied")) {
@@ -88,7 +88,7 @@ public class ConnectionController {
                 LoginController.logout();
                 throw new NonFatalDatabaseException(NonFatalDatabaseException.ExceptionType.TYPE_DB_CONNECTION_FAILURE, LoginController.getUsername());
             } else {
-                System.out.println("Message: " + e.getMessage());
+                ClientLogger.log(e.getMessage(),Level.SEVERE);
                 //e.printStackTrace();
                 LoginController.logout();
                 throw new NonFatalDatabaseException(NonFatalDatabaseException.ExceptionType.TYPE_UNKNOWN, LoginController.getUsername());

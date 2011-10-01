@@ -425,7 +425,7 @@ public class ViewUtil {
     public static JLabel getDetailTitleLabel(String label) {
         JLabel l = new JLabel(label);
         l.setForeground(Color.white);
-        l.setFont(new Font("Arial",Font.BOLD,36));
+        l.setFont(new Font("Arial",Font.BOLD,28));
         return l; 
     }
     

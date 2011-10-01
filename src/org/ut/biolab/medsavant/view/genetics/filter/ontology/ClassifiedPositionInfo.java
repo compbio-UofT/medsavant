@@ -96,7 +96,6 @@ public class ClassifiedPositionInfo {
                 String formatted = 
                         key.trim() + "\t" + (long)currRange.getMin() + "\t" + (long)currRange.getMax();
                 mergedRanges.add(formatted);
-//                System.out.println(formatted);
             }
         }
         return mergedRanges;

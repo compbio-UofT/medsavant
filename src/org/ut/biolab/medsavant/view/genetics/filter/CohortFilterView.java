@@ -28,6 +28,7 @@ import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.record.VariantRecordModel;
@@ -117,7 +118,7 @@ class CohortFilterView {
                         }
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    System.out.println("Adding filter: " + f.getName());
+                    ClientLogger.log("Adding filter: " + f.getName());
                     FilterController.addFilter(f);
                 }
 

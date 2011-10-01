@@ -161,16 +161,6 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
         this.add(bottombar, BorderLayout.SOUTH);
     }
 
-    private static void printHist(Map<String, Integer> chartMap) {
-        if (true) {
-            return;
-        }
-        System.out.println("Printing hist: ");
-        for (String s : chartMap.keySet()) {
-            System.out.println(s + ": " + chartMap.get(s));
-        }
-    }
-
     private void initToolBar() {
         bar = new JToolBar();
         bottombar = new JToolBar();
@@ -293,8 +283,6 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
             
         private ChartFrequencyMap getChartMap(String fieldName, boolean isSorted) throws Exception {
 
-            System.out.println("Threading chart retrieval for " + fieldName);
-            
             ChartFrequencyMap chartMap = new ChartFrequencyMap();
             
             TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
@@ -305,7 +293,6 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
             if (TableSchema.isNumeric(type)) {
                 
                 Range r = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, column);
-                System.err.println("Need to do something for range " + r.toString());
                 
                 int numBins = getNumberOfQuantitativeCategories();
                 

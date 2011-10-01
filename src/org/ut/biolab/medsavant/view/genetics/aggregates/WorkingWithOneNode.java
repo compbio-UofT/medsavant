@@ -137,7 +137,6 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
         try {
             doTheWork();
         } catch (Exception ex) {
-//            System.out.println("Destroyed!\t" + node);
         }
     }
     

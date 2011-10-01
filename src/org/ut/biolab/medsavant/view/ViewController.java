@@ -26,6 +26,7 @@ import javax.swing.border.MatteBorder;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
+import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
@@ -80,7 +81,7 @@ public class ViewController extends JPanel {
     }
 
     void setProject(String projectname) {
-        System.out.println("Setting project to : " + projectname);
+         ClientLogger.log("Setting project to : " + projectname);
     }
 
     void clearMenu() {

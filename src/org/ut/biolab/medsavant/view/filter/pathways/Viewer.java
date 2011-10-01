@@ -52,6 +52,7 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
@@ -338,7 +339,6 @@ public class Viewer extends JSplitPane {
                 return "WikiPathways";
             }
         };
-        System.out.println("Adding filter: " + f.getName());
         FilterController.addFilter(f);
         
         
@@ -470,13 +470,13 @@ public class Viewer extends JSplitPane {
             DocumentBuilder db = dbf.newDocumentBuilder();
             gpmlDoc = db.parse(uri.toString());
         } catch (ParserConfigurationException pce) {
-            System.out.println("ERROR");
+            ClientLogger.log("ERROR",Level.SEVERE);
             //TODO
         } catch (SAXException se) {
-            System.out.println("ERROR");
+             ClientLogger.log("ERROR",Level.SEVERE);
             //TODO
         } catch (IOException ioe) {
-            System.out.println("ERROR");
+             ClientLogger.log("ERROR",Level.SEVERE);
             //TODO
         }
 

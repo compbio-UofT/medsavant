@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil.LogType;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 
@@ -46,8 +48,10 @@ public class LoginController {
         LoginController.loggedIn = loggedIn;
 
         if (loggedIn) {
+            ServerLogQueryUtil.addLog(LoginController.username, LogType.INFO, "Logged in");
             fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_IN));
         } else {
+            ServerLogQueryUtil.addLog(LoginController.username, LogType.INFO, "Logged out");
             fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_OUT));
         }
     }

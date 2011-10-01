@@ -112,6 +112,8 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         label_status = new javax.swing.JLabel();
         spiralPanel = new javax.swing.JPanel();
         label_versioninformation = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -161,7 +163,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             }
         });
 
-        label_status.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        label_status.setFont(new java.awt.Font("Tahoma", 0, 14));
         label_status.setText("Label");
 
         spiralPanel.setPreferredSize(new java.awt.Dimension(150, 150));
@@ -171,7 +173,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         spiralPanel.setLayout(spiralPanelLayout);
         spiralPanelLayout.setHorizontalGroup(
             spiralPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 321, Short.MAX_VALUE)
+            .addGap(0, 292, Short.MAX_VALUE)
         );
         spiralPanelLayout.setVerticalGroup(
             spiralPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -182,21 +184,29 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         label_versioninformation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_versioninformation.setText("version information");
 
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("username");
+
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setText("password");
+
         javax.swing.GroupLayout panel_titleLayout = new javax.swing.GroupLayout(panel_title);
         panel_title.setLayout(panel_titleLayout);
         panel_titleLayout.setHorizontalGroup(
             panel_titleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(spiralPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
-            .addComponent(field_username, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
-            .addComponent(label_versioninformation, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
-            .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
+            .addComponent(label_versioninformation, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
             .addGroup(panel_titleLayout.createSequentialGroup()
                 .addGroup(panel_titleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(cb_autosignin)
                     .addComponent(cb_rememberpassword)
-                    .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE))
+                .addGap(26, 26, 26)
                 .addComponent(button_login))
+            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+            .addComponent(spiralPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+            .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+            .addComponent(field_username, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
         );
         panel_titleLayout.setVerticalGroup(
             panel_titleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -204,9 +214,13 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
                 .addComponent(spiralPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(label_versioninformation)
-                .addGap(14, 14, 14)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(field_username, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(field_password, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panel_titleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -215,7 +229,8 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cb_autosignin)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cb_rememberpassword))
+                .addComponent(cb_rememberpassword)
+                .addContainerGap())
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -263,6 +278,8 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
     private javax.swing.JCheckBox cb_rememberpassword;
     private javax.swing.JPasswordField field_password;
     private javax.swing.JTextField field_username;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel label_status;
     private javax.swing.JLabel label_versioninformation;
     private javax.swing.JPanel panel_title;
