@@ -8,7 +8,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.sql.SQLException;
 import java.util.Collections;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.util.jobject.VariantQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;

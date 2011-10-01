@@ -15,7 +15,7 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ExternalAnnotationController;
-import org.ut.biolab.medsavant.db.util.jobject.Annotation;
+import org.ut.biolab.medsavant.db.util.query.Annotation;
 import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
 import org.ut.biolab.medsavant.view.patients.DetailedView;

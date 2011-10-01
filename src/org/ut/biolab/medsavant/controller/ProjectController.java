@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.util.DBUtil;
-import org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil;
-import org.ut.biolab.medsavant.db.util.jobject.ReferenceQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 
 /**
  *
@@ -34,7 +34,7 @@ public class ProjectController {
 
     public void removeProject(String projectName) {
         try {
-        org.ut.biolab.medsavant.db.Manage.removeProject(projectName);
+        ProjectQueryUtil.removeProject(projectName);
         fireProjectRemovedEvent(projectName);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -58,12 +58,12 @@ public class ProjectController {
     }
 
     public int getProjectId(String projectName) throws SQLException {
-        return org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil.getProjectId(projectName);
+        return org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil.getProjectId(projectName);
     }
 
     public void removeVariantTable(int project_id, int ref_id) {
         try {
-            org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil.removeReferenceForProject(project_id,ref_id);
+            org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil.removeReferenceForProject(project_id,ref_id);
             fireProjectTableRemovedEvent(project_id,ref_id);
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -71,7 +71,7 @@ public class ProjectController {
     }
 
     public String getProjectName(int projectid) throws SQLException {
-        return org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil.getProjectName(projectid);
+        return org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil.getProjectName(projectid);
     }
 
     public void setProject(String projectName) {
@@ -110,7 +110,7 @@ public class ProjectController {
     }
 
     public int getReferenceId(String refName) throws SQLException {
-        return org.ut.biolab.medsavant.db.util.jobject.ReferenceQueryUtil.getReferenceId(refName);
+        return org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil.getReferenceId(refName);
     }
 
     public List<String> getReferencesForProject(int projectid) throws SQLException {

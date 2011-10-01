@@ -23,9 +23,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
-import org.ut.biolab.medsavant.db.util.jobject.Annotation;
-import org.ut.biolab.medsavant.db.util.jobject.AnnotationQueryUtil;
-import org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.Annotation;
+import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 
 /**
  *

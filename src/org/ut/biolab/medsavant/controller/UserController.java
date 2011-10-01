@@ -3,7 +3,7 @@ package org.ut.biolab.medsavant.controller;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.ut.biolab.medsavant.db.util.jobject.UserQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
 
 /**
  *
@@ -15,7 +15,7 @@ public class UserController {
 
     public void removeUser(String name) {
         try {
-        org.ut.biolab.medsavant.db.Manage.removeUser(name);
+        org.ut.biolab.medsavant.db.util.query.UserQueryUtil.removeUser(name);
         fireUserRemovedEvent(name);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -31,7 +31,7 @@ public class UserController {
 
     public boolean addUser(String name, String pass, boolean admin) {
         try {
-            org.ut.biolab.medsavant.db.util.jobject.UserQueryUtil.addUser(name,pass,admin);
+            org.ut.biolab.medsavant.db.util.query.UserQueryUtil.addUser(name,pass,admin);
             UserController.getInstance().fireUserAddedEvent(name);
             return true;
         } catch (SQLException ex) {

@@ -138,7 +138,7 @@ public class NewUserDialog extends javax.swing.JDialog {
         try {
             String username = this.text_username.getText();
 
-            if (org.ut.biolab.medsavant.db.util.jobject.UserQueryUtil.userExists(username)) {
+            if (org.ut.biolab.medsavant.db.util.query.UserQueryUtil.userExists(username)) {
                 JOptionPane.showMessageDialog(this, "User already exists");
             } else {
                 if (UserController.getInstance().addUser(username,this.text_password.getText(),this.cb_admin.isSelected())) {

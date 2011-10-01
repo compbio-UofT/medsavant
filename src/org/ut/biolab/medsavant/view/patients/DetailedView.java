@@ -28,7 +28,7 @@ public abstract class DetailedView extends JPanel {
     protected SplitScreenView parent;
 
     public DetailedView() {
-        this.setPreferredSize(new Dimension(9999, 310));
+        this.setPreferredSize(new Dimension(9999, 350));
         this.setBorder(ViewUtil.getBigBorder());
         
         this.setOpaque(false);

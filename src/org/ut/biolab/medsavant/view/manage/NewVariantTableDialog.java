@@ -24,7 +24,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ReferenceController.ReferenceListener;
 import org.ut.biolab.medsavant.db.util.DBSettings;
-import org.ut.biolab.medsavant.db.util.jobject.ReferenceQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.view.MainFrame;
 
 /**
@@ -160,7 +160,7 @@ public class NewVariantTableDialog extends javax.swing.JDialog implements Refere
             String refName = (String) this.cb_references.getSelectedItem();
             
             int refid = ReferenceQueryUtil.getReferenceId(refName);
-            org.ut.biolab.medsavant.db.util.jobject.ProjectQueryUtil.createVariantTable(projectid,refid);
+            org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil.createVariantTable(projectid,refid);
             this.dispose();
             
         } catch (SQLException ex) {
