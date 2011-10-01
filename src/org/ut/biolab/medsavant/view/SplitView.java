@@ -49,7 +49,7 @@ public class SplitView extends JPanel {
         left.setBorder(new EmptyBorder(10,10,10,10));
         left.setLayout(new BoxLayout(left,BoxLayout.Y_AXIS));
 
-        bannerContainer = ViewUtil.getBannerPanel();
+        bannerContainer = ViewUtil.getSecondaryBannerPanel();
         bannerContainer.setLayout(new BoxLayout(bannerContainer,BoxLayout.X_AXIS));
         bannerContainer.setBorder(new EmptyBorder(5,3,5,3));
         sectionTitleLabel = (JLabel) ViewUtil.clear(new JLabel("Title"));

@@ -77,7 +77,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
 
     private void initGUI() throws NonFatalDatabaseException {
 
-        JPanel statusPanel = ViewUtil.getBannerPanel();
+        JPanel statusPanel = ViewUtil.getSecondaryBannerPanel();
         status = new JLabel();
 
         try {

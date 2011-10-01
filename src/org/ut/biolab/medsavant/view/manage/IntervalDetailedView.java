@@ -34,7 +34,6 @@ public class IntervalDetailedView extends DetailedView {
     private RegionDetailsSW sw;
     private final JPanel content;
     private final JPanel details;
-    private final JPanel menu;
     
     private int numRegionsInRegionList;
 
@@ -114,14 +113,12 @@ public class IntervalDetailedView extends DetailedView {
         content = this.getContentPanel();
         
         details = ViewUtil.getClearPanel();
-        menu = ViewUtil.getButtonPanel();
         
-        menu.add(new JButton("Delete region list"));
+        this.addBottomComponent(new JButton("Delete region list"));
         
         content.setLayout(new BorderLayout());
         
         content.add(details,BorderLayout.CENTER);
-        content.add(menu,BorderLayout.SOUTH);
     }
     
     @Override

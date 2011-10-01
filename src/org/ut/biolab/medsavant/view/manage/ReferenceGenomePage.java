@@ -129,7 +129,6 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
     private class ReferenceDetailedView extends DetailedView {
 
         private final JPanel details;
-        private final JPanel menu;
         private final JPanel content;
         private String refName;
 
@@ -138,19 +137,16 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             content = this.getContentPanel();
 
             details = ViewUtil.getClearPanel();
-            menu = ViewUtil.getButtonPanel();
 
             //menu.add(setDefaultCaseButton());
             //menu.add(setDefaultControlButton());
-            menu.add(deleteButton());
+            this.addBottomComponent(deleteButton());
             //menu.add(deleteCohortButton());
             
-            menu.setVisible(false);
 
             content.setLayout(new BorderLayout());
 
             content.add(details, BorderLayout.CENTER);
-            content.add(menu, BorderLayout.SOUTH);
         }
 
         @Override
@@ -162,10 +158,6 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             details.setLayout(new BorderLayout());
 
             details.updateUI();
-
-            if (menu != null) {
-                menu.setVisible(true);
-            }
         }
         
         public final JButton deleteButton() {

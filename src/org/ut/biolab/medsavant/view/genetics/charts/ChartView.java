@@ -143,7 +143,7 @@ public class ChartView extends JPanel {
     }
 
     private void initBottomBar() {
-        JPanel bottomToolbar = ViewUtil.getBannerPanel();
+        JPanel bottomToolbar = ViewUtil.getSecondaryBannerPanel();
         bottomToolbar.setBorder(ViewUtil.getTinyLineBorder());
         bottomToolbar.setLayout(new BoxLayout(bottomToolbar, BoxLayout.X_AXIS));
 

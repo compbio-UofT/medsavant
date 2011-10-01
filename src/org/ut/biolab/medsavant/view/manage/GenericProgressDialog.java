@@ -65,7 +65,7 @@ class GenericProgressDialog extends JDialog {
                 
         this.add(wp,BorderLayout.CENTER);
         
-        buttonPane = ViewUtil.getBannerPanel();
+        buttonPane = ViewUtil.getSecondaryBannerPanel();
         buttonPane.setLayout(new BoxLayout(buttonPane,BoxLayout.X_AXIS));
         buttonPane.add(Box.createHorizontalGlue());
         

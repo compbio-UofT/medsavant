@@ -8,47 +8,29 @@ import com.jidesoft.utils.SwingWorker;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.Vector;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ut.biolab.medsavant.view.genetics.*;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
-import org.ut.biolab.medsavant.db.Manage;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
-import org.ut.biolab.medsavant.model.record.Chromosome;
-import org.ut.biolab.medsavant.model.record.Genome;
-import org.ut.biolab.medsavant.util.view.PeekingPanel;
 import org.ut.biolab.medsavant.view.MainFrame;
-import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.patients.SplitScreenView;
@@ -96,7 +78,6 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
     private static class ProjectsDetailedView extends DetailedView implements ProjectListener {
 
-        private final JPanel menu;
         private final static JPanel details = ViewUtil.getClearPanel();
         private final JPanel content;
         private String projectName;
@@ -106,18 +87,13 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
             content = this.getContentPanel();
 
-            menu = ViewUtil.getButtonPanel();
-
-            menu.add(deleteProjectButton());
-            menu.add(addTableButton());
-            menu.add(editPatientButton());
-
-            menu.setVisible(false);
+            this.addBottomComponent(deleteProjectButton());
+            this.addBottomComponent(addTableButton());
+            this.addBottomComponent(editPatientButton());
 
             content.setLayout(new BorderLayout());
 
             content.add(details, BorderLayout.CENTER);
-            content.add(menu, BorderLayout.SOUTH);
 
             ProjectController.getInstance().addProjectListener(this);
 
@@ -220,14 +196,6 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             }
             sw = new ProjectDetailsSW(projectName);
             sw.execute();
-
-            if (menu != null) {
-                menu.setVisible(true);
-
-
-
-
-            }
         }
 
         public void referenceChanged(String referenceName) {

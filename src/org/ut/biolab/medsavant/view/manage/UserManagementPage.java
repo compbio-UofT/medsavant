@@ -45,7 +45,6 @@ public class UserManagementPage extends SubSectionView implements UserListener {
     }
 
      private static class ThisDetailedView extends DetailedView  {
-        private final JPanel menu;
         private final JPanel details;
         private final JPanel content;
         private String name;
@@ -56,16 +55,13 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         content = this.getContentPanel();
         
         details = ViewUtil.getClearPanel();
-        menu = ViewUtil.getButtonPanel();
         
-        menu.add(deleteButton());
+        this.addBottomComponent(deleteButton());
 
-        menu.setVisible(false);
         
         content.setLayout(new BorderLayout());
         
         content.add(details,BorderLayout.CENTER);
-        content.add(menu,BorderLayout.SOUTH);
     }
         
         public final JButton deleteButton() {
@@ -99,8 +95,6 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         }
         sw = new DetailsSW(name);
         sw.execute();
-        
-        if(menu != null) menu.setVisible(true);
     }
 
         

@@ -97,11 +97,11 @@ public class ViewUtil {
     }
 
     public static Font getSmallTitleFont() {
-        return new Font("Arial", Font.PLAIN, 10);
+        return new Font("Arial", Font.PLAIN, 9);
     }
     
     public static Font getSuperSmallTitleFont() {
-        return new Font("Arial", Font.PLAIN, 6);
+        return new Font("Arial", Font.PLAIN, 4);
     }
 
     public static Color getDarkColor() {
@@ -131,8 +131,26 @@ public class ViewUtil {
 
         return p;
     }
+    
+    public static JPanel getPrimaryBannerPanel() {
+        JPanel p = new JPanel() {
 
-    public static JPanel getBannerPanel() {
+            @Override
+            public void paintComponent(Graphics g) {
+                GradientPaint p = new GradientPaint(0,0,Color.darkGray,0,50,Color.BLACK);
+                ((Graphics2D)g).setPaint(p);
+                g.fillRect(0, 0, this.getWidth(), this.getHeight());
+            }
+        };
+        
+        p.setBorder(ViewUtil.getSmallBorder());
+
+        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+
+        return p;
+    }
+
+    public static JPanel getSecondaryBannerPanel() {
         JPanel p = new JPanel() {
 
             @Override
@@ -194,7 +212,7 @@ public class ViewUtil {
         
         JPanel p;
         if (isSelected) {
-            p = ViewUtil.getBannerPanel();
+            p = ViewUtil.getSecondaryBannerPanel();
         } else {
             p = new JPanel();
             p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));

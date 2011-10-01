@@ -178,8 +178,10 @@ public class SplitScreenView extends JPanel {
 
         listView = new ListView(detailedListModel,detailedView);
         
-        this.add(new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                           detailedView, listView),BorderLayout.CENTER);
+        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                           detailedView, listView);
+        split.setOneTouchExpandable(true);
+        this.add(split,BorderLayout.CENTER);
         
         //this.add(detailedView, BorderLayout.NORTH);
         //this.add(listView, BorderLayout.CENTER);

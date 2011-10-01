@@ -145,7 +145,6 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
     private class ExternalAnnotationDetailedView extends DetailedView {
 
         private final JPanel details;
-        private final JPanel menu;
         private final JPanel content;
 
         public ExternalAnnotationDetailedView() {
@@ -153,18 +152,11 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
             content = this.getContentPanel();
 
             details = ViewUtil.getClearPanel();
-            menu = ViewUtil.getButtonPanel();
-
-            //menu.add(setDefaultCaseButton());
-            //menu.add(setDefaultControlButton());
-            //menu.add(removeIndividualsButton());
-            menu.add(deleteButton());
-            menu.setVisible(false);
+            this.addBottomComponent(deleteButton());
 
             content.setLayout(new BorderLayout());
 
             content.add(details, BorderLayout.CENTER);
-            content.add(menu, BorderLayout.SOUTH);
         }
         
         public JButton deleteButton() {
@@ -192,10 +184,6 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
             details.setLayout(new BorderLayout());
 
             details.updateUI();
-
-            if (menu != null) {
-                menu.setVisible(true);
-            }
         }
 
         @Override

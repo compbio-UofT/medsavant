@@ -136,7 +136,7 @@ public class ImportFileView extends javax.swing.JDialog {
         
         updatePreview();
 
-        JPanel bottomPanel = ViewUtil.getBannerPanel();
+        JPanel bottomPanel = ViewUtil.getSecondaryBannerPanel();
 
         final JDialog thisDialog = this;
         
