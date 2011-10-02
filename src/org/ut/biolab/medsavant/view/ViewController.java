@@ -81,7 +81,7 @@ public class ViewController extends JPanel {
     }
 
     void setProject(String projectname) {
-         ClientLogger.log("Setting project to : " + projectname);
+         ClientLogger.log(ViewController.class, "Setting project to : " + projectname);
     }
 
     void clearMenu() {

@@ -118,7 +118,7 @@ class CohortFilterView {
                         }
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    ClientLogger.log("Adding filter: " + f.getName());
+                    ClientLogger.log(ClientLogger.class,"Adding filter: " + f.getName());
                     FilterController.addFilter(f);
                 }
 

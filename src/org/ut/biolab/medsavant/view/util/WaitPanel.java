@@ -49,5 +49,9 @@ public class WaitPanel extends JPanel {
         prog.setIndeterminate(false);
         prog.setValue(prog.getMaximum());
     }
+
+    public void setIndeterminate() {
+        prog.setIndeterminate(true);
+    }
     
 }

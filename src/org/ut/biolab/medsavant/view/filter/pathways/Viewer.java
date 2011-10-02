@@ -470,13 +470,13 @@ public class Viewer extends JSplitPane {
             DocumentBuilder db = dbf.newDocumentBuilder();
             gpmlDoc = db.parse(uri.toString());
         } catch (ParserConfigurationException pce) {
-            ClientLogger.log("ERROR",Level.SEVERE);
+            ClientLogger.log(Viewer.class,"ERROR",Level.SEVERE);
             //TODO
         } catch (SAXException se) {
-             ClientLogger.log("ERROR",Level.SEVERE);
+             ClientLogger.log(Viewer.class,"ERROR",Level.SEVERE);
             //TODO
         } catch (IOException ioe) {
-             ClientLogger.log("ERROR",Level.SEVERE);
+             ClientLogger.log(Viewer.class,"ERROR",Level.SEVERE);
             //TODO
         }
 

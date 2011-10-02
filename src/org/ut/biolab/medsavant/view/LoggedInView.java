@@ -15,10 +15,12 @@ import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
 import org.ut.biolab.medsavant.view.manage.ManageSection;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
+import org.ut.biolab.medsavant.view.manage.OtherSection;
 import org.ut.biolab.medsavant.view.patients.PatientsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
@@ -78,8 +80,12 @@ public class LoggedInView extends JPanel implements ProjectListener {
             
             viewController.addComponent(getSeparator());
             
+            addSection(new OtherSection());
+            
             //addSection(new AnnotationsSection());
-            addSection(new ManageSection());
+            if (LoginController.isAdmin()) {
+                addSection(new ManageSection());
+            }
         //}
         //initiated = true;
     }

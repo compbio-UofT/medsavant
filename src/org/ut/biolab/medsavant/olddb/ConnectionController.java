@@ -88,7 +88,7 @@ public class ConnectionController {
                 LoginController.logout();
                 throw new NonFatalDatabaseException(NonFatalDatabaseException.ExceptionType.TYPE_DB_CONNECTION_FAILURE, LoginController.getUsername());
             } else {
-                ClientLogger.log(e.getMessage(),Level.SEVERE);
+                ClientLogger.log(ConnectionController.class, e.getMessage(),Level.SEVERE);
                 //e.printStackTrace();
                 LoginController.logout();
                 throw new NonFatalDatabaseException(NonFatalDatabaseException.ExceptionType.TYPE_UNKNOWN, LoginController.getUsername());

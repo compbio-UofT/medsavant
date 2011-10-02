@@ -18,8 +18,8 @@ public class ClientLogger {
     private static Logger logger;
     private static boolean logOpen;
 
-    public static void log(String string) {
-        log(string, Level.INFO);
+    public static void log(Class c, String string) {
+        log(c, string, Level.INFO);
     }
 
     private static void openLogFile() throws IOException {
@@ -30,7 +30,7 @@ public class ClientLogger {
         logOpen = true;
     }
 
-    public static void log(String msg, Level level) {
+    public static void log(Class c, String msg, Level level) {
         try {
             if (!logOpen) {
                 openLogFile();

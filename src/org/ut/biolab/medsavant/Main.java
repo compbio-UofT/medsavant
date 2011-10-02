@@ -19,6 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -39,6 +40,7 @@ public class Main {
         frame = MainFrame.getInstance();
         frame.setExtendedState(frame.MAXIMIZED_BOTH);
         frame.setVisible(true);
+        ClientLogger.log(Main.class, "MedSavant booted");
     }
 
     private static void setLAF() {

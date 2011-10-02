@@ -224,7 +224,7 @@ public class FilterPanel extends JPanel implements FiltersChangedListener {
                         return PatientBooleanFilterView.createFilterView(table, m.getShortName(), m.getShortName()); //TINYINT
                     }
                 case DATE:
-                    ClientLogger.log("Date field filters are not supported yet.",Level.SEVERE);
+                    ClientLogger.log(FilterPanel.class,"Date field filters are not supported yet.",Level.SEVERE);
                 default:
                     return null;
             }
