@@ -30,6 +30,7 @@ import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil.Status;
 import org.ut.biolab.medsavant.db.util.query.LogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
@@ -60,13 +61,17 @@ public class ServerLogPage extends SubSectionView {
     private SearchableTablePanel annotationTable;
     private static final List<String> clientColumnNames = Arrays.asList(new String[]{"User", "Type", "Description", "Time"});
     private static final List<String> serverColumnNames = Arrays.asList(new String[]{"Type", "Description", "Time"});
-    private static final List<String> annotationsColumnNames = Arrays.asList(new String[]{"Project", "Reference", "Action", "Status", "Restart"});
+    private static final List<String> annotationsColumnNames = Arrays.asList(new String[]{"Project", "Reference", "Action", "Status", "Time", "Restart"});
     private static final List<Class> clientColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class, String.class});
     private static final List<Class> serverColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class});
-    private static final List<Class> annotationsColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class, String.class, JButton.class});
+    private static final List<Class> annotationsColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class, String.class, String.class, JButton.class});
     private String currentCard;
     private WaitPanel waitPanel;
-    private final SwingWorker clientCardUpdater = new SwingWorker() {
+    private SwingWorker clientCardUpdater;
+    private SwingWorker serverCardUpdater;
+    private SwingWorker annotationCardUpdater;
+
+    private class ClientCardUpdater extends SwingWorker {
 
         @Override
         protected Object doInBackground() throws Exception {
@@ -81,6 +86,9 @@ public class ServerLogPage extends SubSectionView {
                     r.add(rs.getTimestamp(DBSettings.FIELDNAME_LOG_TIMESTAMP));
                     v.add(r);
                 }
+                if (Thread.currentThread().isInterrupted()) {
+                    return null;
+                }
                 return v;
             } catch (SQLException ex) {
                 ClientLogger.log(ServerLogPage.class, ex.getLocalizedMessage(), Level.SEVERE);
@@ -92,6 +100,9 @@ public class ServerLogPage extends SubSectionView {
         protected void done() {
             try {
                 Vector v = (Vector) get();
+                if (v == null) {
+                    return;
+                }
                 clientTable.updateData(v);
                 changeToCard(CARDNAME_CLIENT);
             } catch (java.util.concurrent.CancellationException ex0) {
@@ -102,7 +113,8 @@ public class ServerLogPage extends SubSectionView {
             }
         }
     };
-    private final SwingWorker serverCardUpdater = new SwingWorker() {
+
+    private class ServerCardUpdater extends SwingWorker {
 
         @Override
         protected Object doInBackground() throws Exception {
@@ -116,52 +128,8 @@ public class ServerLogPage extends SubSectionView {
                     r.add(rs.getTimestamp(DBSettings.FIELDNAME_LOG_TIMESTAMP));
                     v.add(r);
                 }
-                return v;
-            } catch (SQLException ex) {
-                ClientLogger.log(ServerLogPage.class, ex.getLocalizedMessage(), Level.SEVERE);
-                return null;
-            }
-        }
-
-        @Override
-        protected void done() {
-            try {
-                Vector v = (Vector) get();
-                serverTable.updateData(v);
-                changeToCard(CARDNAME_SERVER);
-            } catch (java.util.concurrent.CancellationException ex0) {
-            } catch (Exception ex) {
-                waitPanel.setComplete();
-                waitPanel.setStatus("Problem getting log");
-                showWaitPanel();
-            }
-        }
-    };
-    private final SwingWorker annotationCardUpdater = new SwingWorker() {
-
-        @Override
-        protected Object doInBackground() throws Exception {
-            try {
-                ResultSet rs = LogQueryUtil.getAnnotationLog();
-                Vector v = new Vector();
-                while (rs.next()) {
-                    
-                    JButton button = new JButton("Restart");
-                    button.addActionListener(new ActionListener() {
-
-                        public void actionPerformed(ActionEvent ae) {
-                            JOptionPane.showMessageDialog(null,"Clicked");
-                        }
-                        
-                    });
-                    
-                    Vector r = new Vector();
-                    r.add(rs.getString(1));
-                    r.add(rs.getString(2));
-                    r.add(AnnotationLogQueryUtil.intToAction(rs.getInt(3)));
-                    r.add(AnnotationLogQueryUtil.intToStatus(rs.getInt(4)));
-                    r.add(button);
-                    v.add(r);
+                if (Thread.currentThread().isInterrupted()) {
+                    return null;
                 }
                 return v;
             } catch (SQLException ex) {
@@ -174,6 +142,76 @@ public class ServerLogPage extends SubSectionView {
         protected void done() {
             try {
                 Vector v = (Vector) get();
+                if (v == null) {
+                    return;
+                }
+                serverTable.updateData(v);
+                changeToCard(CARDNAME_SERVER);
+            } catch (java.util.concurrent.CancellationException ex0) {
+            } catch (Exception ex) {
+                waitPanel.setComplete();
+                waitPanel.setStatus("Problem getting log");
+                showWaitPanel();
+            }
+        }
+    };
+
+    private class AnnotationCardUpdater extends SwingWorker {
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            try {
+                ResultSet rs = LogQueryUtil.getAnnotationLog();
+                Vector v = new Vector();
+                while (rs.next()) {
+
+                    Status status = AnnotationLogQueryUtil.intToStatus(rs.getInt(4));
+
+                    JButton button = new JButton("Retry");
+                    button.addActionListener(new ActionListener() {
+
+                        public void actionPerformed(ActionEvent ae) {
+                            JOptionPane.showMessageDialog(null, "Clicked");
+                        }
+                    });
+
+                    Vector r = new Vector();
+                    r.add(rs.getString(1));
+                    r.add(rs.getString(2));
+                    r.add(AnnotationLogQueryUtil.intToAction(rs.getInt(3)));
+                    r.add(status);
+
+                    try {
+                        r.add(rs.getTimestamp(5));
+                    } catch (Exception e) {
+                        r.add(null);
+                    }
+
+                    if (status != Status.ERROR) {
+                        r.add(new JPanel());
+                    } else {
+                        r.add(button);
+                    }
+
+                    v.add(r);
+                }
+                if (Thread.currentThread().isInterrupted()) {
+                    return null;
+                }
+                return v;
+            } catch (SQLException ex) {
+                ClientLogger.log(ServerLogPage.class, ex.getLocalizedMessage(), Level.SEVERE);
+                return null;
+            }
+        }
+
+        @Override
+        protected void done() {
+            try {
+                Vector v = (Vector) get();
+                if (v == null) {
+                    return;
+                }
                 annotationTable.updateData(v);
                 changeToCard(CARDNAME_ANNOTATION);
             } catch (java.util.concurrent.CancellationException ex0) {
@@ -281,24 +319,24 @@ public class ServerLogPage extends SubSectionView {
     }
 
     private synchronized void changeToCard(String cardname) {
-        
+
         CardLayout cl = (CardLayout) (listPanel.getLayout());
         cl.show(listPanel, cardname);
         this.currentCard = cardname;
-        
+
         if (cardname.equals(CARDNAME_CLIENT)) {
-            if (!clientTableRefreshed) { 
-                this.refreshClientCard(); 
-                clientTableRefreshed = true; 
+            if (!clientTableRefreshed) {
+                this.refreshClientCard();
+                clientTableRefreshed = true;
             }
         } else if (cardname.equals(CARDNAME_SERVER)) {
-            if (!serverTableRefreshed) { 
-                this.refreshServerCard(); 
+            if (!serverTableRefreshed) {
+                this.refreshServerCard();
                 serverTableRefreshed = true;
             }
         } else if (cardname.equals(CARDNAME_ANNOTATION)) {
-            if (!annotationTableRefreshed) { 
-                this.refreshAnnotationCard(); 
+            if (!annotationTableRefreshed) {
+                this.refreshAnnotationCard();
                 annotationTableRefreshed = true;
             }
         }
@@ -337,32 +375,38 @@ public class ServerLogPage extends SubSectionView {
     }
 
     private void refreshClientCard() {
+        if (clientCardUpdater != null) {
+            clientCardUpdater.cancel(true);
+        }
+        clientCardUpdater = new ClientCardUpdater();
+
         waitPanel.setIndeterminate();
         waitPanel.setStatus("");
         showWaitPanel();
-        //if (!this.clientCardUpdater.isDone() || !this.clientCardUpdater.isCancelled()) {
-        //    this.clientCardUpdater.cancel(true);
-        //}
         this.clientCardUpdater.execute();
     }
 
     private void refreshServerCard() {
+        if (serverCardUpdater != null) {
+            serverCardUpdater.cancel(true);
+        }
+        serverCardUpdater = new ServerCardUpdater();
+
         waitPanel.setIndeterminate();
         waitPanel.setStatus("");
         showWaitPanel();
-        //if (!this.serverCardUpdater.isDone() || !this.serverCardUpdater.isCancelled()) {
-        //    this.serverCardUpdater.cancel(true);
-        //}
         this.serverCardUpdater.execute();
     }
 
     private void refreshAnnotationCard() {
+        if (annotationCardUpdater != null) {
+            annotationCardUpdater.cancel(true);
+        }
+        annotationCardUpdater = new AnnotationCardUpdater();
+
         waitPanel.setIndeterminate();
         waitPanel.setStatus("");
         showWaitPanel();
-        //if (!this.serverCardUpdater.isDone() || !this.serverCardUpdater.isCancelled()) {
-        //    this.serverCardUpdater.cancel(true);
-        //}
         this.annotationCardUpdater.execute();
     }
 
@@ -388,15 +432,19 @@ public class ServerLogPage extends SubSectionView {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JButton button = (JButton) value;
-            if (isSelected) {
-                button.setForeground(table.getForeground());
-                button.setBackground(table.getSelectionBackground());
-            } else {
-                button.setForeground(table.getForeground());
-                button.setBackground(UIManager.getColor("Button.background"));
+
+            if (value instanceof JButton) {
+                JButton button = (JButton) value;
+                if (isSelected) {
+                    button.setForeground(table.getForeground());
+                    button.setBackground(table.getSelectionBackground());
+                } else {
+                    button.setForeground(table.getForeground());
+                    button.setBackground(UIManager.getColor("Button.background"));
+                }
+                return button;
             }
-            return button;
+            return (Component) value;
         }
     }
 

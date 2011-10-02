@@ -35,7 +35,7 @@ public class ClientLogger {
             if (!logOpen) {
                 openLogFile();
             }
-            logger.log(level, msg);
+            logger.log(level, "'{'{0}'} '{1}", new Object[]{c.toString(), msg});
         } catch (IOException ex) {
         }
     }
