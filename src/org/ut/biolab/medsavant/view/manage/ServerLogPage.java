@@ -29,6 +29,7 @@ import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import org.ut.biolab.medsavant.db.util.DBSettings;
+import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil.Status;
 import org.ut.biolab.medsavant.db.util.query.LogQueryUtil;
@@ -167,11 +168,16 @@ public class ServerLogPage extends SubSectionView {
 
                     Status status = AnnotationLogQueryUtil.intToStatus(rs.getInt(4));
 
+                    final int updateId = rs.getInt("update_id");
                     JButton button = new JButton("Retry");
                     button.addActionListener(new ActionListener() {
-
                         public void actionPerformed(ActionEvent ae) {
-                            JOptionPane.showMessageDialog(null, "Clicked");
+                            try {
+                                AnnotationLogQueryUtil.setAnnotationLogStatus(updateId, Status.PENDING, DBUtil.getCurrentTimestamp());
+                            } catch (SQLException ex) {
+                                ClientLogger.log(ServerLogPage.class, ex.getLocalizedMessage(), Level.SEVERE);
+                            }
+                            refreshCurrentCard();
                         }
                     });
 
