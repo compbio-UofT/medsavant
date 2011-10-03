@@ -15,12 +15,14 @@ public class ExternalAnnotationController {
 
      public void addExternalAnnotation(String program, String version, int referenceid, String path, String format) {
         
-        try {
+        //TODO: do we need this at all? Adding annotations done in server.
+         
+        /*try {
             int annotationid = AnnotationQueryUtil.addAnnotation(program, version, referenceid, path, format);
             fireAnnotationAddedEvent("" + annotationid);
         } catch (SQLException ex) {
             ex.printStackTrace();
-        }
+        }*/
     }
 
     public static interface ExternalAnnotationListener {
