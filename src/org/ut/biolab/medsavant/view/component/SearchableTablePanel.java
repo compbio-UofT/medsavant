@@ -311,8 +311,8 @@ public class SearchableTablePanel extends JPanel {
         } else {
             rowsPerPageDropdown.setSelectedIndex(1);
         }
-        rowsPerPageDropdown.setPreferredSize(new Dimension(50, 25));
-        rowsPerPageDropdown.setMaximumSize(new Dimension(50, 25));       
+        rowsPerPageDropdown.setPreferredSize(new Dimension(100, 25));
+        rowsPerPageDropdown.setMaximumSize(new Dimension(100, 25));       
         bottomPanel.add(rowsPerPageDropdown);
 
         bottomPanel.add(new JLabel("   Results retrieved: "));
