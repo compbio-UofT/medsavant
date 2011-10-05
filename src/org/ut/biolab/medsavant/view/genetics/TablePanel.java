@@ -5,13 +5,9 @@
 
 package org.ut.biolab.medsavant.view.genetics;
 
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
-import java.util.concurrent.ExecutionException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.view.util.DialogUtil;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
-import org.ut.biolab.medsavant.vcf.VariantRecord;
 import java.awt.CardLayout;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -22,14 +18,12 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
 import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.util.query.AnnotationField;
+import org.ut.biolab.medsavant.db.util.query.AnnotationFormat;
 import org.ut.biolab.medsavant.oldcontroller.FilterController;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.model.record.VariantRecordModel;
-import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
@@ -47,37 +41,32 @@ class TablePanel extends JPanel implements FiltersChangedListener {
     
         cl = new CardLayout();
         this.setLayout(cl);
-        
-        DbTable table = ProjectController.getInstance().getCurrentTable();
-        
+
         List<String> fieldNames = new ArrayList<String>();
         List<Class> fieldClasses = new ArrayList<Class>();
         List<Integer> hiddenColumns = new ArrayList<Integer>();
         
-        for(DbColumn col : table.getColumns()){
-            fieldNames.add(col.getName());
-            //fieldClasses.add(String.class);
-            
-            String type = col.getTypeNameSQL().toLowerCase();
-            if (type.contains("int")){
-                fieldClasses.add(Integer.class);
-            } else if (type.contains("decimal") || type.contains("float")){
-                fieldClasses.add(Double.class);
-            } else {
-                fieldClasses.add(String.class);
+        AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
+        for(AnnotationFormat af : afs){
+            for(AnnotationField field : af.getAnnotationFields()){
+                fieldNames.add(field.getAlias());
+                switch(field.getFieldType()){
+                    case INT:
+                    case BOOLEAN:
+                        fieldClasses.add(Integer.class);
+                        break;
+                    case FLOAT:
+                    case DECIMAL:
+                        fieldClasses.add(Double.class);
+                        break;
+                    case VARCHAR:
+                    default:
+                        fieldClasses.add(String.class);
+                        break;
+                }
             }
         }
-        
-        /*for(int i = 0; i < 10; i++){
-            hiddenColumns.add(i);
-        } */
-        
-        /*tablePanel = new SearchableTablePanel(
-                new Vector(), 
-                VariantRecordModel.getFieldNames(), 
-                VariantRecordModel.getFieldClasses(), 
-                VariantRecordModel.getDefaultColumns(), 
-                1000){*/
+
         tablePanel = new SearchableTablePanel(
                 new Vector(),
                 fieldNames,
@@ -125,34 +114,11 @@ class TablePanel extends JPanel implements FiltersChangedListener {
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
         updateTable();
     }
-
-    //public void projectAdded(String projectName) {}
-
-    //public void projectRemoved(String projectName) {}
-
-    //public void projectChanged(String projectName) {
-        /*try {
-            updateTable();
-        } catch (Exception e){
-            e.printStackTrace();
-        }*/
-    //}
-
-    /*public void projectTableRemoved(int projid, int refid) {}
-
-    public void referenceChanged(String referenceName) {
-        try {
-            updateTable();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }*/
     
     private class GetVariantsSwingWorker extends SwingWorker {
         @Override
         protected Object doInBackground() throws Exception {
             return ResultController.getInstance().getFilteredVariantRecords(tablePanel.getRetrievalLimit());
-            //return Util.convertVariantRecordsToVectors(ResultController.getInstance().getFilteredVariantRecords(tablePanel.getRetrievalLimit()));
         }
         
         @Override
