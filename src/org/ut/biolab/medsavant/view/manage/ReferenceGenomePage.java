@@ -162,6 +162,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
         
         public final JButton deleteButton() {
             JButton b = new JButton("Delete Reference");
+            b.setOpaque(false);
             b.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {

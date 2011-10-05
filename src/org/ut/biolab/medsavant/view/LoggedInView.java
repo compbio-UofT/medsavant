@@ -61,31 +61,32 @@ public class LoggedInView extends JPanel implements ProjectListener {
         
         projectDropDown = new JComboBox();
             
-            projectDropDown.setMinimumSize(new Dimension(210,23));
-                projectDropDown.setPreferredSize(new Dimension(210,23));
-                projectDropDown.setMaximumSize(new Dimension(210,23));
+        projectDropDown.setMinimumSize(new Dimension(210,23));
+        projectDropDown.setPreferredSize(new Dimension(210,23));
+        projectDropDown.setMaximumSize(new Dimension(210,23));
+        projectDropDown.setOpaque(false);
 
-            refreshProjectDropDown();
-        
-            viewController.addComponent(projectDropDown);
-        
+        refreshProjectDropDown();
+
+        viewController.addComponent(projectDropDown);
+
             //viewController.addComponent(getSeparator());
             
             
         //if (!initiated) {
-            addSection(new PatientsSection());
-            
-            addSection(new GeneticsSection());
-            
-            
-            viewController.addComponent(getSeparator());
-            
-            addSection(new OtherSection());
-            
-            //addSection(new AnnotationsSection());
-            if (LoginController.isAdmin()) {
-                addSection(new ManageSection());
-            }
+        addSection(new PatientsSection());
+
+        addSection(new GeneticsSection());
+
+
+        viewController.addComponent(getSeparator());
+
+        addSection(new OtherSection());
+
+        //addSection(new AnnotationsSection());
+        if (LoginController.isAdmin()) {
+            addSection(new ManageSection());
+        }
         //}
         //initiated = true;
     }

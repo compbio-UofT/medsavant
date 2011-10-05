@@ -66,6 +66,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         
         public final JButton deleteButton() {
             JButton b = new JButton("Delete User");
+            b.setOpaque(false);
             b.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {

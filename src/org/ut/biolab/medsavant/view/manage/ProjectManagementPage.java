@@ -104,6 +104,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         public final JButton editPatientButton() {
 
             JButton b = new JButton("Edit patient fields");
+            b.setOpaque(false);
             b.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
@@ -128,6 +129,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         public final JButton addTableButton() {
 
             JButton b = new JButton("Add table for different reference");
+            b.setOpaque(false);
             b.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
@@ -150,6 +152,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
         public final JButton deleteProjectButton() {
             JButton b = new JButton("Delete Project");
+            b.setOpaque(false);
             b.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
@@ -268,6 +271,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                     c.gridx++;
 
                     JButton editTable = new JButton("Change");
+                    editTable.setOpaque(false);
                     editTable.addMouseListener(new MouseAdapter() {
                         public void mouseReleased(MouseEvent e) {
                             try {
@@ -289,6 +293,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                     //tablePanel.add(Box.createHorizontalStrut(strutwidth));
 
                     removeTable = new JButton("Delete");
+                    removeTable.setOpaque(false);
                     removeTable.setPreferredSize(buttonDim);
                     removeTable.setMaximumSize(buttonDim);
 

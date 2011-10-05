@@ -161,6 +161,7 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
         
         public JButton deleteButton() {
             JButton b = new JButton("Delete Annotation");
+            b.setOpaque(false);
             b.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {

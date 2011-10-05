@@ -22,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
+import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -139,11 +140,15 @@ public class ViewController extends JPanel {
             sectionMenuPanel = new JPanel();//ViewUtil.getClearPanel();
             subSectionMenuPanel = new JPanel();//ViewUtil.getClearPanel();
 
+            Border compoundBorder = BorderFactory.createCompoundBorder(
+                    new MatteBorder(1, 0, 0, 0, new Color(160, 160, 160)),
+                    new MatteBorder(0, 0, 2, 0, new Color(194, 194, 194)));
+            
             sectionMenuPanel.setBackground(new Color(232, 232, 232));
-            sectionMenuPanel.setBorder(new MatteBorder(1, 0, 0, 0, Color.gray));
+            sectionMenuPanel.setBorder(compoundBorder);
 
-            subSectionMenuPanel.setBackground(new Color(232, 232, 232));
-            subSectionMenuPanel.setBorder(new MatteBorder(1, 0, 0, 0, Color.gray));
+            subSectionMenuPanel.setBackground(new Color(232, 232, 232));       
+            subSectionMenuPanel.setBorder(compoundBorder);
 
             sectionMenuPanel.setLayout(new BoxLayout(sectionMenuPanel, BoxLayout.X_AXIS));
             subSectionMenuPanel.setLayout(new BoxLayout(subSectionMenuPanel, BoxLayout.X_AXIS));
@@ -191,14 +196,14 @@ public class ViewController extends JPanel {
                     subSectionMenuPanel.add(c);
                 }
             }
-
+            subSectionMenuPanel.add(Box.createVerticalGlue());
+            
             if (sectionBanner != null) {
-
                 for (Component c : sectionBanner) {
                     sectionMenuPanel.add(c);
                 }
-
             }
+            sectionMenuPanel.add(Box.createVerticalGlue());
         }
     }
 
