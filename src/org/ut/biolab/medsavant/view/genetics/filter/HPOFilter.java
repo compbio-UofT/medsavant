@@ -31,7 +31,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import org.ut.biolab.medsavant.oldcontroller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
@@ -315,6 +315,11 @@ public class HPOFilter {
                     @Override
                     public String getName() {
                         return NAME_FILTER;
+                    }
+                                      
+                    @Override
+                    public String getId() {
+                        return NAME_FILTER;//TODO
                     }
                 };
                 FilterController.addFilter(f, 0); //TODO

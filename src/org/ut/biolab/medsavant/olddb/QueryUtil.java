@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import org.ut.biolab.medsavant.oldcontroller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.olddb.table.AlignmentTableSchema;
 import org.ut.biolab.medsavant.olddb.table.CohortTableSchema;

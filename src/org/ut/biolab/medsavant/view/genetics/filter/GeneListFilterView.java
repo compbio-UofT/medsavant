@@ -24,7 +24,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.ut.biolab.medsavant.oldcontroller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
@@ -121,6 +121,12 @@ class GeneListFilterView {
                         @Override
                         public String getName() {
                             return FILTER_NAME;
+                        }
+                        
+                        
+                        @Override
+                        public String getId() {
+                            return FILTER_NAME;//TODO
                         }
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);

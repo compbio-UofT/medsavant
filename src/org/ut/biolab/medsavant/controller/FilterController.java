@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.oldcontroller;
+package org.ut.biolab.medsavant.controller;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
@@ -45,7 +45,7 @@ public class FilterController {
         if(filterMap.get(queryId) == null){
             filterMap.put(queryId, new TreeMap<String, Filter>());
         }
-        Filter prev = filterMap.get(queryId).put(filter.getName(), filter);
+        Filter prev = filterMap.get(queryId).put(filter.getId(), filter);
         
         if(prev == null){
             setLastFilter(filter, FilterAction.ADDED);
@@ -56,9 +56,9 @@ public class FilterController {
         //printSQLSelect();
     }
 
-    public static void removeFilter(String filtername, int queryId) {
+    public static void removeFilter(String filterId, int queryId) {
         //Filter removed = filterMap.remove(filtername);
-        Filter removed = filterMap.get(queryId).remove(filtername);
+        Filter removed = filterMap.get(queryId).remove(filterId);
         if(filterMap.get(queryId).isEmpty()){
             filterMap.remove(queryId);
         }
@@ -133,6 +133,10 @@ public class FilterController {
             @Override
             public String getName() {
                 return "Range Filters";
+            }
+            @Override
+            public String getId() {
+                return "range_filters";
             }
         };
         boolean hasRangeFilter = false;

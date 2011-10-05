@@ -28,7 +28,7 @@ import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.oldcontroller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class VariantStringListFilterView {
     
     //public static FilterView createFilterView(final TableSchema table, final String columnAlias) throws SQLException, NonFatalDatabaseException {
-    public static FilterView createFilterView(String tablename, final String columnname, final int queryId) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias) throws SQLException, NonFatalDatabaseException {
     
         //DbColumn col = table.getDBColumn(columnAlias);
         Connection conn = ConnectionController.connect();
@@ -132,8 +132,14 @@ public class VariantStringListFilterView {
 
                         @Override
                         public String getName() {
+                            return alias;
+                        }
+
+                        @Override
+                        public String getId() {
                             return columnname;
                         }
+
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
                     FilterController.addFilter(f, queryId);
@@ -201,6 +207,6 @@ public class VariantStringListFilterView {
         container.add(bottomContainer); 
         
         al.actionPerformed(null);        
-        return new FilterView(columnname, container);
+        return new FilterView(alias, container);
     }
 }

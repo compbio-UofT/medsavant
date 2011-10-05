@@ -16,7 +16,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.oldcontroller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterController;
 
 /**
  *
@@ -28,14 +28,16 @@ public class FilterPanelSubItem extends JPanel{
     private FilterView filterView;
     private boolean isRemoved;
     private FilterPanelSub parent;
+    private String filterId;
     
     private static Color BAR_COLOUR = Color.darkGray;
     private static Color BUTTON_OVER_COLOUR = Color.gray;
     
-    public FilterPanelSubItem(FilterView filterView, FilterPanelSub parent){
+    public FilterPanelSubItem(FilterView filterView, FilterPanelSub parent, String filterId){
         
         this.parent = parent;
         this.filterView = filterView;
+        this.filterId = filterId;
         
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));        
         setBorder(BorderFactory.createLineBorder(BAR_COLOUR, 1));
@@ -92,7 +94,7 @@ public class FilterPanelSubItem extends JPanel{
     }
     
     public void removeThis(){
-        FilterController.removeFilter(filterView.getTitle(), parent.getId());
+        FilterController.removeFilter(filterId, parent.getId());
         isRemoved = true;
         parent.refreshSubItems();
     }

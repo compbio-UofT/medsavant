@@ -151,7 +151,7 @@ public class FilterPanel extends JScrollPane {
         p.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                fps.addNewSubItem(af.getColumnName(), af.getFieldType());
+                fps.addNewSubItem(af);
                 refreshSubPanels();
             }
             

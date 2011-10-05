@@ -52,4 +52,9 @@ public class VariantRecordFilter extends PostProcessFilter {
     public String getName() {
         return VariantRecordModel.getFieldNameForIndex(fieldNum);
     }
+        
+    @Override
+    public String getId() {
+        return VariantRecordModel.getFieldNameForIndex(fieldNum);//TODO
+    }
 };

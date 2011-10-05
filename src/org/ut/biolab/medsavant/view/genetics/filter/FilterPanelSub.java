@@ -18,6 +18,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.query.AnnotationField;
 import org.ut.biolab.medsavant.db.util.query.AnnotationField.FieldType;
 
 /**
@@ -159,21 +160,21 @@ public class FilterPanelSub extends JPanel{
         return isRemoved;
     }
     
-    public void addNewSubItem(String fieldName, FieldType fieldType){
+    public void addNewSubItem(AnnotationField af){
         
         String tablename = ProjectController.getInstance().getCurrentTableName();
         try {
-            switch(fieldType){
+            switch(af.getFieldType()){
                 case INT:
                 case FLOAT:
                 case DECIMAL:
-                    subItems.add(new FilterPanelSubItem(VariantNumericFilterView.createFilterView(tablename, fieldName, id), this));
+                    subItems.add(new FilterPanelSubItem(VariantNumericFilterView.createFilterView(tablename, af.getColumnName(), id, af.getAlias()), this, af.getColumnName()));
                     break;
                 case VARCHAR:
-                    subItems.add(new FilterPanelSubItem(VariantStringListFilterView.createFilterView(tablename, fieldName, id), this));
+                    subItems.add(new FilterPanelSubItem(VariantStringListFilterView.createFilterView(tablename, af.getColumnName(), id, af.getAlias()), this, af.getColumnName()));
                     break;
                 case BOOLEAN:
-                    subItems.add(new FilterPanelSubItem(VariantBooleanFilterView.createFilterView(tablename, fieldName, id), this));
+                    subItems.add(new FilterPanelSubItem(VariantBooleanFilterView.createFilterView(tablename, af.getColumnName(), id, af.getAlias()), this, af.getColumnName()));
                     break;
             }
         } catch (Exception e) {

@@ -32,7 +32,7 @@ import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.oldcontroller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.model.Filter;
@@ -47,7 +47,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class VariantNumericFilterView {
     
     //public static FilterView createFilterView(final TableSchema table, final String columnAlias) throws SQLException, NonFatalDatabaseException {
-    public static FilterView createFilterView(String tablename, final String columnname, final int queryId) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias) throws SQLException, NonFatalDatabaseException {
         
         //DbColumn col = table.getDBColumn(columnAlias);
         
@@ -208,6 +208,11 @@ public class VariantNumericFilterView {
 
                         @Override
                         public String getName() {
+                            return alias;
+                        }
+
+                        @Override
+                        public String getId() {
                             return columnname;
                         }
                     };
@@ -248,7 +253,7 @@ public class VariantNumericFilterView {
         container.add(bottomContainer);
 
         al.actionPerformed(null);
-        return new FilterView(columnname, container);
+        return new FilterView(alias, container);
     }
     
     public static double getNumber(String s) {

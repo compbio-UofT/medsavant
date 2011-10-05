@@ -24,7 +24,7 @@ import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.oldcontroller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
@@ -36,7 +36,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class VariantBooleanFilterView {
     
-    public static FilterView createFilterView(String tablename, final String columnname, final int queryId) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias) throws SQLException, NonFatalDatabaseException {
         
         List<String> uniq = new ArrayList<String>();
         uniq.add("True");
@@ -86,8 +86,13 @@ public class VariantBooleanFilterView {
 
                         @Override
                         public String getName() {
-                            return columnname;
+                            return alias;
                         }
+                        
+                        @Override
+                        public String getId() {
+                            return columnname;
+                        }                     
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
                     FilterController.addFilter(f, queryId);
@@ -153,7 +158,7 @@ public class VariantBooleanFilterView {
         container.add(bottomContainer);
 
         al.actionPerformed(null);       
-        return new FilterView(columnname, container);
+        return new FilterView(alias, container);
     }
     
 }

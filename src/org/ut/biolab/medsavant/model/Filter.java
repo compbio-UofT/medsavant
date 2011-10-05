@@ -18,6 +18,7 @@ public abstract class Filter {
     private FilterType type;
 
     public abstract String getName();
+    public abstract String getId();
 
     public Filter(FilterType t) {
         this.type = t;

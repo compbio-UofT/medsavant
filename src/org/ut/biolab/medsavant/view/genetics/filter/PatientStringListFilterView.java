@@ -22,7 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.ut.biolab.medsavant.oldcontroller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
@@ -114,6 +114,11 @@ public class PatientStringListFilterView {
                         @Override
                         public String getName() {
                             return filterName;
+                        }
+                                             
+                        @Override
+                        public String getId() {
+                            return filterName;//TODO
                         }
                     };
                     FilterController.addFilter(f, 0); //TODO

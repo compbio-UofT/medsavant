@@ -16,7 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.oldcontroller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
@@ -100,6 +100,12 @@ public class GenderFilterView {
                     @Override
                     public String getName() {
                         return FILTER_NAME;
+                    }
+                    
+                    
+                    @Override
+                    public String getId() {
+                        return FILTER_NAME;//TODO
                     }
                 };
                 FilterController.addFilter(f, 0); //TODO

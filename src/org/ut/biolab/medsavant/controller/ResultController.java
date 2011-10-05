@@ -20,7 +20,6 @@ import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.oldcontroller.FilterController;
 
 /**
  *
