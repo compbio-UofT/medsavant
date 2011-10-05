@@ -18,6 +18,8 @@ import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.util.query.AnnotationField;
+import org.ut.biolab.medsavant.db.util.query.AnnotationField.FieldType;
 
 /**
  *
@@ -25,13 +27,14 @@ import org.ut.biolab.medsavant.controller.FilterController;
  */
 public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
-    private static final TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
-    private final DbColumn column;
-    private final String alias;
+    //private static final TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
+    //private final DbColumn column;
+    private final AnnotationField field;
 
-    public VariantFieldChartMapGenerator(String colAlias) {
-        this.column = table.getDBColumn(colAlias);
-        this.alias = colAlias;
+    public VariantFieldChartMapGenerator(AnnotationField field) {
+        //this.column = table.getDBColumn(colAlias);
+        //this.alias = colAlias;
+        this.field = field;
     }
     
     /*
@@ -44,12 +47,13 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
     public ChartFrequencyMap generateChartMap() throws SQLException, NonFatalDatabaseException {
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
             
-            ColumnType type = table.getColumnType(column);
+            //ColumnType type = table.getColumnType(column);
             
             if (isNumeric()) {
 
                 //Range r = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, column);
-                Range r = new Range(VariantQueryUtil.getExtremeValuesForColumn(ProjectController.getInstance().getCurrentTableName(), column.getColumnNameSQL()));
+                //Range r = new Range(VariantQueryUtil.getExtremeValuesForColumn(ProjectController.getInstance().getCurrentTableName(), column.getColumnNameSQL()));
+                Range r = new Range(VariantQueryUtil.getExtremeValuesForColumn(ProjectController.getInstance().getCurrentTableName(), field.getColumnName()));
                 
                 int numBins = 15;//getNumberOfQuantitativeCategories();
                 
@@ -66,7 +70,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                                 ProjectController.getInstance().getCurrentProjectId(), 
                                 ProjectController.getInstance().getCurrentReferenceId(), 
                                 FilterController.getQueryFilterConditions(), 
-                                column.getColumnNameSQL(), 
+                                field.getColumnName(), 
                                 binrange.getMin(),
                                 binrange.getMax()) 
                             //QueryUtil.getFilteredFrequencyValuesForColumnInRange(ConnectionController.connect(), column, binrange)
@@ -79,7 +83,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                             ProjectController.getInstance().getCurrentProjectId(), 
                             ProjectController.getInstance().getCurrentReferenceId(), 
                             FilterController.getQueryFilterConditions(), 
-                            column.getColumnNameSQL()));
+                            field.getColumnName()));
                     //chartMap.addAll(QueryUtil.getFilteredFrequencyValuesForColumn(ConnectionController.connect(), column));
                     
                     /*if (alias.equals(VariantTableSchema.ALIAS_GT)) {
@@ -100,15 +104,16 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
     }
 
     public boolean isNumeric() {
-        TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
-        ColumnType type = table.getColumnType(column);
-        return TableSchema.isNumeric(type);
-                //&& !alias.equals(VariantTableSchema.ALIAS_GT) // hack to fool chart into thinking numbers are categories
-                //&& !alias.equals(VariantTableSchema.ALIAS_Transv);
+        //TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
+        //ColumnType type = table.getColumnType(column);
+        //return TableSchema.isNumeric(type);
+        FieldType type = field.getFieldType();
+        return type.equals(FieldType.DECIMAL) || type.equals(FieldType.FLOAT) || type.equals(FieldType.INT);
     }
 
     public String getName() {
-        return alias;
+        //return alias;
+        return field.getAlias();
     }
     
     
