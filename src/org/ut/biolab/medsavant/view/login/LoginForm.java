@@ -121,7 +121,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         panel_title.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         field_username.setColumns(25);
-        field_username.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        field_username.setFont(new java.awt.Font("Arial", 1, 18));
         field_username.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_username.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -130,7 +130,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         });
 
         field_password.setColumns(25);
-        field_password.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
+        field_password.setFont(new java.awt.Font("Arial", 0, 18));
         field_password.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_password.setAutoscrolls(false);
         field_password.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -141,6 +141,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
 
         button_login.setBackground(new java.awt.Color(0, 0, 0));
         button_login.setText("Login");
+        button_login.setOpaque(false);
         button_login.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 button_loginActionPerformed(evt);
@@ -149,6 +150,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
 
         cb_rememberpassword.setBackground(new java.awt.Color(255, 255, 255));
         cb_rememberpassword.setText("Remember my password");
+        cb_rememberpassword.setOpaque(false);
         cb_rememberpassword.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cb_rememberpasswordActionPerformed(evt);
@@ -157,6 +159,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
 
         cb_autosignin.setBackground(new java.awt.Color(255, 255, 255));
         cb_autosignin.setText("Sign me in automatically");
+        cb_autosignin.setOpaque(false);
         cb_autosignin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cb_autosigninActionPerformed(evt);
@@ -167,7 +170,6 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         label_status.setText("Label");
 
         spiralPanel.setPreferredSize(new java.awt.Dimension(150, 150));
-        spiralPanel.setSize(new java.awt.Dimension(150, 150));
 
         javax.swing.GroupLayout spiralPanelLayout = new javax.swing.GroupLayout(spiralPanel);
         spiralPanel.setLayout(spiralPanelLayout);
@@ -180,7 +182,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             .addGap(0, 150, Short.MAX_VALUE)
         );
 
-        label_versioninformation.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        label_versioninformation.setFont(new java.awt.Font("Tahoma", 0, 14));
         label_versioninformation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_versioninformation.setText("version information");
 
@@ -199,7 +201,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
                 .addGroup(panel_titleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(cb_autosignin)
                     .addComponent(cb_rememberpassword)
-                    .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE))
+                    .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE))
                 .addGap(26, 26, 26)
                 .addComponent(button_login))
             .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)

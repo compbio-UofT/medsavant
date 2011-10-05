@@ -41,7 +41,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="cb_autosignin" alignment="0" min="-2" max="-2" attributes="1"/>
                       <Component id="cb_rememberpassword" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="label_status" alignment="0" pref="187" max="32767" attributes="0"/>
+                      <Component id="label_status" alignment="0" pref="209" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                   <Component id="button_login" min="-2" max="-2" attributes="0"/>
@@ -113,6 +113,7 @@
               <Color blue="0" green="0" red="0" type="rgb"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Login"/>
+            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="button_loginActionPerformed"/>
@@ -124,6 +125,7 @@
               <Color blue="ff" green="ff" red="ff" type="rgb"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Remember my password"/>
+            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cb_rememberpasswordActionPerformed"/>
@@ -135,6 +137,7 @@
               <Color blue="ff" green="ff" red="ff" type="rgb"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Sign me in automatically"/>
+            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cb_autosigninActionPerformed"/>
@@ -151,9 +154,6 @@
         <Container class="javax.swing.JPanel" name="spiralPanel">
           <Properties>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[150, 150]"/>
-            </Property>
-            <Property name="size" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[150, 150]"/>
             </Property>
           </Properties>
