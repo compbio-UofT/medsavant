@@ -28,8 +28,10 @@ public class FilterController {
     
     private static int filterSetID = 0;
     
-    private static Map<Integer,Map<String,Filter>> filterMapHistory = new TreeMap<Integer,Map<String,Filter>>();
-    private static Map<String,Filter> filterMap = new TreeMap<String,Filter>();
+    //private static Map<Integer,Map<String,Filter>> filterMapHistory = new TreeMap<Integer,Map<String,Filter>>();
+    private static Map<Integer, Map<Integer, Map<String, Filter>>> filterMapHistory = new TreeMap<Integer, Map<Integer, Map<String, Filter>>>();
+    //private static Map<String,Filter> filterMap = new TreeMap<String,Filter>();
+    private static Map<Integer, Map<String, Filter>> filterMap = new TreeMap<Integer, Map<String, Filter>>();   
     private static List<FiltersChangedListener> listeners = new ArrayList<FiltersChangedListener>();
     private static List<FiltersChangedListener> activeListeners = new ArrayList<FiltersChangedListener>();
     
@@ -38,8 +40,13 @@ public class FilterController {
     private static FilterAction lastAction;
     public static enum FilterAction {ADDED, REMOVED, MODIFIED};
 
-    public static void addFilter(Filter filter) {
-        Filter prev = filterMap.put(filter.getName(), filter);
+    public static void addFilter(Filter filter, int queryId) {
+        //Filter prev = filterMap.put(filter.getName(), filter);
+        if(filterMap.get(queryId) == null){
+            filterMap.put(queryId, new TreeMap<String, Filter>());
+        }
+        Filter prev = filterMap.get(queryId).put(filter.getName(), filter);
+        
         if(prev == null){
             setLastFilter(filter, FilterAction.ADDED);
         } else {
@@ -49,8 +56,13 @@ public class FilterController {
         //printSQLSelect();
     }
 
-    public static void removeFilter(String filtername) {
-        Filter removed = filterMap.remove(filtername);
+    public static void removeFilter(String filtername, int queryId) {
+        //Filter removed = filterMap.remove(filtername);
+        Filter removed = filterMap.get(queryId).remove(filtername);
+        if(filterMap.get(queryId).isEmpty()){
+            filterMap.remove(queryId);
+        }
+        
         if(removed == null) return; //something went wrong, but ignore it
         setLastFilter(removed, FilterAction.REMOVED);
         fireFiltersChangedEvent();
@@ -68,7 +80,8 @@ public class FilterController {
         return filterSetID;
     }
     
-    public static Map<String,Filter> getFilterSet(int filterSetID) {
+    //public static Map<String,Filter> getFilterSet(int filterSetID) {
+    public static Map<Integer, Map<String, Filter>> getFilterSet(int filterSetID) {
         return filterMapHistory.get(filterSetID);
     }
 
@@ -99,21 +112,22 @@ public class FilterController {
         }
     }
 
-    public static Filter getFilter(String title) {
-        return filterMap.get(title);
+    public static Filter getFilter(String title, int queryId) {
+        //return filterMap.get(title);
+        return filterMap.get(queryId).get(title);
     }
 
-    static List<PostProcessFilter> getPostProcessFilters() {
+   /* static List<PostProcessFilter> getPostProcessFilters() {
         List<PostProcessFilter> ppfs = new ArrayList<PostProcessFilter>();
         for (Filter f : filterMap.values()) {
             if (f instanceof PostProcessFilter) {
                 ppfs.add((PostProcessFilter) f);
             }
-        }
+        }  
         return ppfs;
-    }
+    }*/
 
-    public static List<QueryFilter> getQueryFilters() {
+    public static List<QueryFilter> getQueryFilters(int queryId) {
         List<QueryFilter> qfs = new ArrayList<QueryFilter>();
         RangeFilter rf = new RangeFilter() {
             @Override
@@ -122,7 +136,7 @@ public class FilterController {
             }
         };
         boolean hasRangeFilter = false;
-        for (Filter f : filterMap.values()) {
+        for (Filter f : filterMap.get(queryId).values()) {
             if (f instanceof RangeFilter) {
                 rf.merge(((RangeFilter)f).getRangeSet());
                 hasRangeFilter = true;
@@ -136,10 +150,26 @@ public class FilterController {
         return qfs;
     }
     
-    public static List<Condition> getQueryFilterConditions() {
+    public static List<List<QueryFilter>> getQueryFilters(){
+        List<List<QueryFilter>> qfs = new ArrayList<List<QueryFilter>>();
+        for(Object key : filterMap.keySet().toArray()){
+            qfs.add(getQueryFilters((Integer)key));
+        }
+        return qfs;
+    }
+    
+    public static List<Condition> getQueryFilterConditions(int queryId) {
         List<Condition> conditions = new ArrayList<Condition>();
-        for(QueryFilter f : FilterController.getQueryFilters()){
+        for(QueryFilter f : FilterController.getQueryFilters(queryId)){
             conditions.add(ComboCondition.or(f.getConditions()));
+        }
+        return conditions;
+    }
+    
+    public static List<List> getQueryFilterConditions() {
+        List<List> conditions = new ArrayList<List>();
+        for(Object key : filterMap.keySet().toArray()){
+            conditions.add(getQueryFilterConditions((Integer)key));
         }
         return conditions;
     }

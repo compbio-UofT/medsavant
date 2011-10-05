@@ -34,15 +34,15 @@ public class GeneticsFilterPage extends SubSectionView {
 
     public JPanel getView(boolean update) {
         if (view == null || update) {
-            try {
+            //try {
                 view = new JPanel();
                 view.setLayout(new BorderLayout());
                 view.add(new FilterPanel(),BorderLayout.CENTER);
                 view.add(new PeekingPanel("History", BorderLayout.WEST, new FilterProgressPanel(), true), BorderLayout.EAST);
-            } catch (NonFatalDatabaseException ex) {
-                view = ViewUtil.getMessagePanel("Error connecting to database");
-                ex.printStackTrace();
-            }
+            //} catch (NonFatalDatabaseException ex) {
+            //    view = ViewUtil.getMessagePanel("Error connecting to database");
+            //    ex.printStackTrace();
+            //}
         }
 
         return view;

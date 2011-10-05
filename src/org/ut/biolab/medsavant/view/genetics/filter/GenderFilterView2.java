@@ -93,7 +93,7 @@ class GenderFilterView2 {
                 return FILTER_NAME;
             }
         };
-        FilterController.addFilter(f);
+        FilterController.addFilter(f, 0); //TODO
     }
 
     private static JComponent getContentPanel(List<String> options) {
@@ -124,7 +124,7 @@ class GenderFilterView2 {
                 }
 
                 if (acceptableValues.size() == boxes.size()) {
-                    FilterController.removeFilter(FILTER_NAME);
+                    FilterController.removeFilter(FILTER_NAME, 0); //TODO
                 } else {
                     generateFilerFromAcceptableValues(acceptableValues);
                 }

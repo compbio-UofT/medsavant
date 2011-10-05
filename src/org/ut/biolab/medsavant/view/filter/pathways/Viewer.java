@@ -339,7 +339,7 @@ public class Viewer extends JSplitPane {
                 return "WikiPathways";
             }
         };
-        FilterController.addFilter(f);
+        FilterController.addFilter(f, 0); //TODO
         
         
         pathwaysPanel.setAppliedFilter(pathwayString, genes.size());

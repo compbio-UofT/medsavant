@@ -7,7 +7,7 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -27,13 +27,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
-import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.oldcontroller.FilterController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
-import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.view.util.ChromosomeComparator;
@@ -46,7 +42,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class VariantStringListFilterView {
     
     //public static FilterView createFilterView(final TableSchema table, final String columnAlias) throws SQLException, NonFatalDatabaseException {
-    public static FilterView createFilterView(String tablename, final String columnname) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createFilterView(String tablename, final String columnname, final int queryId) throws SQLException, NonFatalDatabaseException {
     
         //DbColumn col = table.getDBColumn(columnAlias);
         Connection conn = ConnectionController.connect();
@@ -94,12 +90,13 @@ public class VariantStringListFilterView {
 
         JPanel bottomContainer = new JPanel();
         bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
+        bottomContainer.setMaximumSize(new Dimension(10000,30));
 
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
         final List<JCheckBox> boxes = new ArrayList<JCheckBox>();
-
-        applyButton.addActionListener(new ActionListener() {
+        
+        ActionListener al = new ActionListener(){
 
             public void actionPerformed(ActionEvent e) {
 
@@ -112,9 +109,9 @@ public class VariantStringListFilterView {
                     }
                 }
 
-                if (acceptableValues.size() == boxes.size()) {
-                    FilterController.removeFilter(columnname);
-                } else {
+                //if (acceptableValues.size() == boxes.size()) {
+                //    FilterController.removeFilter(columnname, queryId);
+                //} else {
                     Filter f = new QueryFilter() {
 
                         @Override
@@ -139,14 +136,15 @@ public class VariantStringListFilterView {
                         }
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    FilterController.addFilter(f);
-                }
+                    FilterController.addFilter(f, queryId);
+                //}
 
                 //TODO: why does this not work? Freezes GUI
                 //apply.setEnabled(false);
             }
-        });
-
+        };      
+        applyButton.addActionListener(al);
+        
         for (String s : uniq) {
             JCheckBox b = new JCheckBox(s);
             b.setSelected(true);
@@ -163,6 +161,7 @@ public class VariantStringListFilterView {
                 }
             });
             b.setAlignmentX(0F);
+            b.setAlignmentY(0f);
             container.add(b);
             boxes.add(b);
         }
@@ -192,13 +191,16 @@ public class VariantStringListFilterView {
         });
         bottomContainer.add(selectNone);
 
-        bottomContainer.add(Box.createGlue());
+        bottomContainer.add(Box.createHorizontalGlue());
 
         bottomContainer.add(applyButton);
+        
+        bottomContainer.add(Box.createRigidArea(new Dimension(5,30)));
 
         bottomContainer.setAlignmentX(0F);
         container.add(bottomContainer); 
         
+        al.actionPerformed(null);        
         return new FilterView(columnname, container);
     }
 }

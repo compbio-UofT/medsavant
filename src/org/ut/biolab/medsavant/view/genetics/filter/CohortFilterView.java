@@ -83,7 +83,7 @@ class CohortFilterView {
                 applyButton.setEnabled(false);
 
                 if (((String) b.getSelectedItem()).equals(COHORT_ALL)) {
-                    FilterController.removeFilter(FILTER_NAME);
+                    FilterController.removeFilter(FILTER_NAME, 0); //TODO
                 } else {
                     Filter f = new QueryFilter() {
 
@@ -119,7 +119,7 @@ class CohortFilterView {
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
                     ClientLogger.log(ClientLogger.class,"Adding filter: " + f.getName());
-                    FilterController.addFilter(f);
+                    FilterController.addFilter(f, 0); //TODO
                 }
 
                 //TODO: why does this not work? Freezes GUI

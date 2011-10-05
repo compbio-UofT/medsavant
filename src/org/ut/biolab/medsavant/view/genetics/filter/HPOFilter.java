@@ -317,7 +317,7 @@ public class HPOFilter {
                         return NAME_FILTER;
                     }
                 };
-                FilterController.addFilter(f);
+                FilterController.addFilter(f, 0); //TODO
             }
         });
     }

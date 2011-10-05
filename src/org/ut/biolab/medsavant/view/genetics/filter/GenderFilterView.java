@@ -68,7 +68,7 @@ public class GenderFilterView {
                 } else if (((String) b.getSelectedItem()).equals(FILTER_FEMALE)){
                     gender = 2;
                 } else {
-                    FilterController.removeFilter(FILTER_NAME);
+                    FilterController.removeFilter(FILTER_NAME, 0); //TODO
                     return;
                 }
                 
@@ -102,7 +102,7 @@ public class GenderFilterView {
                         return FILTER_NAME;
                     }
                 };
-                FilterController.addFilter(f);
+                FilterController.addFilter(f, 0); //TODO
 
                 //TODO: why does this not work? Freezes GUI
                 //apply.setEnabled(false);

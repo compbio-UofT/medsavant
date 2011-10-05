@@ -41,7 +41,7 @@ public class ResultController {
 
     private static ResultController instance;
     
-    public ResultController() throws NonFatalDatabaseException {
+    /*public ResultController() throws NonFatalDatabaseException {
         updateFilteredVariantDBResults(DEFAULT_LIMIT);
     }
 
@@ -138,5 +138,5 @@ public class ResultController {
         }
         filteredVariants = Util.convertVectorsToVariantRecords(results);
 
-    }
+    }*/
 }

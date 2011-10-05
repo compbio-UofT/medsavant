@@ -21,6 +21,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.oldcontroller.FilterController;
@@ -35,7 +36,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class VariantBooleanFilterView {
     
-    public static FilterView createFilterView(final TableSchema table, final String columnAlias) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createFilterView(String tablename, final String columnname, final int queryId) throws SQLException, NonFatalDatabaseException {
         
         List<String> uniq = new ArrayList<String>();
         uniq.add("True");
@@ -51,8 +52,8 @@ public class VariantBooleanFilterView {
         applyButton.setEnabled(false);
         final List<JCheckBox> boxes = new ArrayList<JCheckBox>();
 
-        applyButton.addActionListener(new ActionListener() {
-
+        ActionListener al = new ActionListener() {
+            
             public void actionPerformed(ActionEvent e) {
 
                 applyButton.setEnabled(false);
@@ -66,36 +67,39 @@ public class VariantBooleanFilterView {
                     acceptableValues.add("0");
                 }
 
-                if (acceptableValues.size() == boxes.size()) {
-                    FilterController.removeFilter(columnAlias);
-                } else {
+                //if (acceptableValues.size() == boxes.size()) {
+                    //FilterController.removeFilter(columnname, queryId);
+                //} else {
                     Filter f = new QueryFilter() {
 
                         @Override
                         public Condition[] getConditions() {
                             Condition[] results = new Condition[acceptableValues.size()];
                             int i = 0;
-                            DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnAlias));
+                            //DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnAlias));
                             for (String s : acceptableValues) {
-                                results[i++] = BinaryCondition.equalTo(tempCol, s);
+                                results[i++] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "boolean", 1), s);
+                                //results[i++] = BinaryCondition.equalTo(tempCol, s);
                             }
                             return results;
                         }
 
                         @Override
                         public String getName() {
-                            return columnAlias;
+                            return columnname;
                         }
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    FilterController.addFilter(f);
-                }
+                    FilterController.addFilter(f, queryId);
+               // }
 
                 //TODO: why does this not work? Freezes GUI
                 //apply.setEnabled(false);
             }
-        });
-
+        };
+        
+        applyButton.addActionListener(al);
+        
         for (String s : uniq) {
             JCheckBox b = new JCheckBox(s);
             b.setSelected(true);
@@ -148,7 +152,8 @@ public class VariantBooleanFilterView {
         bottomContainer.setAlignmentX(0F);
         container.add(bottomContainer);
 
-        return new FilterView(columnAlias, container);
+        al.actionPerformed(null);       
+        return new FilterView(columnname, container);
     }
     
 }

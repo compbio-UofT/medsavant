@@ -84,7 +84,7 @@ class GeneListFilterView {
                 applyButton.setEnabled(false);
 
                 if (((String) b.getSelectedItem()).equals(GENELIST_NONE)) {
-                    FilterController.removeFilter(FILTER_NAME);
+                    FilterController.removeFilter(FILTER_NAME, 0); //TODO
                 } else {
                     Filter f = new QueryFilter() {
 
@@ -124,7 +124,7 @@ class GeneListFilterView {
                         }
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    FilterController.addFilter(f);
+                    FilterController.addFilter(f, 0); //TODO
                 }
 
                 //TODO: why does this not work? Freezes GUI

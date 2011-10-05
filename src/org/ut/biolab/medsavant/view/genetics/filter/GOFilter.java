@@ -373,7 +373,7 @@ public class GOFilter {
                         return NAME_FILTER;
                     }
                 };
-                FilterController.addFilter(f);
+                FilterController.addFilter(f, 0); //TODO
             }
         });        
     }

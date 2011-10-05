@@ -10,6 +10,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import com.jidesoft.swing.RangeSlider;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -46,7 +47,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class VariantNumericFilterView {
     
     //public static FilterView createFilterView(final TableSchema table, final String columnAlias) throws SQLException, NonFatalDatabaseException {
-    public static FilterView createFilterView(String tablename, final String columnname) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createFilterView(String tablename, final String columnname, final int queryId) throws SQLException, NonFatalDatabaseException {
         
         //DbColumn col = table.getDBColumn(columnAlias);
         
@@ -95,6 +96,8 @@ public class VariantNumericFilterView {
 
         final JTextField frombox = new JTextField(ViewUtil.numToString(min));
         final JTextField tobox = new JTextField(ViewUtil.numToString(max));
+        frombox.setMaximumSize(new Dimension(10000,24));
+        tobox.setMaximumSize(new Dimension(10000,24));
 
         final JLabel fromLabel = new JLabel(ViewUtil.numToString(min));
         final JLabel toLabel = new JLabel(ViewUtil.numToString(max));
@@ -166,54 +169,57 @@ public class VariantNumericFilterView {
             }                   
         });
 
-        applyButton.addActionListener(new ActionListener() {
+        //
+                
+        ActionListener al = new ActionListener() {
 
-        public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {
 
-            applyButton.setEnabled(false);
+                applyButton.setEnabled(false);
 
-            Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
-            acceptableRange.bound(min, max, true);                     
-            frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
-            tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
-            rs.setLowValue((int)acceptableRange.getMin());
-            rs.setHighValue((int)acceptableRange.getMax());
+                Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
+                acceptableRange.bound(min, max, true);                     
+                frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
+                tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
+                rs.setLowValue((int)acceptableRange.getMin());
+                rs.setHighValue((int)acceptableRange.getMax());
 
-            if (min == acceptableRange.getMin() && max == acceptableRange.getMax()) {
-                FilterController.removeFilter(columnname);
-            } else {
-                Filter f = new QueryFilter() {
+                //if (min == acceptableRange.getMin() && max == acceptableRange.getMax()) {
+                //    FilterController.removeFilter(columnname, queryId);
+                //} else {
+                    Filter f = new QueryFilter() {
 
-                    @Override
-                    public Condition[] getConditions() {
-                        Condition[] results = new Condition[2];
-                        //results[0] = BinaryCondition.greaterThan(table.getDBColumn(columnAlias), getNumber(frombox.getText().replaceAll(",", "")), true);
-                        //results[1] = BinaryCondition.lessThan(table.getDBColumn(columnAlias), getNumber(tobox.getText().replaceAll(",", "")), true);
-                        //DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnname));
-                        //results[0] = BinaryCondition.greaterThan(tempCol, getNumber(frombox.getText().replaceAll(",", "")), true);
-                        //results[1] = BinaryCondition.lessThan(tempCol, getNumber(tobox.getText().replaceAll(",", "")), true);
-                        results[0] = BinaryCondition.greaterThan(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "decimal", 1), getNumber(frombox.getText().replaceAll(",", "")), true);
-                        results[1] = BinaryCondition.lessThan(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "decimal", 1), getNumber(tobox.getText().replaceAll(",", "")), true);
-                        
-                        Condition[] resultsCombined = new Condition[1];
-                        resultsCombined[0] = ComboCondition.and(results);
+                        @Override
+                        public Condition[] getConditions() {
+                            Condition[] results = new Condition[2];
+                            //results[0] = BinaryCondition.greaterThan(table.getDBColumn(columnAlias), getNumber(frombox.getText().replaceAll(",", "")), true);
+                            //results[1] = BinaryCondition.lessThan(table.getDBColumn(columnAlias), getNumber(tobox.getText().replaceAll(",", "")), true);
+                            //DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnname));
+                            //results[0] = BinaryCondition.greaterThan(tempCol, getNumber(frombox.getText().replaceAll(",", "")), true);
+                            //results[1] = BinaryCondition.lessThan(tempCol, getNumber(tobox.getText().replaceAll(",", "")), true);
+                            results[0] = BinaryCondition.greaterThan(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "decimal", 1), getNumber(frombox.getText().replaceAll(",", "")), true);
+                            results[1] = BinaryCondition.lessThan(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "decimal", 1), getNumber(tobox.getText().replaceAll(",", "")), true);
 
-                        return resultsCombined;
-                    }
+                            Condition[] resultsCombined = new Condition[1];
+                            resultsCombined[0] = ComboCondition.and(results);
 
-                    @Override
-                    public String getName() {
-                        return columnname;
-                    }
-                };
-                //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                FilterController.addFilter(f);
+                            return resultsCombined;
+                        }
+
+                        @Override
+                        public String getName() {
+                            return columnname;
+                        }
+                    };
+                    //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
+                    FilterController.addFilter(f, queryId);
+                //}
+
+                //TODO: why does this not work? Freezes GUI
+                //apply.setEnabled(false);
             }
-
-            //TODO: why does this not work? Freezes GUI
-            //apply.setEnabled(false);
-        }
-        });
+        };
+        applyButton.addActionListener(al);
 
         rs.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -241,6 +247,7 @@ public class VariantNumericFilterView {
 
         container.add(bottomContainer);
 
+        al.actionPerformed(null);
         return new FilterView(columnname, container);
     }
     
@@ -251,5 +258,5 @@ public class VariantNumericFilterView {
             return 0;
         }
     }
-    
+         
 }

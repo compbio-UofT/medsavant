@@ -5,9 +5,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.util.query.AnnotationFormat;
+import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 
@@ -24,6 +27,7 @@ public class ProjectController {
     private int currentReferenceId;
     private String currentPatientTable;
     private String currentVariantTable;
+    private AnnotationFormat[] currentAnnotationFormats;
     
     private DbTable currentTable;
     
@@ -93,6 +97,7 @@ public class ProjectController {
                 this.currentReferenceId = this.getReferenceId(refName);
                 this.currentReferenceName = refName;
                 setCurrentTable();
+                setCurrentAnnotationFormats(null);
                 this.fireReferenceChangedEvent(refName);
             }
         } catch (SQLException ex) {
@@ -214,6 +219,28 @@ public class ProjectController {
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public AnnotationFormat[] getCurrentAnnotationFormats(){
+        if(currentAnnotationFormats == null){
+            try {
+                int[] annotationIds = AnnotationQueryUtil.getAnnotationIds(this.currentProjectId, this.currentReferenceId);
+                AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+1];
+                af[0] = AnnotationFormat.getDefaultAnnotationFormat();
+                for(int i = 0; i < annotationIds.length; i++){
+                    af[i+1] = AnnotationQueryUtil.getAnnotationFormat(annotationIds[i]);
+                }
+                currentAnnotationFormats = af;
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return currentAnnotationFormats;
+    }
+    
+    public void setCurrentAnnotationFormats(AnnotationFormat[] formats){
+        this.currentAnnotationFormats = formats;
     }
     
 }

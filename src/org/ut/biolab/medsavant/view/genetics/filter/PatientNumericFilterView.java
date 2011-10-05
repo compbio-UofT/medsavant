@@ -182,7 +182,7 @@ public class PatientNumericFilterView {
                     rs.setHighValue((int)acceptableRange.getMax());
 
                     if (min == acceptableRange.getMin() && max == acceptableRange.getMax()) {
-                        FilterController.removeFilter(filterName);
+                        FilterController.removeFilter(filterName, 0); //TODO
                     } else {
                         Filter f = new QueryFilter() {
 
@@ -213,7 +213,7 @@ public class PatientNumericFilterView {
                                 return filterName;
                             }
                         };
-                        FilterController.addFilter(f);
+                        FilterController.addFilter(f, 0); //TODO
                     }
                 }
             });

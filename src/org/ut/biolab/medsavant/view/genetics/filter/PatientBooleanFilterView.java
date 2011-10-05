@@ -85,7 +85,7 @@ public class PatientBooleanFilterView {
                 }
 
                 if (acceptableValues.size() == boxes.size()) {
-                    FilterController.removeFilter(filterName);
+                    FilterController.removeFilter(filterName, 0); //TODO
                 } else {
                     Filter f = new QueryFilter() {
 
@@ -114,7 +114,7 @@ public class PatientBooleanFilterView {
                             return filterName;
                         }
                     };
-                    FilterController.addFilter(f);
+                    FilterController.addFilter(f, 0); //TODO
                 }
             }
         });

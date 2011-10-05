@@ -74,7 +74,7 @@ public class FilterPanelFactory {
                 }
 
                 if (acceptableValues.size() == boxes.size()) {
-                    FilterController.removeFilter(name);
+                    FilterController.removeFilter(name, 0); //TODO
                 } else {
                     Filter f = new QueryFilter() {
 
@@ -94,7 +94,7 @@ public class FilterPanelFactory {
                         }
                     };
                     //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    FilterController.addFilter(f);
+                    FilterController.addFilter(f, 0); //TODO
                 }
 
                 //TODO: why does this not work? Freezes GUI

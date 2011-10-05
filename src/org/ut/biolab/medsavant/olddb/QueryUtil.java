@@ -553,7 +553,7 @@ public class QueryUtil {
     
     public static SelectQuery getCurrentBaseVariantFilterQuery() {
         
-        TableSchema variant = MedSavantDatabase.getInstance().getVariantTableSchema();
+        /*TableSchema variant = MedSavantDatabase.getInstance().getVariantTableSchema();
         TableSchema sift = MedSavantDatabase.getInstance().getVariantSiftTableSchema();
         
         SelectQuery q = new SelectQuery();
@@ -571,7 +571,8 @@ public class QueryUtil {
             q.addCondition(ComboCondition.or(f.getConditions()));
         }
 
-        return q;
+        return q;*/
+        return new SelectQuery();
     }
     
     /*

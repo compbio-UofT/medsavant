@@ -126,7 +126,7 @@ public class PathwaysPanel extends JPanel {
     }
     
     private void removeFilter(){
-        FilterController.removeFilter(filterName);
+        FilterController.removeFilter(filterName, 0); //TODO
         setAppliedFilter("(none)", 0);
         applyButton.setEnabled(true);
         removeButton.setEnabled(false);
