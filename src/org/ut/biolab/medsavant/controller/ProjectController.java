@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationFormat;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
@@ -206,7 +207,7 @@ public class ProjectController {
     }
     
     public String getCurrentTableName(){
-        return DBUtil.getVariantTableName(currentProjectId, currentReferenceId);
+        return DBSettings.getVariantTableName(currentProjectId, currentReferenceId);
     }
     
     public DbTable getCurrentTable(){
