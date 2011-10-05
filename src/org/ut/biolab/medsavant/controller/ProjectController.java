@@ -119,23 +119,6 @@ public class ProjectController {
         return org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil.getReferenceId(refName);
     }
 
-    public List<String> getReferencesForProject(int projectid) throws SQLException {
-        
-        ResultSet rs = org.ut.biolab.medsavant.db.util.ConnectionController.connect().createStatement().executeQuery(
-                        "SELECT reference.name FROM " + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_VARIANTTABLEINFO
-                        + " LEFT JOIN " + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_REFERENCE + " ON "
-                        + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_VARIANTTABLEINFO + ".reference_id = "
-                        + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_REFERENCE + ".reference_id "
-                        + "WHERE project_id=" + projectid + ";");
-        
-        List<String> references = new ArrayList<String>();
-        while (rs.next()) {
-            references.add(rs.getString(1));
-        }
-        
-        return references;
-    }
-
     public int getCurrentProjectId() {
         return this.currentProjectId;
     }

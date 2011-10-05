@@ -28,6 +28,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
+import org.ut.biolab.medsavant.db.util.query.ProjectDetails;
+import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.MainFrame;
@@ -214,13 +216,8 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             protected Object doInBackground() throws Exception {
                 final int projectId = ProjectController.getInstance().getProjectId(projectName);
 
-                ResultSet rs = org.ut.biolab.medsavant.db.util.ConnectionController.connect().createStatement().executeQuery(
-                        "SELECT * FROM " + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_VARIANTTABLEINFO
-                        + " LEFT JOIN " + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_REFERENCE + " ON "
-                        + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_VARIANTTABLEINFO + ".reference_id = "
-                        + org.ut.biolab.medsavant.db.util.DBSettings.TABLENAME_REFERENCE + ".reference_id "
-                        + "WHERE project_id=" + projectId + ";");
-
+                List<ProjectDetails> projectDetails = ProjectQueryUtil.getProjectDetails(projectId);
+                
                 JPanel p = ViewUtil.getClearPanel();
                 ViewUtil.applyVerticalBoxLayout(p);
 
@@ -241,7 +238,8 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                 
                 JButton removeTable = null;
 
-                while (rs.next()) {
+                //while (rs.next()) {
+                for(ProjectDetails pd : projectDetails){
                     numTables++;
 
                     c.gridx = 0;
@@ -250,17 +248,21 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
                     //tablePanel.add(ViewUtil.getDetailLabel("  " + ));
                     
-                    final int refId = rs.getInt("reference_id");
-                    final String refName = rs.getString("name");
+                    //final int refId = rs.getInt("reference_id");
+                    //final String refName = rs.getString("name");
+                    final int refId = pd.getReferenceId();
+                    final String refName = pd.getReferenceName();
                     tablePanel.add(ViewUtil.getDetailLabel(refName),c);
                     c.gridx++;
                     //tablePanel.add(Box.createHorizontalGlue());
 
-                    int numAnnotations = 0;
-                    final String annotationIds = rs.getString("annotation_ids");
-                    if (annotationIds != null) {
-                        numAnnotations = annotationIds.length() - annotationIds.replaceAll(",", "").length() + 1;
-                    }
+                    //int numAnnotations = 0;
+                    //final String annotationIds = rs.getString("annotation_ids");
+                    //if (annotationIds != null) {
+                    //    numAnnotations = annotationIds.length() - annotationIds.replaceAll(",", "").length() + 1;
+                    //}
+                    final String annotationIds = pd.getAnnotationIds();
+                    int numAnnotations = pd.getNumAnnotations();
 
                     tablePanel.add(ViewUtil.getDetailLabel(numAnnotations + " annotation(s) applied"), c);
                     c.gridx++;

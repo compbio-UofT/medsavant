@@ -20,6 +20,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
+import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
 import org.ut.biolab.medsavant.view.dialog.VCFUploadForm;
 //import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
@@ -145,7 +146,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
             }
             referenceDropDown.removeAllItems();
 
-            List<String> references = ProjectController.getInstance().getReferencesForProject(
+            List<String> references = ReferenceQueryUtil.getReferencesForProject(
                     ProjectController.getInstance().getCurrentProjectId());
 
             for (String refname : references) {
