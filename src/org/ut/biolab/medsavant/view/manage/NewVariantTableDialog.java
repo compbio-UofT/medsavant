@@ -215,25 +215,6 @@ public class NewVariantTableDialog extends javax.swing.JDialog implements Refere
 
     }
 
-    private Map<Integer, String> getReferencesWithoutTablesInProject(int projectid) throws SQLException {
-        
-        Connection c = org.ut.biolab.medsavant.db.util.ConnectionController.connect();
-        ResultSet rs = c.createStatement().executeQuery(
-                "SELECT * FROM " + DBSettings.TABLENAME_REFERENCE
-                + " WHERE reference_id NOT IN "
-                + "(SELECT reference_id FROM " + DBSettings.TABLENAME_VARIANTTABLEINFO
-                + " WHERE project_id=" + projectid + ")");
-        
-        HashMap<Integer,String> result = new HashMap<Integer,String>();
-        
-        while (rs.next()) {
-            result.put(rs.getInt(1), rs.getString(2));
-        }
-        
-        return result;
-        
-    }
-
     public void referenceAdded(String name) {
         refreshReferenceList();
     }
@@ -249,7 +230,7 @@ public class NewVariantTableDialog extends javax.swing.JDialog implements Refere
         try {
             cb_references.removeAllItems();
             
-            refIdToNameMap = getReferencesWithoutTablesInProject(projectid);
+            refIdToNameMap = ReferenceQueryUtil.getReferencesWithoutTablesInProject(projectid);
                 
                 //if (refIdToNameMap.isEmpty()) {
                 //    JOptionPane.showMessageDialog(MainFrame.getInstance(), "Variant tables exist for all references.", "", JOptionPane.INFORMATION_MESSAGE);
@@ -270,7 +251,7 @@ public class NewVariantTableDialog extends javax.swing.JDialog implements Refere
     public void setVisible(boolean b) {
         if (b) {
             try {
-                if (getReferencesWithoutTablesInProject(projectid).isEmpty()) {
+                if (ReferenceQueryUtil.getReferencesWithoutTablesInProject(projectid).isEmpty()) {
                     JOptionPane.showMessageDialog(MainFrame.getInstance(), "Variant tables exist for all references.", "", JOptionPane.INFORMATION_MESSAGE);
                     super.setVisible(false);
                 } else {
