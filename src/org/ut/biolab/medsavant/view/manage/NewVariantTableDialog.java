@@ -22,9 +22,9 @@ import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.controller.ReferenceController.ReferenceListener;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
+import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.MainFrame;
 
 /**

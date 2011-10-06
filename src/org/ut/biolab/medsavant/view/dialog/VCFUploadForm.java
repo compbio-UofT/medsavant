@@ -17,6 +17,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.ImportVariants;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -42,9 +43,9 @@ public class VCFUploadForm extends javax.swing.JDialog {
         initComponents();          
              
         this.projectId = ProjectController.getInstance().getCurrentProjectId();
-        this.referenceId = ProjectController.getInstance().getCurrentReferenceId();
+        this.referenceId = ReferenceController.getInstance().getCurrentReferenceId();
         projectLabel.setText(ProjectController.getInstance().getCurrentProjectName());
-        referenceLabel.setText(ProjectController.getInstance().getCurrentReferenceName());
+        referenceLabel.setText(ReferenceController.getInstance().getCurrentReferenceName());
         //projectLabel.setText("TODO (default 1)");
         //referenceLabel.setText("TODO (default 1)");
         

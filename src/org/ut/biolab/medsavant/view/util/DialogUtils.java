@@ -257,4 +257,19 @@ public class DialogUtils {
             return filter.accept(new File(dir, name));
         }
     }
+    
+        public static boolean confirmChangeReference(boolean isChangingProject){
+        int result = JOptionPane.showConfirmDialog(
+                null, 
+                "<HTML>Changing the " + (isChangingProject ? "project" : "reference") + " will remove current filters.<BR>Are you sure you want to do this?</HTML>", 
+                "Confirm", 
+                JOptionPane.YES_NO_OPTION, 
+                JOptionPane.WARNING_MESSAGE);
+        return result == JOptionPane.YES_OPTION;
+    }
+        
+         public static void displayErrorMessage(String msg, Exception ex) {
+        JOptionPane p = new JOptionPane(msg, JOptionPane.ERROR_MESSAGE);
+        p.setVisible(true);
+    }
 }

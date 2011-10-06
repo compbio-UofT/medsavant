@@ -1,11 +1,9 @@
 package org.ut.biolab.medsavant.controller;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -14,19 +12,19 @@ import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationFormat;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
+import org.ut.biolab.medsavant.listener.ProjectListener;
+import org.ut.biolab.medsavant.listener.ReferenceListener;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
  *
  * @author mfiume
  */
-public class ProjectController {
+public class ProjectController implements ReferenceListener {
     
     private String currentProjectName;
     private int currentProjectId;
-    private String currentReferenceName;
 
-    private int currentReferenceId;
     private String currentPatientTable;
     private String currentVariantTable;
     private AnnotationFormat[] currentAnnotationFormats;
@@ -85,7 +83,7 @@ public class ProjectController {
             if (ProjectQueryUtil.containsProject(projectName)) {
                 
                 if(FilterController.hasFiltersApplied()){
-                    if(!confirmChangeReference(true)){
+                    if(!DialogUtils.confirmChangeReference(true)){
                         return false;
                     }
                 }
@@ -101,56 +99,6 @@ public class ProjectController {
         }
         return true;
     }
-    
-    public boolean setReference(String refName){
-        return setReference(refName, false);
-    }
-    
-    public boolean setReference(String refName, boolean getConfirmation) {
-        try {
-            if (ReferenceQueryUtil.containsReference(refName)) {
-                
-                if(getConfirmation && FilterController.hasFiltersApplied()){
-                    if(!confirmChangeReference(false)){
-                        return false;
-                    }
-                }
-                
-                this.currentReferenceId = this.getReferenceId(refName);
-                this.currentReferenceName = refName;
-                setCurrentTable();
-                setCurrentAnnotationFormats(null);
-                this.fireReferenceChangedEvent(refName);
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        }
-        return true;
-    }
-    
-    private boolean confirmChangeReference(boolean isChangingProject){
-        int result = JOptionPane.showConfirmDialog(
-                null, 
-                "<HTML>Changing the " + (isChangingProject ? "project" : "reference") + " will remove current filters.<BR>Are you sure you want to do this?</HTML>", 
-                "Confirm", 
-                JOptionPane.YES_NO_OPTION, 
-                JOptionPane.WARNING_MESSAGE);
-        return result == JOptionPane.YES_OPTION;
-    }
-    
-    public int getCurrentReferenceId(){
-        return this.currentReferenceId;
-    }
-    
-    public String getCurrentReferenceName(){
-        return this.currentReferenceName;
-    }
-
-    public int getReferenceId(String refName) throws SQLException {
-        return org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil.getReferenceId(refName);
-    }
 
     public int getCurrentProjectId() {
         return this.currentProjectId;
@@ -164,19 +112,10 @@ public class ProjectController {
         return ProjectQueryUtil.getNumberOfRecordsInVariantTable(projectid,refid);
     }
 
-    public static interface ProjectListener {
-        public void projectAdded(String projectName);
-        public void projectRemoved(String projectName);
-        public void projectChanged(String projectName);
-
-        public void projectTableRemoved(int projid, int refid);
-        
-        public void referenceChanged(String referenceName);
-    }
-    
-   
     private ProjectController() {
         projectListeners = new ArrayList<ProjectListener>();
+        
+        ReferenceController.getInstance().addReferenceListener(this);
     }
     
     public static ProjectController getInstance() {
@@ -211,12 +150,7 @@ public class ProjectController {
         }
     }
     
-    public void fireReferenceChangedEvent(String referenceName){
-        ProjectController pc = getInstance();
-        for (ProjectListener l : pc.projectListeners){
-            l.referenceChanged(referenceName);
-        }
-    }
+    
     
     public void addProjectListener(ProjectListener l) {
         this.projectListeners.add(l);
@@ -224,7 +158,7 @@ public class ProjectController {
     
     public String getCurrentTableName(){
         try {
-            return ProjectQueryUtil.getVariantTable(currentProjectId, currentReferenceId);
+            return ProjectQueryUtil.getVariantTable(currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -246,7 +180,7 @@ public class ProjectController {
     public AnnotationFormat[] getCurrentAnnotationFormats(){
         if(currentAnnotationFormats == null){
             try {
-                int[] annotationIds = AnnotationQueryUtil.getAnnotationIds(this.currentProjectId, this.currentReferenceId);
+                int[] annotationIds = AnnotationQueryUtil.getAnnotationIds(this.currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
                 AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+1];
                 af[0] = AnnotationFormat.getDefaultAnnotationFormat();
                 for(int i = 0; i < annotationIds.length; i++){
@@ -263,6 +197,17 @@ public class ProjectController {
     
     public void setCurrentAnnotationFormats(AnnotationFormat[] formats){
         this.currentAnnotationFormats = formats;
+    }
+
+    public void referenceChanged(String referenceName) {
+        setCurrentTable();
+        setCurrentAnnotationFormats(null);
+    }
+
+    public void referenceAdded(String name) {
+    }
+
+    public void referenceRemoved(String name) {
     }
     
 }

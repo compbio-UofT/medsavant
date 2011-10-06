@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
+import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.RangeFilter;

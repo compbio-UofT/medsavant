@@ -6,7 +6,7 @@
 package org.ut.biolab.medsavant.view.genetics;
 
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.view.util.DialogUtil;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import java.awt.CardLayout;
 import java.sql.SQLException;
@@ -79,7 +79,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                     updateTable();
                 } catch (Exception ex) {
                     Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-                    DialogUtil.displayErrorMessage("Problem getting data.", ex);
+                    DialogUtils.displayErrorMessage("Problem getting data.", ex);
                 }
             }
         };
@@ -91,7 +91,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
             updateTable();
         } catch (Exception ex) {
             Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-            DialogUtil.displayErrorMessage("Problem getting data.", ex);
+            DialogUtils.displayErrorMessage("Problem getting data.", ex);
         }
         FilterController.addFilterListener(this);
         //ProjectController.getInstance().addProjectListener(this);

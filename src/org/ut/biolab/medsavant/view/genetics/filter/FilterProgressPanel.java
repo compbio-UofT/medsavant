@@ -27,6 +27,7 @@ import javax.swing.table.TableCellRenderer;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
@@ -106,7 +107,7 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
         try {
             maxRecords = VariantQueryUtil.getNumFilteredVariants(
                 ProjectController.getInstance().getCurrentProjectId(), 
-                ProjectController.getInstance().getCurrentReferenceId(), 
+                ReferenceController.getInstance().getCurrentReferenceId(), 
                 FilterController.getQueryFilterConditions());
         } catch (Exception ex) {
             Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -129,7 +130,7 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
         addFilterSet(VariantQueryUtil.getNumFilteredVariants(
                         ProjectController.getInstance().getCurrentProjectId(), 
-                        ProjectController.getInstance().getCurrentReferenceId(), 
+                        ReferenceController.getInstance().getCurrentReferenceId(), 
                         FilterController.getQueryFilterConditions()));
     }
     

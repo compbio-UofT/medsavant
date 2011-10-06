@@ -27,6 +27,7 @@ import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.record.Chromosome;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 
 /**
  *
@@ -120,7 +121,7 @@ public class ChromosomeDiagramPanel extends JPanel {
                 for(int i = 0; i < chr.getLength(); i += binsize){
                     int numVariants = VariantQueryUtil.getNumVariantsInRange(
                             ProjectController.getInstance().getCurrentProjectId(), 
-                            ProjectController.getInstance().getCurrentReferenceId(), 
+                            ReferenceController.getInstance().getCurrentReferenceId(), 
                             FilterController.getQueryFilterConditions(), 
                             chr.getName(), 
                             i, i+binsize);       
@@ -134,7 +135,7 @@ public class ChromosomeDiagramPanel extends JPanel {
             } else {
                 int[] a = VariantQueryUtil.getNumVariantsForBins(
                         ProjectController.getInstance().getCurrentProjectId(), 
-                        ProjectController.getInstance().getCurrentReferenceId(), 
+                        ReferenceController.getInstance().getCurrentReferenceId(), 
                         FilterController.getQueryFilterConditions(), 
                         chr.getName(), 
                         binsize, 

@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
@@ -120,7 +121,7 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
             try {
                 final int totalNum = VariantQueryUtil.getNumFilteredVariants(
                                         ProjectController.getInstance().getCurrentProjectId(), 
-                                        ProjectController.getInstance().getCurrentReferenceId(), 
+                                        ReferenceController.getInstance().getCurrentReferenceId(), 
                                         FilterController.getQueryFilterConditions());           
                 final int binsize = (int)Math.min(249250621, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
 

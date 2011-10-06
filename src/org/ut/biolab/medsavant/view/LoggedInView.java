@@ -17,7 +17,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
+import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.view.manage.ManageSection;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.manage.OtherSection;

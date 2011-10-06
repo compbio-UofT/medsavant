@@ -18,6 +18,7 @@ import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.query.AnnotationField;
 import org.ut.biolab.medsavant.db.util.query.AnnotationField.FieldType;
 
@@ -68,7 +69,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                             binrange.toString(), 
                             VariantQueryUtil.getFilteredFrequencyValuesForColumnInRange(
                                 ProjectController.getInstance().getCurrentProjectId(), 
-                                ProjectController.getInstance().getCurrentReferenceId(), 
+                                ReferenceController.getInstance().getCurrentReferenceId(), 
                                 FilterController.getQueryFilterConditions(), 
                                 field.getColumnName(), 
                                 binrange.getMin(),
@@ -81,7 +82,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                 try {
                     chartMap.addAll(VariantQueryUtil.getFilteredFrequencyValuesForColumn(
                             ProjectController.getInstance().getCurrentProjectId(), 
-                            ProjectController.getInstance().getCurrentReferenceId(), 
+                            ReferenceController.getInstance().getCurrentReferenceId(), 
                             FilterController.getQueryFilterConditions(), 
                             field.getColumnName()));
                     //chartMap.addAll(QueryUtil.getFilteredFrequencyValuesForColumn(ConnectionController.connect(), column));

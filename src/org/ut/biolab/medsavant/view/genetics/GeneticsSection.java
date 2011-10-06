@@ -19,8 +19,9 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
+import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
 import org.ut.biolab.medsavant.view.dialog.VCFUploadForm;
 //import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
@@ -151,22 +152,22 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
             for (String refname : references) {
                 
-                int refid = ProjectController.getInstance().getReferenceId(refname);
+                int refid = ReferenceController.getInstance().getReferenceId(refname);
                 
                 int numVariantsInTable = ProjectController.getInstance().getNumVariantsInTable(ProjectController.getInstance().getCurrentProjectId(),refid);
                 
-                referenceDropDown.addItem(refname);// + " (" + numVariantsInTable + " variants)");
+                referenceDropDown.addItem(refname + " (" + numVariantsInTable + " variants)");
             }
             referenceDropDown.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
-                    String currentName = ProjectController.getInstance().getCurrentReferenceName();
-                    if(!ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem(), true)){
+                    String currentName = ReferenceController.getInstance().getCurrentReferenceName();
+                    if(!ReferenceController.getInstance().setReference((String) referenceDropDown.getSelectedItem(), true)){
                         referenceDropDown.setSelectedItem(currentName);
                     }
                 }
             });
-           ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
+           ReferenceController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
 
         } catch (SQLException ex) {
             ex.printStackTrace();

@@ -58,7 +58,7 @@ import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.view.genetics.charts.ChartFrequencyMap;
 import org.ut.biolab.medsavant.view.genetics.charts.FrequencyEntry;
-import org.ut.biolab.medsavant.view.util.DialogUtil;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**

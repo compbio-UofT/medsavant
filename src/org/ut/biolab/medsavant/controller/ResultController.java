@@ -5,24 +5,14 @@
 
 package org.ut.biolab.medsavant.controller;
 
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.dbspec.Table;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.model.Filter;
-import org.ut.biolab.medsavant.model.QueryFilter;
 
 /**
- *
  * @author Andrew
  */
 public class ResultController {
@@ -42,6 +32,7 @@ public class ResultController {
         updateFilteredVariantDBResults(DEFAULT_LIMIT);
     }
 
+    
     public static ResultController getInstance() throws NonFatalDatabaseException {
         if (instance == null) {
             instance = new ResultController();
@@ -57,7 +48,7 @@ public class ResultController {
     public Vector getFilteredVariantRecords(int limit) {
         if(filterSetId != FilterController.getCurrentFilterSetID() || this.limit < limit ||
                 ProjectController.getInstance().getCurrentProjectId() != projectId ||
-                ProjectController.getInstance().getCurrentReferenceId() != referenceId){
+                ReferenceController.getInstance().getCurrentReferenceId() != referenceId){
             try {
                 updateFilteredVariantDBResults(limit);
                 this.limit = limit;
@@ -65,7 +56,7 @@ public class ResultController {
                 ex.printStackTrace();
             }
             projectId = ProjectController.getInstance().getCurrentProjectId();
-            referenceId = ProjectController.getInstance().getCurrentReferenceId();
+            referenceId = ReferenceController.getInstance().getCurrentReferenceId();
         }      
         return filteredVariants;
     }
@@ -75,7 +66,7 @@ public class ResultController {
         filterSetId = FilterController.getCurrentFilterSetID();
         
         try {
-            filteredVariants = VariantQueryUtil.getVariants(ProjectController.getInstance().getCurrentProjectId(), ProjectController.getInstance().getCurrentReferenceId(), FilterController.getQueryFilterConditions(), limit);
+            filteredVariants = VariantQueryUtil.getVariants(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), FilterController.getQueryFilterConditions(), limit);
         } catch (SQLException ex) {
             Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);
         }
