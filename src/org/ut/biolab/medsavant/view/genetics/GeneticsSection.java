@@ -160,7 +160,10 @@ public class GeneticsSection extends SectionView implements ProjectListener {
             referenceDropDown.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
-                    ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
+                    String currentName = ProjectController.getInstance().getCurrentReferenceName();
+                    if(!ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem(), true)){
+                        referenceDropDown.setSelectedItem(currentName);
+                    }
                 }
             });
            ProjectController.getInstance().setReference((String) referenceDropDown.getSelectedItem());

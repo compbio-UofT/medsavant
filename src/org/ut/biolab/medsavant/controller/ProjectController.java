@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationFormat;
@@ -79,9 +80,16 @@ public class ProjectController {
         return org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil.getProjectName(projectid);
     }
 
-    public void setProject(String projectName) {
+    public boolean setProject(String projectName) {
         try {
             if (ProjectQueryUtil.containsProject(projectName)) {
+                
+                if(FilterController.hasFiltersApplied()){
+                    if(!confirmChangeReference(true)){
+                        return false;
+                    }
+                }
+                                
                 this.currentProjectId = this.getProjectId(projectName);
                 this.currentProjectName = projectName;                
                 this.fireProjectChangedEvent(projectName);              
@@ -89,12 +97,25 @@ public class ProjectController {
         } catch (SQLException ex) {
             ex.printStackTrace();
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
+        return true;
     }
     
-    public void setReference(String refName) {
+    public boolean setReference(String refName){
+        return setReference(refName, false);
+    }
+    
+    public boolean setReference(String refName, boolean getConfirmation) {
         try {
             if (ReferenceQueryUtil.containsReference(refName)) {
+                
+                if(getConfirmation && FilterController.hasFiltersApplied()){
+                    if(!confirmChangeReference(false)){
+                        return false;
+                    }
+                }
+                
                 this.currentReferenceId = this.getReferenceId(refName);
                 this.currentReferenceName = refName;
                 setCurrentTable();
@@ -104,7 +125,19 @@ public class ProjectController {
         } catch (SQLException ex) {
             ex.printStackTrace();
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
+        return true;
+    }
+    
+    private boolean confirmChangeReference(boolean isChangingProject){
+        int result = JOptionPane.showConfirmDialog(
+                null, 
+                "<HTML>Changing the " + (isChangingProject ? "project" : "reference") + " will remove current filters.<BR>Are you sure you want to do this?</HTML>", 
+                "Confirm", 
+                JOptionPane.YES_NO_OPTION, 
+                JOptionPane.WARNING_MESSAGE);
+        return result == JOptionPane.YES_OPTION;
     }
     
     public int getCurrentReferenceId(){

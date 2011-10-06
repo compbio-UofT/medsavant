@@ -20,6 +20,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
@@ -53,6 +54,7 @@ public class MainFrame extends JFrame implements LoginListener{
         }
         
         //if (sessionView == null) {
+            FilterController.init();
             sessionView = new LoggedInView();
             view.add(sessionView, SESSION_VIEW_CARD_NAME);
         //}

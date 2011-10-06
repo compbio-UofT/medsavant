@@ -104,7 +104,10 @@ public class LoggedInView extends JPanel implements ProjectListener {
                 projectDropDown.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
-                        ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
+                        String currentName = ProjectController.getInstance().getCurrentProjectName();
+                        if(!ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem())){
+                            projectDropDown.setSelectedItem(currentName);
+                        }
                     }
                 });
                 ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());

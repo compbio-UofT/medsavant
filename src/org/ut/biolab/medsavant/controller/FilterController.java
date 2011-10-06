@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ut.biolab.medsavant.controller.ProjectController.ProjectListener;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.RangeFilter;
@@ -23,7 +24,7 @@ import org.ut.biolab.medsavant.model.RangeFilter;
  *
  * @author mfiume
  */
-public class FilterController {
+public class FilterController{
 
     
     private static int filterSetID = 0;
@@ -35,9 +36,29 @@ public class FilterController {
     private static List<FiltersChangedListener> listeners = new ArrayList<FiltersChangedListener>();
     private static List<FiltersChangedListener> activeListeners = new ArrayList<FiltersChangedListener>();
     
-    
     private static Filter lastFilter;
     private static FilterAction lastAction;
+
+    private static ProjectListener projectListener;
+    
+    
+    public static void init(){
+        if(projectListener == null){
+            projectListener = new ProjectListener() {
+                public void projectAdded(String projectName) {}
+                public void projectRemoved(String projectName) {}
+                public void projectChanged(String projectName) {
+                    removeAllFilters();
+                }
+                public void projectTableRemoved(int projid, int refid) {}
+                public void referenceChanged(String referenceName) {
+                    removeAllFilters();
+                }
+            };
+            ProjectController.getInstance().addProjectListener(projectListener);
+        }
+    }
+    
     public static enum FilterAction {ADDED, REMOVED, MODIFIED};
 
     public static void addFilter(Filter filter, int queryId) {
@@ -66,6 +87,11 @@ public class FilterController {
         if(removed == null) return; //something went wrong, but ignore it
         setLastFilter(removed, FilterAction.REMOVED);
         fireFiltersChangedEvent();
+    }
+    
+    public static void removeAllFilters(){
+        filterMap.clear();
+        filterMapHistory.clear();
     }
 
     public static void addFilterListener(FiltersChangedListener l) {
@@ -202,6 +228,16 @@ public class FilterController {
             default:
                 return "";
         }
+    }
+    
+    public static boolean hasFiltersApplied(){
+        for(Integer key : filterMap.keySet()){
+            Map<String, Filter> current = filterMap.get(key);
+            if(current != null && !current.isEmpty()){
+                return true;
+            }
+        }
+        return false;
     }
 
 }
