@@ -28,6 +28,7 @@ import javax.swing.JTable;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
+import org.ut.biolab.medsavant.db.table.ServerLogTable;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
@@ -81,10 +82,10 @@ public class ServerLogPage extends SubSectionView {
                 Vector v = new Vector();
                 while (rs.next()) {
                     Vector r = new Vector();
-                    r.add(rs.getString(DBSettings.FIELDNAME_LOG_USER));
-                    r.add(rs.getString(DBSettings.FIELDNAME_LOG_EVENT));
-                    r.add(rs.getString(DBSettings.FIELDNAME_LOG_DESCRIPTION));
-                    r.add(rs.getTimestamp(DBSettings.FIELDNAME_LOG_TIMESTAMP));
+                    r.add(rs.getString(ServerLogTable.FIELDNAME_USER));
+                    r.add(rs.getString(ServerLogTable.FIELDNAME_EVENT));
+                    r.add(rs.getString(ServerLogTable.FIELDNAME_DESCRIPTION));
+                    r.add(rs.getTimestamp(ServerLogTable.FIELDNAME_TIMESTAMP));
                     v.add(r);
                 }
                 if (Thread.currentThread().isInterrupted()) {
@@ -124,9 +125,9 @@ public class ServerLogPage extends SubSectionView {
                 Vector v = new Vector();
                 while (rs.next()) {
                     Vector r = new Vector();
-                    r.add(rs.getString(DBSettings.FIELDNAME_LOG_EVENT));
-                    r.add(rs.getString(DBSettings.FIELDNAME_LOG_DESCRIPTION));
-                    r.add(rs.getTimestamp(DBSettings.FIELDNAME_LOG_TIMESTAMP));
+                    r.add(rs.getString(ServerLogTable.FIELDNAME_EVENT));
+                    r.add(rs.getString(ServerLogTable.FIELDNAME_DESCRIPTION));
+                    r.add(rs.getTimestamp(ServerLogTable.FIELDNAME_TIMESTAMP));
                     v.add(r);
                 }
                 if (Thread.currentThread().isInterrupted()) {
