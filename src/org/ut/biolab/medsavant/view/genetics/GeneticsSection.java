@@ -8,10 +8,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JButton;
@@ -156,7 +152,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
                 
                 int numVariantsInTable = ProjectController.getInstance().getNumVariantsInTable(ProjectController.getInstance().getCurrentProjectId(),refid);
                 
-                referenceDropDown.addItem(refname + " (" + numVariantsInTable + " variants)");
+                referenceDropDown.addItem(refname); // + " (" + numVariantsInTable + " variants)");
             }
             referenceDropDown.addActionListener(new ActionListener() {
 
