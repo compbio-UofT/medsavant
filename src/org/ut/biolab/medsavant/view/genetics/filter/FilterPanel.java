@@ -8,12 +8,15 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -25,6 +28,7 @@ import javax.swing.border.LineBorder;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.AnnotationField;
+import org.ut.biolab.medsavant.db.util.query.AnnotationField.Category;
 import org.ut.biolab.medsavant.db.util.query.AnnotationFormat;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -114,16 +118,32 @@ public class FilterPanel extends JScrollPane {
     public void showOptions(FilterPanelSub fps){
         container.removeAll();
         
-        container.add(createSectionHeader("Default"));
+        
+        Map<Category, List<JPanel>> map = new HashMap<Category, List<JPanel>>();
+        
+        //container.add(createSectionHeader("Default"));
         
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
             for(AnnotationField field : af.getAnnotationFields()){
                 if(field.isFilterable() && !FilterController.isFilterActive(fps.getId(), field.getColumnName())){
-                    container.add(createClickableLabel(fps, field));
+                    //container.add(createClickableLabel(fps, field));
+                    if(!map.containsKey(field.getCategory())){
+                        map.put(field.getCategory(), new ArrayList<JPanel>());
+                    }
+                    map.get(field.getCategory()).add(createClickableLabel(fps, field));
                 }
             }
         }
+        
+        for(Category c : map.keySet()){
+            container.add(createSectionHeader(c.toString()));
+            for(JPanel p : map.get(c)){
+                container.add(p);
+            }
+        }
+        
+        
         
         this.updateUI();        
     }
@@ -146,8 +166,9 @@ public class FilterPanel extends JScrollPane {
         p.setMaximumSize(new Dimension(10000, 22));
         final Color defaultColor = p.getBackground();
         
-        JLabel l = new JLabel(af.getAlias());
-        l.setFont(ViewUtil.getSmallTitleFont());
+        JLabel l = new JLabel("     " + af.getAlias());
+        l.setFont(new Font(ViewUtil.getDefaultFontFamily(),Font.PLAIN,11));
+        //l.setFont(ViewUtil.getSmallTitleFont());
   
         p.addMouseListener(new MouseAdapter() {
             @Override

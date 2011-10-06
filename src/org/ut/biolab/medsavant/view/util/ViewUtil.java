@@ -254,7 +254,7 @@ public class ViewUtil {
         return l;
     }
 
-    private static String getDefaultFontFamily() {
+    public static String getDefaultFontFamily() {
         return "Tahoma";
     }
     
