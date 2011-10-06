@@ -223,7 +223,12 @@ public class ProjectController {
     }
     
     public String getCurrentTableName(){
-        return DBSettings.getVariantTableName(currentProjectId, currentReferenceId);
+        try {
+            return ProjectQueryUtil.getVariantTable(currentProjectId, currentReferenceId);
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
     
     public DbTable getCurrentTable(){
