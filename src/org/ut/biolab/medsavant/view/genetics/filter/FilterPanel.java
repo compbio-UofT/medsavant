@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.border.LineBorder;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.AnnotationField;
 import org.ut.biolab.medsavant.db.util.query.AnnotationFormat;
@@ -118,7 +119,7 @@ public class FilterPanel extends JScrollPane {
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
             for(AnnotationField field : af.getAnnotationFields()){
-                if(field.isFilterable()){
+                if(field.isFilterable() && !FilterController.isFilterActive(fps.getId(), field.getColumnName())){
                     container.add(createClickableLabel(fps, field));
                 }
             }

@@ -240,4 +240,8 @@ public class FilterController{
         return false;
     }
 
+    public static boolean isFilterActive(int queryId, String filterId){
+        return filterMap.containsKey(queryId) && filterMap.get(queryId).containsKey(filterId);
+    }
+    
 }
