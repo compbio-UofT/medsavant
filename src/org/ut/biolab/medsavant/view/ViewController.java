@@ -31,7 +31,7 @@ import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
-import org.ut.biolab.medsavant.util.view.PeekingPanel;
+import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.images.IconFactory.StandardIcon;
 import org.ut.biolab.medsavant.view.menu.Menu;

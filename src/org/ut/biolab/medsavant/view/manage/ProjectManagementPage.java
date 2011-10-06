@@ -465,9 +465,8 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
     @Override
     public Component[] getBanner() {
-        Component[] result = new Component[2];
-        result[0] = getShowPendingAnnotationsButton();
-        result[1] = getAddPatientsButton();
+        Component[] result = new Component[1];
+        result[0] = getAddPatientsButton();
         
         return result;
     }
@@ -484,18 +483,6 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         return button;
     }
     
-    private JButton getShowPendingAnnotationsButton() {
-        JButton button = new JButton("Pending Annotations");
-        button.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                //NewProjectDialog npd = new NewProjectDialog(MainFrame.getInstance(), true);
-                //npd.setVisible(true);
-            }
-        });
-        return button;
-    }
-
     @Override
     public void viewLoading() {
     }
