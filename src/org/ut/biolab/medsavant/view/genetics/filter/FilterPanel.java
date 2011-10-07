@@ -27,9 +27,9 @@ import javax.swing.JViewport;
 import javax.swing.border.LineBorder;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.util.query.AnnotationField;
-import org.ut.biolab.medsavant.db.util.query.AnnotationField.Category;
-import org.ut.biolab.medsavant.db.util.query.AnnotationFormat;
+import org.ut.biolab.medsavant.db.format.AnnotationField;
+import org.ut.biolab.medsavant.db.format.AnnotationField.Category;
+import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**

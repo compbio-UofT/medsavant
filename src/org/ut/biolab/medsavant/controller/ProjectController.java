@@ -1,6 +1,7 @@
 package org.ut.biolab.medsavant.controller;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
-import org.ut.biolab.medsavant.db.util.query.AnnotationFormat;
+import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.listener.ProjectListener;
@@ -52,11 +53,11 @@ public class ProjectController implements ReferenceListener {
         }
     }
 
-    public void addProject(String projectName) {
+    public void addProject(String projectName, File patientFormatFile) {
         try {
-            ProjectQueryUtil.addProject(projectName);
+            ProjectQueryUtil.addProject(projectName, patientFormatFile);
             ProjectController.getInstance().fireProjectAddedEvent(projectName);
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }

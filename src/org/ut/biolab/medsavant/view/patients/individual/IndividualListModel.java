@@ -7,6 +7,9 @@ package org.ut.biolab.medsavant.view.patients.individual;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.table.PatientTable;
+import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
 
@@ -28,21 +31,24 @@ public class IndividualListModel implements DetailedListModel {
             table.add(v);
         }*/
         
-        List<Vector> table = QueryUtil.getDistinctBasicPatientInfo(limit);
-
+        //List<Vector> table = QueryUtil.getDistinctBasicPatientInfo(limit);
+        List<Vector> table = PatientQueryUtil.getBasicPatientInfo(ProjectController.getInstance().getCurrentProjectId(), limit);
+        
         return table;
     }
 
     public List<String> getColumnNames() {
         List<String> result = new ArrayList<String>();
-        result.add("Patient ID");
-        result.add("DNA ID");
-        result.add("Family ID");
+        result.add(PatientTable.ALIAS_ID);
+        result.add(PatientTable.ALIAS_FAMILYID);
+        result.add(PatientTable.ALIAS_PEDIGREEID);
+        result.add(PatientTable.ALIAS_HOSPITALID);
         return result;
     }
 
     public List<Class> getColumnClasses() {
         List<Class> result = new ArrayList<Class>();
+        result.add(Integer.class);
         result.add(String.class);
         result.add(String.class);
         result.add(String.class);

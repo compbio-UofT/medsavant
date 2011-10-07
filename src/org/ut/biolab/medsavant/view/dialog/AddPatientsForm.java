@@ -18,14 +18,20 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.format.CustomField;
+import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.olddb.DBUtil;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.table.ModifiableColumn;
@@ -61,11 +67,22 @@ public class AddPatientsForm extends javax.swing.JDialog {
         };
         model.addColumn("Short Name");
         model.addColumn("Value");
-                
-        List<ModifiableColumn> columns = MedSavantDatabase.getInstance().getPatientTableSchema().getModColumns();     
-        for(ModifiableColumn c : columns){
-            model.addRow(new Object[]{c, ""});
+        
+        //List<ModifiableColumn> columns = MedSavantDatabase.getInstance().getPatientTableSchema().getModColumns();
+        //for(ModifiableColumn c : columns){
+        //    model.addRow(new Object[]{c, ""});
+        //}
+        try {
+            List<CustomField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
+            for(int i = 1; i < fields.size(); i++){ //skip patient id
+                model.addRow(new Object[]{fields.get(i), ""});
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        
+        
         
         table.setModel(model);    
         
@@ -82,9 +99,19 @@ public class AddPatientsForm extends javax.swing.JDialog {
         int index = table.getSelectedRow();
         Object o = table.getValueAt(index, 0);
         if(o == null) return;
-        ModifiableColumn c = (ModifiableColumn)o;
+        /*ModifiableColumn c = (ModifiableColumn)o;
         String s = c.getShortName() + " | " + c.getType().toString() + "(" + c.getLength() + ")  ";
         switch(c.getType()){
+            case DATE:
+                s += "(yyyy-mm-dd)";
+                break;
+            case BOOLEAN:
+                s += "(true/false)";
+                break;
+        }*/
+        CustomField f = (CustomField)o;
+        String s = f.getAlias() + " | " + f.getFieldType().toString().toLowerCase();
+        switch(f.getFieldType()){
             case DATE:
                 s += "(yyyy-mm-dd)";
                 break;
@@ -95,7 +122,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         this.tipLabel.setText(s);   
     }
     
-    private void addPatient(){
+    private void addPatient() throws SQLException{/*
         List<String> values = new ArrayList<String>();
         List<ModifiableColumn> cols = new ArrayList<ModifiableColumn>();
         for(int i = 0; i < table.getRowCount(); i++){
@@ -103,7 +130,19 @@ public class AddPatientsForm extends javax.swing.JDialog {
             values.add((String)table.getModel().getValueAt(i, 1));
         }
         DBUtil.addPatient(cols, values);
-        clearTable();
+        clearTable();*/
+        
+        List<String> values = new ArrayList<String>();
+        List<CustomField> cols = new ArrayList<CustomField>();
+        for(int i = 0; i < table.getRowCount(); i++){
+            String value = (String) table.getModel().getValueAt(i, 1);
+            if(value != null && !value.equals("")){
+                cols.add((CustomField) table.getModel().getValueAt(i, 0));
+                values.add((String)table.getModel().getValueAt(i, 1));
+            }           
+        }
+        PatientQueryUtil.addPatient(ProjectController.getInstance().getCurrentProjectId(), cols, values);
+        clearTable();    
     }
     
     private void clearTable(){
@@ -112,7 +151,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         }
     }
     
-    private void generateTemplate(){
+    private void generateTemplate() throws SQLException{
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Generate Template");
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
@@ -124,13 +163,14 @@ public class AddPatientsForm extends javax.swing.JDialog {
         }
         
         File file = fc.getSelectedFile();
-        List<ModifiableColumn> columns = MedSavantDatabase.getInstance().getPatientTableSchema().getModColumns();  
+        
+        List<CustomField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
         
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(file, false));           
-            for(int i = 0; i < columns.size(); i++){
-                out.write(columns.get(i).getShortName());
-                if(i != columns.size()-1)
+            for(int i = 1; i < fields.size(); i++){ //skip patientId
+                out.write(fields.get(i).getAlias());
+                if(i != fields.size()-1)
                     out.write("\t");
             }
             out.newLine(); 
@@ -140,7 +180,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         }
     }
     
-    private void importFile(){
+    private void importFile() throws SQLException{
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Import File");
         fc.setDialogType(JFileChooser.OPEN_DIALOG);
@@ -152,18 +192,23 @@ public class AddPatientsForm extends javax.swing.JDialog {
         }
         
         File file = fc.getSelectedFile();
-        List<ModifiableColumn> columns = MedSavantDatabase.getInstance().getPatientTableSchema().getModColumns();
+        //List<ModifiableColumn> columns = MedSavantDatabase.getInstance().getPatientTableSchema().getModColumns();
+        
+        List<CustomField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
         
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
             String line = bufferedReader.readLine();
             String[] headers = line.split("\t");
-            List<ModifiableColumn> headerToColumn = new ArrayList<ModifiableColumn>();
+            //List<ModifiableColumn> headerToColumn = new ArrayList<ModifiableColumn>();
+            List<CustomField> headerToField = new ArrayList<CustomField>();
             for(String s : headers){
                 boolean found = false;
-                for(ModifiableColumn m : columns){
-                    if(s.equals(m.getShortName())){
-                        headerToColumn.add(m);
+                //for(ModifiableColumn m : columns){
+                for(CustomField f : fields){
+                    //if(s.equals(m.getShortName())){
+                    if(s.equals(f.getAlias())){
+                        headerToField.add(f);
                         found = true;
                         break;
                     }
@@ -180,7 +225,8 @@ public class AddPatientsForm extends javax.swing.JDialog {
             while ((line = bufferedReader.readLine()) != null) {
                 List<String> values = new ArrayList<String>();
                 values.addAll(Arrays.asList(line.split("\t")));
-                DBUtil.addPatient(headerToColumn, values);
+                //DBUtil.addPatient(headerToColumn, values);
+                PatientQueryUtil.addPatient(ProjectController.getInstance().getCurrentProjectId(), headerToField, values);
             }
             bufferedReader.close();
         } catch (FileNotFoundException ex) {           
@@ -329,15 +375,27 @@ public class AddPatientsForm extends javax.swing.JDialog {
     }//GEN-LAST:event_doneButtonActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        addPatient();
+        try {
+            addPatient();
+        } catch (SQLException ex) {
+            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        generateTemplate();
+        try {
+            generateTemplate();
+        } catch (SQLException ex) {
+            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        importFile();
+        try {
+            importFile();
+        } catch (SQLException ex) {
+            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jButton3ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

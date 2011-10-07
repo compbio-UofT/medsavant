@@ -18,8 +18,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.util.query.AnnotationField;
-import org.ut.biolab.medsavant.db.util.query.AnnotationField.FieldType;
+import org.ut.biolab.medsavant.db.format.AnnotationField;
 
 /**
  *

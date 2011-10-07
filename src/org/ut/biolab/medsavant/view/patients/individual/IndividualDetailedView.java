@@ -9,12 +9,18 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.olddb.DBUtil;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
@@ -33,25 +39,25 @@ public class IndividualDetailedView extends DetailedView {
     private final JPanel content;
     private final JPanel details;
     private final JPanel menu;
-    private String[] patientIds;
+    private int[] patientIds;
     
     private class IndividualDetailsSQ extends SwingWorker {
-        private final String pid;
+        private final int pid;
 
-        public IndividualDetailsSQ(String pid) {
+        public IndividualDetailsSQ(int pid) {
             this.pid = pid;
         }
         
         @Override
         protected Object doInBackground() throws Exception {
-            List<Vector> fieldValues = QueryUtil.getPatientRecord(pid);
+            Vector fieldValues = PatientQueryUtil.getPatientRecord(ProjectController.getInstance().getCurrentProjectId(), pid);
             return fieldValues;
         }
         
         @Override
         protected void done() {
             try {
-                List<Vector> result = (List<Vector>) get();
+                Vector result = (Vector) get();
                 setPatientInformation(result);
                 
             } catch (Exception ex) {
@@ -61,14 +67,13 @@ public class IndividualDetailedView extends DetailedView {
         
     }
 
-    public synchronized void setPatientInformation(List<Vector> result) {
-        Vector firstMatch = result.get(0);
+    public synchronized void setPatientInformation(Vector result) {
         String[][] values = new String[fieldNames.size()][2];
         for (int i = 0; i < fieldNames.size(); i++) {
             values[i][0] = fieldNames.get(i);
             values[i][1] = "";
-            if(firstMatch.get(i) != null)
-                values[i][1] = firstMatch.get(i).toString();
+            if(result.get(i) != null)
+                values[i][1] = result.get(i).toString();
         }
         
         details.removeAll();
@@ -82,7 +87,13 @@ public class IndividualDetailedView extends DetailedView {
     }
     
     public IndividualDetailedView() {
-        fieldNames = MedSavantDatabase.getInstance().getPatientTableSchema().getFieldAliases();
+        
+        //fieldNames = MedSavantDatabase.getInstance().getPatientTableSchema().getFieldAliases();
+        try {
+            fieldNames = PatientQueryUtil.getPatientFieldAliases(ProjectController.getInstance().getCurrentProjectId());
+        } catch (SQLException ex) {
+            Logger.getLogger(IndividualDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         content = this.getContentPanel();
         
@@ -101,8 +112,8 @@ public class IndividualDetailedView extends DetailedView {
     
     @Override
     public void setSelectedItem(Vector item) {
-        String patientId = (String) item.get(0);
-        setTitle(patientId);
+        int patientId = (Integer) item.get(0);
+        setTitle(Integer.toString(patientId));
         
         details.removeAll();
         details.updateUI();
@@ -118,9 +129,9 @@ public class IndividualDetailedView extends DetailedView {
     
     @Override
     public void setMultipleSelections(List<Vector> items){
-        patientIds = new String[items.size()];
+        patientIds = new int[items.size()];
         for(int i = 0; i < items.size(); i++){
-            patientIds[i] = (String) items.get(i).get(0);
+            patientIds[i] = (Integer) items.get(i).get(0);
         }
     }
     
@@ -130,7 +141,8 @@ public class IndividualDetailedView extends DetailedView {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(patientIds != null && patientIds.length > 0){
-                    DBUtil.addIndividualsToCohort(patientIds); 
+                    System.err.println("NOT IMPLEMENTED YET");
+                    //DBUtil.addIndividualsToCohort(patientIds); TODO
                 }                   
             }
         }); 
@@ -143,7 +155,11 @@ public class IndividualDetailedView extends DetailedView {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(patientIds != null && patientIds.length > 0){
-                    DBUtil.deleteIndividuals(patientIds);     
+                    try {
+                        PatientQueryUtil.removePatient(ProjectController.getInstance().getCurrentProjectId(), patientIds);
+                    } catch (SQLException ex) {
+                        Logger.getLogger(IndividualDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     parent.refresh();
                 }
             }

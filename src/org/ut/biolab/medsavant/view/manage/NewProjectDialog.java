@@ -10,17 +10,22 @@
  */
 package org.ut.biolab.medsavant.view.manage;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 
 /**
  *
  * @author mfiume
  */
 public class NewProjectDialog extends javax.swing.JDialog {
+    
+    File formatFile;
 
     /** Creates new form NewProjectDialog */
     public NewProjectDialog(java.awt.Frame parent, boolean modal) {
@@ -44,6 +49,9 @@ public class NewProjectDialog extends javax.swing.JDialog {
         text_project_name = new javax.swing.JTextField();
         button_cancel = new javax.swing.JButton();
         button_ok = new javax.swing.JButton();
+        chooseFileButton = new javax.swing.JButton();
+        formatFileField = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
@@ -71,6 +79,22 @@ public class NewProjectDialog extends javax.swing.JDialog {
             }
         });
 
+        chooseFileButton.setText("...");
+        chooseFileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chooseFileButtonActionPerformed(evt);
+            }
+        });
+
+        formatFileField.setEditable(false);
+        formatFileField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                formatFileFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("Format File:");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -78,24 +102,33 @@ public class NewProjectDialog extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(text_project_name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE))
+                    .add(text_project_name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                    .add(jLabel1)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(button_ok)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(button_cancel)))
+                        .add(button_cancel))
+                    .add(jLabel3)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(formatFileField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(chooseFileButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 55, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(text_project_name, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(jLabel3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(text_project_name, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(formatFileField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(chooseFileButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 33, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(button_cancel)
                     .add(button_ok))
@@ -120,7 +153,16 @@ public class NewProjectDialog extends javax.swing.JDialog {
             if (org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil.containsProject(projectName)) {
                 JOptionPane.showMessageDialog(this, "Project already exists");
             } else {
-                ProjectController.getInstance().addProject(projectName);
+                if(formatFile == null && 
+                        JOptionPane.showConfirmDialog(this, 
+                            "<HTML>No format file specified.<BR>Use only default fields?</HTML>", 
+                            "No format file", 
+                            JOptionPane.OK_CANCEL_OPTION, 
+                            JOptionPane.WARNING_MESSAGE) == JOptionPane.CANCEL_OPTION){
+                    return;
+                }
+                
+                ProjectController.getInstance().addProject(projectName, formatFile);
                 this.dispose();
             }
         } catch (SQLException ex) {
@@ -128,6 +170,26 @@ public class NewProjectDialog extends javax.swing.JDialog {
         }
 
     }//GEN-LAST:event_button_okActionPerformed
+
+    private void chooseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseFileButtonActionPerformed
+        JFileChooser fc = new JFileChooser();
+        fc.setDialogTitle("Format File");
+        fc.setDialogType(JFileChooser.OPEN_DIALOG);
+        fc.addChoosableFileFilter(new ExtensionFileFilter("xml"));
+        
+        int result = fc.showDialog(null, null);
+        if (result == JFileChooser.CANCEL_OPTION || result == JFileChooser.ERROR_OPTION) {
+            return;
+        }
+        
+        formatFile = fc.getSelectedFile();
+        if(formatFile != null)
+            formatFileField.setText(formatFile.getAbsolutePath());
+}//GEN-LAST:event_chooseFileButtonActionPerformed
+
+    private void formatFileFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formatFileFieldActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_formatFileFieldActionPerformed
 
     /**
      * @param args the command line arguments
@@ -150,7 +212,10 @@ public class NewProjectDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton button_cancel;
     private javax.swing.JButton button_ok;
+    private javax.swing.JButton chooseFileButton;
+    private javax.swing.JTextField formatFileField;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JTextField text_project_name;
     // End of variables declaration//GEN-END:variables
 }
