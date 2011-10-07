@@ -10,6 +10,11 @@
  */
 package org.ut.biolab.medsavant.view.dialog;
 
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.olddb.DBUtil;
 
 /**
@@ -82,7 +87,11 @@ public class AddCohortForm extends javax.swing.JDialog {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         String name = field.getText();
         if(name == null || name.equals("")) return;
-        DBUtil.addCohort(name);
+        try {
+            CohortQueryUtil.addCohort(ProjectController.getInstance().getCurrentProjectId(), name);
+        } catch (SQLException ex) {
+            Logger.getLogger(AddCohortForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 

@@ -20,6 +20,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.olddb.DBUtil;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
@@ -141,8 +142,9 @@ public class IndividualDetailedView extends DetailedView {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(patientIds != null && patientIds.length > 0){
-                    System.err.println("NOT IMPLEMENTED YET");
+                    //CohortQueryUtil.addPatientToCohort(patientIds, );
                     //DBUtil.addIndividualsToCohort(patientIds); TODO
+                    //TODO
                 }                   
             }
         }); 

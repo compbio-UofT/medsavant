@@ -10,6 +10,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -23,6 +24,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import org.ut.biolab.medsavant.db.util.query.Cohort;
+import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.olddb.DBUtil;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
@@ -44,25 +47,25 @@ public class CohortDetailedView extends DetailedView {
     private final JPanel menu;
     private String[] cohortNames;
     private JList list;
-    private String cohortName;
+    private Cohort cohort;
     
     private class CohortDetailsSW extends SwingWorker {
-        private final String cohortName;
+        private final Cohort cohort;
 
-        public CohortDetailsSW(String cohortName) {
-            this.cohortName = cohortName;
+        public CohortDetailsSW(Cohort cohort) {
+            this.cohort = cohort;
         }
         
         @Override
         protected Object doInBackground() throws Exception {
-            List<Vector> patientList = QueryUtil.getPatientsInCohort(cohortName);
+            List<Integer> patientList = CohortQueryUtil.getIndividualsInCohort(cohort.getId());
             return patientList;
         }
         
         @Override
         protected void done() {
             try {
-                List<Vector> result = (List<Vector>) get();
+                List<Integer> result = (List<Integer>) get();
                 setPatientList(result);
                 
             } catch (Exception ex) {
@@ -72,7 +75,7 @@ public class CohortDetailedView extends DetailedView {
         
     }
 
-    public synchronized void setPatientList(List<Vector> patients) {
+    public synchronized void setPatientList(List<Integer> patients) {
 
         details.removeAll();
         
@@ -81,10 +84,16 @@ public class CohortDetailedView extends DetailedView {
         
         details.add(ViewUtil.getKeyValuePairPanel("Patients in cohort", patients.size() + ""), BorderLayout.NORTH);
         DefaultListModel lm = new DefaultListModel();
-        for (Vector v : patients) {
+        /*for (Vector v : patients) {
             JLabel l = new JLabel(v.get(CohortViewTableSchema.INDEX_HOSPITALID-1).toString()); l.setForeground(Color.white);
             //details.add(l);
             lm.addElement((String) v.get(CohortViewTableSchema.INDEX_HOSPITALID-1));
+        }*/
+        for(Integer i : patients) {
+            JLabel l = new JLabel(Integer.toString(i));
+            l.setForeground(Color.white);
+            details.add(l);
+            lm.addElement(Integer.toString(i));
         }
         list = (JList) ViewUtil.clear(new JList(lm));
         list.setBackground(ViewUtil.getDetailsBackgroundColor());
@@ -118,8 +127,8 @@ public class CohortDetailedView extends DetailedView {
     
     @Override
     public void setSelectedItem(Vector item) {
-        cohortName = (String) item.get(0);
-        setTitle(cohortName);
+        cohort = ((Cohort) item.get(0));
+        setTitle(cohort.getName());
         
         details.removeAll();
         details.updateUI();
@@ -127,7 +136,7 @@ public class CohortDetailedView extends DetailedView {
         if (sw != null) {
             sw.cancel(true);
         }
-        sw = new CohortDetailsSW(cohortName);
+        sw = new CohortDetailsSW(cohort);
         sw.execute();
         
         if(menu != null) menu.setVisible(true);
@@ -137,7 +146,7 @@ public class CohortDetailedView extends DetailedView {
     public void setMultipleSelections(List<Vector> items){
         cohortNames = new String[items.size()];
         for(int i = 0; i < items.size(); i++){
-            cohortNames[i] = (String) items.get(i).get(0);
+            cohortNames[i] = ((Cohort) items.get(i).get(0)).getName();
         }
     }
     
@@ -177,8 +186,8 @@ public class CohortDetailedView extends DetailedView {
                     patientIds[i] = (String) selected[i];
                 }
                 if(patientIds != null && patientIds.length > 0){
-                    DBUtil.removeIndividualsFromCohort(cohortName, patientIds);     
-                    sw = new CohortDetailsSW(cohortName);
+                    //TODO DBUtil.removeIndividualsFromCohort(cohortName, patientIds);     
+                    sw = new CohortDetailsSW(cohort);
                     sw.execute();
                 }
             }

@@ -7,6 +7,9 @@ package org.ut.biolab.medsavant.view.patients.cohorts;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.query.Cohort;
+import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
@@ -21,11 +24,17 @@ public class CohortListModel implements DetailedListModel {
 
         List<Vector> table = new ArrayList<Vector>();
 
-        List<String> dbresults = QueryUtil.getDistinctCohortNames(limit);
-
+        /*List<String> dbresults = new ArrayList<String>();//TODO QueryUtil.getDistinctCohortNames(limit);        
         for (String s : dbresults) {
             Vector v = new Vector();
             v.add(s);
+            table.add(v);
+        }*/
+        
+        List<Cohort> cohorts = CohortQueryUtil.getCohorts(ProjectController.getInstance().getCurrentProjectId());
+        for(Cohort c : cohorts){
+            Vector v = new Vector();
+            v.add(c);
             table.add(v);
         }
 
@@ -40,7 +49,7 @@ public class CohortListModel implements DetailedListModel {
 
     public List<Class> getColumnClasses() {
         List<Class> result = new ArrayList<Class>();
-        result.add(String.class);
+        result.add(Cohort.class);
         return result;
     }
     
