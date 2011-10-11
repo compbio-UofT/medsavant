@@ -54,6 +54,7 @@ public class FilterPanelSubItem extends JPanel{
         titlePanel.add(Box.createHorizontalGlue());     
         
         final JLabel removeLabel = new JLabel(" X ");
+        removeLabel.setToolTipText("Remove filter");
         removeLabel.setForeground(Color.white);
         removeLabel.setBackground(BAR_COLOUR);
         removeLabel.setOpaque(true);

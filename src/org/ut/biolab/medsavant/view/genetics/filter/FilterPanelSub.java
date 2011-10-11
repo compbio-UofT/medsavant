@@ -64,6 +64,7 @@ public class FilterPanelSub extends JPanel{
         titlePanel.add(Box.createHorizontalGlue());     
         
         final JLabel addLabel = new JLabel(" + ");
+        addLabel.setToolTipText("Add new filter");
         addLabel.setForeground(Color.white);
         addLabel.setBackground(BAR_COLOUR);
         addLabel.setOpaque(true);
@@ -89,6 +90,7 @@ public class FilterPanelSub extends JPanel{
         titlePanel.add(addLabel);
                 
         final JLabel removeLabel = new JLabel(" X ");
+        addLabel.setToolTipText("Remove sub query and all contained filters");
         removeLabel.setForeground(Color.white);
         removeLabel.setBackground(BAR_COLOUR);
         removeLabel.setOpaque(true);
