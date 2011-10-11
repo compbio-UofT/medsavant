@@ -20,7 +20,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.util.query.Cohort;
+import org.ut.biolab.medsavant.db.util.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.olddb.DBUtil;

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.util.query.Cohort;
+import org.ut.biolab.medsavant.db.util.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;

@@ -62,7 +62,7 @@ public class FilterController{
     public static enum FilterAction {ADDED, REMOVED, MODIFIED};
 
     public static void addFilter(Filter filter, int queryId) {
-        //Filter prev = filterMap.put(filter.getName(), filter);
+
         if(filterMap.get(queryId) == null){
             filterMap.put(queryId, new TreeMap<String, Filter>());
         }
@@ -78,8 +78,8 @@ public class FilterController{
     }
 
     public static void removeFilter(String filterId, int queryId) {
-        //Filter removed = filterMap.remove(filtername);
-        if(filterMap.get(queryId) == null) return;
+
+        if(filterMap.get(queryId) == null) return; //filter was never actually added
         
         Filter removed = filterMap.get(queryId).remove(filterId);
         if(filterMap.get(queryId).isEmpty()){

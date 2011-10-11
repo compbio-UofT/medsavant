@@ -33,7 +33,7 @@ import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.table.VariantTable;
-import org.ut.biolab.medsavant.db.util.query.Cohort;
+import org.ut.biolab.medsavant.db.util.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.Filter;
