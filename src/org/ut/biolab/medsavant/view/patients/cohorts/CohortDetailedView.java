@@ -10,6 +10,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -45,9 +46,10 @@ public class CohortDetailedView extends DetailedView {
     private final JPanel content;
     private final JPanel details;
     private final JPanel menu;
-    private String[] cohortNames;
+    //private String[] cohortNames;
     private JList list;
     private Cohort cohort;
+    private Cohort[] cohorts;
     
     private class CohortDetailsSW extends SwingWorker {
         private final Cohort cohort;
@@ -93,7 +95,7 @@ public class CohortDetailedView extends DetailedView {
             JLabel l = new JLabel(Integer.toString(i));
             l.setForeground(Color.white);
             details.add(l);
-            lm.addElement(Integer.toString(i));
+            lm.addElement(i);
         }
         list = (JList) ViewUtil.clear(new JList(lm));
         list.setBackground(ViewUtil.getDetailsBackgroundColor());
@@ -144,9 +146,9 @@ public class CohortDetailedView extends DetailedView {
     
     @Override
     public void setMultipleSelections(List<Vector> items){
-        cohortNames = new String[items.size()];
+        cohorts = new Cohort[items.size()];
         for(int i = 0; i < items.size(); i++){
-            cohortNames[i] = ((Cohort) items.get(i).get(0)).getName();
+            cohorts[i] = (Cohort) items.get(i).get(0);
         }
     }
     
@@ -181,12 +183,18 @@ public class CohortDetailedView extends DetailedView {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Object[] selected = list.getSelectedValues();
-                String[] patientIds = new String[selected.length];
+                int[] patientIds = new int[selected.length];
                 for(int i = 0; i < selected.length; i++){
-                    patientIds[i] = (String) selected[i];
+                    patientIds[i] = (Integer) selected[i];
                 }
                 if(patientIds != null && patientIds.length > 0){
-                    //TODO DBUtil.removeIndividualsFromCohort(cohortName, patientIds);     
+                    
+                    try {
+                        CohortQueryUtil.removePatientsFromCohort(patientIds, cohort.getId());
+                    } catch (SQLException ex) {
+                        Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
                     sw = new CohortDetailsSW(cohort);
                     sw.execute();
                 }
@@ -200,8 +208,12 @@ public class CohortDetailedView extends DetailedView {
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(cohortNames != null && cohortNames.length > 0){
-                    DBUtil.deleteCohorts(cohortNames);     
+                if(cohorts != null && cohorts.length > 0){
+                    try {
+                        CohortQueryUtil.removeCohorts(cohorts);
+                    } catch (SQLException ex) {
+                        Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     parent.refresh();
                 }
             }

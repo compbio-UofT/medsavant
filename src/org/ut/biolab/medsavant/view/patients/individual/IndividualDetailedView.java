@@ -20,11 +20,13 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.query.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.olddb.DBUtil;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
+import org.ut.biolab.medsavant.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -142,9 +144,18 @@ public class IndividualDetailedView extends DetailedView {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(patientIds != null && patientIds.length > 0){
-                    //CohortQueryUtil.addPatientToCohort(patientIds, );
-                    //DBUtil.addIndividualsToCohort(patientIds); TODO
-                    //TODO
+                    try {    
+                        List<Cohort> cohorts = CohortQueryUtil.getCohorts(ProjectController.getInstance().getCurrentProjectId());                    
+                        ComboForm form = new ComboForm(cohorts.toArray(), "Select Cohort", "Select which cohort to add to:");
+                        Cohort selected = (Cohort) form.getSelectedValue();
+                        if (selected == null) {
+                            return;
+                        }                        
+                        CohortQueryUtil.addPatientsToCohort(patientIds, selected.getId());                            
+                    } catch (SQLException ex) {
+                        Logger.getLogger(IndividualDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    parent.refresh();                   
                 }                   
             }
         }); 
