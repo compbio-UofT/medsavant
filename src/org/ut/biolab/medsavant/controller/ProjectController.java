@@ -166,11 +166,11 @@ public class ProjectController implements ReferenceListener {
         return null;
     }
     
-    public DbTable getCurrentTable(){
+    public DbTable getCurrentVariantTable(){
         return currentTable;
     }
     
-    private void setCurrentTable(){
+    private void setCurrentVariantTable(){
         try {
             this.currentTable = DBUtil.importTable(getCurrentTableName());
         } catch (SQLException ex) {
@@ -201,7 +201,7 @@ public class ProjectController implements ReferenceListener {
     }
 
     public void referenceChanged(String referenceName) {
-        setCurrentTable();
+        setCurrentVariantTable();
         setCurrentAnnotationFormats(null);
     }
 

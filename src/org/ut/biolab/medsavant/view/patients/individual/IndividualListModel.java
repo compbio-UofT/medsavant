@@ -43,12 +43,16 @@ public class IndividualListModel implements DetailedListModel {
         result.add(PatientTable.ALIAS_FAMILYID);
         result.add(PatientTable.ALIAS_PEDIGREEID);
         result.add(PatientTable.ALIAS_HOSPITALID);
+        result.add(PatientTable.ALIAS_DNAIDS);
+        result.add(PatientTable.ALIAS_DNAIDS);
         return result;
     }
 
     public List<Class> getColumnClasses() {
         List<Class> result = new ArrayList<Class>();
         result.add(Integer.class);
+        result.add(String.class);
+        result.add(String.class);
         result.add(String.class);
         result.add(String.class);
         result.add(String.class);

@@ -197,8 +197,8 @@ public class VariantNumericFilterView {
                             //DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnname));
                             //results[0] = BinaryCondition.greaterThan(tempCol, getNumber(frombox.getText().replaceAll(",", "")), true);
                             //results[1] = BinaryCondition.lessThan(tempCol, getNumber(tobox.getText().replaceAll(",", "")), true);
-                            results[0] = BinaryCondition.greaterThan(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "decimal", 1), getNumber(frombox.getText().replaceAll(",", "")), true);
-                            results[1] = BinaryCondition.lessThan(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "decimal", 1), getNumber(tobox.getText().replaceAll(",", "")), true);
+                            results[0] = BinaryCondition.greaterThan(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "decimal", 1), getNumber(frombox.getText().replaceAll(",", "")), true);
+                            results[1] = BinaryCondition.lessThan(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "decimal", 1), getNumber(tobox.getText().replaceAll(",", "")), true);
 
                             Condition[] resultsCombined = new Condition[1];
                             resultsCombined[0] = ComboCondition.and(results);

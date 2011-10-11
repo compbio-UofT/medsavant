@@ -78,7 +78,7 @@ public class VariantBooleanFilterView {
                             int i = 0;
                             //DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnAlias));
                             for (String s : acceptableValues) {
-                                results[i++] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "boolean", 1), s);
+                                results[i++] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "boolean", 1), s);
                                 //results[i++] = BinaryCondition.equalTo(tempCol, s);
                             }
                             return results;

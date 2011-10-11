@@ -79,6 +79,8 @@ public class FilterController{
 
     public static void removeFilter(String filterId, int queryId) {
         //Filter removed = filterMap.remove(filtername);
+        if(filterMap.get(queryId) == null) return;
+        
         Filter removed = filterMap.get(queryId).remove(filterId);
         if(filterMap.get(queryId).isEmpty()){
             filterMap.remove(queryId);

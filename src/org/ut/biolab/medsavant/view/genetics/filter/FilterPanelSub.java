@@ -159,6 +159,11 @@ public class FilterPanelSub extends JPanel{
         return isRemoved;
     }
     
+    public void addNewSubItem(FilterView view, String filterId){
+        subItems.add(new FilterPanelSubItem(view, this, filterId));
+        refreshSubItems();
+    }
+    
     public void addNewSubItem(AnnotationField af){
         
         String tablename = ProjectController.getInstance().getCurrentTableName();

@@ -125,7 +125,7 @@ public class VariantStringListFilterView {
                                 //} else {
                                     //results[i++] = BinaryCondition.equalTo(tempCol, s);                                           
                                 //}
-                                results[i++] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentTable(), columnname, "varchar", 1), s);
+                                results[i++] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "varchar", 1), s);
                             }
                             return results;
                         }

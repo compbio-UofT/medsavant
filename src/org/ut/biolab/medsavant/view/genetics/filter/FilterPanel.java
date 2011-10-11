@@ -115,14 +115,24 @@ public class FilterPanel extends JScrollPane {
         this.updateUI();
     }
     
-    public void showOptions(FilterPanelSub fps){
+    public void showOptions(final FilterPanelSub fps){
         container.removeAll();
         
         
         Map<Category, List<JPanel>> map = new HashMap<Category, List<JPanel>>();
         
-        //container.add(createSectionHeader("Default"));
+        //--add defaults
+        map.put(AnnotationField.Category.PATIENT, new ArrayList<JPanel>());
         
+        //cohort filter
+        map.get(AnnotationField.Category.PATIENT).add(createClickableLabel(fps, new FilterPlaceholder() {
+            public FilterView getFilterView() { return CohortFilterView.getCohortFilterView(fps.getId());}
+            public String getFilterID() { return CohortFilterView.FILTER_ID;}
+            public String getFilterName() { return CohortFilterView.FILTER_NAME;}
+        }));  
+        
+        
+        //add from variant table
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
             for(AnnotationField field : af.getAnnotationFields()){
@@ -155,6 +165,38 @@ public class FilterPanel extends JScrollPane {
         
         JLabel l = new JLabel(title);
         l.setFont(ViewUtil.getMediumTitleFont());
+        p.add(l, BorderLayout.WEST);
+        
+        return p;
+    }
+    
+    private JPanel createClickableLabel(final FilterPanelSub fps, final FilterPlaceholder gen){
+        final JPanel p = new JPanel();
+        p.setLayout(new BorderLayout());
+        p.setMaximumSize(new Dimension(10000, 22));
+        final Color defaultColor = p.getBackground();
+        
+        JLabel l = new JLabel("     " + gen.getFilterName());
+        l.setFont(new Font(ViewUtil.getDefaultFontFamily(),Font.PLAIN,11));
+  
+        p.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                fps.addNewSubItem(gen.getFilterView(), gen.getFilterID());
+                refreshSubPanels();
+            }
+            
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                p.setBackground(Color.white);
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                p.setBackground(defaultColor);
+            }
+        });
+        p.setCursor(new Cursor(Cursor.HAND_CURSOR));
         p.add(l, BorderLayout.WEST);
         
         return p;
@@ -193,5 +235,13 @@ public class FilterPanel extends JScrollPane {
         return p;
     }
     
+    /* 
+     * Use this to prevent creating all filters when generating list
+     */
+    interface FilterPlaceholder {
+        public FilterView getFilterView();      
+        public String getFilterID();
+        public String getFilterName();
+    }
     
 }
