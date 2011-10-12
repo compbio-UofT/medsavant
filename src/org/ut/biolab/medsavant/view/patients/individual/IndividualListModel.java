@@ -44,7 +44,6 @@ public class IndividualListModel implements DetailedListModel {
         result.add(PatientTable.ALIAS_PEDIGREEID);
         result.add(PatientTable.ALIAS_HOSPITALID);
         result.add(PatientTable.ALIAS_DNAIDS);
-        result.add(PatientTable.ALIAS_DNAIDS);
         return result;
     }
 
