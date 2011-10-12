@@ -33,6 +33,6 @@ public abstract class SubSectionView {
         return this.parent;
     }
     
-    public abstract void viewLoading();
+    public abstract void viewDidLoad();
     public abstract void viewDidUnload();
 }

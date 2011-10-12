@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -28,16 +27,12 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 
 /**
- *
  * @author AndrewBrook
  */
 public class FilterProgressPanel extends JPanel implements FiltersChangedListener {
@@ -94,7 +89,6 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
         });
         group.add(globalButton);
         group.add(relativeButton);
-        modePanel.add(new JLabel("Select Mode: "));
         modePanel.add(globalButton);
         modePanel.add(relativeButton);
         this.add(modePanel, BorderLayout.NORTH);

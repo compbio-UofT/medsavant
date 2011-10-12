@@ -484,7 +484,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
     }
     
     @Override
-    public void viewLoading() {
+    public void viewDidLoad() {
     }
 
     @Override

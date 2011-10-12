@@ -204,7 +204,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
     }
     
     @Override
-    public void viewLoading() {
+    public void viewDidLoad() {
     }
 
     @Override

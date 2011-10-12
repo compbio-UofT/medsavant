@@ -10,27 +10,14 @@ import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import org.ut.biolab.medsavant.view.patients.cohorts.CohortDetailedView;
-import org.ut.biolab.medsavant.view.patients.cohorts.CohortListModel;
-import org.ut.biolab.medsavant.view.patients.individual.IndividualDetailedView;
-import org.ut.biolab.medsavant.view.patients.individual.IndividualListModel;
-import org.ut.biolab.medsavant.view.util.PaintUtil;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
+
 
 /**
  *
@@ -182,9 +169,6 @@ public class SplitScreenView extends JPanel {
                            detailedView, listView);
         split.setOneTouchExpandable(true);
         this.add(split,BorderLayout.CENTER);
-        
-        //this.add(detailedView, BorderLayout.NORTH);
-        //this.add(listView, BorderLayout.CENTER);
     }
     
     public void refresh(){

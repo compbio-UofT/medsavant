@@ -98,11 +98,11 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
         Component[] result = new Component[4];
         result[0] = new JLabel("Reference:");
-        if(referenceDropDown == null){
+        if (referenceDropDown == null) {
             result[1] = getReferenceDropDown();
         } else {
             result[1] = referenceDropDown;
-        }        
+        }
         result[2] = addShowInSavantButton();
         result[3] = createVcfButton();
         //result[0] = addSaveResultSetButton();
@@ -128,9 +128,9 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         referenceDropDown.setMinimumSize(new Dimension(200, 23));
         referenceDropDown.setPreferredSize(new Dimension(200, 23));
         referenceDropDown.setMaximumSize(new Dimension(200, 23));
-    
+
         refreshReferenceDropDown();
-        
+
         ProjectController.getInstance().addProjectListener(this);
 
         return referenceDropDown;
@@ -138,7 +138,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
     private void refreshReferenceDropDown() {
         try {
-            for(ActionListener l : referenceDropDown.getActionListeners()){
+            for (ActionListener l : referenceDropDown.getActionListeners()) {
                 referenceDropDown.removeActionListener(l);
             }
             referenceDropDown.removeAllItems();
@@ -147,24 +147,29 @@ public class GeneticsSection extends SectionView implements ProjectListener {
                     ProjectController.getInstance().getCurrentProjectId());
 
             for (String refname : references) {
-                
+
                 int refid = ReferenceController.getInstance().getReferenceId(refname);
-                
-                int numVariantsInTable = ProjectController.getInstance().getNumVariantsInTable(ProjectController.getInstance().getCurrentProjectId(),refid);
-                
+
+                int numVariantsInTable = ProjectController.getInstance().getNumVariantsInTable(ProjectController.getInstance().getCurrentProjectId(), refid);
+
                 referenceDropDown.addItem(refname); // + " (" + numVariantsInTable + " variants)");
             }
-            referenceDropDown.addActionListener(new ActionListener() {
 
-                public void actionPerformed(ActionEvent e) {
-                    String currentName = ReferenceController.getInstance().getCurrentReferenceName();
-                    if(!ReferenceController.getInstance().setReference((String) referenceDropDown.getSelectedItem(), true)){
-                        referenceDropDown.setSelectedItem(currentName);
+            if (references.isEmpty()) {
+                referenceDropDown.addItem("No References");
+                referenceDropDown.setEnabled(false);
+            } else {
+                referenceDropDown.setEnabled(true);
+                referenceDropDown.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        String currentName = ReferenceController.getInstance().getCurrentReferenceName();
+                        if (!ReferenceController.getInstance().setReference((String) referenceDropDown.getSelectedItem(), true)) {
+                            referenceDropDown.setSelectedItem(currentName);
+                        }
                     }
-                }
-            });
-           ReferenceController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
-
+                });
+                ReferenceController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
+            }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -187,5 +192,6 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         refreshReferenceDropDown();
     }
 
-    public void referenceChanged(String referenceName) {}
+    public void referenceChanged(String referenceName) {
+    }
 }

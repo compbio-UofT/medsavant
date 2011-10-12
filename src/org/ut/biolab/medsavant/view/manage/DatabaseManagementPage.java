@@ -47,7 +47,7 @@ public class DatabaseManagementPage extends SubSectionView {
     
     
     @Override
-    public void viewLoading() {
+    public void viewDidLoad() {
     }
 
     @Override

@@ -134,7 +134,7 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
     }
 
     @Override
-    public void viewLoading() {
+    public void viewDidLoad() {
     }
 
     @Override

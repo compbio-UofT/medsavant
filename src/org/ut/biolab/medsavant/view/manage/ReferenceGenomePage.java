@@ -188,7 +188,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
     }
 
     @Override
-    public void viewLoading() {
+    public void viewDidLoad() {
     }
 
     @Override

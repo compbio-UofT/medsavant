@@ -15,8 +15,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.border.MatteBorder;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -30,20 +28,16 @@ public abstract class DetailedView extends JPanel {
     private final JPanel contentPanel;
     protected SplitScreenView parent;
     private final JPanel bottomPanel;
-    private static Color titleColor = new Color(53, 103, 0);
     private final Component glue;
 
     public DetailedView() {
         this.setPreferredSize(new Dimension(9999, 350));
-        //this.setBorder(ViewUtil.getBigBorder());
 
         this.setOpaque(false);
 
         this.setLayout(new BorderLayout());
 
         JPanel h1 = ViewUtil.getPrimaryBannerPanel();
-        //h1.setBackground(titleColor);//ViewUtil.getClearPanel();
-        //h1.setBorder(new MatteBorder(0, 0, 1, 0, Color.gray));
         h1.setLayout(new BoxLayout(h1, BoxLayout.X_AXIS));
         this.title = ViewUtil.getDetailTitleLabel("");
 
@@ -58,8 +52,6 @@ public abstract class DetailedView extends JPanel {
         this.add(contentPanel, BorderLayout.CENTER);
 
         bottomPanel = ViewUtil.getPrimaryBannerPanel();
-        //bottomPanel.setBackground(titleColor);
-        //bottomPanel.setBorder(new MatteBorder(1, 0, 0, 0, Color.gray));
         ViewUtil.applyHorizontalBoxLayout(bottomPanel);
         bottomPanel.add(Box.createHorizontalGlue());
 

@@ -262,7 +262,6 @@ public class ServerLogPage extends SubSectionView {
         bg.add(b2);
         bg.add(b3);
 
-
         listPanel = new JPanel();
         listPanel.setLayout(new CardLayout());
 
@@ -295,8 +294,8 @@ public class ServerLogPage extends SubSectionView {
         });
 
 
-        b1.setSelected(true);
-        this.changeToCard(CARDNAME_CLIENT);
+        b3.setSelected(true);
+        this.changeToCard(CARDNAME_ANNOTATION);
 
         JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(new ActionListener() {
@@ -307,9 +306,9 @@ public class ServerLogPage extends SubSectionView {
         });
 
         menuPanel.add(Box.createHorizontalGlue());
+        menuPanel.add(b3);
         menuPanel.add(b1);
         menuPanel.add(b2);
-        menuPanel.add(b3);
         menuPanel.add(refreshButton);
         menuPanel.add(Box.createHorizontalGlue());
 
@@ -423,7 +422,7 @@ public class ServerLogPage extends SubSectionView {
     }
 
     @Override
-    public void viewLoading() {
+    public void viewDidLoad() {
     }
 
     @Override

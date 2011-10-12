@@ -20,6 +20,8 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.ImportVariants;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -172,18 +174,23 @@ public class VCFUploadForm extends javax.swing.JDialog {
     }//GEN-LAST:event_outputFileFieldActionPerformed
 
     private void chooseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseFileButtonActionPerformed
+        
+        files = DialogUtils.chooseFilesForOpen(MainFrame.getInstance(), "Import Variants", new ExtensionFileFilter("vcf"), null);
+        
+        /*
         JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Import Variants");
+        fc.setDialogTitle();
         fc.setDialogType(JFileChooser.OPEN_DIALOG);
-        fc.addChoosableFileFilter(new ExtensionFileFilter("vcf"));
+        fc.addChoosableFileFilter();
         fc.setMultiSelectionEnabled(true);
         
         int result = fc.showDialog(null, null);
         if (result == JFileChooser.CANCEL_OPTION || result == JFileChooser.ERROR_OPTION) {
             return;
         }
+         * 
+         */
         
-        files = fc.getSelectedFiles();
         path = getPathString(files);
         outputFileField.setText(path);
         uploadButton.setEnabled(true);

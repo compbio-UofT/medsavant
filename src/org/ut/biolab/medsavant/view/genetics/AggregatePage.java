@@ -68,7 +68,7 @@ public class AggregatePage extends SubSectionView {
     }  
     
     @Override
-    public void viewLoading() {
+    public void viewDidLoad() {
         if (asp != null)
             asp.resumeAggregation();
     }

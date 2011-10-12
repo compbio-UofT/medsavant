@@ -10,28 +10,18 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.SQLException;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.log.ClientLogger;
-import org.ut.biolab.medsavant.model.event.LoginEvent;
-import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.model.event.SectionChangedEvent;
 import org.ut.biolab.medsavant.model.event.SectionChangedEventListener;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.images.IconFactory.StandardIcon;
@@ -62,11 +52,11 @@ public class ViewController extends JPanel {
     
     public void changeSubSectionTo(SubSectionView view) {
 
-        //if (currentSubsection != null) { currentSubsection.viewDidUnload(); }
+        if (currentSubsection != null) { currentSubsection.viewDidUnload(); }
 
         currentSubsection = view;
 
-        currentSubsection.viewLoading();
+        currentSubsection.viewDidLoad();
 
         this.sectionHeader.setSubSection(view);
 
@@ -83,8 +73,7 @@ public class ViewController extends JPanel {
         }
         currentSection = parent;
         
-        //fireSubSectionChangedEvent(new SectionChangedEvent(view));
-        
+        currentSubsection.viewDidLoad();
     }
 
     void setProject(String projectname) {
@@ -95,20 +84,11 @@ public class ViewController extends JPanel {
         menu.removeAll();
     }
 
-    private void fireSubSectionChangedEvent(SectionChangedEvent evt) {
-        for (SectionChangedEventListener l : listeners) {
-            //l.subsectionChanged(evt);
-        }
-        
-    }
-
     private static class SidePanel extends JPanel {
 
         public SidePanel() {
             this.setBackground(ViewUtil.getMenuColor());
             this.setBorder(ViewUtil.getSideLineBorder());
-
-            //this.setPreferredSize(new Dimension(200,200));
             this.setLayout(new BorderLayout());
         }
 

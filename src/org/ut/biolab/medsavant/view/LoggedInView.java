@@ -101,6 +101,11 @@ public class LoggedInView extends JPanel implements ProjectListener {
                 for (String s : projects) {
                     projectDropDown.addItem(s);
                 }
+                if (projects.isEmpty()) {
+                    projectDropDown.addItem("No Projects");
+                    projectDropDown.setEnabled(false);
+                } else {
+                    projectDropDown.setEnabled(true);
                 projectDropDown.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
@@ -111,6 +116,7 @@ public class LoggedInView extends JPanel implements ProjectListener {
                     }
                 });
                 ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
+                }
                 
             } catch (SQLException ex) {
             }
