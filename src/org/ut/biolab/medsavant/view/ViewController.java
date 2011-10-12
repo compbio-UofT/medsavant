@@ -29,6 +29,8 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.model.event.SectionChangedEvent;
+import org.ut.biolab.medsavant.model.event.SectionChangedEventListener;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -56,6 +58,8 @@ public class ViewController extends JPanel {
     private PeekingPanel peekRight;
     private SubSectionView currentSubsection;
 
+    private List<SectionChangedEventListener> listeners;
+    
     public void changeSubSectionTo(SubSectionView view) {
 
         //if (currentSubsection != null) { currentSubsection.viewDidUnload(); }
@@ -78,6 +82,9 @@ public class ViewController extends JPanel {
             }
         }
         currentSection = parent;
+        
+        //fireSubSectionChangedEvent(new SectionChangedEvent(view));
+        
     }
 
     void setProject(String projectname) {
@@ -86,6 +93,13 @@ public class ViewController extends JPanel {
 
     void clearMenu() {
         menu.removeAll();
+    }
+
+    private void fireSubSectionChangedEvent(SectionChangedEvent evt) {
+        for (SectionChangedEventListener l : listeners) {
+            //l.subsectionChanged(evt);
+        }
+        
     }
 
     private static class SidePanel extends JPanel {

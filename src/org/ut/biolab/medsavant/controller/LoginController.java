@@ -66,8 +66,7 @@ public class LoginController {
         password = pw;
         
         try {
-            isAdmin = org.ut.biolab.medsavant.db.util.query.UserQueryUtil.isUserAdmin(username);
-        
+            isAdmin = username.equals("root") || org.ut.biolab.medsavant.db.util.query.UserQueryUtil.isUserAdmin(username);
         } catch (SQLException ex) {
             setLoggedIn(false);
             setLoginException(ex);

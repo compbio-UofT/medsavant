@@ -96,7 +96,6 @@ public class SplitView extends JPanel {
                 pageCardLayout.show(pageCard, subsectionName);
                 bannerCardLayout.show(bannerCard, subsectionName);
                 this.sectionCheckBoxMap.get(subsectionName).setSelected(true);
-                fireSectionChangedEvent(new SectionChangedEvent(subsectionName));
                 currentSection = subsectionName;
           //  }
         }

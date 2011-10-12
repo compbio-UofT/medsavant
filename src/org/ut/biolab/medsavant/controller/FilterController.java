@@ -7,7 +7,6 @@ package org.ut.biolab.medsavant.controller;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import org.ut.biolab.medsavant.model.PostProcessFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import java.util.ArrayList;
 import java.util.List;
