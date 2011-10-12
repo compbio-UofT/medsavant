@@ -17,7 +17,9 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.listener.ProjectListener;
+import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
@@ -27,7 +29,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class Menu extends JPanel implements MenuItemSelected, ProjectListener {
+public class Menu extends JPanel implements MenuItemSelected, ReferenceListener {
 
     public static class MenuItem extends JPanel {
 
@@ -205,24 +207,19 @@ public class Menu extends JPanel implements MenuItemSelected, ProjectListener {
         this.setOpaque(false);
         this.contentContainer = contentContainer;
         itemGroup = new MenuItemGroup();
-        ProjectController.getInstance().addProjectListener(this);
+        ReferenceController.getInstance().addReferenceListener(this);
     }
-    
-    public void projectAdded(String projectName) {}
-
-    public void projectRemoved(String projectName) {}
-
-    public void projectChanged(String projectName) {}
-
-    public void projectTableRemoved(int projid, int refid) {}
 
     public void referenceChanged(String referenceName) {
         if(currentView != null){
             setContentTo(currentView, true);
         }
     }
-
     
+    public void referenceAdded(String name) {}
+
+    public void referenceRemoved(String name) {}
+   
     public void addComponent(Component c) {
         this.remove(glue);
         this.add(Box.createVerticalStrut(10));

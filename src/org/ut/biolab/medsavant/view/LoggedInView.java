@@ -148,5 +148,4 @@ public class LoggedInView extends JPanel implements ProjectListener {
             refreshProjectDropDown();
         }
 
-        public void referenceChanged(String referenceName) {}
 }

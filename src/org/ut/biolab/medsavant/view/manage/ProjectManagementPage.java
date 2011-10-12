@@ -76,8 +76,6 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
     public void projectTableRemoved(int projid, int refid) {}
 
-    public void referenceChanged(String referenceName) {}
-
     private static class ProjectsDetailedView extends DetailedView implements ProjectListener {
 
         private final static JPanel details = ViewUtil.getClearPanel();
@@ -201,9 +199,6 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             }
             sw = new ProjectDetailsSW(projectName);
             sw.execute();
-        }
-
-        public void referenceChanged(String referenceName) {
         }
 
         private class ProjectDetailsSW extends SwingWorker {

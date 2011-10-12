@@ -191,7 +191,4 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     public void projectTableRemoved(int projid, int refid) {
         refreshReferenceDropDown();
     }
-
-    public void referenceChanged(String referenceName) {
-    }
 }

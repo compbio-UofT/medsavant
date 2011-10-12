@@ -15,6 +15,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.listener.ProjectListener;
+import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.RangeFilter;
@@ -39,6 +40,7 @@ public class FilterController{
     private static FilterAction lastAction;
 
     private static ProjectListener projectListener;
+    private static ReferenceListener referenceListener;
     
     
     public static void init(){
@@ -50,11 +52,18 @@ public class FilterController{
                     removeAllFilters();
                 }
                 public void projectTableRemoved(int projid, int refid) {}
-                public void referenceChanged(String referenceName) {
-                    removeAllFilters();
-                }
-            };
+            };           
             ProjectController.getInstance().addProjectListener(projectListener);
+        }
+        if(referenceListener == null){
+            referenceListener = new ReferenceListener() {
+                public void referenceAdded(String name) {}
+                public void referenceRemoved(String name) {}
+                public void referenceChanged(String prnameojectName) {
+                    removeAllFilters();
+                }              
+            };
+            ReferenceController.getInstance().addReferenceListener(referenceListener);
         }
     }
     
