@@ -89,7 +89,6 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
             this.addBottomComponent(deleteProjectButton());
             this.addBottomComponent(addTableButton());
-            this.addBottomComponent(editPatientButton());
 
             content.setLayout(new BorderLayout());
 
@@ -99,6 +98,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
         }
         
+        /*
         public final JButton editPatientButton() {
 
             JButton b = new JButton("Edit patient fields");
@@ -123,6 +123,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             return b;
         }
         
+         */
 
         public final JButton addTableButton() {
 

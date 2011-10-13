@@ -15,9 +15,6 @@ import org.ut.biolab.medsavant.olddb.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GenomeTableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
-import org.ut.biolab.medsavant.olddb.table.ModifiableTableSchema;
-import org.ut.biolab.medsavant.olddb.table.PatientTableSchema;
-import org.ut.biolab.medsavant.olddb.table.PhenotypeTableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantAnnotationGatkTableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantAnnotationPolyphenTableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantAnnotationSiftTableSchema;
@@ -46,9 +43,6 @@ public class MedSavantDatabase {
     private GeneListMembershipTableSchema geneListMembershipTableSchema;
     private GenomeTableSchema genomeTableSchema;
     //private PatientTableSchema patientTableSchema;
-    
-    private PatientTableSchema patientTableSchema;
-    private PhenotypeTableSchema phenotypeTableSchema;
     
     public static void main(String[] argv) {
         getInstance();
@@ -85,8 +79,6 @@ public class MedSavantDatabase {
         geneListMembershipTableSchema = new GeneListMembershipTableSchema(schema);
         alignmentTableSchema = new AlignmentTableSchema(schema);
         genomeTableSchema = new GenomeTableSchema(schema);
-        
-        refreshModifiableTables();
     }
 
     public VariantTableSchema getVariantTableSchema() {
@@ -103,10 +95,6 @@ public class MedSavantDatabase {
     
     public VariantAnnotationGatkTableSchema getVariantGatkTableSchema() {
         return this.variantGatkTableSchema;
-    }
-    
-    public PatientTableSchema getPatientTableSchema() {
-        return this.patientTableSchema;
     }
     
     public TableSchema getCohortViewTableSchema() {
@@ -135,19 +123,6 @@ public class MedSavantDatabase {
     
     public TableSchema getGenomeTableSchema() {
         return genomeTableSchema;
-    }
-    
-    public PhenotypeTableSchema getPhenotypeTableSchema() {
-        return phenotypeTableSchema;
-    }
-    
-    public ModifiableTableSchema[] getModifiableTables(){
-        return new ModifiableTableSchema[]{patientTableSchema,phenotypeTableSchema};
-    }
-   
-    public void refreshModifiableTables(){
-        patientTableSchema = new PatientTableSchema(schema);
-        phenotypeTableSchema = new PhenotypeTableSchema(schema);
     }
     
 }

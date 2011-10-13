@@ -40,7 +40,6 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class CohortDetailedView extends DetailedView {
 
-    private List<String> fieldNames;
     //private List<Object> fieldValues;
     private CohortDetailsSW sw;
     private final JPanel content;
@@ -108,8 +107,6 @@ public class CohortDetailedView extends DetailedView {
     }
     
     public CohortDetailedView() {
-        fieldNames = MedSavantDatabase.getInstance().getPatientTableSchema().getFieldAliases();
-        
         content = this.getContentPanel();
         
         details = ViewUtil.getClearPanel();

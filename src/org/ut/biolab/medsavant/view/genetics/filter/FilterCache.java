@@ -40,15 +40,11 @@ public class FilterCache {
     
     private static Timestamp lastDateVariant;
     private static Timestamp lastDateCohort;
-    private static Timestamp lastDatePatient;
-    private static Timestamp lastDatePhenotype;
     private static Timestamp lastDateGeneList;
     private static Timestamp lastDateSift;
     
     private static boolean retrieveVariant = false;
     private static boolean retrieveCohort = false;
-    private static boolean retrievePatient = false;
-    private static boolean retrievePhenotype = false;
     private static boolean retrieveGeneList = false;
     private static boolean retrieveSift = false;
     
@@ -61,8 +57,6 @@ public class FilterCache {
             Map<String, Timestamp> timeMap = QueryUtil.getUpdateTimesForCache();
             lastDateVariant = timeMap.get(MedSavantDatabase.getInstance().getVariantTableSchema().getTable().getTableNameSQL());
             lastDateCohort = timeMap.get(MedSavantDatabase.getInstance().getCohortTableSchema().getTable().getTableNameSQL());
-            lastDatePatient = timeMap.get(MedSavantDatabase.getInstance().getPatientTableSchema().getTable().getTableNameSQL());
-            lastDatePhenotype = timeMap.get(MedSavantDatabase.getInstance().getPhenotypeTableSchema().getTable().getTableNameSQL());
             lastDateGeneList = timeMap.get(MedSavantDatabase.getInstance().getGeneListTableSchema().getTable().getTableNameSQL());
             lastDateSift = timeMap.get(MedSavantDatabase.getInstance().getVariantSiftTableSchema().getTable().getTableNameSQL());
         } catch (SQLException ex) {
@@ -72,8 +66,6 @@ public class FilterCache {
         }
         if(lastDateVariant == null) lastDateVariant = Timestamp.valueOf("3000-01-01 01:01:01"); //unreachable date, ensures always new
         if(lastDateCohort == null) lastDateCohort = Timestamp.valueOf("3000-01-01 01:01:01");
-        if(lastDatePatient == null) lastDatePatient = Timestamp.valueOf("3000-01-01 01:01:01");
-        if(lastDatePhenotype == null) lastDatePhenotype = Timestamp.valueOf("3000-01-01 01:01:01");
         if(lastDateGeneList == null) lastDateGeneList = Timestamp.valueOf("3000-01-01 01:01:01"); 
         if(lastDateSift == null) lastDateSift = Timestamp.valueOf("3000-01-01 01:01:01"); 
         
@@ -94,8 +86,6 @@ public class FilterCache {
             String[] lineArray = line.split("\t");
             if(!lastDateVariant.after(new Timestamp(Long.parseLong(lineArray[0])))) retrieveVariant = true;
             if(!lastDateCohort.after(new Timestamp(Long.parseLong(lineArray[1])))) retrieveCohort = true;
-            if(!lastDatePatient.after(new Timestamp(Long.parseLong(lineArray[2])))) retrievePatient = true;
-            if(!lastDatePhenotype.after(new Timestamp(Long.parseLong(lineArray[3])))) retrievePhenotype = true;
             if(!lastDateGeneList.after(new Timestamp(Long.parseLong(lineArray[4])))) retrieveGeneList = true;
             if(!lastDateSift.after(new Timestamp(Long.parseLong(lineArray[5])))) retrieveSift = true;
             
@@ -122,6 +112,9 @@ public class FilterCache {
     }
     
     private static boolean retrieveTable(String tableName){
+        //todo:dbref
+        return false;
+        /*
         if(tableName.equals(MedSavantDatabase.getInstance().getVariantTableSchema().getTable().getTableNameSQL())){
             return retrieveVariant;
         } else if(tableName.equals(MedSavantDatabase.getInstance().getCohortTableSchema().getTable().getTableNameSQL())){
@@ -136,6 +129,8 @@ public class FilterCache {
             return retrieveSift;
         }
         return false;
+         * 
+         */
     }
     
     public static synchronized List<String> getDefaultValues(String filterName){        
@@ -181,8 +176,6 @@ public class FilterCache {
             //write timestamps
             out.write(String.valueOf(lastDateVariant.getTime()) + "\t");
             out.write(String.valueOf(lastDateCohort.getTime()) + "\t");
-            out.write(String.valueOf(lastDatePatient.getTime()) + "\t");
-            out.write(String.valueOf(lastDatePhenotype.getTime()) + "\t");
             out.write(String.valueOf(lastDateGeneList.getTime()) + "\t");
             out.write(String.valueOf(lastDateSift.getTime()));
             out.newLine();

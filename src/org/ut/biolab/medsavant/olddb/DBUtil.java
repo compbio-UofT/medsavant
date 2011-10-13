@@ -5,49 +5,27 @@
 package org.ut.biolab.medsavant.olddb;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.CreateTableQuery;
-import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import org.ut.biolab.medsavant.vcf.VCFParser;
-import org.ut.biolab.medsavant.vcf.VariantRecord;
-import org.ut.biolab.medsavant.vcf.VariantSet;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.broad.tabix.TabixReader;
 import org.ut.biolab.medsavant.olddb.table.CohortTableSchema;
-import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.olddb.table.ModifiableColumn;
-import org.ut.biolab.medsavant.olddb.table.PatientTableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema.ColumnType;
-import org.ut.biolab.medsavant.olddb.table.VariantAnnotationGatkTableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantAnnotationPolyphenTableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantAnnotationSiftTableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
@@ -205,9 +183,13 @@ public class DBUtil {
 
 
         try {
+            
+            //TODO:DBREF
+            
+            /*
             Connection conn = ConnectionController.connect();
             
-            String sql1 = "DELETE FROM " + PatientTableSchema.TABLE_NAME
+            String sql1 = "DELETE FROM " +  PatientTableSchema.TABLE_NAME
                     + " WHERE " + PatientTableSchema.DBFIELDNAME_PATIENTID + "=?";
             PreparedStatement pstmt1 = conn.prepareStatement(sql1);
 
@@ -227,53 +209,12 @@ public class DBUtil {
 
             conn.commit();
             conn.setAutoCommit(true);
+             * 
+             */
 
         } catch (Exception ex) {
             Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-    
-    public static void addPatient(List<ModifiableColumn> cols, List<String> values){
-        //TODO: make sure row doesn't already exist.
-        TableSchema t = MedSavantDatabase.getInstance().getPatientTableSchema();
-        InsertQuery is = new InsertQuery(t.getTable());
-        
-        for(int i = 0; i < cols.size(); i++){
-            ModifiableColumn c = cols.get(i);
-            String s = values.get(i);          
-            if(s == null || s.equals("")){
-                continue;
-            }
-            switch(c.getType()){
-                case BOOLEAN:
-                    is.addColumn(t.getDBColumn(c.getShortName()), Boolean.getBoolean(s));
-                    break;
-                case DATE:
-                    is.addColumn(t.getDBColumn(c.getShortName()), Date.valueOf(s));
-                    break;
-                case DECIMAL:
-                    is.addColumn(t.getDBColumn(c.getShortName()), Double.parseDouble(s));
-                    break;
-                case FLOAT:
-                    is.addColumn(t.getDBColumn(c.getShortName()), Float.parseFloat(s));
-                    break;
-                case INTEGER:
-                    is.addColumn(t.getDBColumn(c.getShortName()), Integer.parseInt(s));
-                    break;
-                case VARCHAR:
-                    is.addColumn(t.getDBColumn(c.getShortName()), s);
-                    break;                
-            }
-        }
-        
-        try {
-            Statement s = ConnectionController.connect().createStatement();
-            s.executeUpdate(is.toString());
-        } catch (NonFatalDatabaseException ex) {
-            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(DBUtil.class.getName()).log(Level.SEVERE, null, ex);
-        }   
     }
     
     public static void addCohort(String cohort_name) {

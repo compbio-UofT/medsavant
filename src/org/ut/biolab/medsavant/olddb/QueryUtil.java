@@ -34,8 +34,6 @@ import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GenomeTableSchema;
-import org.ut.biolab.medsavant.olddb.table.PatientTableSchema;
-import org.ut.biolab.medsavant.olddb.table.PhenotypeTableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.olddb.table.VariantAnnotationSiftTableSchema;
@@ -249,18 +247,14 @@ public class QueryUtil {
     }*/
     
     public static List<String> getDistinctPatientIDs() throws SQLException, NonFatalDatabaseException {
-                return QueryUtil.getDistinctValuesForColumn(
-                    ConnectionController.connect(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_PATIENTID));
+                
+        //TODO:dbref
+        return new ArrayList<String>();
     }
 
     public static List<Vector> getPatientRecord(String pid) throws NonFatalDatabaseException, SQLException {
-        return QueryUtil.getRecordsMatchingID(
-                    ConnectionController.connect(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema(),
-                    MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(PatientTableSchema.ALIAS_PATIENTID),
-                    pid);
+        //TODO:dbref
+        return new ArrayList<Vector>();
     }
     
     private static List<Vector> getRecordsMatchingID(Connection conn, TableSchema t, DbColumn col, String id) throws SQLException {
@@ -409,16 +403,27 @@ public class QueryUtil {
     }
     
     public static List<String> getDistinctValuesFromPatientTable(String columnAlias, boolean isNumeric) throws NonFatalDatabaseException, SQLException {
+        
+        //TODO:dbref
+        
         if(isNumeric){
+            return new ArrayList<String>();
+            /*
             return QueryUtil.getDistinctNumericValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getPatientTableSchema(),
                     MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(columnAlias));
+             * 
+             */
         } else {
+            return new ArrayList<String>();
+            /*
             return QueryUtil.getDistinctValuesForColumn(
                     ConnectionController.connect(),
                     MedSavantDatabase.getInstance().getPatientTableSchema(),
                     MedSavantDatabase.getInstance().getPatientTableSchema().getDBColumn(columnAlias));
+             * 
+             */
         }
     }
 
@@ -679,6 +684,10 @@ public class QueryUtil {
     
     public static List<String> getDNAIdsForIndividualsInCohort(String cohortName) throws NonFatalDatabaseException, SQLException {
         
+        //TODO:dbref
+        return new ArrayList<String>();
+        
+        /*
         int cohortId = getCohortIdFromCohortName(cohortName);
         
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
@@ -705,10 +714,16 @@ public class QueryUtil {
         }
         
         return results;
+         * 
+         */
     }
 
     public static List<String> getDNAIdsForGender(int gender) throws NonFatalDatabaseException, SQLException {
         
+        //todo:dbref
+        return new ArrayList<String>();
+        
+        /*
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
         DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNAID);
         DbColumn subjectGender = tsubject.getDBColumn(PatientTableSchema.ALIAS_GENDER);
@@ -727,11 +742,17 @@ public class QueryUtil {
             results.add(rs.getString(1));
         }
         
-        return results;      
+        return results;    
+         * 
+         */
     }
     
     public static List<String> getDNAIdsForList(TableSchema table, List<String> list, String columnAlias) throws NonFatalDatabaseException, SQLException {
         
+        //todo:dbref
+        return new ArrayList<String>();
+        
+        /*
         PatientTableSchema tpatient = MedSavantDatabase.getInstance().getPatientTableSchema();
         PhenotypeTableSchema tphenotype = MedSavantDatabase.getInstance().getPhenotypeTableSchema();
         DbColumn currentDNAId = tpatient.getDBColumn(PatientTableSchema.ALIAS_DNAID);
@@ -762,6 +783,8 @@ public class QueryUtil {
         }
         
         return results;  
+         * 
+         */
     }
     
     /*public static List<String> getDNAIdsForPatientList(List<String> list, String columnAlias) throws NonFatalDatabaseException, SQLException {
@@ -793,6 +816,10 @@ public class QueryUtil {
  
     public static List<String> getAllDNAIds() throws NonFatalDatabaseException, SQLException {
         
+        //todo:dbref
+        return new ArrayList<String>();
+        
+        /*
         PatientTableSchema tsubject = (PatientTableSchema) MedSavantDatabase.getInstance().getPatientTableSchema();
         DbColumn currentDNAId = tsubject.getDBColumn(PatientTableSchema.ALIAS_DNAID);     
 
@@ -810,6 +837,8 @@ public class QueryUtil {
         }
         
         return results;
+         * 
+         */
     }
 
     public static List<GenomicRegion> getGenomicRangesForRegionList(String geneListName) throws SQLException, NonFatalDatabaseException {
@@ -952,6 +981,10 @@ public class QueryUtil {
     
     public static List<String> getDNAIdsWithValuesInRange(TableSchema table, String columnName, Range r) throws NonFatalDatabaseException, SQLException {
         
+        return new ArrayList<String>();
+        //todo:dbref
+        
+        /*
         PatientTableSchema tpatient = MedSavantDatabase.getInstance().getPatientTableSchema();
         PhenotypeTableSchema tphenotype = MedSavantDatabase.getInstance().getPhenotypeTableSchema();
         DbColumn currentDNAId = tpatient.getDBColumn(PatientTableSchema.ALIAS_DNAID);
@@ -978,6 +1011,8 @@ public class QueryUtil {
         }
         
         return results; 
+         * 
+         */
     }
     
     /*public static List<String> getPatientsWithValuesInRange(String alias_any_numeric_field, Range r) throws NonFatalDatabaseException, SQLException {
@@ -1003,6 +1038,11 @@ public class QueryUtil {
     }*/
     
     public static List<Vector> getDistinctBasicPatientInfo(int limit) throws SQLException, NonFatalDatabaseException {
+        
+        //TODO:dbref
+        return new ArrayList<Vector>();
+        
+        /*
         TableSchema t = MedSavantDatabase.getInstance().getPatientTableSchema();
         Object[][] columnTypeIndices = {{1,null,ColumnType.VARCHAR},{2,null,ColumnType.VARCHAR},{3,null,ColumnType.VARCHAR}};
         //DbColumn[] cols = {t.getDBColumn(PatientTableSchema.ALIAS_INDEXID), t.getDBColumn(PatientTableSchema.ALIAS_DNA1), t.getDBColumn(PatientTableSchema.ALIAS_FAMNUM)};
@@ -1015,6 +1055,8 @@ public class QueryUtil {
             t.getDBColumn(PatientTableSchema.ALIAS_PATIENTID),
             Dir.ASCENDING,
             limit);
+         * 
+         */
     }
     
     public static Date getUpdateTimeForTable(String dbName, String tableName) throws SQLException, NonFatalDatabaseException {  
@@ -1059,6 +1101,10 @@ public class QueryUtil {
     
     public static Map<String, Timestamp> getUpdateTimesForCache() throws SQLException, NonFatalDatabaseException {  
         
+        //todo:dbref
+        return new HashMap<String,Timestamp>();
+        
+        /*
         String query = 
                 "SELECT TABLE_NAME, UPDATE_TIME " +
                 "FROM information_schema.tables " + 
@@ -1080,6 +1126,8 @@ public class QueryUtil {
             result.put(rs.getString(1), rs.getTimestamp(2));
         }
         return result;
+         * 
+         */
     }
     
     
