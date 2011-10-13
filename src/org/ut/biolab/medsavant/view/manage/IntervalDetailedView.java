@@ -7,9 +7,14 @@ package org.ut.biolab.medsavant.view.manage;
 import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -17,6 +22,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import org.ut.biolab.medsavant.db.model.RegionSet;
+import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
@@ -36,34 +43,37 @@ public class IntervalDetailedView extends DetailedView {
     private RegionDetailsSW sw;
     private final JPanel content;
     private final JPanel details;
+    private RegionSet regionSet;
     
     private int numRegionsInRegionList;
 
     @Override
     public void setMultipleSelections(List<Vector> selectedRows) {
-        System.err.println("Multiple selections of regions not supported yet!");
+        //System.err.println("Multiple selections of regions not supported yet!");
     }
     
     private class RegionDetailsSW extends SwingWorker {
-        private final String regionName;
+        private final RegionSet regionSet;
         private final int limit;
 
-        public RegionDetailsSW(String regionName, int limit) {
-            this.regionName = regionName;
+        public RegionDetailsSW(RegionSet regionSet, int limit) {
+            this.regionSet = regionSet;
             this.limit = limit;
         }
         
         @Override
         protected Object doInBackground() throws Exception {
-            numRegionsInRegionList = QueryUtil.getNumRegionsInRegionSet(regionName);
-            List<Vector> regionList = QueryUtil.getRegionsInRegionSet(regionName,limit);
+            //numRegionsInRegionList = QueryUtil.getNumRegionsInRegionSet(regionName);
+            //List<Vector> regionList = QueryUtil.getRegionsInRegionSet(regionName,limit);
+            numRegionsInRegionList = RegionQueryUtil.getNumberRegions(regionSet.getId());
+            List<String> regionList = RegionQueryUtil.getRegionsInRegionSet(regionSet.getId(), limit);
             return regionList;
         }
         
         @Override
         protected void done() {
             try {
-                List<Vector> result = (List<Vector>) get();
+                List<String> result = (List<String>) get();
                 setRegionList(result);
                 
             } catch (Exception ex) {
@@ -73,7 +83,7 @@ public class IntervalDetailedView extends DetailedView {
         
     }
 
-    public synchronized void setRegionList(List<Vector> regions) {
+    public synchronized void setRegionList(List<String> regions) {
 
         details.removeAll();
         
@@ -94,10 +104,10 @@ public class IntervalDetailedView extends DetailedView {
         details.add(h1,BorderLayout.NORTH);
         
         DefaultListModel lm = new DefaultListModel();
-        for (Vector v : regions) {
+        for (String region : regions) {
             //JLabel l = new JLabel(v.get(1).toString()); 
             //l.setForeground(Color.white);
-            lm.addElement((String) v.get(GeneListViewTableSchema.INDEX_DESCRIPTION-1));
+            lm.addElement(region);
         }
         JList list = (JList) ViewUtil.clear(new JList(lm));
         list.setBackground(ViewUtil.getDetailsBackgroundColor());
@@ -116,7 +126,22 @@ public class IntervalDetailedView extends DetailedView {
         
         details = ViewUtil.getClearPanel();
         
-        this.addBottomComponent(new JButton("Delete region list"));
+        JButton deleteButton = new JButton("Delete region list");
+        deleteButton.setOpaque(false);
+        deleteButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(regionSet != null){
+                    try {
+                        RegionQueryUtil.removeRegionList(regionSet.getId());
+                    } catch (SQLException ex) {
+                        Logger.getLogger(IntervalDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    parent.refresh();
+                }
+            }
+        });
+        
+        this.addBottomComponent(deleteButton);
         
         content.setLayout(new BorderLayout());
         
@@ -127,8 +152,9 @@ public class IntervalDetailedView extends DetailedView {
     public void setSelectedItem(Vector item) {
         
         
-        String regionListName = (String) item.get(0);
-        setTitle(regionListName);
+        RegionSet regionList = (RegionSet) item.get(0);
+        setTitle(regionList.getName());
+        this.regionSet = regionList;
         
         details.removeAll();
         details.updateUI();
@@ -136,7 +162,7 @@ public class IntervalDetailedView extends DetailedView {
         if (sw != null) {
             sw.cancel(true);
         }
-        sw = new RegionDetailsSW(regionListName,limitNumberOfRegionsShown);
+        sw = new RegionDetailsSW(regionList,limitNumberOfRegionsShown);
         sw.execute();
     }
     

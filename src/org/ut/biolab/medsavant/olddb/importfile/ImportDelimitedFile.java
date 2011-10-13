@@ -113,7 +113,14 @@ public class ImportDelimitedFile {
         CSVReader reader = getFileReader(path, separator);
 
         List<String[]> headerLines = getLinesFromReader(reader, numHeaderLines);
-        List<String[]> previewLines = getLinesFromReader(reader, numLines, fields);
+        List<String[]> previewLines = null;
+        try {
+            previewLines = getLinesFromReader(reader, numLines, fields);
+        } catch (Exception e){
+            System.out.println("XXX");
+            e.printStackTrace();
+        }
+        
         
         Object[] lines = new Object[2];
         lines[0] = headerLines;
@@ -154,6 +161,8 @@ public class ImportDelimitedFile {
         for (int i = 0; i < numLines; i++) {
             try {
                 String[] line = reader.readNext();
+                
+                if(line == null) break;
 
                 if (fields == null) {
                     lines.add(line);

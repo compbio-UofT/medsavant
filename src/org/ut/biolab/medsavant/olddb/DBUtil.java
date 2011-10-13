@@ -269,62 +269,7 @@ public class DBUtil {
         }
     }
 
-    public static void addGeneListToDatabase(String geneListName, Iterator<String[]> i) throws NonFatalDatabaseException, SQLException {
-
-        Connection conn = ConnectionController.connect();
-
-        // create gene list
-        TableSchema geneListTable = MedSavantDatabase.getInstance().getGeneListTableSchema();
-        InsertQuery q0 = new InsertQuery(geneListTable.getTable());
-        
-        q0.addColumn(geneListTable.getDBColumn(GeneListTableSchema.ALIAS_NAME), geneListName);
-
-        Statement s0 = conn.createStatement();
-
-        s0.executeUpdate(q0.toString());
-
-        SelectQuery q1 = new SelectQuery();
-
-        q1.addFromTable(geneListTable.getTable());
-        q1.addAllColumns();
-        q1.addCondition(new BinaryCondition(BinaryCondition.Op.EQUAL_TO,
-                geneListTable.getDBColumn(GeneListTableSchema.ALIAS_NAME),
-                geneListName));
-
-        Statement s1 = conn.createStatement();
-
-        ResultSet r1 = s1.executeQuery(q1.toString());
-        r1.next();
-
-        int genelistid = r1.getInt(GeneListTableSchema.DBFIELDNAME_ID);
-
-        conn.setAutoCommit(false);
-
-        InsertQuery q2;
-        Statement s2;
-
-        TableSchema glmembership = MedSavantDatabase.getInstance().getGeneListMembershipTableSchema();
-
-        while (i.hasNext()) {
-
-            String[] line = i.next();
-
-            q2 = new InsertQuery(glmembership.getTable());
-            q2.addColumn(glmembership.getDBColumn(GeneListMembershipTableSchema.ALIAS_REGIONSETID), genelistid);
-            //TODO: dont hard code! Get from the user!!
-            q2.addColumn(glmembership.getDBColumn(GeneListMembershipTableSchema.ALIAS_GENOMEID), 1);
-            q2.addColumn(glmembership.getDBColumn(GeneListMembershipTableSchema.ALIAS_CHROM), line[0]);
-            q2.addColumn(glmembership.getDBColumn(GeneListMembershipTableSchema.ALIAS_START), line[1]);
-            q2.addColumn(glmembership.getDBColumn(GeneListMembershipTableSchema.ALIAS_END), line[2]);
-            q2.addColumn(glmembership.getDBColumn(GeneListMembershipTableSchema.ALIAS_DESCRIPTION), line[3]);
-
-            s2 = conn.createStatement();
-
-            s2.executeUpdate(q2.toString());
-        }
-
-        conn.commit();
-        conn.setAutoCommit(true);
+    
 
         /**
          * TODO: all this!
@@ -369,7 +314,7 @@ public class DBUtil {
         // put genes into gene list
          * 
          */
-    }
+    //}
     
     public static void executeUpdate(String sql) throws SQLException, NonFatalDatabaseException {
         Connection conn = ConnectionController.connect();
