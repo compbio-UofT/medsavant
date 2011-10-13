@@ -21,6 +21,7 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.model.Chromosome;
+import org.ut.biolab.medsavant.db.util.DBUtil;
 
 /**
  *
@@ -114,6 +115,7 @@ public class NewReferenceDialog extends javax.swing.JDialog {
                 throw new Exception(); //centromere can't be greater than length
             }
 
+            names.add(name);
             result.add(new Chromosome(name, null, centromere, length));
         }
         return result;
@@ -250,7 +252,9 @@ public class NewReferenceDialog extends javax.swing.JDialog {
             String referenceName = this.text_reference_name.getText();
             List<Chromosome> contigs = getContigs();
 
-            if (org.ut.biolab.medsavant.db.util.DBUtil.containsReference(referenceName)) {
+            if (referenceName == null || referenceName.equals("")){
+                JOptionPane.showMessageDialog(this, "Reference name required");
+            } else if (org.ut.biolab.medsavant.db.util.DBUtil.containsReference(referenceName)) {
                 JOptionPane.showMessageDialog(this, "Reference already exists");
             } else {
                 ReferenceController.getInstance().addReference(referenceName, contigs);
@@ -259,8 +263,10 @@ public class NewReferenceDialog extends javax.swing.JDialog {
         } catch (SQLException ex) {
             ex.printStackTrace();
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "There was a problem reading your contig values", "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, 
+                    "<HTML>There was a problem reading your contig values.<BR>"
+                    + "Make sure there are no duplicate names, length and centromere contain only numbers, <BR>"
+                    + "and centromere &lt; length.</HTML>");
         }
 
     }//GEN-LAST:event_button_okActionPerformed
