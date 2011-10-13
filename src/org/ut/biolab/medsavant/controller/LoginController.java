@@ -94,8 +94,8 @@ public class LoginController {
     }
 
     private static void fireLoginEvent(LoginEvent evt) {
-        for (LoginListener l : loginListeners) {
-            l.loginEvent(evt);
+        for(int i = loginListeners.size()-1; i >= 0; i--){
+            loginListeners.get(i).loginEvent(evt);
         }
     }
 

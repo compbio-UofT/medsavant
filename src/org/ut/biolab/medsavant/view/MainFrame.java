@@ -70,10 +70,11 @@ public class MainFrame extends JFrame implements LoginListener{
             view.remove(sessionView);
         }
         
-        //if (loginView == null) {
-            loginView = new LoginView();
-            view.add(loginView, LOGIN_CARD_NAME);
-        //}
+        if(loginView != null){
+            LoginController.removeLoginListener(loginView.getLoginForm());
+        }
+        loginView = new LoginView();
+        view.add(loginView, LOGIN_CARD_NAME);
         
         logOutItem.setEnabled(false);
         //manageDBItem.setEnabled(false);

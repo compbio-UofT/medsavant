@@ -20,6 +20,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 public class LoginView extends JPanel {
+    
+    private LoginForm loginForm;
 
     public LoginView() {
         //this.setBackground(ViewUtil.getDarkColor());
@@ -28,7 +30,8 @@ public class LoginView extends JPanel {
 
     private void initView() {
         this.setLayout(new BorderLayout());
-        this.add(new LoginForm(),BorderLayout.CENTER);
+        this.loginForm = new LoginForm();
+        this.add(loginForm,BorderLayout.CENTER);
         //this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         //this.add(Box.createVerticalGlue());
         //JPanel p = new JPanel();
@@ -42,6 +45,9 @@ public class LoginView extends JPanel {
         //this.add(Box.createVerticalGlue());
     }
 
+    public LoginForm getLoginForm(){
+        return this.loginForm;
+    }
     /*
     @Override
     public void paintComponent(Graphics g) {
