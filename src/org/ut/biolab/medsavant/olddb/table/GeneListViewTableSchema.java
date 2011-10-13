@@ -28,7 +28,7 @@ public class GeneListViewTableSchema extends TableSchema {
     public static final String ALIAS_END = "End";
     public static final String ALIAS_DESCRIPTION = "Description";
     
-    public static final String DBFIELDNAME_REGIONSETID = "regionset_id";
+    public static final String DBFIELDNAME_REGIONSETID = "region_set_id";
     public static final String DBFIELDNAME_GENOMEID = "genome_id";
     public static final String DBFIELDNAME_CHROM = "chrom";
     public static final String DBFIELDNAME_START = "start";

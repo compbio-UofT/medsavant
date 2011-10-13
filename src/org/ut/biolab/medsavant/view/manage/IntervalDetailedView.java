@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -16,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
@@ -123,6 +125,8 @@ public class IntervalDetailedView extends DetailedView {
     
     @Override
     public void setSelectedItem(Vector item) {
+        
+        
         String regionListName = (String) item.get(0);
         setTitle(regionListName);
         
