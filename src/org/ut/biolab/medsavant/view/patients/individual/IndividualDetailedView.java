@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.Cohort;
@@ -168,6 +169,12 @@ public class IndividualDetailedView extends DetailedView {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(patientIds != null && patientIds.length > 0){
+                    int result = JOptionPane.showConfirmDialog(
+                            null,
+                            "Are you sure you want to delete these individuals?\nThis cannot be undone.",
+                            "Confirm", 
+                            JOptionPane.YES_NO_OPTION);
+                    if (result != JOptionPane.YES_OPTION) return;
                     try {
                         PatientQueryUtil.removePatient(ProjectController.getInstance().getCurrentProjectId(), patientIds);
                     } catch (SQLException ex) {

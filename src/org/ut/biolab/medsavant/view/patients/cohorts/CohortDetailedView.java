@@ -23,6 +23,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.ut.biolab.medsavant.db.model.Cohort;
@@ -206,6 +207,12 @@ public class CohortDetailedView extends DetailedView {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(cohorts != null && cohorts.length > 0){
+                    int result = JOptionPane.showConfirmDialog(
+                            null,
+                            "Are you sure you want to delete these cohorts?\nThis cannot be undone.",
+                            "Confirm", 
+                            JOptionPane.YES_NO_OPTION);
+                    if (result != JOptionPane.YES_OPTION) return;
                     try {
                         CohortQueryUtil.removeCohorts(cohorts);
                     } catch (SQLException ex) {

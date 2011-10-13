@@ -20,6 +20,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.ut.biolab.medsavant.db.model.RegionSet;
@@ -131,6 +132,12 @@ public class IntervalDetailedView extends DetailedView {
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(regionSet != null){
+                    int result = JOptionPane.showConfirmDialog(
+                            null,
+                            "Are you sure you want to delete " + regionSet.getName() + "?\nThis cannot be undone.",
+                            "Confirm", 
+                            JOptionPane.YES_NO_OPTION);
+                    if (result != JOptionPane.YES_OPTION) return;
                     try {
                         RegionQueryUtil.removeRegionList(regionSet.getId());
                     } catch (SQLException ex) {
