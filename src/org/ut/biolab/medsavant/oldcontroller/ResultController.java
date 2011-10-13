@@ -5,28 +5,8 @@
 
 package org.ut.biolab.medsavant.oldcontroller;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
-import org.ut.biolab.medsavant.olddb.DBUtil;
-import org.ut.biolab.medsavant.olddb.table.TableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantAnnotationGatkTableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantAnnotationPolyphenTableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantAnnotationSiftTableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.util.Util;
 
 /**
  *

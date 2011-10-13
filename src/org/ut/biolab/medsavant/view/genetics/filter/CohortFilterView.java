@@ -38,7 +38,6 @@ import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 
 /**
  *

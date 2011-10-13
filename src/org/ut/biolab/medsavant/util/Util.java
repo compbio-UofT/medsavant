@@ -16,7 +16,6 @@ import java.util.Vector;
 import javax.swing.JButton;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.model.record.FileRecord;
-import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 
 /**
@@ -29,23 +28,6 @@ public class Util {
         Vector v = new Vector(l.size());
         v.addAll(l);
         return v;
-    }
-
-    public static Vector convertVariantRecordsToVectors(List<VariantRecord> list) {
-        Vector result = new Vector(); 
-        for (VariantRecord r : list) {
-            Vector v = VariantRecordModel.convertToVector(r);
-            result.add(v);
-        }
-        return result;
-    }
-
-    public static Vector convertVectorsToVariantRecords(List<Vector> dbResults) {
-        Vector result = new Vector();
-        for (Vector dbResult : dbResults) {
-            result.add(convertToVariantRecord(dbResult));
-        }
-        return result;
     }
 
     public static Vector getFileRecordVector(List<FileRecord> list) {

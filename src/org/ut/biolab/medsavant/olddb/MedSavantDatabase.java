@@ -15,9 +15,6 @@ import org.ut.biolab.medsavant.olddb.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GenomeTableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantAnnotationGatkTableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantAnnotationPolyphenTableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantAnnotationSiftTableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 
 /**
@@ -31,9 +28,6 @@ public class MedSavantDatabase {
     private static MedSavantDatabase instance;
 
     private VariantTableSchema variantTableSchema;  
-    private VariantAnnotationSiftTableSchema variantSiftTableSchema;
-    private VariantAnnotationPolyphenTableSchema variantPolyphenTableSchema;
-    private VariantAnnotationGatkTableSchema variantGatkTableSchema;
     
     private AlignmentTableSchema alignmentTableSchema;
     private CohortViewTableSchema cohortviewTableSchema;
@@ -68,9 +62,6 @@ public class MedSavantDatabase {
     private void initTableSchemas() {
         
         variantTableSchema = new VariantTableSchema(schema);    
-        variantSiftTableSchema = new VariantAnnotationSiftTableSchema(schema);
-        variantPolyphenTableSchema = new VariantAnnotationPolyphenTableSchema(schema);
-        variantGatkTableSchema = new VariantAnnotationGatkTableSchema(schema);
         
         cohortviewTableSchema = new CohortViewTableSchema(schema);
         cohortTableSchema = new CohortTableSchema(schema);
@@ -83,18 +74,6 @@ public class MedSavantDatabase {
 
     public VariantTableSchema getVariantTableSchema() {
         return this.variantTableSchema;
-    }
-    
-    public VariantAnnotationSiftTableSchema getVariantSiftTableSchema() {
-        return this.variantSiftTableSchema;
-    }
-    
-    public VariantAnnotationPolyphenTableSchema getVariantPolyphenTableSchema() {
-        return this.variantPolyphenTableSchema;
-    }
-    
-    public VariantAnnotationGatkTableSchema getVariantGatkTableSchema() {
-        return this.variantGatkTableSchema;
     }
     
     public TableSchema getCohortViewTableSchema() {

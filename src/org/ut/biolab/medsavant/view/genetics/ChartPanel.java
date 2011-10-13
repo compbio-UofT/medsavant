@@ -54,7 +54,6 @@ import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.view.genetics.charts.ChartFrequencyMap;
 import org.ut.biolab.medsavant.view.genetics.charts.FrequencyEntry;

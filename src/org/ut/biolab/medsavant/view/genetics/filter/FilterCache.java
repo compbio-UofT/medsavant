@@ -41,12 +41,7 @@ public class FilterCache {
     private static Timestamp lastDateVariant;
     private static Timestamp lastDateCohort;
     private static Timestamp lastDateGeneList;
-    private static Timestamp lastDateSift;
     
-    private static boolean retrieveVariant = false;
-    private static boolean retrieveCohort = false;
-    private static boolean retrieveGeneList = false;
-    private static boolean retrieveSift = false;
     
     public static void retrieveCache(){
         
@@ -58,7 +53,6 @@ public class FilterCache {
             lastDateVariant = timeMap.get(MedSavantDatabase.getInstance().getVariantTableSchema().getTable().getTableNameSQL());
             lastDateCohort = timeMap.get(MedSavantDatabase.getInstance().getCohortTableSchema().getTable().getTableNameSQL());
             lastDateGeneList = timeMap.get(MedSavantDatabase.getInstance().getGeneListTableSchema().getTable().getTableNameSQL());
-            lastDateSift = timeMap.get(MedSavantDatabase.getInstance().getVariantSiftTableSchema().getTable().getTableNameSQL());
         } catch (SQLException ex) {
             Logger.getLogger(FilterCache.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NonFatalDatabaseException ex) {
@@ -67,7 +61,6 @@ public class FilterCache {
         if(lastDateVariant == null) lastDateVariant = Timestamp.valueOf("3000-01-01 01:01:01"); //unreachable date, ensures always new
         if(lastDateCohort == null) lastDateCohort = Timestamp.valueOf("3000-01-01 01:01:01");
         if(lastDateGeneList == null) lastDateGeneList = Timestamp.valueOf("3000-01-01 01:01:01"); 
-        if(lastDateSift == null) lastDateSift = Timestamp.valueOf("3000-01-01 01:01:01"); 
         
         //get cache file
         File cacheDir = new File(CACHE_DIR);
@@ -84,10 +77,6 @@ public class FilterCache {
             //check which tables are valid
             String line = bufferedReader.readLine();
             String[] lineArray = line.split("\t");
-            if(!lastDateVariant.after(new Timestamp(Long.parseLong(lineArray[0])))) retrieveVariant = true;
-            if(!lastDateCohort.after(new Timestamp(Long.parseLong(lineArray[1])))) retrieveCohort = true;
-            if(!lastDateGeneList.after(new Timestamp(Long.parseLong(lineArray[4])))) retrieveGeneList = true;
-            if(!lastDateSift.after(new Timestamp(Long.parseLong(lineArray[5])))) retrieveSift = true;
             
             //parse entries
             while((line = bufferedReader.readLine()) != null){
@@ -177,7 +166,6 @@ public class FilterCache {
             out.write(String.valueOf(lastDateVariant.getTime()) + "\t");
             out.write(String.valueOf(lastDateCohort.getTime()) + "\t");
             out.write(String.valueOf(lastDateGeneList.getTime()) + "\t");
-            out.write(String.valueOf(lastDateSift.getTime()));
             out.newLine();
             
             //write each filter and value set

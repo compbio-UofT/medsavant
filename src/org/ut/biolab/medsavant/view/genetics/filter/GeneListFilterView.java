@@ -32,7 +32,6 @@ import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.model.record.VariantRecordModel;
 
 /**
  *

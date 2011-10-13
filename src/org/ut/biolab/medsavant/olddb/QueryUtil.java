@@ -36,13 +36,11 @@ import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GenomeTableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema.ColumnType;
-import org.ut.biolab.medsavant.olddb.table.VariantAnnotationSiftTableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.record.BEDRecord;
 import org.ut.biolab.medsavant.model.GenomicRegion;
-import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 
 /**
