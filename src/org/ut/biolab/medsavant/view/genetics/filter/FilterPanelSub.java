@@ -90,7 +90,7 @@ public class FilterPanelSub extends JPanel{
         titlePanel.add(addLabel);
                 
         final JLabel removeLabel = new JLabel(" X ");
-        addLabel.setToolTipText("Remove sub query and all contained filters");
+        removeLabel.setToolTipText("Remove sub query and all contained filters");
         removeLabel.setForeground(Color.white);
         removeLabel.setBackground(BAR_COLOUR);
         removeLabel.setOpaque(true);
