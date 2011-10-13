@@ -10,15 +10,25 @@
  */
 package org.ut.biolab.medsavant.view.manage;
 
+import java.awt.Cursor;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.db.model.Chromosome;
 
 /**
  *
  * @author mfiume
  */
 public class NewReferenceDialog extends javax.swing.JDialog {
+    
+    private DefaultTableModel model;
 
     /** Creates new form NewProjectDialog */
     public NewReferenceDialog(java.awt.Frame parent, boolean modal) {
@@ -27,6 +37,86 @@ public class NewReferenceDialog extends javax.swing.JDialog {
         initComponents();
         this.getRootPane().setDefaultButton(this.button_ok);
         this.setLocationRelativeTo(parent);
+         
+        
+        //setup table
+        model = new DefaultTableModel(){
+            @Override
+            public boolean isCellEditable(int row, int col) {  
+                return true;        
+            }  
+        };
+        model.addColumn("Contig Name");
+        model.addColumn("Length");
+        model.addColumn("Centromere Position");
+        
+        for(Chromosome c : Chromosome.getDefaultChromosomes()){
+            model.addRow(new Object[]{c.getName(), c.getLength(), c.getCentromerepos()});
+        }
+        
+        table.setModel(model);
+        table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        
+        
+        //setup addRowButton
+        addRowButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        addRowButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                addRow();
+            }
+        });
+        
+        
+        //setup clearButton
+        clearButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        clearButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                clearTable();
+            }
+        });
+        
+    }
+    
+    private void addRow(){
+        model.addRow(new Object[3]);
+        table.setModel(model);
+    }
+    
+    private void clearTable(){
+        for(int i = 0; i < model.getRowCount(); i++){
+            for(int j = 0; j < model.getColumnCount(); j++){
+                model.setValueAt(null, i, j);
+            }
+        }
+        table.setModel(model);
+    }
+    
+    private List<Chromosome> getContigs() throws NumberFormatException, Exception {
+        List<Chromosome> result = new ArrayList<Chromosome>();
+        List<String> names = new ArrayList<String>();
+        for(int i = 0; i < model.getRowCount(); i++){
+            
+            //contig name
+            String name = (String) model.getValueAt(i, 0);
+            if(name == null || name.equals("")) continue;
+            if(names.contains(name)){
+                throw new Exception(); //can't have duplicates
+            }
+            
+            //length
+            long length = Long.parseLong(model.getValueAt(i, 1).toString());
+            
+            //centromere
+            long centromere = Long.parseLong(model.getValueAt(i, 2).toString());
+            if(centromere > length){
+                throw new Exception(); //centromere can't be greater than length
+            }
+
+            result.add(new Chromosome(name, null, centromere, length));
+        }
+        return result;
     }
 
     /** This method is called from within the constructor to
@@ -42,6 +132,12 @@ public class NewReferenceDialog extends javax.swing.JDialog {
         text_reference_name = new javax.swing.JTextField();
         button_cancel = new javax.swing.JButton();
         button_ok = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        table = new javax.swing.JTable();
+        jLabel2 = new javax.swing.JLabel();
+        clearButton = new javax.swing.JLabel();
+        addRowButton = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
@@ -69,30 +165,68 @@ public class NewReferenceDialog extends javax.swing.JDialog {
             }
         });
 
+        table.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(table);
+
+        jLabel2.setText("Contig Information:");
+
+        clearButton.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        clearButton.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        clearButton.setText("clear");
+
+        addRowButton.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        addRowButton.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        addRowButton.setText("add row");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, text_reference_name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(text_reference_name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(button_ok)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(button_cancel)))
+                        .add(button_cancel))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 103, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 118, Short.MAX_VALUE)
+                        .add(addRowButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 64, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(clearButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(text_reference_name, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(text_reference_name, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel2)
+                    .add(clearButton)
+                    .add(addRowButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 338, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(button_cancel)
@@ -114,14 +248,18 @@ public class NewReferenceDialog extends javax.swing.JDialog {
     private void button_okActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_okActionPerformed
         try {
             String referenceName = this.text_reference_name.getText();
+            List<Chromosome> contigs = getContigs();
 
             if (org.ut.biolab.medsavant.db.util.DBUtil.containsReference(referenceName)) {
                 JOptionPane.showMessageDialog(this, "Reference already exists");
             } else {
-                ReferenceController.getInstance().addReference(referenceName);
+                ReferenceController.getInstance().addReference(referenceName, contigs);
                 this.dispose();
             }
         } catch (SQLException ex) {
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "There was a problem reading your contig values", "Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
 
@@ -146,9 +284,15 @@ public class NewReferenceDialog extends javax.swing.JDialog {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel addRowButton;
     private javax.swing.JButton button_cancel;
     private javax.swing.JButton button_ok;
+    private javax.swing.JLabel clearButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JTable table;
     private javax.swing.JTextField text_reference_name;
     // End of variables declaration//GEN-END:variables
 }

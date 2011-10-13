@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -41,9 +42,9 @@ public class ReferenceController {
     }
      * 
      */
-    public void addReference(String name) {
+    public void addReference(String name, List<Chromosome> contigs) {
         try {
-            org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil.addReference(name);
+            org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil.addReference(name, contigs);
             fireReferenceAddedEvent(name);
         } catch (SQLException ex) {
             ex.printStackTrace();

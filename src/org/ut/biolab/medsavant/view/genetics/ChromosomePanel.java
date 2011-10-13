@@ -16,7 +16,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.model.record.Chromosome;
+import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**

@@ -25,7 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import org.ut.biolab.medsavant.db.util.Cohort;
+import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.olddb.DBUtil;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;

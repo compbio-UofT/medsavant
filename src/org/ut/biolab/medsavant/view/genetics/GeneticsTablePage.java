@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
-import org.ut.biolab.medsavant.model.record.Chromosome;
+import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.dialog.SavantExportForm;

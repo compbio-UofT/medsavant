@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.model.record.Chromosome;
+import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.util.MedSwingWorker;
 import org.ut.biolab.medsavant.view.util.ViewUtil;

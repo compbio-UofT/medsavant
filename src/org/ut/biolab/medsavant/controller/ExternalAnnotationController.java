@@ -3,7 +3,7 @@ package org.ut.biolab.medsavant.controller;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.ut.biolab.medsavant.db.util.Annotation;
+import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 
 /**
