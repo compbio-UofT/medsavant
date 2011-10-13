@@ -67,36 +67,29 @@ public class VariantBooleanFilterView {
                     acceptableValues.add("0");
                 }
 
-                //if (acceptableValues.size() == boxes.size()) {
-                    //FilterController.removeFilter(columnname, queryId);
-                //} else {
-                    Filter f = new QueryFilter() {
+                Filter f = new QueryFilter() {
 
-                        @Override
-                        public Condition[] getConditions() {
-                            Condition[] results = new Condition[acceptableValues.size()];
-                            int i = 0;
-                            //DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnAlias));
-                            for (String s : acceptableValues) {
-                                results[i++] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "boolean", 1), s);
-                                //results[i++] = BinaryCondition.equalTo(tempCol, s);
-                            }
-                            return results;
+                    @Override
+                    public Condition[] getConditions() {
+                        Condition[] results = new Condition[acceptableValues.size()];
+                        int i = 0;
+                        for (String s : acceptableValues) {
+                            results[i++] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "boolean", 1), s);
                         }
+                        return results;
+                    }
 
-                        @Override
-                        public String getName() {
-                            return alias;
-                        }
-                        
-                        @Override
-                        public String getId() {
-                            return columnname;
-                        }                     
-                    };
-                    //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    FilterController.addFilter(f, queryId);
-               // }
+                    @Override
+                    public String getName() {
+                        return alias;
+                    }
+
+                    @Override
+                    public String getId() {
+                        return columnname;
+                    }                     
+                };
+                FilterController.addFilter(f, queryId);
 
                 //TODO: why does this not work? Freezes GUI
                 //apply.setEnabled(false);

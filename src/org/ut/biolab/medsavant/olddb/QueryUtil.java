@@ -1074,31 +1074,7 @@ public class QueryUtil {
         Date date = rs.getDate(1);
         return date;
     }
-    
-    /*
-     * Check the latest update time for any table that is used in FilterCache. 
-     */
-    /*public static Timestamp getMaxUpdateTimeForCache() throws SQLException, NonFatalDatabaseException {  
-        
-        String query = 
-                "SELECT MAX(UPDATE_TIME) " +
-                "FROM information_schema.tables " +
-                "WHERE TABLE_SCHEMA = '" + SettingsController.getInstance().getDBName() + "' " +
-                "AND (" + 
-                "TABLE_NAME = '" + MedSavantDatabase.getInstance().getPatientTableSchema().getTable().getTableNameSQL() + "' " + 
-                "OR TABLE_NAME = '" + MedSavantDatabase.getInstance().getVariantTableSchema().getTable().getTableNameSQL() + "' " + 
-                "OR TABLE_NAME = '" + MedSavantDatabase.getInstance().getCohortTableSchema().getTable().getTableNameSQL() + "' " + 
-                "OR TABLE_NAME = '" + MedSavantDatabase.getInstance().getPhenotypeTableSchema().getTable().getTableNameSQL() + "' " + 
-                "OR TABLE_NAME = '" + MedSavantDatabase.getInstance().getGeneListTableSchema().getTable().getTableNameSQL() + "' " + 
-                ")";
-        
-        Statement s = ConnectionController.connect().createStatement();             
-        ResultSet rs = s.executeQuery(query);
-        
-        rs.next();
-        Timestamp timestamp = rs.getTimestamp(1);
-        return timestamp;
-    }*/
+
     
     public static Map<String, Timestamp> getUpdateTimesForCache() throws SQLException, NonFatalDatabaseException {  
         

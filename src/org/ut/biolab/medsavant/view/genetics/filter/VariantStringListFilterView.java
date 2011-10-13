@@ -41,12 +41,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class VariantStringListFilterView {
     
-    //public static FilterView createFilterView(final TableSchema table, final String columnAlias) throws SQLException, NonFatalDatabaseException {
     public static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias) throws SQLException, NonFatalDatabaseException {
-    
-        //DbColumn col = table.getDBColumn(columnAlias);
-        Connection conn = ConnectionController.connect();
-        //boolean isVariantTableSchema = table.getTable().getTableNameSQL().equals(VariantTableSchema.TABLE_NAME);
 
         final List<String> uniq;
 
@@ -71,13 +66,6 @@ public class VariantStringListFilterView {
                     }));
         } 
         else {
-            //List<String> tmp = FilterCache.getDefaultValues(columnAlias);
-            //if(tmp == null){
-                //tmp = QueryUtil.getDistinctValuesForColumn(conn, table, col);
-            //} else {
-            //}
-            //FilterCache.addDefaultValues(table.getTable().getTableNameSQL(), columnAlias, tmp);
-            //uniq = tmp;
             uniq = VariantQueryUtil.getDistinctValuesForColumn(tablename, columnname);
         }
 
@@ -109,41 +97,30 @@ public class VariantStringListFilterView {
                     }
                 }
 
-                //if (acceptableValues.size() == boxes.size()) {
-                //    FilterController.removeFilter(columnname, queryId);
-                //} else {
-                    Filter f = new QueryFilter() {
+                Filter f = new QueryFilter() {
 
-                        @Override
-                        public Condition[] getConditions() {
-                            Condition[] results = new Condition[acceptableValues.size()];
-                            int i = 0;
-                            //DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnAlias));
-                            for (String s : acceptableValues) {
-                                //if(columnAlias.equals(VariantTableSchema.ALIAS_GT)){
-                                //    results[i++] = BinaryCondition.equalTo(MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(columnAlias), uniq.indexOf(s));
-                                //} else {
-                                    //results[i++] = BinaryCondition.equalTo(tempCol, s);                                           
-                                //}
-                                results[i++] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "varchar", 1), s);
-                            }
-                            return results;
+                    @Override
+                    public Condition[] getConditions() {
+                        Condition[] results = new Condition[acceptableValues.size()];
+                        int i = 0;
+                        for (String s : acceptableValues) {
+                            results[i++] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "varchar", 1), s);
                         }
+                        return results;
+                    }
 
-                        @Override
-                        public String getName() {
-                            return alias;
-                        }
+                    @Override
+                    public String getName() {
+                        return alias;
+                    }
 
-                        @Override
-                        public String getId() {
-                            return columnname;
-                        }
+                    @Override
+                    public String getId() {
+                        return columnname;
+                    }
 
-                    };
-                    //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    FilterController.addFilter(f, queryId);
-                //}
+                };
+                FilterController.addFilter(f, queryId);
 
                 //TODO: why does this not work? Freezes GUI
                 //apply.setEnabled(false);

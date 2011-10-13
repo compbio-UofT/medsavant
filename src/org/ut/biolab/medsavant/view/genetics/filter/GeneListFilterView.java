@@ -47,18 +47,13 @@ class GeneListFilterView {
     }
     
     private static List<String> getDefaultValues() {
-        List<String> list = FilterCache.getDefaultValues(FILTER_NAME);
-        if(list == null){
-            try {
-                list = QueryUtil.getDistinctGeneListNames();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                Logger.getLogger(GeneListFilterView.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } 
-        FilterCache.addDefaultValues(MedSavantDatabase.getInstance().getGeneListTableSchema().getTable().getTableNameSQL(), FILTER_NAME, list);
-        return list;
-    }   
+        try {
+            return QueryUtil.getDistinctGeneListNames();
+        } catch (Exception ex){
+            Logger.getLogger(GeneListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
 
     private static JComponent getContentPanel() {
 

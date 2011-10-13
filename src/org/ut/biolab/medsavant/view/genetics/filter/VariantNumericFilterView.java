@@ -46,13 +46,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class VariantNumericFilterView {
     
-    //public static FilterView createFilterView(final TableSchema table, final String columnAlias) throws SQLException, NonFatalDatabaseException {
     public static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias) throws SQLException, NonFatalDatabaseException {
-        
-        //DbColumn col = table.getDBColumn(columnAlias);
-        
-        //boolean isVariantTableSchema = table.getTable().getTableNameSQL().equals(VariantTableSchema.TABLE_NAME);
-        
+
         Range extremeValues = null;
 
         if (columnname.equals("position")) {
@@ -60,13 +55,7 @@ public class VariantNumericFilterView {
         } else if (columnname.equals("sb")) {
             extremeValues = new Range(-100,100);
         } else {
-            //extremeValues = FilterCache.getDefaultValuesRange(columnAlias);
-            //if(extremeValues == null){
-                //extremeValues = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, col);
-            //} else {
-            //}
             extremeValues = new Range(VariantQueryUtil.getExtremeValuesForColumn(tablename, columnname));
-            //FilterCache.addDefaultValues(table.getTable().getTableNameSQL(), columnAlias, extremeValues);
         }
 
         if (columnname.equals("dp")) {
@@ -192,11 +181,6 @@ public class VariantNumericFilterView {
                         @Override
                         public Condition[] getConditions() {
                             Condition[] results = new Condition[2];
-                            //results[0] = BinaryCondition.greaterThan(table.getDBColumn(columnAlias), getNumber(frombox.getText().replaceAll(",", "")), true);
-                            //results[1] = BinaryCondition.lessThan(table.getDBColumn(columnAlias), getNumber(tobox.getText().replaceAll(",", "")), true);
-                            //DbColumn tempCol = MedSavantDatabase.getInstance().getVariantTableSchema().createTempColumn(table.getDBColumn(columnname));
-                            //results[0] = BinaryCondition.greaterThan(tempCol, getNumber(frombox.getText().replaceAll(",", "")), true);
-                            //results[1] = BinaryCondition.lessThan(tempCol, getNumber(tobox.getText().replaceAll(",", "")), true);
                             results[0] = BinaryCondition.greaterThan(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "decimal", 1), getNumber(frombox.getText().replaceAll(",", "")), true);
                             results[1] = BinaryCondition.lessThan(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "decimal", 1), getNumber(tobox.getText().replaceAll(",", "")), true);
 

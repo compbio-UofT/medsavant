@@ -46,15 +46,10 @@ public class PatientNumericFilterView {
     }
     
     private static Range getDefaultValues(TableSchema table, String filterName, String patientDbCol) throws SQLException, NonFatalDatabaseException {      
-        Range extremeValues = FilterCache.getDefaultValuesRange(filterName);
-        if(extremeValues == null){
-            extremeValues = QueryUtil.getExtremeValuesForColumn(
+        return QueryUtil.getExtremeValuesForColumn(
                     ConnectionController.connect(),
                     table,
                     table.getDBColumn(patientDbCol));
-        } 
-        FilterCache.addDefaultValues(table.getTable().getTableNameSQL(), filterName, extremeValues);
-        return extremeValues;
     }
     
     public static double getNumber(String s) {

@@ -45,17 +45,12 @@ public class PatientStringListFilterView {
     }
     
     private static List<String> getDefaultValues(TableSchema table, String filterName, String dbCol) {
-        List<String> list = FilterCache.getDefaultValues(filterName);
-        if(list == null){
-            try {
-                list = QueryUtil.getDistinctValuesForColumn(ConnectionController.connect(), table, table.getDBColumn(dbCol));
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                Logger.getLogger(PatientStringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } 
-        FilterCache.addDefaultValues(table.getTable().getTableNameSQL(), filterName, list);
-        return list;
+        try {
+            return QueryUtil.getDistinctValuesForColumn(ConnectionController.connect(), table, table.getDBColumn(dbCol));
+        } catch (Exception ex) {
+            Logger.getLogger(PatientStringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
     
     private static JComponent getContentPanel(final TableSchema table, final String filterName, final String dbCol) {

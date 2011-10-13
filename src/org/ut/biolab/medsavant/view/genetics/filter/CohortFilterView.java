@@ -52,21 +52,7 @@ class CohortFilterView {
     static FilterView getCohortFilterView(int queryId) {
         return new FilterView("Cohort", getContentPanel(queryId));
     }
-    
-    /*private static List<String> getDefaultValues() {
-        List<String> list = FilterCache.getDefaultValues(FILTER_NAME);
-        if(list == null){
-            try {
-                list = QueryUtil.getDistinctCohortNames(-1);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } 
-        FilterCache.addDefaultValues(MedSavantDatabase.getInstance().getCohortTableSchema().getTable().getTableNameSQL(), FILTER_NAME, list);
-        return list;
-    }*/
-    
+
     public static List<Cohort> getDefaultValues() {
         try {
             return CohortQueryUtil.getCohorts(ProjectController.getInstance().getCurrentProjectId());
