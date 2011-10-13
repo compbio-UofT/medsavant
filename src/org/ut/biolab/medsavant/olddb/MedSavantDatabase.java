@@ -13,7 +13,6 @@ import org.ut.biolab.medsavant.olddb.table.CohortTableSchema;
 import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
-import org.ut.biolab.medsavant.olddb.table.GenomeTableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 
@@ -35,7 +34,6 @@ public class MedSavantDatabase {
     private GeneListTableSchema geneListTableSchema;
     private GeneListViewTableSchema geneListViewTableSchema;
     private GeneListMembershipTableSchema geneListMembershipTableSchema;
-    private GenomeTableSchema genomeTableSchema;
     //private PatientTableSchema patientTableSchema;
     
     public static void main(String[] argv) {
@@ -69,7 +67,6 @@ public class MedSavantDatabase {
         geneListViewTableSchema = new GeneListViewTableSchema(schema);
         geneListMembershipTableSchema = new GeneListMembershipTableSchema(schema);
         alignmentTableSchema = new AlignmentTableSchema(schema);
-        genomeTableSchema = new GenomeTableSchema(schema);
     }
 
     public VariantTableSchema getVariantTableSchema() {
@@ -99,9 +96,4 @@ public class MedSavantDatabase {
     public TableSchema getAlignmentTableSchema() {
         return alignmentTableSchema;
     }
-    
-    public TableSchema getGenomeTableSchema() {
-        return genomeTableSchema;
-    }
-    
 }

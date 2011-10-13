@@ -26,14 +26,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.olddb.table.AlignmentTableSchema;
 import org.ut.biolab.medsavant.olddb.table.CohortTableSchema;
 import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
-import org.ut.biolab.medsavant.olddb.table.GenomeTableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
@@ -917,6 +914,10 @@ public class QueryUtil {
     
     public static String getGenomeBAMPathForVersion(Connection c, String genomeVersion) throws SQLException, NonFatalDatabaseException {
         
+        //todo:dbref
+        throw new UnsupportedOperationException("dbref");
+        
+        /*
         TableSchema t = MedSavantDatabase.getInstance().getGenomeTableSchema();
         SelectQuery q = new SelectQuery();
         q.addColumns(t.getDBColumn(GenomeTableSchema.ALIAS_BAMPATH));
@@ -931,6 +932,8 @@ public class QueryUtil {
         } else {
             return "";
         }
+         * 
+         */
         
     }
 
