@@ -32,7 +32,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
+import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
@@ -299,14 +299,14 @@ public class HPOFilter {
                             for (Range range: ranges){
 
                                 BinaryCondition innerCond1 = BinaryCondition.greaterThan
-                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMin(), true);
+                                        (OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMin(), true);
                                 BinaryCondition innerCond2 = BinaryCondition.lessThan
-                                        (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMax(), true);
+                                        (OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMax(), true);
                                 BinaryCondition[] condTogether = {innerCond1, innerCond2};
                                 listInnerCond.add(ComboCondition.and(condTogether));
                             } // for each range for the chromosome of interest.
                             BinaryCondition chrCond = BinaryCondition.equalTo
-                                    (MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
+                                    (OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
                             conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
                         } // for each chromosome.
                         return conds;

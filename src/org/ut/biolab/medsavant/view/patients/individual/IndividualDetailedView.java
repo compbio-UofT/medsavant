@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.olddb.DBUtil;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
+import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.view.patients.DetailedView;

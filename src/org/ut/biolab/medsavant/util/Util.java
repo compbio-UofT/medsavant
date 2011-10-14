@@ -16,7 +16,7 @@ import java.util.Vector;
 import javax.swing.JButton;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.model.record.FileRecord;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
+import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 
 /**
  *
@@ -109,7 +109,7 @@ public class Util {
     
     public static VariantRecord convertToVariantRecord(Vector dbResult) {
         
-        VariantTableSchema V = (VariantTableSchema)MedSavantDatabase.getInstance().getVariantTableSchema();      
+        VariantTableSchema V = (VariantTableSchema)OMedSavantDatabase.getInstance().getVariantTableSchema();      
         //VariantAnnotationSiftTableSchema S = (VariantAnnotationSiftTableSchema)MedSavantDatabase.getInstance().getVariantSiftTableSchema();
         int i = 0;
         

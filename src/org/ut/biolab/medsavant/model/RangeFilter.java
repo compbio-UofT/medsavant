@@ -9,7 +9,7 @@ import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.util.List;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
+import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.model.Range;
@@ -37,8 +37,8 @@ public abstract class RangeFilter extends QueryFilter {
     
     public Condition[] getConditions(){
         Condition[] conditions = new Condition[ranges.getSize()];
-        DbColumn posCol = MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(VariantTableSchema.ALIAS_POSITION);      
-        DbColumn chrCol = MedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(VariantTableSchema.ALIAS_CHROM);   
+        DbColumn posCol = OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(VariantTableSchema.ALIAS_POSITION);      
+        DbColumn chrCol = OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(VariantTableSchema.ALIAS_CHROM);   
         Object[] chrs = ranges.getChrs();
         int pos = 0;
         for(Object o : chrs){

@@ -28,7 +28,7 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.oldcontroller.ResultController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
+import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.images.IconFactory;

@@ -53,8 +53,8 @@ import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import org.ut.biolab.medsavant.log.ClientLogger;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
-import org.ut.biolab.medsavant.olddb.table.TableSchema;
+import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 //import savant.controller.LocationController;
 //import savant.util.Range;
@@ -314,7 +314,7 @@ public class Viewer extends JSplitPane {
             }
         }
         
-        TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
+        TableSchema table = OMedSavantDatabase.getInstance().getVariantTableSchema();
         final DbColumn positionCol = table.getDBColumn(VariantTableSchema.ALIAS_POSITION);
         final DbColumn chromCol = table.getDBColumn(VariantTableSchema.ALIAS_CHROM);
     

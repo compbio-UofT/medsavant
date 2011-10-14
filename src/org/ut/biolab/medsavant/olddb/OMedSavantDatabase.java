@@ -13,18 +13,17 @@ import org.ut.biolab.medsavant.olddb.table.CohortTableSchema;
 import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
-import org.ut.biolab.medsavant.olddb.table.TableSchema;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 
 /**
  *
  * @author mfiume
  */
-public class MedSavantDatabase {
-
+public class OMedSavantDatabase {
     private final DbSpec spec;
     private final DbSchema schema;
-    private static MedSavantDatabase instance;
+    private static OMedSavantDatabase instance;
 
     private VariantTableSchema variantTableSchema;  
     
@@ -40,9 +39,9 @@ public class MedSavantDatabase {
         getInstance();
     }
 
-    public static MedSavantDatabase getInstance() {
+    public static OMedSavantDatabase getInstance() {
         if (instance == null) {
-            instance = new MedSavantDatabase();
+            instance = new OMedSavantDatabase();
         }
         return instance;
     }
@@ -51,7 +50,7 @@ public class MedSavantDatabase {
         return schema;
     }
 
-    public MedSavantDatabase() {
+    public OMedSavantDatabase() {
         spec = new DbSpec();
         schema = spec.addDefaultSchema();
         initTableSchemas();
@@ -96,4 +95,5 @@ public class MedSavantDatabase {
     public TableSchema getAlignmentTableSchema() {
         return alignmentTableSchema;
     }
+
 }

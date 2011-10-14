@@ -17,6 +17,8 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.olddb.DBUtil;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 
 /**
  *

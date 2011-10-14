@@ -24,10 +24,11 @@ import org.ut.biolab.medsavant.olddb.table.CohortTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.olddb.table.ModifiableColumn;
-import org.ut.biolab.medsavant.olddb.table.TableSchema;
-import org.ut.biolab.medsavant.olddb.table.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.view.dialog.ConfirmDialog;
 
@@ -219,7 +220,7 @@ public class DBUtil {
     
     public static void addCohort(String cohort_name) {
         //TODO: make sure name doesn't already exist.
-        TableSchema t = MedSavantDatabase.getInstance().getCohortTableSchema();
+        TableSchema t = MedSavantDatabase.CohortTableSchema;
         InsertQuery is = new InsertQuery(t.getTable());
         is.addColumn(t.getDBColumn(CohortTableSchema.ALIAS_COHORTNAME), cohort_name);        
         try {

@@ -48,10 +48,10 @@ import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.oldcontroller.ResultController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
+import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
-import org.ut.biolab.medsavant.olddb.table.TableSchema;
-import org.ut.biolab.medsavant.olddb.table.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.Util;
@@ -167,7 +167,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
         JComboBox b = new JComboBox();
 
         
-        chartNames = MedSavantDatabase.getInstance().getVariantTableSchema().getFieldAliases();
+        chartNames = OMedSavantDatabase.getInstance().getVariantTableSchema().getFieldAliases();
         for (String chartName : chartNames) {
             b.addItem(chartName);
         }
@@ -284,7 +284,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
 
             ChartFrequencyMap chartMap = new ChartFrequencyMap();
             
-            TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
+            TableSchema table = OMedSavantDatabase.getInstance().getVariantTableSchema();
             DbColumn column = table.getDBColumn(fieldName);
             
             ColumnType type = table.getColumnType(column);

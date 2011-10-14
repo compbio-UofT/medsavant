@@ -6,8 +6,7 @@ package org.ut.biolab.medsavant.olddb.table;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 
 /**
  *

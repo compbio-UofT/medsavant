@@ -4,7 +4,7 @@
  */
 package org.ut.biolab.medsavant.olddb.table;
 
-import org.ut.biolab.medsavant.olddb.table.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 
 /**
  *
