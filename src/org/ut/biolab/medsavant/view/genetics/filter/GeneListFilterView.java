@@ -4,15 +4,15 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import org.ut.biolab.medsavant.model.GenomicRegion;
+import org.ut.biolab.medsavant.db.model.GenomicRegion;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.jidesoft.range.Range;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,16 +22,15 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
-import org.ut.biolab.medsavant.olddb.table.TableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.model.RegionSet;
+import org.ut.biolab.medsavant.db.table.VariantTable;
+import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.log.ClientLogger;
 
 /**
  *
@@ -39,33 +38,36 @@ import org.ut.biolab.medsavant.model.QueryFilter;
  */
 class GeneListFilterView {
 
-    private static final String FILTER_NAME = "Gene List";
+    public static final String FILTER_NAME = "Gene List";
+    public static final String FILTER_ID = "gene_list";
     private static final String GENELIST_NONE = "None";
 
-    static FilterView getFilterView() {
-        return new FilterView(FILTER_NAME, getContentPanel());
+    static FilterView getFilterView(int queryId) {
+        return new FilterView(FILTER_NAME, getContentPanel(queryId));
     }
     
-    private static List<String> getDefaultValues() {
+    private static List<RegionSet> getDefaultValues() {
         try {
-            return QueryUtil.getDistinctGeneListNames();
+            return RegionQueryUtil.getRegionSets();
         } catch (Exception ex){
             Logger.getLogger(GeneListFilterView.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
     }
 
-    private static JComponent getContentPanel() {
+    private static JComponent getContentPanel(final int queryId) {
 
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
+        p.setMaximumSize(new Dimension(1000,80));
 
         final JComboBox b = new JComboBox();
+        b.setMaximumSize(new Dimension(1000,30));
 
         b.addItem(GENELIST_NONE);
-        List<String> geneListNames = getDefaultValues();
-        for (String name : geneListNames) {
-            b.addItem(name);
+        List<RegionSet> geneLists = getDefaultValues();
+        for (RegionSet set : geneLists) {
+            b.addItem(set);
         }
         
         final JButton applyButton = new JButton("Apply");
@@ -77,56 +79,62 @@ class GeneListFilterView {
 
                 applyButton.setEnabled(false);
 
-                if (((String) b.getSelectedItem()).equals(GENELIST_NONE)) {
-                    FilterController.removeFilter(FILTER_NAME, 0); //TODO
-                } else {
-                    Filter f = new QueryFilter() {
+                Filter f = new QueryFilter() {
 
-                        @Override
-                        public Condition[] getConditions() {
+                    @Override
+                    public Condition[] getConditions() {
 
-                            String geneListName = (String) b.getSelectedItem();
+                        if(b.getSelectedItem().equals(GENELIST_NONE)){
+                            return new Condition[0];
+                        }
+
+                        RegionSet regionSet = (RegionSet) b.getSelectedItem();
+
+                        try {
+
+                            List<GenomicRegion> regions = RegionQueryUtil.getRegionsInRegionSet(regionSet.getId());
                             
-                            TableSchema variantSchema = MedSavantDatabase.getInstance().getVariantTableSchema();
-                            
-                            try {
-
-                                List<GenomicRegion> regions = QueryUtil.getGenomicRangesForRegionList(geneListName);
-
-                                Condition[] results = new Condition[regions.size()];
-                                int i = 0;
-                                for (GenomicRegion gr : regions) {
-                                    Condition[] tmp = new Condition[2];
-                                    tmp[0] = BinaryCondition.equalTo(variantSchema.getDBColumn(VariantTableSchema.ALIAS_CHROM), gr.getChrom());
-                                    tmp[1] = QueryUtil.getRangeCondition(variantSchema.getDBColumn(VariantTableSchema.ALIAS_POSITION), gr.getRange());
-                                    results[i] = ComboCondition.and(tmp);
-                                    
-                                    i++;
-                                }
-
-                                return results;
+                            Condition[] results = new Condition[regions.size()];
+                            int i = 0;
+                            for (GenomicRegion gr : regions) {
+                                Condition[] tmp = new Condition[2];
                                 
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                                return null;
+                                tmp[0] = BinaryCondition.equalTo(
+                                        new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), VariantTable.FIELDNAME_CHROM, "varchar", 5), 
+                                        gr.getChrom());
+                                
+                                DbColumn colPosition = new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), VariantTable.FIELDNAME_POSITION, "int", 11);
+                                tmp[1] = ComboCondition.and(new Condition[]{
+                                        BinaryCondition.greaterThan(colPosition, (long)gr.getRange().getMin(), true),
+                                        BinaryCondition.lessThan(colPosition, (long)gr.getRange().getMax(), false)});
+                                                                
+                                results[i] = ComboCondition.and(tmp);
+
+                                i++;
                             }
-                        }
 
-                        @Override
-                        public String getName() {
-                            return FILTER_NAME;
-                        }
-                        
-                        
-                        @Override
-                        public String getId() {
-                            return FILTER_NAME;//TODO
-                        }
-                    };
-                    //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    FilterController.addFilter(f, 0); //TODO
-                }
+                            return results;
 
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    public String getName() {
+                        return FILTER_NAME;
+                    }
+
+
+                    @Override
+                    public String getId() {
+                        return FILTER_ID;
+                    }
+                };
+                ClientLogger.log(ClientLogger.class,"Adding filter: " + f.getName());
+                FilterController.addFilter(f, queryId); //TODO
+            
                 //TODO: why does this not work? Freezes GUI
                 //apply.setEnabled(false);
             }
@@ -143,6 +151,7 @@ class GeneListFilterView {
 
         JPanel bottomContainer = new JPanel();
         bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
+        bottomContainer.setMaximumSize(new Dimension(1000,30));
 
         bottomContainer.add(Box.createHorizontalGlue());
         bottomContainer.add(applyButton);

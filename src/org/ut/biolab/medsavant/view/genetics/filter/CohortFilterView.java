@@ -8,7 +8,6 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.jidesoft.range.Range;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -24,14 +23,8 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
-import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.table.VariantTable;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
@@ -72,10 +65,7 @@ class CohortFilterView {
         b.setMaximumSize(new Dimension(1000,30));
 
         b.addItem(COHORT_ALL);
-        /*List<String> cohortNames = getDefaultValues();
-        for (String cohortName : cohortNames) {
-            b.addItem(cohortName);
-        }*/
+
         List<Cohort> cohorts = getDefaultValues();
         for(Cohort c : cohorts){
             b.addItem(c);
@@ -90,11 +80,6 @@ class CohortFilterView {
 
                 applyButton.setEnabled(false);
 
-                //if (((String) b.getSelectedItem()).equals(COHORT_ALL)) {
-                //if(b.getSelectedItem().equals(COHORT_ALL)){
-                    //FilterController.removeFilter(FILTER_ID, queryId);
-                    //TODO
-                //} else {
                     Filter f = new QueryFilter() {
 
                         @Override
@@ -138,7 +123,6 @@ class CohortFilterView {
                             return FILTER_ID;
                         }
                     };
-                    //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
                     ClientLogger.log(ClientLogger.class,"Adding filter: " + f.getName());
                     FilterController.addFilter(f, queryId);
                 //}

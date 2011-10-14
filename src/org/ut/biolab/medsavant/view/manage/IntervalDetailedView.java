@@ -65,9 +65,9 @@ public class IntervalDetailedView extends DetailedView {
         @Override
         protected Object doInBackground() throws Exception {
             //numRegionsInRegionList = QueryUtil.getNumRegionsInRegionSet(regionName);
-            //List<Vector> regionList = QueryUtil.getRegionsInRegionSet(regionName,limit);
+            //List<Vector> regionList = QueryUtil.getRegionNamesInRegionSet(regionName,limit);
             numRegionsInRegionList = RegionQueryUtil.getNumberRegions(regionSet.getId());
-            List<String> regionList = RegionQueryUtil.getRegionsInRegionSet(regionSet.getId(), limit);
+            List<String> regionList = RegionQueryUtil.getRegionNamesInRegionSet(regionSet.getId(), limit);
             return regionList;
         }
         

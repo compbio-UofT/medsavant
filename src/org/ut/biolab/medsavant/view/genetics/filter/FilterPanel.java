@@ -131,6 +131,13 @@ public class FilterPanel extends JScrollPane {
             public String getFilterName() { return CohortFilterView.FILTER_NAME;}
         }));  
         
+        //gene list filter
+        /*map.get(AnnotationField.Category.PATIENT).add(createClickableLabel(fps, new FilterPlaceholder() {
+            public FilterView getFilterView() { return GeneListFilterView.getFilterView(fps.getId());}
+            public String getFilterID() { return GeneListFilterView.FILTER_ID;}
+            public String getFilterName() { return GeneListFilterView.FILTER_NAME;}
+        }));*/  
+        
         
         //add from variant table
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
