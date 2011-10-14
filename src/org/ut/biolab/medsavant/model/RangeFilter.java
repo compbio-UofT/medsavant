@@ -12,6 +12,7 @@ import java.util.List;
 import org.ut.biolab.medsavant.olddb.MedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
+import org.ut.biolab.medsavant.db.model.Range;
 
 /**
  *
