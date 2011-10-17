@@ -159,7 +159,7 @@ public class ProjectController implements ReferenceListener {
     
     public String getCurrentTableName(){
         try {
-            return ProjectQueryUtil.getVariantTable(currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
+            return ProjectQueryUtil.getVariantTablename(currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }
