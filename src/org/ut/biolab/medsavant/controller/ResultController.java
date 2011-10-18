@@ -66,7 +66,11 @@ public class ResultController {
         filterSetId = FilterController.getCurrentFilterSetID();
         
         try {
-            filteredVariants = VariantQueryUtil.getVariants(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), FilterController.getQueryFilterConditions(), limit);
+            VariantQueryUtil.getVariants(
+                    ProjectController.getInstance().getCurrentProjectId(), 
+                    ReferenceController.getInstance().getCurrentReferenceId(), 
+                    FilterController.getQueryFilterConditions(), 
+                    limit);
         } catch (SQLException ex) {
             Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);
         }
