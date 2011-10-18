@@ -50,7 +50,12 @@ public class SavantExportForm extends javax.swing.JDialog {
     /** Creates new form SavantExportForm */
     public SavantExportForm() {
         
-        this.setModalityType(ModalityType.APPLICATION_MODAL);
+        
+        System.err.println("NOT IMPLEMENTED YET");
+        this.dispose();
+        return;
+        
+        /*this.setModalityType(ModalityType.APPLICATION_MODAL);
         
         initComponents();
         JPanel container = new JPanel(new BorderLayout());
@@ -74,7 +79,7 @@ public class SavantExportForm extends javax.swing.JDialog {
 
         this.pack();
         this.setLocationRelativeTo(null);
-        this.setVisible(true);  
+        this.setVisible(true);  */
     }
     
     private void addId(String id){
@@ -109,7 +114,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         //get BAM files
         List<String> bamFiles = new ArrayList<String>();
         try {            
-            bamFiles = QueryUtil.getBAMFilesForDNAIds(ConnectionController.connect(), selectedIds);
+            bamFiles = org.ut.biolab.medsavant.db.util.query.QueryUtil.getBAMFilesForDNAIds(selectedIds);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

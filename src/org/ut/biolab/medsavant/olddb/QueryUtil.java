@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import org.ut.biolab.medsavant.olddb.table.AlignmentTableSchema;
 import org.ut.biolab.medsavant.olddb.table.CohortTableSchema;
 import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListTableSchema;
@@ -885,31 +884,6 @@ public class QueryUtil {
         }
         
         return results;
-    }
-    
-    public static List<String> getBAMFilesForDNAIds(Connection c, List<String> dnaIds) throws SQLException, NonFatalDatabaseException {
-        
-        TableSchema t = OMedSavantDatabase.getInstance().getAlignmentTableSchema();
-        SelectQuery q = new SelectQuery();
-        q.setIsDistinct(true);
-        q.addColumns(t.getDBColumn(AlignmentTableSchema.ALIAS_ALIGNMENTPATH));
-        q.addFromTable(t.getTable());
-
-        Condition[] conditions = new Condition[dnaIds.size()];
-        for(int i = 0; i < dnaIds.size(); i++){
-            conditions[i] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_DNAID), dnaIds.get(i));
-        }
-        q.addCondition(ComboCondition.or(conditions));
-        
-        Statement s = c.createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
-
-        List<String> results = new ArrayList<String>();
-        while (rs.next()) {
-            results.add(rs.getString(1));
-        }
-        
-        return results;      
     }
     
     public static String getGenomeBAMPathForVersion(Connection c, String genomeVersion) throws SQLException, NonFatalDatabaseException {
