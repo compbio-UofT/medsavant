@@ -58,7 +58,6 @@ import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
 import org.ut.biolab.medsavant.log.ClientLogger;
-import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 //import savant.controller.LocationController;

@@ -45,7 +45,6 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
