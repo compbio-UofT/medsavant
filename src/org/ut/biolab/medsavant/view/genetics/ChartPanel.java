@@ -24,6 +24,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -41,12 +42,16 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.model.structure.CustomTables;
+import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.view.genetics.charts.ChartFrequencyMap;
@@ -159,8 +164,13 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
         bottombar.setFloatable(false);
         JComboBox b = new JComboBox();
 
-        
-        chartNames = OMedSavantDatabase.getInstance().getVariantTableSchema().getFieldAliases();
+        TableSchema table = null;
+        try {
+            table = CustomTables.getVariantTableSchema(ProjectQueryUtil.getVariantTablename(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId()));
+        } catch (SQLException ex) {
+            Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        chartNames = table.getFieldAliases();
         for (String chartName : chartNames) {
             b.addItem(chartName);
         }
@@ -277,8 +287,13 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
 
             ChartFrequencyMap chartMap = new ChartFrequencyMap();
             
-            TableSchema table = OMedSavantDatabase.getInstance().getVariantTableSchema();
-            DbColumn column = table.getDBColumn(fieldName);
+            TableSchema table = null;
+            try {
+                table = CustomTables.getVariantTableSchema(ProjectQueryUtil.getVariantTablename(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId()));
+            } catch (SQLException ex) {
+                Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            DbColumn column = table.getDBColumnByAlias(fieldName);
             
             ColumnType type = table.getColumnType(column);
             

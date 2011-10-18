@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
-import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
+import org.ut.biolab.medsavant.db.model.structure.CustomTables;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.listener.ProjectListener;
@@ -31,6 +31,7 @@ public class ProjectController implements ReferenceListener {
     private AnnotationFormat[] currentAnnotationFormats;
     
     private DbTable currentTable;
+    private TableSchema currentTableSchema;
     
     private static ProjectController instance;
     
@@ -170,9 +171,14 @@ public class ProjectController implements ReferenceListener {
         return currentTable;
     }
     
+    public TableSchema getCurrentVariantTableSchema(){
+        return currentTableSchema;
+    }
+    
     private void setCurrentVariantTable(){
         try {
             this.currentTable = DBUtil.importTable(getCurrentTableName());
+            this.currentTableSchema =  CustomTables.getVariantTableSchema(getCurrentTableName());          
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }

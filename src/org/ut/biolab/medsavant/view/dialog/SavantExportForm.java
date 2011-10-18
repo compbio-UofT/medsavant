@@ -106,7 +106,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         //get bookmarks
         Map<String, List<String>> map = new HashMap<String, List<String>>();
         try {
-            map = QueryUtil.getSavantBookmarkPositionsForDNAIds(ConnectionController.connect(), selectedIds, 1000);
+            map = org.ut.biolab.medsavant.db.util.query.QueryUtil.getSavantBookmarkPositionsForDNAIds(selectedIds, 1000);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

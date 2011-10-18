@@ -27,8 +27,11 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -359,10 +362,12 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             protected Object doInBackground() throws Exception {
                 for(int i = 0; i < Math.min(records.size(), limit); i++){
                     BEDRecord r = records.get(i);
-                    int recordsInRegion = QueryUtil.getNumVariantsInRange(
-                            ConnectionController.connect(),
-                            r.getChrom(),
-                            r.getStart(),
+                    int recordsInRegion = VariantQueryUtil.getNumVariantsInRange(
+                            ProjectController.getInstance().getCurrentProjectId(), 
+                            ReferenceController.getInstance().getCurrentReferenceId(), 
+                            FilterController.getQueryFilterConditions(), 
+                            r.getChrom(), 
+                            r.getStart(), 
                             r.getEnd());
                     if (!Thread.interrupted()) {
                         updateBEDRecordVariantValue(r, recordsInRegion);
@@ -392,10 +397,12 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             protected Object doInBackground() throws Exception {
                 for(int i = 0; i < Math.min(records.size(), limit); i++){
                     BEDRecord r = records.get(i);
-                    int recordsInRegion = QueryUtil.getNumPatientsWithVariantsInRange(
-                            ConnectionController.connect(),
-                            r.getChrom(),
-                            r.getStart(),
+                    int recordsInRegion = VariantQueryUtil.getNumPatientsWithVariantsInRange(
+                            ProjectController.getInstance().getCurrentProjectId(), 
+                            ReferenceController.getInstance().getCurrentReferenceId(), 
+                            FilterController.getQueryFilterConditions(), 
+                            r.getChrom(), 
+                            r.getStart(), 
                             r.getEnd());
                     if (!Thread.interrupted()) {
                         updateBEDRecordPatientValue(r, recordsInRegion);

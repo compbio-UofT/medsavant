@@ -7,8 +7,6 @@ package org.ut.biolab.medsavant.olddb;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 
 /**
  *
@@ -19,10 +17,6 @@ public class OMedSavantDatabase {
     private final DbSchema schema;
     private static OMedSavantDatabase instance;
 
-    private VariantTableSchema variantTableSchema;  
-    
-    //private PatientTableSchema patientTableSchema;
-    
     public static void main(String[] argv) {
         getInstance();
     }
@@ -45,13 +39,6 @@ public class OMedSavantDatabase {
     }
 
     private void initTableSchemas() {
-        
-        variantTableSchema = new VariantTableSchema(schema);    
-        
-    }
-
-    public VariantTableSchema getVariantTableSchema() {
-        return this.variantTableSchema;
     }
     
 }

@@ -24,7 +24,6 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -32,10 +31,13 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOParser;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
@@ -290,6 +292,8 @@ public class HPOFilter {
                         
                         Condition[] conds = new Condition[map.keySet().size()];
                         int i = 0;
+                        
+                        TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
                        
                         for (String key: map.keySet()){
                             
@@ -297,16 +301,13 @@ public class HPOFilter {
                                     new ArrayList<ComboCondition>();
                             List<Range> ranges = map.get(key);
                             for (Range range: ranges){
-
-                                BinaryCondition innerCond1 = BinaryCondition.greaterThan
-                                        (OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMin(), true);
-                                BinaryCondition innerCond2 = BinaryCondition.lessThan
-                                        (OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMax(), true);
+                                
+                                BinaryCondition innerCond1 = BinaryCondition.greaterThan(table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_POSITION), range.getMin(), true);
+                                BinaryCondition innerCond2 = BinaryCondition.lessThan(table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_POSITION), range.getMax(), true);
                                 BinaryCondition[] condTogether = {innerCond1, innerCond2};
                                 listInnerCond.add(ComboCondition.and(condTogether));
                             } // for each range for the chromosome of interest.
-                            BinaryCondition chrCond = BinaryCondition.equalTo
-                                    (OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
+                            BinaryCondition chrCond = BinaryCondition.equalTo(table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_CHROM), key);
                             conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
                         } // for each chromosome.
                         return conds;

@@ -4,17 +4,10 @@
  */
 package org.ut.biolab.medsavant.view.genetics.charts;
 
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.sql.SQLException;
 import java.util.Collections;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
-import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
-import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.controller.FilterController;

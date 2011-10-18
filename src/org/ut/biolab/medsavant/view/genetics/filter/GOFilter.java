@@ -9,16 +9,12 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.SetOperationQuery;
-import com.healthmarketscience.sqlbuilder.UnionQuery;
-import com.jidesoft.plaf.LookAndFeelFactory;
 import com.jidesoft.swing.CheckBoxTree;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,24 +26,23 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.view.genetics.filter.geneontology.*;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
-import org.ut.biolab.medsavant.view.genetics.storer.FilterJComponentStorer;
 import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -339,19 +334,18 @@ public class GOFilter {
                         int i = 0;
                         List<SelectQuery> list = new ArrayList<SelectQuery>();
                         
+                        TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
+                        
                         for (String key: map.keySet()){
                             
                             List<ComboCondition> listInnerCond = 
                                     new ArrayList<ComboCondition>();
                             List<Range> ranges = map.get(key);
-                            BinaryCondition chrCond = BinaryCondition.equalTo
-                                    (OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.CHROM_COL), key);
+                            BinaryCondition chrCond = BinaryCondition.equalTo(table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_CHROM), key);
                             for (Range range: ranges){
-
-                                BinaryCondition innerCond1 = BinaryCondition.greaterThan
-                                        (OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMin(), true);
-                                BinaryCondition innerCond2 = BinaryCondition.lessThan
-                                        (OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(ClassifiedPositionInfo.POSITION_COL), range.getMax(), true);
+                                
+                                BinaryCondition innerCond1 = BinaryCondition.greaterThan(table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_POSITION), range.getMin(), true);
+                                BinaryCondition innerCond2 = BinaryCondition.lessThan(table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_POSITION), range.getMax(), true);
                                 BinaryCondition[] condTogether = {innerCond1, innerCond2};
                                 listInnerCond.add(ComboCondition.and(condTogether));
                                 

@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Vector;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
-import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Range;
@@ -212,12 +211,6 @@ public class QueryUtil {
         return rs.getInt(1);
     }
 
-    public static List<String> getDistinctDNAIds() throws SQLException, NonFatalDatabaseException {
-        return QueryUtil.getDistinctValuesForColumn(
-                    ConnectionController.connect(),
-                    OMedSavantDatabase.getInstance().getVariantTableSchema(),
-                    OMedSavantDatabase.getInstance().getVariantTableSchema().getDBColumn(VariantTableSchema.ALIAS_DNAID));
-    }
 
     /*public static List<String> getDistinctPatientIDs() throws SQLException, NonFatalDatabaseException {
                 return QueryUtil.getDistinctValuesForColumn(
@@ -372,96 +365,9 @@ public class QueryUtil {
         }
     }
 
-    public static int getNumVariantsInRange(Connection c, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException {
-        
-        TableSchema t = OMedSavantDatabase.getInstance().getVariantTableSchema();
-
-        FunctionCall count = FunctionCall.countAll();
-        SelectQuery q = getCurrentBaseVariantFilterQuery();
-        q.addCustomColumns(count);
-        
-        Condition[] conditions = new Condition[3];
-        conditions[0] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_CHROM), chrom);
-        conditions[1] = new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_POSITION), start);
-        conditions[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, t.getDBColumn(VariantTableSchema.ALIAS_POSITION), end);       
-        q.addCondition(ComboCondition.and(conditions));        
-        
-        Statement s = c.createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
-        rs.next();
-
-        int numrows = rs.getInt(1);
-        s.close();
-        
-        return numrows;
-    }
     
-    public static int[] getNumVariantsForBins(Connection c, String chrom, int binsize, int numbins) throws SQLException, NonFatalDatabaseException {
-        
-        TableSchema t = OMedSavantDatabase.getInstance().getVariantTableSchema();
-
-        SelectQuery base = getCurrentBaseVariantFilterQuery();
-        base.addColumns(t.getDBColumn(VariantTableSchema.ALIAS_POSITION));
-        base.addCondition(new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_CHROM), chrom)); 
-
-        String q1 = base.toString();
-        
-        String q = "select y.range as `range`, count(*) as `number of occurences` "
-                + "from ("
-                + "select case ";
-        int pos = 0;
-        for(int i = 0; i < numbins; i++){
-            q += "when `position` between " + pos + " and " + (pos+binsize) + " then " + i + " ";
-            pos += binsize;
-        }
-        
-        q += "end as `range` "
-                + "from (";
-        q += q1;
-        q += ") x ) y "
-                + "group by y.`range`";
-        
-        Statement s = c.createStatement();
-        ResultSet rs = s.executeQuery(q);
-        
-        int[] numRows = new int[numbins];
-        for(int i = 0; i < numbins; i++) numRows[i] = 0;
-        while(rs.next()){
-            int index = rs.getInt(1);
-            numRows[index] = rs.getInt(2);
-        }
-              
-        s.close();
-        
-        return numRows;
-    }
     
-    public static int getNumPatientsWithVariantsInRange(Connection connect, String chrom, int start, int end) throws SQLException {
-        VariantTableSchema t = (VariantTableSchema) OMedSavantDatabase.getInstance().getVariantTableSchema();
-
-        FunctionCall count = FunctionCall.count();
-        SelectQuery q = getCurrentBaseVariantFilterQuery();
-        q.addCustomColumns("COUNT(DISTINCT " + t.DBFIELDNAME_DNAID + ")");
-        //q.addColumns(t.getDBColumn(t.ALIAS_DNAID));
-        
-        Condition[] conditions = new Condition[3];
-        conditions[0] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_CHROM), chrom);
-        conditions[1] = new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_POSITION), start);
-        conditions[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, t.getDBColumn(VariantTableSchema.ALIAS_POSITION), end);       
-        q.addCondition(ComboCondition.and(conditions));        
-        
-        String query = q.toString();
-        query = query.replaceFirst("'", "").replaceFirst("'", "");
-        
-        Statement s = connect.createStatement();
-        ResultSet rs = s.executeQuery(query);
-        rs.next();
-
-        int numrows = rs.getInt(1);
-        s.close();
-        
-        return numrows;
-    }
+    
     
     public static int getNumFilteredVariants(Connection c) throws SQLException {
         return 1;
@@ -764,30 +670,7 @@ public class QueryUtil {
          */
     }
     
-    public static Map<String, List<String>> getSavantBookmarkPositionsForDNAIds(Connection c, List<String> dnaIds, int limit) throws SQLException, NonFatalDatabaseException {
-        
-        Map<String, List<String>> results = new HashMap<String, List<String>>();
-        
-        TableSchema t = OMedSavantDatabase.getInstance().getVariantTableSchema();
-        SelectQuery q = getCurrentBaseVariantFilterQuery();
-        q.addColumns(t.getDBColumn(VariantTableSchema.ALIAS_DNAID), t.getDBColumn(VariantTableSchema.ALIAS_CHROM), t.getDBColumn(VariantTableSchema.ALIAS_POSITION));
-        
-        Condition[] conditions = new Condition[dnaIds.size()];
-        for(int i = 0; i < dnaIds.size(); i++){
-            conditions[i] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_DNAID), dnaIds.get(i));
-            results.put(dnaIds.get(i), new ArrayList<String>());
-        }
-        q.addCondition(ComboCondition.or(conditions));    
-        
-        Statement s = c.createStatement();
-        ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
-
-        while (rs.next()) {
-            results.get(rs.getString(1)).add(rs.getString(2) + ":" + (rs.getLong(3)-100) + "-" + (rs.getLong(3)+100));  
-        }
-        
-        return results;
-    }
+   
     
     public static String getGenomeBAMPathForVersion(Connection c, String genomeVersion) throws SQLException, NonFatalDatabaseException {
         

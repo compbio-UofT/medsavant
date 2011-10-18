@@ -6,12 +6,13 @@ package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
@@ -84,8 +85,13 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
             String key = chrom + "_" + start + "_" + end;
             Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
             if (numCurr == null){;
-                numCurr = QueryUtil.getNumVariantsInRange
-                        (ConnectionController.connect(), chrom, start, end);
+                numCurr = VariantQueryUtil.getNumVariantsInRange(
+                            ProjectController.getInstance().getCurrentProjectId(), 
+                            ReferenceController.getInstance().getCurrentReferenceId(), 
+                            FilterController.getQueryFilterConditions(), 
+                            chrom, 
+                            start, 
+                            end);
                 OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
             }
             else{

@@ -25,6 +25,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,10 +53,14 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.db.model.structure.CustomTables;
+import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
+import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 //import savant.controller.LocationController;
 //import savant.util.Range;
 
@@ -314,9 +319,14 @@ public class Viewer extends JSplitPane {
             }
         }
         
-        TableSchema table = OMedSavantDatabase.getInstance().getVariantTableSchema();
-        final DbColumn positionCol = table.getDBColumn(VariantTableSchema.ALIAS_POSITION);
-        final DbColumn chromCol = table.getDBColumn(VariantTableSchema.ALIAS_CHROM);
+        TableSchema table = null;
+        try {
+            table = CustomTables.getVariantTableSchema(ProjectQueryUtil.getVariantTablename(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId()));
+        } catch (SQLException ex) {
+            Logger.getLogger(Viewer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        final DbColumn positionCol = table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_POSITION);
+        final DbColumn chromCol = table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_CHROM);
     
         Filter f = new QueryFilter() {
 

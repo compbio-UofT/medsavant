@@ -7,8 +7,9 @@ package org.ut.biolab.medsavant.view.genetics.filter.ontology;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
 
 /**
  *
@@ -20,12 +21,12 @@ public class ClassifiedPositionInfo {
     /**
      * Name of the column with chromosome info.
      */
-    public final static String CHROM_COL = VariantTableSchema.ALIAS_CHROM;
+    public final static String CHROM_COL = MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultvariantTableSchema.COLUMNNAME_OF_CHROM);
     
     /**
      * Name of the column with position info.
      */
-    public final static String POSITION_COL = VariantTableSchema.ALIAS_POSITION;
+    public final static String POSITION_COL = MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultvariantTableSchema.COLUMNNAME_OF_POSITION);
 
     
     /**

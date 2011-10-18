@@ -4,7 +4,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.charts;
 
-import org.ut.biolab.medsavant.view.genetics.charts.SummaryChart;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -16,15 +15,13 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.AnnotationField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
-import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
-import org.ut.biolab.medsavant.view.genetics.charts.ChartMapGenerator;
-import org.ut.biolab.medsavant.view.genetics.charts.VariantFieldChartMapGenerator;
+import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -43,7 +40,7 @@ public class ChartView extends JPanel {
     public ChartView() {
         mapGenerators = new HashMap<String, ChartMapGenerator>();
         initGUI();
-        this.chartChooser.setSelectedItem(VariantTableSchema.ALIAS_CHROM);
+        this.chartChooser.setSelectedItem(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultvariantTableSchema.COLUMNNAME_OF_CHROM));
     }
 
     private void initGUI() {
@@ -67,7 +64,7 @@ public class ChartView extends JPanel {
                 String alias = (String) chartChooser.getSelectedItem();
                 sc.setChartMapGenerator(mapGenerators.get(alias));
                 if (bSort == null) { return; }
-                if (alias.equals(VariantTableSchema.ALIAS_CHROM)) {
+                if (alias.equals(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultvariantTableSchema.COLUMNNAME_OF_CHROM))) {
                     bSort.setEnabled(false);
                     sc.setIsSortedKaryotypically(true);
                 } else {
