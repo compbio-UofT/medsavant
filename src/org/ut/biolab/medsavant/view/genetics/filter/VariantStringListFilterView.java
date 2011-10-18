@@ -102,7 +102,7 @@ public class VariantStringListFilterView {
                         Condition[] results = new Condition[acceptableValues.size()];
                         int i = 0;
                         for (String s : acceptableValues) {
-                            results[i++] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "varchar", 1), s);
+                            results[i++] = BinaryCondition.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), s);
                         }
                         return results;
                     }

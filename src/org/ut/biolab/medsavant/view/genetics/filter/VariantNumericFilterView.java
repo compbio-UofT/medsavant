@@ -175,9 +175,10 @@ public class VariantNumericFilterView {
                         @Override
                         public Condition[] getConditions() {
                             Condition[] results = new Condition[2];
-                            results[0] = BinaryCondition.greaterThan(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "decimal", 1), getNumber(frombox.getText().replaceAll(",", "")), true);
-                            results[1] = BinaryCondition.lessThan(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), columnname, "decimal", 1), getNumber(tobox.getText().replaceAll(",", "")), true);
-
+                            
+                            results[0] = BinaryCondition.greaterThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(frombox.getText().replaceAll(",", "")), true);
+                            results[1] = BinaryCondition.lessThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(tobox.getText().replaceAll(",", "")), true);
+ 
                             Condition[] resultsCombined = new Condition[1];
                             resultsCombined[0] = ComboCondition.and(results);
 

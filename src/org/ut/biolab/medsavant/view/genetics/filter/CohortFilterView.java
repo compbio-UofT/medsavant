@@ -97,8 +97,8 @@ class CohortFilterView {
                                 
                                 Condition[] results = new Condition[dnaIds.size()];
                                 int i = 0;
-                                for (String dnaId : dnaIds) {                                    
-                                    results[i] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), DefaultvariantTableSchema.COLUMNNAME_OF_DNA_ID, "varchar", 100), dnaId);
+                                for (String dnaId : dnaIds) {   
+                                    results[i] = BinaryCondition.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaId);
                                     i++;
                                 }
 
