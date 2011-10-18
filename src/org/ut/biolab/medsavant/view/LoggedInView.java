@@ -1,7 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 
 package org.ut.biolab.medsavant.view;
 
@@ -15,12 +27,14 @@ import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.listener.ProjectListener;
-import org.ut.biolab.medsavant.view.manage.ManageSection;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
+import org.ut.biolab.medsavant.view.manage.ManageSection;
 import org.ut.biolab.medsavant.view.manage.OtherSection;
+import org.ut.biolab.medsavant.view.manage.PluginsSection;
 import org.ut.biolab.medsavant.view.patients.PatientsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
@@ -81,6 +95,7 @@ public class LoggedInView extends JPanel implements ProjectListener {
 
         viewController.addComponent(getSeparator());
 
+        addSection(new PluginsSection());
         addSection(new OtherSection());
 
         //addSection(new AnnotationsSection());

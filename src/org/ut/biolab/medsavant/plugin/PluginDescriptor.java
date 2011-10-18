@@ -67,7 +67,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
         this.id = id;
         this.version = version;
         this.name = name;
-        this.sdkVersion = sdkVersion != null ? sdkVersion : "1.4.2 or earlier";
+        this.sdkVersion = sdkVersion;
         this.file = file;
     }
 
@@ -110,7 +110,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
      * Here's where we do our SDK compatibility check.  Update this code whenever the API changes.
      */
     public boolean isCompatible() {
-        return sdkVersion.equals("1.5.1") || sdkVersion.equals("1.6.0");
+        return sdkVersion.equals("1.0.0");
     }
 
     public static PluginDescriptor fromFile(File f) throws PluginVersionException {

@@ -15,8 +15,8 @@
  */
 package org.ut.biolab.medsavant.settings;
 
-import java.awt.Font;
 import java.net.URL;
+import org.ut.biolab.medsavant.controller.SettingsController;
 
 
 /**
@@ -24,9 +24,6 @@ import java.net.URL;
  * @author mfiume
  */
 public class BrowserSettings {
-
-    private static PersistentSettings settings = PersistentSettings.getInstance();
-
     private static final String CHECKVERSION_KEY = "CHECKVERSION";
     private static final String COLLECTSTATS_KEY = "COLLECTSTATS";
 
@@ -40,6 +37,8 @@ public class BrowserSettings {
 
     public static final String VERSION = "1.0.0";
     public static String BUILD = "beta";
+
+    private static SettingsController settings = SettingsController.getInstance();
 
     /**
      * Is this version a beta release?
@@ -58,13 +57,5 @@ public class BrowserSettings {
 
     public static boolean getCollectAnonymousUsage() {
         return settings.getBoolean(COLLECTSTATS_KEY, true);
-    }
-
-    public static void setCheckVersionOnStartup(boolean b) {
-        settings.setBoolean(CHECKVERSION_KEY, b);
-    }
-
-    public static void setCollectAnonymousUsage(boolean b) {
-        settings.setBoolean(COLLECTSTATS_KEY, b);
     }
 }

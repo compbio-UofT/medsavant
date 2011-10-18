@@ -15,7 +15,6 @@
  */
 package org.ut.biolab.medsavant.controller;
 
-import java.awt.BorderLayout;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,14 +27,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.plugin.PluginIndex;
 import org.ut.biolab.medsavant.plugin.PluginVersionException;
-import org.ut.biolab.medsavant.plugin.MedSavantSectionPlugin;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.settings.BrowserSettings;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
@@ -43,24 +40,11 @@ import org.ut.biolab.medsavant.settings.NetworkUtils;
 import org.ut.biolab.medsavant.util.Controller;
 import org.ut.biolab.medsavant.util.IOUtils;
 import org.ut.biolab.medsavant.util.MiscUtils;
-import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
-/*
-import savant.api.util.DialogUtils;
-import savant.controller.event.PluginEvent;
-import savant.experimental.PluginTool;
-import savant.settings.BrowserSettings;
-import savant.settings.DirectorySettings;
-import savant.util.Controller;
-import savant.util.IOUtils;
-import savant.util.MiscUtils;
-import savant.util.NetworkUtils;
-import savant.view.tools.ToolsModule;
- * 
- */
 
 /**
+ * Plugin controller ported over from Savant.
  *
  * @author mfiume, tarkvara
  */
@@ -93,7 +77,7 @@ public class PluginController extends Controller {
      */
     private PluginController() {
         try {
-            uninstallFile = new File(DirectorySettings.getSavantDirectory(), UNINSTALL_FILENAME);
+            uninstallFile = new File(DirectorySettings.getMedSavantDirectory(), UNINSTALL_FILENAME);
 
             LOG.info("Uninstall list " + UNINSTALL_FILENAME);
             if (uninstallFile.exists()) {
@@ -133,7 +117,7 @@ public class PluginController extends Controller {
                 }
             }
             if (updated.size() > 0) {
-                DialogUtils.displayMessage("Plugins Updated", String.format("<html>The following plugins were updated to be compatible with Savant %s:<br><br><i>%s</i></html>", BrowserSettings.VERSION, MiscUtils.join(updated, ", ")));
+                DialogUtils.displayMessage("Plugins Updated", String.format("<html>The following plugins were updated to be compatible with MedSavant %s:<br><br><i>%s</i></html>", BrowserSettings.VERSION, MiscUtils.join(updated, ", ")));
                 for (String s: updated) {
                     pluginErrors.remove(s);
                 }
@@ -153,7 +137,7 @@ public class PluginController extends Controller {
                 if (errorStr != null) {
                     // The following dialog will only report plugins which we can tell are faulty before calling loadPlugin(), typically
                     // by checking the version in plugin.xml.
-                    DialogUtils.displayMessage("Plugins Not Loaded", String.format("<html>The following plugins could not be loaded:<br><br><i>%s</i><br><br>They will not be available to Savant.</html>", errorStr));
+                    DialogUtils.displayMessage("Plugins Not Loaded", String.format("<html>The following plugins could not be loaded:<br><br><i>%s</i><br><br>They will not be available to MedSavant.</html>", errorStr));
                 }
             }
         }
@@ -180,7 +164,7 @@ public class PluginController extends Controller {
                             } catch (Throwable x) {
                                 LOG.error("Unable to load " + desc.getName(), x);
                                 pluginErrors.put(desc.getID(), x.getClass().getName());
-                                DialogUtils.displayMessage("Plugin Not Loaded", String.format("<html>The following plugin could not be loaded:<br><br><i>%s – %s</i><br><br>It will not be available to Savant.</html>", desc.getID(), x));
+                                fireEvent(new PluginEvent(PluginEvent.Type.ERROR, desc.getID()));
                             }
                         }
                     }.start();
@@ -214,10 +198,10 @@ public class PluginController extends Controller {
             out.write(info.getFile().getAbsolutePath() + "\n");
             out.close();
 
-            DialogUtils.displayMessage("Uninstallation Complete", "Please restart Savant for changes to take effect.");
+            DialogUtils.displayMessage("Uninstallation Complete", "Please restart MedSavant for changes to take effect.");
             pluginsToRemove.add(id);
 
-            fireEvent(new PluginEvent(PluginEvent.Type.QUEUED_FOR_REMOVAL, id, null));
+            fireEvent(new PluginEvent(PluginEvent.Type.QUEUED_FOR_REMOVAL, id));
 
         } catch (IOException ex) {
             LOG.error("Error uninstalling plugin: " + uninstallFile, ex);
@@ -250,20 +234,6 @@ public class PluginController extends Controller {
         }
         return "Unknown";
     }
-
-    /**
-     * Give a panel plugin an opportunity to initialise itself.
-     *
-     * @param plugin
-     */
-    private SectionView initSectionPlugin(MedSavantSectionPlugin plugin) {
-        
-        JPanel canvas = new JPanel();
-        canvas.setLayout(new BorderLayout());
-        SectionView view = plugin.getView();
-        return view;
-    }
-
 
     private void deleteFileList(File fileListFile) {
         BufferedReader br = null;
@@ -315,14 +285,8 @@ public class PluginController extends Controller {
         Class pluginClass = pluginLoader.loadClass(desc.getClassName());
         MedSavantPlugin plugin = (MedSavantPlugin)pluginClass.newInstance();
         plugin.setDescriptor(desc);
-
-        // Init the plugin based on its type
-        SectionView view = null;
-        if (plugin instanceof MedSavantSectionPlugin) {
-            view = initSectionPlugin((MedSavantSectionPlugin)plugin);
-        }
         loadedPlugins.put(desc.getID(), plugin);
-        fireEvent(new PluginEvent(PluginEvent.Type.LOADED, desc.getID(), view));
+        fireEvent(new PluginEvent(PluginEvent.Type.LOADED, desc.getID()));
     }
 
     /**
@@ -398,5 +362,3 @@ public class PluginController extends Controller {
         }
     }
 }
-
-

@@ -16,9 +16,7 @@
 
 package org.ut.biolab.medsavant.controller;
 
-import javax.swing.JPanel;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
-import org.ut.biolab.medsavant.view.subview.SectionView;
 
 
 /**
@@ -35,15 +33,13 @@ public class PluginEvent {
 
     private final Type type;
     private final String pluginID;
-    private final SectionView view;
 
     /**
      * Constructor invoked by PluginController.
      */
-    public PluginEvent(Type type, String pluginID, SectionView view) {
+    public PluginEvent(Type type, String pluginID) {
         this.type = type;
         this.pluginID = pluginID;
-        this.view = view;
     }
 
     public Type getType() {
@@ -51,13 +47,16 @@ public class PluginEvent {
     }
 
     /**
-     * Plugin which loaded.  Will be null if the plugin did not successfully load.
+     * ID of plugin which was being loaded.
+     */
+    public String getID() {
+        return pluginID;
+    }
+
+    /**
+     * Plugin which was being loaded.  Will be null if the plugin did not successfully load.
      */
     public MedSavantPlugin getPlugin() {
         return PluginController.getInstance().getPlugin(pluginID);
-    }
-
-    public SectionView getCanvas() {
-        return view;
     }
 }

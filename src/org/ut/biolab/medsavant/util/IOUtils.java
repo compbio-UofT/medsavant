@@ -41,8 +41,10 @@ public class IOUtils {
 
     public static void copyDir(File srcDir, File destDir) throws IOException {
         File[] files = srcDir.listFiles();
-        for (File f: files) {
-            copyFile(f, new File(destDir, f.getName()));
+        if (files != null) {
+            for (File f: files) {
+                copyFile(f, new File(destDir, f.getName()));
+            }
         }
     }
 

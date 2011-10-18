@@ -1,18 +1,23 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.controller;
 
 import org.ut.biolab.medsavant.MedSavantProgramInformation;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.HashMap;
+import java.io.*;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -126,6 +131,37 @@ public class SettingsController {
         }
         return persistenceMap.get(key);
     }
+
+    /**
+     * Retrieve the value of a boolean setting.
+     * @param key the key for the setting to retrieve
+     * @param dflt the default value if the key does not currently exist
+     * @return value of the setting
+     */
+    public boolean getBoolean(String key, boolean dflt) {
+        String value = getValue(key);
+        return value != null ? value.toLowerCase().equals("true") : dflt;
+    }
+
+    public void setBoolean(String key, boolean value) {
+        setValue(key, Boolean.toString(value));
+    }
+
+    /**
+     * Retrieve the value of a <code>File</code> setting.
+     * @param key the key for the setting to retrieve
+     * @param dflt the default value if the key does not currently exist
+     * @return value of the setting
+     */
+    public File getFile(String key) {
+        String value = getValue(key);
+        return value != null ? new File(value) : null;
+    }
+
+    public void setFile(String key, File value) {
+        setValue(key, value.getAbsolutePath());
+    }
+
 
     /**
      * Read the settings in from file (usually performed once, on load)

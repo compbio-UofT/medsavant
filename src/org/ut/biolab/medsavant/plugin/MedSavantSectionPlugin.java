@@ -16,7 +16,7 @@
 
 package org.ut.biolab.medsavant.plugin;
 
-import org.ut.biolab.medsavant.view.subview.SectionView;
+import javax.swing.JPanel;
 
 
 /**
@@ -31,6 +31,6 @@ public abstract class MedSavantSectionPlugin extends MedSavantPlugin {
      * This method is called once during application life cycle to allow a third-party
      * plugin to initialize and show itself.
      */
-    public abstract SectionView getView();
+    public abstract void init(JPanel panel);
     
 }
