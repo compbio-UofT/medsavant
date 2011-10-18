@@ -22,6 +22,7 @@ import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 
 /**
  *
@@ -254,7 +255,7 @@ public class NewReferenceDialog extends javax.swing.JDialog {
 
             if (referenceName == null || referenceName.equals("")){
                 JOptionPane.showMessageDialog(this, "Reference name required");
-            } else if (org.ut.biolab.medsavant.db.util.DBUtil.containsReference(referenceName)) {
+            } else if (ReferenceQueryUtil.containsReference(referenceName)) {
                 JOptionPane.showMessageDialog(this, "Reference already exists");
             } else {
                 ReferenceController.getInstance().addReference(referenceName, contigs);

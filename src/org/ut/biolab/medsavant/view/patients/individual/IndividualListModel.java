@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.table.PatientTable;
+import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
 
 /**
@@ -38,12 +39,13 @@ public class IndividualListModel implements DetailedListModel {
     }
 
     public List<String> getColumnNames() {
+        TableSchema table = MedSavantDatabase.DefaultpatientTableSchema;
         List<String> result = new ArrayList<String>();
-        result.add(PatientTable.ALIAS_ID);
-        result.add(PatientTable.ALIAS_FAMILYID);
-        result.add(PatientTable.ALIAS_PEDIGREEID);
-        result.add(PatientTable.ALIAS_HOSPITALID);
-        result.add(PatientTable.ALIAS_DNAIDS);
+        result.add(table.getFieldAlias(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID));
+        result.add(table.getFieldAlias(DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID));
+        result.add(table.getFieldAlias(DefaultpatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID));
+        result.add(table.getFieldAlias(DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID));
+        result.add(table.getFieldAlias(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS));
         return result;
     }
 

@@ -25,8 +25,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.table.VariantTable;
 import org.ut.biolab.medsavant.db.model.Cohort;
+import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.Filter;
@@ -98,7 +98,7 @@ class CohortFilterView {
                                 Condition[] results = new Condition[dnaIds.size()];
                                 int i = 0;
                                 for (String dnaId : dnaIds) {                                    
-                                    results[i] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), VariantTable.FIELDNAME_DNAID, "varchar", 100), dnaId);
+                                    results[i] = BinaryCondition.equalTo(new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), DefaultvariantTableSchema.COLUMNNAME_OF_DNA_ID, "varchar", 100), dnaId);
                                     i++;
                                 }
 
