@@ -23,7 +23,7 @@ import javax.swing.WindowConstants;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.olddb.ConnectionController;
+import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.login.LoginView;
 

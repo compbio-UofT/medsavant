@@ -15,7 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
-import org.ut.biolab.medsavant.olddb.DBUtil;
 
 /**
  *

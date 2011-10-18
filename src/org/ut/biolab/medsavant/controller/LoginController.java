@@ -7,8 +7,8 @@ package org.ut.biolab.medsavant.controller;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil.LogType;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
@@ -80,7 +80,7 @@ public class LoginController {
 
         try {
             setLoggedIn(null != ConnectionController.connect());
-        } catch (NonFatalDatabaseException ex) {
+        } catch (Exception ex) {
             setLoginException(ex);
         }
     }

@@ -25,7 +25,6 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.db.util.query.QueryUtil;
-import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
