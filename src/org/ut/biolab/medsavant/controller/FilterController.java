@@ -206,8 +206,8 @@ public class FilterController{
         return conditions;
     }
     
-    public static List<List> getQueryFilterConditions() {
-        List<List> conditions = new ArrayList<List>();
+    public static List<List<Condition>> getQueryFilterConditions() {
+        List<List<Condition>> conditions = new ArrayList<List<Condition>>();
         for(Object key : filterMap.keySet().toArray()){
             conditions.add(getQueryFilterConditions((Integer)key));
         }
