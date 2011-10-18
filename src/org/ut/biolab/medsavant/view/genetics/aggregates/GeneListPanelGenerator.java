@@ -7,7 +7,7 @@ package org.ut.biolab.medsavant.view.genetics.aggregates;
 import java.sql.SQLException;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.model.record.BEDRecord;
+import org.ut.biolab.medsavant.db.model.BEDRecord;
 import com.jidesoft.utils.SwingWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import java.awt.BorderLayout;
@@ -27,6 +27,8 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.model.RegionSet;
+import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
 import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -123,7 +125,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             geneLister.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
-                    showGeneAggregates((String) geneLister.getSelectedItem());
+                    showGeneAggregates((RegionSet) geneLister.getSelectedItem());
                 }
             });
 
@@ -220,13 +222,13 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                         incrementProgress();
         }
 
-        public void updateGeneListDropDown(List<String> geneLists) {
-            for (String genel : geneLists) {
+        public void updateGeneListDropDown(List<RegionSet> geneLists) {
+            for (RegionSet genel : geneLists) {
                 geneLister.addItem(genel);
             }
         }
 
-        private void showGeneAggregates(String geneList) {
+        private void showGeneAggregates(RegionSet geneList) {
 
             if (aggregator != null && !aggregator.isDone() && !aggregator.isCancelled()) {
                 aggregator.cancel(true);
@@ -300,15 +302,15 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
         private class GeneAggregator extends SwingWorker {
 
-            private final String geneListName;
+            private final RegionSet geneList;
 
-            private GeneAggregator(String geneList) {
-                this.geneListName = geneList;
+            private GeneAggregator(RegionSet geneList) {
+                this.geneList = geneList;
             }
 
             @Override
             protected Object doInBackground() throws Exception {
-                final List<BEDRecord> genes = QueryUtil.getRegionsInRegionList(geneListName, limit);
+                final List<BEDRecord> genes = RegionQueryUtil.getBedRegionsInRegionSet(geneList.getId(), limit);
                 return genes;
             }
 
@@ -328,13 +330,13 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected Object doInBackground() throws Exception {
-                List<String> geneLists = QueryUtil.getDistinctRegionLists(100);
+                List<RegionSet> geneLists = RegionQueryUtil.getRegionSets();
                 return geneLists;
             }
 
             protected void done() {
                 try {
-                    List<String> geneLists = (List<String>) get();
+                    List<RegionSet> geneLists = (List<RegionSet>) get();
                     updateGeneListDropDown(geneLists);
                 } catch (java.util.concurrent.CancellationException ex) {
                 } catch (InterruptedException ex) {

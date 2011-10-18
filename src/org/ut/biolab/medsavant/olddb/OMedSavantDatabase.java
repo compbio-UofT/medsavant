@@ -5,10 +5,8 @@
 
 package org.ut.biolab.medsavant.olddb;
 
-import org.ut.biolab.medsavant.olddb.table.GeneListTableSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
-import org.ut.biolab.medsavant.olddb.table.GeneListMembershipTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
@@ -24,9 +22,7 @@ public class OMedSavantDatabase {
 
     private VariantTableSchema variantTableSchema;  
     
-    private GeneListTableSchema geneListTableSchema;
     private GeneListViewTableSchema geneListViewTableSchema;
-    private GeneListMembershipTableSchema geneListMembershipTableSchema;
     //private PatientTableSchema patientTableSchema;
     
     public static void main(String[] argv) {
@@ -54,9 +50,7 @@ public class OMedSavantDatabase {
         
         variantTableSchema = new VariantTableSchema(schema);    
         
-        geneListTableSchema = new GeneListTableSchema(schema);
         geneListViewTableSchema = new GeneListViewTableSchema(schema);
-        geneListMembershipTableSchema = new GeneListMembershipTableSchema(schema);
     }
 
     public VariantTableSchema getVariantTableSchema() {
@@ -65,14 +59,6 @@ public class OMedSavantDatabase {
     
     public TableSchema getGeneListViewTableSchema() {
         return this.geneListViewTableSchema;
-    }
-    
-    public TableSchema getGeneListTableSchema() {
-        return this.geneListTableSchema;
-    }
-
-    public TableSchema getGeneListMembershipTableSchema() {
-        return geneListMembershipTableSchema;
     }
 
 }

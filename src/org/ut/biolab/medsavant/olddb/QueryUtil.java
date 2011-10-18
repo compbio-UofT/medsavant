@@ -26,14 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import org.ut.biolab.medsavant.olddb.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.olddb.table.VariantTableSchema;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.model.record.BEDRecord;
+import org.ut.biolab.medsavant.db.model.BEDRecord;
 import org.ut.biolab.medsavant.db.model.GenomicRegion;
 import org.ut.biolab.medsavant.db.model.Range;
 
@@ -351,33 +350,6 @@ public class QueryUtil {
         return results;
     }
     
-    public static List<String> getDistinctGeneListNames() throws SQLException, NonFatalDatabaseException {
-        return QueryUtil.getDistinctValuesForColumn(
-                    ConnectionController.connect(),
-                    OMedSavantDatabase.getInstance().getGeneListTableSchema(),
-                    OMedSavantDatabase.getInstance().getGeneListTableSchema().getDBColumn(GeneListTableSchema.ALIAS_NAME));
-    }
-
-    
-    public static List<Vector> getRegionsInRegionSet(String regionName, int limit) throws SQLException, NonFatalDatabaseException {
-        int regionId = getRegionIdFromRegionName(regionName);
-        return QueryUtil.getRecordsMatchingID(
-                    ConnectionController.connect(),
-                    OMedSavantDatabase.getInstance().getGeneListViewTableSchema(),
-                    OMedSavantDatabase.getInstance().getGeneListViewTableSchema().getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETID),
-                    OMedSavantDatabase.getInstance().getGeneListViewTableSchema().getDBColumn(GeneListViewTableSchema.ALIAS_DESCRIPTION),
-                    regionId,
-                    limit);
-    }
-
-    public static List<String> getDistinctRegionLists(int limit) throws NonFatalDatabaseException, SQLException {
-        return QueryUtil.getDistinctValuesForColumn(
-                    ConnectionController.connect(),
-                    OMedSavantDatabase.getInstance().getGeneListTableSchema(),
-                    OMedSavantDatabase.getInstance().getGeneListTableSchema().getDBColumn(GeneListTableSchema.ALIAS_NAME),
-                    limit);
-    }
-    
     public static List<String> getDistinctValuesFromPatientTable(String columnAlias, boolean isNumeric) throws NonFatalDatabaseException, SQLException {
         
         //TODO:dbref
@@ -403,28 +375,6 @@ public class QueryUtil {
         }
     }
 
-    public static int getNumRegionsInRegionSet(String regionName) throws NonFatalDatabaseException, SQLException {
-        
-        int regionId = getRegionIdFromRegionName(regionName);
-        
-        TableSchema t = OMedSavantDatabase.getInstance().getGeneListViewTableSchema();
-
-        FunctionCall count = FunctionCall.countAll();
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(t.getTable());
-        q.addCustomColumns(count);
-        q.addCondition(BinaryCondition.equalTo(t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETID), regionId));
-        
-        Statement s = ConnectionController.connect().createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
-        rs.next();
-
-        int numrows = rs.getInt(1);
-        s.close();
-        
-        return numrows;
-    }
-    
     public static int getNumVariantsInRange(Connection c, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException {
         
         TableSchema t = OMedSavantDatabase.getInstance().getVariantTableSchema();
@@ -816,32 +766,6 @@ public class QueryUtil {
          * 
          */
     }
-
-    public static List<GenomicRegion> getGenomicRangesForRegionList(String geneListName) throws SQLException, NonFatalDatabaseException {
-        
-        int regionId = getRegionIdFromRegionName(geneListName);
-        
-        GeneListViewTableSchema t = (GeneListViewTableSchema) OMedSavantDatabase.getInstance().getGeneListViewTableSchema();
-        DbColumn name = t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETID);     
-
-        SelectQuery q = new SelectQuery();
-        q.addColumns(t.getDBColumn(GeneListViewTableSchema.ALIAS_CHROM));
-        q.addColumns(t.getDBColumn(GeneListViewTableSchema.ALIAS_START));
-        q.addColumns(t.getDBColumn(GeneListViewTableSchema.ALIAS_END));
-        q.addFromTable(t.getTable());
-        q.addCondition(BinaryCondition.equalTo(name, regionId)); 
-        
-        Statement s = ConnectionController.connect().createStatement();
-
-        ResultSet rs = s.executeQuery(q.toString());
-
-        List<GenomicRegion> results = new ArrayList<GenomicRegion>();
-        while (rs.next()) {
-            results.add(new GenomicRegion(rs.getString(1), new Range(rs.getInt(2), rs.getInt(3))));
-        }
-        
-        return results;
-    }
     
     public static Map<String, List<String>> getSavantBookmarkPositionsForDNAIds(Connection c, List<String> dnaIds, int limit) throws SQLException, NonFatalDatabaseException {
         
@@ -891,49 +815,6 @@ public class QueryUtil {
          * 
          */
         
-    }
-
-    public static List<BEDRecord> getRegionsInRegionList(String geneListName, int limit) throws NonFatalDatabaseException, SQLException {
-        
-        int regionId = getRegionIdFromRegionName(geneListName);
-        
-        //select chrom,start,end,description from region_set_view where name = 'ASD Genes';
-        GeneListViewTableSchema t = (GeneListViewTableSchema) OMedSavantDatabase.getInstance().getGeneListViewTableSchema();
-        
-        DbColumn chrom = t.getDBColumn(GeneListViewTableSchema.ALIAS_CHROM);
-        DbColumn start = t.getDBColumn(GeneListViewTableSchema.ALIAS_START);
-        DbColumn end = t.getDBColumn(GeneListViewTableSchema.ALIAS_END);
-        DbColumn description = t.getDBColumn(GeneListViewTableSchema.ALIAS_DESCRIPTION);
-        DbColumn name = t.getDBColumn(GeneListViewTableSchema.ALIAS_REGIONSETID);
-        
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(t.getTable());
-        q.addColumns(chrom);
-        q.addColumns(start);
-        q.addColumns(end);
-        q.addColumns(description);
-        q.addOrdering(description, Dir.ASCENDING);
-        q.addCondition(BinaryCondition.equalTo(name, regionId));
-         
-        Statement s = ConnectionController.connect().createStatement();
-        String queryString = q.toString();
-        if(limit > 0) queryString = queryString + " LIMIT " + limit;
-        
-        ResultSet rs = s.executeQuery(queryString);
-        
-        List<BEDRecord> results = new ArrayList<BEDRecord>();
-        
-        while(rs.next()) {
-            
-            results.add(new BEDRecord(
-                    rs.getString(1),
-                    rs.getInt(2),
-                    rs.getInt(3),
-                    rs.getString(4)
-                    ));
-        }
-        
-        return results;
     }
     
     public static List<String> getDNAIdsWithValuesInRange(TableSchema table, String columnName, Range r) throws NonFatalDatabaseException, SQLException {
@@ -1080,16 +961,6 @@ public class QueryUtil {
             return -1;
         }
     }
-
-    public static int getRegionIdFromRegionName(String regionName) throws SQLException, NonFatalDatabaseException {
-        TableSchema t = OMedSavantDatabase.getInstance().getGeneListTableSchema();
-        return getIdFromName(
-                t, 
-                t.getDBColumn(GeneListTableSchema.ALIAS_NAME),
-                t.getDBColumn(GeneListTableSchema.ALIAS_ID),
-                regionName);
-    }
-    
     
     /*public static int getCohortIdFromCohortName(String cohortName) throws SQLException, NonFatalDatabaseException {       
         TableSchema t = MedSavantDatabase.getInstance().getCohortTableSchema();

@@ -4,32 +4,16 @@
  */
 package org.ut.biolab.medsavant.olddb;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.InsertQuery;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.ut.biolab.medsavant.olddb.table.GeneListMembershipTableSchema;
-import org.ut.biolab.medsavant.olddb.table.GeneListTableSchema;
-import org.ut.biolab.medsavant.olddb.table.ModifiableColumn;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
-import org.ut.biolab.medsavant.view.dialog.ComboForm;
-import org.ut.biolab.medsavant.view.dialog.ConfirmDialog;
 
 /**
  *

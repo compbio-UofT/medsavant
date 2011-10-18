@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
 import org.ut.biolab.medsavant.olddb.DBUtil;
 import org.ut.biolab.medsavant.olddb.importfile.BedFormat;
@@ -133,7 +135,7 @@ public class IntervalPage extends SubSectionView {
             Iterator<String[]> i = ImportDelimitedFile.getFileIterator(path, delim, numHeaderLines,fileFormat);
             
             //DBUtil.addRegionList(geneListName,i);
-            RegionQueryUtil.addRegionList(geneListName, i);
+            RegionQueryUtil.addRegionList(geneListName, ReferenceController.getInstance().getCurrentReferenceId(), i);
             
             return null;
             
