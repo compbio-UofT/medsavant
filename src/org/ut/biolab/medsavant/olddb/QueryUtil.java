@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;

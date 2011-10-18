@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Vector;
 import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
-import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
 
 /**

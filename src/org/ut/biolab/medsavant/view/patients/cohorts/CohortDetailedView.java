@@ -28,10 +28,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
-import org.ut.biolab.medsavant.olddb.DBUtil;
-import org.ut.biolab.medsavant.olddb.OMedSavantDatabase;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
-import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
