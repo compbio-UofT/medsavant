@@ -24,9 +24,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
-import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.QueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -45,7 +45,7 @@ public class PatientStringListFilterView {
     
     private static List<String> getDefaultValues(TableSchema table, String filterName, String dbCol) {
         try {
-            return QueryUtil.getDistinctValuesForColumn(ConnectionController.connect(), table, table.getDBColumn(dbCol));
+            return QueryUtil.getDistinctValuesForColumn(table, table.getDBColumn(dbCol));
         } catch (Exception ex) {
             Logger.getLogger(PatientStringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -88,7 +88,7 @@ public class PatientStringListFilterView {
                         public Condition[] getConditions() {
                             try {
 
-                                List<String> individuals = QueryUtil.getDNAIdsForList(table, acceptableValues, dbCol);
+                                List<String> individuals = PatientQueryUtil.getDNAIdsForList(table, acceptableValues, dbCol);
                                 
                                 Condition[] results = new Condition[individuals.size()];
                                 int i = 0;

@@ -16,22 +16,16 @@ import java.awt.Dimension;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.db.util.query.QueryUtil;
 import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -123,7 +117,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         String genomeVersion = "hg19";
         String genomePath = "";
         try {            
-            genomePath = QueryUtil.getGenomeBAMPathForVersion(ConnectionController.connect(), genomeVersion);
+            genomePath = QueryUtil.getGenomeBAMPathForVersion(genomeVersion);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

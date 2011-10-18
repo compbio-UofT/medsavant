@@ -44,13 +44,12 @@ import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.Util;
 import org.ut.biolab.medsavant.view.genetics.charts.ChartFrequencyMap;
@@ -298,7 +297,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
             
             if (TableSchema.isNumeric(type)) {
                 
-                Range r = QueryUtil.getExtremeValuesForColumn(ConnectionController.connect(), table, column);
+                Range r = org.ut.biolab.medsavant.db.util.query.QueryUtil.getExtremeValuesForColumn(table, column);
                 
                 int numBins = getNumberOfQuantitativeCategories();
                 
@@ -311,13 +310,19 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
                     Range binrange = new Range((int) (min + i * step), (int) (min + (i + 1) * step));
                     chartMap.addEntry(
                             binrange.toString(), 
-                            QueryUtil.getFilteredFrequencyValuesForColumnInRange(ConnectionController.connect(), column, binrange)
+                            VariantQueryUtil.getFilteredFrequencyValuesForColumnInRange(
+                                    ProjectController.getInstance().getCurrentProjectId(), 
+                                    ReferenceController.getInstance().getCurrentReferenceId(), 
+                                    FilterController.getQueryFilterConditions(), 
+                                    fieldName, 
+                                    binrange.getMin(), 
+                                    binrange.getMax())
                             );
                 }
 
             } else {
                 try {
-                    chartMap.addAll(QueryUtil.getFilteredFrequencyValuesForColumn(ConnectionController.connect(), column));
+                    chartMap.addAll(VariantQueryUtil.getFilteredFrequencyValuesForColumn(table.getTable(), FilterController.getQueryFilterConditions(), column));
                     Collections.sort(chartMap.getEntries());
                 } catch (Exception e) {
                     e.printStackTrace();

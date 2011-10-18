@@ -24,14 +24,14 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.olddb.ConnectionController;
-import org.ut.biolab.medsavant.olddb.QueryUtil;
+import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
+import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -45,8 +45,7 @@ public class PatientNumericFilterView {
     }
     
     private static Range getDefaultValues(TableSchema table, String filterName, String patientDbCol) throws SQLException, NonFatalDatabaseException {      
-        return QueryUtil.getExtremeValuesForColumn(
-                    ConnectionController.connect(),
+        return org.ut.biolab.medsavant.db.util.query.QueryUtil.getExtremeValuesForColumn(
                     table,
                     table.getDBColumn(patientDbCol));
     }
@@ -185,7 +184,7 @@ public class PatientNumericFilterView {
 
                                 List<String> individuals = null;
                                 try {
-                                    individuals = QueryUtil.getDNAIdsWithValuesInRange(table, dbCol, new Range(rs.getLowValue(), rs.getHighValue()));
+                                    individuals = PatientQueryUtil.getDNAIdsWithValuesInRange(ProjectController.getInstance().getCurrentProjectId(), dbCol, new Range(rs.getLowValue(), rs.getHighValue()));
                                 } catch (NonFatalDatabaseException ex) {
                                     Logger.getLogger(PatientNumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
                                 } catch (SQLException ex) {
