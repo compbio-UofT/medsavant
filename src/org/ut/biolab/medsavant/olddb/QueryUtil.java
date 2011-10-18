@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import org.ut.biolab.medsavant.olddb.table.CohortTableSchema;
 import org.ut.biolab.medsavant.olddb.table.CohortViewTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListTableSchema;
 import org.ut.biolab.medsavant.olddb.table.GeneListViewTableSchema;
@@ -352,14 +351,6 @@ public class QueryUtil {
         
         return results;
     }
-
-    public static List<String> getDistinctCohortNames(int limit) throws NonFatalDatabaseException, SQLException {
-         return QueryUtil.getDistinctValuesForColumn(
-                    ConnectionController.connect(),
-                    OMedSavantDatabase.getInstance().getCohortTableSchema(),
-                    OMedSavantDatabase.getInstance().getCohortTableSchema().getDBColumn(CohortTableSchema.ALIAS_COHORTNAME),
-                    limit);
-    }
     
     public static List<String> getDistinctGeneListNames() throws SQLException, NonFatalDatabaseException {
         return QueryUtil.getDistinctValuesForColumn(
@@ -368,14 +359,6 @@ public class QueryUtil {
                     OMedSavantDatabase.getInstance().getGeneListTableSchema().getDBColumn(GeneListTableSchema.ALIAS_NAME));
     }
 
-    public static List<Vector> getPatientsInCohort(String cohortName) throws SQLException, NonFatalDatabaseException {
-        int cohortId = getCohortIdFromCohortName(cohortName);
-        return QueryUtil.getRecordsMatchingID(
-                    ConnectionController.connect(),
-                    OMedSavantDatabase.getInstance().getCohortViewTableSchema(),
-                    OMedSavantDatabase.getInstance().getCohortViewTableSchema().getDBColumn(CohortViewTableSchema.ALIAS_COHORTID),
-                    cohortId);
-    }
     
     public static List<Vector> getRegionsInRegionSet(String regionName, int limit) throws SQLException, NonFatalDatabaseException {
         int regionId = getRegionIdFromRegionName(regionName);
@@ -1098,16 +1081,7 @@ public class QueryUtil {
             return -1;
         }
     }
-    
-    public static int getCohortIdFromCohortName(String cohortName) throws SQLException, NonFatalDatabaseException {
-        TableSchema t = OMedSavantDatabase.getInstance().getCohortTableSchema();
-        return getIdFromName(
-                t, 
-                t.getDBColumn(CohortTableSchema.ALIAS_COHORTNAME),
-                t.getDBColumn(CohortTableSchema.ALIAS_COHORTID),
-                cohortName);
-    }
-    
+
     public static int getRegionIdFromRegionName(String regionName) throws SQLException, NonFatalDatabaseException {
         TableSchema t = OMedSavantDatabase.getInstance().getGeneListTableSchema();
         return getIdFromName(
