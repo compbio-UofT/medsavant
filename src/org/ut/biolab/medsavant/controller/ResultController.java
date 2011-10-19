@@ -66,7 +66,7 @@ public class ResultController {
         filterSetId = FilterController.getCurrentFilterSetID();
         
         try {
-            VariantQueryUtil.getVariants(
+            filteredVariants = VariantQueryUtil.getVariants(
                     ProjectController.getInstance().getCurrentProjectId(), 
                     ReferenceController.getInstance().getCurrentReferenceId(), 
                     FilterController.getQueryFilterConditions(), 
@@ -76,74 +76,4 @@ public class ResultController {
         }
     }
 
-    /*private void updateFilteredVariantDBResults1(int limit) throws NonFatalDatabaseException {
-        
-        filterSetId = FilterController.getCurrentFilterSetID();
-
-        TableSchema variant = MedSavantDatabase.getInstance().getVariantTableSchema();
-        VariantAnnotationSiftTableSchema sift = MedSavantDatabase.getInstance().getVariantSiftTableSchema();
-        VariantAnnotationPolyphenTableSchema polyphen = MedSavantDatabase.getInstance().getVariantPolyphenTableSchema();
-        VariantAnnotationGatkTableSchema gatk = MedSavantDatabase.getInstance().getVariantGatkTableSchema();
-        
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(variant.getTable());
-        query.addAllColumns();
-
-        List<QueryFilter> filters = FilterController.getQueryFilters();
-        for (QueryFilter f : filters) {
-            query.addCondition(ComboCondition.or(f.getConditions()));
-        }
-        
-        String queryString = query.toString() + " LIMIT " + limit;
-        
-        ResultSet r1;
-        try {
-            r1 = ConnectionController.connect().createStatement().executeQuery(queryString);
-        } catch (SQLException ex) {
-            Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);
-            throw new FatalDatabaseException(ex.getMessage());
-        }
-
-        List<Vector> results;
-        Object[][] columnGridVariant = variant.getColumnGrid();
-        Object[][] columnGridSift = sift.getJoinedColumnGrid();
-        Object[][] columnGridPolyphen = polyphen.getJoinedColumnGrid();
-        Object[][] columnGridGatk = gatk.getJoinedColumnGrid();
-        Object[][] columnGrid = new Object[columnGridVariant.length + columnGridSift.length + columnGridPolyphen.length + columnGridGatk.length][3];
-        
-        //copy variant
-        System.arraycopy(columnGridVariant, 0, columnGrid, 0, columnGridVariant.length);
-        
-        int numFields = variant.getNumFields();
-        
-        //copy sift
-        for(int i = 0; i < columnGridSift.length; i++){
-            columnGridSift[i][0] = ((Integer)columnGridSift[i][0]) + numFields; 
-        }      
-        System.arraycopy(columnGridSift, 0, columnGrid, numFields, columnGridSift.length);
-        numFields += columnGridSift.length;
-        
-        //copy polyphen
-        for(int i = 0; i < columnGridPolyphen.length; i++){
-            columnGridPolyphen[i][0] = ((Integer)columnGridPolyphen[i][0]) + numFields; 
-        }      
-        System.arraycopy(columnGridPolyphen, 0, columnGrid, numFields, columnGridPolyphen.length);
-        numFields += columnGridPolyphen.length;
-        
-        //copy gatk
-        for(int i = 0; i < columnGridGatk.length; i++){
-            columnGridGatk[i][0] = ((Integer)columnGridGatk[i][0]) + numFields; 
-        }      
-        System.arraycopy(columnGridGatk, 0, columnGrid, numFields, columnGridGatk.length);
-        numFields += columnGridGatk.length;
-
-        try {
-            results = DBUtil.parseResultSet(columnGrid, r1);
-        } catch (Exception ex) {
-            Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);
-            throw new FatalDatabaseException(ex.getMessage());
-        }
-        filteredVariants1 = Util.convertVectorsToVariantRecords(results);
-
-    }*/
 }
