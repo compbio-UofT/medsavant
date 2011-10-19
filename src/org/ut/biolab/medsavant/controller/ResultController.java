@@ -66,7 +66,7 @@ public class ResultController {
         filterSetId = FilterController.getCurrentFilterSetID();
         
         try {
-            filteredVariants = VariantQueryUtil.getVariants(
+            VariantQueryUtil.getVariants(
                     ProjectController.getInstance().getCurrentProjectId(), 
                     ReferenceController.getInstance().getCurrentReferenceId(), 
                     FilterController.getQueryFilterConditions(), 

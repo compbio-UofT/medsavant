@@ -24,12 +24,13 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.model.RangeCondition;
 import org.ut.biolab.medsavant.db.model.RegionSet;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.log.ClientLogger;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 
 /**
  *
@@ -99,13 +100,18 @@ class GeneListFilterView {
                                 Condition[] tmp = new Condition[2];
                                 
                                 tmp[0] = BinaryCondition.equalTo(
-                                        new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, "varchar", 5), 
+                                        ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), 
                                         gr.getChrom());
                                 
-                                DbColumn colPosition = new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, "int", 11);
+                                /*DbColumn colPosition = new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), DefaultvariantTableSchema.COLUMNNAME_OF_POSITION, "int", 11);
                                 tmp[1] = ComboCondition.and(new Condition[]{
                                         BinaryCondition.greaterThan(colPosition, (long)gr.getRange().getMin(), true),
-                                        BinaryCondition.lessThan(colPosition, (long)gr.getRange().getMax(), false)});
+                                        BinaryCondition.lessThan(colPosition, (long)gr.getRange().getMax(), false)});*/
+                                
+                                tmp[1] = new RangeCondition(
+                                        ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), 
+                                        (long)gr.getRange().getMin(), 
+                                        (long)gr.getRange().getMax());
                                                                 
                                 results[i] = ComboCondition.and(tmp);
 

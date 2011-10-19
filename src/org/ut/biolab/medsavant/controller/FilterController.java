@@ -198,18 +198,36 @@ public class FilterController{
         return qfs;
     }
     
-    public static List<Condition> getQueryFilterConditions(int queryId) {
+    /*public static List<Condition> getQueryFilterConditions(int queryId) {
         List<Condition> conditions = new ArrayList<Condition>();
         for(QueryFilter f : FilterController.getQueryFilters(queryId)){
             conditions.add(ComboCondition.or(f.getConditions()));
         }
         return conditions;
+    }*/
+    
+    public static Condition[] getQueryFilterConditions(int queryId) {
+        List<QueryFilter> filters = getQueryFilters(queryId);
+        Condition[] conditions = new Condition[filters.size()];
+        for(int i = 0; i < filters.size(); i++){
+            conditions[i] = ComboCondition.or(filters.get(i).getConditions());
+        }
+        return conditions;
     }
     
-    public static List<List<Condition>> getQueryFilterConditions() {
+    /*public static List<List<Condition>> getQueryFilterConditions() {
         List<List<Condition>> conditions = new ArrayList<List<Condition>>();
         for(Object key : filterMap.keySet().toArray()){
             conditions.add(getQueryFilterConditions((Integer)key));
+        }
+        return conditions;
+    }*/
+    
+    public static Condition[][] getQueryFilterConditions() {
+        Object[] keys = filterMap.keySet().toArray();
+        Condition[][] conditions = new Condition[keys.length][];
+        for(int i = 0; i < keys.length; i++){
+            conditions[i] = getQueryFilterConditions((Integer)keys[i]);
         }
         return conditions;
     }

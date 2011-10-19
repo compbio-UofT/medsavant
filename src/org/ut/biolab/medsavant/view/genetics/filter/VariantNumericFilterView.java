@@ -32,6 +32,8 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.model.RangeCondition;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -174,7 +176,7 @@ public class VariantNumericFilterView {
 
                         @Override
                         public Condition[] getConditions() {
-                            Condition[] results = new Condition[2];
+                            /*Condition[] results = new Condition[2];
                             
                             results[0] = BinaryCondition.greaterThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(frombox.getText().replaceAll(",", "")), true);
                             results[1] = BinaryCondition.lessThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(tobox.getText().replaceAll(",", "")), true);
@@ -182,7 +184,11 @@ public class VariantNumericFilterView {
                             Condition[] resultsCombined = new Condition[1];
                             resultsCombined[0] = ComboCondition.and(results);
 
-                            return resultsCombined;
+                            return resultsCombined;*/
+                            
+                            Condition[] results = new Condition[1];
+                            results[0] = new RangeCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
+                            return results;
                         }
 
                         @Override
