@@ -20,8 +20,8 @@ import javax.swing.JRadioButton;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.AnnotationField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
-import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -40,7 +40,7 @@ public class ChartView extends JPanel {
     public ChartView() {
         mapGenerators = new HashMap<String, ChartMapGenerator>();
         initGUI();
-        this.chartChooser.setSelectedItem(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultvariantTableSchema.COLUMNNAME_OF_CHROM));
+        this.chartChooser.setSelectedItem(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
     }
 
     private void initGUI() {
@@ -64,7 +64,7 @@ public class ChartView extends JPanel {
                 String alias = (String) chartChooser.getSelectedItem();
                 sc.setChartMapGenerator(mapGenerators.get(alias));
                 if (bSort == null) { return; }
-                if (alias.equals(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultvariantTableSchema.COLUMNNAME_OF_CHROM))) {
+                if (alias.equals(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM))) {
                     bSort.setEnabled(false);
                     sc.setIsSortedKaryotypically(true);
                 } else {

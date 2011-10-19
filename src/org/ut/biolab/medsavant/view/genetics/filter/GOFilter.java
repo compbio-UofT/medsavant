@@ -36,7 +36,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
-import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.view.genetics.filter.geneontology.*;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
@@ -340,11 +340,11 @@ public class GOFilter {
                             List<ComboCondition> listInnerCond = 
                                     new ArrayList<ComboCondition>();
                             List<Range> ranges = map.get(key);
-                            BinaryCondition chrCond = BinaryCondition.equalTo(table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_CHROM), key);
+                            BinaryCondition chrCond = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), key);
                             for (Range range: ranges){
                                 
-                                BinaryCondition innerCond1 = BinaryCondition.greaterThan(table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_POSITION), range.getMin(), true);
-                                BinaryCondition innerCond2 = BinaryCondition.lessThan(table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_POSITION), range.getMax(), true);
+                                BinaryCondition innerCond1 = BinaryCondition.greaterThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), range.getMin(), true);
+                                BinaryCondition innerCond2 = BinaryCondition.lessThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), range.getMax(), true);
                                 BinaryCondition[] condTogether = {innerCond1, innerCond2};
                                 listInnerCond.add(ComboCondition.and(condTogether));
                                 

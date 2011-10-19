@@ -20,13 +20,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.settings.NetworkUtils;
 
 /**
@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.settings.NetworkUtils;
  * @author tarkvara
  */
 public class PluginIndex {
-    private static final Log LOG = LogFactory.getLog(PluginIndex.class);
+    private static final Logger LOG = Logger.getLogger(PluginIndex.class.getName());
     private Map<String, URL> urls;
 
     public PluginIndex(URL url) throws IOException {
@@ -55,7 +55,7 @@ public class PluginIndex {
                                 try {
                                     urls.put(id, new URL(reader.getElementText()));
                                 } catch (MalformedURLException x) {
-                                    LOG.info("Unable to parse \"" + reader.getElementText() + "\" as a plugin URL.");
+                                    LOG.log(Level.INFO, "Unable to parse \"%s\" as a plugin URL.", reader.getElementText());
                                 }
                                 id = null;
                             }
@@ -76,3 +76,4 @@ public class PluginIndex {
         return urls.get(id);
     }
 }
+

@@ -19,17 +19,10 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.plugin.PluginIndex;
 import org.ut.biolab.medsavant.plugin.PluginVersionException;
@@ -50,7 +43,7 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  */
 public class PluginController extends Controller {
 
-    private static final Log LOG = LogFactory.getLog(PluginController.class);
+    private static final Logger LOG = Logger.getLogger(PluginController.class.getName());
     private static final String UNINSTALL_FILENAME = ".uninstall_plugins";
 
     private static PluginController instance;
@@ -79,13 +72,13 @@ public class PluginController extends Controller {
         try {
             uninstallFile = new File(DirectorySettings.getMedSavantDirectory(), UNINSTALL_FILENAME);
 
-            LOG.info("Uninstall list " + UNINSTALL_FILENAME);
+            LOG.log(Level.INFO, "Uninstall list " + UNINSTALL_FILENAME);
             if (uninstallFile.exists()) {
                 deleteFileList(uninstallFile);
             }
             copyBuiltInPlugins();
         } catch (Exception ex) {
-            LOG.error("Error loading plugins.", ex);
+            LOG.log(Level.SEVERE, "Error loading plugins.", ex);
         }
     }
 
@@ -103,7 +96,7 @@ public class PluginController extends Controller {
             try {
                 addPlugin(f);
             } catch (PluginVersionException x) {
-                LOG.warn("No compatible plugins found in " + f);
+                LOG.log(Level.WARNING, "No compatible plugins found in %s.", f);
             }
         }
 
@@ -162,7 +155,7 @@ public class PluginController extends Controller {
                             try {
                                 loadPlugin(desc);
                             } catch (Throwable x) {
-                                LOG.error("Unable to load " + desc.getName(), x);
+                                LOG.log(Level.SEVERE, "Unable to load " + desc.getName(), x);
                                 pluginErrors.put(desc.getID(), x.getClass().getName());
                                 fireEvent(new PluginEvent(PluginEvent.Type.ERROR, desc.getID()));
                             }
@@ -188,7 +181,7 @@ public class PluginController extends Controller {
         FileWriter fstream = null;
         try {
             PluginDescriptor info = knownPlugins.get(id);
-            LOG.info("Adding plugin " + info.getFile().getAbsolutePath() + " to uninstall list " + uninstallFile.getPath());
+            LOG.log(Level.INFO, "Adding plugin %s to uninstall list %s.", new Object[] { info.getFile().getAbsolutePath(), uninstallFile.getPath() });
 
             if (!uninstallFile.exists()) {
                 uninstallFile.createNewFile();
@@ -204,7 +197,7 @@ public class PluginController extends Controller {
             fireEvent(new PluginEvent(PluginEvent.Type.QUEUED_FOR_REMOVAL, id));
 
         } catch (IOException ex) {
-            LOG.error("Error uninstalling plugin: " + uninstallFile, ex);
+            LOG.log(Level.SEVERE, "Error uninstalling plugin: " + uninstallFile, ex);
         } finally {
             try {
                 fstream.close();
@@ -242,13 +235,13 @@ public class PluginController extends Controller {
             br = new BufferedReader(new FileReader(fileListFile));
 
             while ((line = br.readLine()) != null) {
-                LOG.info("Uninstalling " + line);
+                LOG.log(Level.INFO, "Uninstalling %s.", line);
                 if (!new File(line).delete()) {
                     throw new IOException("Delete of " + line + " failed");
                 }
             }
         } catch (IOException ex) {
-            LOG.error("Problem uninstalling " + line, ex);
+            LOG.log(Level.SEVERE, "Problem uninstalling " + line, ex);
         } finally {
             try {
                 br.close();
@@ -276,7 +269,7 @@ public class PluginController extends Controller {
             srcDir = new File("plugins");
             IOUtils.copyDir(srcDir, destDir);
         } catch (Exception x) {
-            LOG.error("Unable to copy builtin plugins from " + srcDir.getAbsolutePath() + " to " + destDir, x);
+            LOG.log(Level.SEVERE, "Unable to copy builtin plugins from " + srcDir.getAbsolutePath() + " to " + destDir, x);
         }
     }
 
@@ -296,20 +289,20 @@ public class PluginController extends Controller {
     public PluginDescriptor addPlugin(File f) throws PluginVersionException {
         PluginDescriptor desc = PluginDescriptor.fromFile(f);
         if (desc != null) {
-            LOG.info("Found usable " + desc + " in " + f.getName());
+            LOG.log(Level.INFO, "Found usable %s in %s.", new Object[] { desc, f.getName() });
             PluginDescriptor existingDesc = knownPlugins.get(desc.getID());
             if (existingDesc != null && existingDesc.getVersion().compareTo(desc.getVersion()) >= 0) {
-                LOG.info("   Ignored " + desc + " due to presence of existing " + existingDesc);
+                LOG.log(Level.INFO, "   Ignored %s due to presence of existing %s.", new Object[] { desc, existingDesc });
                 return null;
             }
             knownPlugins.put(desc.getID(), desc);
             if (desc.isCompatible()) {
                 if (existingDesc != null) {
-                    LOG.info("   Replaced " + existingDesc);
+                    LOG.log(Level.INFO, "   Replaced %s.", existingDesc);
                     pluginErrors.remove(desc.getID());
                 }
             } else {
-                LOG.info("Found incompatible " + desc + " (SDK version " + desc.getSDKVersion() + ") in " + f.getName());
+                LOG.log(Level.INFO, "Found incompatible %s (SDK version %s) in %s.", new Object[] { desc, desc.getSDKVersion(), f.getName() });
                 pluginErrors.put(desc.getID(), "Invalid SDK version (" + desc.getSDKVersion() + ")");
                 throw new PluginVersionException("Invalid SDK version (" + desc.getSDKVersion() + ")");
             }
@@ -336,14 +329,14 @@ public class PluginController extends Controller {
             }
             URL updateURL = repositoryIndex.getPluginURL(id);
             if (updateURL != null) {
-                LOG.info("Downloading updated version of " + id + " from " + updateURL);
+                LOG.log(Level.INFO, "Downloading updated version of %s from %s.", new Object[] { id, updateURL });
                 addPlugin(NetworkUtils.downloadFile(updateURL, DirectorySettings.getPluginsDirectory(), null));
                 return true;
             }
         } catch (IOException x) {
-            LOG.error("Unable to install update for " + id, x);
+            LOG.log(Level.SEVERE, "Unable to install update for " + id, x);
         } catch (PluginVersionException x) {
-            LOG.error("Update for " + id + " not loaded.");
+            LOG.log(Level.SEVERE, "Update for %s not loaded.", id);
         }
         return false;
     }

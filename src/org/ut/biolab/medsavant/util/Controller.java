@@ -19,9 +19,6 @@ package org.ut.biolab.medsavant.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 
 /**
  * Generic controller class which provides functionality which can be used by other
@@ -30,8 +27,6 @@ import org.apache.commons.logging.LogFactory;
  * @author tarkvara
  */
 public abstract class Controller<E> {
-    private static final Log LOG = LogFactory.getLog(Controller.class);
-
     protected List<Listener<E>> listeners = new ArrayList<Listener<E>>();
     private List<Listener<E>> listenersToAdd;
     private List<Listener<E>> listenersToRemove;
@@ -46,7 +41,7 @@ public abstract class Controller<E> {
             try {
                 l.handleEvent(event);
             } catch (Throwable x) {
-                LOG.warn(l + " threw exception while handling event.", x);
+//                LOG.warn(l + " threw exception while handling event.", x);
             }
         }
         for (Listener<E> l: listenersToAdd) {

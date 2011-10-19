@@ -27,8 +27,8 @@ import javax.swing.JTable;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
-import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.ServerlogTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ServerLogTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
@@ -82,10 +82,10 @@ public class ServerLogPage extends SubSectionView {
                 while (rs.next()) {
                     TableSchema table = MedSavantDatabase.ServerlogTableSchema;
                     Vector r = new Vector();
-                    r.add(rs.getString(table.getFieldAlias(ServerlogTableSchema.COLUMNNAME_OF_USER)));
-                    r.add(rs.getString(table.getFieldAlias(ServerlogTableSchema.COLUMNNAME_OF_EVENT)));
-                    r.add(rs.getString(table.getFieldAlias(ServerlogTableSchema.COLUMNNAME_OF_DESCRIPTION)));
-                    r.add(rs.getTimestamp(table.getFieldAlias(ServerlogTableSchema.COLUMNNAME_OF_TIMESTAMP)));
+                    r.add(rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_USER)));
+                    r.add(rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_EVENT)));
+                    r.add(rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION)));
+                    r.add(rs.getTimestamp(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP)));
                     v.add(r);
                 }
                 if (Thread.currentThread().isInterrupted()) {
@@ -126,9 +126,9 @@ public class ServerLogPage extends SubSectionView {
                 while (rs.next()) {
                     TableSchema table = MedSavantDatabase.ServerlogTableSchema;
                     Vector r = new Vector();
-                    r.add(rs.getString(table.getFieldAlias(ServerlogTableSchema.COLUMNNAME_OF_EVENT)));
-                    r.add(rs.getString(table.getFieldAlias(ServerlogTableSchema.COLUMNNAME_OF_DESCRIPTION)));
-                    r.add(rs.getTimestamp(table.getFieldAlias(ServerlogTableSchema.COLUMNNAME_OF_TIMESTAMP)));
+                    r.add(rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_EVENT)));
+                    r.add(rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION)));
+                    r.add(rs.getTimestamp(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP)));
                     v.add(r);
                 }
                 if (Thread.currentThread().isInterrupted()) {

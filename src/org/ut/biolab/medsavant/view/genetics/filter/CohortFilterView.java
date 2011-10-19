@@ -4,10 +4,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -23,10 +19,16 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.Cohort;
-import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.Filter;
@@ -98,7 +100,7 @@ class CohortFilterView {
                                 Condition[] results = new Condition[dnaIds.size()];
                                 int i = 0;
                                 for (String dnaId : dnaIds) {   
-                                    results[i] = BinaryCondition.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaId);
+                                    results[i] = BinaryCondition.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaId);
                                     i++;
                                 }
 

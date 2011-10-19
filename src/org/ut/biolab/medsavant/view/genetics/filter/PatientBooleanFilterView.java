@@ -21,7 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.db.model.structure.MedSavantDatabase.DefaultvariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
@@ -96,7 +96,7 @@ public class PatientBooleanFilterView {
                                 Condition[] results = new Condition[individuals.size()];
                                 int i = 0;
                                 for (String ind : individuals) {
-                                    results[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultvariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
+                                    results[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
                                     i++;
                                 }
 
