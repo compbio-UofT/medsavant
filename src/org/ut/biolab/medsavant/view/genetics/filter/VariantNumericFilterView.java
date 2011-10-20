@@ -229,7 +229,7 @@ public class VariantNumericFilterView {
 
         container.add(bottomContainer);
 
-        al.actionPerformed(null);
+        //al.actionPerformed(null);
         return new FilterView(alias, container);
     }
     

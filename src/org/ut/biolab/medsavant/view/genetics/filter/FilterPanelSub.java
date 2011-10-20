@@ -209,6 +209,15 @@ public final class FilterPanelSub extends JPanel{
         refreshSubItems();
     }
     
+    public boolean hasSubItem(String filterId){
+        for(FilterPanelSubItem f : subItems){
+            if(f.getFilterId().equals(filterId)){
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public void addNewSubItem(AnnotationField af){
         
         String tablename = ProjectController.getInstance().getCurrentTableName();
@@ -251,7 +260,7 @@ public final class FilterPanelSub extends JPanel{
         map.put(Category.PLUGIN, new ArrayList<FilterPlaceholder>()); 
 
         //cohort filter
-        if(!FilterController.isFilterActive(thisId, CohortFilterView.FILTER_ID)){
+        if(!hasSubItem(CohortFilterView.FILTER_ID)){
             map.get(Category.PATIENT).add(new FilterPlaceholder() {
                 public FilterView getFilterView() { return CohortFilterView.getCohortFilterView(thisId);}
                 public String getFilterID() { return CohortFilterView.FILTER_ID;}
@@ -260,7 +269,7 @@ public final class FilterPanelSub extends JPanel{
         }
 
         //gene list filter
-        if(!FilterController.isFilterActive(thisId, GeneListFilterView.FILTER_ID)){
+        if(!hasSubItem(GeneListFilterView.FILTER_ID)){
             map.get(Category.GENOME_COORDS).add(new FilterPlaceholder() {
                 public FilterView getFilterView() { return GeneListFilterView.getFilterView(thisId);}
                 public String getFilterID() { return GeneListFilterView.FILTER_ID;}
@@ -272,7 +281,7 @@ public final class FilterPanelSub extends JPanel{
         PluginController pc = PluginController.getInstance();
         for (PluginDescriptor desc: pc.getDescriptors()) {
             final MedSavantPlugin p = pc.getPlugin(desc.getID());
-            if (p instanceof MedSavantFilterPlugin) {
+            if (p instanceof MedSavantFilterPlugin && !hasSubItem(p.getDescriptor().getID())) {
                 map.get(Category.PLUGIN).add(new FilterPlaceholder() {
                     public FilterView getFilterView() { return PluginFilterView.getFilterView((MedSavantFilterPlugin)p);}
                     public String getFilterID() { return p.getDescriptor().getID();}
@@ -285,7 +294,7 @@ public final class FilterPanelSub extends JPanel{
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
             for(final AnnotationField field : af.getAnnotationFields()){
-                if(field.isFilterable() && !FilterController.isFilterActive(thisId, field.getColumnName())){
+                if(field.isFilterable() && !hasSubItem(field.getColumnName())){
                     map.get(field.getCategory()).add(new FilterPlaceholder() {
 
                         public FilterView getFilterView() {

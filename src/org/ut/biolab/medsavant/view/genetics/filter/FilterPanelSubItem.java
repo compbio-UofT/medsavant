@@ -104,6 +104,10 @@ public class FilterPanelSubItem extends JPanel{
         return isRemoved;
     }
     
+    public String getFilterId(){
+        return filterId;
+    }
+    
     
     
 }

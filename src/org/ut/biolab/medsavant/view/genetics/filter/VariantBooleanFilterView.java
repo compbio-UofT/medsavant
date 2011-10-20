@@ -148,7 +148,7 @@ public class VariantBooleanFilterView {
         bottomContainer.setAlignmentX(0F);
         container.add(bottomContainer);
 
-        al.actionPerformed(null);       
+        //al.actionPerformed(null);       
         return new FilterView(alias, container);
     }
     

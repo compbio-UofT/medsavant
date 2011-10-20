@@ -150,7 +150,7 @@ class CohortFilterView {
         p.add(b, BorderLayout.CENTER);
         p.add(bottomContainer, BorderLayout.SOUTH);
         
-        al.actionPerformed(null);
+        //al.actionPerformed(null);
         return p;
     }
 }
