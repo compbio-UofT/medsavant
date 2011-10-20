@@ -30,5 +30,5 @@ public abstract class MedSavantFilterPlugin extends MedSavantPlugin {
      * This method is called once during application life cycle to allow a third-party
      * plugin to initialize and show itself.
      */
-    public abstract void init(JPanel panel);
+    public abstract void init(JPanel panel, int queryId);
 }

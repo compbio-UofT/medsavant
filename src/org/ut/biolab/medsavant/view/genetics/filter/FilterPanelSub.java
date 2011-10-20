@@ -246,9 +246,7 @@ public final class FilterPanelSub extends JPanel{
     }
     
     private Map<Category, List<FilterPlaceholder>> getRemainingFilters(){
-        
-        final int thisId = this.getId();
-        
+                
         Map<Category, List<FilterPlaceholder>> map = new HashMap<Category, List<FilterPlaceholder>>();
                 
         map.put(Category.PATIENT, new ArrayList<FilterPlaceholder>());
@@ -262,7 +260,7 @@ public final class FilterPanelSub extends JPanel{
         //cohort filter
         if(!hasSubItem(CohortFilterView.FILTER_ID)){
             map.get(Category.PATIENT).add(new FilterPlaceholder() {
-                public FilterView getFilterView() { return CohortFilterView.getCohortFilterView(thisId);}
+                public FilterView getFilterView() { return CohortFilterView.getCohortFilterView(id);}
                 public String getFilterID() { return CohortFilterView.FILTER_ID;}
                 public String getFilterName() { return CohortFilterView.FILTER_NAME;}
             });  
@@ -271,7 +269,7 @@ public final class FilterPanelSub extends JPanel{
         //gene list filter
         if(!hasSubItem(GeneListFilterView.FILTER_ID)){
             map.get(Category.GENOME_COORDS).add(new FilterPlaceholder() {
-                public FilterView getFilterView() { return GeneListFilterView.getFilterView(thisId);}
+                public FilterView getFilterView() { return GeneListFilterView.getFilterView(id);}
                 public String getFilterID() { return GeneListFilterView.FILTER_ID;}
                 public String getFilterName() { return GeneListFilterView.FILTER_NAME;}
             });
@@ -283,7 +281,7 @@ public final class FilterPanelSub extends JPanel{
             final MedSavantPlugin p = pc.getPlugin(desc.getID());
             if (p instanceof MedSavantFilterPlugin && !hasSubItem(p.getDescriptor().getID())) {
                 map.get(Category.PLUGIN).add(new FilterPlaceholder() {
-                    public FilterView getFilterView() { return PluginFilterView.getFilterView((MedSavantFilterPlugin)p);}
+                    public FilterView getFilterView() { return PluginFilterView.getFilterView((MedSavantFilterPlugin)p, id);}
                     public String getFilterID() { return p.getDescriptor().getID();}
                     public String getFilterName() { return p.getTitle();}
                 });
