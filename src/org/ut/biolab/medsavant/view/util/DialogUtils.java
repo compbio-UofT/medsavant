@@ -170,13 +170,19 @@ public class DialogUtils {
      * @return an array of selected files; an empty array if nothing is selected
      */
     public static File[] chooseFilesForOpen(Frame parent, String title, FileFilter filter, File initialDir) {
+        
+        
+        // unfortunately, we need function over aesthetics... 
+        /*
         if (MiscUtils.MAC) {
             // Mac AWT FileDialog doesn't support multiple selection.
-            File f = chooseFileForOpen(parent, title, filter, initialDir);
-            if (f != null) {
-                return new File[] { f };
+            File[] files = chooseFilesForOpen( parent,  title,  filter,  initialDir);
+            if (files != null) {
+                return files;
             }
         } else {
+         * 
+         */
             JFileChooser fd = new JFileChooser();
             fd.setDialogTitle(title);
             fd.setSelectedFile(initialDir);
@@ -189,7 +195,7 @@ public class DialogUtils {
             if (result == JFileChooser.APPROVE_OPTION) {
                 return fd.getSelectedFiles();
             }
-        }
+        //}
         return new File[] {};
     }
 
