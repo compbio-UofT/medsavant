@@ -59,7 +59,7 @@ public class LoginController {
     private static ArrayList<LoginListener> loginListeners = new ArrayList<LoginListener>();
 
     public static boolean isLoggedIn() { return loggedIn; }
-
+    
     public static synchronized void login(String un, String pw) {
         
         username = un;
@@ -106,4 +106,6 @@ public class LoginController {
     private static void setLoginException(Exception ex) {
         fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED,ex));
     }
+
+   
 }

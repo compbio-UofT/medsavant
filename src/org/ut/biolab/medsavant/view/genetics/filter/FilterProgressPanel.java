@@ -100,8 +100,10 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
                 FilterController.getQueryFilterConditions());
         } catch (Exception ex) {
             Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
-        }      
-        model.addRow("Total", "", maxRecords);
+        }
+        if (maxRecords != -1) {
+            model.addRow("Total", "", maxRecords);
+        }
         
         FilterController.addFilterListener(this);
         

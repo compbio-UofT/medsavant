@@ -5,15 +5,7 @@
 package org.ut.biolab.medsavant.view.login;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.view.util.PaintUtil;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *

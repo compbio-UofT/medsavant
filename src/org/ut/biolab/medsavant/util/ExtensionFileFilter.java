@@ -13,29 +13,44 @@ import javax.swing.filechooser.FileFilter;
  * @author mfiume
  */
 public class ExtensionFileFilter extends FileFilter {
-    private final String extension;
+
+    private final String[] extensions;
 
     public ExtensionFileFilter(String extension) {
-        this.extension = extension.toLowerCase();
+        this(new String[] {extension});
+    }
+
+    public ExtensionFileFilter(String[] exts) {
+        this.extensions = exts;
     }
 
     public boolean accept(File f) {
         if (f.isDirectory()) { return true; }
         if (f.isFile()) {
-            if (f.getAbsolutePath().toLowerCase().endsWith("." + extension)) { return true; }
+            for (String extension : extensions) {
+                if (f.getAbsolutePath().toLowerCase().endsWith("." + extension)) { return true; }
+            }
         }
         return false;
     }
 
     @Override
     public String getDescription() {
-        if(extension.equals("vcf")){
-            return "VCF files | *.vcf";
-        } else if (extension.equals("svp")){
-            return "Savant Project Files | *.svp";
+        if(extensions[0].equals("vcf")){
+            return "VCF files | " + getExtensionString();
+        } else if (extensions[0].equals("svp")){
+            return "Savant Project Files | " + getExtensionString();
         } else {
-            return "*." + extension;
+            return "*." + extensions[0];
         }        
+    }
+
+    private String getExtensionString() {
+        String s = "";
+        for (String e : extensions) {
+            s += " *." + e;
+        }
+        return s;
     }
 
 }

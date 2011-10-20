@@ -175,7 +175,7 @@ public class VCFUploadForm extends javax.swing.JDialog {
 
     private void chooseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseFileButtonActionPerformed
         
-        files = DialogUtils.chooseFilesForOpen(MainFrame.getInstance(), "Import Variants", new ExtensionFileFilter("vcf"), null);
+        files = DialogUtils.chooseFilesForOpen(MainFrame.getInstance(), "Import Variants", new ExtensionFileFilter(new String[] {"vcf","vcf.gz"}), null);
         
         /*
         JFileChooser fc = new JFileChooser();

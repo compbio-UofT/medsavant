@@ -22,7 +22,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.PluginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.AnnotationField;
