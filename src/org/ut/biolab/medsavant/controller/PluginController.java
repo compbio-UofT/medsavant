@@ -96,7 +96,7 @@ public class PluginController extends Controller {
             try {
                 addPlugin(f);
             } catch (PluginVersionException x) {
-                LOG.log(Level.WARNING, "No compatible plugins found in %s.", f);
+                LOG.log(Level.WARNING, "No compatible plugins found in {0}.", f);
             }
         }
 
@@ -181,7 +181,7 @@ public class PluginController extends Controller {
         FileWriter fstream = null;
         try {
             PluginDescriptor info = knownPlugins.get(id);
-            LOG.log(Level.INFO, "Adding plugin %s to uninstall list %s.", new Object[] { info.getFile().getAbsolutePath(), uninstallFile.getPath() });
+            LOG.log(Level.INFO, "Adding plugin {0} to uninstall list {1}.", new Object[] { info.getFile().getAbsolutePath(), uninstallFile.getPath() });
 
             if (!uninstallFile.exists()) {
                 uninstallFile.createNewFile();
@@ -235,7 +235,7 @@ public class PluginController extends Controller {
             br = new BufferedReader(new FileReader(fileListFile));
 
             while ((line = br.readLine()) != null) {
-                LOG.log(Level.INFO, "Uninstalling %s.", line);
+                LOG.log(Level.INFO, "Uninstalling {0}.", line);
                 if (!new File(line).delete()) {
                     throw new IOException("Delete of " + line + " failed");
                 }
@@ -289,20 +289,20 @@ public class PluginController extends Controller {
     public PluginDescriptor addPlugin(File f) throws PluginVersionException {
         PluginDescriptor desc = PluginDescriptor.fromFile(f);
         if (desc != null) {
-            LOG.log(Level.INFO, "Found usable %s in %s.", new Object[] { desc, f.getName() });
+            LOG.log(Level.INFO, "Found usable {0} in {1}.", new Object[] { desc, f.getName() });
             PluginDescriptor existingDesc = knownPlugins.get(desc.getID());
             if (existingDesc != null && existingDesc.getVersion().compareTo(desc.getVersion()) >= 0) {
-                LOG.log(Level.INFO, "   Ignored %s due to presence of existing %s.", new Object[] { desc, existingDesc });
+                LOG.log(Level.INFO, "   Ignored {0} due to presence of existing {1}.", new Object[] { desc, existingDesc });
                 return null;
             }
             knownPlugins.put(desc.getID(), desc);
             if (desc.isCompatible()) {
                 if (existingDesc != null) {
-                    LOG.log(Level.INFO, "   Replaced %s.", existingDesc);
+                    LOG.log(Level.INFO, "   Replaced {0}.", existingDesc);
                     pluginErrors.remove(desc.getID());
                 }
             } else {
-                LOG.log(Level.INFO, "Found incompatible %s (SDK version %s) in %s.", new Object[] { desc, desc.getSDKVersion(), f.getName() });
+                LOG.log(Level.INFO, "Found incompatible {0} (SDK version {1}) in {2}.", new Object[] { desc, desc.getSDKVersion(), f.getName() });
                 pluginErrors.put(desc.getID(), "Invalid SDK version (" + desc.getSDKVersion() + ")");
                 throw new PluginVersionException("Invalid SDK version (" + desc.getSDKVersion() + ")");
             }
@@ -329,14 +329,14 @@ public class PluginController extends Controller {
             }
             URL updateURL = repositoryIndex.getPluginURL(id);
             if (updateURL != null) {
-                LOG.log(Level.INFO, "Downloading updated version of %s from %s.", new Object[] { id, updateURL });
+                LOG.log(Level.INFO, "Downloading updated version of {0} from {1}.", new Object[] { id, updateURL });
                 addPlugin(NetworkUtils.downloadFile(updateURL, DirectorySettings.getPluginsDirectory(), null));
                 return true;
             }
         } catch (IOException x) {
             LOG.log(Level.SEVERE, "Unable to install update for " + id, x);
         } catch (PluginVersionException x) {
-            LOG.log(Level.SEVERE, "Update for %s not loaded.", id);
+            LOG.log(Level.SEVERE, "Update for {0} not loaded.", id);
         }
         return false;
     }

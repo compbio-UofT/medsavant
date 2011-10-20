@@ -24,7 +24,7 @@ import org.ut.biolab.medsavant.db.format.AnnotationField;
  *
  * @author Andrew
  */
-public class FilterPanelSub extends JPanel{
+public final class FilterPanelSub extends JPanel{
     
     private int id;
     private JPanel contentPanel;

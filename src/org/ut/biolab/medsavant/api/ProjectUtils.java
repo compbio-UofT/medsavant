@@ -18,11 +18,15 @@ package org.ut.biolab.medsavant.api;
 
 import java.sql.SQLException;
 
+import com.healthmarketscience.sqlbuilder.Condition;
+
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
+import org.ut.biolab.medsavant.model.QueryFilter;
 
 
 /**
@@ -48,5 +52,28 @@ public class ProjectUtils {
     
     public static TableSchema getCustomVariantTableSchema(int projectID, int refID) throws SQLException {
         return CustomTables.getVariantTableSchema(ProjectQueryUtil.getVariantTablename(projectID, refID));
+    }
+    
+    public static void addFilterConditions(final Condition[] conditions, final String filterName, final String filterID, int queryID) {
+        FilterController.addFilter(new QueryFilter() {
+            @Override
+            public Condition[] getConditions() {
+                return conditions;
+            }
+
+            @Override
+            public String getName() {
+                return filterName;
+            }
+
+            @Override
+            public String getId() {
+                return filterID;
+            }
+        }, queryID);
+    }
+    
+    public static void removeFilter(String filterID, int queryID) {
+        FilterController.removeFilter(filterID, queryID);
     }
 }

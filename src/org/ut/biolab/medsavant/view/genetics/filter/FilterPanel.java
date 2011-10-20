@@ -1,6 +1,17 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
@@ -9,12 +20,10 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
@@ -23,13 +32,16 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JViewport;
-import javax.swing.border.LineBorder;
+
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.PluginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.AnnotationField;
 import org.ut.biolab.medsavant.db.format.AnnotationField.Category;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
+import org.ut.biolab.medsavant.plugin.MedSavantFilterPlugin;
+import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
+import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -119,7 +131,7 @@ public class FilterPanel extends JScrollPane {
         container.removeAll();
         
         
-        Map<Category, List<JPanel>> map = new HashMap<Category, List<JPanel>>();
+        Map<Category, List<JPanel>> map = new EnumMap<Category, List<JPanel>>(Category.class);
         
         //--add defaults
         map.put(AnnotationField.Category.PATIENT, new ArrayList<JPanel>());
@@ -150,6 +162,21 @@ public class FilterPanel extends JScrollPane {
                     }
                     map.get(field.getCategory()).add(createClickableLabel(fps, field));
                 }
+            }
+        }
+        
+        PluginController pc = PluginController.getInstance();
+        for (PluginDescriptor desc: pc.getDescriptors()) {
+            final MedSavantPlugin p = pc.getPlugin(desc.getID());
+            if (p instanceof MedSavantFilterPlugin) {
+                if (!map.containsKey(Category.PLUGIN)) {
+                    map.put(Category.PLUGIN, new ArrayList<JPanel>());
+                }
+                map.get(Category.PLUGIN).add(createClickableLabel(fps, new FilterPlaceholder() {
+                    public FilterView getFilterView() { return PluginFilterView.getFilterView((MedSavantFilterPlugin)p);}
+                    public String getFilterID() { return p.getDescriptor().getID();}
+                    public String getFilterName() { return p.getTitle();}
+                }));
             }
         }
         
