@@ -11,14 +11,27 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.PluginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.AnnotationField;
+import org.ut.biolab.medsavant.db.format.AnnotationField.Category;
+import org.ut.biolab.medsavant.db.format.AnnotationFormat;
+import org.ut.biolab.medsavant.plugin.MedSavantFilterPlugin;
+import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
+import org.ut.biolab.medsavant.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -75,8 +88,38 @@ public final class FilterPanelSub extends JPanel{
             public void mousePressed(MouseEvent e) {}
 
             public void mouseReleased(MouseEvent e) {
-                parent.showOptions(instance);
-                addLabel.setBackground(BAR_COLOUR);
+
+                Map<Category, List<FilterPlaceholder>> map = getRemainingFilters();
+                
+                JPopupMenu p = new JPopupMenu();  
+                
+                Category[] cats = new Category[map.size()];
+                cats = map.keySet().toArray(cats);
+                Arrays.sort(cats, new CategoryComparator());
+                
+                for(Category c : cats){
+                    
+                    JLabel header = new JLabel(AnnotationField.categoryToString(c));
+                    header.setFont(ViewUtil.getMediumTitleFont());
+                    p.add(header);
+                    
+                    FilterPlaceholder[] filters = new FilterPlaceholder[map.get(c).size()];
+                    filters = map.get(c).toArray(filters);
+                    Arrays.sort(filters, new FilterComparator());
+                    
+                    for(final FilterPlaceholder filter : filters){
+                        p.add(filter.getFilterName()).addMouseListener(new MouseAdapter() {                        
+                             public void mouseReleased(MouseEvent e) {
+                                 subItems.add(new FilterPanelSubItem(filter.getFilterView(), instance, filter.getFilterID()));
+                                 refreshSubItems();
+                             }
+                        });
+                    }
+                    p.addSeparator();
+                }
+
+                p.show(addLabel, 0, 20);
+                
             }
 
             public void mouseEntered(MouseEvent e) {
@@ -88,7 +131,7 @@ public final class FilterPanelSub extends JPanel{
             }
         });
         titlePanel.add(addLabel);
-                
+
         final JLabel removeLabel = new JLabel(" X ");
         removeLabel.setToolTipText("Remove sub query and all contained filters");
         removeLabel.setForeground(Color.white);
@@ -191,6 +234,113 @@ public final class FilterPanelSub extends JPanel{
     
     public int getId(){
         return id;
+    }
+    
+    private Map<Category, List<FilterPlaceholder>> getRemainingFilters(){
+        
+        final int thisId = this.getId();
+        
+        Map<Category, List<FilterPlaceholder>> map = new HashMap<Category, List<FilterPlaceholder>>();
+                
+        map.put(Category.PATIENT, new ArrayList<FilterPlaceholder>());
+        map.put(Category.GENOME_COORDS, new ArrayList<FilterPlaceholder>());
+        map.put(Category.GENOTYPE, new ArrayList<FilterPlaceholder>());
+        map.put(Category.PHENOTYPE, new ArrayList<FilterPlaceholder>());
+        map.put(Category.ONTOLOGY, new ArrayList<FilterPlaceholder>());
+        map.put(Category.PATHWAYS, new ArrayList<FilterPlaceholder>());
+        map.put(Category.PLUGIN, new ArrayList<FilterPlaceholder>()); 
+
+        //cohort filter
+        if(!FilterController.isFilterActive(thisId, CohortFilterView.FILTER_ID)){
+            map.get(Category.PATIENT).add(new FilterPlaceholder() {
+                public FilterView getFilterView() { return CohortFilterView.getCohortFilterView(thisId);}
+                public String getFilterID() { return CohortFilterView.FILTER_ID;}
+                public String getFilterName() { return CohortFilterView.FILTER_NAME;}
+            });  
+        }
+
+        //gene list filter
+        if(!FilterController.isFilterActive(thisId, GeneListFilterView.FILTER_ID)){
+            map.get(Category.GENOME_COORDS).add(new FilterPlaceholder() {
+                public FilterView getFilterView() { return GeneListFilterView.getFilterView(thisId);}
+                public String getFilterID() { return GeneListFilterView.FILTER_ID;}
+                public String getFilterName() { return GeneListFilterView.FILTER_NAME;}
+            });
+        }
+        
+        //plugin filters
+        PluginController pc = PluginController.getInstance();
+        for (PluginDescriptor desc: pc.getDescriptors()) {
+            final MedSavantPlugin p = pc.getPlugin(desc.getID());
+            if (p instanceof MedSavantFilterPlugin) {
+                map.get(Category.PLUGIN).add(new FilterPlaceholder() {
+                    public FilterView getFilterView() { return PluginFilterView.getFilterView((MedSavantFilterPlugin)p);}
+                    public String getFilterID() { return p.getDescriptor().getID();}
+                    public String getFilterName() { return p.getTitle();}
+                });
+            }
+        }
+
+        //add from variant table
+        AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
+        for(AnnotationFormat af : afs){
+            for(final AnnotationField field : af.getAnnotationFields()){
+                if(field.isFilterable() && !FilterController.isFilterActive(thisId, field.getColumnName())){
+                    map.get(field.getCategory()).add(new FilterPlaceholder() {
+
+                        public FilterView getFilterView() {
+                            try {
+                                switch(field.getFieldType()){
+                                    case INT:
+                                    case FLOAT:
+                                    case DECIMAL:
+                                        return VariantNumericFilterView.createFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias());
+                                    case BOOLEAN:
+                                        return VariantBooleanFilterView.createFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias());
+                                    case VARCHAR:                                 
+                                    default:
+                                        return VariantStringListFilterView.createFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias());
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                return null;
+                            }
+                        }
+
+                        public String getFilterID() {
+                            return field.getColumnName();
+                        }
+
+                        public String getFilterName() {
+                            return field.getAlias();
+                        }
+                    });
+                }
+            }
+        }
+        
+        return map;
+    }
+    
+    /* 
+     * Use this to prevent creating all filters when generating list
+     */
+    abstract class FilterPlaceholder {
+        public abstract FilterView getFilterView();      
+        public abstract String getFilterID();
+        public abstract String getFilterName();
+    } 
+    
+    public class CategoryComparator implements Comparator<Category> {
+        public int compare(Category o1, Category o2) {
+            return o1.toString().compareTo(o2.toString());
+        }
+    }
+    
+    public class FilterComparator implements Comparator<FilterPlaceholder> {
+        public int compare(FilterPlaceholder o1, FilterPlaceholder o2) {
+            return o1.getFilterName().compareTo(o2.getFilterName());
+        }
     }
     
     

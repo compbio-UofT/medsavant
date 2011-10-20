@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.sql.SQLException;
@@ -68,24 +69,18 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
         ButtonGroup group = new ButtonGroup();
         JRadioButton globalButton = new JRadioButton("Global");
         globalButton.setSelected(true);
-        JRadioButton relativeButton = new JRadioButton("Relative");
-        globalButton.addMouseListener(new MouseListener() {
-            public void mouseClicked(MouseEvent e) {
+        JRadioButton relativeButton = new JRadioButton("Relative");       
+        globalButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
                 changeMode(Mode.GLOBAL);
             }
-            public void mousePressed(MouseEvent e) {}
-            public void mouseReleased(MouseEvent e) {}
-            public void mouseEntered(MouseEvent e) {}
-            public void mouseExited(MouseEvent e) {}
         });
-        relativeButton.addMouseListener(new MouseListener() {
-            public void mouseClicked(MouseEvent e) {
+        relativeButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
                 changeMode(Mode.RELATIVE);
             }
-            public void mousePressed(MouseEvent e) {}
-            public void mouseReleased(MouseEvent e) {}
-            public void mouseEntered(MouseEvent e) {}
-            public void mouseExited(MouseEvent e) {}
         });
         group.add(globalButton);
         group.add(relativeButton);

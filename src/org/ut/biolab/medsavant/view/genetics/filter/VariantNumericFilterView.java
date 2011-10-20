@@ -169,44 +169,36 @@ public class VariantNumericFilterView {
                 rs.setLowValue((int)acceptableRange.getMin());
                 rs.setHighValue((int)acceptableRange.getMax());
 
-                //if (min == acceptableRange.getMin() && max == acceptableRange.getMax()) {
-                //    FilterController.removeFilter(columnname, queryId);
-                //} else {
-                    Filter f = new QueryFilter() {
+                Filter f = new QueryFilter() {
 
-                        @Override
-                        public Condition[] getConditions() {
-                            /*Condition[] results = new Condition[2];
-                            
-                            results[0] = BinaryCondition.greaterThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(frombox.getText().replaceAll(",", "")), true);
-                            results[1] = BinaryCondition.lessThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(tobox.getText().replaceAll(",", "")), true);
- 
-                            Condition[] resultsCombined = new Condition[1];
-                            resultsCombined[0] = ComboCondition.and(results);
+                    @Override
+                    public Condition[] getConditions() {
+                        /*Condition[] results = new Condition[2];
 
-                            return resultsCombined;*/
-                            
-                            Condition[] results = new Condition[1];
-                            results[0] = new RangeCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
-                            return results;
-                        }
+                        results[0] = BinaryCondition.greaterThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(frombox.getText().replaceAll(",", "")), true);
+                        results[1] = BinaryCondition.lessThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(tobox.getText().replaceAll(",", "")), true);
 
-                        @Override
-                        public String getName() {
-                            return alias;
-                        }
+                        Condition[] resultsCombined = new Condition[1];
+                        resultsCombined[0] = ComboCondition.and(results);
 
-                        @Override
-                        public String getId() {
-                            return columnname;
-                        }
-                    };
-                    //Filter f = new VariantRecordFilter(acceptableValues, fieldNum);
-                    FilterController.addFilter(f, queryId);
-                //}
+                        return resultsCombined;*/
 
-                //TODO: why does this not work? Freezes GUI
-                //apply.setEnabled(false);
+                        Condition[] results = new Condition[1];
+                        results[0] = new RangeCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
+                        return results;
+                    }
+
+                    @Override
+                    public String getName() {
+                        return alias;
+                    }
+
+                    @Override
+                    public String getId() {
+                        return columnname;
+                    }
+                };
+                FilterController.addFilter(f, queryId);
             }
         };
         applyButton.addActionListener(al);

@@ -73,7 +73,7 @@ class GeneListFilterView {
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
 
-        applyButton.addActionListener(new ActionListener() {
+        ActionListener al = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
 
@@ -102,12 +102,7 @@ class GeneListFilterView {
                                 tmp[0] = BinaryCondition.equalTo(
                                         ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), 
                                         gr.getChrom());
-                                
-                                /*DbColumn colPosition = new DbColumn(ProjectController.getInstance().getCurrentVariantTable(), DefaultvariantTableSchema.COLUMNNAME_OF_POSITION, "int", 11);
-                                tmp[1] = ComboCondition.and(new Condition[]{
-                                        BinaryCondition.greaterThan(colPosition, (long)gr.getRange().getMin(), true),
-                                        BinaryCondition.lessThan(colPosition, (long)gr.getRange().getMax(), false)});*/
-                                
+
                                 tmp[1] = new RangeCondition(
                                         ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), 
                                         (long)gr.getRange().getMin(), 
@@ -139,11 +134,8 @@ class GeneListFilterView {
                 };
                 ClientLogger.log(ClientLogger.class,"Adding filter: " + f.getName());
                 FilterController.addFilter(f, queryId); //TODO
-            
-                //TODO: why does this not work? Freezes GUI
-                //apply.setEnabled(false);
             }
-        });
+        };
 
         b.addActionListener(new ActionListener() {
 
@@ -161,19 +153,11 @@ class GeneListFilterView {
         bottomContainer.add(Box.createHorizontalGlue());
         bottomContainer.add(applyButton);
 
-        /*
-        addChangeListener(new ChangeListener() {
-        
-        public void stateChanged(ChangeEvent e) {
-        applyButton.setEnabled(true);
-        }
-        });
-         * 
-         */
 
         p.add(b, BorderLayout.CENTER);
         p.add(bottomContainer, BorderLayout.SOUTH);
 
+        al.actionPerformed(null);
         return p;
     }
 }

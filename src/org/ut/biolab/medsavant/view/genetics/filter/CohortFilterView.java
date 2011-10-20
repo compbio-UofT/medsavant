@@ -23,7 +23,6 @@ import javax.swing.JPanel;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -76,63 +75,61 @@ class CohortFilterView {
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
 
-        applyButton.addActionListener(new ActionListener() {
+        ActionListener al = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
 
                 applyButton.setEnabled(false);
 
-                    Filter f = new QueryFilter() {
+                Filter f = new QueryFilter() {
 
-                        @Override
-                        public Condition[] getConditions() {
-                            
-                            if(b.getSelectedItem().equals(COHORT_ALL)){
-                                return new Condition[0];
+                    @Override
+                    public Condition[] getConditions() {
+
+                        if(b.getSelectedItem().equals(COHORT_ALL)){
+                            return new Condition[0];
+                        }
+
+                        Cohort cohort = (Cohort) b.getSelectedItem();
+
+                        try {
+
+                            List<String> dnaIds = CohortQueryUtil.getDNAIdsInCohort(cohort.getId());
+
+                            Condition[] results = new Condition[dnaIds.size()];
+                            int i = 0;
+                            for (String dnaId : dnaIds) {   
+                                results[i] = BinaryCondition.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaId);
+                                i++;
                             }
 
-                            Cohort cohort = (Cohort) b.getSelectedItem();
+                            Condition[] resultsCombined = new Condition[1];
+                            resultsCombined[0] = ComboCondition.or(results);
 
-                            try {
+                            return resultsCombined;
 
-                                List<String> dnaIds = CohortQueryUtil.getDNAIdsInCohort(cohort.getId());
-                                
-                                Condition[] results = new Condition[dnaIds.size()];
-                                int i = 0;
-                                for (String dnaId : dnaIds) {   
-                                    results[i] = BinaryCondition.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaId);
-                                    i++;
-                                }
-
-                                Condition[] resultsCombined = new Condition[1];
-                                resultsCombined[0] = ComboCondition.or(results);
-                                
-                                return resultsCombined;
-                                
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                                return null;
-                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            return null;
                         }
+                    }
 
-                        @Override
-                        public String getName() {
-                            return FILTER_NAME;
-                        }
-                        
-                        @Override
-                        public String getId() {
-                            return FILTER_ID;
-                        }
-                    };
-                    ClientLogger.log(ClientLogger.class,"Adding filter: " + f.getName());
-                    FilterController.addFilter(f, queryId);
-                //}
+                    @Override
+                    public String getName() {
+                        return FILTER_NAME;
+                    }
 
-                //TODO: why does this not work? Freezes GUI
-                //apply.setEnabled(false);
+                    @Override
+                    public String getId() {
+                        return FILTER_ID;
+                    }
+                };
+                ClientLogger.log(ClientLogger.class,"Adding filter: " + f.getName());
+                FilterController.addFilter(f, queryId);
+
             }
-        });
+        };
+        applyButton.addActionListener(al);
 
         b.addActionListener(new ActionListener() {
 
@@ -150,19 +147,10 @@ class CohortFilterView {
         bottomContainer.add(Box.createHorizontalGlue());
         bottomContainer.add(applyButton);
 
-        /*
-        addChangeListener(new ChangeListener() {
-        
-        public void stateChanged(ChangeEvent e) {
-        applyButton.setEnabled(true);
-        }
-        });
-         * 
-         */
-
         p.add(b, BorderLayout.CENTER);
         p.add(bottomContainer, BorderLayout.SOUTH);
-
+        
+        al.actionPerformed(null);
         return p;
     }
 }
