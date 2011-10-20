@@ -40,8 +40,8 @@ public class ProjectController implements ReferenceListener {
 
     public void removeProject(String projectName) {
         try {
-        ProjectQueryUtil.removeProject(projectName);
-        fireProjectRemovedEvent(projectName);
+            ProjectQueryUtil.removeProject(projectName);
+            fireProjectRemovedEvent(projectName);
         } catch (SQLException e) {
             e.printStackTrace();
         }
