@@ -5,6 +5,7 @@
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
@@ -90,34 +92,64 @@ public final class FilterPanelSub extends JPanel{
 
                 Map<Category, List<FilterPlaceholder>> map = getRemainingFilters();
                 
-                JPopupMenu p = new JPopupMenu();  
+                final JPopupMenu p = new JPopupMenu();  
                 
                 Category[] cats = new Category[map.size()];
                 cats = map.keySet().toArray(cats);
                 Arrays.sort(cats, new CategoryComparator());
+          
+                final Map<JLabel, List<Component>> menuMap = new HashMap<JLabel, List<Component>>();
                 
                 for(Category c : cats){
                     
-                    JLabel header = new JLabel(AnnotationField.categoryToString(c));
+                    final JLabel header = new JLabel(AnnotationField.categoryToString(c));
+                    header.setCursor(new Cursor(Cursor.HAND_CURSOR));
                     header.setFont(ViewUtil.getMediumTitleFont());
-                    p.add(header);
+                    header.addMouseListener(new MouseAdapter() {
+                        public void mouseReleased(MouseEvent e){
+                            for(Object key : menuMap.keySet()){
+                                for(Component comp : menuMap.get(key)){
+                                    comp.setVisible(false);
+                                }
+                            }
+                            for(Component comp : menuMap.get(header)){
+                                comp.setVisible(true);
+                            }
+                            p.validate();
+                            p.pack();
+                            p.repaint();
+                        }
+                    });
+                    menuMap.put(header, new ArrayList<Component>());
+                    p.add(header);                    
                     
                     FilterPlaceholder[] filters = new FilterPlaceholder[map.get(c).size()];
                     filters = map.get(c).toArray(filters);
                     Arrays.sort(filters, new FilterComparator());
                     
                     for(final FilterPlaceholder filter : filters){
-                        p.add(filter.getFilterName()).addMouseListener(new MouseAdapter() {                        
+                        Component comp = p.add(filter.getFilterName());
+                        comp.addMouseListener(new MouseAdapter() {                        
                             @Override
                             public void mouseReleased(MouseEvent e) {
                                 subItems.add(new FilterPanelSubItem(filter.getFilterView(), FilterPanelSub.this, filter.getFilterID()));
                                 refreshSubItems();
                             }
                         });
+                        menuMap.get(header).add(comp);
+                        comp.setVisible(false);
                     }
+                    
+                    if(filters.length == 0){
+                        JLabel empty = new JLabel("(No filters)");
+                        empty.setFont(ViewUtil.getSmallTitleFont());
+                        menuMap.get(header).add(empty);
+                        empty.setVisible(false);     
+                        p.add(empty);
+                    }  
                     p.addSeparator();
                 }
-
+                
                 p.show(addLabel, 0, 20);
                 
             }
