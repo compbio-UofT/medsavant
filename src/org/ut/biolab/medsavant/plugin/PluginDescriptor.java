@@ -49,9 +49,15 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
         VALUE,
         VERSION,
         CLASS,
+        TYPE,
         IGNORED
     };
 
+    public enum Type {
+        FILTER,
+        SECTION,
+        UNKNOWN
+    }
 
     final String className;
     final String id;
@@ -59,15 +65,17 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
     final String name;
     final String sdkVersion;
     final File file;
+    final Type type;
 
     private static XMLStreamReader reader;
 
-    private PluginDescriptor(String className, String id, String version, String name, String sdkVersion, File file) {
+    private PluginDescriptor(String className, String id, String version, String name, String sdkVersion, String type, File file) {
         this.className = className;
         this.id = id;
         this.version = version;
         this.name = name;
         this.sdkVersion = sdkVersion;
+        this.type = Type.valueOf(type.toUpperCase());
         this.file = file;
     }
 
@@ -94,6 +102,10 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
 
     public String getSDKVersion() {
         return sdkVersion;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     public File getFile() {
@@ -125,6 +137,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
                 String version = null;
                 String sdkVersion = null;
                 String name = null;
+                String type = "FILTER";
                 do {
                     switch (reader.next()) {
                         case XMLStreamConstants.START_ELEMENT:
@@ -133,6 +146,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
                                     className = readAttribute(PluginXMLAttribute.CLASS);
                                     id = readAttribute(PluginXMLAttribute.ID);
                                     version = readAttribute(PluginXMLAttribute.VERSION);
+                                    type = readAttribute(PluginXMLAttribute.TYPE);
                                     break;
                                 case ATTRIBUTE:
                                     if ("sdk-version".equals(readAttribute(PluginXMLAttribute.ID))) {
@@ -154,7 +168,7 @@ public class PluginDescriptor implements Comparable<PluginDescriptor> {
                 } while (reader != null);
 
                 if (className != null && id != null && name != null) {
-                    return new PluginDescriptor(className, id, version, name, sdkVersion, f);
+                    return new PluginDescriptor(className, id, version, name, sdkVersion, type, f);
                 }
             }
         } catch (Exception x) {

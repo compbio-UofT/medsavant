@@ -13,24 +13,17 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+package org.ut.biolab.medsavant.util;
 
-package org.ut.biolab.medsavant.plugin;
-
-import javax.swing.JPanel;
+import org.ut.biolab.medsavant.api.Listener;
 
 
 /**
- * Plugin which displays its contents in a JPanel managed by the Savant user-interface.
- * The canonical example is our own data table plugin.
+ * Basically just a Listener class, but also allows for the possibility that the
+ * listener wants to cancel the download process.
  *
- * @author mfiume
+ * @author tarkvara
  */
-public abstract class MedSavantSectionPlugin extends MedSavantPlugin {
-
-    /**
-     * This method is called once during application life cycle to allow a third-party
-     * plugin to initialize and show itself.
-     */
-    public abstract void init(JPanel panel);
-    
+public interface DownloadMonitor extends Listener<DownloadEvent> {
+    public boolean isCancelled();
 }

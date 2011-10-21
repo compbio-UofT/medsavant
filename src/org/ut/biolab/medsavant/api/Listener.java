@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.util;
+package org.ut.biolab.medsavant.api;
 
 /**
  * Generic event-listener class so that we don't have to write a new class for every

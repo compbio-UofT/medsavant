@@ -25,6 +25,7 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.plugin.PluginManagerDialog;
 import org.ut.biolab.medsavant.view.login.LoginView;
 
 /**
@@ -110,6 +111,7 @@ public class MainFrame extends JFrame implements LoginListener{
 
         JMenuBar menu = new JMenuBar();   
         JMenu fileMenu = new JMenu("File");
+        
         /*
         manageDBItem = new JMenuItem("Manage Database");
         manageDBItem.setEnabled(false);
@@ -121,6 +123,14 @@ public class MainFrame extends JFrame implements LoginListener{
         });
          * 
          */
+        JMenuItem pluginsItem = new JMenuItem("Plugins…");
+        pluginsItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                PluginManagerDialog.getInstance().setVisible(true);
+            }
+            
+        });
+
         logOutItem = new JMenuItem("Sign out");
         logOutItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -134,10 +144,11 @@ public class MainFrame extends JFrame implements LoginListener{
             }
         });
         //fileMenu.add(manageDBItem);
+        fileMenu.add(pluginsItem);
         fileMenu.add(logOutItem);
         fileMenu.add(closeItem);
         menu.add(fileMenu);
-        
+
         setJMenuBar(menu);
 
         this.add(BottomBar.getInstance(),BorderLayout.SOUTH);

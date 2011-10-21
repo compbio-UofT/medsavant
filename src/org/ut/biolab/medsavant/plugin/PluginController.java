@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.controller;
+package org.ut.biolab.medsavant.plugin;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -23,13 +23,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.ut.biolab.medsavant.plugin.PluginDescriptor;
-import org.ut.biolab.medsavant.plugin.PluginIndex;
-import org.ut.biolab.medsavant.plugin.PluginVersionException;
-import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.settings.BrowserSettings;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.settings.NetworkUtils;
+import org.ut.biolab.medsavant.util.NetworkUtils;
 import org.ut.biolab.medsavant.util.Controller;
 import org.ut.biolab.medsavant.util.IOUtils;
 import org.ut.biolab.medsavant.util.MiscUtils;
@@ -169,6 +165,17 @@ public class PluginController extends Controller {
     public List<PluginDescriptor> getDescriptors() {
         List<PluginDescriptor> result = new ArrayList<PluginDescriptor>();
         result.addAll(knownPlugins.values());
+        Collections.sort(result);
+        return result;
+    }
+
+    public List<PluginDescriptor> getDescriptorsOfType(PluginDescriptor.Type t) {
+        List<PluginDescriptor> result = new ArrayList<PluginDescriptor>();
+        for (PluginDescriptor desc: knownPlugins.values()) {
+            if (desc.getType() == t) {
+                result.add(desc);
+            }
+        }
         Collections.sort(result);
         return result;
     }

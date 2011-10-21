@@ -14,33 +14,24 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.plugin;
+package org.ut.biolab.medsavant.api;
 
-import org.ut.biolab.medsavant.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
+import javax.swing.JPanel;
 
 
 /**
- * Base class for all Savant plugins.  Not much here yet.
+ * Plugin which displays its contents in a JPanel managed by the Savant user-interface.
+ * The canonical example is our own data table plugin.
  *
- * @author tarkvara
+ * @author mfiume
  */
-public abstract class MedSavantPlugin {
-    
-    private PluginDescriptor descriptor;
-
-    public PluginDescriptor getDescriptor() {
-        return descriptor;
-    }
+public abstract class MedSavantSectionPlugin extends MedSavantPlugin {
 
     /**
-     * Called by the PluginController after instantiating the plugin.
-     * @param desc descriptor from which this plugin was created
+     * This method is called once during application life cycle to allow a third-party
+     * plugin to initialize and show itself.
      */
-    public void setDescriptor(PluginDescriptor desc) {
-        descriptor = desc;
-    }
-
-    public String getTitle() {
-        return descriptor.getName();
-    }
+    public abstract void init(JPanel panel);
+    
 }

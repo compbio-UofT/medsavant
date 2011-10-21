@@ -16,21 +16,17 @@
 
 package org.ut.biolab.medsavant.view.manage;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.ut.biolab.medsavant.controller.PluginController;
-import org.ut.biolab.medsavant.controller.PluginEvent;
+import org.ut.biolab.medsavant.api.Listener;
+import org.ut.biolab.medsavant.api.MedSavantSectionPlugin;
+import org.ut.biolab.medsavant.plugin.PluginController;
+import org.ut.biolab.medsavant.plugin.PluginEvent;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
-import org.ut.biolab.medsavant.plugin.MedSavantSectionPlugin;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
-import org.ut.biolab.medsavant.util.Listener;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;

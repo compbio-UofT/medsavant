@@ -17,7 +17,7 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import javax.swing.JPanel;
 
-import org.ut.biolab.medsavant.plugin.MedSavantFilterPlugin;
+import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 
 /**
  * Create a FilterView which presents the user-interface for a filter plugin.

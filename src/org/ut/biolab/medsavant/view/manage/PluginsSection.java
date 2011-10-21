@@ -20,7 +20,7 @@ import java.awt.Component;
 import java.util.List;
 import javax.swing.JPanel;
 
-import org.ut.biolab.medsavant.controller.PluginController;
+import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -47,7 +47,7 @@ public class PluginsSection extends SectionView {
     public SubSectionView[] getSubSections() {
         PluginController pc = PluginController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
-        List<PluginDescriptor> knownPlugins = pc.getDescriptors();
+        List<PluginDescriptor> knownPlugins = pc.getDescriptorsOfType(PluginDescriptor.Type.SECTION);
         
         PluginPage[] pages = new PluginPage[knownPlugins.size()];
         for (int i = 0; i < pages.length; i++) {

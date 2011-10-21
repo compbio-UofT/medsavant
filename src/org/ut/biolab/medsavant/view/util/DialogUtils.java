@@ -18,6 +18,7 @@ package org.ut.biolab.medsavant.view.util;
 
 import java.awt.FileDialog;
 import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -30,6 +31,7 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import com.jidesoft.dialog.JideOptionPane;
+
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MainFrame;
 
@@ -40,6 +42,26 @@ import org.ut.biolab.medsavant.view.MainFrame;
  * @author vwilliams, tarkvara
  */
 public class DialogUtils {
+    /**
+     * Same as JOptionPane.YES_OPTION.
+     */
+    public static final int YES = 0;
+
+    /**
+     * Same as JOptionPane.OK_OPTION.
+     */
+    public static final int OK = 0;
+
+    /**
+     * Same as JOptionPane.NO_OPTION.
+     */
+    public static final int NO = 1;
+
+    /**
+     * Same as JOptionPane.CANCEL_OPTION.
+     */
+    public static final int CANCEL = 2;
+
 
     public static int askYesNo(String title, String prompt) {
         return JOptionPane.showConfirmDialog(MainFrame.getInstance(), prompt, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
@@ -274,8 +296,15 @@ public class DialogUtils {
         return result == JOptionPane.YES_OPTION;
     }
         
-         public static void displayErrorMessage(String msg, Exception ex) {
+    public static void displayErrorMessage(String msg, Exception ex) {
         JOptionPane p = new JOptionPane(msg, JOptionPane.ERROR_MESSAGE);
         p.setVisible(true);
+    }
+    
+    /**
+     * For purposes of parenting dialogs, here's the MedSavant main window.
+     */
+    public static Window getMainWindow() {
+        return MainFrame.getInstance();
     }
 }

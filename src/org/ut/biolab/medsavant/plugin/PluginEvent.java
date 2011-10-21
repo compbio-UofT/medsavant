@@ -14,9 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.controller;
-
-import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
+package org.ut.biolab.medsavant.plugin;
 
 
 /**

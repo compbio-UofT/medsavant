@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.settings;
 
+import org.ut.biolab.medsavant.util.NetworkUtils;
 import java.net.URL;
 import org.ut.biolab.medsavant.controller.SettingsController;
 
@@ -32,7 +33,7 @@ public class BrowserSettings {
      */
     public static final URL URL = NetworkUtils.getKnownGoodURL("http://www.genomesavant.com/medsavant");
     public static final URL VERSION_URL = NetworkUtils.getKnownGoodURL(URL, "serve/version/version.xml");
-    public static final URL PLUGIN_URL = NetworkUtils.getKnownGoodURL(URL, "serve/plugin/plugin.xml");
+    public static final URL PLUGIN_URL = NetworkUtils.getKnownGoodURL(URL, "plugins/plugin.xml");
     public static final URL LOG_USAGE_STATS_URL = NetworkUtils.getKnownGoodURL(URL, "scripts/logUsageStats.cgi");
 
     public static final String VERSION = "1.0.0";

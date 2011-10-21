@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.plugin;
+package org.ut.biolab.medsavant.api;
 
+import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import javax.swing.JPanel;
 
 
