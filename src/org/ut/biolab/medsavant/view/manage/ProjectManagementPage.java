@@ -46,7 +46,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
     public void projectAdded(String projectName) {
         if (panel != null) {
-            try {
+            /*try {
                 int projectid = ProjectController.getInstance().getProjectId(projectName);
 
                 NewVariantTableDialog d = new NewVariantTableDialog(projectid, MainFrame.getInstance(), true);
@@ -56,7 +56,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             } catch (SQLException ex) {
                 ex.printStackTrace();
                 Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }*/
 
             panel.refresh();
         }
@@ -472,8 +472,11 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                NewProjectDialog npd = new NewProjectDialog(MainFrame.getInstance(), true);
-                npd.setVisible(true);
+                //NewProjectDialog npd = new NewProjectDialog(MainFrame.getInstance(), true);
+                //npd.setVisible(true);
+                
+                new NewProjectWizard();
+                
             }
         });
         return button;

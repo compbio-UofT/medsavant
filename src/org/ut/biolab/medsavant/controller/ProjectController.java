@@ -54,13 +54,15 @@ public class ProjectController implements ReferenceListener {
         }
     }
 
-    public void addProject(String projectName, File patientFormatFile) {
+    public int addProject(String projectName, File patientFormatFile) {
         try {
-            ProjectQueryUtil.addProject(projectName, patientFormatFile);
+            int projectid = ProjectQueryUtil.addProject(projectName, patientFormatFile);
             ProjectController.getInstance().fireProjectAddedEvent(projectName);
+            return projectid;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        return -1;
     }
 
     public int getProjectId(String projectName) throws SQLException {
