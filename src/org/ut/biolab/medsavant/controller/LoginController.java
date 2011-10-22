@@ -79,7 +79,7 @@ public class LoginController {
         }
 
         try {
-            setLoggedIn(null != ConnectionController.connect());
+            setLoggedIn(null != ConnectionController.connectPooled());
         } catch (Exception ex) {
             setLoginException(ex);
         }

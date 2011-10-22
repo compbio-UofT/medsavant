@@ -13,10 +13,13 @@ import java.awt.event.MouseListener;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -33,6 +36,8 @@ public class FilterPanelSubItem extends JPanel{
     private static Color BAR_COLOUR = Color.darkGray;
     private static Color BUTTON_OVER_COLOUR = Color.gray;
     
+    
+    
     public FilterPanelSubItem(FilterView filterView, FilterPanelSub parent, String filterId){
         
         this.parent = parent;
@@ -40,24 +45,22 @@ public class FilterPanelSubItem extends JPanel{
         this.filterId = filterId;
         
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));        
-        setBorder(BorderFactory.createLineBorder(BAR_COLOUR, 1));
-        
+        setBorder(BorderFactory.createCompoundBorder(
+                          ViewUtil.getMediumBorder(),
+                          ViewUtil.getTinyLineBorder()));
         
         //title bar
-        JPanel titlePanel = new JPanel();
-        titlePanel.setBackground(BAR_COLOUR);
+        JPanel titlePanel = ViewUtil.getSecondaryBannerPanel();
+        //titlePanel.setBackground(BAR_COLOUR);
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
         JLabel testLabel = new JLabel(filterView.getTitle());
-        testLabel.setForeground(Color.white);
+        testLabel.setForeground(Color.black);
         titlePanel.add(Box.createRigidArea(new Dimension(10,16)));
         titlePanel.add(testLabel);  
         titlePanel.add(Box.createHorizontalGlue());     
         
-        final JLabel removeLabel = new JLabel(" X ");
+        final JButton removeLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
         removeLabel.setToolTipText("Remove filter");
-        removeLabel.setForeground(Color.white);
-        removeLabel.setBackground(BAR_COLOUR);
-        removeLabel.setOpaque(true);
         removeLabel.addMouseListener(new MouseListener() {
             
             public void mouseClicked(MouseEvent e) {}

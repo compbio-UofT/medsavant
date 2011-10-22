@@ -17,7 +17,9 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+import org.ut.biolab.medsavant.db.admin.Setup;
 import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
  *
@@ -29,22 +31,22 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
     public static final int RET_CANCEL = 0;
     /** A return status code - returned if OK button has been pressed */
     public static final int RET_OK = 1;
-    
+
     public AddDatabaseDialog(String hostname, String port, String dbname) {
-        super(MainFrame.getInstance(),true);
+        super(MainFrame.getInstance(), true);
         initComponents();
-        
+
         this.setResizable(false);
 
         setLocationRelativeTo(MainFrame.getInstance());
         this.field_hostname.setText(hostname);
         this.field_port.setText(port);
         this.field_database.setText(dbname);
-        
+
         //this.field_database.setSelectionStart(0);
         //this.field_database.setSelectionEnd(999);
         this.field_database.requestFocus();
-        
+
         // Close the dialog when Esc is pressed
         String cancelName = "cancel";
         InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -212,9 +214,22 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        doClose(RET_OK);
+
+        try {
+            if (Setup.createDatabase(this.field_hostname.getText(),
+                    Integer.parseInt(this.field_port.getText()),
+                    this.field_database.getText())) {
+                DialogUtils.displayMessage("Database \"" + this.field_database.getText() + "\" created successfuly");
+                doClose(RET_OK);
+                return;
+            }
+
+        } catch (Exception e) {
+        }
+
+        DialogUtils.displayError("Uh oh...", "Database could not be created.\nPlease check the settings and try again.");
     }//GEN-LAST:event_okButtonActionPerformed
-    
+
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         doClose(RET_CANCEL);
     }//GEN-LAST:event_cancelButtonActionPerformed
@@ -244,13 +259,12 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
             //loginUsingEnteredUsernameAndPassword();
         }
 }//GEN-LAST:event_field_databaseKeyPressed
-    
+
     private void doClose(int retStatus) {
         returnStatus = retStatus;
         setVisible(false);
         dispose();
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JTextField field_database;

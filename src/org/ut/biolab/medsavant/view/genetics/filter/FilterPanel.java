@@ -31,8 +31,10 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -71,8 +73,20 @@ public class FilterPanel extends javax.swing.JPanel {
     private JPanel createNewOrButton(){
         JPanel p = new JPanel();
         p.setMaximumSize(new Dimension(10000,40));
+        p.setBorder(ViewUtil.getMediumBorder());
         p.setLayout(new BorderLayout());
         
+        final JButton addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+        addLabel.setToolTipText("Create new sub query");
+        addLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                createNewSubPanel();
+            }
+        });
+        p.add(addLabel, BorderLayout.CENTER);
+
+        /*
         JLabel label = new JLabel("Create new sub query");
         label.setHorizontalAlignment(JLabel.CENTER);
         label.setBorder(BorderFactory.createLineBorder(label.getBackground(), 8));
@@ -86,6 +100,8 @@ public class FilterPanel extends javax.swing.JPanel {
         label.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         p.add(label, BorderLayout.CENTER);
+         * 
+         */
         return p;
     }
     

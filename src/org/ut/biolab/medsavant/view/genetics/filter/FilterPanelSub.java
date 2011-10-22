@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -33,6 +34,7 @@ import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -59,8 +61,8 @@ public final class FilterPanelSub extends JPanel{
         
         
         //title bar
-        JPanel titlePanel = new JPanel();
-        titlePanel.setBackground(BAR_COLOUR);
+        JPanel titlePanel = ViewUtil.getPrimaryBannerPanel();//new JPanel();
+        //titlePanel.setBackground(BAR_COLOUR);
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
         titlePanel.addMouseListener(new MouseAdapter() {
             @Override
@@ -78,11 +80,8 @@ public final class FilterPanelSub extends JPanel{
         
         titlePanel.add(Box.createHorizontalGlue());     
         
-        final JLabel addLabel = new JLabel(" + ");
+        final JButton addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         addLabel.setToolTipText("Add new filter");
-        addLabel.setForeground(Color.white);
-        addLabel.setBackground(BAR_COLOUR);
-        addLabel.setOpaque(true);
         addLabel.addMouseListener(new MouseListener() {
             
             public void mouseClicked(MouseEvent e) {}
@@ -164,11 +163,8 @@ public final class FilterPanelSub extends JPanel{
         });
         titlePanel.add(addLabel);
 
-        final JLabel removeLabel = new JLabel(" X ");
+        final JButton removeLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
         removeLabel.setToolTipText("Remove sub query and all contained filters");
-        removeLabel.setForeground(Color.white);
-        removeLabel.setBackground(BAR_COLOUR);
-        removeLabel.setOpaque(true);
         removeLabel.addMouseListener(new MouseListener() {
             
             public void mouseClicked(MouseEvent e) {}

@@ -294,7 +294,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             }
         });
 
-        label_status.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        label_status.setFont(new java.awt.Font("Tahoma", 0, 14));
         label_status.setText("Label");
 
         javax.swing.GroupLayout panel_titleLayout = new javax.swing.GroupLayout(panel_title);

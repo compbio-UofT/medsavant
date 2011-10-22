@@ -42,17 +42,17 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="label_versioninformation" alignment="0" pref="309" max="32767" attributes="1"/>
-              <Component id="jLabel1" alignment="1" pref="309" max="32767" attributes="0"/>
-              <Component id="spiralPanel" alignment="0" pref="309" max="32767" attributes="1"/>
-              <Component id="field_password" alignment="0" pref="309" max="32767" attributes="1"/>
-              <Component id="field_username" alignment="0" pref="309" max="32767" attributes="1"/>
-              <Component id="jLabel2" alignment="1" pref="309" max="32767" attributes="0"/>
+              <Component id="label_versioninformation" alignment="0" pref="360" max="32767" attributes="1"/>
+              <Component id="jLabel1" alignment="1" pref="360" max="32767" attributes="0"/>
+              <Component id="spiralPanel" alignment="0" pref="360" max="32767" attributes="1"/>
+              <Component id="field_password" alignment="0" pref="360" max="32767" attributes="1"/>
+              <Component id="field_username" alignment="0" pref="360" max="32767" attributes="1"/>
+              <Component id="jLabel2" alignment="1" pref="360" max="32767" attributes="0"/>
               <Component id="cb_autosignin" alignment="0" min="-2" max="-2" attributes="1"/>
               <Component id="cb_rememberpassword" alignment="0" min="-2" max="-2" attributes="0"/>
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="label_status" max="32767" attributes="0"/>
+                  <Component id="label_status" pref="83" max="32767" attributes="0"/>
                   <EmptySpace min="-2" pref="161" max="-2" attributes="0"/>
                   <Component id="button_login" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -154,7 +154,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="309" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="360" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -204,15 +204,15 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jSeparator1" alignment="1" pref="269" max="32767" attributes="0"/>
-                          <Component id="jLabel3" alignment="1" pref="269" max="32767" attributes="0"/>
-                          <Component id="field_hostname" alignment="1" pref="269" max="32767" attributes="0"/>
-                          <Component id="jLabel4" alignment="0" pref="269" max="32767" attributes="0"/>
-                          <Component id="field_port" alignment="1" pref="269" max="32767" attributes="0"/>
-                          <Component id="jLabel5" alignment="0" pref="269" max="32767" attributes="0"/>
-                          <Component id="field_database" alignment="0" pref="269" max="32767" attributes="0"/>
+                          <Component id="jSeparator1" alignment="1" pref="320" max="32767" attributes="0"/>
+                          <Component id="jLabel3" alignment="1" pref="320" max="32767" attributes="0"/>
+                          <Component id="field_hostname" alignment="1" pref="320" max="32767" attributes="0"/>
+                          <Component id="jLabel4" alignment="0" pref="320" max="32767" attributes="0"/>
+                          <Component id="field_port" alignment="1" pref="320" max="32767" attributes="0"/>
+                          <Component id="jLabel5" alignment="0" pref="320" max="32767" attributes="0"/>
+                          <Component id="field_database" alignment="0" pref="320" max="32767" attributes="0"/>
                           <Component id="button_create_db" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="jSeparator2" alignment="1" pref="269" max="32767" attributes="0"/>
+                          <Component id="jSeparator2" alignment="1" pref="320" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>

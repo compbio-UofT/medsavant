@@ -11,16 +11,19 @@ import com.jidesoft.swing.JideSplitButton;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Paint;
 import java.text.NumberFormat;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -33,6 +36,8 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
+import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.images.IconFactory.StandardIcon;
 
 /**
  *
@@ -498,6 +503,16 @@ public class ViewUtil {
         
     }
     
+    public static JButton createIconButton(ImageIcon i) {
+        JButton b = new JButton();
+        b.setBorder(null);
+        b.setBorderPainted(false);
+        b.setOpaque(false);
+        b.setPreferredSize(new Dimension(i.getIconWidth(),i.getIconHeight()));
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setIcon(i);
+        return b;
+    }
     
     
 }

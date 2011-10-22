@@ -29,7 +29,8 @@ public class IconFactory {
     }
 
     public enum StandardIcon {
-
+        ADD,
+        REMOVE,
         FILTER,
         RESULTS,
         CHART,
@@ -47,6 +48,10 @@ public class IconFactory {
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case ADD:
+                return getIcon(iconroot + "open_normal.png");
+            case REMOVE:
+                return getIcon(iconroot + "close_normal.png");
             case FILTER:
                 return getIcon(iconroot + "filter.gif");
             case RESULTS:
