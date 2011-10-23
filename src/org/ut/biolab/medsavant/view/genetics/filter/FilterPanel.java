@@ -22,6 +22,7 @@
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
@@ -73,18 +74,37 @@ public class FilterPanel extends javax.swing.JPanel {
     private JPanel createNewOrButton(){
         JPanel p = new JPanel();
         p.setMaximumSize(new Dimension(10000,40));
-        p.setBorder(ViewUtil.getMediumBorder());
-        p.setLayout(new BorderLayout());
+        //p.setBorder(ViewUtil.getMediumBorder());
+        //p.setLayout(new BorderLayout());
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.setBorder(BorderFactory.createLineBorder(p.getBackground(), 6));
         
         final JButton addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
-        addLabel.setToolTipText("Create new sub query");
+        addLabel.setToolTipText("Add filter set");
         addLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 createNewSubPanel();
             }
         });
-        p.add(addLabel, BorderLayout.CENTER);
+        
+        
+        JPanel tmp1 = ViewUtil.getPrimaryBannerPanel();//ViewUtil.getClearPanel();
+        //ViewUtil.applyHorizontalBoxLayout(tmp1);
+        tmp1.add(Box.createRigidArea(new Dimension(5,20)));
+        tmp1.add(addLabel);
+        tmp1.add(Box.createRigidArea(new Dimension(5,20)));
+        JLabel addLabelText = new JLabel("Add filter set");
+        addLabelText.setForeground(Color.white);
+        tmp1.add(addLabelText);
+        tmp1.add(Box.createHorizontalGlue()); 
+        tmp1.setBorder(BorderFactory.createCompoundBorder(
+                          ViewUtil.getTinyLineBorder(),
+                          ViewUtil.getMediumBorder()));
+        
+        p.add(tmp1);
+
+        //p.add(tmp1, BorderLayout.CENTER);
 
         /*
         JLabel label = new JLabel("Create new sub query");
@@ -148,29 +168,21 @@ public class FilterPanel extends javax.swing.JPanel {
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
+        jPanel1.setBackground(new java.awt.Color(255, 204, 204));
+        jPanel1.setLayout(new java.awt.GridLayout(1, 3));
+
         javax.swing.GroupLayout containerLayout = new javax.swing.GroupLayout(container);
         container.setLayout(containerLayout);
         containerLayout.setHorizontalGroup(
             containerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 600, Short.MAX_VALUE)
+            .addGap(0, 657, Short.MAX_VALUE)
         );
         containerLayout.setVerticalGroup(
             containerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 423, Short.MAX_VALUE)
+            .addGap(0, 509, Short.MAX_VALUE)
         );
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(container, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(61, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(container, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+        jPanel1.add(container);
 
         jScrollPane1.setViewportView(jPanel1);
 
@@ -182,7 +194,7 @@ public class FilterPanel extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

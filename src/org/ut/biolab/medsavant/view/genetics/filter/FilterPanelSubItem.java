@@ -46,8 +46,8 @@ public class FilterPanelSubItem extends JPanel{
         
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));        
         setBorder(BorderFactory.createCompoundBorder(
-                          ViewUtil.getMediumBorder(),
-                          ViewUtil.getTinyLineBorder()));
+                ViewUtil.getMediumBorder(),ViewUtil.getTinyLineBorder()
+                ));
         
         //title bar
         JPanel titlePanel = ViewUtil.getSecondaryBannerPanel();

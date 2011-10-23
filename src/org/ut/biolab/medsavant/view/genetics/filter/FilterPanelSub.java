@@ -57,11 +57,13 @@ public final class FilterPanelSub extends JPanel{
         this.id = id;
         this.parent = parent;
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));        
-        setBorder(BorderFactory.createLineBorder(BAR_COLOUR, 1));
-        
+        setBorder(BorderFactory.createCompoundBorder(
+                          ViewUtil.getMediumBorder(),
+                          ViewUtil.getTinyLineBorder()));
         
         //title bar
         JPanel titlePanel = ViewUtil.getPrimaryBannerPanel();//new JPanel();
+        
         //titlePanel.setBackground(BAR_COLOUR);
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
         titlePanel.addMouseListener(new MouseAdapter() {
@@ -73,13 +75,14 @@ public final class FilterPanelSub extends JPanel{
         });
         titlePanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        JLabel titleLabel = new JLabel("Sub Query " + id);
+        JLabel titleLabel = new JLabel("Filter Set " + id);
         titleLabel.setForeground(Color.white);
         titlePanel.add(Box.createRigidArea(new Dimension(10,20)));
         titlePanel.add(titleLabel);  
         
         titlePanel.add(Box.createHorizontalGlue());     
         
+        /*
         final JButton addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         addLabel.setToolTipText("Add new filter");
         addLabel.addMouseListener(new MouseListener() {
@@ -162,7 +165,7 @@ public final class FilterPanelSub extends JPanel{
             }
         });
         titlePanel.add(addLabel);
-
+        */
         final JButton removeLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
         removeLabel.setToolTipText("Remove sub query and all contained filters");
         removeLabel.addMouseListener(new MouseListener() {
@@ -195,6 +198,7 @@ public final class FilterPanelSub extends JPanel{
         //contentPanel.add(Box.createRigidArea(new Dimension(100,100)));
         this.add(contentPanel);
         
+        
         refreshSubItems();
 
     }
@@ -216,6 +220,101 @@ public final class FilterPanelSub extends JPanel{
                 this.contentPanel.add(Box.createRigidArea(new Dimension(5,5)));
             }
         }
+        
+        JPanel addFilterPanel = new JPanel();
+        ViewUtil.applyHorizontalBoxLayout(addFilterPanel);
+        final JButton addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+        addLabel.setToolTipText("Add new filter");
+        addLabel.addMouseListener(new MouseListener() {
+            
+            public void mouseClicked(MouseEvent e) {}
+            public void mousePressed(MouseEvent e) {}
+
+            public void mouseReleased(MouseEvent e) {
+
+                Map<Category, List<FilterPlaceholder>> map = getRemainingFilters();
+                
+                final JPopupMenu p = new JPopupMenu();  
+                
+                Category[] cats = new Category[map.size()];
+                cats = map.keySet().toArray(cats);
+                Arrays.sort(cats, new CategoryComparator());
+          
+                final Map<JLabel, List<Component>> menuMap = new HashMap<JLabel, List<Component>>();
+                
+                for(Category c : cats){
+                    
+                    final JLabel header = new JLabel(AnnotationField.categoryToString(c));
+                    header.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    header.setFont(ViewUtil.getMediumTitleFont());
+                    header.addMouseListener(new MouseAdapter() {
+                        public void mouseReleased(MouseEvent e){
+                            for(Object key : menuMap.keySet()){
+                                for(Component comp : menuMap.get(key)){
+                                    comp.setVisible(false);
+                                }
+                            }
+                            for(Component comp : menuMap.get(header)){
+                                comp.setVisible(true);
+                            }
+                            p.validate();
+                            p.pack();
+                            p.repaint();
+                        }
+                    });
+                    menuMap.put(header, new ArrayList<Component>());
+                    p.add(header);                    
+                    
+                    FilterPlaceholder[] filters = new FilterPlaceholder[map.get(c).size()];
+                    filters = map.get(c).toArray(filters);
+                    Arrays.sort(filters, new FilterComparator());
+                    
+                    for(final FilterPlaceholder filter : filters){
+                        Component comp = p.add(filter.getFilterName());
+                        comp.addMouseListener(new MouseAdapter() {                        
+                            @Override
+                            public void mouseReleased(MouseEvent e) {
+                                subItems.add(new FilterPanelSubItem(filter.getFilterView(), FilterPanelSub.this, filter.getFilterID()));
+                                refreshSubItems();
+                            }
+                        });
+                        menuMap.get(header).add(comp);
+                        comp.setVisible(false);
+                    }
+                    
+                    if(filters.length == 0){
+                        JLabel empty = new JLabel("(No filters)");
+                        empty.setFont(ViewUtil.getSmallTitleFont());
+                        menuMap.get(header).add(empty);
+                        empty.setVisible(false);     
+                        p.add(empty);
+                    }  
+                    p.addSeparator();
+                }
+                
+                p.show(addLabel, 0, 20);
+                
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                addLabel.setBackground(BUTTON_OVER_COLOUR);
+            }
+
+            public void mouseExited(MouseEvent e) {
+                addLabel.setBackground(BAR_COLOUR);
+            }
+        });
+        
+        JPanel tmp1 = ViewUtil.getSecondaryBannerPanel();//ViewUtil.getClearPanel();
+        //ViewUtil.applyHorizontalBoxLayout(tmp1);
+        tmp1.setBorder(BorderFactory.createCompoundBorder(
+               ViewUtil.getTinyLineBorder(),ViewUtil.getMediumBorder()));
+        tmp1.add(addLabel);
+        tmp1.add(Box.createRigidArea(new Dimension(5,20)));
+        tmp1.add(new JLabel("Add filter"));        
+        tmp1.add(Box.createHorizontalGlue()); 
+        
+        contentPanel.add(tmp1);
         
         this.updateUI();
     }

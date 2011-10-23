@@ -154,6 +154,16 @@ public class ViewUtil {
         return p;
     }
 
+    
+    public static JPanel getSeparatorBannerPanel() {
+        JPanel p = new JPanel();
+        p.setOpaque(true);
+        p.setBorder(BorderFactory.createMatteBorder(0,0,1,0,Color.gray));
+        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+
+        return p;
+    }
+
     public static JPanel getSecondaryBannerPanel() {
         JPanel p = new JPanel() {
 
