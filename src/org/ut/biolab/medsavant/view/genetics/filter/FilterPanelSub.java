@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -203,6 +204,20 @@ public final class FilterPanelSub extends JPanel{
 
     }
     
+    private JPanel createAndLabel(){
+        JPanel p = new JPanel();
+        p.setMaximumSize(new Dimension(10000,40));
+        p.setLayout(new BorderLayout());
+        
+        JLabel label = new JLabel("AND");
+        label.setHorizontalAlignment(JLabel.CENTER);
+        //label.setBorder(BorderFactory.createLineBorder(label.getBackground(), 8));
+        //label.setFont(ViewUtil.getMediumTitleFont());
+        
+        p.add(label, BorderLayout.CENTER);
+        return p;
+    }
+    
     public void refreshSubItems(){
         contentPanel.removeAll();
         
@@ -216,9 +231,6 @@ public final class FilterPanelSub extends JPanel{
         //refresh panel
         for(int i = 0; i < subItems.size(); i++){
             this.contentPanel.add(subItems.get(i));
-            if(i != subItems.size()-1){
-                this.contentPanel.add(Box.createRigidArea(new Dimension(5,5)));
-            }
         }
         
         JPanel addFilterPanel = new JPanel();
@@ -234,7 +246,8 @@ public final class FilterPanelSub extends JPanel{
 
                 Map<Category, List<FilterPlaceholder>> map = getRemainingFilters();
                 
-                final JPopupMenu p = new JPopupMenu();  
+                final JPopupMenu p = new JPopupMenu(); 
+                p.setBorder(ViewUtil.getMediumBorder());
                 
                 Category[] cats = new Category[map.size()];
                 cats = map.keySet().toArray(cats);

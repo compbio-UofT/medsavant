@@ -64,8 +64,8 @@ public class FilterPanel extends javax.swing.JPanel {
         
         JLabel label = new JLabel("OR");
         label.setHorizontalAlignment(JLabel.CENTER);
-        label.setBorder(BorderFactory.createLineBorder(label.getBackground(), 8));
-        label.setFont(ViewUtil.getMediumTitleFont());
+        //label.setBorder(BorderFactory.createLineBorder(label.getBackground(), 8));
+        //label.setFont(ViewUtil.getMediumTitleFont());
         
         p.add(label, BorderLayout.CENTER);
         return p;
@@ -77,7 +77,7 @@ public class FilterPanel extends javax.swing.JPanel {
         //p.setBorder(ViewUtil.getMediumBorder());
         //p.setLayout(new BorderLayout());
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(BorderFactory.createLineBorder(p.getBackground(), 6));
+        //p.setBorder(BorderFactory.createLineBorder(p.getBackground(), 6));
         
         final JButton addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         addLabel.setToolTipText("Add filter set");
@@ -144,7 +144,7 @@ public class FilterPanel extends javax.swing.JPanel {
         for(int i = 0; i < subs.size(); i++){
             container.add(subs.get(i));
             if(i != subs.size()-1){
-                container.add(createOrLabel());
+                //container.add(createOrLabel());
             } 
         }
         container.add(createNewOrButton());
