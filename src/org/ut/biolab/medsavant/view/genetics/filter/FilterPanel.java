@@ -23,7 +23,6 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -56,28 +55,8 @@ public class FilterPanel extends javax.swing.JPanel {
         
         createNewSubPanel();
     }
-    
-    private JPanel createOrLabel(){
-        JPanel p = new JPanel();
-        p.setMaximumSize(new Dimension(10000,40));
-        p.setLayout(new BorderLayout());
-        
-        JLabel label = new JLabel("OR");
-        label.setHorizontalAlignment(JLabel.CENTER);
-        //label.setBorder(BorderFactory.createLineBorder(label.getBackground(), 8));
-        //label.setFont(ViewUtil.getMediumTitleFont());
-        
-        p.add(label, BorderLayout.CENTER);
-        return p;
-    }
  
     private JPanel createNewOrButton(){
-        JPanel p = new JPanel();
-        p.setMaximumSize(new Dimension(10000,40));
-        //p.setBorder(ViewUtil.getMediumBorder());
-        //p.setLayout(new BorderLayout());
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        //p.setBorder(BorderFactory.createLineBorder(p.getBackground(), 6));
         
         final JButton addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         addLabel.setToolTipText("Add filter set");
@@ -90,39 +69,18 @@ public class FilterPanel extends javax.swing.JPanel {
         
         
         JPanel tmp1 = ViewUtil.getPrimaryBannerPanel();//ViewUtil.getClearPanel();
-        //ViewUtil.applyHorizontalBoxLayout(tmp1);
-        tmp1.add(Box.createRigidArea(new Dimension(5,20)));
+        tmp1.setBorder(BorderFactory.createCompoundBorder(
+                          ViewUtil.getTinyLineBorder(),
+                          ViewUtil.getMediumBorder()));
         tmp1.add(addLabel);
-        tmp1.add(Box.createRigidArea(new Dimension(5,20)));
+        tmp1.setMaximumSize(new Dimension(9999,40));
+        tmp1.add(Box.createHorizontalStrut(5));
         JLabel addLabelText = new JLabel("Add filter set");
         addLabelText.setForeground(Color.white);
         tmp1.add(addLabelText);
         tmp1.add(Box.createHorizontalGlue()); 
-        tmp1.setBorder(BorderFactory.createCompoundBorder(
-                          ViewUtil.getTinyLineBorder(),
-                          ViewUtil.getMediumBorder()));
-        
-        p.add(tmp1);
-
-        //p.add(tmp1, BorderLayout.CENTER);
-
-        /*
-        JLabel label = new JLabel("Create new sub query");
-        label.setHorizontalAlignment(JLabel.CENTER);
-        label.setBorder(BorderFactory.createLineBorder(label.getBackground(), 8));
-        label.setFont(ViewUtil.getMediumTitleFont());
-        label.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                createNewSubPanel();
-            }
-        });
-        label.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        p.add(label, BorderLayout.CENTER);
-         * 
-         */
-        return p;
+       
+        return tmp1;
     }
     
     private void createNewSubPanel(){
@@ -133,6 +91,9 @@ public class FilterPanel extends javax.swing.JPanel {
     public void refreshSubPanels(){
         container.removeAll();
         
+        JLabel l = new JLabel("Filter out variants that don't pass any of these filter sets:");
+        container.add(l);
+        container.add(Box.createVerticalStrut(5));
         //check for removed items
         for(int i = subs.size()-1; i >= 0; i--){
             if(subs.get(i).isRemoved()){
@@ -143,9 +104,7 @@ public class FilterPanel extends javax.swing.JPanel {
         //refresh panel
         for(int i = 0; i < subs.size(); i++){
             container.add(subs.get(i));
-            if(i != subs.size()-1){
-                //container.add(createOrLabel());
-            } 
+            container.add(Box.createVerticalStrut(5));
         }
         container.add(createNewOrButton());
         container.add(Box.createVerticalGlue());

@@ -49,9 +49,9 @@ public class IconFactory {
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
             case ADD:
-                return getIcon(iconroot + "open_normal.png");
+                return getIcon(iconroot + "open_normal_green.png");
             case REMOVE:
-                return getIcon(iconroot + "close_normal.png");
+                return getIcon(iconroot + "close_normal_green.png");
             case FILTER:
                 return getIcon(iconroot + "filter.gif");
             case RESULTS:

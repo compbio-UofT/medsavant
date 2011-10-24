@@ -58,9 +58,7 @@ public final class FilterPanelSub extends JPanel{
         this.id = id;
         this.parent = parent;
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));        
-        setBorder(BorderFactory.createCompoundBorder(
-                          ViewUtil.getMediumBorder(),
-                          ViewUtil.getTinyLineBorder()));
+        setBorder(ViewUtil.getTinyLineBorder());
         
         //title bar
         JPanel titlePanel = ViewUtil.getPrimaryBannerPanel();//new JPanel();
@@ -231,6 +229,7 @@ public final class FilterPanelSub extends JPanel{
         //refresh panel
         for(int i = 0; i < subItems.size(); i++){
             this.contentPanel.add(subItems.get(i));
+            contentPanel.add(Box.createRigidArea(new Dimension(5,5)));
         }
         
         JPanel addFilterPanel = new JPanel();
