@@ -136,6 +136,7 @@ class GeneListFilterView {
                 FilterController.addFilter(f, queryId); //TODO
             }
         };
+        applyButton.addActionListener(al);
 
         b.addActionListener(new ActionListener() {
 
