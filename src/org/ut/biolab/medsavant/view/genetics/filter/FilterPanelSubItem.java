@@ -9,8 +9,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -25,7 +23,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Andrew
  */
-public class FilterPanelSubItem extends JPanel{
+public class FilterPanelSubItem extends JPanel {
     
     private JComponent contentPanel;
     private FilterView filterView;
@@ -38,7 +36,7 @@ public class FilterPanelSubItem extends JPanel{
     
     
     
-    public FilterPanelSubItem(FilterView filterView, FilterPanelSub parent, String filterId){
+    public FilterPanelSubItem(FilterView filterView, FilterPanelSub parent, String filterId) {
         
         this.parent = parent;
         this.filterView = filterView;
@@ -59,19 +57,19 @@ public class FilterPanelSubItem extends JPanel{
         
         final JLabel removeLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
         removeLabel.setToolTipText("Remove filter");
-        removeLabel.addMouseListener(new MouseListener() {
+        removeLabel.addMouseListener(new MouseAdapter() {
             
-            public void mouseClicked(MouseEvent e) {}
-            public void mousePressed(MouseEvent e) {}
-
+            @Override
             public void mouseReleased(MouseEvent e) {
                 removeThis();
             }
 
+            @Override
             public void mouseEntered(MouseEvent e) {
                 removeLabel.setBackground(BUTTON_OVER_COLOUR);
             }
 
+            @Override
             public void mouseExited(MouseEvent e) {
                 removeLabel.setBackground(BAR_COLOUR);
             }
@@ -95,20 +93,18 @@ public class FilterPanelSubItem extends JPanel{
         
     }
     
-    public void removeThis(){
+    public void removeThis() {
         FilterController.removeFilter(filterId, parent.getId());
         isRemoved = true;
+        filterView.cleanup();       // Give derived classes (e.g. plugin filters) a chance to clean up.
         parent.refreshSubItems();
     }
     
-    public boolean isRemoved(){
+    public boolean isRemoved() {
         return isRemoved;
     }
     
-    public String getFilterId(){
+    public String getFilterId() {
         return filterId;
-    }
-    
-    
-    
+    }    
 }

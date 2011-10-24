@@ -26,13 +26,18 @@ import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
  */
 public class PluginFilterView {
     
-    public static FilterView getFilterView(MedSavantFilterPlugin plugin, int queryId){
-        return new FilterView(plugin.getTitle(), getContentPanel(plugin, queryId));
+    public static FilterView getFilterView(final MedSavantFilterPlugin plugin, final int queryID) {
+        return new FilterView(plugin.getTitle(), getContentPanel(plugin, queryID)) {
+            @Override
+            public void cleanup() {
+                plugin.cleanup(queryID);
+            }
+        };
     }
     
-    private static JPanel getContentPanel(MedSavantFilterPlugin plugin, int queryId) {
+    private static JPanel getContentPanel(MedSavantFilterPlugin plugin, int queryID) {
         JPanel container = new JPanel();
-        plugin.init(container, queryId);
+        plugin.init(container, queryID);
         return container;
     }
   

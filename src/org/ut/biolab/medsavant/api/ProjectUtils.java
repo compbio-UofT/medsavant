@@ -27,11 +27,14 @@ import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 
 
 /**
  * API for project-related functionality exposed to plugins.  Expect this to be refactored at
  * some point.
+ * 
+ * TODO: Give this class a better name.
  *
  * @author tarkvara
  */
@@ -75,5 +78,13 @@ public class ProjectUtils {
     
     public static void removeFilter(String filterID, int queryID) {
         FilterController.removeFilter(filterID, queryID);
+    }
+    
+    public static void addFilterListener(FiltersChangedListener l) {
+        FilterController.addFilterListener(l);
+    }
+
+    public static boolean isFilterActive(String filterID, int queryID) {
+        return FilterController.isFilterActive(queryID, filterID);
     }
 }

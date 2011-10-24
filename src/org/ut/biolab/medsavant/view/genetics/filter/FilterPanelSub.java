@@ -366,7 +366,6 @@ public final class FilterPanelSub extends JPanel{
         tmp1.add(Box.createRigidArea(new Dimension(5,20)));
         tmp1.add(new JLabel("Add filter"));        
         tmp1.add(Box.createHorizontalGlue()); 
-        
         contentPanel.add(tmp1);
         
         this.updateUI();

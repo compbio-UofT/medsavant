@@ -16,8 +16,8 @@
 
 package org.ut.biolab.medsavant.api;
 
-import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 
 
 /**
@@ -28,8 +28,14 @@ import javax.swing.JPanel;
 public abstract class MedSavantFilterPlugin extends MedSavantPlugin {
 
     /**
-     * This method is called once during application life cycle to allow a third-party
-     * plugin to initialize and show itself.
+     * This method is called once during the lifecycle of each instance of the plugin
+     * filter to give the filter instance a chance to set up its user interface.
      */
-    public abstract void init(JPanel panel, int queryId);
+    public abstract void init(JPanel panel, int queryID);
+    
+    /**
+     * This method is called once during the lifecycle of an instance of the plugin
+     * filter to give the filter instance a chance to clean up after itself.
+     */
+    public abstract void cleanup(int queryID);
 }
