@@ -472,9 +472,6 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                //NewProjectDialog npd = new NewProjectDialog(MainFrame.getInstance(), true);
-                //npd.setVisible(true);
-                
                 new NewProjectWizard();
                 
             }

@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
@@ -54,9 +55,9 @@ public class ProjectController implements ReferenceListener {
         }
     }
 
-    public int addProject(String projectName, File patientFormatFile) {
+    public int addProject(String projectName, List<CustomField> fields) {
         try {
-            int projectid = ProjectQueryUtil.addProject(projectName, patientFormatFile);
+            int projectid = ProjectQueryUtil.addProject(projectName, fields);
             ProjectController.getInstance().fireProjectAddedEvent(projectName);
             return projectid;
         } catch (Exception ex) {

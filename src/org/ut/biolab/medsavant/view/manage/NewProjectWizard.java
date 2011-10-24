@@ -8,7 +8,6 @@ import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.dialog.ButtonPanel;
 import com.jidesoft.dialog.PageList;
-import com.jidesoft.swing.JideButton;
 import com.jidesoft.wizard.AbstractWizardPage;
 import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
@@ -17,37 +16,37 @@ import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
-import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 
 /**
  *
@@ -56,10 +55,12 @@ import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 public class NewProjectWizard extends WizardDialog {
     
     private String projectName;
-    private File formatFile;
+    //private File formatFile;
+    private DefaultTableModel formatModel;
     private String referenceName;
     private List<Annotation> chosenAnnotations = new ArrayList<Annotation>();
     private String validationError = "";
+    private List<CustomField> fields;
     
     public NewProjectWizard(){
 
@@ -141,10 +142,10 @@ public class NewProjectWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);   
             }     
         };
-        page.addText(
+        /*page.addText(
                 "Choose an xml file which specifies the fields used for patient\n"
                 + "data. See documentation for proper xml schema. If no file is\n"
-                + "specified, only the default fields will be used");
+                + "specified, only the default fields will be used.");
         
         //setup file chooser
         final JTextField filefield = new JTextField();
@@ -183,8 +184,57 @@ public class NewProjectWizard extends WizardDialog {
         panel.add(spacer);
         panel.add(button);
         
-        page.addComponent(panel);
+        page.addComponent(panel);*/
         
+        page.addText("Add relevant fields for patients. ");
+
+        JScrollPane scrollpane = new JScrollPane();
+        scrollpane.setPreferredSize(new Dimension(300,250));    
+        scrollpane.getViewport().setBackground(Color.white);
+        
+        final JTable table = new JTable(){      
+            @Override
+            public Class<?> getColumnClass(int column) {
+                if(column == 2){
+                    return Boolean.class;
+                } else {
+                    return String.class;
+                }
+            }     
+        };
+        
+        formatModel = new DefaultTableModel(){
+            @Override
+            public boolean isCellEditable(int row, int col) {  
+                return row >= 4;   
+            }  
+        };
+             
+        formatModel.addColumn("Name");
+        formatModel.addColumn("Type");
+        formatModel.addColumn("Filterable");
+        formatModel.addColumn("Alias");
+        formatModel.addColumn("Description");
+        
+        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID, DefaultPatientTableSchema.TYPE_OF_FAMILY_ID + "(" + DefaultPatientTableSchema.LENGTH_OF_FAMILY_ID + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID, ""});
+        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID, DefaultPatientTableSchema.TYPE_OF_PEDIGREE_ID + "(" + DefaultPatientTableSchema.LENGTH_OF_PEDIGREE_ID + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID, ""});
+        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, DefaultPatientTableSchema.TYPE_OF_HOSPITAL_ID + "(" + DefaultPatientTableSchema.LENGTH_OF_HOSPITAL_ID + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, ""});
+        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultPatientTableSchema.TYPE_OF_DNA_IDS + "(" + DefaultPatientTableSchema.LENGTH_OF_DNA_IDS + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, ""});
+       
+        table.setModel(formatModel);
+        table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        scrollpane.getViewport().add(table);
+        page.addComponent(scrollpane);
+        
+        JButton addFieldButton = new JButton("Add Field");
+        addFieldButton.addMouseListener(new MouseAdapter() {
+            public void mouseReleased(MouseEvent e){
+                formatModel.addRow(new Object[5]);
+                table.setModel(formatModel);
+            }
+        });
+        page.addComponent(addFieldButton);
+
         return page;
     }
     
@@ -337,15 +387,50 @@ public class NewProjectWizard extends WizardDialog {
     private boolean validateProject() throws SQLException {
         if(ProjectQueryUtil.containsProject(projectName)){
             validationError = "Project name already in use";
+        } else if(!validateFormatModel()) {
+            validationError = "Patient table format contains errors\n"
+                    + "Name cannot only contain letters, numbers and underscores. \n"
+                    + "Type must be in format: COLUMNTYPE(LENGTH)";
         } else {
             return true;
         }
         return false;
     }
     
+    private boolean validateFormatModel() {
+        
+        fields = new ArrayList<CustomField>();
+        
+        for(int row = 4; row < formatModel.getRowCount(); row++){
+            String fieldName = (String)formatModel.getValueAt(row, 0);
+            String fieldType = (String)formatModel.getValueAt(row, 1);
+            Boolean fieldFilterable = (Boolean)formatModel.getValueAt(row, 2);
+            String fieldAlias = (String)formatModel.getValueAt(row, 3);
+            String fieldDescription = (String)formatModel.getValueAt(row, 4);
+            
+            if(fieldName == null || fieldType == null){
+                continue;
+            }
+            
+            if(!fieldName.matches("^([a-z]|[A-Z]|_|[0-9])+$") ||
+                    !fieldType.matches("^([a-z]|[A-Z])+\\([0-9]+\\)$")){
+                return false;
+            }
+            
+            if(!fieldName.equals("") && !fieldType.equals("")){
+                if(fieldFilterable == null) fieldFilterable = false;
+                if(fieldAlias == null) fieldAlias = fieldName;
+                if(fieldDescription == null) fieldDescription = "";
+                fields.add(new CustomField(fieldName, fieldType, fieldFilterable, fieldAlias, fieldDescription));
+            }
+        }
+        
+        return true;
+    }
+    
     private void createProject() throws SQLException {
         //create project
-        int projectid = ProjectController.getInstance().addProject(projectName, formatFile);
+        int projectid = ProjectController.getInstance().addProject(projectName, fields);
         
         //add reference
         int refid = ReferenceQueryUtil.getReferenceId(referenceName);
@@ -359,11 +444,11 @@ public class NewProjectWizard extends WizardDialog {
             }
             annotationIds = annotationIds.substring(0, annotationIds.length()-1);
             ProjectQueryUtil.setAnnotations(projectid, refid, annotationIds);
-        }       
+        }   
     }
     
     
-    class CheckListItem{
+    private class CheckListItem{
 
         private String  label;
         private boolean isSelected = false;
@@ -392,7 +477,7 @@ public class NewProjectWizard extends WizardDialog {
         }
     }
 
-    class CheckListRenderer extends JCheckBox implements ListCellRenderer {
+    private class CheckListRenderer extends JCheckBox implements ListCellRenderer {
 
         public Component getListCellRendererComponent(
             JList list, Object value, int index,
