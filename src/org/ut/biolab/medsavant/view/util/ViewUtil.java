@@ -513,10 +513,10 @@ public class ViewUtil {
         
     }
     
-    public static JButton createIconButton(ImageIcon i) {
-        JButton b = new JButton();
+    public static JLabel createIconButton(ImageIcon i) {
+        JLabel b = new JLabel();
         b.setBorder(null);
-        b.setBorderPainted(false);
+        //b.setBorderPainted(false);
         b.setOpaque(false);
         b.setPreferredSize(new Dimension(i.getIconWidth(),i.getIconHeight()));
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));

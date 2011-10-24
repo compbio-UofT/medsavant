@@ -221,8 +221,14 @@ public class NewProjectWizard extends WizardDialog {
             }
         } catch (SQLException ex) {
             Logger.getLogger(NewProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
-        }       
-        page.addComponent(combo);
+        }     
+        if(combo.getItemCount() > 0){
+            page.addComponent(combo);
+        } else {
+            page.addText(
+                    "You must first add a reference genome! \n"
+                    + "This can be done in the left side menu panel.");
+        }
         
         return page;
     }

@@ -26,6 +26,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.border.Border;
 
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -165,7 +166,8 @@ public final class FilterPanelSub extends JPanel{
         });
         titlePanel.add(addLabel);
         */
-        final JButton removeLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
+        final JLabel removeLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
+        removeLabel.setBackground(Color.RED);
         removeLabel.setToolTipText("Remove sub query and all contained filters");
         removeLabel.addMouseListener(new MouseListener() {
             
@@ -234,7 +236,7 @@ public final class FilterPanelSub extends JPanel{
         
         JPanel addFilterPanel = new JPanel();
         ViewUtil.applyHorizontalBoxLayout(addFilterPanel);
-        final JButton addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+        final JLabel addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         addLabel.setToolTipText("Add new filter");
         addLabel.addMouseListener(new MouseListener() {
             
@@ -245,20 +247,27 @@ public final class FilterPanelSub extends JPanel{
 
                 Map<Category, List<FilterPlaceholder>> map = getRemainingFilters();
                 
-                final JPopupMenu p = new JPopupMenu(); 
-                p.setBorder(ViewUtil.getMediumBorder());
+                final JPopupMenu p = new JPopupMenu();                  
+                p.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.black), BorderFactory.createLineBorder(Color.white, 5)));
+                p.setBackground(Color.white);
                 
                 Category[] cats = new Category[map.size()];
                 cats = map.keySet().toArray(cats);
                 Arrays.sort(cats, new CategoryComparator());
           
-                final Map<JLabel, List<Component>> menuMap = new HashMap<JLabel, List<Component>>();
+                final Map<JPanel, List<Component>> menuMap = new HashMap<JPanel, List<Component>>();
                 
                 for(Category c : cats){
                     
-                    final JLabel header = new JLabel(AnnotationField.categoryToString(c));
+                    final JPanel header = new JPanel();
+                    header.setBackground(Color.white);
+                    header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
+                    JLabel label = new JLabel(" " + AnnotationField.categoryToString(c));
+                    header.add(label);
+                    header.add(Box.createHorizontalGlue()); 
                     header.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    header.setFont(ViewUtil.getMediumTitleFont());
+                    label.setFont(ViewUtil.getMediumTitleFont());
+                    header.setPreferredSize(new Dimension(200,20));
                     header.addMouseListener(new MouseAdapter() {
                         public void mouseReleased(MouseEvent e){
                             for(Object key : menuMap.keySet()){
@@ -273,6 +282,12 @@ public final class FilterPanelSub extends JPanel{
                             p.pack();
                             p.repaint();
                         }
+                        public void mouseEntered(MouseEvent e) {
+                            header.setBackground(new Color(0.9f, 0.9f, 0.9f));
+                        }
+                        public void mouseExited(MouseEvent e) {
+                            header.setBackground(Color.white);
+                        }
                     });
                     menuMap.put(header, new ArrayList<Component>());
                     p.add(header);                    
@@ -282,27 +297,53 @@ public final class FilterPanelSub extends JPanel{
                     Arrays.sort(filters, new FilterComparator());
                     
                     for(final FilterPlaceholder filter : filters){
-                        Component comp = p.add(filter.getFilterName());
-                        comp.addMouseListener(new MouseAdapter() {                        
+                        
+                        final JPanel item = new JPanel();
+                        item.setPreferredSize(new Dimension(200,20));
+                        item.setBackground(Color.white);
+                        item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
+                        JLabel itemLabel = new JLabel("     " + filter.getFilterName());
+                        item.add(itemLabel);
+                        item.add(Box.createHorizontalGlue());                    
+                        item.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                        item.addMouseListener(new MouseAdapter() {                        
                             @Override
                             public void mouseReleased(MouseEvent e) {
                                 subItems.add(new FilterPanelSubItem(filter.getFilterView(), FilterPanelSub.this, filter.getFilterID()));
                                 refreshSubItems();
+                                p.setVisible(false);
+                            }
+                            public void mouseEntered(MouseEvent e) {
+                                item.setBackground(new Color(0.9f, 0.9f, 0.9f));
+                            }
+                            public void mouseExited(MouseEvent e) {
+                                item.setBackground(Color.white);
                             }
                         });
-                        menuMap.get(header).add(comp);
-                        comp.setVisible(false);
+                        menuMap.get(header).add(item);
+                        item.setVisible(false);
+                        p.add(item);
                     }
                     
                     if(filters.length == 0){
-                        JLabel empty = new JLabel("(No filters)");
-                        empty.setFont(ViewUtil.getSmallTitleFont());
-                        menuMap.get(header).add(empty);
-                        empty.setVisible(false);     
-                        p.add(empty);
+                        JPanel item = new JPanel();
+                        item.setPreferredSize(new Dimension(150,20));
+                        item.setBackground(Color.white);
+                        item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
+                        JLabel empty = new JLabel("     (No filters)");
+                        empty.setFont(ViewUtil.getSmallTitleFont());                       
+                        item.setVisible(false);     
+                        item.add(empty);
+                        item.add(Box.createHorizontalGlue());
+                        p.add(item);
+                        menuMap.get(header).add(item);
                     }  
-                    p.addSeparator();
                 }
+                
+                JPanel ppp = new JPanel();
+                ppp.setBackground(Color.white);
+                ppp.setPreferredSize(new Dimension(1,1));
+                p.add(ppp);
                 
                 p.show(addLabel, 0, 20);
                 

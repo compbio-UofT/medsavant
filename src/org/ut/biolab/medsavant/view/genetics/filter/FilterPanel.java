@@ -58,7 +58,7 @@ public class FilterPanel extends javax.swing.JPanel {
  
     private JPanel createNewOrButton(){
         
-        final JButton addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+        final JLabel addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         addLabel.setToolTipText("Add filter set");
         addLabel.addMouseListener(new MouseAdapter() {
             @Override
