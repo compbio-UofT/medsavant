@@ -120,18 +120,17 @@ public class LoggedInView extends JPanel implements ProjectListener {
                     projectDropDown.setEnabled(false);
                 } else {
                     projectDropDown.setEnabled(true);
-                projectDropDown.addActionListener(new ActionListener() {
+                    projectDropDown.addActionListener(new ActionListener() {
 
-                    public void actionPerformed(ActionEvent e) {
-                        String currentName = ProjectController.getInstance().getCurrentProjectName();
-                        if(!ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem())){
-                            projectDropDown.setSelectedItem(currentName);
+                        public void actionPerformed(ActionEvent e) {
+                            String currentName = ProjectController.getInstance().getCurrentProjectName();
+                            if(!ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem())){
+                                projectDropDown.setSelectedItem(currentName);
+                            }
                         }
-                    }
-                });
-                ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
-                }
-                
+                    });
+                    ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
+                }               
             } catch (SQLException ex) {
             }
 

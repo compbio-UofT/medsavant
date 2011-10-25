@@ -87,7 +87,8 @@ public class ProjectController implements ReferenceListener {
         try {
             if (ProjectQueryUtil.containsProject(projectName)) {
                 
-                if(FilterController.hasFiltersApplied()){
+                if(ProjectQueryUtil.containsProject(this.currentProjectName) &&
+                        FilterController.hasFiltersApplied()){
                     if(!DialogUtils.confirmChangeReference(true)){
                         return false;
                     }
