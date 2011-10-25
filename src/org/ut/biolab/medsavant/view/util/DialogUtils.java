@@ -111,7 +111,7 @@ public class DialogUtils {
                 @Override
                 public void actionPerformed(ActionEvent e2) {
                     String issue = "Hey MedSavant Developers,\n\n";
-                    issue += "I am encountering an error in Savant. I have provided additional diagnostic information below.\n\n";
+                    issue += "I am encountering an error in MedSavant. I have provided additional diagnostic information below.\n\n";
 
                     issue += "=== DESCRIBE THE ISSUE BELOW ===\n\n\n";
 

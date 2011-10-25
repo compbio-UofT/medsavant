@@ -132,10 +132,10 @@ public class BugReportDialog extends javax.swing.JDialog {
         jTextArea3.setBackground(java.awt.SystemColor.control);
         jTextArea3.setColumns(20);
         jTextArea3.setEditable(false);
-        jTextArea3.setFont(new java.awt.Font("Tahoma", 0, 13));
+        jTextArea3.setFont(new java.awt.Font("Tahoma", 0, 13)); // NOI18N
         jTextArea3.setLineWrap(true);
         jTextArea3.setRows(5);
-        jTextArea3.setText("We are constantly improving Savant. Please report any issues you encounter, so that we can address them. We will contact you once we have corrected the problem.");
+        jTextArea3.setText("We are constantly improving MedSavant. Please report any issues you encounter, so that we can address them. We will contact you once we have corrected the problem.");
         jTextArea3.setWrapStyleWord(true);
         jTextArea3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jScrollPane3.setViewportView(jTextArea3);
@@ -181,7 +181,7 @@ public class BugReportDialog extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(171, 171, 171)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE))
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(27, 27, 27)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -206,7 +206,7 @@ public class BugReportDialog extends javax.swing.JDialog {
                             .addComponent(field_requesttype, 0, 532, Short.MAX_VALUE)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(171, 171, 171)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)))
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -276,13 +276,13 @@ public class BugReportDialog extends javax.swing.JDialog {
             String jdk = getJDKVersion();
             String os = getOS();
 
-            String subject = "[Savant Bug Report] from " + name;
+            String subject = "[MedSavant Bug Report] from " + name;
             String message = ""
                 + "Name: " + name + "\n\n"
                 + "Email: " + email + "\n\n"
                 + "Type: " + type + "\n\n"
                 + "Institution: " + institution + "\n\n"
-                + "Savant Version: " + savantVersion + "\n\n"
+                + "MedSavant Version: " + savantVersion + "\n\n"
                 + "JDK Version: " + jdk + "\n\n"
                 + "OS Version: " + os + "\n\n"
                 + "Description:\n" + description + "\n";

@@ -28,7 +28,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="171" max="-2" attributes="0"/>
-                      <Component id="jScrollPane3" pref="532" max="32767" attributes="1"/>
+                      <Component id="jScrollPane3" pref="542" max="32767" attributes="1"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
@@ -58,7 +58,7 @@
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="-2" pref="171" max="-2" attributes="0"/>
-                      <Component id="jScrollPane4" pref="532" max="32767" attributes="1"/>
+                      <Component id="jScrollPane4" pref="542" max="32767" attributes="1"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -244,7 +244,7 @@
             </Property>
             <Property name="lineWrap" type="boolean" value="true"/>
             <Property name="rows" type="int" value="5"/>
-            <Property name="text" type="java.lang.String" value="We are constantly improving Savant. Please report any issues you encounter, so that we can address them. We will contact you once we have corrected the problem."/>
+            <Property name="text" type="java.lang.String" value="We are constantly improving MedSavant. Please report any issues you encounter, so that we can address them. We will contact you once we have corrected the problem."/>
             <Property name="wrapStyleWord" type="boolean" value="true"/>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
