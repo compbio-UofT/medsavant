@@ -38,13 +38,7 @@ public class LoginController {
 
     private static boolean loggedIn = false;
 
-    private synchronized static void setLoggedIn(boolean loggedIn) {
-        if (!loggedIn) {
-            ConnectionController.disconnectAll();
-            if (!SettingsController.getInstance().getRememberPassword()) {
-                password = "";
-            }
-        }
+    private synchronized static void setLoggedIn(boolean loggedIn) {       
         LoginController.loggedIn = loggedIn;
 
         if (loggedIn) {
@@ -53,6 +47,13 @@ public class LoginController {
         } else {
             ServerLogQueryUtil.addLog(LoginController.username, LogType.INFO, "Logged out");
             fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_OUT));
+        }
+        
+        if (!loggedIn) {
+            ConnectionController.disconnectAll();
+            if (!SettingsController.getInstance().getRememberPassword()) {
+                password = "";
+            }
         }
     }
 
