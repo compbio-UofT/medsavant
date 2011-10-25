@@ -206,7 +206,7 @@ public class NewProjectWizard extends WizardDialog {
         formatModel = new DefaultTableModel(){
             @Override
             public boolean isCellEditable(int row, int col) {  
-                return row >= 4;   
+                return row >= 5;   
             }  
         };
              
@@ -220,7 +220,9 @@ public class NewProjectWizard extends WizardDialog {
         formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID, DefaultPatientTableSchema.TYPE_OF_PEDIGREE_ID + "(" + DefaultPatientTableSchema.LENGTH_OF_PEDIGREE_ID + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID, ""});
         formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, DefaultPatientTableSchema.TYPE_OF_HOSPITAL_ID + "(" + DefaultPatientTableSchema.LENGTH_OF_HOSPITAL_ID + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, ""});
         formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultPatientTableSchema.TYPE_OF_DNA_IDS + "(" + DefaultPatientTableSchema.LENGTH_OF_DNA_IDS + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, ""});
-       
+        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultPatientTableSchema.TYPE_OF_BAM_URL + "(" + DefaultPatientTableSchema.LENGTH_OF_BAM_URL + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, ""});
+
+
         table.setModel(formatModel);
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         scrollpane.getViewport().add(table);
@@ -401,7 +403,7 @@ public class NewProjectWizard extends WizardDialog {
         
         fields = new ArrayList<CustomField>();
         
-        for(int row = 4; row < formatModel.getRowCount(); row++){
+        for(int row = 5; row < formatModel.getRowCount(); row++){
             String fieldName = (String)formatModel.getValueAt(row, 0);
             String fieldType = (String)formatModel.getValueAt(row, 1);
             Boolean fieldFilterable = (Boolean)formatModel.getValueAt(row, 2);
