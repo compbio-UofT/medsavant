@@ -325,8 +325,13 @@ public class PluginController extends Controller {
         File pluginFile = new File(DirectorySettings.getPluginsDirectory(), selectedFile.getName());
         IOUtils.copyFile(selectedFile, pluginFile);
         PluginDescriptor desc = addPlugin(pluginFile);
-        pluginLoader.addJar(pluginFile);
-        loadPlugin(desc);
+        if (desc != null) {
+            if (pluginLoader == null) {
+                pluginLoader = new PluginLoader(new URL[] { pluginFile.toURI().toURL() }, getClass().getClassLoader());
+            }
+            pluginLoader.addJar(pluginFile);
+            loadPlugin(desc);
+        }
     }
 
     private boolean checkForPluginUpdate(String id) {
