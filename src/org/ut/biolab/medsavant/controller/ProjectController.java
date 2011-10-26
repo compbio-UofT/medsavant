@@ -182,7 +182,7 @@ public class ProjectController implements ReferenceListener {
     private void setCurrentVariantTable(){
         try {
             this.currentTable = DBUtil.importTable(getCurrentTableName());
-            this.currentTableSchema =  CustomTables.getVariantTableSchema(getCurrentTableName());          
+            this.currentTableSchema =  CustomTables.getCustomTableSchema(getCurrentTableName());          
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }

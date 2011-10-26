@@ -51,7 +51,6 @@ public class GeneticsFilterPage extends SubSectionView {
 
         private void updateSQL() {
             Condition[][] conditions = FilterController.getQueryFilterConditions();
-             TableSchema table = CustomTables.getVariantTableSchema("VARIANT TABLE");
                
             SelectQuery q = new SelectQuery();
             //q.addFromTable(table.getTable());

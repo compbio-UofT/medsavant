@@ -164,7 +164,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
 
         TableSchema table = null;
         try {
-            table = CustomTables.getVariantTableSchema(ProjectQueryUtil.getVariantTablename(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId()));
+            table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId()));
         } catch (SQLException ex) {
             Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -287,7 +287,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
             
             TableSchema table = null;
             try {
-                table = CustomTables.getVariantTableSchema(ProjectQueryUtil.getVariantTablename(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId()));
+                table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId()));
             } catch (SQLException ex) {
                 Logger.getLogger(ChartPanel.class.getName()).log(Level.SEVERE, null, ex);
             }

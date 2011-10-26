@@ -13,7 +13,7 @@ import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.format.AnnotationField;
-import org.ut.biolab.medsavant.db.format.CustomField.FieldType;
+import org.ut.biolab.medsavant.db.util.DBUtil.FieldType;
 
 /**
  *

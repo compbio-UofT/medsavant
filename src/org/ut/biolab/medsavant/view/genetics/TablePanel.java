@@ -23,6 +23,7 @@ import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.format.AnnotationField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.util.DBUtil.FieldType;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 

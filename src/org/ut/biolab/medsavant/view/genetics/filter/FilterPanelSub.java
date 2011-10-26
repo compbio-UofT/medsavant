@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.AnnotationField;
 import org.ut.biolab.medsavant.db.format.AnnotationField.Category;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
+import org.ut.biolab.medsavant.db.util.DBUtil.FieldType;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
@@ -401,7 +402,7 @@ public final class FilterPanelSub extends JPanel{
         
         String tablename = ProjectController.getInstance().getCurrentTableName();
         try {
-            switch(af.getFieldType()){
+            switch((FieldType)af.getFieldType()){
                 case INT:
                 case FLOAT:
                 case DECIMAL:

@@ -54,7 +54,7 @@ public class ProjectUtils {
     }
     
     public static TableSchema getCustomVariantTableSchema(int projectID, int refID) throws SQLException {
-        return CustomTables.getVariantTableSchema(ProjectQueryUtil.getVariantTablename(projectID, refID));
+        return CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(projectID, refID));
     }
     
     public static void addFilterConditions(final Condition[] conditions, final String filterName, final String filterID, int queryID) {
