@@ -1,13 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 
-/*
- * AddDatabaseDialog.java
- *
- * Created on Oct 18, 2011, 2:55:51 PM
- */
 package org.ut.biolab.medsavant.view.dialog;
 
 import java.awt.event.ActionEvent;
@@ -17,6 +23,7 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+
 import org.ut.biolab.medsavant.db.admin.Setup;
 import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -76,16 +83,17 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
 
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
-        panel_details = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
+        javax.swing.JPanel detailsPanel = new javax.swing.JPanel();
+        javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
         field_hostname = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel4 = new javax.swing.JLabel();
         field_port = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel5 = new javax.swing.JLabel();
         field_database = new javax.swing.JTextField();
-        jLabel6 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel6 = new javax.swing.JLabel();
         field_password = new javax.swing.JPasswordField();
 
+        setTitle("Create Database");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 closeDialog(evt);
@@ -106,7 +114,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
             }
         });
 
-        panel_details.setOpaque(false);
+        detailsPanel.setOpaque(false);
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel3.setText("hostname");
@@ -143,26 +151,26 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
 
         field_password.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
-        org.jdesktop.layout.GroupLayout panel_detailsLayout = new org.jdesktop.layout.GroupLayout(panel_details);
-        panel_details.setLayout(panel_detailsLayout);
-        panel_detailsLayout.setHorizontalGroup(
-            panel_detailsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panel_detailsLayout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout detailsPanelLayout = new org.jdesktop.layout.GroupLayout(detailsPanel);
+        detailsPanel.setLayout(detailsPanelLayout);
+        detailsPanelLayout.setHorizontalGroup(
+            detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(detailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(panel_detailsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, field_hostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, field_port, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-                    .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-                    .add(field_database, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-                    .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-                    .add(field_password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
+                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, field_hostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, field_port, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                    .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                    .add(field_database, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                    .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                    .add(field_password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        panel_detailsLayout.setVerticalGroup(
-            panel_detailsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panel_detailsLayout.createSequentialGroup()
+        detailsPanelLayout.setVerticalGroup(
+            detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(detailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -187,12 +195,12 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(235, Short.MAX_VALUE)
+                .addContainerGap(260, Short.MAX_VALUE)
                 .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cancelButton)
                 .addContainerGap())
-            .add(panel_details, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(detailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         layout.linkSize(new java.awt.Component[] {cancelButton, okButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -200,7 +208,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(panel_details, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(detailsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cancelButton)
@@ -216,18 +224,12 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 
         try {
-            if (Setup.createDatabase(this.field_hostname.getText(),
-                    Integer.parseInt(this.field_port.getText()),
-                    this.field_database.getText())) {
-                DialogUtils.displayMessage("Database \"" + this.field_database.getText() + "\" created successfuly");
-                doClose(RET_OK);
-                return;
-            }
-
-        } catch (Exception e) {
+            Setup.createDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_password.getPassword());
+            DialogUtils.displayMessage("Database \"" + this.field_database.getText() + "\" created successfuly");
+            doClose(RET_OK);
+        } catch (Exception x) {
+            DialogUtils.displayException("Sorry", "Database could not be created.\nPlease check the settings and try again.", x);
         }
-
-        DialogUtils.displayError("Uh oh...", "Database could not be created.\nPlease check the settings and try again.");
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
@@ -271,12 +273,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
     private javax.swing.JTextField field_hostname;
     private javax.swing.JPasswordField field_password;
     private javax.swing.JTextField field_port;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JButton okButton;
-    private javax.swing.JPanel panel_details;
     // End of variables declaration//GEN-END:variables
     private int returnStatus = RET_CANCEL;
 }
