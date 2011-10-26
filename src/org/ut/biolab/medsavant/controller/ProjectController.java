@@ -16,13 +16,15 @@ import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
+import org.ut.biolab.medsavant.model.event.LoginEvent;
+import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
  *
  * @author mfiume
  */
-public class ProjectController implements ReferenceListener {
+public class ProjectController implements ReferenceListener, LoginListener {
     
     private String currentProjectName;
     private int currentProjectId;
@@ -122,6 +124,7 @@ public class ProjectController implements ReferenceListener {
         projectListeners = new ArrayList<ProjectListener>();
         
         ReferenceController.getInstance().addReferenceListener(this);
+        LoginController.addLoginListener(this);
     }
     
     public static ProjectController getInstance() {
@@ -219,6 +222,10 @@ public class ProjectController implements ReferenceListener {
     }
 
     public void referenceRemoved(String name) {
+    }
+
+    public void loginEvent(LoginEvent evt) {
+        CustomTables.clearMap();
     }
     
 }
