@@ -414,8 +414,8 @@ public class NewProjectWizard extends WizardDialog {
                 continue;
             }
             
-            if(!fieldName.matches("^([a-z]|[A-Z]|_|[0-9])+$") ||
-                    !fieldType.matches("^([a-z]|[A-Z])+\\([0-9]+\\)$")){
+            if(!fieldName.matches("^([a-z]|[A-Z]|_|[0-9])+$")){// ||
+                    //!fieldType.matches("^([a-z]|[A-Z])+\\([0-9]+\\)$")){
                 return false;
             }
             
