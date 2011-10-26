@@ -45,22 +45,32 @@
               <Component id="label_versioninformation" alignment="0" pref="360" max="32767" attributes="1"/>
               <Component id="jLabel1" alignment="1" pref="360" max="32767" attributes="0"/>
               <Component id="spiralPanel" alignment="0" pref="360" max="32767" attributes="1"/>
-              <Component id="field_password" alignment="0" pref="360" max="32767" attributes="1"/>
               <Component id="field_username" alignment="0" pref="360" max="32767" attributes="1"/>
               <Component id="jLabel2" alignment="1" pref="360" max="32767" attributes="0"/>
-              <Component id="cb_autosignin" alignment="0" min="-2" max="-2" attributes="1"/>
-              <Component id="cb_rememberpassword" alignment="0" min="-2" max="-2" attributes="0"/>
-              <Group type="102" alignment="1" attributes="0">
+              <Component id="field_password" alignment="0" pref="360" max="32767" attributes="1"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <Component id="jLabel5" pref="340" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="label_status" pref="122" max="32767" attributes="0"/>
+              </Group>
+              <Component id="field_database" alignment="0" pref="360" max="32767" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <Component id="jToggleButton1" pref="343" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+              <Group type="102" alignment="0" attributes="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="cb_rememberpassword" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="cb_autosignin" alignment="0" min="-2" max="-2" attributes="1"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+              <Component id="panel_details" alignment="1" max="32767" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <Component id="label_status" pref="93" max="32767" attributes="0"/>
                   <EmptySpace min="-2" pref="171" max="-2" attributes="0"/>
                   <Component id="button_login" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jToggleButton1" min="-2" pref="148" max="-2" attributes="0"/>
               </Group>
-              <Component id="panel_details" alignment="0" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -75,11 +85,15 @@
                   <Component id="field_username" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="field_password" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jToggleButton1" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
+                  <Component id="field_database" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jToggleButton1" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="cb_autosignin" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="cb_rememberpassword" min="-2" max="-2" attributes="0"/>
@@ -90,7 +104,6 @@
                       <Component id="label_status" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="button_login" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -203,15 +216,13 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jSeparator1" alignment="1" pref="340" max="32767" attributes="0"/>
-                          <Component id="jLabel3" alignment="1" pref="340" max="32767" attributes="0"/>
-                          <Component id="field_hostname" alignment="1" pref="340" max="32767" attributes="0"/>
-                          <Component id="jLabel4" alignment="0" pref="340" max="32767" attributes="0"/>
-                          <Component id="field_port" alignment="1" pref="340" max="32767" attributes="0"/>
-                          <Component id="jLabel5" alignment="0" pref="340" max="32767" attributes="0"/>
-                          <Component id="field_database" alignment="0" pref="340" max="32767" attributes="0"/>
-                          <Component id="button_create_db" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="jSeparator2" alignment="1" pref="340" max="32767" attributes="0"/>
+                          <Component id="jSeparator1" alignment="1" pref="320" max="32767" attributes="0"/>
+                          <Component id="jLabel3" alignment="1" pref="320" max="32767" attributes="0"/>
+                          <Component id="field_hostname" alignment="1" pref="320" max="32767" attributes="0"/>
+                          <Component id="jLabel4" alignment="0" pref="320" max="32767" attributes="0"/>
+                          <Component id="field_port" alignment="1" pref="320" max="32767" attributes="0"/>
+                          <Component id="jSeparator2" alignment="0" pref="320" max="32767" attributes="0"/>
+                          <Component id="button_create_db" alignment="1" pref="320" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -220,7 +231,6 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
@@ -231,14 +241,10 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="field_port" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="field_database" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="button_create_db" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jSeparator2" min="-2" pref="10" max="-2" attributes="0"/>
-                      <EmptySpace pref="61" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -272,20 +278,6 @@
                 <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="field_portKeyPressed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JLabel" name="jLabel5">
-              <Properties>
-                <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="database"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="field_database">
-              <Properties>
-                <Property name="horizontalAlignment" type="int" value="0"/>
-              </Properties>
-              <Events>
-                <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="field_databaseKeyPressed"/>
-              </Events>
-            </Component>
             <Component class="javax.swing.JSeparator" name="jSeparator1">
             </Component>
             <Component class="javax.swing.JSeparator" name="jSeparator2">
@@ -306,7 +298,6 @@
               <Color blue="0" green="0" red="0" type="rgb"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Login"/>
-            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="button_loginActionPerformed"/>
@@ -318,6 +309,23 @@
               <Font name="Tahoma" size="14" style="0"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Label"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="field_database">
+          <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Arial" size="18" style="1"/>
+            </Property>
+            <Property name="horizontalAlignment" type="int" value="0"/>
+          </Properties>
+          <Events>
+            <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="field_databaseKeyPressed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel5">
+          <Properties>
+            <Property name="horizontalAlignment" type="int" value="0"/>
+            <Property name="text" type="java.lang.String" value="database"/>
           </Properties>
         </Component>
       </SubComponents>
