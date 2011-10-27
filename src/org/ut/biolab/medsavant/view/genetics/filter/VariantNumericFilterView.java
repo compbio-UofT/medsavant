@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class VariantNumericFilterView {
     
-    public static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias, final boolean isDecimal) throws SQLException, NonFatalDatabaseException {
 
         Range extremeValues = null;
 
@@ -62,10 +62,16 @@ public class VariantNumericFilterView {
         container.setBorder(ViewUtil.getMediumBorder());
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
-        final RangeSlider rs = new com.jidesoft.swing.RangeSlider();
-
         final int min = (int) Math.floor(extremeValues.getMin());
         final int max = (int) Math.ceil(extremeValues.getMax());
+        
+        int precision = 0;
+        if(isDecimal && max-min<=1){
+            precision = 2;
+        } else if (isDecimal && max-min<=10){
+            precision = 1;
+        }
+        final DecimalRangeSlider rs = new DecimalRangeSlider(precision);
 
         rs.setMinimum(min);
         rs.setMaximum(max);
@@ -73,8 +79,8 @@ public class VariantNumericFilterView {
         rs.setMajorTickSpacing(5);
         rs.setMinorTickSpacing(1);
 
-        rs.setLowValue(min);
-        rs.setHighValue(max);
+        rs.setLow(min);
+        rs.setHigh(max);
 
         JPanel rangeContainer = new JPanel();
         rangeContainer.setLayout(new BoxLayout(rangeContainer, BoxLayout.X_AXIS));
@@ -103,8 +109,8 @@ public class VariantNumericFilterView {
             public void mouseClicked(MouseEvent e) {}
             public void mousePressed(MouseEvent e) {}
             public void mouseReleased(MouseEvent e) {
-                frombox.setText(ViewUtil.numToString(rs.getLowValue()));
-                tobox.setText(ViewUtil.numToString(rs.getHighValue()));
+                frombox.setText(ViewUtil.numToString(rs.getLow()));
+                tobox.setText(ViewUtil.numToString(rs.getHigh()));
             }
             public void mouseEntered(MouseEvent e) {}
             public void mouseExited(MouseEvent e) {}
@@ -121,8 +127,8 @@ public class VariantNumericFilterView {
                         acceptableRange.bound(min, max, true);                     
                         frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
                         tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
-                        rs.setLowValue((int)acceptableRange.getMin());
-                        rs.setHighValue((int)acceptableRange.getMax());           
+                        rs.setLow(acceptableRange.getMin());
+                        rs.setHigh(acceptableRange.getMax());           
                         applyButton.setEnabled(true);
                     } catch (Exception e2) {
                         e2.printStackTrace();
@@ -143,8 +149,8 @@ public class VariantNumericFilterView {
                         acceptableRange.bound(min, max, false);                     
                         frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
                         tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
-                        rs.setLowValue((int)acceptableRange.getMin());
-                        rs.setHighValue((int)acceptableRange.getMax());      
+                        rs.setLow(acceptableRange.getMin());
+                        rs.setHigh(acceptableRange.getMax());      
                         applyButton.setEnabled(true);
                     } catch (Exception e2) {
                         e2.printStackTrace();
@@ -166,8 +172,8 @@ public class VariantNumericFilterView {
                 acceptableRange.bound(min, max, true);                     
                 frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
                 tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
-                rs.setLowValue((int)acceptableRange.getMin());
-                rs.setHighValue((int)acceptableRange.getMax());
+                rs.setLow(acceptableRange.getMin());
+                rs.setHigh(acceptableRange.getMax());
 
                 Filter f = new QueryFilter() {
 
@@ -184,7 +190,13 @@ public class VariantNumericFilterView {
                         return resultsCombined;*/
 
                         Condition[] results = new Condition[1];
-                        results[0] = new RangeCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
+                        double min = getNumber(frombox.getText().replaceAll(",", ""));
+                        double max = getNumber(tobox.getText().replaceAll(",", ""));
+                        if(isDecimal){
+                            results[0] = new RangeCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), min, max);
+                        } else {
+                            results[0] = new RangeCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), (int)Math.floor(min), (int)Math.ceil(max));
+                        }
                         return results;
                     }
 
@@ -240,5 +252,66 @@ public class VariantNumericFilterView {
             return 0;
         }
     }
+    
+    
          
+}
+
+class DecimalRangeSlider extends RangeSlider {
+        
+    private int multiplier;
+
+    public DecimalRangeSlider(int precision){
+        super();
+        if(precision <= 0){
+            multiplier = 1;
+        } else {
+            multiplier = precision * 10;
+        }
+    }
+
+    public DecimalRangeSlider(){
+        this(0);
+    }
+
+    @Override
+    public void setMinimum(int i){
+        super.setMinimum(adjustValue(i));
+    }
+
+    @Override
+    public void setMaximum(int i){
+        super.setMaximum(adjustValue(i));
+    }
+
+    public void setLow(double i){
+        super.setLowValue(adjustValue(i));
+    }
+
+    public void setHigh(double i){
+        super.setHighValue(adjustValue(i));
+    }
+
+    public double getLow(){
+        int value = super.getLowValue();
+        return getActualValue(value);
+    }
+
+    public double getHigh(){
+        int value = super.getHighValue();
+        return getActualValue(value);
+    }
+
+    private int adjustValue(double i){
+        return (int)(i * multiplier);
+    }
+
+    private int adjustValue(int i){
+        return i * multiplier;
+    }
+
+    private double getActualValue(int i){
+        return (double)i / (double)multiplier;
+    }
+
 }

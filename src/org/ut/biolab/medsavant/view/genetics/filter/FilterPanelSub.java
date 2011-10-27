@@ -83,90 +83,6 @@ public final class FilterPanelSub extends JPanel{
         
         titlePanel.add(Box.createHorizontalGlue());     
         
-        /*
-        final JButton addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
-        addLabel.setToolTipText("Add new filter");
-        addLabel.addMouseListener(new MouseListener() {
-            
-            public void mouseClicked(MouseEvent e) {}
-            public void mousePressed(MouseEvent e) {}
-
-            public void mouseReleased(MouseEvent e) {
-
-                Map<Category, List<FilterPlaceholder>> map = getRemainingFilters();
-                
-                final JPopupMenu p = new JPopupMenu();  
-                
-                Category[] cats = new Category[map.size()];
-                cats = map.keySet().toArray(cats);
-                Arrays.sort(cats, new CategoryComparator());
-          
-                final Map<JLabel, List<Component>> menuMap = new HashMap<JLabel, List<Component>>();
-                
-                for(Category c : cats){
-                    
-                    final JLabel header = new JLabel(AnnotationField.categoryToString(c));
-                    header.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    header.setFont(ViewUtil.getMediumTitleFont());
-                    header.addMouseListener(new MouseAdapter() {
-                        public void mouseReleased(MouseEvent e){
-                            for(Object key : menuMap.keySet()){
-                                for(Component comp : menuMap.get(key)){
-                                    comp.setVisible(false);
-                                }
-                            }
-                            for(Component comp : menuMap.get(header)){
-                                comp.setVisible(true);
-                            }
-                            p.validate();
-                            p.pack();
-                            p.repaint();
-                        }
-                    });
-                    menuMap.put(header, new ArrayList<Component>());
-                    p.add(header);                    
-                    
-                    FilterPlaceholder[] filters = new FilterPlaceholder[map.get(c).size()];
-                    filters = map.get(c).toArray(filters);
-                    Arrays.sort(filters, new FilterComparator());
-                    
-                    for(final FilterPlaceholder filter : filters){
-                        Component comp = p.add(filter.getFilterName());
-                        comp.addMouseListener(new MouseAdapter() {                        
-                            @Override
-                            public void mouseReleased(MouseEvent e) {
-                                subItems.add(new FilterPanelSubItem(filter.getFilterView(), FilterPanelSub.this, filter.getFilterID()));
-                                refreshSubItems();
-                            }
-                        });
-                        menuMap.get(header).add(comp);
-                        comp.setVisible(false);
-                    }
-                    
-                    if(filters.length == 0){
-                        JLabel empty = new JLabel("(No filters)");
-                        empty.setFont(ViewUtil.getSmallTitleFont());
-                        menuMap.get(header).add(empty);
-                        empty.setVisible(false);     
-                        p.add(empty);
-                    }  
-                    p.addSeparator();
-                }
-                
-                p.show(addLabel, 0, 20);
-                
-            }
-
-            public void mouseEntered(MouseEvent e) {
-                addLabel.setBackground(BUTTON_OVER_COLOUR);
-            }
-
-            public void mouseExited(MouseEvent e) {
-                addLabel.setBackground(BAR_COLOUR);
-            }
-        });
-        titlePanel.add(addLabel);
-        */
         final JLabel removeLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
         removeLabel.setBackground(Color.RED);
         removeLabel.setToolTipText("Remove sub query and all contained filters");
@@ -398,29 +314,6 @@ public final class FilterPanelSub extends JPanel{
         return false;
     }
     
-    public void addNewSubItem(AnnotationField af){
-        
-        String tablename = ProjectController.getInstance().getCurrentTableName();
-        try {
-            switch((FieldType)af.getFieldType()){
-                case INT:
-                case FLOAT:
-                case DECIMAL:
-                    subItems.add(new FilterPanelSubItem(VariantNumericFilterView.createFilterView(tablename, af.getColumnName(), id, af.getAlias()), this, af.getColumnName()));
-                    break;
-                case VARCHAR:
-                    subItems.add(new FilterPanelSubItem(VariantStringListFilterView.createFilterView(tablename, af.getColumnName(), id, af.getAlias()), this, af.getColumnName()));
-                    break;
-                case BOOLEAN:
-                    subItems.add(new FilterPanelSubItem(VariantBooleanFilterView.createFilterView(tablename, af.getColumnName(), id, af.getAlias()), this, af.getColumnName()));
-                    break;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        refreshSubItems();
-    }
-    
     public int getId(){
         return id;
     }
@@ -477,9 +370,10 @@ public final class FilterPanelSub extends JPanel{
                             try {
                                 switch(field.getFieldType()){
                                     case INT:
+                                        return VariantNumericFilterView.createFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias(), false);
                                     case FLOAT:
                                     case DECIMAL:
-                                        return VariantNumericFilterView.createFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias());
+                                        return VariantNumericFilterView.createFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias(), true);
                                     case BOOLEAN:
                                         return VariantBooleanFilterView.createFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias());
                                     case VARCHAR:                                 
