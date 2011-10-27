@@ -127,14 +127,19 @@ public class ViewController extends JPanel {
             this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
             this.setBorder(null);
 
+            this.setMinimumSize(new Dimension(9999,30));
+            this.setPreferredSize(new Dimension(9999,30));
+            this.setMaximumSize(new Dimension(9999,30));
+            
+            
             this.setBorder(ViewUtil.getLargeSideBorder());
-            title = ViewUtil.getHeaderLabel(" ");
+            title = ViewUtil.getHeaderLabel("Welcome to MedSavant");
             this.add(title);
             sectionMenuPanel = new JPanel();//ViewUtil.getClearPanel();
             subSectionMenuPanel = new JPanel();//ViewUtil.getClearPanel();
 
             Border compoundBorderRight = BorderFactory.createCompoundBorder(
-                    new MatteBorder(1, 1, 0, 1, new Color(160, 160, 160)),
+                    new MatteBorder(0, 1, 0, 1, new Color(160, 160, 160)),
                     ViewUtil.getMediumSideBorder());
             
             sectionMenuPanel.setBackground(new Color(232, 232, 232));
@@ -164,7 +169,7 @@ public class ViewController extends JPanel {
         }
         
         private void setTitle(String sectionName, String subsectionName) {
-            title.setText(sectionName.toUpperCase() + " › " + subsectionName);
+            title.setText(sectionName.toUpperCase() + " › " + subsectionName.trim());
         }
 
         private void setSubSection(SubSectionView view) {
