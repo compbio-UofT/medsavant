@@ -318,6 +318,7 @@ public class NewProjectWizard extends WizardDialog {
             for(String name : refNames){
                 referenceCombo.addItem(name);
             }
+            referenceCombo.updateUI();
         } catch (SQLException ex) {
             Logger.getLogger(NewProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
         }  
