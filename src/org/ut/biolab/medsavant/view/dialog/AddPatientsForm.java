@@ -138,6 +138,12 @@ public class AddPatientsForm extends javax.swing.JDialog {
                 values.add((String)table.getModel().getValueAt(i, 1));
             }           
         }
+        
+        // replace empty strings for nulls
+                for (int i = 0; i < values.size(); i++) {
+                    values.set(i, values.get(i).equals("") ? null : values.get(i));
+                }
+        
         PatientQueryUtil.addPatient(ProjectController.getInstance().getCurrentProjectId(), cols, values);
         clearTable();    
     }
@@ -222,6 +228,12 @@ public class AddPatientsForm extends javax.swing.JDialog {
             while ((line = bufferedReader.readLine()) != null) {
                 List<String> values = new ArrayList<String>();
                 values.addAll(Arrays.asList(line.split("\t")));
+                
+                // replace empty strings for nulls
+                for (int i = 0; i < values.size(); i++) {
+                    values.set(i, values.get(i).equals("") ? null : values.get(i));
+                }
+                
                 //DBUtil.addPatient(headerToColumn, values);
                 PatientQueryUtil.addPatient(ProjectController.getInstance().getCurrentProjectId(), headerToField, values);
             }

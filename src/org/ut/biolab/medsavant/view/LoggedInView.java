@@ -111,6 +111,10 @@ public class LoggedInView extends JPanel implements ProjectListener {
                 while (projects == null || projects.isEmpty()) {
                     projects = ProjectController.getInstance().getProjectNames();
                     
+                    if (!projects.isEmpty()) {
+                        break;
+                    }
+                    
                     if (projects.isEmpty() && !LoginController.isAdmin()) {
                         DialogUtils.displayMessage("Welcome to MedSavant. No projects have been started. Please contact your administrator.");
                         LoginController.logout();

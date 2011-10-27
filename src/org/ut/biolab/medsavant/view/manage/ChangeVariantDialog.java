@@ -61,6 +61,7 @@ public class ChangeVariantDialog extends javax.swing.JDialog {
         List<Integer> annotationIds = new ArrayList<Integer>();
         if(annotationIdsString != null){
             for(String s : annotationIdsString.split(",")){
+                if (s.isEmpty()) { continue; }
                 annotationIds.add(Integer.parseInt(s));
             }
         }

@@ -16,6 +16,9 @@ import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.ImportVariants;
@@ -213,13 +216,23 @@ public class VCFUploadForm extends javax.swing.JDialog {
      
         final JDialog dialog = new JDialog();
         dialog.setTitle("Import VCF");
+        dialog.setResizable(false);
+        
+        JPanel p = new JPanel(); 
+        ViewUtil.applyVerticalBoxLayout(p);
+        
         final JLabel progressLabel = new JLabel("Beginning import of VCF files. ");
         progressLabel.setHorizontalTextPosition(JLabel.CENTER);
         progressLabel.setHorizontalAlignment(JLabel.CENTER);
         progressLabel.setMinimumSize(new Dimension(300,70));
         progressLabel.setPreferredSize(new Dimension(300,70));
-        progressLabel.setFont(ViewUtil.getMediumTitleFont());
-        dialog.setContentPane(progressLabel);
+        //progressLabel.setFont(ViewUtil.);
+        p.add(progressLabel);
+        JProgressBar b = new JProgressBar();
+        b.setIndeterminate(true);
+        p.add(b);
+        p.setBorder(ViewUtil.getBigBorder());
+        dialog.setContentPane(p);
         dialog.setDefaultCloseOperation(
             JDialog.DO_NOTHING_ON_CLOSE);
         dialog.setMinimumSize(new Dimension(200,50));
@@ -232,6 +245,13 @@ public class VCFUploadForm extends javax.swing.JDialog {
             public void run() {
                 try {
                     ImportVariants.performImport(files, projectId, referenceId, progressLabel);
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            DialogUtils.displayMessage("Successfully queued variants for entry into database.");
+                        }
+                        
+                    });
                 } catch (SQLException ex){
                     Logger.getLogger(VCFUploadForm.class.getName()).log(Level.SEVERE, null, ex);
                 }
