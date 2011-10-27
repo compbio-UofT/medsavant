@@ -12,6 +12,7 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -45,6 +46,7 @@ public class Menu extends JPanel implements MenuItemSelected, ReferenceListener 
         }
 
         public MenuItem(SubSectionView v) {
+            subSectionViews.add(v);
             this.view = v;
             listeners = new ArrayList<MenuItemSelected>();
             this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -201,6 +203,8 @@ public class Menu extends JPanel implements MenuItemSelected, ReferenceListener 
     private final JPanel contentContainer;
     private Component glue = Box.createVerticalGlue();
     private final MenuItemGroup itemGroup;
+    //private List<SectionView> sectionViews = new ArrayList<SectionView>();
+    private static List<SubSectionView> subSectionViews = new ArrayList<SubSectionView>();
 
     public Menu(JPanel contentContainer) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -211,9 +215,13 @@ public class Menu extends JPanel implements MenuItemSelected, ReferenceListener 
     }
 
     public void referenceChanged(String referenceName) {
+        for(int i = 0; i < subSectionViews.size(); i++){
+            subSectionViews.get(i).setUpdateRequired(true);
+        }
+               
         if(currentView != null){
             setContentTo(currentView, true);
-        }
+        }       
     }
     
     public void referenceAdded(String name) {}
@@ -254,7 +262,8 @@ public class Menu extends JPanel implements MenuItemSelected, ReferenceListener 
     private void setContentTo(SubSectionView v, boolean update) {
         currentView = v;
         contentContainer.removeAll();
-        contentContainer.add(v.getView(update), BorderLayout.CENTER);
+        contentContainer.add(v.getView(update || v.isUpdateRequired()), BorderLayout.CENTER);
+        v.setUpdateRequired(false);
         contentContainer.updateUI();
     }
     

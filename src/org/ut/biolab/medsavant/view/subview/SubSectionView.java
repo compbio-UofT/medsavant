@@ -17,7 +17,15 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public abstract class SubSectionView {
 
     private SectionView parent;
-
+    private boolean updateRequired = true;
+    
+    public void setUpdateRequired(boolean required){
+        this.updateRequired = required;
+    }
+    
+    public boolean isUpdateRequired(){
+        return this.updateRequired;
+    }
     
     public SubSectionView(SectionView parent) {
         this.parent = parent;
