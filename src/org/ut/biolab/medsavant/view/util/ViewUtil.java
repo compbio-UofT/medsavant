@@ -293,6 +293,10 @@ public class ViewUtil {
     public static Border getMediumSideBorder() {
         return BorderFactory.createEmptyBorder(0, 5, 0, 5);
     }
+    
+    public static Border getLargeSideBorder() {
+        return BorderFactory.createEmptyBorder(0, 10, 0, 10);
+    }
 
     public static JScrollPane getClearBorderedJSP(Container c) {
         JScrollPane jsp = new JScrollPane(c);

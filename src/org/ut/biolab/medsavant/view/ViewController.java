@@ -120,41 +120,42 @@ public class ViewController extends JPanel {
         private final JLabel title;
         private final JPanel sectionMenuPanel;
         private final JPanel subSectionMenuPanel;
-        private final ImagePanel leftTab;
-        private final ImagePanel rightTab;
+        //private final ImagePanel leftTab;
+        //private final ImagePanel rightTab;
 
         public SectionHeader() {
             this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
             this.setBorder(null);
 
-            this.setBorder(ViewUtil.getMediumSideBorder());
+            this.setBorder(ViewUtil.getLargeSideBorder());
             title = ViewUtil.getHeaderLabel(" ");
             this.add(title);
             sectionMenuPanel = new JPanel();//ViewUtil.getClearPanel();
             subSectionMenuPanel = new JPanel();//ViewUtil.getClearPanel();
 
-            Border compoundBorder = BorderFactory.createCompoundBorder(
-                    new MatteBorder(1, 0, 0, 0, new Color(160, 160, 160)),
-                    new MatteBorder(0, 0, 2, 0, new Color(194, 194, 194)));
+            Border compoundBorderRight = BorderFactory.createCompoundBorder(
+                    new MatteBorder(1, 1, 0, 1, new Color(160, 160, 160)),
+                    ViewUtil.getMediumSideBorder());
             
             sectionMenuPanel.setBackground(new Color(232, 232, 232));
-            sectionMenuPanel.setBorder(compoundBorder);
+            sectionMenuPanel.setBorder(compoundBorderRight);
 
             subSectionMenuPanel.setBackground(new Color(232, 232, 232));       
-            subSectionMenuPanel.setBorder(compoundBorder);
+            subSectionMenuPanel.setBorder(compoundBorderRight);
 
             sectionMenuPanel.setLayout(new BoxLayout(sectionMenuPanel, BoxLayout.X_AXIS));
             subSectionMenuPanel.setLayout(new BoxLayout(subSectionMenuPanel, BoxLayout.X_AXIS));
 
             this.add(Box.createHorizontalGlue());
 
-            leftTab = new ImagePanel(IconFactory.StandardIcon.TAB_LEFT);
-            rightTab = new ImagePanel(IconFactory.StandardIcon.TAB_RIGHT);
+            //leftTab = new ImagePanel(IconFactory.StandardIcon.TAB_LEFT);
+            //rightTab = new ImagePanel(IconFactory.StandardIcon.TAB_RIGHT);
 
-            this.add(leftTab);
+            //this.add(leftTab);
             this.add(sectionMenuPanel);
+            this.add(ViewUtil.getSmallSeparator());
             this.add(subSectionMenuPanel);
-            this.add(rightTab);
+            //this.add(rightTab);
 
         }
 
@@ -177,25 +178,34 @@ public class ViewController extends JPanel {
 
 
             if (subsectionBanner == null && sectionBanner == null) {
-                leftTab.setVisible(false);
-                rightTab.setVisible(false);
+                //leftTab.setVisible(false);
+                //rightTab.setVisible(false);
             } else {
-                leftTab.setVisible(true);
-                rightTab.setVisible(true);
+                //leftTab.setVisible(true);
+                //rightTab.setVisible(true);
             }
+
+                            boolean empty = true;
 
             if (subsectionBanner != null) {
                 for (Component c : subsectionBanner) {
                     subSectionMenuPanel.add(c);
+                    empty = false;
                 }
             }
+                            subSectionMenuPanel.setVisible(!empty);                     
+
             subSectionMenuPanel.add(Box.createVerticalGlue());
             
+            empty = true;
             if (sectionBanner != null) {
                 for (Component c : sectionBanner) {
                     sectionMenuPanel.add(c);
+                    empty = false;
                 }
             }
+            sectionMenuPanel.setVisible(!empty);
+            
             sectionMenuPanel.add(Box.createVerticalGlue());
         }
     }
