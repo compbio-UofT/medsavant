@@ -225,7 +225,9 @@ public class ProjectController implements ReferenceListener, LoginListener {
     }
 
     public void loginEvent(LoginEvent evt) {
-        CustomTables.clearMap();
+        if(!evt.isLoggedIn()){
+            CustomTables.clearMap();
+        }
     }
-    
+  
 }
