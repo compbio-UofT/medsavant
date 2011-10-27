@@ -116,14 +116,16 @@ public class LoggedInView extends JPanel implements ProjectListener {
                         LoginController.logout();
                     }
                     
-                    while (true) {
-                        int result = DialogUtils.askYesNo("Welcome to MedSavant", "To begin using MedSavant, you will need to create a project.");
-                        if (result == DialogUtils.NO) {
-                            MainFrame.getInstance().requestClose();
-                            // don't break, the user chose not to quit
-                        } else {
-                            NewProjectWizard npd = new NewProjectWizard();
-                            break;
+                    if(projects.isEmpty()){
+                        while (true) {
+                            int result = DialogUtils.askYesNo("Welcome to MedSavant", "To begin using MedSavant, you will need to create a project.");
+                            if (result == DialogUtils.NO) {
+                                MainFrame.getInstance().requestClose();
+                                // don't break, the user chose not to quit
+                            } else {
+                                NewProjectWizard npd = new NewProjectWizard();
+                                break;
+                            }
                         }
                     }
                 }
