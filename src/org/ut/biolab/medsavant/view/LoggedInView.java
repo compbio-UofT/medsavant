@@ -33,10 +33,12 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.manage.ManageSection;
+import org.ut.biolab.medsavant.view.manage.NewProjectWizard;
 import org.ut.biolab.medsavant.view.manage.OtherSection;
 import org.ut.biolab.medsavant.view.manage.PluginsSection;
 import org.ut.biolab.medsavant.view.patients.PatientsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 
 /**
@@ -83,14 +85,8 @@ public class LoggedInView extends JPanel implements ProjectListener {
 
         viewController.addComponent(projectDropDown);
 
-            //viewController.addComponent(getSeparator());
-            
-            
-        //if (!initiated) {
         addSection(new PatientsSection());
-
         addSection(new GeneticsSection());
-
 
         viewController.addComponent(getSeparator());
 
@@ -110,8 +106,28 @@ public class LoggedInView extends JPanel implements ProjectListener {
             try {
                 projectDropDown.removeAllItems();
                 
-                List<String> projects = ProjectController.getInstance().getProjectNames();
-
+                List<String> projects = null;
+                
+                while (projects == null || projects.isEmpty()) {
+                    projects = ProjectController.getInstance().getProjectNames();
+                    
+                    if (projects.isEmpty() && !LoginController.isAdmin()) {
+                        DialogUtils.displayMessage("Welcome to MedSavant. No projects have been started. Please contact your administrator.");
+                        LoginController.logout();
+                    }
+                    
+                    while (true) {
+                        int result = DialogUtils.askYesNo("Welcome to MedSavant", "To begin using MedSavant, you will need to create a project.");
+                        if (result == DialogUtils.NO) {
+                            MainFrame.getInstance().requestClose();
+                            // don't break, the user chose not to quit
+                        } else {
+                            NewProjectWizard npd = new NewProjectWizard();
+                            break;
+                        }
+                    }
+                }
+                
                 for (String s : projects) {
                     projectDropDown.addItem(s);
                 }

@@ -17,6 +17,8 @@ import com.jidesoft.wizard.WizardStyle;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
@@ -33,6 +35,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -41,12 +44,15 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
+import org.ut.biolab.medsavant.listener.ReferenceListener;
+import org.ut.biolab.medsavant.view.MainFrame;
 
 /**
  *
@@ -61,12 +67,12 @@ public class NewProjectWizard extends WizardDialog {
     private List<Annotation> chosenAnnotations = new ArrayList<Annotation>();
     private String validationError = "";
     private List<CustomField> fields;
+    private JComboBox referenceCombo;
     
     public NewProjectWizard(){
 
         setTitle("New Project Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
-        
         
         //add pages
         PageList model = new PageList();
@@ -259,30 +265,62 @@ public class NewProjectWizard extends WizardDialog {
                 "Choose a reference genome to use with this project. You can add\n"
                 + "more references later. ");
         
+        
         //setup combo
-        JComboBox combo = new JComboBox();
-        combo.addItemListener(new ItemListener() {
+        referenceCombo = new JComboBox();
+        referenceCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 referenceName = (String)e.getItem();
+                if(referenceName == null || referenceName.equals("")){                  
+                    page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);                   
+                } else {
+                    page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);              
+                }
             }
         });
+          
+        
+        JButton butt = new JButton("New Reference");
+        page.addComponent(butt);
+        butt.addActionListener(new ActionListener(){
+
+            public void actionPerformed(ActionEvent e) {
+                NewReferenceDialog d = new NewReferenceDialog(MainFrame.getInstance(),true);
+                d.setVisible(true);
+            }
+            
+        });
+        ReferenceController.getInstance().addReferenceListener(new ReferenceListener() {
+
+            public void referenceAdded(String name) {
+                refreshReferenceList();
+            }
+
+            public void referenceRemoved(String name) {
+                refreshReferenceList();
+            }
+
+            public void referenceChanged(String prnameojectName) {
+                refreshReferenceList();
+            }
+            
+        });
+        
+        refreshReferenceList();
+        page.addComponent(referenceCombo);
+        
+        return page;
+    }
+    
+    private void refreshReferenceList() {
         try {
             List<String> refNames = ReferenceQueryUtil.getReferenceNames();
             for(String name : refNames){
-                combo.addItem(name);
+                referenceCombo.addItem(name);
             }
         } catch (SQLException ex) {
             Logger.getLogger(NewProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
-        }     
-        if(combo.getItemCount() > 0){
-            page.addComponent(combo);
-        } else {
-            page.addText(
-                    "You must first add a reference genome! \n"
-                    + "This can be done in the left side menu panel.");
-        }
-        
-        return page;
+        }  
     }
     
     private AbstractWizardPage getAnnotationsPage(){
