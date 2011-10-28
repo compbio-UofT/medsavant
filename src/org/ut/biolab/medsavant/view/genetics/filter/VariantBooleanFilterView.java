@@ -116,6 +116,13 @@ public class VariantBooleanFilterView {
             boxes.add(b);
         }
 
+        //force left alignment
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+        p.add(Box.createRigidArea(new Dimension(5,5)));
+        p.add(Box.createHorizontalGlue());
+        container.add(p);
+        
         JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
         selectAll.addActionListener(new ActionListener() {
 

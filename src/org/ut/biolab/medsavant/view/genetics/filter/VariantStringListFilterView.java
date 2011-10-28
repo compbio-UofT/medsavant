@@ -6,7 +6,6 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -146,7 +145,14 @@ public class VariantStringListFilterView {
             container.add(b);
             boxes.add(b);
         }
-
+        
+        //force left alignment
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+        p.add(Box.createRigidArea(new Dimension(5,5)));
+        p.add(Box.createHorizontalGlue());
+        container.add(p);
+              
         JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
         selectAll.addActionListener(new ActionListener() {
 
