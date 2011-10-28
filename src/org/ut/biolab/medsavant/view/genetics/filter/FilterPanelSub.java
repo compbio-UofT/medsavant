@@ -371,15 +371,15 @@ public final class FilterPanelSub extends JPanel{
                             try {
                                 switch(field.getFieldType()){
                                     case INT:
-                                        return VariantNumericFilterView.createFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias(), false);
+                                        return NumericFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias(), false);
                                     case FLOAT:
                                     case DECIMAL:
-                                        return VariantNumericFilterView.createFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias(), true);
+                                        return NumericFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias(), true);
                                     case BOOLEAN:
-                                        return VariantBooleanFilterView.createFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias());
+                                        return BooleanFilterView.createVariantFilterView(field.getColumnName(), id, field.getAlias());
                                     case VARCHAR:                                 
                                     default:
-                                        return VariantStringListFilterView.createFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias());
+                                        return StringListFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias());
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -408,15 +408,15 @@ public final class FilterPanelSub extends JPanel{
                         try {
                             switch(field.getFieldType()){
                                 case INT:
-                                    return PatientNumericFilterView.createFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias(), false);
+                                    return NumericFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias(), false);
                                 case FLOAT:
                                 case DECIMAL:
-                                    return PatientNumericFilterView.createFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias(), true);
+                                    return NumericFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias(), true);
                                 case BOOLEAN:
-                                    return PatientBooleanFilterView.createFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias());
+                                    return BooleanFilterView.createPatientFilterView(field.getColumnName(), id, field.getAlias());
                                 case VARCHAR:                                 
                                 default:
-                                    return PatientStringListFilterView.createFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias());
+                                    return StringListFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias());
                             }
                         } catch (Exception e) {
                             e.printStackTrace();

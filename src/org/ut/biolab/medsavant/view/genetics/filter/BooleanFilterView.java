@@ -12,6 +12,8 @@ import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -24,17 +26,29 @@ import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
- * @author AndrewBrook
+ * @author Andrew
  */
-public class VariantBooleanFilterView {
+public class BooleanFilterView {
     
-    public static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias) throws SQLException, NonFatalDatabaseException {
+    private enum Table {PATIENT, VARIANT};
+    
+    public static FilterView createVariantFilterView(String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
+        return createFilterView(columnname, queryId, alias, Table.VARIANT);
+    }
+    
+    public static FilterView createPatientFilterView(String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
+        return createFilterView(columnname, queryId, alias, Table.PATIENT);
+    }
+    
+    private static FilterView createFilterView(final String columnname, final int queryId, final String alias, final Table whichTable) throws SQLException, NonFatalDatabaseException {
         
         List<String> uniq = new ArrayList<String>();
         uniq.add("True");
@@ -69,12 +83,31 @@ public class VariantBooleanFilterView {
 
                     @Override
                     public Condition[] getConditions() {
-                        Condition[] results = new Condition[acceptableValues.size()];
-                        int i = 0;
-                        for (String s : acceptableValues) {
-                            results[i++] = BinaryCondition.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), s);
+                        if(whichTable == Table.VARIANT){
+                            Condition[] results = new Condition[acceptableValues.size()];
+                            int i = 0;
+                            for (String s : acceptableValues) {
+                                results[i++] = BinaryCondition.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), s);
+                            }
+                            return results;
+                        } else if (whichTable == Table.PATIENT){
+                            try {
+                                List<String> individuals = PatientQueryUtil.getDNAIdsForStringList(ProjectController.getInstance().getCurrentPatientTableSchema(), acceptableValues, columnname);
+
+                                Condition[] results = new Condition[individuals.size()];
+                                int i = 0; 
+                                for(String ind : individuals){
+                                    results[i++] = BinaryCondition.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
+                                }
+                                return results;
+
+                            } catch (NonFatalDatabaseException ex) {
+                                Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (SQLException ex) {
+                                Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
-                        return results;
+                        return new Condition[0];
                     }
 
                     @Override
@@ -158,5 +191,4 @@ public class VariantBooleanFilterView {
         //al.actionPerformed(null);       
         return new FilterView(alias, container);
     }
-    
 }

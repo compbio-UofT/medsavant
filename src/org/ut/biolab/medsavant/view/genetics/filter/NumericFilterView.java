@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -13,6 +14,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -25,19 +29,31 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
+import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
- * @author AndrewBrook
+ * @author Andrew
  */
-public class VariantNumericFilterView {
+public class NumericFilterView {
     
-    public static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias, final boolean isDecimal) throws SQLException, NonFatalDatabaseException {
+    private enum Table {PATIENT, VARIANT};
+    
+    public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException {
+        return createFilterView(tablename, columnname, queryId, alias, isDecimal, Table.VARIANT);
+    }
+    
+    public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException {
+        return createFilterView(tablename, columnname, queryId, alias, isDecimal, Table.PATIENT);
+    }
+    
+    private static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias, final boolean isDecimal, final Table whichTable) throws SQLException, NonFatalDatabaseException {
 
         Range extremeValues = null;
 
@@ -174,15 +190,34 @@ public class VariantNumericFilterView {
 
                     @Override
                     public Condition[] getConditions() {
-                        Condition[] results = new Condition[1];
-                        double min = acceptableRange.getMin();//getNumber(frombox.getText().replaceAll(",", ""));
-                        double max = acceptableRange.getMax();//getNumber(tobox.getText().replaceAll(",", ""));
-                        if(isDecimal){
-                            results[0] = new RangeCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), min, max);
-                        } else {
-                            results[0] = new RangeCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), (int)Math.floor(min), (int)Math.ceil(max));
+                        if(whichTable == Table.VARIANT){
+                            Condition[] results = new Condition[1];
+                            double min = acceptableRange.getMin();//getNumber(frombox.getText().replaceAll(",", ""));
+                            double max = acceptableRange.getMax();//getNumber(tobox.getText().replaceAll(",", ""));
+                            if(isDecimal){
+                                results[0] = new RangeCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), min, max);
+                            } else {
+                                results[0] = new RangeCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), (int)Math.floor(min), (int)Math.ceil(max));
+                            }
+                            return results;
+                        } else if (whichTable == Table.PATIENT){
+                            try {
+                                List<String> individuals = PatientQueryUtil.getDNAIdsWithValuesInRange(ProjectController.getInstance().getCurrentProjectId(), columnname, acceptableRange);
+
+                                Condition[] results = new Condition[individuals.size()];
+                                int i = 0; 
+                                for(String ind : individuals){
+                                    results[i++] = BinaryCondition.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
+                                }
+                                return results;
+
+                            } catch (NonFatalDatabaseException ex) {
+                                Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (SQLException ex) {
+                                Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
-                        return results;
+                        return new Condition[0];
                     }
 
                     @Override
@@ -237,6 +272,4 @@ public class VariantNumericFilterView {
             return 0;
         }
     }
-         
 }
-
