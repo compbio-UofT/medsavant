@@ -122,8 +122,8 @@ public class CohortDetailedView extends DetailedView {
     }
     
     @Override
-    public void setSelectedItem(Vector item) {
-        cohort = ((Cohort) item.get(0));
+    public void setSelectedItem(Object[] item) {
+        cohort = (Cohort)item[0];
         setTitle(cohort.getName());
         
         details.removeAll();
@@ -139,37 +139,12 @@ public class CohortDetailedView extends DetailedView {
     }
     
     @Override
-    public void setMultipleSelections(List<Vector> items){
+    public void setMultipleSelections(List<Object[]> items){
         cohorts = new Cohort[items.size()];
         for(int i = 0; i < items.size(); i++){
-            cohorts[i] = (Cohort) items.get(i).get(0);
+            cohorts[i] = (Cohort)items.get(i)[0];
         }
     }
-    
-    /*
-    private JButton setDefaultCaseButton(){
-        JButton button = new JButton("Set default Case cohort");
-        button.setBackground(ViewUtil.getDetailsBackgroundColor());
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                //TODO
-            }
-        }); 
-        return button;
-    }
-    
-    private JButton setDefaultControlButton(){
-        JButton button = new JButton("Set default Control cohort");
-        button.setBackground(ViewUtil.getDetailsBackgroundColor());
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                //TODO
-            }
-        }); 
-        return button;
-    }
-     * 
-     */
     
     private JButton removeIndividualsButton(){
         JButton button = new JButton("Remove individual(s) from cohort");

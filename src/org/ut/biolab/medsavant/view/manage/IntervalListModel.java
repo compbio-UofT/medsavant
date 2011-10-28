@@ -1,12 +1,24 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.manage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
+
 import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
@@ -17,17 +29,15 @@ import org.ut.biolab.medsavant.view.patients.DetailedListModel;
  */
 public class IntervalListModel implements DetailedListModel {
 
-    public List<Vector> getList(int limit) throws Exception {
+    public List<Object[]> getList(int limit) throws Exception {
 
-        List<Vector> table = new ArrayList<Vector>();
+        List<Object[]> table = new ArrayList<Object[]>();
 
         //List<String> dbresults = QueryUtil.getDistinctRegionLists(limit);
         List<RegionSet> regions = RegionQueryUtil.getRegionSets();
         
         for (RegionSet s : regions) {
-            Vector v = new Vector();
-            v.add(s);
-            table.add(v);
+            table.add(new Object[] { s });
         }
 
         return table;
@@ -49,7 +59,7 @@ public class IntervalListModel implements DetailedListModel {
         return new ArrayList<Integer>();
     }
 
-    public static String getIndividualID(Vector r) {
-        return (String) r.get(0);
+    public static String getIndividualID(Object[] r) {
+        return (String)r[0];
     }
 }

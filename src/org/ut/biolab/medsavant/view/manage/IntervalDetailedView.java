@@ -1,27 +1,31 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.manage;
 
-import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
+
 import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
@@ -45,11 +49,11 @@ public class IntervalDetailedView extends DetailedView {
     private int numRegionsInRegionList;
 
     @Override
-    public void setMultipleSelections(List<Vector> selectedRows) {
+    public void setMultipleSelections(List<Object[]> selectedRows) {
         //System.err.println("Multiple selections of regions not supported yet!");
     }
     
-    private class RegionDetailsSW extends SwingWorker {
+    private class RegionDetailsSW extends SwingWorker<List<String>, Object> {
         private final RegionSet regionSet;
         private final int limit;
 
@@ -59,20 +63,17 @@ public class IntervalDetailedView extends DetailedView {
         }
         
         @Override
-        protected Object doInBackground() throws Exception {
+        protected List<String> doInBackground() throws Exception {
             //numRegionsInRegionList = QueryUtil.getNumRegionsInRegionSet(regionName);
             //List<Vector> regionList = QueryUtil.getRegionNamesInRegionSet(regionName,limit);
             numRegionsInRegionList = RegionQueryUtil.getNumberRegions(regionSet.getId());
-            List<String> regionList = RegionQueryUtil.getRegionNamesInRegionSet(regionSet.getId(), limit);
-            return regionList;
+            return RegionQueryUtil.getRegionNamesInRegionSet(regionSet.getId(), limit);
         }
         
         @Override
         protected void done() {
             try {
-                List<String> result = (List<String>) get();
-                setRegionList(result);
-                
+                setRegionList(get());
             } catch (Exception ex) {
                 return;
             }
@@ -152,10 +153,10 @@ public class IntervalDetailedView extends DetailedView {
     }
     
     @Override
-    public void setSelectedItem(Vector item) {
+    public void setSelectedItem(Object[] item) {
         
         
-        RegionSet regionList = (RegionSet) item.get(0);
+        RegionSet regionList = (RegionSet)item[0];
         setTitle(regionList.getName());
         this.regionSet = regionList;
         

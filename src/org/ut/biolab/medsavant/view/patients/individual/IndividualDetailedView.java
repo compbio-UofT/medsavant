@@ -4,13 +4,11 @@
  */
 package org.ut.biolab.medsavant.view.patients.individual;
 
-import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -18,6 +16,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingWorker;
+
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
@@ -40,7 +40,7 @@ public class IndividualDetailedView extends DetailedView {
     private final JPanel menu;
     private int[] patientIds;
     
-    private class IndividualDetailsSQ extends SwingWorker {
+    private class IndividualDetailsSQ extends SwingWorker<Object[], Object> {
         private final int pid;
 
         public IndividualDetailsSQ(int pid) {
@@ -48,16 +48,14 @@ public class IndividualDetailedView extends DetailedView {
         }
         
         @Override
-        protected Object doInBackground() throws Exception {
-            Vector fieldValues = PatientQueryUtil.getPatientRecord(ProjectController.getInstance().getCurrentProjectId(), pid);
-            return fieldValues;
+        protected Object[] doInBackground() throws Exception {
+            return PatientQueryUtil.getPatientRecord(ProjectController.getInstance().getCurrentProjectId(), pid);
         }
         
         @Override
         protected void done() {
             try {
-                Vector result = (Vector) get();
-                setPatientInformation(result);
+                setPatientInformation(get());
                 
             } catch (Exception ex) {
                 return;
@@ -66,13 +64,14 @@ public class IndividualDetailedView extends DetailedView {
         
     }
 
-    public synchronized void setPatientInformation(Vector result) {
+    public synchronized void setPatientInformation(Object[] result) {
         String[][] values = new String[fieldNames.size()][2];
         for (int i = 0; i < fieldNames.size(); i++) {
             values[i][0] = fieldNames.get(i);
             values[i][1] = "";
-            if(result.get(i) != null)
-                values[i][1] = result.get(i).toString();
+            if (result[i] != null) {
+                values[i][1] = result[i].toString();
+            }
         }
         
         details.removeAll();
@@ -110,8 +109,8 @@ public class IndividualDetailedView extends DetailedView {
     }
     
     @Override
-    public void setSelectedItem(Vector item) {
-        int patientId = (Integer) item.get(0);
+    public void setSelectedItem(Object[] item) {
+        int patientId = (Integer)item[0];
         setTitle(Integer.toString(patientId));
         
         details.removeAll();
@@ -127,10 +126,10 @@ public class IndividualDetailedView extends DetailedView {
     }
     
     @Override
-    public void setMultipleSelections(List<Vector> items){
+    public void setMultipleSelections(List<Object[]> items){
         patientIds = new int[items.size()];
         for(int i = 0; i < items.size(); i++){
-            patientIds[i] = (Integer) items.get(i).get(0);
+            patientIds[i] = (Integer) items.get(i)[0];
         }
     }
     

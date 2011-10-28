@@ -1,16 +1,29 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.patients.cohorts;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
+
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
+
 
 /**
  *
@@ -18,9 +31,9 @@ import org.ut.biolab.medsavant.view.patients.DetailedListModel;
  */
 public class CohortListModel implements DetailedListModel {
 
-    public List<Vector> getList(int limit) throws Exception {
+    public List<Object[]> getList(int limit) throws Exception {
 
-        List<Vector> table = new ArrayList<Vector>();
+        List<Object[]> table = new ArrayList<Object[]>();
 
         /*List<String> dbresults = new ArrayList<String>();//TODO QueryUtil.getDistinctCohortNames(limit);        
         for (String s : dbresults) {
@@ -31,9 +44,7 @@ public class CohortListModel implements DetailedListModel {
         
         List<Cohort> cohorts = CohortQueryUtil.getCohorts(ProjectController.getInstance().getCurrentProjectId());
         for(Cohort c : cohorts){
-            Vector v = new Vector();
-            v.add(c);
-            table.add(v);
+            table.add(new Object[] { c });
         }
 
         return table;
@@ -55,7 +66,7 @@ public class CohortListModel implements DetailedListModel {
         return new ArrayList<Integer>();
     }
 
-    public static String getIndividualID(Vector r) {
-        return (String) r.get(0);
+    public static String getIndividualID(Object[] r) {
+        return (String)r[0];
     }
 }

@@ -1,7 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.manage;
 
 import java.awt.BorderLayout;
@@ -10,14 +22,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.MainFrame;
-import org.ut.biolab.medsavant.view.manage.NewReferenceDialog;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.patients.SplitScreenView;
@@ -91,13 +102,11 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
         public ReferenceGenomeListModel() {
         }
 
-        public List<Vector> getList(int limit) throws Exception {
+        public List<Object[]> getList(int limit) throws Exception {
             List<String> refs = ReferenceController.getInstance().getReferenceNames();
-            List<Vector> refVector = new ArrayList<Vector>();
+            List<Object[]> refVector = new ArrayList<Object[]>();
             for (String p : refs) {
-                Vector v = new Vector();
-                v.add(p);
-                refVector.add(v);
+                refVector.add(new Object[] { p });
             }
             return refVector;
         }
@@ -150,8 +159,8 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
         }
 
         @Override
-        public void setSelectedItem(Vector item) {
-            refName = (String) item.get(0);
+        public void setSelectedItem(Object[] item) {
+            refName = (String)item[0];
             setTitle(refName);
 
             details.removeAll();
@@ -182,7 +191,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
         }
 
         @Override
-        public void setMultipleSelections(List<Vector> selectedRows) {
+        public void setMultipleSelections(List<Object[]> selectedRows) {
             //throw new UnsupportedOperationException("Not supported yet.");
         }
     }

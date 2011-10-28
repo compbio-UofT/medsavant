@@ -1,15 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.manage;
 
-import com.jidesoft.utils.SwingWorker;
-import java.awt.event.MouseEvent;
-import java.sql.SQLException;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -18,7 +24,10 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
-import java.sql.ResultSet;
+import java.awt.event.MouseEvent;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
@@ -26,6 +35,8 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
+import javax.swing.SwingWorker;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.ProjectDetails;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
@@ -168,9 +179,9 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         }
 
         @Override
-        public void setSelectedItem(Vector item) {
+        public void setSelectedItem(Object[] item) {
 
-            projectName = (String) item.get(0);
+            projectName = (String)item[0];
             refreshSelectedProject();
 
 
@@ -269,6 +280,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                     JButton editTable = new JButton("Change");
                     editTable.setOpaque(false);
                     editTable.addMouseListener(new MouseAdapter() {
+                        @Override
                         public void mouseReleased(MouseEvent e) {
                             try {
                                 new ChangeVariantDialog(MainFrame.getInstance(), true, projectId, refId, refName, annotationIds).setVisible(true);
@@ -354,7 +366,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         }
 
         @Override
-        public void setMultipleSelections(List<Vector> items) {
+        public void setMultipleSelections(List<Object[]> items) {
         }
 
         public static synchronized void updateDetails(JPanel p) {
@@ -401,13 +413,11 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         public ProjectsListModel() {
         }
 
-        public List<Vector> getList(int limit) throws Exception {
+        public List<Object[]> getList(int limit) throws Exception {
             List<String> projects = ProjectController.getInstance().getProjectNames();
-            List<Vector> projectVector = new ArrayList<Vector>();
+            List<Object[]> projectVector = new ArrayList<Object[]>();
             for (String p : projects) {
-                Vector v = new Vector();
-                v.add(p);
-                projectVector.add(v);
+                projectVector.add(new Object[] { p });
             }
             return projectVector;
         }
