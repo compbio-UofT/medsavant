@@ -1,7 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view;
 
 import java.awt.BorderLayout;
@@ -9,22 +21,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Image;
-import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
+
 import org.ut.biolab.medsavant.log.ClientLogger;
-import org.ut.biolab.medsavant.model.event.SectionChangedEvent;
-import org.ut.biolab.medsavant.model.event.SectionChangedEventListener;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
-import org.ut.biolab.medsavant.view.images.IconFactory;
-import org.ut.biolab.medsavant.view.images.IconFactory.StandardIcon;
 import org.ut.biolab.medsavant.view.menu.Menu;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -43,26 +45,74 @@ public class ViewController extends JPanel {
     private Menu menu;
     private JPanel contentContainer;
     private PersistencePanel sectionPanel;
-    //private JToggleButton buttonSectionPanelController;
-    private SectionView currentSection;
     private PeekingPanel peekRight;
+    private SectionView currentSection;
     private SubSectionView currentSubsection;
 
-    private List<SectionChangedEventListener> listeners;
-    
+    private static ViewController instance;
+
+    private ViewController() {
+        setLayout(new BorderLayout());
+
+        // create the banner
+        //banner = new Banner();
+        JPanel h1 = new JPanel();
+        h1.setLayout(new BorderLayout());
+
+        // create the section header
+        sectionHeader = new SectionHeader();
+        h1.add(sectionHeader, BorderLayout.NORTH);
+
+        // create the content container
+        contentContainer = new JPanel();
+        contentContainer.setBackground(Color.white);
+        contentContainer.setLayout(new BorderLayout());
+        h1.add(contentContainer, BorderLayout.CENTER);
+
+        // create the left menu
+        leftPanel = new SidePanel();
+        menu = new Menu(contentContainer);
+        leftPanel.setContent(menu);
+
+        // create the right panel
+        sectionPanel = new PersistencePanel();
+        sectionPanel.setPreferredSize(new Dimension(350, 999));
+        peekRight = new PeekingPanel("", BorderLayout.WEST, sectionPanel, true);
+        h1.add(peekRight, BorderLayout.EAST);
+
+        // add it all to the view
+        add(h1, BorderLayout.CENTER);
+
+        PeekingPanel peekLeft = new PeekingPanel("Menu", BorderLayout.EAST, leftPanel, true, 210);
+        this.add(peekLeft, BorderLayout.WEST);
+
+        peekRight.setVisible(false);
+    }
+
+    public static ViewController getInstance() {
+        if (instance == null) {
+            instance = new ViewController();
+        }
+        return instance;
+    }
+
     public void changeSubSectionTo(SubSectionView view) {
 
-        if (currentSubsection != null) { currentSubsection.viewDidUnload(); }
+        if (currentSubsection != null) {
+            currentSubsection.viewDidUnload();
+        }
 
         currentSubsection = view;
 
-        currentSubsection.viewDidLoad();
+        if (currentSubsection != null) {
+            currentSubsection.viewDidLoad();
+        }
 
-        this.sectionHeader.setSubSection(view);
+        sectionHeader.setSubSection(view);
 
-        SectionView parent = view.getParent();
+        SectionView parent = view != null ? view.getParent() : null;
 
-        if (parent != currentSection) {
+        if (parent != currentSection && parent != null) {
             JPanel[] persistentPanels = parent.getPersistentPanels();
             if (persistentPanels != null) {
                 peekRight.setVisible(true);
@@ -72,8 +122,6 @@ public class ViewController extends JPanel {
             }
         }
         currentSection = parent;
-        
-        currentSubsection.viewDidLoad();
     }
 
     void setProject(String projectname) {
@@ -82,6 +130,18 @@ public class ViewController extends JPanel {
 
     void clearMenu() {
         menu.removeAll();
+    }
+
+    public void addSection(SectionView section) {
+        menu.addSection(section);
+    }
+
+    public void refreshView() {
+        menu.refreshSelection();
+    }
+
+    public void addComponent(Component c) {
+        menu.addComponent(c);
     }
 
     private static class SidePanel extends JPanel {
@@ -116,7 +176,7 @@ public class ViewController extends JPanel {
     }
 
     private static class SectionHeader extends JPanel {
-
+        private static final String DEFAULT_TITLE = "Welcome to MedSavant";
         private final JLabel title;
         private final JPanel sectionMenuPanel;
         private final JPanel subSectionMenuPanel;
@@ -133,7 +193,7 @@ public class ViewController extends JPanel {
             
             
             this.setBorder(ViewUtil.getLargeSideBorder());
-            title = ViewUtil.getHeaderLabel("Welcome to MedSavant");
+            title = ViewUtil.getHeaderLabel(DEFAULT_TITLE);
             this.add(title);
             sectionMenuPanel = new JPanel();//ViewUtil.getClearPanel();
             subSectionMenuPanel = new JPanel();//ViewUtil.getClearPanel();
@@ -164,6 +224,7 @@ public class ViewController extends JPanel {
 
         }
 
+        @Override
         public void paintComponent(Graphics g) {
             PaintUtil.paintLightMenu(g, this);
         }
@@ -172,129 +233,43 @@ public class ViewController extends JPanel {
             title.setText(sectionName.toUpperCase() + " › " + subsectionName.trim());
         }
 
-        private void setSubSection(SubSectionView view) {
-            setTitle(view.getParent().getName(), view.getName());
+        void setSubSection(SubSectionView view) {
+            boolean empty = true;
 
-            subSectionMenuPanel.removeAll();
-            sectionMenuPanel.removeAll();
+            if (view != null) {
+                setTitle(view.getParent().getName(), view.getName());
 
-            Component[] subsectionBanner = view.getBanner();
-            Component[] sectionBanner = view.getParent().getBanner();
+                subSectionMenuPanel.removeAll();
+                sectionMenuPanel.removeAll();
+
+                Component[] subsectionBanner = view.getBanner();
+                Component[] sectionBanner = view.getParent().getBanner();
 
 
-            if (subsectionBanner == null && sectionBanner == null) {
-                //leftTab.setVisible(false);
-                //rightTab.setVisible(false);
+                if (subsectionBanner != null) {
+                    for (Component c : subsectionBanner) {
+                        subSectionMenuPanel.add(c);
+                        empty = false;
+                    }
+                }
+                subSectionMenuPanel.setVisible(!empty);                     
+
+                subSectionMenuPanel.add(Box.createVerticalGlue());
+
+                empty = true;
+                if (sectionBanner != null) {
+                    for (Component c : sectionBanner) {
+                        sectionMenuPanel.add(c);
+                        empty = false;
+                    }
+                }
             } else {
-                //leftTab.setVisible(true);
-                //rightTab.setVisible(true);
-            }
+                title.setText(DEFAULT_TITLE);
 
-                            boolean empty = true;
-
-            if (subsectionBanner != null) {
-                for (Component c : subsectionBanner) {
-                    subSectionMenuPanel.add(c);
-                    empty = false;
-                }
-            }
-                            subSectionMenuPanel.setVisible(!empty);                     
-
-            subSectionMenuPanel.add(Box.createVerticalGlue());
-            
-            empty = true;
-            if (sectionBanner != null) {
-                for (Component c : sectionBanner) {
-                    sectionMenuPanel.add(c);
-                    empty = false;
-                }
             }
             sectionMenuPanel.setVisible(!empty);
             
             sectionMenuPanel.add(Box.createVerticalGlue());
         }
-    }
-
-    private static class ImagePanel extends JPanel {
-
-        private final Image img;
-        private final Dimension d;
-
-        public ImagePanel(StandardIcon si) {
-            img = IconFactory.getInstance().getIcon(si).getImage();
-            d = new Dimension(img.getWidth(null), 30);//img.getHeight(null));
-            this.setMaximumSize(d);
-            this.setPreferredSize(d);
-        }
-
-        public void paintComponent(Graphics g) {
-            //g.setColor(Color.red);
-            //g.fillRect(0, 0, this.getWidth(), this.getHeight());
-            g.drawImage(img, 0, 0, null);
-        }
-    }
-    private static ViewController instance;
-
-    public static ViewController getInstance() {
-        if (instance == null) {
-            instance = new ViewController();
-        }
-        return instance;
-    }
-
-    private ViewController() {
-        initUI();
-    }
-
-    private void initUI() {
-        this.setLayout(new BorderLayout());
-
-        // create the banner
-        //banner = new Banner();
-        JPanel h1 = new JPanel();
-        h1.setLayout(new BorderLayout());
-
-        // create the section header
-        sectionHeader = new SectionHeader();
-        h1.add(sectionHeader, BorderLayout.NORTH);
-
-        // create the content container
-        contentContainer = new JPanel();
-        contentContainer.setBackground(Color.white);
-        contentContainer.setLayout(new BorderLayout());
-        h1.add(contentContainer, BorderLayout.CENTER);
-
-        // create the left menu
-        leftPanel = new SidePanel();
-        menu = new Menu(contentContainer);
-        leftPanel.setContent(menu);
-
-        // create the right panel
-        sectionPanel = new PersistencePanel();
-        sectionPanel.setPreferredSize(new Dimension(350, 999));
-        peekRight = new PeekingPanel("", BorderLayout.WEST, sectionPanel, true);
-        h1.add(peekRight, BorderLayout.EAST);
-
-        // add it all to the view
-        //this.add(banner, BorderLayout.NORTH);
-        this.add(h1, BorderLayout.CENTER);
-
-        PeekingPanel peekLeft = new PeekingPanel("Menu", BorderLayout.EAST, leftPanel, true, 210);
-        this.add(peekLeft, BorderLayout.WEST);
-
-        peekRight.setVisible(false);
-        //buttonSectionPanelController.setVisible(false);
-    }
-
-    public void addSection(SectionView section) {
-        menu.addSection(section);
-    }
-
-    public void refreshView() {
-        menu.refreshSelection();
-    }
-
-    public void addComponent(Component c) {
-        menu.addComponent(c);
     }
 }

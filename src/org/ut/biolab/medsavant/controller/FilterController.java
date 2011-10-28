@@ -1,31 +1,50 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 
 package org.ut.biolab.medsavant.controller;
 
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.RangeFilter;
+import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.model.event.LoginEvent;
+import org.ut.biolab.medsavant.model.event.LoginListener;
+
 
 /**
  *
  * @author mfiume
  */
-public class FilterController{
-
+public class FilterController {
+    private static final Logger LOG = Logger.getLogger(FilterController.class.getName());
+    private static final ProjectListener projectListener;
+    private static final ReferenceListener referenceListener;
+    private static final LoginListener logoutListener;
     
     private static int filterSetID = 0;
     
@@ -39,50 +58,53 @@ public class FilterController{
     private static Filter lastFilter;
     private static FilterAction lastAction;
 
-    private static ProjectListener projectListener;
-    private static ReferenceListener referenceListener;
-    
-    
-    public static void init(){
-        if(projectListener == null){
-            projectListener = new ProjectListener() {
-                public void projectAdded(String projectName) {}
-                public void projectRemoved(String projectName) {}
-                public void projectChanged(String projectName) {
+    static {
+        projectListener = new ProjectListener() {
+            public void projectAdded(String projectName) {}
+            public void projectRemoved(String projectName) {}
+            public void projectChanged(String projectName) {
+                removeAllFilters();
+            }
+            public void projectTableRemoved(int projid, int refid) {}
+        };           
+        ProjectController.getInstance().addProjectListener(projectListener);
+
+        referenceListener = new ReferenceListener() {
+            public void referenceAdded(String name) {}
+            public void referenceRemoved(String name) {}
+            public void referenceChanged(String prnameojectName) {
+                removeAllFilters();
+            }              
+        };
+        ReferenceController.getInstance().addReferenceListener(referenceListener);
+        
+
+        logoutListener = new LoginListener() {
+            public void loginEvent(LoginEvent evt) {
+                if (evt.getType() == LoginEvent.EventType.LOGGED_OUT) {
                     removeAllFilters();
                 }
-                public void projectTableRemoved(int projid, int refid) {}
-            };           
-            ProjectController.getInstance().addProjectListener(projectListener);
-        }
-        if(referenceListener == null){
-            referenceListener = new ReferenceListener() {
-                public void referenceAdded(String name) {}
-                public void referenceRemoved(String name) {}
-                public void referenceChanged(String prnameojectName) {
-                    removeAllFilters();
-                }              
-            };
-            ReferenceController.getInstance().addReferenceListener(referenceListener);
-        }
+            }
+            
+        };
+        LoginController.addLoginListener(logoutListener);
     }
     
     public static enum FilterAction {ADDED, REMOVED, MODIFIED};
 
     public static void addFilter(Filter filter, int queryId) {
 
-        if(filterMap.get(queryId) == null){
+        if(filterMap.get(queryId) == null) {
             filterMap.put(queryId, new TreeMap<String, Filter>());
         }
         Filter prev = filterMap.get(queryId).put(filter.getId(), filter);
         
-        if(prev == null){
+        if(prev == null) {
             setLastFilter(filter, FilterAction.ADDED);
         } else {
             setLastFilter(filter, FilterAction.MODIFIED);
         }
         fireFiltersChangedEvent();
-        //printSQLSelect();
     }
 
     public static void removeFilter(String filterId, int queryId) {
@@ -90,7 +112,7 @@ public class FilterController{
         if(filterMap.get(queryId) == null) return; //filter was never actually added
         
         Filter removed = filterMap.get(queryId).remove(filterId);
-        if(filterMap.get(queryId).isEmpty()){
+        if(filterMap.get(queryId).isEmpty()) {
             filterMap.remove(queryId);
         }
         
@@ -99,7 +121,7 @@ public class FilterController{
         fireFiltersChangedEvent();
     }
     
-    public static void removeAllFilters(){
+    public static void removeAllFilters() {
         filterMap.clear();
         filterMapHistory.clear();
     }
@@ -131,8 +153,7 @@ public class FilterController{
             try {
                 l.filtersChanged();
             } catch (Exception e) {
-                Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage());
-                e.printStackTrace();
+                LOG.log(Level.SEVERE, null, e);
             }
         }
         activeListeners.clear();
@@ -142,8 +163,7 @@ public class FilterController{
             try {
                 l.filtersChanged();
             } catch (Exception e) {
-                Logger.getAnonymousLogger().log(Level.SEVERE, e.getMessage());
-                e.printStackTrace();
+                LOG.log(Level.SEVERE, null, e);
             }
         }
     }
@@ -184,15 +204,15 @@ public class FilterController{
                 qfs.add((QueryFilter) f);
             }
         }
-        if(hasRangeFilter){
+        if(hasRangeFilter) {
             qfs.add((QueryFilter)rf);
         }
         return qfs;
     }
     
-    public static List<List<QueryFilter>> getQueryFilters(){
+    public static List<List<QueryFilter>> getQueryFilters() {
         List<List<QueryFilter>> qfs = new ArrayList<List<QueryFilter>>();
-        for(Object key : filterMap.keySet().toArray()){
+        for(Object key : filterMap.keySet().toArray()) {
             qfs.add(getQueryFilters((Integer)key));
         }
         return qfs;
@@ -200,7 +220,7 @@ public class FilterController{
     
     /*public static List<Condition> getQueryFilterConditions(int queryId) {
         List<Condition> conditions = new ArrayList<Condition>();
-        for(QueryFilter f : FilterController.getQueryFilters(queryId)){
+        for(QueryFilter f : FilterController.getQueryFilters(queryId)) {
             conditions.add(ComboCondition.or(f.getConditions()));
         }
         return conditions;
@@ -209,7 +229,7 @@ public class FilterController{
     public static Condition[] getQueryFilterConditions(int queryId) {
         List<QueryFilter> filters = getQueryFilters(queryId);
         Condition[] conditions = new Condition[filters.size()];
-        for(int i = 0; i < filters.size(); i++){
+        for(int i = 0; i < filters.size(); i++) {
             conditions[i] = ComboCondition.or(filters.get(i).getConditions());
         }
         return conditions;
@@ -217,7 +237,7 @@ public class FilterController{
     
     /*public static List<List<Condition>> getQueryFilterConditions() {
         List<List<Condition>> conditions = new ArrayList<List<Condition>>();
-        for(Object key : filterMap.keySet().toArray()){
+        for(Object key : filterMap.keySet().toArray()) {
             conditions.add(getQueryFilterConditions((Integer)key));
         }
         return conditions;
@@ -226,27 +246,27 @@ public class FilterController{
     public static Condition[][] getQueryFilterConditions() {
         Object[] keys = filterMap.keySet().toArray();
         Condition[][] conditions = new Condition[keys.length][];
-        for(int i = 0; i < keys.length; i++){
+        for(int i = 0; i < keys.length; i++) {
             conditions[i] = getQueryFilterConditions((Integer)keys[i]);
         }
         return conditions;
     }
     
-    private static void setLastFilter(Filter filter, FilterAction action){
+    private static void setLastFilter(Filter filter, FilterAction action) {
         lastFilter = filter;
         lastAction = action;
     }
     
-    public static Filter getLastFilter(){
+    public static Filter getLastFilter() {
         return lastFilter;
     }
     
-    public static FilterAction getLastAction(){
+    public static FilterAction getLastAction() {
         return lastAction;
     }
     
-    public static String getLastActionString(){
-        switch(lastAction){
+    public static String getLastActionString() {
+        switch(lastAction) {
             case ADDED:
                 return "Added";
             case REMOVED:
@@ -258,17 +278,17 @@ public class FilterController{
         }
     }
     
-    public static boolean hasFiltersApplied(){
-        for(Integer key : filterMap.keySet()){
+    public static boolean hasFiltersApplied() {
+        for(Integer key : filterMap.keySet()) {
             Map<String, Filter> current = filterMap.get(key);
-            if(current != null && !current.isEmpty()){
+            if(current != null && !current.isEmpty()) {
                 return true;
             }
         }
         return false;
     }
 
-    public static boolean isFilterActive(int queryId, String filterId){
+    public static boolean isFilterActive(int queryId, String filterId) {
         return filterMap.containsKey(queryId) && filterMap.get(queryId).containsKey(filterId);
     }
     

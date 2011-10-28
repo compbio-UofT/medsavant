@@ -25,6 +25,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
@@ -46,9 +48,8 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author mfiume
  */
 public class LoggedInView extends JPanel implements ProjectListener {
-    
+    private static final Logger LOG = Logger.getLogger(LoggedInView.class.getName());
     private ViewController viewController;
-    private static boolean initiated = false;
     private JComboBox projectDropDown;
 
     public LoggedInView() {
@@ -93,94 +94,90 @@ public class LoggedInView extends JPanel implements ProjectListener {
         addSection(new PluginsSection());
         addSection(new OtherSection());
 
-        //addSection(new AnnotationsSection());
         if (LoginController.isAdmin()) {
             addSection(new ManageSection());
         }
-        //}
-        //initiated = true;
     }
     
     
-        private void refreshProjectDropDown() {
-            try {
-                projectDropDown.removeAllItems();
-                
-                List<String> projects = null;
-                
-                while (projects == null || projects.isEmpty()) {
-                    projects = ProjectController.getInstance().getProjectNames();
-                    
-                    if (!projects.isEmpty()) {
-                        break;
-                    }
-                    
-                    if (projects.isEmpty() && !LoginController.isAdmin()) {
-                        DialogUtils.displayMessage("Welcome to MedSavant. No projects have been started. Please contact your administrator.");
-                        LoginController.logout();
-                    }
-                    
-                    if(projects.isEmpty()){
-                        while (true) {
-                            int result = DialogUtils.askYesNo("Welcome to MedSavant", "To begin using MedSavant, you will need to create a project.");
-                            if (result == DialogUtils.NO) {
-                                MainFrame.getInstance().requestClose();
-                                // don't break, the user chose not to quit
-                            } else {
-                                NewProjectWizard npd = new NewProjectWizard();
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-                for (String s : projects) {
-                    projectDropDown.addItem(s);
-                }
-                if (projects.isEmpty()) {
-                    projectDropDown.addItem("No Projects");
-                    projectDropDown.setEnabled(false);
-                } else {
-                    projectDropDown.setEnabled(true);
-                    projectDropDown.addActionListener(new ActionListener() {
+    private void refreshProjectDropDown() {
+        try {
+            projectDropDown.removeAllItems();
 
-                        public void actionPerformed(ActionEvent e) {
-                            String currentName = ProjectController.getInstance().getCurrentProjectName();
-                            if(!ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem())){
-                                projectDropDown.setSelectedItem(currentName);
-                            }
+            List<String> projects = null;
+
+            while (projects == null || projects.isEmpty()) {
+                projects = ProjectController.getInstance().getProjectNames();
+
+                if (!projects.isEmpty()) {
+                    break;
+                }
+
+                if (projects.isEmpty() && !LoginController.isAdmin()) {
+                    DialogUtils.displayMessage("Welcome to MedSavant. No projects have been started. Please contact your administrator.");
+                    LoginController.logout();
+                }
+
+                if (projects.isEmpty()) {
+                    while (true) {
+                        int result = DialogUtils.askYesNo("Welcome to MedSavant", "To begin using MedSavant, you will need to create a project.");
+                        if (result == DialogUtils.NO) {
+                            MainFrame.getInstance().requestClose();
+                            // don't break, the user chose not to quit
+                        } else {
+                            NewProjectWizard npd = new NewProjectWizard();
+                            break;
                         }
-                    });
-                    ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
-                }               
-            } catch (SQLException ex) {
+                    }
+                }
             }
 
+            for (String s : projects) {
+                projectDropDown.addItem(s);
+            }
+            if (projects.isEmpty()) {
+                projectDropDown.addItem("No Projects");
+                projectDropDown.setEnabled(false);
+            } else {
+                projectDropDown.setEnabled(true);
+                projectDropDown.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        String currentName = ProjectController.getInstance().getCurrentProjectName();
+                        if (!ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem())) {
+                            projectDropDown.setSelectedItem(currentName);
+                        }
+                    }
+                });
+                ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
+            }               
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
         }
+    }
 
 
     private Component getSeparator() {
         JPanel p = new JPanel();
-            Dimension d = new Dimension(200,1);
-            p.setPreferredSize(d);
-            p.setMaximumSize(d);
-            p.setBackground(Color.lightGray);
-            return p;
+        Dimension d = new Dimension(200,1);
+        p.setPreferredSize(d);
+        p.setMaximumSize(d);
+        p.setBackground(Color.lightGray);
+        return p;
     }
     
     public void projectAdded(String projectName) {
-            refreshProjectDropDown();
-        }
+        refreshProjectDropDown();
+    }
 
-        public void projectRemoved(String projectName) {
-            refreshProjectDropDown();
-        }
+    public void projectRemoved(String projectName) {
+        refreshProjectDropDown();
+    }
 
-        public void projectChanged(String projectName) {
-        }
+    public void projectChanged(String projectName) {
+    }
 
-        public void projectTableRemoved(int projid, int refid) {
-            refreshProjectDropDown();
-        }
-
+    public void projectTableRemoved(int projid, int refid) {
+        refreshProjectDropDown();
+    }
 }

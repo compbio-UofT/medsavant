@@ -1,10 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.menu;
 
-import org.ut.biolab.medsavant.view.ViewController;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -17,10 +28,13 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.controller.ProjectController;
+
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
+import org.ut.biolab.medsavant.model.event.LoginEvent;
+import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
@@ -30,7 +44,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class Menu extends JPanel implements MenuItemSelected, ReferenceListener {
+public class Menu extends JPanel implements MenuItemSelected {
 
     public static class MenuItem extends JPanel {
 
@@ -145,6 +159,7 @@ public class Menu extends JPanel implements MenuItemSelected, ReferenceListener 
             return this.isSelected;
         }
 
+        @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
 
@@ -203,53 +218,62 @@ public class Menu extends JPanel implements MenuItemSelected, ReferenceListener 
     private final JPanel contentContainer;
     private Component glue = Box.createVerticalGlue();
     private final MenuItemGroup itemGroup;
-    //private List<SectionView> sectionViews = new ArrayList<SectionView>();
     private static List<SubSectionView> subSectionViews = new ArrayList<SubSectionView>();
 
-    public Menu(JPanel contentContainer) {
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        this.setOpaque(false);
-        this.contentContainer = contentContainer;
+    public Menu(JPanel panel) {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setOpaque(false);
+        contentContainer = panel;
         itemGroup = new MenuItemGroup();
-        ReferenceController.getInstance().addReferenceListener(this);
+        
+        ReferenceController.getInstance().addReferenceListener(new ReferenceListener() {
+            public void referenceChanged(String referenceName) {
+                for(int i = 0; i < subSectionViews.size(); i++) {
+                    subSectionViews.get(i).setUpdateRequired(true);
+                }
+
+                if (currentView != null) {
+                    setContentTo(currentView, true);
+                }       
+            }
+
+            public void referenceAdded(String name) {}
+
+            public void referenceRemoved(String name) {}
+        });
+        
+        LoginController.addLoginListener(new LoginListener() {
+            public void loginEvent(LoginEvent evt) {
+                if (evt.getType() == LoginEvent.EventType.LOGGED_OUT) {
+                    contentContainer.removeAll();
+                    ViewController.getInstance().changeSubSectionTo(null);
+                }
+            }
+        });
     }
 
-    public void referenceChanged(String referenceName) {
-        for(int i = 0; i < subSectionViews.size(); i++){
-            subSectionViews.get(i).setUpdateRequired(true);
-        }
-               
-        if(currentView != null){
-            setContentTo(currentView, true);
-        }       
-    }
-    
-    public void referenceAdded(String name) {}
-
-    public void referenceRemoved(String name) {}
-   
     public void addComponent(Component c) {
-        this.remove(glue);
-        this.add(Box.createVerticalStrut(10));
-        this.add(c);
-        this.add(glue);
+        remove(glue);
+        add(Box.createVerticalStrut(10));
+        add(c);
+        add(glue);
     }
 
     public void addSection(SectionView section) {
 
-        this.remove(glue);
+        remove(glue);
         
-        this.add(Box.createVerticalStrut(10));
+        add(Box.createVerticalStrut(10));
 
         JPanel p = ViewUtil.alignLeft(ViewUtil.getMenuSectionLabel(section.getName()));
         p.setBorder(ViewUtil.getMenuItemBorder());
-        this.add(p);
+        add(p);
 
         for (SubSectionView v : section.getSubSections()) {
             MenuItem subsectionLabel = new MenuItem(v);
             itemGroup.addMenuItem(subsectionLabel);
             subsectionLabel.addSelectionListener(this);
-            this.add(subsectionLabel);
+            add(subsectionLabel);
         }
 
         this.add(glue);
@@ -267,8 +291,8 @@ public class Menu extends JPanel implements MenuItemSelected, ReferenceListener 
         contentContainer.updateUI();
     }
     
-    public void refreshSelection(){
-        if(itemGroup.lastSelected != null){
+    public void refreshSelection() {
+        if (itemGroup.lastSelected != null) {
             itemSelected(itemGroup.lastSelected);
         }
     }
