@@ -22,6 +22,7 @@ import org.ut.biolab.medsavant.db.format.AnnotationField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.util.DBUtil.FieldType;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -123,34 +124,13 @@ public class ChartView extends JPanel {
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
             for(AnnotationField field : af.getAnnotationFields()){
-                //FieldType type = field.getFieldType();
-                //if(type.equals(FieldType.BOOLEAN) || type.equals(FieldType.DECIMAL) || type.equals(FieldType.FLOAT) || type.equals(FieldType.INT)){
-                if(field.isFilterable()){
+                FieldType type = field.getFieldType();
+                if(field.isFilterable() &&
+                        (type.equals(FieldType.BOOLEAN) || type.equals(FieldType.DECIMAL) || type.equals(FieldType.FLOAT) || type.equals(FieldType.INT))){
                     addCMG(new VariantFieldChartMapGenerator(field));
                 }
             }
         }
-        
-        /*addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_DNAID));
-        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_CHROM));
-        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_QUALITY));
-        //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_GT));
-        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_DP));
-        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_AA));
-        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_AC));
-        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_AF));
-        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_AN));
-        //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_BQ));
-        //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_MQ));
-        //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_MQ0));
-        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_REFERENCE));
-        addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_ALTERNATE));
-        //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_Transv));
-        //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_inCodingRegion));
-        //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_prediction));
-        //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_pph2_class));
-        //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_functionalClass));
-        //addCMG(new VariantFieldChartMapGenerator(VariantTableSchema.ALIAS_sift_prediction));*/
         
     }
 
