@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.AnnotationField;
 import org.ut.biolab.medsavant.db.format.AnnotationField.Category;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.util.DBUtil.FieldType;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.plugin.PluginController;
@@ -363,7 +364,7 @@ public final class FilterPanelSub extends JPanel{
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
             for(final AnnotationField field : af.getAnnotationFields()){
-                if(field.isFilterable() && !hasSubItem(field.getColumnName())){
+                if(field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getFieldType())){
                     map.get(field.getCategory()).add(new FilterPlaceholder() {
 
                         public FilterView getFilterView() {
@@ -398,7 +399,56 @@ public final class FilterPanelSub extends JPanel{
             }
         }
         
+        //add from patient table
+        for(final AnnotationField field : ProjectController.getInstance().getCurrentPatientFormat()){
+            if(field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getFieldType())){
+                map.get(field.getCategory()).add(new FilterPlaceholder() {
+
+                    public FilterView getFilterView() {
+                        try {
+                            switch(field.getFieldType()){
+                                case INT:
+                                    return PatientNumericFilterView.createFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias(), false);
+                                case FLOAT:
+                                case DECIMAL:
+                                    return PatientNumericFilterView.createFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias(), true);
+                                case BOOLEAN:
+                                    return PatientBooleanFilterView.createFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias());
+                                case VARCHAR:                                 
+                                default:
+                                    return PatientStringListFilterView.createFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias());
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }
+
+                    public String getFilterID() {
+                        return field.getColumnName();
+                    }
+
+                    public String getFilterName() {
+                        return field.getAlias();
+                    }
+                });
+            }
+        }
+        
         return map;
+    }
+    
+    private boolean isFilterable(FieldType type){
+        switch(type){
+            case INT:
+            case FLOAT:
+            case DECIMAL:
+            case BOOLEAN:
+            case VARCHAR:  
+                return true;
+            default:
+                return false;
+        }
     }
     
     /* 

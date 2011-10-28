@@ -47,7 +47,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
     public void projectAdded(String projectName) {
         if (panel != null) {
             /*try {
-                int projectid = ProjectController.getInstance().getProjectId(projectName);
+                int projectid = ProjectController.getInstance().getProjectName(projectName);
 
                 NewVariantTableDialog d = new NewVariantTableDialog(projectid, MainFrame.getInstance(), true);
                 d.setCancellable(false);
@@ -107,7 +107,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
                 public void actionPerformed(ActionEvent ae) {
                     try {
-                        int projectid = ProjectController.getInstance().getProjectId(projectName);
+                        int projectid = ProjectController.getInstance().getProjectName(projectName);
 
                         EditPatientTableDialog d = new EditPatientTableDialog(projectid, MainFrame.getInstance(), true);
                         d.setVisible(true);

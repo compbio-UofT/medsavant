@@ -6,7 +6,7 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
@@ -144,7 +144,7 @@ public class VariantBooleanFilterView {
         bottomContainer.add(Box.createGlue());
 
         bottomContainer.add(applyButton);
-
+        bottomContainer.setMaximumSize(new Dimension(10000,24));
         bottomContainer.setAlignmentX(0F);
         container.add(bottomContainer);
 

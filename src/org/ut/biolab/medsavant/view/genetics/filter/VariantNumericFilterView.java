@@ -4,11 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.jidesoft.swing.RangeSlider;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,7 +29,6 @@ import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -168,7 +163,7 @@ public class VariantNumericFilterView {
 
                 applyButton.setEnabled(false);
 
-                Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
+                final Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
                 acceptableRange.bound(min, max, true);                     
                 frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
                 tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
@@ -179,19 +174,9 @@ public class VariantNumericFilterView {
 
                     @Override
                     public Condition[] getConditions() {
-                        /*Condition[] results = new Condition[2];
-
-                        results[0] = BinaryCondition.greaterThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(frombox.getText().replaceAll(",", "")), true);
-                        results[1] = BinaryCondition.lessThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), getNumber(tobox.getText().replaceAll(",", "")), true);
-
-                        Condition[] resultsCombined = new Condition[1];
-                        resultsCombined[0] = ComboCondition.and(results);
-
-                        return resultsCombined;*/
-
                         Condition[] results = new Condition[1];
-                        double min = getNumber(frombox.getText().replaceAll(",", ""));
-                        double max = getNumber(tobox.getText().replaceAll(",", ""));
+                        double min = acceptableRange.getMin();//getNumber(frombox.getText().replaceAll(",", ""));
+                        double max = acceptableRange.getMax();//getNumber(tobox.getText().replaceAll(",", ""));
                         if(isDecimal){
                             results[0] = new RangeCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), min, max);
                         } else {
@@ -252,66 +237,6 @@ public class VariantNumericFilterView {
             return 0;
         }
     }
-    
-    
          
 }
 
-class DecimalRangeSlider extends RangeSlider {
-        
-    private int multiplier;
-
-    public DecimalRangeSlider(int precision){
-        super();
-        if(precision <= 0){
-            multiplier = 1;
-        } else {
-            multiplier = precision * 10;
-        }
-    }
-
-    public DecimalRangeSlider(){
-        this(0);
-    }
-
-    @Override
-    public void setMinimum(int i){
-        super.setMinimum(adjustValue(i));
-    }
-
-    @Override
-    public void setMaximum(int i){
-        super.setMaximum(adjustValue(i));
-    }
-
-    public void setLow(double i){
-        super.setLowValue(adjustValue(i));
-    }
-
-    public void setHigh(double i){
-        super.setHighValue(adjustValue(i));
-    }
-
-    public double getLow(){
-        int value = super.getLowValue();
-        return getActualValue(value);
-    }
-
-    public double getHigh(){
-        int value = super.getHighValue();
-        return getActualValue(value);
-    }
-
-    private int adjustValue(double i){
-        return (int)(i * multiplier);
-    }
-
-    private int adjustValue(int i){
-        return i * multiplier;
-    }
-
-    private double getActualValue(int i){
-        return (double)i / (double)multiplier;
-    }
-
-}

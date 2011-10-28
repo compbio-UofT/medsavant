@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ut.biolab.medsavant.db.format.AnnotationField;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
@@ -29,12 +31,16 @@ public class ProjectController implements ReferenceListener, LoginListener {
     private String currentProjectName;
     private int currentProjectId;
 
-    private String currentPatientTable;
-    private String currentVariantTable;
+    //private String currentPatientTableName;
+    //private String currentVariantTableName;
     private AnnotationFormat[] currentAnnotationFormats;
+    private List<AnnotationField> currentPatientFormat;
     
     private DbTable currentTable;
     private TableSchema currentTableSchema;
+    
+    private DbTable currentPatientTable;
+    private TableSchema currentPatientTableSchema;
     
     private static ProjectController instance;
     
@@ -97,7 +103,8 @@ public class ProjectController implements ReferenceListener, LoginListener {
                 }
                                 
                 this.currentProjectId = this.getProjectId(projectName);
-                this.currentProjectName = projectName;                
+                this.currentProjectName = projectName;      
+                this.setCurrentPatientTable();
                 this.fireProjectChangedEvent(projectName);              
             }
         } catch (SQLException ex) {
@@ -191,6 +198,32 @@ public class ProjectController implements ReferenceListener, LoginListener {
         }
     }
     
+    public String getCurrentPatientTableName(){
+        try {
+            return PatientQueryUtil.getPatientTablename(currentProjectId);
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
+    public DbTable getCurrentPatientTable(){
+        return currentPatientTable;
+    }
+    
+    public TableSchema getCurrentPatientTableSchema(){
+        return currentPatientTableSchema;
+    }
+    
+    private void setCurrentPatientTable(){
+        try {
+            this.currentPatientTable = DBUtil.importTable(getCurrentPatientTableName());
+            this.currentPatientTableSchema =  CustomTables.getCustomTableSchema(getCurrentPatientTableName());          
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public AnnotationFormat[] getCurrentAnnotationFormats(){
         if(currentAnnotationFormats == null){
             try {
@@ -207,6 +240,17 @@ public class ProjectController implements ReferenceListener, LoginListener {
             }
         }
         return currentAnnotationFormats;
+    }
+    
+    public List<AnnotationField> getCurrentPatientFormat(){
+        if(currentPatientFormat == null){
+            try {
+                currentPatientFormat = PatientQueryUtil.getPatientFields(currentProjectId); 
+            } catch (SQLException ex) {
+                Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return currentPatientFormat;
     }
     
     public void setCurrentAnnotationFormats(AnnotationFormat[] formats){
