@@ -325,7 +325,7 @@ public final class FilterPanelSub extends JPanel{
                 
         map.put(Category.PATIENT, new ArrayList<FilterPlaceholder>());
         map.put(Category.GENOME_COORDS, new ArrayList<FilterPlaceholder>());
-        map.put(Category.GENOTYPE, new ArrayList<FilterPlaceholder>());
+        //map.put(Category.GENOTYPE, new ArrayList<FilterPlaceholder>());
         map.put(Category.PHENOTYPE, new ArrayList<FilterPlaceholder>());
         map.put(Category.PLUGIN, new ArrayList<FilterPlaceholder>()); 
 

@@ -26,21 +26,21 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel1" alignment="0" pref="380" max="32767" attributes="0"/>
-                  <Component id="scrollPane" alignment="1" pref="380" max="32767" attributes="0"/>
+                  <Component id="jLabel1" alignment="0" pref="408" max="32767" attributes="0"/>
+                  <Component id="scrollPane" alignment="1" pref="408" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="tipLabel" pref="281" max="32767" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jButton1" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator1" alignment="0" pref="380" max="32767" attributes="0"/>
-                  <Component id="jLabel2" alignment="0" pref="380" max="32767" attributes="0"/>
+                  <Component id="jSeparator1" alignment="0" pref="408" max="32767" attributes="0"/>
+                  <Component id="jLabel2" alignment="0" pref="408" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jButton2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jButton3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator2" alignment="0" pref="380" max="32767" attributes="0"/>
+                  <Component id="jSeparator2" alignment="0" pref="408" max="32767" attributes="0"/>
                   <Component id="doneButton" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -79,11 +79,6 @@
   </Layout>
   <SubComponents>
     <Container class="javax.swing.JScrollPane" name="scrollPane">
-      <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
-      </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
@@ -129,7 +124,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="jButton2">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Generate Template"/>
+        <Property name="text" type="java.lang.String" value="Export CSV"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>
@@ -137,7 +132,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="jButton3">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Import From File"/>
+        <Property name="text" type="java.lang.String" value="Import CSV"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton3ActionPerformed"/>

@@ -1,19 +1,7 @@
 /*
- *    Copyright 2011 University of Toronto
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
-
 package org.ut.biolab.medsavant.view.manage;
 
 import java.awt.BorderLayout;
@@ -22,10 +10,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-
 import org.ut.biolab.medsavant.controller.ExternalAnnotationController;
 import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.view.MainFrame;
@@ -104,11 +92,15 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
         public ExternalAnnotationListModel() {
         }
 
-        public List<Object[]> getList(int limit) throws Exception {
+        public List<Vector> getList(int limit) throws Exception {
             List<Annotation> annotations = ExternalAnnotationController.getInstance().getExternalAnnotations();
-            List<Object[]> annotationVector = new ArrayList<Object[]>();
+            List<Vector> annotationVector = new ArrayList<Vector>();
             for (Annotation p : annotations) {
-                annotationVector.add(new Object[] { p.getProgram(), p.getVersion(), p.getReference() });
+                Vector v = new Vector();
+                v.add(p.getProgram());
+                v.add(p.getVersion());
+                v.add(p.getReference());
+                annotationVector.add(v);
             }
             return annotationVector;
         }
@@ -184,9 +176,9 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
         }
 
         @Override
-        public void setSelectedItem(Object[] item) {
+        public void setSelectedItem(Vector item) {
             
-            String title = (String) item[0] + " (v" + item[1] + ")";
+            String title = (String) item.get(0) + " (v" + item.get(1) + ")";
             setTitle(title);
 
             details.removeAll();
@@ -196,7 +188,7 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
         }
 
         @Override
-        public void setMultipleSelections(List<Object[]> selectedRows) {
+        public void setMultipleSelections(List<Vector> selectedRows) {
             //throw new UnsupportedOperationException("Not supported yet.");
         }
     }

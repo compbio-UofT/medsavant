@@ -17,7 +17,12 @@ import org.ut.biolab.medsavant.view.subview.SectionView;
  */
 public class PatientsSection extends SectionView {
 
-    
+    private SubSectionView[] pages;
+    {
+        pages = new SubSectionView[2];
+        pages[0] = new IndividualsPage(this);
+        pages[1] = new CohortsPage(this);
+    }
     
     @Override
     public String getName() {
@@ -26,9 +31,6 @@ public class PatientsSection extends SectionView {
 
     @Override
     public SubSectionView[] getSubSections() {
-        SubSectionView[] pages = new SubSectionView[2];
-        pages[0] = new IndividualsPage(this);
-        pages[1] = new CohortsPage(this);
         return pages;
     }
 

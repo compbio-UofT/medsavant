@@ -49,7 +49,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                 //Range r = new Range(VariantQueryUtil.getExtremeValuesForColumn(ProjectController.getInstance().getCurrentTableName(), column.getColumnNameSQL()));
                 Range r = new Range(VariantQueryUtil.getExtremeValuesForColumn(ProjectController.getInstance().getCurrentTableName(), field.getColumnName()));
                 
-                int numBins = 15;//getNumberOfQuantitativeCategories();
+                int numBins = 25;//getNumberOfQuantitativeCategories();
                 
                 int min = (int) Math.floor(r.getMin());
                 int max = (int) Math.ceil(r.getMax());

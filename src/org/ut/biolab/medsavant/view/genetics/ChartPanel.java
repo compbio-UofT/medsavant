@@ -301,7 +301,7 @@ public class ChartPanel extends JPanel implements FiltersChangedListener {
                 
                 int numBins = getNumberOfQuantitativeCategories();
                 
-                int min = (int) Math.floor(r.getMin());
+                int min = (r.getMin() > 0) ? 0 : (int) Math.floor(r.getMin());
                 int max = (int) Math.ceil(r.getMax());
                 
                 double step = ((double) (max - min)) / numBins;

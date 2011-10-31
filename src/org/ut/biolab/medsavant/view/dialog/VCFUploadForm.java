@@ -244,11 +244,17 @@ public class VCFUploadForm extends javax.swing.JDialog {
             @Override
             public void run() {
                 try {
-                    ImportVariants.performImport(files, projectId, referenceId, progressLabel);
+                    final boolean success = ImportVariants.performImport(files, projectId, referenceId, progressLabel);
+                    
+                    
                     SwingUtilities.invokeLater(new Runnable() {
 
                         public void run() {
-                            DialogUtils.displayMessage("Successfully queued variants for entry into database.");
+                            if (success) {
+                                DialogUtils.displayMessage("Successfully queued variants for entry into database.");
+                            } else {
+                                DialogUtils.displayError("An error occured while importing variants.");
+                            }
                         }
                         
                     });

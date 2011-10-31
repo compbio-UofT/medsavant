@@ -1,24 +1,12 @@
 /*
- *    Copyright 2011 University of Toronto
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
-
 package org.ut.biolab.medsavant.view.patients.individual;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Vector;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultPatientTableSchema;
@@ -32,18 +20,32 @@ import org.ut.biolab.medsavant.view.patients.DetailedListModel;
  */
 public class IndividualListModel implements DetailedListModel {
 
-    public List<Object[]> getList(int limit) throws Exception {
-        return PatientQueryUtil.getBasicPatientInfo(ProjectController.getInstance().getCurrentProjectId(), limit);
+    public List<Vector> getList(int limit) throws Exception {
+
+        /*List<Vector> table = new ArrayList<Vector>();
+
+        List<String> dbresults = QueryUtil.getDistinctPatientIDs();
+
+        for (String s : dbresults) {
+            Vector v = new Vector();
+            v.add(s);
+            table.add(v);
+        }*/
+        
+        //List<Vector> table = QueryUtil.getDistinctBasicPatientInfo(limit);
+        List<Vector> table = PatientQueryUtil.getBasicPatientInfo(ProjectController.getInstance().getCurrentProjectId(), limit);
+        
+        return table;
     }
 
     public List<String> getColumnNames() {
-        TableSchema table = MedSavantDatabase.DefaultpatientTableSchema;
+        //TableSchema table = MedSavantDatabase.DefaultpatientTableSchema;
         List<String> result = new ArrayList<String>();
-        result.add(table.getFieldAlias(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID));
-        result.add(table.getFieldAlias(DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID));
-        result.add(table.getFieldAlias(DefaultPatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID));
-        result.add(table.getFieldAlias(DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID));
-        result.add(table.getFieldAlias(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS));
+        result.add("Patient ID");
+        result.add("Family ID");
+        result.add("Pedigree ID");
+        result.add("Hospital ID");
+        result.add("DNA ID(s)");
         return result;
     }
 
@@ -62,7 +64,7 @@ public class IndividualListModel implements DetailedListModel {
         return new ArrayList<Integer>();
     }
     
-    public static String getIndividualID(Object[] r) {
-        return (String)r[0];
+    public static String getIndividualID(Vector r) {
+        return (String) r.get(0);
     }
 }

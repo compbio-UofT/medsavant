@@ -26,6 +26,8 @@ import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 
 import org.ut.biolab.medsavant.log.ClientLogger;
+import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.images.ImagePanel;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.menu.Menu;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -87,6 +89,16 @@ public class ViewController extends JPanel {
         this.add(peekLeft, BorderLayout.WEST);
 
         peekRight.setVisible(false);
+        
+        
+        /*
+        JPanel starter = new JPanel();
+        ViewUtil.applyVerticalBoxLayout(starter);
+        starter.add(new ImagePanel(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOGO).getImage(),128,128), BorderLayout.NORTH);
+        starter.add(new JLabel("Choose a menu item from the left"));
+        contentContainer.add(starter, BorderLayout.NORTH);
+         * 
+         */
     }
 
     public static ViewController getInstance() {

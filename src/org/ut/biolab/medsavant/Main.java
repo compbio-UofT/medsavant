@@ -17,15 +17,19 @@
 package org.ut.biolab.medsavant;
 
 import java.awt.Insets;
+import ext.growl.GrowlException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
+import ext.growl.Growl;
+import ext.growl.GrowlUtils;
 
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.log.ClientLogger;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MainFrame;
 
 
@@ -47,6 +51,22 @@ public class Main {
         frame.setExtendedState(MainFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
         ClientLogger.log(Main.class, "MedSavant booted");
+        
+        // experimental integration with Growl
+        /*
+        if (MiscUtils.MAC) {
+            try {
+                Growl growl = GrowlUtils.getGrowlInstance("MedSavant");
+            growl.addNotification("Something has happened", true);
+            growl.register();
+
+             // snip
+            growl.sendNotification("Something has happened", "Notification!", "Wake up lazy bones!");
+            } catch (GrowlException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+         */
     }
 
     private static void setLAF() {

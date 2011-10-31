@@ -126,7 +126,7 @@ public class ChartView extends JPanel {
             for(AnnotationField field : af.getAnnotationFields()){
                 FieldType type = field.getFieldType();
                 if(field.isFilterable() &&
-                        (type.equals(FieldType.BOOLEAN) || type.equals(FieldType.DECIMAL) || type.equals(FieldType.FLOAT) || type.equals(FieldType.INT))){
+                        (type.equals(FieldType.VARCHAR) || type.equals(FieldType.BOOLEAN) || type.equals(FieldType.DECIMAL) || type.equals(FieldType.FLOAT) || type.equals(FieldType.INT))){
                     addCMG(new VariantFieldChartMapGenerator(field));
                 }
             }
@@ -145,7 +145,7 @@ public class ChartView extends JPanel {
 
         bPie = new JCheckBox("Pie chart");
         bSort = new JCheckBox("Sort by frequency");
-        bLog = new JCheckBox("Log scale");
+        bLog = new JCheckBox("Log scale Y Axis");
 
         bPie.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
