@@ -26,7 +26,9 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.Cohort;
+import org.ut.biolab.medsavant.db.model.SimplePatient;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -56,14 +58,14 @@ public class CohortDetailedView extends DetailedView {
         
         @Override
         protected Object doInBackground() throws Exception {
-            List<Integer> patientList = CohortQueryUtil.getIndividualsInCohort(cohort.getId());
+            List<SimplePatient> patientList = CohortQueryUtil.getIndividualsInCohort(ProjectController.getInstance().getCurrentProjectId(), cohort.getId());
             return patientList;
         }
         
         @Override
         protected void done() {
             try {
-                List<Integer> result = (List<Integer>) get();
+                List<SimplePatient> result = (List<SimplePatient>) get();
                 setPatientList(result);
                 
             } catch (Exception ex) {
@@ -73,7 +75,7 @@ public class CohortDetailedView extends DetailedView {
         
     }
 
-    public synchronized void setPatientList(List<Integer> patients) {
+    public synchronized void setPatientList(List<SimplePatient> patients) {
 
         details.removeAll();
         
@@ -87,8 +89,8 @@ public class CohortDetailedView extends DetailedView {
             //details.add(l);
             lm.addElement((String) v.get(CohortViewTableSchema.INDEX_HOSPITALID-1));
         }*/
-        for(Integer i : patients) {
-            JLabel l = new JLabel(Integer.toString(i));
+        for(SimplePatient i : patients) {
+            JLabel l = new JLabel(i.toString());
             l.setForeground(Color.white);
             details.add(l);
             lm.addElement(i);
@@ -179,7 +181,8 @@ public class CohortDetailedView extends DetailedView {
                 Object[] selected = list.getSelectedValues();
                 int[] patientIds = new int[selected.length];
                 for(int i = 0; i < selected.length; i++){
-                    patientIds[i] = (Integer) selected[i];
+                    //patientIds[i] = (Integer) selected[i];
+                    patientIds[i] = ((SimplePatient) selected[i]).getId();
                 }
                 if(patientIds != null && patientIds.length > 0){
                     
@@ -220,6 +223,6 @@ public class CohortDetailedView extends DetailedView {
         }); 
         return button;
     }
-    
 
+    
 }

@@ -121,7 +121,7 @@ public class StringListFilterView {
                             return results;
                         } else if (whichTable == Table.PATIENT) {
                             try {
-                                List<String> individuals = PatientQueryUtil.getDNAIdsForStringList(ProjectController.getInstance().getCurrentPatientTableSchema(), uniq, columnname);
+                                List<String> individuals = PatientQueryUtil.getDNAIdsForStringList(ProjectController.getInstance().getCurrentPatientTableSchema(), acceptableValues, columnname);
 
                                 Condition[] results = new Condition[individuals.size()];
                                 int i = 0; 
