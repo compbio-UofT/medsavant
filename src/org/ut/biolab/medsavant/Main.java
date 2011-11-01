@@ -17,19 +17,15 @@
 package org.ut.biolab.medsavant;
 
 import java.awt.Insets;
-import ext.growl.GrowlException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
-import ext.growl.Growl;
-import ext.growl.GrowlUtils;
 
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.log.ClientLogger;
-import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MainFrame;
 
 
