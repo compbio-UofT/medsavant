@@ -72,7 +72,6 @@ public class IndividualDetailedView extends DetailedView {
 
         String[][] values = new String[fieldNames.size()][2];
         for (int i = 0; i < fieldNames.size(); i++) {
-            ClientLogger.log(IndividualDetailedView.class,fieldNames.get(i) + " " + result.get(i),Level.SEVERE);
             values[i][0] = fieldNames.get(i);
             values[i][1] = "";
             if(result.get(i) != null)
