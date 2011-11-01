@@ -260,7 +260,7 @@ public class SettingsController {
      */
     public static String getDefaultValue(String key) {
         if (key.equals(KEY_USERNAME)) {
-            return "root";
+            return "";
         } else if (key.equals(KEY_PASSWORD)) {
             return "";
         } else if (key.equals(KEY_REMEMBER_PASSWORD)) {
