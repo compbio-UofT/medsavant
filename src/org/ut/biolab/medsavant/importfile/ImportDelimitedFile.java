@@ -115,7 +115,6 @@ public class ImportDelimitedFile {
         try {
             previewLines = getLinesFromReader(reader, numLines, fields);
         } catch (Exception e){
-            System.out.println("XXX");
             e.printStackTrace();
         }
         
@@ -126,28 +125,6 @@ public class ImportDelimitedFile {
 
         return lines;
     }
-
-    
-    /*
-    public static Object[] getPreview(
-            String path,
-            char separator,
-            int numHeaderLines,
-            int numLines) throws FileNotFoundException {
-
-        CSVReader reader = getFileReader(path, separator);
-
-        List<String[]> headerLines = getLinesFromReader(reader, numHeaderLines);
-        List<String[]> previewLines = getLinesFromReader(reader, numLines);
-
-        Object[] lines = new Object[2];
-        lines[0] = headerLines;
-        lines[1] = previewLines;
-
-        return lines;
-    }
-     * 
-     */
 
     private static List<String[]> getLinesFromReader(CSVReader reader, int numLines) {
         return getLinesFromReader(reader, numLines, null);
