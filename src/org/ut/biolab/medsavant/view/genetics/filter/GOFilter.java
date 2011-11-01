@@ -38,6 +38,7 @@ import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.view.genetics.filter.geneontology.*;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
@@ -340,7 +341,7 @@ public class GOFilter {
                             List<ComboCondition> listInnerCond = 
                                     new ArrayList<ComboCondition>();
                             List<Range> ranges = map.get(key);
-                            BinaryCondition chrCond = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), key);
+                            BinaryCondition chrCond = BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), key);
                             for (Range range: ranges){
                                 
                                 BinaryCondition innerCond1 = BinaryCondition.greaterThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), range.getMin(), true);

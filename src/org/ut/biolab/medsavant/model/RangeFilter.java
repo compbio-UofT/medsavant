@@ -13,6 +13,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.QueryUtil;
 
 /**
@@ -48,7 +49,7 @@ public abstract class RangeFilter extends QueryFilter {
             List<Range> rangesInChr = ranges.getRanges(chrName);
             for(Range r : rangesInChr){
                 Condition posCondition = QueryUtil.getRangeCondition(posCol, r);
-                Condition chrCondition = BinaryCondition.equalTo(chrCol, chrName);
+                Condition chrCondition = BinaryConditionMS.equalTo(chrCol, chrName);
                 conditions[pos] = ComboCondition.and(posCondition, chrCondition);
                 pos++;
             }

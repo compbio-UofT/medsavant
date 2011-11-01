@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOParser;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
@@ -306,7 +307,7 @@ public class HPOFilter {
                                 BinaryCondition[] condTogether = {innerCond1, innerCond2};
                                 listInnerCond.add(ComboCondition.and(condTogether));
                             } // for each range for the chromosome of interest.
-                            BinaryCondition chrCond = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), key);
+                            BinaryCondition chrCond = BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), key);
                             conds[i++] = ComboCondition.and(chrCond, ComboCondition.or(listInnerCond.toArray()));
                         } // for each chromosome.
                         return conds;

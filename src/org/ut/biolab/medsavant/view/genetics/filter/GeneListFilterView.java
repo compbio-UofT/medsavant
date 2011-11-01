@@ -31,6 +31,7 @@ import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 
 /**
  *
@@ -99,7 +100,7 @@ class GeneListFilterView {
                             for (GenomicRegion gr : regions) {
                                 Condition[] tmp = new Condition[2];
                                 
-                                tmp[0] = BinaryCondition.equalTo(
+                                tmp[0] = BinaryConditionMS.equalTo(
                                         ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), 
                                         gr.getChrom());
 

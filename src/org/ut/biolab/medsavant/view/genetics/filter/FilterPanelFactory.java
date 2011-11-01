@@ -23,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -80,7 +81,7 @@ public class FilterPanelFactory {
                             Condition[] results = new Condition[acceptableValues.size()];
                             int i = 0;
                             for (String s : acceptableValues) {
-                                results[i++] = BinaryCondition.equalTo(column, s);
+                                results[i++] = BinaryConditionMS.equalTo(column, s);
                             }
                             return results;
                         }
