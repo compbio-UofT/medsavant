@@ -1,0 +1,9 @@
+db.driver=com.mysql.jdbc.Driver
+db.host=localhost
+db.name=medsavantkb
+db.port=5030
+general.autologin=false
+medsavant.version=1.0
+user.name=admin
+user.password=
+user.rememberpass=false
