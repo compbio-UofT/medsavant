@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.manage.ManageSection;
-import org.ut.biolab.medsavant.view.manage.NewProjectWizard;
+import org.ut.biolab.medsavant.view.manage.ProjectWizard;
 import org.ut.biolab.medsavant.view.manage.OtherSection;
 import org.ut.biolab.medsavant.view.manage.PluginsSection;
 import org.ut.biolab.medsavant.view.patients.PatientsSection;
@@ -125,7 +125,7 @@ public class LoggedInView extends JPanel implements ProjectListener {
                             MainFrame.getInstance().requestClose();
                             // don't break, the user chose not to quit
                         } else {
-                            NewProjectWizard npd = new NewProjectWizard();
+                            ProjectWizard npd = new ProjectWizard();
                             break;
                         }
                     }

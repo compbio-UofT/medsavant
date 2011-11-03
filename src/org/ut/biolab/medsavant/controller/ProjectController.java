@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ut.biolab.medsavant.db.format.AnnotationField;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
@@ -34,7 +34,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
     //private String currentPatientTableName;
     //private String currentVariantTableName;
     private AnnotationFormat[] currentAnnotationFormats;
-    private List<AnnotationField> currentPatientFormat;
+    private List<CustomField> currentPatientFormat;
     
     private DbTable currentTable;
     private TableSchema currentTableSchema;
@@ -56,7 +56,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
         }
     }
 
-    private void fireProjectRemovedEvent(String projectName) {
+    public void fireProjectRemovedEvent(String projectName) {
         ProjectController pc = getInstance();
         for (ProjectListener l : pc.projectListeners) {
             l.projectRemoved(projectName);
@@ -64,14 +64,14 @@ public class ProjectController implements ReferenceListener, LoginListener {
     }
 
     public int addProject(String projectName, List<CustomField> fields) {
+        int projectid = -1;
         try {
-            int projectid = ProjectQueryUtil.addProject(projectName, fields);
+            projectid = ProjectQueryUtil.addProject(projectName, fields);
             ProjectController.getInstance().fireProjectAddedEvent(projectName);
-            return projectid;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return -1;
+        return projectid;
     }
 
     public int getProjectId(String projectName) throws SQLException {
@@ -242,7 +242,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
         return currentAnnotationFormats;
     }
     
-    public List<AnnotationField> getCurrentPatientFormat(){
+    public List<CustomField> getCurrentPatientFormat(){
         if(currentPatientFormat == null){
             try {
                 currentPatientFormat = PatientQueryUtil.getPatientFields(currentProjectId); 

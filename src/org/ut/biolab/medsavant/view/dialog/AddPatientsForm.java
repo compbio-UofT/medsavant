@@ -30,7 +30,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.format.AnnotationField;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.view.ViewController;
@@ -71,7 +70,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         //    model.addRow(new Object[]{c, ""});
         //}
         try {
-            List<AnnotationField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
+            List<CustomField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
             for(int i = 1; i < fields.size(); i++){ //skip patient id
                 model.addRow(new Object[]{fields.get(i), ""});
             }
@@ -168,7 +167,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         
         File file = fc.getSelectedFile();
         
-        List<AnnotationField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
+        List<CustomField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
         
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(file, false));           
@@ -198,7 +197,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         File file = fc.getSelectedFile();
         //List<ModifiableColumn> columns = MedSavantDatabase.getInstance().getPatientTableSchema().getModColumns();
         
-        List<AnnotationField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
+        List<CustomField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
         
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file));

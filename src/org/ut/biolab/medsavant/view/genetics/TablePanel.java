@@ -30,7 +30,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.format.AnnotationField;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
@@ -60,7 +60,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
-            for(AnnotationField field : af.getAnnotationFields()){
+            for(CustomField field : af.getCustomFields()){
                 fieldNames.add(field.getAlias());
                 switch(field.getFieldType()){
                     case INT:

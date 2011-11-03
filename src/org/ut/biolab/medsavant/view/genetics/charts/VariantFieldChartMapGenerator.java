@@ -12,7 +12,7 @@ import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.format.AnnotationField;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.util.DBUtil.FieldType;
 
 /**
@@ -23,9 +23,9 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
     //private static final TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
     //private final DbColumn column;
-    private final AnnotationField field;
+    private final CustomField field;
 
-    public VariantFieldChartMapGenerator(AnnotationField field) {
+    public VariantFieldChartMapGenerator(CustomField field) {
         //this.column = table.getDBColumn(colAlias);
         //this.alias = colAlias;
         this.field = field;
