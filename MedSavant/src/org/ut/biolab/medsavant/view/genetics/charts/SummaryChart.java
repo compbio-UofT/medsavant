@@ -41,6 +41,7 @@ import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
+import java.util.concurrent.CancellationException;
 
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -234,6 +235,8 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
                 ChartFrequencyMap chartMap = (ChartFrequencyMap) get();
                 if (chartMap == null) { return; }
                 drawChart(chartMap);
+            } catch (CancellationException x){
+                //this is expected
             } catch (Exception x) {
                 // TODO: #90
                 LOG.log(Level.SEVERE, null, x);
