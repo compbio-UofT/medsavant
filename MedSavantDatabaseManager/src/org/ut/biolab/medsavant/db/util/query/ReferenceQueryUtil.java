@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.AnnotationTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ChromosomeTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ReferenceTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantTablemapTableSchema;
+import org.ut.biolab.medsavant.db.model.Reference;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
@@ -46,6 +47,27 @@ import org.ut.biolab.medsavant.db.util.ConnectionController;
  * @author mfiume
  */
 public class ReferenceQueryUtil { 
+    
+    public static List<Reference> getReferences() throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.ReferenceTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addColumns(
+                table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
+                table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME));
+        
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
+
+        List<Reference> results = new ArrayList<Reference>();
+        while(rs.next()) {
+            results.add(new Reference(
+                    rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID), 
+                    rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME)));
+        }
+
+        return results;       
+    }
     
     public static List<String> getReferenceNames() throws SQLException {
         

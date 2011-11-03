@@ -4,6 +4,9 @@
  */
 package org.ut.biolab.medsavant.db.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author Andrew
@@ -20,8 +23,19 @@ public class ProjectDetails {
         this.annotationIds = annotationIds;
     }
 
-    public String getAnnotationIds() {
+    /*public String getAnnotationIds() {
         return annotationIds;
+    }*/
+    
+    public List<Integer> getAnnotationIds(){
+        List<Integer> ids = new ArrayList<Integer>();
+        if(annotationIds != null){
+            for(String s : annotationIds.split(",")){
+                if (s.isEmpty()) { continue; }
+                ids.add(Integer.parseInt(s));
+            }
+        }
+        return ids;
     }
 
     public int getReferenceId() {

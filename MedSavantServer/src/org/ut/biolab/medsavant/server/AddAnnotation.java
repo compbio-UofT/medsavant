@@ -23,7 +23,7 @@ import net.sf.samtools.util.BlockCompressedOutputStream;
 import org.broad.tabix.TabixWriter;
 import org.broad.tabix.TabixWriter.Conf;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
-import org.ut.biolab.medsavant.db.format.AnnotationField;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat.AnnotationType;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
@@ -51,7 +51,7 @@ public class AddAnnotation {
     private static String path;
     private static String tabixPath;
     
-    private static List<AnnotationField> annotationFields = new ArrayList<AnnotationField>();
+    private static List<CustomField> CustomFields = new ArrayList<CustomField>();
     
     public static void addAnnotation(String annotationFile, String annotationFormat, boolean isPreFormatted){
         path = annotationFile;
@@ -80,7 +80,7 @@ public class AddAnnotation {
                 (AnnotationFormat.intToAnnotationType(annotationType) == AnnotationType.INTERVAL ? 2 : 1) + // position or start/end
                 (hasRef ? 1 : 0) + //ref
                 (hasAlt ? 1 : 0) + //alt
-                annotationFields.size()]; //numfields
+                CustomFields.size()]; //numfields
         int pos = 0;
         result[pos++] = "chrom";
         if(AnnotationFormat.intToAnnotationType(annotationType) == AnnotationType.POSITION){
@@ -91,8 +91,8 @@ public class AddAnnotation {
         }
         if(hasRef) result[pos++] = "ref";
         if(hasAlt) result[pos++] = "alt";
-        for(int i = 0; i < annotationFields.size(); i++){
-            result[pos++] = annotationFields.get(i).getColumnName();
+        for(int i = 0; i < CustomFields.size(); i++){
+            result[pos++] = CustomFields.get(i).getColumnName();
         }
         return result;
     }
@@ -108,8 +108,8 @@ public class AddAnnotation {
         //populate
         Connection conn = ConnectionController.connectPooled();
         conn.setAutoCommit(false);
-        for(int i = 0; i < annotationFields.size(); i++){
-            AnnotationField a = annotationFields.get(i);
+        for(int i = 0; i < CustomFields.size(); i++){
+            CustomField a = CustomFields.get(i);
             AnnotationQueryUtil.addAnnotationFormat(id, i, id + "_" + a.getColumnName(), a.getColumnType(), a.isFilterable(), a.getAlias(), a.getDescription());
         }
         conn.commit();
@@ -138,7 +138,7 @@ public class AddAnnotation {
         NodeList fields = doc.getElementsByTagName("field");
         for(int i = 0; i < fields.getLength(); i++){
             Element field = (Element)(fields.item(i));       
-            annotationFields.add(new AnnotationField(
+            CustomFields.add(new CustomField(
                     prefix + field.getAttribute("name"),
                     field.getAttribute("type"),
                     field.getAttribute("filterable").equals("true"),

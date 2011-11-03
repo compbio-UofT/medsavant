@@ -18,7 +18,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.format.AnnotationField;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
@@ -123,7 +123,7 @@ public class ChartView extends JPanel {
         
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
-            for(AnnotationField field : af.getAnnotationFields()){
+            for(CustomField field : af.getCustomFields()){
                 FieldType type = field.getFieldType();
                 if(field.isFilterable() &&
                         (type.equals(FieldType.VARCHAR) || type.equals(FieldType.BOOLEAN) || type.equals(FieldType.DECIMAL) || type.equals(FieldType.FLOAT) || type.equals(FieldType.INT))){

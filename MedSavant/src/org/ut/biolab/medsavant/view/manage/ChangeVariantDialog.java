@@ -37,7 +37,7 @@ public class ChangeVariantDialog extends javax.swing.JDialog {
     private int refId;
 
     /** Creates new form ChangeVariantDialog */
-    public ChangeVariantDialog(java.awt.Frame parent, boolean modal, int projectId, int refId, String refName, String annotationIdsString) throws SQLException {
+    public ChangeVariantDialog(java.awt.Frame parent, boolean modal, int projectId, int refId, String refName, List<Integer> annotationIds) throws SQLException {
         super(parent, modal);
         initComponents();
         
@@ -58,13 +58,13 @@ public class ChangeVariantDialog extends javax.swing.JDialog {
         
         //set up annotation list
         List<Annotation> annotations = AnnotationQueryUtil.getAnnotations();
-        List<Integer> annotationIds = new ArrayList<Integer>();
+        /*List<Integer> annotationIds = new ArrayList<Integer>();
         if(annotationIdsString != null){
             for(String s : annotationIdsString.split(",")){
                 if (s.isEmpty()) { continue; }
                 annotationIds.add(Integer.parseInt(s));
             }
-        }
+        }*/
         
         DefaultListModel model = new DefaultListModel();
         for(Annotation a : annotations){

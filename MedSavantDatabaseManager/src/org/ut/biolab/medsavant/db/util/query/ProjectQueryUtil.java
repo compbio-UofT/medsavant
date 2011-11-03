@@ -374,4 +374,13 @@ public class ProjectQueryUtil {
         return result;
     }
 
+    public static void renameProject(int projectId, String newName) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.ProjectTableSchema;
+        UpdateQuery query = new UpdateQuery(table.getTable());
+        query.addSetClause(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), newName);
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
+        
+        ConnectionController.connectPooled().createStatement().executeUpdate(query.toString());
+    }
 }

@@ -41,7 +41,7 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.AnnotationTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.AnnotationFormatTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ReferenceTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantTablemapTableSchema;
-import org.ut.biolab.medsavant.db.format.AnnotationField;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
@@ -176,9 +176,9 @@ public class AnnotationQueryUtil {
         
         ResultSet rs2 = ConnectionController.connectPooled().createStatement().executeQuery(query2.toString());
 
-        List<AnnotationField> fields = new ArrayList<AnnotationField>();
+        List<CustomField> fields = new ArrayList<CustomField>();
         while(rs2.next()){
-            fields.add(new AnnotationField(
+            fields.add(new CustomField(
                     rs2.getString(AnnotationFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), 
                     rs2.getString(AnnotationFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), 
                     rs2.getBoolean(AnnotationFormatTableSchema.COLUMNNAME_OF_FILTERABLE), 

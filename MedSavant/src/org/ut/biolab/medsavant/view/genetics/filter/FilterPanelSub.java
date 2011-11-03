@@ -30,8 +30,8 @@ import javax.swing.border.Border;
 
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.format.AnnotationField;
-import org.ut.biolab.medsavant.db.format.AnnotationField.Category;
+import org.ut.biolab.medsavant.db.format.CustomField;
+import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.util.DBUtil.FieldType;
@@ -180,7 +180,7 @@ public final class FilterPanelSub extends JPanel{
                     final JPanel header = new JPanel();
                     header.setBackground(Color.white);
                     header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
-                    JLabel label = new JLabel(" " + AnnotationField.categoryToString(c));
+                    JLabel label = new JLabel(" " + CustomField.categoryToString(c));
                     header.add(label);
                     header.add(Box.createHorizontalGlue()); 
                     header.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -363,7 +363,7 @@ public final class FilterPanelSub extends JPanel{
         //add from variant table
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
-            for(final AnnotationField field : af.getAnnotationFields()){
+            for(final CustomField field : af.getCustomFields()){
                 if(field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getFieldType())){
                     map.get(field.getCategory()).add(new FilterPlaceholder() {
 
@@ -400,7 +400,7 @@ public final class FilterPanelSub extends JPanel{
         }
         
         //add from patient table
-        for(final AnnotationField field : ProjectController.getInstance().getCurrentPatientFormat()){
+        for(final CustomField field : ProjectController.getInstance().getCurrentPatientFormat()){
             if(field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getFieldType())){
                 map.get(field.getCategory()).add(new FilterPlaceholder() {
 

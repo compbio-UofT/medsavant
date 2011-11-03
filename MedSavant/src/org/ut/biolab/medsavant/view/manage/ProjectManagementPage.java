@@ -33,7 +33,9 @@ import java.util.List;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.ProjectDetails;
+import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -83,7 +85,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             content = this.getContentPanel();
 
             this.addBottomComponent(deleteProjectButton());
-            this.addBottomComponent(addTableButton());
+            this.addBottomComponent(modifyProjecButton());
 
             content.setLayout(new BorderLayout());
 
@@ -92,31 +94,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             ProjectController.getInstance().addProjectListener(this);
 
         }
-        
-        public final JButton addTableButton() {
-
-            JButton b = new JButton("Add table for different reference");
-            b.setOpaque(false);
-            b.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent ae) {
-                    try {
-                        int projectid = ProjectController.getInstance().getProjectId(projectName);
-
-                        NewVariantTableDialog d = new NewVariantTableDialog(projectid, MainFrame.getInstance(), true);
-                        d.setVisible(true);
-
-                        refreshSelectedProject();
-
-                    } catch (SQLException ex) {
-                        Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            });
-
-            return b;
-        }
-
+       
         public final JButton deleteProjectButton() {
             JButton b = new JButton("Delete Project");
             b.setOpaque(false);
@@ -134,14 +112,36 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             });
             return b;
         }
+        
+        public final JButton modifyProjecButton() {
+            JButton b = new JButton("Modify Project");
+            b.setOpaque(false);
+            b.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent ae) {
+                    try {
+                        int projectId = ProjectQueryUtil.getProjectId(projectName);
+                        ProjectWizard wiz = new ProjectWizard(
+                                projectId,
+                                projectName, 
+                                PatientQueryUtil.getCustomPatientFields(projectId),
+                                ProjectQueryUtil.getProjectDetails(projectId));
+                        if(wiz.isModified()){
+                            ProjectController.getInstance().fireProjectRemovedEvent(projectName);
+                            ProjectController.getInstance().fireProjectAddedEvent(ProjectQueryUtil.getProjectName(projectId));   
+                        }                              
+                    } catch (SQLException ex) {
+                        Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            });
+            return b;
+        }
 
         @Override
         public void setSelectedItem(Object[] item) {
-
             projectName = (String)item[0];
             refreshSelectedProject();
-
-
         }
 
         public void projectAdded(String projectName) {
@@ -228,55 +228,10 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                     //if (annotationIds != null) {
                     //    numAnnotations = annotationIds.length() - annotationIds.replaceAll(",", "").length() + 1;
                     //}
-                    final String annotationIds = pd.getAnnotationIds();
+                    final List<Integer> annotationIds = pd.getAnnotationIds();
                     int numAnnotations = pd.getNumAnnotations();
 
                     tablePanel.add(ViewUtil.getDetailLabel(numAnnotations + " annotation(s) applied"), c);
-                    c.gridx++;
-
-                    JButton editTable = new JButton("Change");
-                    editTable.setOpaque(false);
-                    editTable.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseReleased(MouseEvent e) {
-                            try {
-                                new ChangeVariantDialog(MainFrame.getInstance(), true, projectId, refId, refName, annotationIds).setVisible(true);
-                                refreshSelectedProject();
-                            } catch (SQLException ex) {
-                                Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        }
-                    });
-                    editTable.setPreferredSize(buttonDim);
-                    editTable.setMaximumSize(buttonDim);
-
-                    //final int project_id = rs.getInt("project_id");
-
-                    tablePanel.add(editTable, c);
-                    c.gridx++;
-
-                    //tablePanel.add(Box.createHorizontalStrut(strutwidth));
-
-                    removeTable = new JButton("Delete");
-                    removeTable.setOpaque(false);
-                    removeTable.setPreferredSize(buttonDim);
-                    removeTable.setMaximumSize(buttonDim);
-
-
-                    removeTable.addActionListener(new ActionListener() {
-
-                        public void actionPerformed(ActionEvent ae) {
-                            int result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
-                                    "Are you sure you want to delete " + refName + "?\nThis cannot be undone.",
-                                    "Confirm", JOptionPane.YES_NO_OPTION);
-                            if (result == JOptionPane.YES_OPTION) {
-                                ProjectController.getInstance().removeVariantTable(projectId, refId);
-                            }
-                        }
-                    });
-
-                    tablePanel.add(removeTable, c);
-
                     c.gridx++;
                     
                     tablePanel.add(Box.createHorizontalGlue(),c);
@@ -419,7 +374,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                new NewProjectWizard();
+                new ProjectWizard();
                 
             }
         });
