@@ -16,8 +16,10 @@
 
 package org.ut.biolab.medsavant.view.util;
 
+import java.awt.Dialog;
 import java.awt.FileDialog;
 import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,9 +34,7 @@ import javax.swing.filechooser.FileFilter;
 
 import com.jidesoft.dialog.JideOptionPane;
 
-import java.awt.KeyboardFocusManager;
 import org.ut.biolab.medsavant.util.MiscUtils;
-import org.ut.biolab.medsavant.view.MainFrame;
 
 
 /**
@@ -65,23 +65,23 @@ public class DialogUtils {
 
 
     public static int askYesNo(String title, String prompt) {
-        return JOptionPane.showConfirmDialog(MainFrame.getInstance(), prompt, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        return JOptionPane.showConfirmDialog(getMainWindow(), prompt, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
 
     public static int askYesNoCancel(String title, String prompt) {
-        return JOptionPane.showConfirmDialog(MainFrame.getInstance(), prompt, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        return JOptionPane.showConfirmDialog(getMainWindow(), prompt, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
 
     public static void displayError(String title, String message) {
-        JOptionPane.showMessageDialog(MainFrame.getInstance(), message, title, JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(getMainWindow(), message, title, JOptionPane.ERROR_MESSAGE);
     }
 
     public static void displayMessage(String title, String message) {
-        JOptionPane.showMessageDialog(MainFrame.getInstance(), message, title, JOptionPane.PLAIN_MESSAGE);
+        JOptionPane.showMessageDialog(getMainWindow(), message, title, JOptionPane.PLAIN_MESSAGE);
     }
 
     public static String displayInputMessage(String title, String message, String defaultInput) {
-        String result = JOptionPane.showInputDialog(MainFrame.getInstance(), message, title, JOptionPane.QUESTION_MESSAGE);
+        String result = JOptionPane.showInputDialog(getMainWindow(), message, title, JOptionPane.QUESTION_MESSAGE);
         if (result != null && result.length() > 0) {
             return result;
         }
@@ -121,7 +121,7 @@ public class DialogUtils {
                     issue += MiscUtils.getStackTrace(t);
 
                     dialog.dispose();
-                    (new BugReportDialog(MainFrame.getInstance(), issue, null)).setVisible(true);
+                    (new BugReportDialog(issue, null)).setVisible(true);
                 }
 
                 });
@@ -149,9 +149,9 @@ public class DialogUtils {
      * @param initialDir initial directory for the dialog
      * @return the selected file, or null if nothing was selected
      */
-    public static File chooseFileForOpen(Frame parent, String title, FileFilter filter, File initialDir) {
+    public static File chooseFileForOpen(String title, FileFilter filter, File initialDir) {
         if (MiscUtils.MAC) {
-            FileDialog fd = new FileDialog(parent, title, FileDialog.LOAD);
+            FileDialog fd = getFileDialog(title, FileDialog.LOAD);
             if (filter != null) {
                 fd.setFilenameFilter(new FilenameFilterAdapter(filter));
             }
@@ -174,7 +174,7 @@ public class DialogUtils {
             if (initialDir != null) {
                 fd.setCurrentDirectory(initialDir);
             }
-            int result = fd.showOpenDialog(parent);
+            int result = fd.showOpenDialog(getMainWindow());
             if (result == JFileChooser.APPROVE_OPTION) {
                 return fd.getSelectedFile();
             }
@@ -192,7 +192,7 @@ public class DialogUtils {
      * @param initialDir initial directory for the dialog
      * @return an array of selected files; an empty array if nothing is selected
      */
-    public static File[] chooseFilesForOpen(Frame parent, String title, FileFilter filter, File initialDir) {
+    public static File[] chooseFilesForOpen(String title, FileFilter filter, File initialDir) {
         
         
         // unfortunately, we need function over aesthetics... 
@@ -214,7 +214,7 @@ public class DialogUtils {
                 fd.setFileFilter(filter);
             }
             fd.setMultiSelectionEnabled(true);
-            int result = fd.showOpenDialog(parent);
+            int result = fd.showOpenDialog(getMainWindow());
             if (result == JFileChooser.APPROVE_OPTION) {
                 return fd.getSelectedFiles();
             }
@@ -230,8 +230,8 @@ public class DialogUtils {
      * @param defaultName default file-name to appear in the dialog
      * @return a File, or null if cancelled
      */
-    public static File chooseFileForSave(Frame parent, String title, String defaultName) {
-        return chooseFileForSave(parent, title, defaultName, null, null);
+    public static File chooseFileForSave(String title, String defaultName) {
+        return chooseFileForSave(title, defaultName, null, null);
     }
 
     /**
@@ -244,8 +244,8 @@ public class DialogUtils {
      * @param initialDir initial directory for the dialog
      * @return a File, or null if cancelled
      */
-    public static File chooseFileForSave(Frame parent, String title, String defaultName, FileFilter filter, File initialDir) {
-        FileDialog fd = new FileDialog(parent, title, FileDialog.SAVE);
+    public static File chooseFileForSave(String title, String defaultName, FileFilter filter, File initialDir) {
+        FileDialog fd = getFileDialog(title, FileDialog.SAVE);
         if (filter != null) {
             fd.setFilenameFilter(new FilenameFilterAdapter(filter));
         }
@@ -303,9 +303,23 @@ public class DialogUtils {
     }
     
     /**
-     * For purposes of parenting dialogs, here's the MedSavant main window.
+     * For purposes of parenting dialogs, here's frontmost window.  Generally, it's the
+     * MedSavant main window, but in some cases it could be a dialog.
      */
     public static Window getMainWindow() {
-        return MainFrame.getInstance();
+        return KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+    }
+    
+    /**
+     * In a remarkable piece of bad design, Java provides separate FileDialog constructors
+     * depending on whether the parent is a Frame or a Dialog.
+     */
+    private static FileDialog getFileDialog(String title, int type) {
+        Window w = getMainWindow();
+        if (w instanceof Frame) {
+            return new FileDialog((Frame)w, title, type);
+        } else {
+            return new FileDialog((Dialog)w, title, type);
+        }
     }
 }

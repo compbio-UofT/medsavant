@@ -68,7 +68,7 @@ public class PluginController extends Controller<PluginEvent> {
         try {
             uninstallFile = new File(DirectorySettings.getMedSavantDirectory(), UNINSTALL_FILENAME);
 
-            LOG.log(Level.INFO, "Uninstall list " + UNINSTALL_FILENAME);
+            LOG.log(Level.FINE, "Uninstall list " + UNINSTALL_FILENAME);
             if (uninstallFile.exists()) {
                 deleteFileList(uninstallFile);
             }
@@ -282,10 +282,12 @@ public class PluginController extends Controller<PluginEvent> {
 
 
     private void loadPlugin(PluginDescriptor desc) throws Throwable {
+        LOG.log(Level.FINE, "loadPlugin(\"{0}\")", desc.getID());
         Class pluginClass = pluginLoader.loadClass(desc.getClassName());
         MedSavantPlugin plugin = (MedSavantPlugin)pluginClass.newInstance();
         plugin.setDescriptor(desc);
         loadedPlugins.put(desc.getID(), plugin);
+        LOG.log(Level.FINE, "Firing LOADED event to {0} listeners.", listeners.size());
         fireEvent(new PluginEvent(PluginEvent.Type.LOADED, desc.getID()));
     }
 
@@ -296,20 +298,20 @@ public class PluginController extends Controller<PluginEvent> {
     public PluginDescriptor addPlugin(File f) throws PluginVersionException {
         PluginDescriptor desc = PluginDescriptor.fromFile(f);
         if (desc != null) {
-            LOG.log(Level.INFO, "Found usable {0} in {1}.", new Object[] { desc, f.getName() });
+            LOG.log(Level.FINE, "Found usable {0} in {1}.", new Object[] { desc, f.getName() });
             PluginDescriptor existingDesc = knownPlugins.get(desc.getID());
             if (existingDesc != null && existingDesc.getVersion().compareTo(desc.getVersion()) >= 0) {
-                LOG.log(Level.INFO, "   Ignored {0} due to presence of existing {1}.", new Object[] { desc, existingDesc });
+                LOG.log(Level.FINE, "   Ignored {0} due to presence of existing {1}.", new Object[] { desc, existingDesc });
                 return null;
             }
             knownPlugins.put(desc.getID(), desc);
             if (desc.isCompatible()) {
                 if (existingDesc != null) {
-                    LOG.log(Level.INFO, "   Replaced {0}.", existingDesc);
+                    LOG.log(Level.FINE, "   Replaced {0}.", existingDesc);
                     pluginErrors.remove(desc.getID());
                 }
             } else {
-                LOG.log(Level.INFO, "Found incompatible {0} (SDK version {1}) in {2}.", new Object[] { desc, desc.getSDKVersion(), f.getName() });
+                LOG.log(Level.FINE, "Found incompatible {0} (SDK version {1}) in {2}.", new Object[] { desc, desc.getSDKVersion(), f.getName() });
                 pluginErrors.put(desc.getID(), "Invalid SDK version (" + desc.getSDKVersion() + ")");
                 throw new PluginVersionException("Invalid SDK version (" + desc.getSDKVersion() + ")");
             }

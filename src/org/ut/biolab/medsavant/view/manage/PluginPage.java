@@ -18,6 +18,8 @@ package org.ut.biolab.medsavant.view.manage;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -37,6 +39,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author tarkvara
  */
 public class PluginPage extends SubSectionView {
+    private static final Logger LOG = Logger.getLogger(PluginPage.class.getName());
     private static PluginController controller = PluginController.getInstance();
     private final PluginDescriptor descriptor;
     JPanel panel;
@@ -47,31 +50,37 @@ public class PluginPage extends SubSectionView {
         panel = new JPanel();
         panel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        
-        JLabel placeholder = new JLabel(controller.getPluginStatus(desc.getID()));
-        placeholder.setFont(ViewUtil.getBigTitleFont());
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        panel.add(placeholder, gbc);
-        
-        controller.addListener(new Listener<PluginEvent>() {
-            public void handleEvent(PluginEvent event) {
-                switch (event.getType()) {
-                    case LOADED:
-                        panel.removeAll();
-                        MedSavantPlugin p = event.getPlugin();
-                        if (p instanceof MedSavantSectionPlugin) {
-                            ((MedSavantSectionPlugin)p).init(panel);
-                        }
-                        break;
-                    case ERROR:
-                        ((JLabel)panel.getComponent(0)).setText(controller.getPluginStatus(event.getID()));
-                        break;
+
+        MedSavantPlugin p = controller.getPlugin(desc.getID());
+        if (p != null) {
+            ((MedSavantSectionPlugin)p).init(panel);
+        } else {
+            JLabel placeholder = new JLabel(controller.getPluginStatus(desc.getID()));
+            placeholder.setFont(ViewUtil.getBigTitleFont());
+            gbc.weightx = 1.0;
+            gbc.weighty = 1.0;
+            panel.add(placeholder, gbc);
+
+            // Not yet loaded.  We need to wait for PluginController to fire event.
+            controller.addListener(new Listener<PluginEvent>() {
+                public void handleEvent(PluginEvent event) {
+                    LOG.log(Level.FINE, "PluginPage.handleEvent({0})", event.getType());
+                    switch (event.getType()) {
+                        case LOADED:
+                            panel.removeAll();
+                            MedSavantPlugin p = event.getPlugin();
+                            if (p instanceof MedSavantSectionPlugin) {
+                                ((MedSavantSectionPlugin)p).init(panel);
+                            }
+                            break;
+                        case ERROR:
+                            ((JLabel)panel.getComponent(0)).setText(controller.getPluginStatus(event.getID()));
+                            break;
+                    }
+                    controller.removeListener(this);
                 }
-                controller.removeListener(this);
-            }
-        });
-        
+            });
+        }
     }
 
     @Override

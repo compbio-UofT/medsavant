@@ -17,9 +17,10 @@ package org.ut.biolab.medsavant.view.util;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.Window;
 import java.io.File;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+
 import org.ut.biolab.medsavant.mail.Mail;
 import org.ut.biolab.medsavant.settings.BrowserSettings;
 
@@ -27,13 +28,13 @@ import org.ut.biolab.medsavant.settings.BrowserSettings;
  *
  * @author mfiume
  */
-public class BugReportDialog extends javax.swing.JDialog {
+public class BugReportDialog extends JDialog {
     private final PathField pf;
 
-    public BugReportDialog(Window parent, String description, String path) {
-        super(parent, Dialog.ModalityType.APPLICATION_MODAL);
+    public BugReportDialog(String description, String path) {
+        super(DialogUtils.getMainWindow(), Dialog.ModalityType.APPLICATION_MODAL);
         initComponents();
-        setLocationRelativeTo(parent);
+        setLocationRelativeTo(getParent());
         attachment_panel.setLayout(new BorderLayout());
         pf = new PathField(JFileChooser.OPEN_DIALOG);
         this.attachment_panel.add(pf, BorderLayout.CENTER);

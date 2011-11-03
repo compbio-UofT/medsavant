@@ -16,9 +16,12 @@
 
 package org.ut.biolab.medsavant.util;
 
-import org.ut.biolab.medsavant.api.Listener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.ut.biolab.medsavant.api.Listener;
 
 
 /**
@@ -28,6 +31,8 @@ import java.util.List;
  * @author tarkvara
  */
 public abstract class Controller<E> {
+    private static final Logger LOG = Logger.getLogger(Controller.class.getName());
+
     protected List<Listener<E>> listeners = new ArrayList<Listener<E>>();
     private List<Listener<E>> listenersToAdd;
     private List<Listener<E>> listenersToRemove;
@@ -42,7 +47,7 @@ public abstract class Controller<E> {
             try {
                 l.handleEvent(event);
             } catch (Throwable x) {
-//                LOG.warn(l + " threw exception while handling event.", x);
+                LOG.log(Level.WARNING, l + " threw exception while handling event.", x);
             }
         }
         for (Listener<E> l: listenersToAdd) {

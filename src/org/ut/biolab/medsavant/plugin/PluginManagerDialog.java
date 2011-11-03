@@ -152,7 +152,7 @@ public class PluginManagerDialog extends JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void fromFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fromFileButtonActionPerformed
-        File selectedFile = DialogUtils.chooseFileForOpen((Frame)DialogUtils.getMainWindow(), "Select Plugin JAR", null, null);
+        File selectedFile = DialogUtils.chooseFileForOpen("Select Plugin JAR", null, null);
         if (selectedFile != null) {
             try {
                 PluginController.getInstance().installPlugin(selectedFile);
