@@ -34,7 +34,8 @@ import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.util.DBUtil.FieldType;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
@@ -364,13 +365,13 @@ public final class FilterPanelSub extends JPanel{
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
             for(final CustomField field : af.getCustomFields()){
-                if(field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getFieldType())){
+                if(field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getColumnType())){
                     map.get(field.getCategory()).add(new FilterPlaceholder() {
 
                         public FilterView getFilterView() {
                             try {
-                                switch(field.getFieldType()){
-                                    case INT:
+                                switch(field.getColumnType()){
+                                    case INTEGER:
                                         return NumericFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias(), false);
                                     case FLOAT:
                                     case DECIMAL:
@@ -401,13 +402,13 @@ public final class FilterPanelSub extends JPanel{
         
         //add from patient table
         for(final CustomField field : ProjectController.getInstance().getCurrentPatientFormat()){
-            if(field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getFieldType())){
+            if(field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getColumnType())){
                 map.get(field.getCategory()).add(new FilterPlaceholder() {
 
                     public FilterView getFilterView() {
                         try {
-                            switch(field.getFieldType()){
-                                case INT:
+                            switch(field.getColumnType()){
+                                case INTEGER:
                                     return NumericFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias(), false);
                                 case FLOAT:
                                 case DECIMAL:
@@ -438,9 +439,9 @@ public final class FilterPanelSub extends JPanel{
         return map;
     }
     
-    private boolean isFilterable(FieldType type){
+    private boolean isFilterable(ColumnType type){
         switch(type){
-            case INT:
+            case INTEGER:
             case FLOAT:
             case DECIMAL:
             case BOOLEAN:

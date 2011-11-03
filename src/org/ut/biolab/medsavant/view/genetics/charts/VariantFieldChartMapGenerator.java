@@ -13,7 +13,7 @@ import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.util.DBUtil.FieldType;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 
 /**
  *
@@ -41,7 +41,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
     public ChartFrequencyMap generateChartMap() throws SQLException, NonFatalDatabaseException {
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
             
-            //ColumnType type = table.getColumnType(column);
+            //ColumnType type = table.getColumnTypeString(column);
             
             if (isNumeric()) {
 
@@ -99,10 +99,10 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
     public boolean isNumeric() {
         //TableSchema table = MedSavantDatabase.getInstance().getVariantTableSchema();
-        //ColumnType type = table.getColumnType(column);
+        //ColumnType type = table.getColumnTypeString(column);
         //return TableSchema.isNumeric(type);
-        FieldType type = field.getFieldType();
-        return type.equals(FieldType.DECIMAL) || type.equals(FieldType.FLOAT) || type.equals(FieldType.INT);
+        ColumnType type = field.getColumnType();
+        return type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER);
     }
 
     public String getName() {
