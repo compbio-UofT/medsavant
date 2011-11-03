@@ -114,7 +114,7 @@ public class ChartView extends JPanel {
     }
 
     private void addCMG(ChartMapGenerator cmg) {
-        sc.setChartMapGenerator(cmg);
+        //sc.setChartMapGenerator(cmg);
         chartChooser.addItem(cmg.getName());
         mapGenerators.put(cmg.getName(), cmg);
     }
@@ -127,8 +127,15 @@ public class ChartView extends JPanel {
                 ColumnType type = field.getColumnType();
                 if(field.isFilterable() &&
                         (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))){
-                    addCMG(new VariantFieldChartMapGenerator(field));
+                    addCMG(VariantFieldChartMapGenerator.createVariantChart(field));
                 }
+            }
+        }
+        for(CustomField field : ProjectController.getInstance().getCurrentPatientFormat()){
+            ColumnType type = field.getColumnType();
+            if(field.isFilterable() &&
+                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))){
+                addCMG(VariantFieldChartMapGenerator.createPatientChart(field));
             }
         }
         

@@ -36,6 +36,8 @@ import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import java.util.HashMap;
+import java.util.Map;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.xml.sax.SAXException;
@@ -272,6 +274,38 @@ public class PatientQueryUtil {
         ConnectionController.connectPooled().createStatement().executeUpdate(query.toString()); 
     }
 
+    public static Map<Object, List<String>> getDNAIdsForValues(int projectId, String columnName) throws NonFatalDatabaseException, SQLException {
+        
+        String tablename = getPatientTablename(projectId);
+        
+        TableSchema table = CustomTables.getCustomTableSchema(tablename);
+        
+        DbColumn currentDNAId = table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS);
+        DbColumn testColumn = table.getDBColumn(columnName);
+        
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(table.getTable());
+        q.setIsDistinct(true);
+        q.addColumns(currentDNAId, testColumn);
+        
+        Statement s = ConnectionController.connectPooled().createStatement();
+        ResultSet rs = s.executeQuery(q.toString());
+        
+        Map<Object, List<String>> map = new HashMap<Object, List<String>>();
+        while(rs.next()){
+            Object o = rs.getObject(columnName);
+            if(o == null) o = "";
+            if(map.get(o) == null) map.put(o, new ArrayList<String>());
+            String[] dnaIds = rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS).split(",");
+            for(String id : dnaIds){
+                if(!map.get(o).contains(id)){
+                    map.get(o).add(id);
+                }
+            }   
+        }
+        return map;
+    }
+    
     public static List<String> getDNAIdsWithValuesInRange(int projectId, String columnName, Range r) throws NonFatalDatabaseException, SQLException {
         
         String tablename = getPatientTablename(projectId);
