@@ -4,8 +4,9 @@
  */
 package org.ut.biolab.medsavant.db.format;
 
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.util.DBUtil;
-import org.ut.biolab.medsavant.db.util.DBUtil.FieldType;
 
 /**
  *
@@ -18,7 +19,7 @@ public class CustomField {
     private boolean filterable;
     private String alias;
     private String description;
-    private FieldType fieldType;   
+    private ColumnType fieldType;   
     private Category category;
     
     public static enum Category {PATIENT, GENOTYPE, PHENOTYPE, GENOME_COORDS, PLUGIN}
@@ -46,7 +47,7 @@ public class CustomField {
         this.filterable = filterable;
         this.alias = alias;
         this.description = description;
-        setFieldType(columnType);
+        setColumnType(columnType);
     }
     
     public CustomField(String name, String type, boolean filterable, String alias, String description, Category category){
@@ -62,7 +63,7 @@ public class CustomField {
         return columnName;
     }
 
-    public String getColumnType() {
+    public String getColumnTypeString() {
         return columnType;
     }
 
@@ -74,12 +75,21 @@ public class CustomField {
         return filterable;
     }
     
-    private void setFieldType(String type){
-        fieldType = DBUtil.getFieldType(type);
+    private void setColumnType(String type){
+        fieldType = TableSchema.convertStringToColumnType(type);
     }
     
-    public FieldType getFieldType(){
+    public ColumnType getColumnType(){
         return fieldType;
+    }
+    
+    public String getColumnLength(){
+        int posLeft = columnType.indexOf("(");
+        if(posLeft == -1){
+            return "";
+        }
+        int posRight = columnType.indexOf(")");
+        return columnType.substring(posLeft+1, posRight);
     }
     
     public String generateSchema(){
@@ -100,7 +110,7 @@ public class CustomField {
         if(o == null || !o.getClass().equals(CustomField.class)) return false;
         CustomField other = (CustomField)o;
         return this.getColumnName().equals(other.getColumnName()) &&
-                this.getColumnType().equals(other.getColumnType());
+                this.getColumnTypeString().equals(other.getColumnTypeString());
     }
 
 }

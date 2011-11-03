@@ -33,21 +33,22 @@ import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 public class TableSchema implements TableSchemaAdapter {
 
     public static ColumnType convertStringToColumnType(String typeNameSQL) {
-        if (typeNameSQL.equals("float")) {
+        typeNameSQL = typeNameSQL.toLowerCase();
+        if (typeNameSQL.contains("float")) {
             return ColumnType.FLOAT;
-        } else if (typeNameSQL.equals("int")) {
+        } else if (typeNameSQL.contains("int")) {
             return ColumnType.INTEGER;
-        } else if (typeNameSQL.equals("varchar")) {
+        } else if (typeNameSQL.contains("varchar")) {
             return ColumnType.VARCHAR;
-        } else if (typeNameSQL.equals("tinyint")) {
+        } else if (typeNameSQL.contains("tinyint")) {
             return ColumnType.INTEGER;
-        } else if (typeNameSQL.equals("blob")) {
+        } else if (typeNameSQL.contains("blob")) {
             return ColumnType.VARCHAR;
-        } else if (typeNameSQL.equals("datetime")) {
+        } else if (typeNameSQL.contains("datetime")) {
             return ColumnType.DATE;
-        } else if(typeNameSQL.equals("decimal")){
+        } else if(typeNameSQL.contains("decimal")){
             return ColumnType.DECIMAL;
-        } else if (typeNameSQL.equals("date")){
+        } else if (typeNameSQL.contains("date")){
             return ColumnType.DATE;
         }
         

@@ -13,6 +13,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Date;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 
 /**
  *
@@ -20,7 +21,7 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema;
  */
 public class DBUtil {
 
-    public static enum FieldType {VARCHAR, FLOAT, INT, BOOLEAN, DECIMAL, DATE, TIMESTAMP}
+    /*public static enum FieldType {VARCHAR, FLOAT, INT, BOOLEAN, DECIMAL, DATE, TIMESTAMP}
     
     public static FieldType getFieldType(String type){
         String typeLower = type.toLowerCase();
@@ -43,7 +44,7 @@ public class DBUtil {
         } else {
             return FieldType.VARCHAR;
         }
-    }
+    }*/
     
     public static String getColumnTypeString(String s) {
         int pos = s.indexOf("(");

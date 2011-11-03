@@ -62,8 +62,8 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         for(AnnotationFormat af : afs){
             for(CustomField field : af.getCustomFields()){
                 fieldNames.add(field.getAlias());
-                switch(field.getFieldType()){
-                    case INT:
+                switch(field.getColumnType()){
+                    case INTEGER:
                     case BOOLEAN:
                         fieldClasses.add(Integer.class);
                         break;

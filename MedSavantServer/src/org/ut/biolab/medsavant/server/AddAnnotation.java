@@ -110,7 +110,7 @@ public class AddAnnotation {
         conn.setAutoCommit(false);
         for(int i = 0; i < CustomFields.size(); i++){
             CustomField a = CustomFields.get(i);
-            AnnotationQueryUtil.addAnnotationFormat(id, i, id + "_" + a.getColumnName(), a.getColumnType(), a.isFilterable(), a.getAlias(), a.getDescription());
+            AnnotationQueryUtil.addAnnotationFormat(id, i, id + "_" + a.getColumnName(), a.getColumnTypeString(), a.isFilterable(), a.getAlias(), a.getDescription());
         }
         conn.commit();
         conn.setAutoCommit(true);

@@ -13,8 +13,8 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -32,15 +32,18 @@ import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultPatientTableSchema;
@@ -48,6 +51,7 @@ import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.db.model.ProjectDetails;
 import org.ut.biolab.medsavant.db.model.Reference;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
@@ -167,7 +171,7 @@ public class ProjectWizard extends WizardDialog {
         final JTable table = new JTable(){      
             @Override
             public Class<?> getColumnClass(int column) {
-                if(column == 2){
+                if(column == 3){
                     return Boolean.class;
                 } else {
                     return String.class;
@@ -184,24 +188,33 @@ public class ProjectWizard extends WizardDialog {
              
         formatModel.addColumn("Name");
         formatModel.addColumn("Type");
+        formatModel.addColumn("Length");
         formatModel.addColumn("Filterable");
         formatModel.addColumn("Alias");
         formatModel.addColumn("Description");
         
-        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID, DefaultPatientTableSchema.TYPE_OF_FAMILY_ID + "(" + DefaultPatientTableSchema.LENGTH_OF_FAMILY_ID + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID, ""});
-        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID, DefaultPatientTableSchema.TYPE_OF_PEDIGREE_ID + "(" + DefaultPatientTableSchema.LENGTH_OF_PEDIGREE_ID + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID, ""});
-        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, DefaultPatientTableSchema.TYPE_OF_HOSPITAL_ID + "(" + DefaultPatientTableSchema.LENGTH_OF_HOSPITAL_ID + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, ""});
-        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultPatientTableSchema.TYPE_OF_DNA_IDS + "(" + DefaultPatientTableSchema.LENGTH_OF_DNA_IDS + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, ""});
-        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultPatientTableSchema.TYPE_OF_BAM_URL + "(" + DefaultPatientTableSchema.LENGTH_OF_BAM_URL + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, ""});
+        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID, DefaultPatientTableSchema.TYPE_OF_FAMILY_ID, Integer.toString(DefaultPatientTableSchema.LENGTH_OF_FAMILY_ID), false, DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID, ""});
+        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID, DefaultPatientTableSchema.TYPE_OF_PEDIGREE_ID, Integer.toString(DefaultPatientTableSchema.LENGTH_OF_PEDIGREE_ID), false, DefaultPatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID, ""});
+        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, DefaultPatientTableSchema.TYPE_OF_HOSPITAL_ID, Integer.toString(DefaultPatientTableSchema.LENGTH_OF_HOSPITAL_ID), false, DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, ""});
+        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultPatientTableSchema.TYPE_OF_DNA_IDS, Integer.toString(DefaultPatientTableSchema.LENGTH_OF_DNA_IDS), false, DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, ""});
+        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultPatientTableSchema.TYPE_OF_BAM_URL, Integer.toString(DefaultPatientTableSchema.LENGTH_OF_BAM_URL), false, DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, ""});
 
         if(modify){
             for(CustomField f : fields){
-                formatModel.addRow(new Object[]{f.getColumnName(), f.getColumnType(), f.isFilterable(), f.getAlias(), f.getDescription()});
+                formatModel.addRow(new Object[]{f.getColumnName(), f.getColumnType(), f.getColumnLength(), f.isFilterable(), f.getAlias(), f.getDescription()});
             }
         }
 
         table.setModel(formatModel);
+        table.setDefaultRenderer(String.class, new StringCellRenderer());
+        ColumnType[] types = new ColumnType[]{ColumnType.VARCHAR, ColumnType.INTEGER, ColumnType.FLOAT, ColumnType.DECIMAL, ColumnType.DATE, ColumnType.BOOLEAN};
+        JComboBox box = new JComboBox();
+        for(ColumnType type : types) box.addItem(type);
+        box.setSelectedIndex(1);
+        table.getColumnModel().getColumn(1).setCellEditor(new ComboBoxEditor(box));
+        table.getColumnModel().getColumn(1).setCellRenderer(new ComboBoxRenderer(types));
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        
         scrollpane.getViewport().add(table);
         page.addComponent(scrollpane);
         
@@ -251,7 +264,7 @@ public class ProjectWizard extends WizardDialog {
         
         //setup list   
         JScrollPane scrollpane = new JScrollPane();
-        scrollpane.setPreferredSize(new Dimension(300,220));    
+        scrollpane.setPreferredSize(new Dimension(350,220));    
         scrollpane.getViewport().setBackground(Color.white);
         
         final JPanel p = new JPanel();
@@ -348,9 +361,8 @@ public class ProjectWizard extends WizardDialog {
         if(ProjectQueryUtil.containsProject(projectName) && (!modify || !projectName.equals(originalProjectName))){
             validationError = "Project name already in use";
         } else if(!validateFormatModel()) {
-            validationError = "Patient table format contains errors\n"
-                    + "Name cannot only contain letters, numbers and underscores. \n"
-                    + "Type must be in format: COLUMNTYPE(LENGTH)";
+            validationError = "Patient table format contains errors<BR>"
+                    + "Name can only contain letters, numbers and underscores.";
         } else if (!validateReferences()) {
             validationError = "You must select at least one reference genome. ";
         } else {
@@ -374,17 +386,22 @@ public class ProjectWizard extends WizardDialog {
         
         for(int row = 5; row < formatModel.getRowCount(); row++){
             String fieldName = (String)formatModel.getValueAt(row, 0);
-            String fieldType = (String)formatModel.getValueAt(row, 1);
-            Boolean fieldFilterable = (Boolean)formatModel.getValueAt(row, 2);
-            String fieldAlias = (String)formatModel.getValueAt(row, 3);
-            String fieldDescription = (String)formatModel.getValueAt(row, 4);
+            ColumnType fieldType = (ColumnType)formatModel.getValueAt(row, 1);
+            String fieldLength = (String)formatModel.getValueAt(row, 2);
+            Boolean fieldFilterable = (Boolean)formatModel.getValueAt(row, 3);
+            String fieldAlias = (String)formatModel.getValueAt(row, 4);
+            String fieldDescription = (String)formatModel.getValueAt(row, 5);
             
             if(fieldName == null || fieldType == null){
-                continue;
+                return false;
             }
             
-            if(!fieldName.matches("^([a-z]|[A-Z]|_|[0-9])+$")){// ||
-                    //!fieldType.matches("^([a-z]|[A-Z])+\\([0-9]+\\)$")){
+            if(!fieldName.matches("^([a-z]|[A-Z]|_|[0-9])+$")){
+                return false;
+            }
+            
+            if((fieldLength == null || fieldLength.equals("") && (fieldType == ColumnType.VARCHAR)) ||
+                    fieldLength != null && ! fieldLength.equals("") && (fieldType == ColumnType.BOOLEAN || fieldType == ColumnType.DATE || fieldType == ColumnType.FLOAT)){
                 return false;
             }
             
@@ -392,7 +409,9 @@ public class ProjectWizard extends WizardDialog {
                 if(fieldFilterable == null) fieldFilterable = false;
                 if(fieldAlias == null) fieldAlias = fieldName;
                 if(fieldDescription == null) fieldDescription = "";
-                fields.add(new CustomField(fieldName, fieldType, fieldFilterable, fieldAlias, fieldDescription));
+                String fieldTypeString = fieldType.toString();
+                if(fieldLength != null) fieldTypeString += " (" + fieldLength + ")";
+                fields.add(new CustomField(fieldName, fieldTypeString, fieldFilterable, fieldAlias, fieldDescription));
             }
         }
         
@@ -573,6 +592,48 @@ public class ProjectWizard extends WizardDialog {
     
     public boolean isModified(){
         return isModified;
+    }
+    
+    private class ComboBoxEditor extends DefaultCellEditor {
+        
+        public ComboBoxEditor(JComboBox box){
+            super(box);
+        }
+    }
+    
+    private class ComboBoxRenderer extends JComboBox implements TableCellRenderer {
+        
+        public ComboBoxRenderer(ColumnType[] items) {
+            super(items);
+            setSelectedIndex(1);
+        }
+
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            this.setBackground(Color.white);
+            this.setOpaque(false);
+            this.setEnabled(table.isCellEditable(row, column));
+            setSelectedItem(value);
+            return this;
+        }
+    }
+    
+    private class StringCellRenderer extends JLabel implements TableCellRenderer {
+        
+        public StringCellRenderer(){
+            super();
+        }
+        
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            this.setText((String)value);
+            if(!table.isCellEditable(row, column)){
+                this.setForeground(Color.gray);
+            } else {
+                this.setForeground(Color.black);
+            }
+            return this;
+        }    
     }
     
 }

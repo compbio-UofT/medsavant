@@ -69,7 +69,7 @@ public class AnnotationFormat {
         for(int i = 0; i < fields.size(); i++){
             CustomField field = fields.get(i);
             String columnName = field.getColumnName();
-            String columnType = field.getColumnType();
+            String columnType = field.getColumnTypeString();
             result += "`" + columnName + "` " + columnType + " DEFAULT NULL,";
         }
 

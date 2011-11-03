@@ -107,8 +107,8 @@ public class AddPatientsForm extends javax.swing.JDialog {
                 break;
         }*/
         CustomField f = (CustomField)o;
-        String s = f.getAlias() + " | " + f.getFieldType().toString().toLowerCase();
-        switch(f.getFieldType()){
+        String s = f.getAlias() + " | " + f.getColumnType().toString().toLowerCase();
+        switch(f.getColumnType()){
             case DATE:
                 s += "(yyyy-mm-dd)";
                 break;

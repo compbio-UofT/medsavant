@@ -22,7 +22,7 @@ import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.util.DBUtil.FieldType;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -124,9 +124,9 @@ public class ChartView extends JPanel {
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
             for(CustomField field : af.getCustomFields()){
-                FieldType type = field.getFieldType();
+                ColumnType type = field.getColumnType();
                 if(field.isFilterable() &&
-                        (type.equals(FieldType.VARCHAR) || type.equals(FieldType.BOOLEAN) || type.equals(FieldType.DECIMAL) || type.equals(FieldType.FLOAT) || type.equals(FieldType.INT))){
+                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))){
                     addCMG(new VariantFieldChartMapGenerator(field));
                 }
             }
