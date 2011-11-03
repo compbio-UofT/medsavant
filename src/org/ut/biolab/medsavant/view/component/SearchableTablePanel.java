@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
@@ -78,6 +79,7 @@ public class SearchableTablePanel extends JPanel {
         table.repaint();
     }
 
+    @SuppressWarnings("UseOfObsoleteCollectionType")
     public void updateView() {
 
         if (data == null) {
@@ -85,13 +87,18 @@ public class SearchableTablePanel extends JPanel {
         }
 
         List<Object[]> pageData = getDataOnPage(getPageNumber(), data);
-
+        
         boolean first = false;
         if (model == null) {
             model = new GenericTableModel(pageData, columnNames, columnClasses);
             first = true;
         } else {
-            model.setDataVector(pageData.toArray(new Object[0][0]), columnNames.toArray());
+            // We can't call setDataVector directly because that blows away any custom table renderers we've set.
+            java.util.Vector v = model.getDataVector();
+            v.removeAllElements();
+            for (Object[] r: pageData) {
+                v.add(new java.util.Vector(Arrays.asList(r)));
+            }
         }
 
         this.gotoFirst.setEnabled(true);
@@ -160,7 +167,7 @@ public class SearchableTablePanel extends JPanel {
     public SearchableTablePanel(List<Object[]> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
         boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection, int defaultRowsRetrieved) {
 
-        this.ROWSPERPAGE_X = defaultRows;
+        ROWSPERPAGE_X = defaultRows;
         this.DEFAULT_ROWS_RETRIEVED = defaultRowsRetrieved;
 
         this.hiddenColumns = hiddenColumns;
