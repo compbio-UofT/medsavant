@@ -131,7 +131,7 @@ public class ConnectionController {
     public static ResultSet executeQuery(String format, Object... args) throws SQLException {
         Statement st = connectPooled().createStatement();
         String query = String.format(format, args);
-        LOG.log(Level.OFF, query);
+        LOG.log(Level.FINE, query);
         return st.executeQuery(query);
     }
 
@@ -146,7 +146,7 @@ public class ConnectionController {
     public static void executeUpdate(String format, Object... args) throws SQLException {
         Statement st = connectPooled().createStatement();
         String query = String.format(format, args);
-        LOG.log(Level.OFF, query);
+        LOG.log(Level.FINE, query);
         st.executeUpdate(query);
     }
 }

@@ -16,8 +16,6 @@
 
 package org.ut.biolab.medsavant.db.util.query;
 
-import com.healthmarketscience.sqlbuilder.AlterTableQuery;
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -42,7 +40,6 @@ import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.xml.sax.SAXException;
 
-import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
