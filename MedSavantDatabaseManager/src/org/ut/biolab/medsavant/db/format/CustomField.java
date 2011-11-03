@@ -42,16 +42,16 @@ public class CustomField {
     }
 
     public CustomField(String name, String type, boolean filterable, String alias, String description){
+        this(name, type, filterable, alias, description, Category.PHENOTYPE);
+    }
+    
+    public CustomField(String name, String type, boolean filterable, String alias, String description, Category category){
         this.columnName = name;
         this.columnType = type;
         this.filterable = filterable;
         this.alias = alias;
         this.description = description;
         setColumnType(columnType);
-    }
-    
-    public CustomField(String name, String type, boolean filterable, String alias, String description, Category category){
-        this(name, type, filterable, alias, description);
         this.category = category;
     }
 
