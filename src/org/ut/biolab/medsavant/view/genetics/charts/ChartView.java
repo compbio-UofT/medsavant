@@ -139,6 +139,9 @@ public class ChartView extends JPanel {
             }
         }
         
+        String alias = (String) chartChooser.getSelectedItem();
+        sc.setChartMapGenerator(mapGenerators.get(alias));
+        
     }
 
     private void initBottomBar() {
