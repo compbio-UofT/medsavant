@@ -77,6 +77,7 @@ public class AnnotationQueryUtil {
                     rs.getInt(AnnotationTableSchema.COLUMNNAME_OF_ANNOTATION_ID),
                     rs.getString(AnnotationTableSchema.COLUMNNAME_OF_PROGRAM),
                     rs.getString(AnnotationTableSchema.COLUMNNAME_OF_VERSION),
+                    rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                     rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
                     rs.getString(AnnotationTableSchema.COLUMNNAME_OF_PATH),
                     AnnotationFormat.intToAnnotationType(rs.getInt(AnnotationTableSchema.COLUMNNAME_OF_TYPE))));
@@ -109,6 +110,7 @@ public class AnnotationQueryUtil {
                     rs.getInt(AnnotationTableSchema.COLUMNNAME_OF_ANNOTATION_ID),
                     rs.getString(AnnotationTableSchema.COLUMNNAME_OF_PROGRAM),
                     rs.getString(AnnotationTableSchema.COLUMNNAME_OF_VERSION),
+                    rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                     rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
                     rs.getString(AnnotationTableSchema.COLUMNNAME_OF_PATH),
                     AnnotationFormat.intToAnnotationType(rs.getInt(AnnotationTableSchema.COLUMNNAME_OF_TYPE)));

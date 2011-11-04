@@ -108,7 +108,7 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
             List<Annotation> annotations = ExternalAnnotationController.getInstance().getExternalAnnotations();
             List<Object[]> annotationVector = new ArrayList<Object[]>();
             for (Annotation p : annotations) {
-                annotationVector.add(new Object[] { p.getProgram(), p.getVersion(), p.getReference() });
+                annotationVector.add(new Object[] { p.getProgram(), p.getVersion(), p.getReferenceName() });
             }
             return annotationVector;
         }

@@ -18,16 +18,18 @@ public class Annotation {
     final private int id;
     final private String program;
     final private String version;
-    final private String reference;
+    final private int referenceId;
+    final private String referenceName;
     final private String dataPath;
     final private AnnotationType type;
     private TabixReader reader;
 
-    public Annotation(int id, String program, String version, String reference, String dataPath, AnnotationType type) {
+    public Annotation(int id, String program, String version, int referenceId, String referenceName, String dataPath, AnnotationType type) {
         this.id = id;
         this.program = program;
         this.version = version;
-        this.reference = reference;
+        this.referenceId = referenceId;
+        this.referenceName = referenceName;
         this.dataPath = dataPath;
         this.type = type;
     }
@@ -47,9 +49,13 @@ public class Annotation {
     public String getProgram() {
         return program;
     }
+    
+    public int getReferenceId() {
+        return referenceId;
+    }
 
-    public String getReference() {
-        return reference;
+    public String getReferenceName() {
+        return referenceName;
     }
 
     public String getVersion() {
@@ -69,7 +75,7 @@ public class Annotation {
 
     @Override
     public String toString() {
-        return "Annotation{" + "version=" + version + ", reference=" + reference + ", dataPath=" + dataPath + ", type=" + type + '}';
+        return "Annotation{" + "version=" + version + ", reference=" + referenceName + ", dataPath=" + dataPath + ", type=" + type + '}';
     }
     
 }

@@ -68,7 +68,7 @@ public class ChangeVariantDialog extends javax.swing.JDialog {
         
         DefaultListModel model = new DefaultListModel();
         for(Annotation a : annotations){
-            if(a.getReference().equals(refName)){
+            if(a.getReferenceName().equals(refName)){
                 model.addElement(new CheckListItem(a, annotationIds.contains(a.getId())));
             }
         }
