@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class ImportFileView extends JDialog {
-    private char delimiter;
+    private char delimiter = '\t';
     private boolean importAccepted;
     private PathField pathField;
     private JComboBox formatComboBox;
@@ -71,9 +71,9 @@ public class ImportFileView extends JDialog {
         h1.setBorder(ViewUtil.getMediumBorder());
         
         h1.setLayout(new BoxLayout(h1,BoxLayout.Y_AXIS));
-        
-        /*
-        JPanel delimiterBarPanel = new JPanel();
+       
+        //Delimiter bar
+        /*JPanel delimiterBarPanel = new JPanel();
         delimiterBarPanel.setLayout(new BoxLayout(delimiterBarPanel,BoxLayout.X_AXIS));
         
         delimiterBarPanel.add(Box.createHorizontalGlue());
@@ -84,14 +84,13 @@ public class ImportFileView extends JDialog {
         addDelimiterRadioButton("Comma",',',delimiterBarPanel,delimiterBG,false);
         
         delimiterBarPanel.add(Box.createHorizontalGlue());
-         
 
         h1.add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel("Delimiter")));
-        h1.add(delimiterBarPanel);
-         * 
-         */
-        h1.add(ViewUtil.getSmallVerticalSeparator());
-        
+        h1.add(delimiterBarPanel); 
+              
+        h1.add(ViewUtil.getSmallVerticalSeparator());*/
+
+        //File format bar
         h1.add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel("Format")));
         
         formatComboBox = new JComboBox();
@@ -99,6 +98,7 @@ public class ImportFileView extends JDialog {
         
         h1.add(ViewUtil.getSmallVerticalSeparator());
         
+        //File chooser bar
         h1.add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel("File")));
         pathField = new PathField(JFileChooser.OPEN_DIALOG);
         
