@@ -26,9 +26,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.model.UserLevel;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
 
 /**
@@ -302,35 +304,8 @@ public class Setup {
     }
 
     private static void addDefaultReferenceGenomes(Connection c) throws SQLException {
-        
-        c.createStatement().execute("INSERT INTO `" + MedSavantDatabase.ReferenceTableSchema.getTablename() + "` VALUES (1, X'68673139');");
-        
-        c.createStatement().execute(
-                "INSERT INTO `" + MedSavantDatabase.ChromosomeTableSchema.getTablename() + "` "
-                + "VALUES "
-                + "(1, 0, X'63687231', 249250621, 125000000),"
-                + "(1, 1, X'63687232', 243199373, 93300000),"
-                + "(1, 2, X'63687233', 198022430, 91000000),"
-                + "(1, 3, X'63687234', 191154276, 50400000),"
-                + "(1, 4, X'63687235', 180915260, 48400000),"
-                + "(1, 5, X'63687236', 171115067, 61000000),"
-                + "(1, 6, X'63687237', 159138663, 59900000),"
-                + "(1, 7, X'63687238', 146364022, 45600000),"
-                + "(1, 8, X'63687239', 141213431, 49000000),"
-                + "(1, 9, X'6368723130', 135534747, 40200000),"
-                + "(1, 10, X'6368723131', 135006516, 53700000),"
-                + "(1, 11, X'6368723132', 133851895, 35800000),"
-                + "(1, 12, X'6368723133', 115169878, 17900000),"
-                + "(1, 13, X'6368723134', 107349540, 17600000),"
-                + "(1, 14, X'6368723135', 102531392, 19000000),"
-                + "(1, 15, X'6368723136', 90354753, 36600000),"
-                + "(1, 16, X'6368723137', 81195210, 24000000),"
-                + "(1, 17, X'6368723138', 78077248, 17200000),"
-                + "(1, 18, X'6368723139', 59128983, 26500000),"
-                + "(1, 19, X'6368723230', 63025520, 27500000),"
-                + "(1, 20, X'6368723231', 48129895, 13200000),"
-                + "(1, 21, X'6368723232', 51304566, 14700000),"
-                + "(1, 22, X'63687258', 155270560, 60600000),"
-                + "(1, 23, X'63687259', 59373566, 12500000);");
+        ReferenceQueryUtil.addReference("hg17", Chromosome.getHg17Chromosomes());
+        ReferenceQueryUtil.addReference("hg18", Chromosome.getHg18Chromosomes());
+        ReferenceQueryUtil.addReference("hg19", Chromosome.getHg19Chromosomes());
     }
 }
