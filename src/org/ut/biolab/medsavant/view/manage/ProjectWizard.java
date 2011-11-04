@@ -534,6 +534,8 @@ public class ProjectWizard extends WizardDialog {
 
             for(final Annotation a : annotations){
                 
+                if(a.getReferenceId() != reference.getId()) continue;
+                
                 final JCheckBox b1 = new JCheckBox(a.getProgram() + " " + a.getVersion());
                 b1.setMaximumSize(new Dimension(1000,20));
                 b1.setBackground(Color.white);
