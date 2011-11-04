@@ -18,11 +18,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.DBSettings;
-import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
@@ -38,7 +35,7 @@ public class UpdateVariantTable {
     public static Random rand = new Random();
 
     
-    public static void performUpdate(int projectId, int referenceId) throws SQLException, Exception {
+    public static void performUpdate(int projectId, int referenceId, int updateId) throws SQLException, Exception {
 
         Date now = new Date();
         String basedir = (now.getYear()+1900) + "_" + now.getMonth() + "_" + now.getDay() + "_" + now.getHours() + "_" + now.getMinutes() + "_project_" + projectId + "_reference_" + referenceId + "_" + (rand).nextInt();
@@ -49,73 +46,61 @@ public class UpdateVariantTable {
 
         String tableName = ProjectQueryUtil.getVariantTablename(projectId, referenceId);
 
-        //create TDF from existing variants
+        //dump existing variants
         File variantDumpFile = new File(basedir,"temp_proj" + projectId + "_ref" + referenceId);
-        String variantDump = variantDumpFile.getAbsolutePath();
-        
-        ServerLogger.log(UpdateVariantTable.class, "File containing dumped variants: " + variantDump);
-
-
-        ServerLogger.log(UpdateVariantTable.class, "Dumping variants to file");
+        String variantDump = variantDumpFile.getAbsolutePath();        
+        ServerLogger.log(UpdateVariantTable.class, "Dumping variants to file: " + variantDump);
         variantsToFile(tableName, new File(variantDump));
 
+        //sort variants
         ServerLogger.log(UpdateVariantTable.class, "Sorting variants");
         String sortedVariants = variantDump + "_sorted";
-
         sortFileByPosition(variantDump, sortedVariants);
 
         //annotate
         String outputFilename = sortedVariants + "_annotated";
-
         ServerLogger.log(UpdateVariantTable.class, "File containing annotated variants, sorted by position: " + outputFilename);
-
         int[] annotationIds = AnnotationQueryUtil.getAnnotationIds(projectId, referenceId);
         annotateTDF(sortedVariants, outputFilename, annotationIds);
         
+        //split
         File splitDir = new File(basedir,"splitDir");
         splitDir.mkdir();
-
         ServerLogger.log(UpdateVariantTable.class, "Splitting annotation file into multiple files by file ID");
-
         for (File f : splitDir.listFiles()) {
             removeTemp(f);
         }
-        
         splitFileOnColumn(splitDir, outputFilename, 1);
         String outputFilenameMerged = outputFilename + "_merged";
 
+        //merge
         ServerLogger.log(UpdateVariantTable.class, "File containing annotated variants, sorted by file: " + outputFilenameMerged);
-
         ServerLogger.log(UpdateVariantTable.class, "Merging files");
-
         concatenateFilesInDir(splitDir, outputFilenameMerged);
 
-        ServerLogger.log(UpdateVariantTable.class, "Dropping existing table");
-
-        //drop table and recreate
-        dropTable(tableName);
-        ProjectQueryUtil.createVariantTable(projectId, referenceId, 0, AnnotationQueryUtil.getAnnotationIds(projectId, referenceId), false, false); //recreate with annotations
-
-        ServerLogger.log(UpdateVariantTable.class, "Creating new table from file");
-
-        //upload file
-        VariantQueryUtil.uploadFileToVariantTable(new File(outputFilenameMerged), tableName);
-
-        ServerLogger.log(UpdateVariantTable.class, "Removing temp files");
+        //create new table from file
+        ServerLogger.log(UpdateVariantTable.class, "Creating new table");
+        String newTableName = ProjectQueryUtil.createVariantTable(projectId, referenceId, updateId, AnnotationQueryUtil.getAnnotationIds(projectId, referenceId), false); //recreate with annotations
+        
+        //upload variants
+        ServerLogger.log(UpdateVariantTable.class, "Uploading variants to table: " + newTableName);
+        VariantQueryUtil.uploadFileToVariantTable(new File(outputFilenameMerged), newTableName);
 
         //remove temporary files
-        /*
-        removeTemp(variantDump);
+        ServerLogger.log(UpdateVariantTable.class, "Removing temp files");
+        /*removeTemp(variantDump);
         removeTemp(outputFilename);
         removeTemp(outputFilenameMerged);
         
         for (File f : splitDir.listFiles()) {
             removeTemp(f);
         }
-        splitDir.delete();
-         * 
-         */
+        splitDir.delete();*/
 
+        //drop old table
+        ServerLogger.log(UpdateVariantTable.class, "Dropping old table: " + tableName);
+        dropTable(tableName);
+        
         ServerLogger.log(UpdateVariantTable.class, "Annotation complete!");
     }
 
@@ -130,77 +115,59 @@ public class UpdateVariantTable {
 
         String tableName = ProjectQueryUtil.getVariantTablename(projectId, referenceId);
 
-        //create TDF from staging table
+        //dump existing variants
         String stagingTableName = DBSettings.createVariantStagingTableName(projectId, referenceId, updateId);
         File tempFile = new File(basedir,"temp_proj" + projectId + "_ref" + referenceId + "_update" + updateId);
         String tempFilename = tempFile.getAbsolutePath();
-
         ServerLogger.log(UpdateVariantTable.class, "Dumping variants to file");
         variantsToFile(stagingTableName, new File(tempFilename));
-
         logFileSize(tempFilename);
         
+        //sort variants
         ServerLogger.log(UpdateVariantTable.class, "Sorting variants");
         String sortedVariants = tempFilename + "_sorted";
-
         sortFileByPosition(tempFilename, sortedVariants);
-        
         logFileSize(sortedVariants);
 
         //annotate
         String annotatedFilename = sortedVariants + "_annotated";
-
         ServerLogger.log(UpdateVariantTable.class, "File containing annotated variants, sorted by position: " + annotatedFilename);
-
-
         int[] annotationIds = AnnotationQueryUtil.getAnnotationIds(projectId, referenceId);
         annotateTDF(sortedVariants, annotatedFilename, annotationIds);
-
         logFileSize(annotatedFilename);
         
+        //split
         File splitDir = new File(basedir,"splitDir");
         splitDir.mkdir();
-
         ServerLogger.log(UpdateVariantTable.class, "Splitting annotation file into multiple files by file ID");
-
         splitFileOnColumn(splitDir, annotatedFilename, 1);
         String outputFilenameMerged = tempFilename + "_annotated_merged";
-
         ServerLogger.log(UpdateVariantTable.class, "File containing annotated variants, sorted by file: " + outputFilenameMerged);
 
+        //merge
         ServerLogger.log(UpdateVariantTable.class, "Merging files");
-
         concatenateFilesInDir(splitDir, outputFilenameMerged);
-
         logFileSize(outputFilenameMerged);
         
-        ServerLogger.log(UpdateVariantTable.class, "Dropping existing table");
-
-        //recreate empty table
-        dropTable(tableName);
-
+        //create new variant table
         ServerLogger.log(UpdateVariantTable.class, "Creating new table from file");
-
-        ProjectQueryUtil.createVariantTable(projectId, referenceId, 0, AnnotationQueryUtil.getAnnotationIds(projectId, referenceId), false, false);
+        String newTableName = ProjectQueryUtil.createVariantTable(projectId, referenceId, updateId, AnnotationQueryUtil.getAnnotationIds(projectId, referenceId), false);
 
         //upload file
-        VariantQueryUtil.uploadFileToVariantTable(new File(outputFilenameMerged), tableName);
-
-        ServerLogger.log(UpdateVariantTable.class, "Removing temp files");
+        ServerLogger.log(UpdateVariantTable.class, "Uploading variants to table: " + newTableName);
+        VariantQueryUtil.uploadFileToVariantTable(new File(outputFilenameMerged), newTableName);
 
         //remove temporary files
-        /*
-        removeTemp(tempFilename);
+        ServerLogger.log(UpdateVariantTable.class, "Removing temp files");
+        /*removeTemp(tempFilename);
         removeTemp(annotatedFilename);
         removeTemp(sortedVariants);
-        removeTemp(outputFilenameMerged);
-         * 
-         */
+        removeTemp(outputFilenameMerged);*/
 
-        ServerLogger.log(UpdateVariantTable.class, "Removing staging tables");
-        
-        //drop staging table
+        //remove staging tables and old table
+        ServerLogger.log(UpdateVariantTable.class, "Removing staging table and old variant table");
         dropTable(stagingTableName);
+        dropTable(tableName);
 
         ServerLogger.log(UpdateVariantTable.class, "Annotation complete!");
     }

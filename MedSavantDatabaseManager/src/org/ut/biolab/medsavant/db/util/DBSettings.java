@@ -6,8 +6,8 @@ package org.ut.biolab.medsavant.db.util;
  */
 public class DBSettings {
     
-    public static String createVariantTableName(int projectId, int referenceId){
-        return "z_variant_proj" + projectId + "_ref" + referenceId;
+    public static String createVariantTableName(int projectId, int referenceId, int updateId){
+        return "z_variant_proj" + projectId + "_ref" + referenceId + "_update" + updateId;
     }
     
     public static String createVariantStagingTableName(int projectId, int referenceId, int updateId){

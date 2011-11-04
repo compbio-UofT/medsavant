@@ -132,13 +132,13 @@ public class ProjectQueryUtil {
         }
     }
     
-    public static String createVariantTable(int projectid, int referenceid) throws SQLException {
-        return createVariantTable(projectid, referenceid, 0, null, false, true);
+    public static String createVariantTable(int projectid, int referenceid, int updateid) throws SQLException {
+        return createVariantTable(projectid, referenceid, updateid, null, false);
     }
 
-    public static String createVariantTable(int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging, boolean addToTableMap) throws SQLException {
+    public static String createVariantTable(int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging) throws SQLException {
         
-        String variantTableInfoName = isStaging ? DBSettings.createVariantStagingTableName(projectid, referenceid, updateid) : DBSettings.createVariantTableName(projectid, referenceid);
+        String variantTableInfoName = isStaging ? DBSettings.createVariantStagingTableName(projectid, referenceid, updateid) : DBSettings.createVariantTableName(projectid, referenceid, updateid);
 
         Connection c = (ConnectionController.connectPooled());
    
@@ -185,13 +185,20 @@ public class ProjectQueryUtil {
 
         c.createStatement().execute(query);
 
-        if(!isStaging && addToTableMap){
+        if(!isStaging){
             TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
+            
+            //remove existing entries
+            DeleteQuery d = new DeleteQuery(table.getTable());
+            d.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+            d.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceid));
+            c.createStatement().execute(d.toString());
+            
+            //create new entry
             InsertQuery query1 = new InsertQuery(table.getTable());
             query1.addColumn(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid);
             query1.addColumn(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceid);
             query1.addColumn(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), variantTableInfoName);
-
             c.createStatement().execute(query1.toString());
         }
 

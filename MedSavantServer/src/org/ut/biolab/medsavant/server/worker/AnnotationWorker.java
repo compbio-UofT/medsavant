@@ -72,7 +72,7 @@ public class AnnotationWorker extends SwingWorker {
                         case UPDATE_TABLE:
                             // TODO: users shouldnt see ids
                             ServerLogQueryUtil.addServerLog(ServerLogQueryUtil.LogType.INFO, "Updating table projectid=" + projectId + " referenceid=" + referenceId + " updateid=" + updateId);
-                            UpdateVariantTable.performUpdate(projectId, referenceId);
+                            UpdateVariantTable.performUpdate(projectId, referenceId, updateId);
                             // TODO: users shouldnt see ids
                             ServerLogQueryUtil.addServerLog(ServerLogQueryUtil.LogType.INFO, "Done updating table projectid=" + projectId + " referenceid=" + referenceId + " updateid=" + updateId);
                             break;

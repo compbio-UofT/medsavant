@@ -34,7 +34,7 @@ public class ImportVariants {
         
         //create the staging table       
         try {
-            ProjectQueryUtil.createVariantTable(projectId, referenceId, updateId, null, true, false);
+            ProjectQueryUtil.createVariantTable(projectId, referenceId, updateId, null, true);
         } catch (SQLException ex) {
             //table already exists?
         }
