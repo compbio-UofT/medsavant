@@ -29,6 +29,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
+import org.ut.biolab.medsavant.view.component.SearchableTablePanel.DataRetriever;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 
@@ -120,7 +121,7 @@ public class SplitScreenView extends JPanel {
             List<Class> columnClasses = listModel.getColumnClasses();
             List<Integer> columnVisibility = listModel.getHiddenColumns();
 
-            stp = new SearchableTablePanel(data, columnNames, columnClasses, columnVisibility, limit) {
+            stp = new SearchableTablePanel(columnNames, columnClasses, columnVisibility, limit, SearchableTablePanel.createPrefetchedDataRetriever(data)) {
                 @Override
                 public void forceRefreshData(){
                     limit = stp.getRetrievalLimit();

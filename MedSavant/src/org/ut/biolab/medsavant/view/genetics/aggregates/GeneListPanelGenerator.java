@@ -144,7 +144,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             List<String> columnNames = Arrays.asList(new String[]{"Name", "Chromosome", "Start", "End", "Variants", "Patients"});
             List<Class> columnClasses = Arrays.asList(new Class[]{String.class, String.class, Integer.class, Integer.class, Integer.class, Integer.class});
-            stp = new SearchableTablePanel(null, columnNames, columnClasses, new ArrayList<Integer>(), limit) {
+            stp = new SearchableTablePanel(columnNames, columnClasses, new ArrayList<Integer>(), limit, null) {
                 @Override
                 public void forceRefreshData(){
                     limit = stp.getRetrievalLimit();
@@ -206,9 +206,9 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                 i++;
             }
             
-            stp.updateData(data);
+            //stp.updateData(data);
             stp.updateUI();
-            stp.updateView();
+            stp.forceRefreshData();
         }
 
         public synchronized void updateBEDRecordVariantValue(BEDRecord br, int value) {

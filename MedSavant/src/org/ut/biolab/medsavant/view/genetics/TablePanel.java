@@ -32,8 +32,10 @@ import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
+import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
+import org.ut.biolab.medsavant.view.component.SearchableTablePanel.DataRetriever;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -79,27 +81,42 @@ class TablePanel extends JPanel implements FiltersChangedListener {
             }
         }
 
-        tablePanel = new SearchableTablePanel(null, fieldNames, fieldClasses, hiddenColumns, 1000) {
-            @Override
-            public void forceRefreshData(){
+        DataRetriever retriever = new DataRetriever(){
+            public List<Object[]> retrieve(int start, int limit) {
+                showWaitCard();
+                List<Object[]> result = null;
                 try {
-                    updateTable();
-                } catch (Exception ex) {
+                    result = ResultController.getInstance().getFilteredVariantRecords(start, limit);
+                } catch (NonFatalDatabaseException ex) {
                     Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-                    DialogUtils.displayErrorMessage("Problem getting data.", ex);
                 }
+                showShowCard();
+                return result;
+            }
+
+            public int getTotalNum() {
+                showWaitCard();
+                int result = 0;
+                try {
+                    result = ResultController.getInstance().getNumFilteredVariants();
+                } catch (NonFatalDatabaseException ex) {
+                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                showShowCard();
+                return result;
             }
         };
+        tablePanel = new SearchableTablePanel(fieldNames, fieldClasses, hiddenColumns, 1000, retriever);
         
         this.add(tablePanel, CARD_SHOW);             
         this.add(new WaitPanel("Generating List View"), CARD_WAIT);
 
-        try {
+        /*try {
             updateTable();
         } catch (Exception ex) {
             Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
             DialogUtils.displayErrorMessage("Problem getting data.", ex);
-        }
+        }*/
         FilterController.addFilterListener(this);
         //ProjectController.getInstance().addProjectListener(this);
     }
@@ -112,17 +129,17 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         cl.show(this, CARD_SHOW);
     }
 
-    private void updateTable() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {       
+    /*private void updateTable() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {       
         showWaitCard();
         GetVariantsSwingWorker gv = new GetVariantsSwingWorker();
         gv.execute();
-    }
+    }*/
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        updateTable();
+        tablePanel.forceRefreshData();
     }
     
-    private class GetVariantsSwingWorker extends SwingWorker<List<Object[]>, Object> {
+    /*private class GetVariantsSwingWorker extends SwingWorker<List<Object[]>, Object> {
         @Override
         protected List<Object[]> doInBackground() throws Exception {
             return ResultController.getInstance().getFilteredVariantRecords(tablePanel.getRetrievalLimit());
@@ -131,12 +148,12 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         @Override
         protected void done() {
             try {
-                tablePanel.updateData(get());
+                //tablePanel.updateData(get());
                 showShowCard();
             } catch (Exception x) {
                 // TODO: #90
                 LOG.log(Level.SEVERE, null, x);
             }
         }  
-    }
+    }*/
 }

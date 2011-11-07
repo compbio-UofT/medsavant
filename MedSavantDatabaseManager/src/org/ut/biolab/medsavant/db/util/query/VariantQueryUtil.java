@@ -53,11 +53,11 @@ public class VariantQueryUtil {
         return CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(projectId, referenceId));
     }
     
-    public static List<Object[]> getVariants(int projectId, int referenceId, int limit) throws SQLException {       
-        return getVariants(projectId, referenceId, new Condition[1][], limit);
+    public static List<Object[]> getVariants(int projectId, int referenceId, int start, int limit) throws SQLException {       
+        return getVariants(projectId, referenceId, new Condition[1][], start, limit);
     }
    
-    public static List<Object[]> getVariants(int projectId, int referenceId, Condition[][] conditions, int limit) throws SQLException {            
+    public static List<Object[]> getVariants(int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException {            
         
         TableSchema table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(projectId, referenceId));
         SelectQuery query = new SelectQuery();
@@ -66,7 +66,7 @@ public class VariantQueryUtil {
         addConditionsToQuery(query, conditions);
         
         Connection conn = ConnectionController.connectPooled();
-        ResultSet rs = conn.createStatement().executeQuery(query.toString() + " LIMIT " + limit);
+        ResultSet rs = conn.createStatement().executeQuery(query.toString() + " LIMIT " + start + ", " + limit);
         
         ResultSetMetaData rsMetaData = rs.getMetaData();
         int numberColumns = rsMetaData.getColumnCount();

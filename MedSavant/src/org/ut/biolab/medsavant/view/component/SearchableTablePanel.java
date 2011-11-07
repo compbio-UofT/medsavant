@@ -28,13 +28,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
-
 import com.jidesoft.grid.*;
-
 import org.ut.biolab.medsavant.view.images.IconFactory;
-
 
 /**
  *
@@ -67,26 +67,51 @@ public class SearchableTablePanel extends JPanel {
     private final JButton gotoLast;
     private ColumnChooser columnChooser;
     private List<Integer> hiddenColumns;
+    private DataRetriever retriever;
+    private int totalNumRows;
 
     public SortableTable getTable() {
         return table;
     }
-
-    public final synchronized void updateData(List<Object[]> data) {
-        this.data = data;
-        setPageNumber(1); // updates the view
-        model.fireTableDataChanged();
-        table.repaint();
+    
+    private synchronized void updateView(boolean newData){
+        (new GetDataSwingWorker(newData)).execute();  
     }
-
-    @SuppressWarnings("UseOfObsoleteCollectionType")
-    public void updateView() {
-
-        if (data == null) {
-            return;
+    
+    private class GetDataSwingWorker extends SwingWorker<List<Object[]>, Object> {
+        
+        boolean update;
+        
+        protected GetDataSwingWorker(boolean newData){
+            this.update = newData;
         }
-
-        List<Object[]> pageData = getDataOnPage(getPageNumber(), data);
+        
+        @Override
+        protected List<Object[]> doInBackground() throws Exception {
+            //TODO: get page information
+            
+            if(update){
+                setTotalRowCount(retriever.getTotalNum());
+                pageNum = 1;
+            }
+            return retriever.retrieve((pageNum-1) * getRowsPerPage(), getRowsPerPage());
+        }
+        
+        @Override
+        protected void done() {
+            List<Object[]> pageData = null;
+            try {
+                pageData = get();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(SearchableTablePanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger(SearchableTablePanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            applyData(pageData);
+        }
+    }
+         
+    private void applyData(List<Object[]> pageData){
         
         boolean first = false;
         if (model == null) {
@@ -101,25 +126,25 @@ public class SearchableTablePanel extends JPanel {
             }
         }
 
-        this.gotoFirst.setEnabled(true);
-        this.gotoPrevious.setEnabled(true);
-        this.gotoNext.setEnabled(true);
-        this.gotoLast.setEnabled(true);
+        gotoFirst.setEnabled(true);
+        gotoPrevious.setEnabled(true);
+        gotoNext.setEnabled(true);
+        gotoLast.setEnabled(true);
 
         if (pageNum == 1 || pageNum == 0) {
-            this.gotoFirst.setEnabled(false);
-            this.gotoPrevious.setEnabled(false);
+            gotoFirst.setEnabled(false);
+            gotoPrevious.setEnabled(false);
         }
         if (pageNum == getTotalNumPages() || pageNum == 0) {
-            this.gotoNext.setEnabled(false);
-            this.gotoLast.setEnabled(false);
+            gotoNext.setEnabled(false);
+            gotoLast.setEnabled(false);
         }
 
 
-        pageLabel.setText("Page " + this.getPageNumber() + " of " + this.getTotalNumPages());
-        int start = getTotalNumPages() == 0 ? 0 : (this.getPageNumber() - 1) * this.getRowsPerPage() + 1;
-        int end = getTotalNumPages() == 0 ? 0 : Math.min(start + this.getRowsPerPage() - 1, this.getTotalRowCount());
-        amountLabel.setText("Showing " + start + " - " + end + " of " + data.size() + " records");
+        pageLabel.setText("Page " + getPageNumber() + " of " + getTotalNumPages());
+        int start = getTotalNumPages() == 0 ? 0 : (getPageNumber() - 1) * getRowsPerPage() + 1;
+        int end = getTotalNumPages() == 0 ? 0 : Math.min(start + getRowsPerPage() - 1, getTotalRowCount());
+        amountLabel.setText("Showing " + start + " - " + end + " of " + getTotalRowCount() + " records");
 
         if (first) {
             int[] columns = new int[columnNames.size()];
@@ -129,8 +154,6 @@ public class SearchableTablePanel extends JPanel {
             filterField.setTableModel(model);
             filterField.setColumnIndices(columns);           
             filterField.setObjectConverterManagerEnabled(true);
-            //filterField.setSearchingColumnIndices(columns);
-            //filterField.setTable(table);
 
             table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
             columnChooser.hideColumns(table, hiddenColumns);
@@ -147,7 +170,8 @@ public class SearchableTablePanel extends JPanel {
         } else {
             model.fireTableDataChanged();
         }
-    }
+    }  
+    
 
     private void setTableModel(List<Object[]> data, List<String> columnNames, List<Class> columnClasses) {
         if (data == null) {
@@ -157,19 +181,19 @@ public class SearchableTablePanel extends JPanel {
         }
         this.columnNames = columnNames;
         this.columnClasses = columnClasses;
-        updateView();
     }
     
-    public SearchableTablePanel(List<Object[]> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, int defaultRowsRetrieved) {
-        this(data, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true, defaultRowsRetrieved);
+    public SearchableTablePanel(List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, int defaultRowsRetrieved, DataRetriever retriever) {
+        this(columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true, defaultRowsRetrieved, retriever);
     }
 
-    public SearchableTablePanel(List<Object[]> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
-        boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection, int defaultRowsRetrieved) {
+    public SearchableTablePanel(List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
+        boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection, int defaultRowsRetrieved, DataRetriever retriever) {
 
         this.ROWSPERPAGE_X = defaultRows;
         this.DEFAULT_ROWS_RETRIEVED = defaultRowsRetrieved;
 
+        this.retriever = retriever;
         this.hiddenColumns = hiddenColumns;
         table = new SortableTable() {
 
@@ -196,13 +220,11 @@ public class SearchableTablePanel extends JPanel {
         table.setOptimized(true);
         table.setColumnAutoResizable(true);
         table.setAutoResort(false);
-        //table.setDragEnabled(false);
         table.setRowHeight(20);
         table.setSortable(allowSort);
         table.setSortingEnabled(allowSort);
         table.setFocusable(allowSelection);
         table.setCellSelectionEnabled(allowSelection);
-        //table.setFont(new Font("Times New Roman", Font.PLAIN, 14));
 
         table.setAutoResizeMode(SortableTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
@@ -219,7 +241,6 @@ public class SearchableTablePanel extends JPanel {
         table.setTableHeader(header);
 
         filterField = new QuickTableFilterField(model);
-        //filterField.setColumns(50);
         filterField.setHintText("Type to search");
 
         this.setLayout(new BorderLayout(3, 3));
@@ -232,7 +253,7 @@ public class SearchableTablePanel extends JPanel {
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 
-        gotoFirst = niceButton();//new JButton();
+        gotoFirst = niceButton();
         gotoPrevious = niceButton();
         gotoNext = niceButton();
         gotoLast = niceButton();
@@ -307,6 +328,11 @@ public class SearchableTablePanel extends JPanel {
 
         rowsPerPageDropdown = new JComboBox(finalList);
         rowsPerPageDropdown.setPrototypeDisplayValue(ROWSPERPAGE_3);
+        if (hasDefaultRowsPerPage) {
+            rowsPerPageDropdown.setSelectedIndex(rowsList.indexOf(ROWSPERPAGE_X));
+        } else {
+            rowsPerPageDropdown.setSelectedIndex(1);
+        }
         rowsPerPageDropdown.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -314,33 +340,10 @@ public class SearchableTablePanel extends JPanel {
                 int rowsPerPage = (Integer) cb.getSelectedItem();
                 setNumRowsPerPage(rowsPerPage);
             }
-        });
-        if (hasDefaultRowsPerPage) {
-            rowsPerPageDropdown.setSelectedIndex(rowsList.indexOf(ROWSPERPAGE_X));
-        } else {
-            rowsPerPageDropdown.setSelectedIndex(1);
-        }
+        });       
         rowsPerPageDropdown.setPreferredSize(new Dimension(100, 25));
         rowsPerPageDropdown.setMaximumSize(new Dimension(100, 25));       
-        bottomPanel.add(rowsPerPageDropdown);
-
-        bottomPanel.add(new JLabel("   Results retrieved: "));
-        rowsRetrievedBox = new JTextField();
-        rowsRetrievedBox.setColumns(5);
-        rowsRetrievedBox.setMaximumSize(new Dimension(50,25));
-        rowsRetrievedBox.setText(String.valueOf(DEFAULT_ROWS_RETRIEVED));
-        bottomPanel.add(rowsRetrievedBox);
-        
-        rowsRetrievedBox.addKeyListener(new KeyListener() {
-            public void keyTyped(KeyEvent e) {}
-            public void keyPressed(KeyEvent e) {}
-            public void keyReleased(KeyEvent e) {
-                int key = e.getKeyCode();
-                if (key == KeyEvent.VK_ENTER) {
-                    forceRefreshData();
-                }
-            }                
-        });
+        bottomPanel.add(rowsPerPageDropdown);        
         
         setTableModel(data, columnNames, columnClasses);
 
@@ -359,13 +362,13 @@ public class SearchableTablePanel extends JPanel {
 
         this.add(tablePanel);
         
-        this.updateData(data);
+        applyData(new ArrayList<Object[]>());
+        updateView(true);
     }
 
     private void setNumRowsPerPage(int num) {
         this.numRowsPerPage = num;
         this.goToFirstPage();
-        updateView();
     }
 
     private void strut(JPanel p) {
@@ -381,7 +384,7 @@ public class SearchableTablePanel extends JPanel {
             i = 1;
         }
         this.pageNum = i;
-        this.updateView();
+        this.updateView(false);
     }
 
     public int getPageNumber() {
@@ -405,37 +408,19 @@ public class SearchableTablePanel extends JPanel {
     }
 
     private int getTotalRowCount() {
-        if (data == null) {
-            return 0;
-        }
-        return data.size();
+        return this.totalNumRows;
     }
-
+    
+    private void setTotalRowCount(int num) {
+        this.totalNumRows = num;
+    }
+  
     private int getTotalNumPages() {
         return (int) Math.ceil(((double) getTotalRowCount()) / getRowsPerPage());
     }
-
+    
     public int getRowsPerPage() {
         return this.numRowsPerPage;
-    }
-
-    private List<Object[]> getDataOnPage(int pageNumber, List<Object[]> data) {
-
-        List<Object[]> result = new ArrayList<Object[]>();
-
-        if (pageNumber == 0) {
-            return result;
-        }
-
-        int start = (pageNumber - 1) * this.getRowsPerPage();
-        int end = start + this.getRowsPerPage();
-
-        if (data != null) {
-            for (int i = start; i < end && i < data.size(); i++) {
-                result.add(data.get(i));
-            }
-        }
-        return result;
     }
 
     private JButton niceButton() {
@@ -466,7 +451,7 @@ public class SearchableTablePanel extends JPanel {
     }
     
     public void forceRefreshData(){
-        //override this in parent
+        updateView(true);
     }
     
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
@@ -478,4 +463,22 @@ public class SearchableTablePanel extends JPanel {
         }
     }
       
+    public interface DataRetriever {
+        public abstract List<Object[]> retrieve(int start, int limit);
+        public abstract int getTotalNum();
+    }
+    
+    public static DataRetriever createPrefetchedDataRetriever(final List data){
+        return new DataRetriever() {
+            public List<Object[]> retrieve(int start, int limit) {
+               return data.subList(start, Math.min(start+limit, data.size()));
+            }
+            public int getTotalNum() {
+                return data.size();
+            }
+        };
+    }
+    
+    
+    
 }
