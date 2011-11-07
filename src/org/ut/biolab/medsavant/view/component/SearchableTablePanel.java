@@ -67,6 +67,7 @@ public class SearchableTablePanel extends JPanel {
     private final JButton gotoLast;
     private ColumnChooser columnChooser;
     private List<Integer> hiddenColumns;
+    private TableCellRenderer[] customRenderers;
 
     public SortableTable getTable() {
         return table;
@@ -163,18 +164,29 @@ public class SearchableTablePanel extends JPanel {
     public SearchableTablePanel(List<Object[]> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, int defaultRowsRetrieved) {
         this(data, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true, defaultRowsRetrieved);
     }
-
+    
+    public SearchableTablePanel(List<Object[]> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, int defaultRowsRetrieved, TableCellRenderer[] renderers) {
+        this(data, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true, defaultRowsRetrieved, renderers);
+    }
+      
     public SearchableTablePanel(List<Object[]> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
         boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection, int defaultRowsRetrieved) {
+        this(data, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true, defaultRowsRetrieved, new TableCellRenderer[columnNames.size()]);
+    }
 
-        ROWSPERPAGE_X = defaultRows;
+    public SearchableTablePanel(List<Object[]> data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
+        boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection, int defaultRowsRetrieved, TableCellRenderer[] renderers) {
+
+        this.ROWSPERPAGE_X = defaultRows;
         this.DEFAULT_ROWS_RETRIEVED = defaultRowsRetrieved;
 
+        this.customRenderers = renderers;
         this.hiddenColumns = hiddenColumns;
         table = new SortableTable() {
 
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int Index_row, int Index_col) {
+                if(customRenderers[Index_col] != null) renderer = customRenderers[Index_col];
                 Component comp = super.prepareRenderer(renderer, Index_row, Index_col);
                 //even index, selected or not selected
 
@@ -475,6 +487,36 @@ public class SearchableTablePanel extends JPanel {
             for (Integer i : indices) {
                 hideColumn(table, i);
             }
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    public class JTableButtonRenderer implements TableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
+            if (value instanceof JButton) {
+                JButton button = (JButton) value;
+                if (isSelected) {
+                    button.setForeground(table.getForeground());
+                    button.setBackground(table.getSelectionBackground());
+                } else {
+                    button.setForeground(table.getForeground());
+                    button.setBackground(UIManager.getColor("Button.background"));
+                }
+                return button;
+            }
+            return (Component) value;
         }
     }
 }
