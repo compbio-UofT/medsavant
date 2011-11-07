@@ -21,10 +21,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
-import javax.swing.SwingWorker;
 
 import com.jidesoft.chart.Chart;
 import com.jidesoft.chart.ChartType;
@@ -41,10 +38,10 @@ import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
-import java.util.concurrent.CancellationException;
 
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -52,22 +49,22 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-public class SummaryChart extends JPanel implements FiltersChangedListener {
-    private static final Logger LOG = Logger.getLogger(SummaryChart.class.getName());
-
+public class SummaryChart extends JPanel {
     private boolean isLogscale = false;
     private boolean isPie = false;
     private boolean isSorted = false;
     private static final int DEFAULT_NUM_QUANTITATIVE_CATEGORIES = 15;
-    //private String currentChart;
-    private ChartMapSW cmsw;
+    private ChartMapWorker mapWorker;
     private ChartMapGenerator mapGenerator;
     private boolean isSortedKaryotypically;
 
     public SummaryChart() {
-        this.setLayout(new BorderLayout());
-        //updateDataAndDrawChart();
-        FilterController.addFilterListener(this);
+        setLayout(new BorderLayout());
+        FilterController.addFilterListener(new FiltersChangedListener() {
+            public void filtersChanged() {
+                updateDataAndDrawChart();
+            }
+        });
     }
 
     public void setIsLogscale(boolean isLogscale) {
@@ -112,17 +109,7 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         this.add(new WaitPanel("Getting chart data"), BorderLayout.CENTER);
         this.updateUI();
 
-        // kill existing thread, if any
-        if (cmsw != null && !cmsw.isDone()) {
-            try {
-                cmsw.cancel(true);
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
-            }
-        }
-
-        cmsw = new ChartMapSW();
-        cmsw.execute();
+        new ChartMapWorker().execute();
     }
 
     private synchronized void drawChart(ChartFrequencyMap chartMap) {
@@ -212,17 +199,22 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
             chart.setChartType(ChartType.PIE);
         }
 
-        this.removeAll();
-        //this.add(bar, BorderLayout.NORTH);
         this.add(chart, BorderLayout.CENTER);
-        //this.add(bottombar, BorderLayout.SOUTH);
     }
 
     void setIsSortedKaryotypically(boolean b) {
         this.isSortedKaryotypically = b;
     }
 
-    public class ChartMapSW extends SwingWorker<ChartFrequencyMap, Object> {
+    public class ChartMapWorker extends MedSavantWorker<ChartFrequencyMap> {
+
+        @SuppressWarnings("LeakingThisInConstructor")
+        ChartMapWorker() {
+            if (mapWorker != null) {
+                mapWorker.cancel(true);
+            }
+            mapWorker = this;
+        }
 
         @Override
         protected ChartFrequencyMap doInBackground() throws Exception {
@@ -230,22 +222,18 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
             return mapGenerator.generateChartMap();
         }
 
-        protected void done() {
-            try {
-                ChartFrequencyMap chartMap = (ChartFrequencyMap) get();
-                if (chartMap == null) { return; }
-                drawChart(chartMap);
-            } catch (CancellationException x){
-                //this is expected
-            } catch (Exception x) {
-                // TODO: #90
-                LOG.log(Level.SEVERE, null, x);
+        public void showSuccess(ChartFrequencyMap result) {
+            if (result != null) {
+                drawChart(result);
             }
         }
-    }
 
-    public void filtersChanged() {
-        updateDataAndDrawChart();
+        public void showProgress(double prog) {
+            if (prog == 1.0) {
+                mapWorker = null;
+                removeAll();        // Clear away the WaitPanel.
+            }
+        }
     }
 
     static class ValueComparator implements Comparator {
