@@ -60,7 +60,9 @@ public class SearchableTablePanel extends JPanel {
     private List<Object[]> data;
     private List<String> columnNames;
     private List<Class> columnClasses;
-    private final JLabel pageLabel;
+    private final JLabel pageLabel1;
+    private final JLabel pageLabel2;
+    private final JTextField pageText;
     private final JButton gotoFirst;
     private final JButton gotoPrevious;
     private final JButton gotoNext;
@@ -140,8 +142,8 @@ public class SearchableTablePanel extends JPanel {
             gotoLast.setEnabled(false);
         }
 
-
-        pageLabel.setText("Page " + getPageNumber() + " of " + getTotalNumPages());
+        pageText.setText(Integer.toString(getPageNumber()));
+        pageLabel2.setText(" of " + getTotalNumPages());
         int start = getTotalNumPages() == 0 ? 0 : (getPageNumber() - 1) * getRowsPerPage() + 1;
         int end = getTotalNumPages() == 0 ? 0 : Math.min(start + getRowsPerPage() - 1, getTotalRowCount());
         amountLabel.setText("Showing " + start + " - " + end + " of " + getTotalRowCount() + " records");
@@ -287,17 +289,38 @@ public class SearchableTablePanel extends JPanel {
                 goToLastPage();
             }
         });
+        
+        pageText = new JTextField();
+        pageText.setColumns(5);
+        pageText.setMaximumSize(new Dimension(50,20));
+        pageText.addKeyListener(new KeyListener() {
+            public void keyTyped(KeyEvent e) {}
+            public void keyPressed(KeyEvent e) {}
+            public void keyReleased(KeyEvent e) {
+                int key = e.getKeyCode();
+                if (key == KeyEvent.VK_ENTER) {
+                    try {
+                        setPageNumber(Integer.parseInt(pageText.getText()));
+                    } catch (NumberFormatException ex){
+                        setPageNumber(0);
+                    }
+                }
+            }                
+        });
 
         amountLabel = new JLabel();
         bottomPanel.add(amountLabel);
 
-        pageLabel = new JLabel();
+        pageLabel1 = new JLabel("Page ");       
+        pageLabel2 = new JLabel();
 
         bottomPanel.add(Box.createHorizontalGlue());
         bottomPanel.add(gotoFirst);
         bottomPanel.add(gotoPrevious);
         strut(bottomPanel);
-        bottomPanel.add(pageLabel);
+        bottomPanel.add(pageLabel1);
+        bottomPanel.add(pageText);
+        bottomPanel.add(pageLabel2);
         strut(bottomPanel);
         bottomPanel.add(gotoNext);
         bottomPanel.add(gotoLast);
@@ -377,7 +400,7 @@ public class SearchableTablePanel extends JPanel {
 
     private void setPageNumber(int i) {
         if (0 == getTotalNumPages()) {
-            i = 0;
+            i = 1;
         } else if (i > getTotalNumPages()) {
             i = getTotalNumPages();
         } else if (i < 1) {
