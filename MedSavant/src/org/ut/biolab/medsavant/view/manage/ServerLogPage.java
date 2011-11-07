@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.view.manage;
 
+import com.jidesoft.grid.SortableTableModel;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
@@ -343,8 +345,9 @@ public class ServerLogPage extends SubSectionView {
     private JPanel getAnnotationCard() {
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
-        annotationTable = new SearchableTablePanel(null, annotationsColumnNames, annotationsColumnClasses, new ArrayList<Integer>(), limit);
-        annotationTable.getTable().getColumn("Restart").setCellRenderer(new JTableButtonRenderer());
+        TableCellRenderer[] renderers = new TableCellRenderer[annotationsColumnNames.size()];
+        renderers[annotationsColumnNames.indexOf("Restart")] = new JTableButtonRenderer();
+        annotationTable = new SearchableTablePanel(null, annotationsColumnNames, annotationsColumnClasses, new ArrayList<Integer>(), limit, renderers);
         annotationTable.getTable().addMouseListener(new JTableButtonMouseListener(annotationTable.getTable()));
         p.add(annotationTable, BorderLayout.CENTER);
         return p;
