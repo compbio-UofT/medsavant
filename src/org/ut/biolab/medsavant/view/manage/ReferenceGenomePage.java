@@ -76,12 +76,10 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
     @Override
     public Component[] getBanner() {
-        Component[] result = new Component[1];
-        result[0] = getAddPatientsButton();
-        return result;
+        return new Component[] { getAddReferenceButton() };
     }
 
-    private JButton getAddPatientsButton() {
+    private JButton getAddReferenceButton() {
         JButton button = new JButton("New Reference");
         button.addActionListener(new ActionListener() {
 

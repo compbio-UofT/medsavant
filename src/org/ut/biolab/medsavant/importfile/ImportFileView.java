@@ -17,7 +17,9 @@
 package org.ut.biolab.medsavant.importfile;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -50,8 +52,8 @@ public class ImportFileView extends JDialog {
     private static PreviewWorker worker;
     
     /** Creates new form ThreadManagerDialog */
-    public ImportFileView(java.awt.Frame parent, String title) {
-        super(parent, true);
+    public ImportFileView(Window parent, String title) {
+        super(parent, Dialog.ModalityType.APPLICATION_MODAL);
         this.setTitle(title);
         initGUI();
         this.setLocationRelativeTo(parent);
@@ -63,9 +65,9 @@ public class ImportFileView extends JDialog {
     
     private void initGUI() {
 
-        this.setMinimumSize(new Dimension(600, 600));
-        this.setPreferredSize(new Dimension(600, 600));
-        this.setLayout(new BorderLayout());
+        setMinimumSize(new Dimension(600, 600));
+        setPreferredSize(new Dimension(600, 600));
+        setLayout(new BorderLayout());
 
         JPanel h1 = new JPanel();
         h1.setBorder(ViewUtil.getMediumBorder());
@@ -126,27 +128,25 @@ public class ImportFileView extends JDialog {
         
         h1.add(Box.createVerticalGlue());
         
-        this.add(h1,BorderLayout.NORTH);
+        add(h1,BorderLayout.NORTH);
         
         previewPanel = new JPanel();
         previewPanel.setBorder(ViewUtil.getTinyLineBorder());
         
-        this.add(previewPanel,BorderLayout.CENTER);
+        add(previewPanel,BorderLayout.CENTER);
         
         updatePreview();
 
         JPanel bottomPanel = ViewUtil.getSecondaryBannerPanel();
 
-        final JDialog thisDialog = this;
-        
         JButton importButton = new JButton("Import");
         importButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 if (validateForm()) {
-                    setImportAccepted(true);
+                    importAccepted = true;
+                    ImportFileView.this.setVisible(false);
                 }
-                thisDialog.setVisible(false);
             }
         });
         
@@ -156,8 +156,8 @@ public class ImportFileView extends JDialog {
         cancelButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                setImportAccepted(false);
-                thisDialog.setVisible(false);
+                importAccepted = false;
+                ImportFileView.this.setVisible(false);
             }
         });
         
@@ -165,9 +165,9 @@ public class ImportFileView extends JDialog {
         bottomPanel.add(importButton);
         bottomPanel.add(cancelButton);
         
-        this.getRootPane().setDefaultButton(importButton);
+        getRootPane().setDefaultButton(importButton);
 
-        this.add(bottomPanel, BorderLayout.SOUTH);
+        add(bottomPanel, BorderLayout.SOUTH);
         
     }
 
@@ -200,17 +200,11 @@ public class ImportFileView extends JDialog {
     public char getDelimiter() {
         return delimiter;
     }
-    
 
-    
     public boolean isImportAccepted() {
         return importAccepted;
     }
 
-    public void setImportAccepted(boolean importAccepted) {
-        this.importAccepted = importAccepted;
-    }
-    
     public boolean validateForm() {
         
         File f = new File(pathField.getPath());
