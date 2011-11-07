@@ -34,6 +34,7 @@ public class ResultController {
     
     private static final int DEFAULT_LIMIT = 1000;
     private int limit = -1;
+    private int start = -1;
     private int filterSetId = -1;
     
     private int projectId;
@@ -42,7 +43,7 @@ public class ResultController {
     private static ResultController instance;
     
     public ResultController() throws NonFatalDatabaseException {
-        updateFilteredVariantDBResults(DEFAULT_LIMIT);
+        updateFilteredVariantDBResults(0, DEFAULT_LIMIT);
     }
 
     
@@ -58,13 +59,14 @@ public class ResultController {
         return filteredVariants;
     }
 
-    public List<Object[]> getFilteredVariantRecords(int limit) {
-        if (filterSetId != FilterController.getCurrentFilterSetID() || this.limit < limit ||
+    public List<Object[]> getFilteredVariantRecords(int start, int limit) {
+        if (filterSetId != FilterController.getCurrentFilterSetID() || this.limit < limit || this.start != start ||
                 ProjectController.getInstance().getCurrentProjectId() != projectId ||
                 ReferenceController.getInstance().getCurrentReferenceId() != referenceId) {
             try {
-                updateFilteredVariantDBResults(limit);
+                updateFilteredVariantDBResults(start, limit);
                 this.limit = limit;
+                this.start = start;
             } catch (NonFatalDatabaseException ex) {
                 ex.printStackTrace();
             }
@@ -74,7 +76,7 @@ public class ResultController {
         return filteredVariants;
     }
     
-    private void updateFilteredVariantDBResults(int limit) throws NonFatalDatabaseException {
+    private void updateFilteredVariantDBResults(int start, int limit) throws NonFatalDatabaseException {
         
         filterSetId = FilterController.getCurrentFilterSetID();
         
@@ -82,11 +84,22 @@ public class ResultController {
             filteredVariants = VariantQueryUtil.getVariants(
                     ProjectController.getInstance().getCurrentProjectId(), 
                     ReferenceController.getInstance().getCurrentReferenceId(), 
-                    FilterController.getQueryFilterConditions(), 
+                    FilterController.getQueryFilterConditions(),
+                    start, 
                     limit);
         } catch (SQLException ex) {
             Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    
+    public int getNumFilteredVariants() {
+        try {
+            return VariantQueryUtil.getNumFilteredVariants(
+                    ProjectController.getInstance().getCurrentProjectId(), 
+                    ReferenceController.getInstance().getCurrentReferenceId(), 
+                    FilterController.getQueryFilterConditions());
+        } catch (SQLException ex) {
+            return 0;
+        }
+    }
 }
