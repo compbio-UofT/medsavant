@@ -345,9 +345,8 @@ public class ServerLogPage extends SubSectionView {
     private JPanel getAnnotationCard() {
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
-        TableCellRenderer[] renderers = new TableCellRenderer[annotationsColumnNames.size()];
-        renderers[annotationsColumnNames.indexOf("Restart")] = new JTableButtonRenderer();
-        annotationTable = new SearchableTablePanel(null, annotationsColumnNames, annotationsColumnClasses, new ArrayList<Integer>(), limit, renderers);
+        annotationTable = new SearchableTablePanel(null, annotationsColumnNames, annotationsColumnClasses, new ArrayList<Integer>(), limit);
+        annotationTable.getTable().getColumn("Restart").setCellRenderer(new JTableButtonRenderer());
         annotationTable.getTable().addMouseListener(new JTableButtonMouseListener(annotationTable.getTable()));
         p.add(annotationTable, BorderLayout.CENTER);
         return p;
