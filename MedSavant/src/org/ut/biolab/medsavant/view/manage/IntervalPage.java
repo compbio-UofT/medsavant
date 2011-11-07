@@ -20,12 +20,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.SwingWorker;
 
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
@@ -33,16 +30,18 @@ import org.ut.biolab.medsavant.importfile.BedFormat;
 import org.ut.biolab.medsavant.importfile.FileFormat;
 import org.ut.biolab.medsavant.importfile.ImportDelimitedFile;
 import org.ut.biolab.medsavant.importfile.ImportFileView;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.patients.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
+import org.ut.biolab.medsavant.view.util.GenericProgressDialog;
 
 /**
  *
  * @author mfiume
  */
 public class IntervalPage extends SubSectionView {
-    private static final Logger LOG = Logger.getLogger(IntervalPage.class.getName());
 
     int importID = 0;
     SplitScreenView view;
@@ -64,57 +63,27 @@ public class IntervalPage extends SubSectionView {
     
     @Override
     public Component[] getBanner() {
-        return new Component[] { getAddCohortButton() };
+        return new Component[] { getAddRegionListButton() };
     }
 
-    private Component getAddCohortButton() {
+    private Component getAddRegionListButton() {
         JButton b = new JButton("Add region list");
         
         b.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                
-                String geneListName = (String) JOptionPane.showInputDialog(
-                    null,
-                    "Name of Region List:",
-                    "Import Region List",
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    null,
-                    "");
-                
-                if (geneListName == null) { return; }
-                
-                ImportFileView d = new ImportFileView(null,"Import List from File");
-                d.addFileFormat(new BedFormat());
-                d.setVisible(true);
-                
-                if (d.isImportAccepted()) {
-                    
-                    final ImportCohortSW importsw = new ImportCohortSW(
-                            geneListName,
-                            d.getPath(),
-                            d.getDelimiter(),
-                            d.getNumHeaderLines(),
-                            d.getFileFormat());
-                    
-                    GenericProgressDialog importpd = new GenericProgressDialog("Importing gene list","Importing gene list");
-                    
-                    importsw.setProgressDialog(importpd);
-                    importpd.setCancelListener(new GenericProgressDialog.CancelRequestListener() {
+                String geneListName = DialogUtils.displayInputMessage("Import Region List", "Name of Region List:", null);
+                if (geneListName != null) {
 
-                        public void cancelRequested() {
-                            importsw.cancel(true);
-                        }
-                    });
-                    
-                    importsw.execute();
-                    
-                    importpd.setVisible(true);
+                    ImportFileView d = new ImportFileView(DialogUtils.getMainWindow(), "Import List from File");
+                    d.addFileFormat(new BedFormat());
+                    d.setVisible(true);
+                    if (d.isImportAccepted()) {
+                        new ImportRegionListWorker(geneListName, d.getPath(), d.getDelimiter(), d.getNumHeaderLines(), d.getFileFormat()).execute();
+                    }
+
+                    d.dispose();
                 }
-                
-                d.dispose();
-                view.refresh();
             }
             
         });
@@ -122,7 +91,7 @@ public class IntervalPage extends SubSectionView {
         return b;
     }
     
-    private class ImportCohortSW extends SwingWorker {
+    private class ImportRegionListWorker extends MedSavantWorker<Object> {
         private final String path;
         private final char delim;
         private final int numHeaderLines;
@@ -130,8 +99,8 @@ public class IntervalPage extends SubSectionView {
         private GenericProgressDialog progressDialog;
         private final String geneListName;
 
-        private ImportCohortSW(String genelistname, String path, char delimiter, int numHeaderLines, FileFormat ff) {
-            this.geneListName = genelistname;
+        private ImportRegionListWorker(String geneListName, String path, char delimiter, int numHeaderLines, FileFormat ff) {
+            this.geneListName = geneListName;
             this.path = path;
             this.delim = delimiter;
             this.numHeaderLines = numHeaderLines;
@@ -140,10 +109,9 @@ public class IntervalPage extends SubSectionView {
 
         @Override
         protected Object doInBackground() throws Exception {
-            
+            showProgress(-1.0);
             Iterator<String[]> i = ImportDelimitedFile.getFileIterator(path, delim, numHeaderLines,fileFormat);
             
-            //DBUtil.addRegionList(geneListName,i);
             RegionQueryUtil.addRegionList(geneListName, ReferenceController.getInstance().getCurrentReferenceId(), i);
             
             return null;
@@ -151,31 +119,26 @@ public class IntervalPage extends SubSectionView {
         }
         
         @Override
-        protected void done() {
-            try {
-                get();
-            } catch (Exception x) {
-                // TODO: #90
-                LOG.log(Level.SEVERE, null, x);
-            }
-            
-            if (progressDialog != null) {
-                if (!progressDialog.wasCancelRequested()) {
-                    progressDialog.setComplete();
+        protected void showProgress(double fraction) {
+            if (fraction == 1.0) {
+                progressDialog.setComplete();
+            } else {
+                if (progressDialog == null) {
+                    progressDialog = new GenericProgressDialog("Importing gene list","Importing gene list") {
+                        @Override
+                        public void cancelRequested() {
+                            cancel(true);
+                        }
+                    };
+                    progressDialog.setVisible(true);
                 }
             }
         }
 
-        private void setProgressDialog(GenericProgressDialog importpd) {
-            this.progressDialog = importpd;
+        @Override
+        protected void showSuccess(Object result) {
+            view.refresh();
         }
-
-        private void setLinesProcessed(int i) {
-            if (progressDialog != null) {
-                progressDialog.setStatus(i + " lines parsed");
-            }
-        }
-        
     }
     
     @Override

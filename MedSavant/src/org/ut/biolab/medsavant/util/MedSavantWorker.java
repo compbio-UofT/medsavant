@@ -41,6 +41,7 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
             }
         }
     }
+    
 
     /**
      * Show progress during a lengthy operation.  As a special case, pass 1.0 to remove the progress display.

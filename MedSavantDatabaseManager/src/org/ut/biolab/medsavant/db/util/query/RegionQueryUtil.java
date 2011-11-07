@@ -25,20 +25,19 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetMembershipTableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.BEDRecord;
 import org.ut.biolab.medsavant.db.model.GenomicRegion;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RegionSet;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetMembershipTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
@@ -55,6 +54,8 @@ public class RegionQueryUtil {
         TableSchema regionSetTable = MedSavantDatabase.RegionsetTableSchema;     
         TableSchema regionMemberTable = MedSavantDatabase.RegionsetmembershipTableSchema;
         
+        conn.setAutoCommit(false);
+
         //add region set
         InsertQuery query1 = new InsertQuery(regionSetTable.getTable());
         query1.addColumn(regionSetTable.getDBColumn(RegionSetTableSchema.COLUMNNAME_OF_NAME), geneListName);
@@ -67,8 +68,7 @@ public class RegionQueryUtil {
         int regionSetId = rs.getInt(1);
         
         //add regions
-        conn.setAutoCommit(false);
-        while(i.hasNext()){
+        while (i.hasNext() && !Thread.currentThread().isInterrupted()){
             String[] line = i.next();
             InsertQuery query = new InsertQuery(regionMemberTable.getTable());
             query.addColumn(regionMemberTable.getDBColumn(RegionSetMembershipTableSchema.COLUMNNAME_OF_GENOME_ID), genomeId);
@@ -80,8 +80,12 @@ public class RegionQueryUtil {
             
             conn.createStatement().executeUpdate(query.toString());
         }
-        conn.commit();
-        conn.setAutoCommit(false);
+        if (Thread.currentThread().isInterrupted()) {
+            conn.rollback();
+        } else {
+            conn.commit();
+        }
+        conn.setAutoCommit(true);
     }
     
     public static void removeRegionList(int regionSetId) throws SQLException {
