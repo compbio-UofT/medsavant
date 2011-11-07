@@ -43,6 +43,7 @@ import javax.swing.*;
 
 import com.jidesoft.docking.DockableFrame;
 import com.jidesoft.docking.DockingManager;
+import com.mysql.jdbc.CommunicationsException;
 import net.sf.samtools.SAMRecord;
 
 
@@ -289,6 +290,17 @@ public class MiscUtils {
             return "Null pointer exception";
         } else if (t instanceof FileNotFoundException) {
             return String.format("File %s not found", t.getMessage());
+        } else if (t instanceof CommunicationsException) {
+            // MySQL stuffs the whole stack-trace into this exception.
+            String[] lines = t.getMessage().split("\\n");
+            String result = lines[0];
+            for (int i = 1; i < lines.length; i++) {
+                if (lines[i].startsWith("MESSAGE: ")) {
+                    result += lines[i].substring(7);
+                    break;
+                }
+            }
+            return result;
         } else {
             return t.getMessage();
         }
