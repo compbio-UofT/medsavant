@@ -1,13 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 
-/*
- * LoginForm.java
- *
- * Created on Jun 20, 2011, 11:11:22 AM
- */
 package org.ut.biolab.medsavant.view.login;
 
 import java.awt.BorderLayout;
@@ -17,9 +23,15 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+
+import com.mysql.jdbc.CommunicationsException;
+
+import java.sql.SQLException;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.MedSavantProgramInformation;
@@ -27,6 +39,7 @@ import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.AddDatabaseDialog;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -35,7 +48,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class LoginForm extends javax.swing.JPanel implements LoginListener {
+public class LoginForm extends JPanel implements LoginListener {
+    private static final Logger LOG = Logger.getLogger(LoginForm.class.getName());
 
     private static class SpiralPanel extends JPanel {
         private final Image img;
@@ -44,6 +58,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOGO).getImage();
         }
         
+        @Override
         public void paintComponent(Graphics g) {
             //g.setColor(Color.black);
             //g.fillRect(0, 0, this.getWidth(), this.getHeight());
@@ -58,38 +73,38 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         
         initComponents();
         
-        cb_rememberpassword.setVisible(false);
-        cb_autosignin.setVisible(false);
+        rememberPasswordCheck.setVisible(false);
+        autoSigninCheck.setVisible(false);
         
-        field_username.setText(LoginController.getUsername());
-        field_password.setText(LoginController.getPassword());
+        userField.setText(LoginController.getUsername());
+        passwordField.setText(LoginController.getPassword());
 
-        this.field_username.setText(SettingsController.getInstance().getUsername());
+        userField.setText(SettingsController.getInstance().getUsername());
         if (SettingsController.getInstance().getRememberPassword()) {
-            this.field_password.setText(SettingsController.getInstance().getPassword());
+            passwordField.setText(SettingsController.getInstance().getPassword());
         }
-        this.cb_rememberpassword.setSelected(SettingsController.getInstance().getRememberPassword());
-        this.cb_autosignin.setSelected(SettingsController.getInstance().getAutoLogin());
+        rememberPasswordCheck.setSelected(SettingsController.getInstance().getRememberPassword());
+        autoSigninCheck.setSelected(SettingsController.getInstance().getAutoLogin());
 
-        this.label_versioninformation.setText(MedSavantProgramInformation.getVersion() + " " + MedSavantProgramInformation.getReleaseType().toUpperCase());
+        versionInfoLabel.setText(MedSavantProgramInformation.getVersion() + " " + MedSavantProgramInformation.getReleaseType().toUpperCase());
 
-        ViewUtil.clear(this.cb_autosignin);
-        ViewUtil.clear(this.cb_rememberpassword);
+        ViewUtil.clear(autoSigninCheck);
+        ViewUtil.clear(rememberPasswordCheck);
 
         updateAutoSignInCheckBoxBasedOnPasswordCheckbox();
 
-        label_status.setText("");
-        this.panel_title.add(Box.createVerticalGlue(),0); 
+        statusLabel.setText("");
+        titlePanel.add(Box.createVerticalGlue(),0); 
         
         spiralPanel.setLayout(new BorderLayout());
         spiralPanel.add(new SpiralPanel(),BorderLayout.CENTER); 
         
-        this.panel_details.setVisible(false);
+        detailsPanel.setVisible(false);
         this.button_create_db.setVisible(false);
         
-        this.field_database.setText(SettingsController.getInstance().getValue(SettingsController.KEY_DB_NAME));
-        this.field_port.setText(SettingsController.getInstance().getValue(SettingsController.KEY_DB_PORT));
-         this.field_hostname.setText(SettingsController.getInstance().getValue(SettingsController.KEY_DB_HOST));
+        databaseField.setText(SettingsController.getInstance().getValue(SettingsController.KEY_DB_NAME));
+        portField.setText(SettingsController.getInstance().getValue(SettingsController.KEY_DB_PORT));
+        hostField.setText(SettingsController.getInstance().getValue(SettingsController.KEY_DB_HOST));
         
         
         this.setOpaque(false);
@@ -107,70 +122,67 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        panel_title = new javax.swing.JPanel();
-        field_username = new javax.swing.JTextField();
-        field_password = new javax.swing.JPasswordField();
-        cb_rememberpassword = new javax.swing.JCheckBox();
-        cb_autosignin = new javax.swing.JCheckBox();
+        titlePanel = new javax.swing.JPanel();
+        userField = new javax.swing.JTextField();
+        passwordField = new javax.swing.JPasswordField();
+        rememberPasswordCheck = new javax.swing.JCheckBox();
+        autoSigninCheck = new javax.swing.JCheckBox();
         spiralPanel = new javax.swing.JPanel();
-        label_versioninformation = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jToggleButton1 = new javax.swing.JToggleButton();
-        panel_details = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        field_hostname = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
-        field_port = new javax.swing.JTextField();
-        jSeparator1 = new javax.swing.JSeparator();
-        jSeparator2 = new javax.swing.JSeparator();
+        versionInfoLabel = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
+        javax.swing.JToggleButton jToggleButton1 = new javax.swing.JToggleButton();
+        detailsPanel = new javax.swing.JPanel();
+        javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
+        hostField = new javax.swing.JTextField();
+        javax.swing.JLabel jLabel4 = new javax.swing.JLabel();
+        portField = new javax.swing.JTextField();
+        javax.swing.JSeparator jSeparator1 = new javax.swing.JSeparator();
+        javax.swing.JSeparator jSeparator2 = new javax.swing.JSeparator();
         button_create_db = new javax.swing.JButton();
-        button_login = new javax.swing.JButton();
-        label_status = new javax.swing.JLabel();
-        field_database = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
+        loginButton = new javax.swing.JButton();
+        statusLabel = new javax.swing.JLabel();
+        databaseField = new javax.swing.JTextField();
+        javax.swing.JLabel jLabel5 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        panel_title.setBackground(new java.awt.Color(217, 222, 229));
-        panel_title.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        panel_title.setMaximumSize(new java.awt.Dimension(400, 32767));
-        panel_title.setMinimumSize(new java.awt.Dimension(400, 800));
+        titlePanel.setBackground(new java.awt.Color(217, 222, 229));
+        titlePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        titlePanel.setMaximumSize(new java.awt.Dimension(400, 32767));
+        titlePanel.setMinimumSize(new java.awt.Dimension(400, 800));
 
-        field_username.setColumns(25);
-        field_username.setFont(new java.awt.Font("Arial", 1, 18));
-        field_username.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        field_username.addKeyListener(new java.awt.event.KeyAdapter() {
+        userField.setColumns(25);
+        userField.setFont(new java.awt.Font("Arial", 1, 18));
+        userField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        userField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                field_usernameKeyPressed(evt);
+                userFieldKeyPressed(evt);
             }
         });
 
-        field_password.setColumns(25);
-        field_password.setFont(new java.awt.Font("Arial", 0, 18));
-        field_password.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        field_password.addKeyListener(new java.awt.event.KeyAdapter() {
+        passwordField.setColumns(25);
+        passwordField.setFont(new java.awt.Font("Arial", 0, 18));
+        passwordField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        passwordField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                field_passwordKeyPressed(evt);
+                passwordFieldKeyPressed(evt);
             }
         });
 
-        cb_rememberpassword.setBackground(new java.awt.Color(255, 255, 255));
-        cb_rememberpassword.setText("Remember my password");
-        cb_rememberpassword.addActionListener(new java.awt.event.ActionListener() {
+        rememberPasswordCheck.setBackground(new java.awt.Color(255, 255, 255));
+        rememberPasswordCheck.setText("Remember my password");
+        rememberPasswordCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cb_rememberpasswordActionPerformed(evt);
+                rememberPasswordCheckActionPerformed(evt);
             }
         });
 
-        cb_autosignin.setBackground(new java.awt.Color(255, 255, 255));
-        cb_autosignin.setText("Sign me in automatically");
-        cb_autosignin.addActionListener(new java.awt.event.ActionListener() {
+        autoSigninCheck.setBackground(new java.awt.Color(255, 255, 255));
+        autoSigninCheck.setText("Sign me in automatically");
+        autoSigninCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cb_autosigninActionPerformed(evt);
+                autoSigninCheckActionPerformed(evt);
             }
         });
 
@@ -187,9 +199,9 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             .addGap(0, 150, Short.MAX_VALUE)
         );
 
-        label_versioninformation.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        label_versioninformation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        label_versioninformation.setText("version information");
+        versionInfoLabel.setFont(new java.awt.Font("Tahoma", 0, 14));
+        versionInfoLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        versionInfoLabel.setText("version information");
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("username");
@@ -204,25 +216,25 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             }
         });
 
-        panel_details.setOpaque(false);
+        detailsPanel.setOpaque(false);
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel3.setText("hostname");
 
-        field_hostname.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        field_hostname.addKeyListener(new java.awt.event.KeyAdapter() {
+        hostField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        hostField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                field_hostnameKeyPressed(evt);
+                hostFieldKeyPressed(evt);
             }
         });
 
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel4.setText("port");
 
-        field_port.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        field_port.addKeyListener(new java.awt.event.KeyAdapter() {
+        portField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        portField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                field_portKeyPressed(evt);
+                portFieldKeyPressed(evt);
             }
         });
 
@@ -233,34 +245,34 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             }
         });
 
-        javax.swing.GroupLayout panel_detailsLayout = new javax.swing.GroupLayout(panel_details);
-        panel_details.setLayout(panel_detailsLayout);
-        panel_detailsLayout.setHorizontalGroup(
-            panel_detailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panel_detailsLayout.createSequentialGroup()
+        javax.swing.GroupLayout detailsPanelLayout = new javax.swing.GroupLayout(detailsPanel);
+        detailsPanel.setLayout(detailsPanelLayout);
+        detailsPanelLayout.setHorizontalGroup(
+            detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(detailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(panel_detailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                    .addComponent(field_hostname, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                    .addComponent(field_port, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                    .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                    .addComponent(button_create_db, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
+                .addGroup(detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                    .addComponent(hostField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                    .addComponent(portField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                    .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                    .addComponent(button_create_db, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        panel_detailsLayout.setVerticalGroup(
-            panel_detailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panel_detailsLayout.createSequentialGroup()
+        detailsPanelLayout.setVerticalGroup(
+            detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(detailsPanelLayout.createSequentialGroup()
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(field_hostname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(hostField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(field_port, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(button_create_db)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -268,87 +280,87 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        button_login.setBackground(new java.awt.Color(0, 0, 0));
-        button_login.setText("Login");
-        button_login.addActionListener(new java.awt.event.ActionListener() {
+        loginButton.setBackground(new java.awt.Color(0, 0, 0));
+        loginButton.setText("Login");
+        loginButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                button_loginActionPerformed(evt);
+                loginButtonActionPerformed(evt);
             }
         });
 
-        label_status.setFont(new java.awt.Font("Tahoma", 0, 14));
-        label_status.setText("Label");
+        statusLabel.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        statusLabel.setText("Label");
 
-        field_database.setFont(new java.awt.Font("Arial", 1, 18));
-        field_database.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        field_database.addKeyListener(new java.awt.event.KeyAdapter() {
+        databaseField.setFont(new java.awt.Font("Arial", 1, 18));
+        databaseField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        databaseField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                field_databaseKeyPressed(evt);
+                databaseFieldKeyPressed(evt);
             }
         });
 
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel5.setText("database");
 
-        javax.swing.GroupLayout panel_titleLayout = new javax.swing.GroupLayout(panel_title);
-        panel_title.setLayout(panel_titleLayout);
-        panel_titleLayout.setHorizontalGroup(
-            panel_titleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(label_versioninformation, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+        javax.swing.GroupLayout titlePanelLayout = new javax.swing.GroupLayout(titlePanel);
+        titlePanel.setLayout(titlePanelLayout);
+        titlePanelLayout.setHorizontalGroup(
+            titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(versionInfoLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
             .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
             .addComponent(spiralPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-            .addComponent(field_username, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+            .addComponent(userField, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
             .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-            .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-            .addGroup(panel_titleLayout.createSequentialGroup()
-                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+            .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+            .addGroup(titlePanelLayout.createSequentialGroup()
+                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
                 .addContainerGap())
-            .addComponent(field_database, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-            .addGroup(panel_titleLayout.createSequentialGroup()
-                .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+            .addComponent(databaseField, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+            .addGroup(titlePanelLayout.createSequentialGroup()
+                .addComponent(jToggleButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
                 .addContainerGap())
-            .addGroup(panel_titleLayout.createSequentialGroup()
-                .addGroup(panel_titleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cb_rememberpassword)
-                    .addComponent(cb_autosignin))
+            .addGroup(titlePanelLayout.createSequentialGroup()
+                .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(rememberPasswordCheck)
+                    .addComponent(autoSigninCheck))
                 .addContainerGap())
-            .addComponent(panel_details, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(panel_titleLayout.createSequentialGroup()
-                .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
+            .addComponent(detailsPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(titlePanelLayout.createSequentialGroup()
+                .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
                 .addGap(171, 171, 171)
-                .addComponent(button_login)
+                .addComponent(loginButton)
                 .addContainerGap())
         );
-        panel_titleLayout.setVerticalGroup(
-            panel_titleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panel_titleLayout.createSequentialGroup()
+        titlePanelLayout.setVerticalGroup(
+            titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(titlePanelLayout.createSequentialGroup()
                 .addComponent(spiralPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(label_versioninformation)
+                .addComponent(versionInfoLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(field_username, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(userField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(field_password, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(field_database, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(databaseField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jToggleButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cb_autosignin)
+                .addComponent(autoSigninCheck)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cb_rememberpassword)
+                .addComponent(rememberPasswordCheck)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panel_details, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(detailsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(panel_titleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(label_status)
-                    .addComponent(button_login)))
+                .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(statusLabel)
+                    .addComponent(loginButton)))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -358,205 +370,148 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(45, 45, 45, 45);
-        add(panel_title, gridBagConstraints);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
-        add(jPanel1, new java.awt.GridBagConstraints());
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
-        add(jPanel2, new java.awt.GridBagConstraints());
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
-        add(jPanel3, new java.awt.GridBagConstraints());
+        add(titlePanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void field_passwordKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_field_passwordKeyPressed
+    private void passwordFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordFieldKeyPressed
         int key = evt.getKeyCode();
         if (key == KeyEvent.VK_ENTER) {
             loginUsingEnteredUsernameAndPassword();
         }
-    }//GEN-LAST:event_field_passwordKeyPressed
+    }//GEN-LAST:event_passwordFieldKeyPressed
 
-    private void cb_rememberpasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cb_rememberpasswordActionPerformed
-        String value = SettingsController.booleanToString(this.cb_rememberpassword.isSelected());
+    private void rememberPasswordCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rememberPasswordCheckActionPerformed
+        String value = SettingsController.booleanToString(rememberPasswordCheck.isSelected());
         SettingsController.getInstance().setValue(SettingsController.KEY_REMEMBER_PASSWORD, value);
         updateAutoSignInCheckBoxBasedOnPasswordCheckbox();
-    }//GEN-LAST:event_cb_rememberpasswordActionPerformed
+    }//GEN-LAST:event_rememberPasswordCheckActionPerformed
 
-    private void cb_autosigninActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cb_autosigninActionPerformed
-        String value = SettingsController.booleanToString(this.cb_autosignin.isSelected());
+    private void autoSigninCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoSigninCheckActionPerformed
+        String value = SettingsController.booleanToString(autoSigninCheck.isSelected());
         SettingsController.getInstance().setValue(SettingsController.KEY_AUTOLOGIN, value);
-    }//GEN-LAST:event_cb_autosigninActionPerformed
+    }//GEN-LAST:event_autoSigninCheckActionPerformed
 
-    private void button_loginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_loginActionPerformed
+    private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
         this.loginUsingEnteredUsernameAndPassword();
-    }//GEN-LAST:event_button_loginActionPerformed
+    }//GEN-LAST:event_loginButtonActionPerformed
 
-    private void field_usernameKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_field_usernameKeyPressed
+    private void userFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_userFieldKeyPressed
         int key = evt.getKeyCode();
         if (key == KeyEvent.VK_ENTER) {
             loginUsingEnteredUsernameAndPassword();
         }
-}//GEN-LAST:event_field_usernameKeyPressed
+}//GEN-LAST:event_userFieldKeyPressed
 
     private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
-        this.panel_details.setVisible(!this.panel_details.isVisible());
+        detailsPanel.setVisible(!detailsPanel.isVisible());
         this.button_create_db.setVisible(!this.button_create_db.isVisible());
     }//GEN-LAST:event_jToggleButton1ActionPerformed
 
-    private void field_hostnameKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_field_hostnameKeyPressed
+    private void hostFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_hostFieldKeyPressed
         int key = evt.getKeyCode();
         if (key == KeyEvent.VK_ENTER) {
             loginUsingEnteredUsernameAndPassword();
         }
-    }//GEN-LAST:event_field_hostnameKeyPressed
+    }//GEN-LAST:event_hostFieldKeyPressed
 
-    private void field_portKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_field_portKeyPressed
+    private void portFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_portFieldKeyPressed
         int key = evt.getKeyCode();
         if (key == KeyEvent.VK_ENTER) {
             loginUsingEnteredUsernameAndPassword();
         }
-    }//GEN-LAST:event_field_portKeyPressed
+    }//GEN-LAST:event_portFieldKeyPressed
 
-    private void field_databaseKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_field_databaseKeyPressed
+    private void databaseFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_databaseFieldKeyPressed
         int key = evt.getKeyCode();
         if (key == KeyEvent.VK_ENTER) {
             loginUsingEnteredUsernameAndPassword();
         }
-    }//GEN-LAST:event_field_databaseKeyPressed
+    }//GEN-LAST:event_databaseFieldKeyPressed
 
     private void button_create_dbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_create_dbActionPerformed
-        AddDatabaseDialog d = new AddDatabaseDialog(this.field_hostname.getText(),this.field_port.getText(),this.field_database.getText());
+        AddDatabaseDialog d = new AddDatabaseDialog(hostField.getText(), portField.getText(), databaseField.getText());
         d.setVisible(true);
         
     }//GEN-LAST:event_button_create_dbActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox autoSigninCheck;
     private javax.swing.JButton button_create_db;
-    private javax.swing.JButton button_login;
-    private javax.swing.JCheckBox cb_autosignin;
-    private javax.swing.JCheckBox cb_rememberpassword;
-    private javax.swing.JTextField field_database;
-    private javax.swing.JTextField field_hostname;
-    private javax.swing.JPasswordField field_password;
-    private javax.swing.JTextField field_port;
-    private javax.swing.JTextField field_username;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JToggleButton jToggleButton1;
-    private javax.swing.JLabel label_status;
-    private javax.swing.JLabel label_versioninformation;
-    private javax.swing.JPanel panel_details;
-    private javax.swing.JPanel panel_title;
+    private javax.swing.JTextField databaseField;
+    private javax.swing.JPanel detailsPanel;
+    private javax.swing.JTextField hostField;
+    private javax.swing.JButton loginButton;
+    private javax.swing.JPasswordField passwordField;
+    private javax.swing.JTextField portField;
+    private javax.swing.JCheckBox rememberPasswordCheck;
     private javax.swing.JPanel spiralPanel;
+    private javax.swing.JLabel statusLabel;
+    private javax.swing.JPanel titlePanel;
+    private javax.swing.JTextField userField;
+    private javax.swing.JLabel versionInfoLabel;
     // End of variables declaration//GEN-END:variables
 
     private void loginUsingEnteredUsernameAndPassword() {
         
         final int port;
-        try { port = Integer.parseInt(field_port.getText()); }
-        catch (Exception e) { this.field_port.requestFocus(); return; }
+        try { port = Integer.parseInt(portField.getText()); }
+        catch (Exception e) { portField.requestFocus(); return; }
         
-        SettingsController.getInstance().setValue(SettingsController.KEY_DB_NAME,this.field_database.getText());
-        SettingsController.getInstance().setValue(SettingsController.KEY_DB_PORT,this.field_port.getText());
-        SettingsController.getInstance().setValue(SettingsController.KEY_DB_HOST,this.field_hostname.getText());
+        SettingsController.getInstance().setValue(SettingsController.KEY_DB_NAME, databaseField.getText());
+        SettingsController.getInstance().setValue(SettingsController.KEY_DB_PORT, portField.getText());
+        SettingsController.getInstance().setValue(SettingsController.KEY_DB_HOST, hostField.getText());
         
-        ConnectionController.setDbname(SettingsController.getInstance().getValue(SettingsController.KEY_DB_NAME));
+        ConnectionController.setDBName(SettingsController.getInstance().getValue(SettingsController.KEY_DB_NAME));
         ConnectionController.setPort(Integer.parseInt(SettingsController.getInstance().getValue(SettingsController.KEY_DB_PORT)));
-        ConnectionController.setDbhost(SettingsController.getInstance().getValue(SettingsController.KEY_DB_HOST));
+        ConnectionController.setHost(SettingsController.getInstance().getValue(SettingsController.KEY_DB_HOST));
         
-        this.label_status.setText("signing in...");
-        this.label_status.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        this.label_status.setForeground(Color.black);
-        this.button_login.setEnabled(false);
+        statusLabel.setText("signing in...");
+        statusLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        statusLabel.setForeground(Color.black);
+        statusLabel.setEnabled(false);
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                LoginController.login(field_username.getText(),field_password.getText());
+                LoginController.login(userField.getText(), passwordField.getText());
             }
         });
-        //new Thread(new RunLogin(this,this.field_username.getText(),this.field_password.getText())).start();
     }
 
     private void updateAutoSignInCheckBoxBasedOnPasswordCheckbox() {
-        boolean rememberpw = this.cb_rememberpassword.isSelected();
-        boolean autosignin = this.cb_autosignin.isSelected();
+        boolean rememberpw = rememberPasswordCheck.isSelected();
+        boolean autosignin = autoSigninCheck.isSelected();
         if (!rememberpw) {
-            this.cb_autosignin.setEnabled(false);
+            autoSigninCheck.setEnabled(false);
             if (autosignin) {
-                this.cb_autosignin.setSelected(false);
+                autoSigninCheck.setSelected(false);
                 SettingsController.getInstance().setAutoLogin(false);
             }
         } else {
-            this.cb_autosignin.setEnabled(true);
+            autoSigninCheck.setEnabled(true);
         }
     }
 
     public void notifyOfUnsuccessfulLogin(Exception ex) {
         
-        if (ex instanceof NonFatalDatabaseException) {
-        
-            NonFatalDatabaseException ex0 = (NonFatalDatabaseException) ex;
-        if (!LoginController.isLoggedIn()) {
-            if (ex0.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_ACCESS_DENIED) {
-                this.label_status.setText("login incorrect");
-            } else if (ex0.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_DB_CONNECTION_FAILURE
-                    ) {
-                this.label_status.setText("error accessing database");
-            } else if (ex0.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_UNKNOWN) {
-                this.label_status.setText("login failure");
-            }
-            this.label_status.setFont(new Font("Tahoma", Font.PLAIN, 14));
-            this.label_status.setForeground(Color.red);
-            this.field_username.requestFocus();
-            this.button_login.setEnabled(true);
-        }
+        if (ex instanceof CommunicationsException) {
+            setErrorStatus(MiscUtils.extractMySQLMessage((CommunicationsException)ex).toLowerCase());
         } else {
-            ex.printStackTrace();
-            this.label_status.setText("error accessing database");
-            this.label_status.setFont(new Font("Tahoma", Font.PLAIN, 14));
-            this.label_status.setForeground(Color.red);
-            this.field_username.requestFocus();
-            this.button_login.setEnabled(true);
+            if (ex instanceof SQLException) {
+                if (ex.getMessage().startsWith("Access denied")) {
+                    setErrorStatus("access denied");
+                    return;
+                }
+            }
+            LOG.log(Level.SEVERE, "Error accessing database.", ex);
+            setErrorStatus("error accessing database");
         }
+    }
+
+    private void setErrorStatus(String msg) {
+        statusLabel.setText(msg);
+        statusLabel.setForeground(Color.red);
+        userField.requestFocus();
+        loginButton.setEnabled(true);
     }
 
     public void loginEvent(LoginEvent evt) {

@@ -19,7 +19,6 @@ package org.ut.biolab.medsavant.view.manage;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 
 import org.ut.biolab.medsavant.controller.UserController;
 import org.ut.biolab.medsavant.db.model.UserLevel;
@@ -192,17 +191,17 @@ public class NewUserDialog extends javax.swing.JDialog {
             String username = usernameField.getText();
 
             if (UserQueryUtil.userExists(username)) {
-                JOptionPane.showMessageDialog(this, "User already exists.");
+                DialogUtils.displayMessage("User already exists.");
             } else {
                 if (UserController.getInstance().addUser(username, passwordField.getPassword(), UserLevel.valueOf(privilegeGroup.getSelection().getActionCommand()))) {
                     setVisible(false);
                 } else {
-                    JOptionPane.showMessageDialog(this, "Problem adding user.");
+                    DialogUtils.displayError("Unable to add user.");
                 }
             }
         } catch (SQLException x) {
             LOG.log(Level.SEVERE, "Error adding user.", x);
-            DialogUtils.displayErrorMessage("Problem adding user.", x);
+            DialogUtils.displayErrorMessage("Unable to add user.", x);
         }
     }//GEN-LAST:event_okButtonActionPerformed
 
