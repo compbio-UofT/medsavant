@@ -33,11 +33,6 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.*;
 
@@ -282,6 +277,26 @@ public class MiscUtils {
 
 
     /**
+     * The message for a MySQL CommunicationsException contains a lot of junk (including
+     * a full stack-trace), but hidden inside is a useful message.  Extract it.
+     * @param x the exception to be parsed.
+     * @return text found on line starting with "MESSAGE: "
+     */
+    public static String extractMySQLMessage(CommunicationsException x) {
+        // MySQL stuffs the whole stack-trace into this exception.
+        String key = "\nMESSAGE: ";
+        String msg = x.getMessage();
+        int startPos = msg.indexOf(key);
+        if (startPos >= 0) {
+            startPos += key.length();
+            int endPos = msg.indexOf('\n', startPos);
+            return msg.substring(startPos, endPos);
+        }
+        // Couldn' find our magic string.  Return the whole thing.
+        return msg;
+    }
+
+    /**
      * Sometimes Throwable.getMessage() returns a useless string (e.g. "null" for a NullPointerException).
      * Return a string which is more meaningful to the end-user.
      */
@@ -291,14 +306,11 @@ public class MiscUtils {
         } else if (t instanceof FileNotFoundException) {
             return String.format("File %s not found", t.getMessage());
         } else if (t instanceof CommunicationsException) {
-            // MySQL stuffs the whole stack-trace into this exception.
-            String[] lines = t.getMessage().split("\\n");
-            String result = lines[0];
-            for (int i = 1; i < lines.length; i++) {
-                if (lines[i].startsWith("MESSAGE: ")) {
-                    result += lines[i].substring(7);
-                    break;
-                }
+            String result = t.getMessage();
+            int retPos = result.indexOf('\n');
+            if (retPos > 0) {
+                result = result.substring(0, retPos);
+                result += extractMySQLMessage((CommunicationsException)t);
             }
             return result;
         } else {

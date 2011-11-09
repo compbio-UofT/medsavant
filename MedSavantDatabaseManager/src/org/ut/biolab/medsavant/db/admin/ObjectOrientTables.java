@@ -48,8 +48,8 @@ public class ObjectOrientTables {
         BufferedWriter bw = new BufferedWriter(new FileWriter(outfile));
         
         ConnectionController.setPort(port);
-        ConnectionController.setDbhost(dbhost);
-        ConnectionController.setDbname(dbname);
+        ConnectionController.setHost(dbhost);
+        ConnectionController.setDBName(dbname);
         
         Connection conn = ConnectionController.connectPooled();
         

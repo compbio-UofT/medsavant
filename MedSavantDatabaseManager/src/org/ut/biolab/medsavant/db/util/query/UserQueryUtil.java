@@ -43,19 +43,26 @@ public class UserQueryUtil {
     }
 
     public static boolean userExists(String userName) throws SQLException {
-        ResultSet rs = ConnectionController.executeQuery("SELECT user FROM mysql.user WHERE user='%s';", userName);
+        ResultSet rs = ConnectionController.executeQuery("SELECT user FROM mysql.user WHERE user=?;", userName);
         return rs.next();
     }
     
-    public static void addUser(String name, char[] pass, UserLevel level) throws SQLException {
+    public static synchronized void addUser(String name, char[] pass, UserLevel level) throws SQLException {
+        ConnectionController.connectPooled().setAutoCommit(false);
+        
         try {
-            ConnectionController.executeUpdate("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';", name, new String(pass));
+            ConnectionController.executeUpdate("CREATE USER ?@'localhost' IDENTIFIED BY ?;", name, new String(pass));
+            grantPrivileges(name, level);
+            ConnectionController.connectPooled().commit();
+        } catch (SQLException sqlx) {
+            ConnectionController.connectPooled().rollback();
+            throw sqlx;
         } finally {
             for (int i = 0; i < pass.length; i++) {
                 pass[i] = 0;
             }
+            ConnectionController.connectPooled().setAutoCommit(true);
         }
-        grantPrivileges(name, level);
     }
 
     /**
@@ -67,14 +74,16 @@ public class UserQueryUtil {
     public static void grantPrivileges(String name, UserLevel level) throws SQLException {
         switch (level) {
             case ADMIN:
-                ConnectionController.executeUpdate("GRANT ALL ON %s.* TO '%s'@'localhost';", ConnectionController.getDbname(), name);
-                ConnectionController.executeUpdate("GRANT CREATE USER ON *.* TO '%s'@'localhost';", name);
+                ConnectionController.executeUpdate(String.format("GRANT ALL ON %s.* TO ?@'localhost';", ConnectionController.getDBName()), name);
+                ConnectionController.executeUpdate(String.format("GRANT GRANT OPTION ON *.* TO ?@'localhost';", ConnectionController.getDBName()), name);
+                ConnectionController.executeUpdate(String.format("GRANT CREATE USER ON *.* TO ?@'localhost';", ConnectionController.getDBName()), name);
+                ConnectionController.executeUpdate("GRANT SELECT ON mysql.user TO ?@'localhost';", name);
                 break;
             case USER:
-                ConnectionController.executeUpdate("GRANT SELECT, CREATE TEMPORARY TABLES ON %s.* TO '%s'@'localhost';", ConnectionController.getDbname(), name);
+                ConnectionController.executeUpdate(String.format("GRANT SELECT, CREATE TEMPORARY TABLES ON %s.* TO ?@'localhost';", ConnectionController.getDBName()), name);
                 break;
             case GUEST:
-                ConnectionController.executeUpdate("GRANT SELECT ON %s.* TO '%s'@'localhost'", ConnectionController.getDbname(), name);
+                ConnectionController.executeUpdate(String.format("GRANT SELECT ON %s.* TO ?@'localhost'", ConnectionController.getDBName()), name);
                 break;
         }                
     }
@@ -82,7 +91,7 @@ public class UserQueryUtil {
     public static boolean isUserAdmin(String name) throws SQLException {
         if (userExists(name)) {
             // If the user can create other users, they're assumed to be admin.
-            ResultSet rs = ConnectionController.executeQuery("SELECT Create_user_priv FROM mysql.user WHERE user='%s';", name);
+            ResultSet rs = ConnectionController.executeQuery("SELECT Create_user_priv FROM mysql.user WHERE user=?;", name);
             rs.next();
             return rs.getString(1).equals("Y");
         } else {
@@ -93,13 +102,13 @@ public class UserQueryUtil {
     public static UserLevel getUserLevel(String name) throws SQLException {
         if (userExists(name)) {
             // If the user can create other users, they're assumed to be admin.
-            ResultSet rs = ConnectionController.executeQuery("SELECT Create_user_priv FROM mysql.user WHERE user='%s';", name);
+            ResultSet rs = ConnectionController.executeQuery("SELECT Create_user_priv FROM mysql.user WHERE user=?;", name);
             if (rs.next()) {
                 if (rs.getString(1).equals("Y")) {
                     return UserLevel.ADMIN;
                 }
             }
-            rs = ConnectionController.executeQuery("SELECT Create_tmp_table_priv FROM mysql.db WHERE user='%s'", name, ConnectionController.getDbname());
+            rs = ConnectionController.executeQuery("SELECT Create_tmp_table_priv FROM mysql.db WHERE user=?", name, ConnectionController.getDBName());
             if (rs.next()) {
                 if (rs.getString(1).equals("Y")) {
                     return UserLevel.USER;
@@ -111,6 +120,6 @@ public class UserQueryUtil {
     }
         
     public static void removeUser(String name) throws SQLException {
-        ConnectionController.executeUpdate("DROP USER '%s'@'localhost';", name);
+        ConnectionController.executeUpdate("DROP USER ?@'localhost';", name);
     }
 }

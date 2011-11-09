@@ -264,9 +264,12 @@ public class ImportFileView extends JDialog {
         return this.numHeaderLines;
     }
 
+    /**
+     * SwingWorker whose job it is to fetch a fifty-line preview of the file being imported.
+     */
     class PreviewWorker extends MedSavantWorker<List<String[]>> {
 
-        private static final int numLines = 50;
+        private static final int NUM_LINES = 50;
 
         @SuppressWarnings("LeakingThisInConstructor")
         PreviewWorker() {
@@ -278,8 +281,9 @@ public class ImportFileView extends JDialog {
 
         @Override
         protected List<String[]> doInBackground() throws Exception {
+            showProgress(-1.0);
             // This method returns two lists: header and data.  We only care about the data.
-            return ImportDelimitedFile.getPreview(pathField.getPath(), getDelimiter(), numHeaderLines, numLines, getFileFormat())[1];
+            return ImportDelimitedFile.getPreview(pathField.getPath(), getDelimiter(), numHeaderLines, NUM_LINES, getFileFormat())[1];
         }
         
         @SuppressWarnings("unchecked")
@@ -301,7 +305,7 @@ public class ImportFileView extends JDialog {
 
         @Override
         protected void showProgress(double fraction) {
-            if (fraction < 1.0) {
+            if (fraction < 0.0) {
                 previewPanel.add(waitPanel);
             } else {
                 worker = null;

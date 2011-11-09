@@ -18,9 +18,11 @@ package org.ut.biolab.medsavant.db.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,6 +33,16 @@ import java.util.logging.Logger;
 public class ConnectionController {
     private static final Logger LOG = Logger.getLogger(ConnectionController.class.getName());
     private static Connection lastConnection;
+    private static Map<String, PreparedStatement> statementCache = new HashMap<String, PreparedStatement>();
+
+    private static String dbHost;
+    private static int dbPort = -1;
+    private static String dbName;
+    private static String dbDriver = "com.mysql.jdbc.Driver";
+    private static String props = "enableQueryTimeouts=false";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
+    private static String user;
+    private static String pw;
+
 
     public static void disconnectAll() {
         if (lastConnection != null) {
@@ -39,114 +51,113 @@ public class ConnectionController {
             } catch (SQLException ex) {
             }
             lastConnection = null;
+            statementCache.clear();
         }
-
     }
-    
-    private static String dbhost;
-    private static int port;
-    private static String dbname;
     
     public static Connection connectPooled() throws SQLException {
         
-        if (!hostSet) {
+        if (dbHost == null) {
             throw new SQLException("DB host not set");
         }
         
-        if (!dbnameset) {
+        if (dbName == null) {
             throw new SQLException("DB name not set");
         }
         
-        if (!portset) {
+        if (dbPort == -1) {
             throw new SQLException("DB port not set");
         }
         
-        return connectInternal(dbhost,port,dbname);
+        if (lastConnection == null || lastConnection.isClosed()) {
+            lastConnection = connectOnce(dbHost, dbPort, dbName);
+        }
+        
+        return lastConnection;
     }
     
     public static Connection connectUnpooled(String dbhost, int port, String dbname) throws SQLException {
         return connectOnce(dbhost, port, dbname);
     }
     
-    private static Connection connectInternal(String dbhost, int port, String dbname) throws SQLException {
+    public static void setCredentials(String user, String pw) {
+        // New user/password, so start with a clean slate.
+        disconnectAll();
 
-        if (lastConnection == null || lastConnection.isClosed()) {
-            lastConnection = connectOnce(dbhost, port, dbname);
-        }
-        
-        return lastConnection;
+        ConnectionController.user = user;
+        ConnectionController.pw = pw;
     }
 
-    public static void setDbhost(String dbhost) {
-        hostSet = true;
-        ConnectionController.dbhost = dbhost;
+    public static void setHost(String value) {
+        ConnectionController.dbHost = value;
     }
 
-    public static void setDbname(String dbname) {
-        dbnameset = true;
-        ConnectionController.dbname = dbname;
+    public static String getDBName() {
+        return dbName;
     }
 
-    public static void setPort(int port) {
-        portset = true;
-        ConnectionController.port = port;
+    public static void setDBName(String value) {
+        ConnectionController.dbName = value;
     }
 
-    public static String getDbname() {
-        return dbname;
+    public static void setPort(int value) {
+        ConnectionController.dbPort = value;
     }
-
-    
-    
-    
-    private static String dbdriver = "com.mysql.jdbc.Driver";
-    private static String dburl = "jdbc:mysql://";
-    private static String user = "root";
-    private static String pw = "";
-    private static String props = "enableQueryTimeouts=false";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
 
     private static Connection connectOnce(String dbhost, int port, String dbname) throws SQLException {
-        Connection c;
         try {
-            Class.forName(dbdriver).newInstance();
+            Class.forName(dbDriver).newInstance();
         } catch (Exception ex) {
+            if (ex instanceof ClassNotFoundException || ex instanceof InstantiationException) {
+                throw new SQLException("Unable to load MySQL driver.");
+            }
         }
-        c = DriverManager.getConnection(dburl + dbhost + ":" + port + "/" + dbname + "?" + props, user, pw);
-        
-        return c;
+        return DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s?%s", dbhost, port, dbname, props), user, pw);
     }
-    private static boolean hostSet;
-    private static boolean portset;
-    private static boolean dbnameset;
-    
-    
+
+    /**
+     * Utility statement to retrieve a prepared statement if one has already been prepared,
+     * or to prepare a new statement if the given one is not found in the cache.
+     */
+    private static PreparedStatement getPreparedStatement(String query) throws SQLException {
+        if (statementCache.containsKey(query)) {
+            return statementCache.get(query);
+        }
+        PreparedStatement result = connectPooled().prepareStatement(query);
+        statementCache.put(query, result);
+        return result;
+    }
+
     /**
      * Utility method to make it easier to execute SELECT-style queries.
      * 
-     * @param format format string
-     * @param args arguments for format string
+     * @param stmt a query, possibly containing '?' placeholder elements
+     * @param args arguments for the placeholders
      * @return a ResultSet containing the results of the query
      * @throws SQLException 
      */
-    public static ResultSet executeQuery(String format, Object... args) throws SQLException {
-        Statement st = connectPooled().createStatement();
-        String query = String.format(format, args);
-        LOG.log(Level.FINE, query);
-        return st.executeQuery(query);
+    public static ResultSet executeQuery(String query, Object... args) throws SQLException {
+        PreparedStatement st = getPreparedStatement(query);
+        for (int i = 0; i < args.length; i++) {
+            st.setObject(i + 1, args[i]);
+        }
+        return st.executeQuery();
     }
 
     /**
      * Utility method to make it easier to execute data-manipulation calls which don't
      * return a result.
      *
-     * @param format format string
-     * @param args arguments for the format string
+     * @param stmt a query, possibly containing '?' placeholder elements
+     * @param args arguments for the placeholders
      * @throws SQLException 
      */
-    public static void executeUpdate(String format, Object... args) throws SQLException {
-        Statement st = connectPooled().createStatement();
-        String query = String.format(format, args);
-        LOG.log(Level.FINE, query);
-        st.executeUpdate(query);
+    public static void executeUpdate(String query, Object... args) throws SQLException {
+        PreparedStatement st = getPreparedStatement(query);
+        for (int i = 0; i < args.length; i++) {
+            st.setObject(i + 1, args[i]);
+        }
+        LOG.log(Level.INFO, query);
+        st.executeUpdate();
     }
 }

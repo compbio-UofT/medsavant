@@ -265,16 +265,16 @@ public class Setup {
         }
     }
 
-    public static void createDatabase(String dbhost, int port, String dbname, char[] rootPassword) throws SQLException {
+    public static void createDatabase(String dbHost, int port, String dbname, char[] rootPassword) throws SQLException {
         
-        Connection c = ConnectionController.connectUnpooled(dbhost, port, "");
+        Connection c = ConnectionController.connectUnpooled(dbHost, port, "");
         createDatabase(c,dbname);
 
-        c = ConnectionController.connectUnpooled(dbhost, port,dbname);
+        c = ConnectionController.connectUnpooled(dbHost, port, dbname);
 
-        ConnectionController.setDbhost(dbhost);
+        ConnectionController.setHost(dbHost);
         ConnectionController.setPort(port);
-        ConnectionController.setDbname(dbname);
+        ConnectionController.setDBName(dbname);
 
         dropTables(c);
         createTables(c);
