@@ -68,9 +68,9 @@ public class MedSavantServerUtility {
         
         
         
-        ConnectionController.setDbhost(host);
+        ConnectionController.setHost(host);
         ConnectionController.setPort(port);
-        ConnectionController.setDbname(name);
+        ConnectionController.setDBName(name);
         
         ServerLogger.log(MedSavantServerUtility.class, "dbhost: " + host);
         ServerLogger.log(MedSavantServerUtility.class, "dbport: " + port);
