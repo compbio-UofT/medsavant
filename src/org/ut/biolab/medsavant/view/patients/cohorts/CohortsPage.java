@@ -4,14 +4,12 @@
  */
 package org.ut.biolab.medsavant.view.patients.cohorts;
 
+import org.ut.biolab.medsavant.view.dialog.CohortWizard;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.importfile.BedFormat;
-import org.ut.biolab.medsavant.importfile.ImportFileView;
-import org.ut.biolab.medsavant.view.dialog.AddCohortForm;
 import org.ut.biolab.medsavant.view.patients.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -46,7 +44,7 @@ public class CohortsPage extends SubSectionView {
         JButton button = new JButton("Add cohort");
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                new AddCohortForm();
+                new CohortWizard();
                 if(view != null) view.refresh();
             }
         }); 
