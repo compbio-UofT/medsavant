@@ -30,11 +30,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.ViewController;
+import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
@@ -228,18 +231,23 @@ public class Menu extends JPanel implements MenuItemSelected {
         
         ReferenceController.getInstance().addReferenceListener(new ReferenceListener() {
             public void referenceChanged(String referenceName) {
-                for(int i = 0; i < subSectionViews.size(); i++) {
-                    subSectionViews.get(i).setUpdateRequired(true);
-                }
-
-                if (currentView != null) {
-                    setContentTo(currentView, true);
-                }       
+                updateSections();
             }
-
             public void referenceAdded(String name) {}
-
             public void referenceRemoved(String name) {}
+        });
+        
+        ProjectController.getInstance().addProjectListener(new ProjectListener() {
+            public void projectAdded(String projectName) {}
+            public void projectRemoved(String projectName) {}
+            public void projectChanged(String projectName) {      
+                if(!GeneticsSection.isInitialized){ 
+                    //once this section is initialized, referencecombobox fires
+                    //referencechanged event on every project change
+                    updateSections();
+                }
+            }
+            public void projectTableRemoved(int projid, int refid) {}
         });
         
         LoginController.addLoginListener(new LoginListener() {
@@ -250,6 +258,15 @@ public class Menu extends JPanel implements MenuItemSelected {
                 }
             }
         });
+    }
+    
+    public void updateSections(){
+        for(int i = 0; i < subSectionViews.size(); i++) {
+            subSectionViews.get(i).setUpdateRequired(true);
+        }
+        if (currentView != null) {
+            setContentTo(currentView, true);
+        }    
     }
 
     public void addComponent(Component c) {
