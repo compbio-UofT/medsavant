@@ -502,6 +502,8 @@ public class SearchableTablePanel extends JPanel {
         };
     }
     
-    
+    public int getActualRowAt(int row){
+        return TableModelWrapperUtils.getActualRowAt(table.getModel(), row);
+    }
     
 }
