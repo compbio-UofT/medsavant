@@ -19,6 +19,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.model.record.Genome;
@@ -50,6 +51,7 @@ public class GeneticsChartPage extends SubSectionView {
             } catch (NonFatalDatabaseException ex) {
             }
         }
+        cc.updateIfRequired();
         return panel;
     }
 
@@ -61,7 +63,7 @@ public class GeneticsChartPage extends SubSectionView {
         //PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true,400);
         //panel.add(detailView, BorderLayout.WEST);
 
-        cc = new ChartView();
+        cc = new ChartView(getName());
         panel.add(cc, BorderLayout.CENTER);
     }
     
@@ -89,6 +91,7 @@ public class GeneticsChartPage extends SubSectionView {
 
     @Override
     public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
     }
     
 }

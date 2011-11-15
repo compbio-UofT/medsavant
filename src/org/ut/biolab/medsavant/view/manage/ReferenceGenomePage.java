@@ -27,6 +27,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
@@ -69,6 +70,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
     public JPanel getView(boolean update) {
         panel = new SplitScreenView(
+                getName(),
                 new ReferenceGenomeListModel(),
                 new ReferenceDetailedView());
         return panel;
@@ -200,5 +202,6 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
     @Override
     public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
     }
 }

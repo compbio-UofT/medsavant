@@ -28,12 +28,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import com.jidesoft.grid.*;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 
 /**
@@ -42,6 +40,7 @@ import org.ut.biolab.medsavant.view.images.IconFactory;
  */
 public class SearchableTablePanel extends JPanel {
 
+    private String pageName;
     private QuickTableFilterField filterField;
     private GenericTableModel model;
     private SortableTable table;
@@ -77,39 +76,50 @@ public class SearchableTablePanel extends JPanel {
     }
     
     private synchronized void updateView(boolean newData){
-        (new GetDataSwingWorker(newData)).execute();  
+        GetDataSwingWorker x = new GetDataSwingWorker(pageName, newData);
+        x.execute();
     }
     
-    private class GetDataSwingWorker extends SwingWorker<List<Object[]>, Object> {
+    private class GetDataSwingWorker extends MedSavantWorker {
         
         boolean update;
         
-        protected GetDataSwingWorker(boolean newData){
+        protected GetDataSwingWorker(String pageName, boolean newData){
+            super(pageName);
             this.update = newData;
         }
         
         @Override
-        protected List<Object[]> doInBackground() throws Exception {
-            //TODO: get page information
-            
-            if(update){
-                setTotalRowCount(retriever.getTotalNum());
-                pageNum = 1;
+        protected List<Object[]> doInBackground() {
+            try {
+                if(this.isThreadCancelled()) return null;
+                if(update){
+                    setTotalRowCount(retriever.getTotalNum());
+                    pageNum = 1;
+                }
+                if(this.isThreadCancelled()) return null;
+                return retriever.retrieve((pageNum-1) * getRowsPerPage(), getRowsPerPage());
+            } catch (Exception e) {
+                return null;
             }
-            return retriever.retrieve((pageNum-1) * getRowsPerPage(), getRowsPerPage());
         }
         
-        @Override
-        protected void done() {
-            List<Object[]> pageData = null;
-            try {
-                pageData = get();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(SearchableTablePanel.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ExecutionException ex) {
-                Logger.getLogger(SearchableTablePanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        /*@Override
+        protected void finish(Object result) {  
+            List<Object[]> pageData = (List<Object[]>)result;
             applyData(pageData);
+        }*/
+
+        @Override
+        protected void showProgress(double fraction) {
+            //do nothing
+        }
+
+        @Override
+        protected void showSuccess(Object result) {
+            List<Object[]> pageData = (List<Object[]>)result;
+            applyData(pageData);
+            retriever.retrievalComplete();
         }
     }
          
@@ -185,13 +195,14 @@ public class SearchableTablePanel extends JPanel {
         this.columnClasses = columnClasses;
     }
     
-    public SearchableTablePanel(List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, int defaultRowsRetrieved, DataRetriever retriever) {
-        this(columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true, defaultRowsRetrieved, retriever);
+    public SearchableTablePanel(String pageName, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, int defaultRowsRetrieved, DataRetriever retriever) {
+        this(pageName, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true, defaultRowsRetrieved, retriever);
     }
 
-    public SearchableTablePanel(List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
+    public SearchableTablePanel(String pageName, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
         boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection, int defaultRowsRetrieved, DataRetriever retriever) {
 
+        this.pageName = pageName;
         this.ROWSPERPAGE_X = defaultRows;
         this.DEFAULT_ROWS_RETRIEVED = defaultRowsRetrieved;
 
@@ -386,7 +397,7 @@ public class SearchableTablePanel extends JPanel {
         this.add(tablePanel);
         
         applyData(new ArrayList<Object[]>());
-        updateView(true);
+        //updateView(true);
     }
 
     private void setNumRowsPerPage(int num) {
@@ -489,6 +500,7 @@ public class SearchableTablePanel extends JPanel {
     public interface DataRetriever {
         public abstract List<Object[]> retrieve(int start, int limit);
         public abstract int getTotalNum();
+        public abstract void retrievalComplete();
     }
     
     public static DataRetriever createPrefetchedDataRetriever(final List data){
@@ -499,11 +511,12 @@ public class SearchableTablePanel extends JPanel {
             public int getTotalNum() {
                 return data.size();
             }
+            public void retrievalComplete(){};
         };
     }
     
     public int getActualRowAt(int row){
         return TableModelWrapperUtils.getActualRowAt(table.getModel(), row);
     }
-    
+
 }

@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -63,6 +64,8 @@ public class CohortDetailedView extends DetailedView {
         protected void done() {
             try {
                 setPatientList(get());
+            } catch (CancellationException x){
+                
             } catch (Exception x) {
                 // TODO: #90
                 LOG.log(Level.SEVERE, null, x);

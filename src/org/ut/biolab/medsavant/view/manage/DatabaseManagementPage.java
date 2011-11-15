@@ -7,6 +7,7 @@ package org.ut.biolab.medsavant.view.manage;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
@@ -51,6 +52,7 @@ public class DatabaseManagementPage extends SubSectionView {
 
     @Override
     public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
     }
     
 }

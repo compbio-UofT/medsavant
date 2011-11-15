@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.db.model.Chromosome;
@@ -27,6 +28,8 @@ import org.ut.biolab.medsavant.view.util.PeekingPanel;
 public class GeneticsTablePage extends SubSectionView {
 
     private JPanel panel;
+    private TablePanel tablePanel;
+    private GenomeContainer gp;
 
     public GeneticsTablePage(SectionView parent) { 
         super(parent);       
@@ -40,6 +43,8 @@ public class GeneticsTablePage extends SubSectionView {
         if (panel == null || update) {
             setPanel();
         }
+        tablePanel.updateIfRequired();
+        gp.updateIfRequired();
         return panel;
     }
 
@@ -47,7 +52,7 @@ public class GeneticsTablePage extends SubSectionView {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         
-        GenomeContainer gp = new GenomeContainer();
+        gp = new GenomeContainer(getName());
         List<Chromosome> chrs = new ArrayList<Chromosome>();
         try {
             chrs = ChromosomeQueryUtil.getContigs(ReferenceController.getInstance().getCurrentReferenceId());
@@ -59,7 +64,8 @@ public class GeneticsTablePage extends SubSectionView {
         PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, true,225);
         panel.add(genomeView, BorderLayout.NORTH);
         
-        panel.add(new TablePanel(), BorderLayout.CENTER);
+        tablePanel = new TablePanel(getName());
+        panel.add(tablePanel, BorderLayout.CENTER);
     }
 
     public Component[] getBanner() {
@@ -73,6 +79,10 @@ public class GeneticsTablePage extends SubSectionView {
 
     @Override
     public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
+        if(!tablePanel.isInit()){
+            this.setUpdateRequired(true);
+        }
     }
 
 }

@@ -82,6 +82,9 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                 double step = ((double) (max - min)) / numBins;
 
                 for (int i = 0; i < numBins; i++) {
+                    if(Thread.currentThread().isInterrupted()){
+                        return null;
+                    }
                     Range binrange = new Range((int) (min + i * step), (int) (min + (i + 1) * step));
                     if (whichTable == Table.VARIANT) {                    
                         chartMap.addEntry(
@@ -135,6 +138,9 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                 }
 
             } else {
+                if(Thread.currentThread().isInterrupted()){
+                    return null;
+                }
                 if (whichTable == Table.VARIANT) {
                     chartMap.addAll(VariantQueryUtil.getFilteredFrequencyValuesForColumn(
                             ProjectController.getInstance().getCurrentProjectId(), 
@@ -145,6 +151,10 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                     Map<Object, List<String>> map = PatientQueryUtil.getDNAIdsForValues(ProjectController.getInstance().getCurrentProjectId(), field.getColumnName());
                     Condition[][] filterConditions = FilterController.getQueryFilterConditions();
                     for (Object key : map.keySet()) {
+                        
+                        if(Thread.currentThread().isInterrupted()){
+                            return null;
+                        }
 
                         //create dnaid list
                         List<String> individuals = map.get(key);

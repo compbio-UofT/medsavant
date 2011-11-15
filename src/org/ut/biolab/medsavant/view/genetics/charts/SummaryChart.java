@@ -42,6 +42,7 @@ import com.jidesoft.range.NumericRange;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -57,12 +58,22 @@ public class SummaryChart extends JPanel {
     private ChartMapWorker mapWorker;
     private ChartMapGenerator mapGenerator;
     private boolean isSortedKaryotypically;
+    private String pageName;
 
-    public SummaryChart() {
+    private final Object updateLock = new Object();
+    private boolean updateRequired = false;
+    
+    public SummaryChart(final String pageName) {
+        this.pageName = pageName;
         setLayout(new BorderLayout());
         FilterController.addFilterListener(new FiltersChangedListener() {
             public void filtersChanged() {
-                updateDataAndDrawChart();
+                synchronized (updateLock){
+                    updateRequired = true;
+                }
+                if(ViewController.getInstance().getCurrentSectionView() != null && ViewController.getInstance().getCurrentSectionView().getName().equals(pageName)){
+                    updateIfRequired();
+                }
             }
         });
     }
@@ -102,8 +113,19 @@ public class SummaryChart extends JPanel {
         this.mapGenerator = cmg;
         updateDataAndDrawChart();
     }
+    
+    public void updateIfRequired() {
+        synchronized (updateLock){
+            if(updateRequired){
+                updateRequired = false;     
+                updateDataAndDrawChart();
+            }
+        }
+    }
 
     private void updateDataAndDrawChart() {
+        
+        System.out.println("update");
 
         this.removeAll();
         this.add(new WaitPanel("Getting chart data"), BorderLayout.CENTER);
@@ -210,6 +232,7 @@ public class SummaryChart extends JPanel {
 
         @SuppressWarnings("LeakingThisInConstructor")
         ChartMapWorker() {
+            super(pageName);
             if (mapWorker != null) {
                 mapWorker.cancel(true);
             }
@@ -219,6 +242,7 @@ public class SummaryChart extends JPanel {
         @Override
         protected ChartFrequencyMap doInBackground() throws Exception {
             if (mapGenerator == null) { return null; }
+            if(this.isThreadCancelled()) return null;
             return mapGenerator.generateChartMap();
         }
 

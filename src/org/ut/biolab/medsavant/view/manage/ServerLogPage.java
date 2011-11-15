@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import org.ut.biolab.medsavant.controller.ThreadController;
 
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ServerLogTableSchema;
@@ -220,9 +221,10 @@ public class ServerLogPage extends SubSectionView {
                 } catch (SQLException ex) {
                     return 0;
                 }
-            }        
+            }
+            public void retrievalComplete() {}
         };
-        clientTable = new SearchableTablePanel(clientColumnNames, clientColumnClasses, new ArrayList<Integer>(), limit, retriever);
+        clientTable = new SearchableTablePanel(getName(), clientColumnNames, clientColumnClasses, new ArrayList<Integer>(), limit, retriever);
         p.add(clientTable, BorderLayout.CENTER);
         return p;
     }
@@ -240,9 +242,10 @@ public class ServerLogPage extends SubSectionView {
                 } catch (SQLException ex) {
                     return 0;
                 }
-            }        
+            }    
+            public void retrievalComplete() {}
         };
-        serverTable = new SearchableTablePanel(serverColumnNames, serverColumnClasses, new ArrayList<Integer>(), limit, retriever);
+        serverTable = new SearchableTablePanel(getName(), serverColumnNames, serverColumnClasses, new ArrayList<Integer>(), limit, retriever);
         p.add(serverTable, BorderLayout.CENTER);
         return p;
     }
@@ -260,9 +263,10 @@ public class ServerLogPage extends SubSectionView {
                 } catch (SQLException ex) {
                     return 0;
                 }
-            }        
+            }      
+            public void retrievalComplete() {}
         };
-        annotationTable = new SearchableTablePanel(annotationsColumnNames, annotationsColumnClasses, new ArrayList<Integer>(), limit, retriever);
+        annotationTable = new SearchableTablePanel(getName(), annotationsColumnNames, annotationsColumnClasses, new ArrayList<Integer>(), limit, retriever);
         annotationTable.getTable().getColumn("Restart").setCellRenderer(new JTableButtonRenderer());
         annotationTable.getTable().addMouseListener(new JTableButtonMouseListener(annotationTable.getTable()));
         p.add(annotationTable, BorderLayout.CENTER);
@@ -292,6 +296,7 @@ public class ServerLogPage extends SubSectionView {
 
     @Override
     public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
     }
 
     private WaitPanel getWaitPanel() {
