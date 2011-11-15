@@ -90,6 +90,8 @@ public class FilterController {
         LoginController.addLoginListener(logoutListener);
     }
     
+    public static void init(){};
+    
     public static enum FilterAction {ADDED, REMOVED, MODIFIED};
 
     public static void addFilter(Filter filter, int queryId) {

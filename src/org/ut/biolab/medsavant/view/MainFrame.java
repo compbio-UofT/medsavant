@@ -35,6 +35,7 @@ import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
 
 import org.ut.biolab.medsavant.MedSavantProgramInformation;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
@@ -136,6 +137,8 @@ public class MainFrame extends JFrame implements LoginListener {
         } else {
             switchToLoginView();
         }
+        
+        FilterController.init();
     }
 
     public void switchToSessionView() {

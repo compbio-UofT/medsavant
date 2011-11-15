@@ -217,38 +217,16 @@ public class VCFUploadForm extends javax.swing.JDialog {
         
         final JDialog instance = this;
         this.setVisible(false);
-     
-        final JDialog dialog = new JDialog();
-        dialog.setTitle("Import VCF");
-        dialog.setResizable(false);
         
-        JPanel p = new JPanel(); 
-        ViewUtil.applyVerticalBoxLayout(p);
-        
-        final JLabel progressLabel = new JLabel("Beginning import of VCF files. ");
-        progressLabel.setHorizontalTextPosition(JLabel.CENTER);
-        progressLabel.setHorizontalAlignment(JLabel.CENTER);
-        progressLabel.setMinimumSize(new Dimension(300,70));
-        progressLabel.setPreferredSize(new Dimension(300,70));
-        //progressLabel.setFont(ViewUtil.);
-        p.add(progressLabel);
-        JProgressBar b = new JProgressBar();
-        b.setIndeterminate(true);
-        p.add(b);
-        p.setBorder(ViewUtil.getBigBorder());
-        dialog.setContentPane(p);
-        dialog.setDefaultCloseOperation(
-            JDialog.DO_NOTHING_ON_CLOSE);
-        dialog.setMinimumSize(new Dimension(200,50));
-        dialog.pack();
-        dialog.setLocationRelativeTo(null);
-        dialog.setVisible(true);
-           
+        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                "Import VCF",
+                "Beginning import of VCF files. ",
+                false);    
         Thread thread = new Thread() {
             @Override
             public void run() {
                 try {
-                    final boolean success = ImportVariants.performImport(files, projectId, referenceId, progressLabel);
+                    final boolean success = ImportVariants.performImport(files, projectId, referenceId, dialog.getMessageLabel());
                     
                     
                     SwingUtilities.invokeLater(new Runnable() {
@@ -269,6 +247,7 @@ public class VCFUploadForm extends javax.swing.JDialog {
                 dialog.dispose();        
             }
         };
+        dialog.setVisible(true);
         thread.start(); 
     }//GEN-LAST:event_uploadButtonActionPerformed
 

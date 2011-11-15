@@ -1,13 +1,11 @@
 package org.ut.biolab.medsavant.controller;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
-import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
@@ -20,6 +18,7 @@ import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -47,13 +46,26 @@ public class ProjectController implements ReferenceListener, LoginListener {
     
     private final ArrayList<ProjectListener> projectListeners;
 
-    public void removeProject(String projectName) {
-        try {
-            ProjectQueryUtil.removeProject(projectName);
-            fireProjectRemovedEvent(projectName);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void removeProject(final String projectName) {
+        
+        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                "Removing Project", 
+                projectName + " project is being removed. Please wait.", 
+                true);
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    ProjectQueryUtil.removeProject(projectName);
+                    fireProjectRemovedEvent(projectName);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                dialog.close();  
+            }
+        };
+        thread.start(); 
+        dialog.setVisible(true);
     }
 
     public void fireProjectRemovedEvent(String projectName) {
