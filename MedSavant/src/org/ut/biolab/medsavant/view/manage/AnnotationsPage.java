@@ -27,6 +27,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.controller.ExternalAnnotationController;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.patients.DetailedListModel;
@@ -67,6 +68,7 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
 
     public JPanel getView(boolean update) {
         panel = new SplitScreenView(
+                getName(),
                 new ExternalAnnotationListModel(),
                 new ExternalAnnotationDetailedView());
         return panel;
@@ -147,6 +149,7 @@ public class AnnotationsPage extends SubSectionView {//implements ExternalAnnota
 
     @Override
     public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
     }
     
     

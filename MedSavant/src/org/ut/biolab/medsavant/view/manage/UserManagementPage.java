@@ -26,6 +26,7 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
+import org.ut.biolab.medsavant.controller.ThreadController;
 
 import org.ut.biolab.medsavant.controller.UserController;
 import org.ut.biolab.medsavant.controller.UserController.UserListener;
@@ -190,6 +191,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
     
     public void setPanel() { 
         panel = new SplitScreenView(
+                getName(),
                 new ThisListModel(), 
                 new ThisDetailedView());
     }
@@ -218,6 +220,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
 
     @Override
     public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
     }
     
     

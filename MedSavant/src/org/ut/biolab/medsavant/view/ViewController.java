@@ -284,4 +284,8 @@ public class ViewController extends JPanel {
             sectionMenuPanel.add(Box.createVerticalGlue());
         }
     }
+    
+    public SectionView getCurrentSectionView(){
+        return currentSection;
+    }
 }

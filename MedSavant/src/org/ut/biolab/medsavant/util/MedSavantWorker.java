@@ -16,10 +16,12 @@
 
 package org.ut.biolab.medsavant.util;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingWorker;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -28,12 +30,26 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author tarkvara
  */
 public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
+    
+    private String pageName;
+    
+    /**
+     * 
+     * @param pageName which view created this worker
+     */   
+    public MedSavantWorker(String pageName){
+        super();
+        this.pageName = pageName;
+        ThreadController.getInstance().addWorker(pageName, this);
+    }
+    
     @Override
     public void done() {
         showProgress(1.0);
         if (!isCancelled()) {
             try {
-                showSuccess(get());
+                showSuccess(get()); 
+                cleanup();
             } catch (InterruptedException x) {
                 showFailure(x);
             } catch (ExecutionException x) {
@@ -60,11 +76,30 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
      * and put up a dialog box.
      */
     protected void showFailure(Throwable t) {
-        if (t instanceof InterruptedException) {
+        if (t instanceof CancellationException) {
+            return;
+        } else if (t instanceof InterruptedException) {
             DialogUtils.displayMessage("Background task interrupted.");
         } else {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Exception thrown by background task.", t);
             DialogUtils.displayException("MedSavant", String.format("<html>Exception thrown by background task:<br><br><i>%s</i></html>", MiscUtils.getMessage(t)), t);
         }
+    }
+    
+    /**
+     * Must be called after worker finishes. 
+     */
+    public void cleanup(){
+        ThreadController.getInstance().removeWorker(pageName, this);
+    }
+    
+    /**
+     * Use this instead of isCancelled();
+     */
+    public boolean isThreadCancelled(){
+        if(super.isCancelled()){
+            cleanup();
+        }
+        return super.isCancelled();
     }
 }

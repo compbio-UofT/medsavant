@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.view.patients.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -29,6 +30,7 @@ public class CohortsPage extends SubSectionView {
 
     public JPanel getView(boolean update) {
         view =  new SplitScreenView(
+                getName(),
                 new CohortListModel(), 
                 new CohortDetailedView());
         return view;
@@ -57,6 +59,7 @@ public class CohortsPage extends SubSectionView {
 
     @Override
     public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
     }
     
 }

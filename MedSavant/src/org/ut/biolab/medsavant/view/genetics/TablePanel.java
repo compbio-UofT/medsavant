@@ -32,6 +32,8 @@ import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel.DataRetriever;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
@@ -47,19 +49,24 @@ class TablePanel extends JPanel implements FiltersChangedListener {
 
     private SearchableTablePanel tablePanel;
     private CardLayout cl;
-
-    public TablePanel() {
+    private boolean init = false;
+    private boolean updateRequired = true;
+    private final Object updateLock = new Object();
+    private String pageName;
     
+    public TablePanel(final String pageName) {
+            
+        this.pageName = pageName;
         cl = new CardLayout();
         this.setLayout(cl);
         this.add(new WaitPanel("Generating List View"), CARD_WAIT);
         showWaitCard();
 
         final TablePanel instance = this;
-        Thread t = new Thread(){
+        MedSavantWorker worker = new MedSavantWorker(pageName){
             @Override
-            public void run(){
-        
+            protected Object doInBackground() {
+
                 List<String> fieldNames = new ArrayList<String>();
                 List<Class> fieldClasses = new ArrayList<Class>();
                 List<Integer> hiddenColumns = new ArrayList<Integer>();
@@ -84,6 +91,8 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                         }
                     }
                 }
+                if(this.isThreadCancelled()) return null;
+                
                 DataRetriever retriever = new DataRetriever(){
                     public List<Object[]> retrieve(int start, int limit) {
                         showWaitCard();
@@ -108,15 +117,40 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                         showShowCard();
                         return result;
                     }
+
+                    public void retrievalComplete() {
+                        synchronized (updateLock){
+                            updateRequired = false;
+                        }
+                    }
                 };
-                tablePanel = new SearchableTablePanel(fieldNames, fieldClasses, hiddenColumns, 1000, retriever);
-
-                instance.add(tablePanel, CARD_SHOW);             
-
-                FilterController.addFilterListener(instance);
+                tablePanel = new SearchableTablePanel(pageName, fieldNames, fieldClasses, hiddenColumns, 1000, retriever);
+                updateIfRequired();
+                
+                return null;
             }
+
+            /*@Override
+            protected void finish(Object result) {       
+                instance.add(tablePanel, CARD_SHOW);             
+                FilterController.addFilterListener(instance);       
+            }*/
+
+            @Override
+            protected void showProgress(double fraction) {
+                //do nothing
+            }
+
+            @Override
+            protected void showSuccess(Object result) {
+                instance.add(tablePanel, CARD_SHOW);             
+                FilterController.addFilterListener(instance);  
+                init = true;
+            }
+
         };
-        t.start();
+        worker.execute();
+        
     }
     
     private void showWaitCard() {
@@ -127,8 +161,26 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         cl.show(this, CARD_SHOW);
     }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        tablePanel.forceRefreshData();
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {       
+        synchronized (updateLock){
+            updateRequired = true;
+        }
+        if(ViewController.getInstance().getCurrentSectionView() != null && ViewController.getInstance().getCurrentSectionView().getName().equals(pageName)){
+            updateIfRequired();
+        }
+    }
+    
+    public boolean isInit(){
+        return init;
+    }
+    
+    public void updateIfRequired(){
+        if(tablePanel == null) return;
+        synchronized (updateLock){
+            if(updateRequired){
+                tablePanel.forceRefreshData();
+            }
+        }
     }
     
 }

@@ -273,6 +273,7 @@ public class ImportFileView extends JDialog {
 
         @SuppressWarnings("LeakingThisInConstructor")
         PreviewWorker() {
+            super("X");
             if (worker != null) {
                 worker.cancel(true);
             }
@@ -296,7 +297,7 @@ public class ImportFileView extends JDialog {
                 columnClasses.add(getFileFormat().getFieldNumberToClassMap().get(i));
             }
 
-            SearchableTablePanel searchableTablePanel = new SearchableTablePanel(columnNames, columnClasses, new ArrayList<Integer>(), false,false,50,false,false, 1000, SearchableTablePanel.createPrefetchedDataRetriever(data));
+            SearchableTablePanel searchableTablePanel = new SearchableTablePanel(ImportFileView.class.getName(), columnNames, columnClasses, new ArrayList<Integer>(), false,false,50,false,false, 1000, SearchableTablePanel.createPrefetchedDataRetriever(data));
 
             //boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection
             previewPanel.add(searchableTablePanel,BorderLayout.CENTER);

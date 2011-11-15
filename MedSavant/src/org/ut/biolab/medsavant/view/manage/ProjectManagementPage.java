@@ -33,6 +33,7 @@ import java.util.List;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.ProjectDetails;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
@@ -357,6 +358,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
     public void setPanel() {
         panel = new SplitScreenView(
+                getName(),
                 new ProjectsListModel(),
                 new ProjectsDetailedView());
     }
@@ -387,5 +389,6 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
     @Override
     public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
     }
 }

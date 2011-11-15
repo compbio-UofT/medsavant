@@ -25,6 +25,7 @@ import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.api.MedSavantSectionPlugin;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginEvent;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
@@ -99,5 +100,6 @@ public class PluginPage extends SubSectionView {
 
     @Override
     public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
     }
 }

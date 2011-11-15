@@ -37,8 +37,10 @@ public class ChartView extends JPanel {
     private JCheckBox bPie;
     private JCheckBox bSort;
     private JCheckBox bLog;
+    private String pageName;
 
-    public ChartView() {
+    public ChartView(String pageName) {
+        this.pageName = pageName;
         mapGenerators = new HashMap<String, ChartMapGenerator>();
         initGUI();
         this.chartChooser.setSelectedItem(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
@@ -106,7 +108,7 @@ public class ChartView extends JPanel {
         JPanel h1 = new JPanel();
         h1.setLayout(new GridLayout(1, 1));
 
-        sc = new SummaryChart();
+        sc = new SummaryChart(pageName);
 
         h1.add(sc, BorderLayout.CENTER);
 
@@ -206,6 +208,12 @@ public class ChartView extends JPanel {
         if (bLog.isEnabled()) {
             sc.setIsLogscale(!sc.isLogscale());
             bLog.setSelected(sc.isLogscale());
+        }
+    }
+    
+    public void updateIfRequired(){
+        if(sc != null){
+            sc.updateIfRequired();
         }
     }
 }

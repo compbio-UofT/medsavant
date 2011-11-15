@@ -29,7 +29,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
-import org.ut.biolab.medsavant.view.component.SearchableTablePanel.DataRetriever;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 
@@ -43,6 +42,7 @@ public class SplitScreenView extends JPanel {
     private final DetailedListModel detailedListModel;
     private ListView listView;
     private DetailedView detailedView;
+    private final String pageName;
 
     private static class ListView extends JPanel {
 
@@ -55,8 +55,10 @@ public class SplitScreenView extends JPanel {
         private final DetailedView detailedView;
         private SearchableTablePanel stp;
         private int limit = 10000;
+        private final String pageName;
 
-        private ListView(DetailedListModel listModel, DetailedView detailedView) {
+        private ListView(String pageName, DetailedListModel listModel, DetailedView detailedView) {
+            this.pageName = pageName;
             this.listModel = listModel;
             this.detailedView = detailedView;
 
@@ -121,13 +123,8 @@ public class SplitScreenView extends JPanel {
             List<Class> columnClasses = listModel.getColumnClasses();
             List<Integer> columnVisibility = listModel.getHiddenColumns();
 
-            stp = new SearchableTablePanel(columnNames, columnClasses, columnVisibility, limit, SearchableTablePanel.createPrefetchedDataRetriever(data)) {
-                @Override
-                public void forceRefreshData(){
-                    limit = stp.getRetrievalLimit();
-                    refreshList();
-                }
-            };
+            stp = new SearchableTablePanel(pageName, columnNames, columnClasses, columnVisibility, limit, SearchableTablePanel.createPrefetchedDataRetriever(data));
+            stp.forceRefreshData();
 
             //stp.updateData(Util.listToVector(data));
 
@@ -165,7 +162,8 @@ public class SplitScreenView extends JPanel {
     }
  
 
-    public SplitScreenView(DetailedListModel lm, DetailedView view) {
+    public SplitScreenView(String pageName, DetailedListModel lm, DetailedView view) {
+        this.pageName = pageName;
         this.detailedListModel = lm;
         this.detailedView = view;        
         initGUI();
@@ -175,7 +173,7 @@ public class SplitScreenView extends JPanel {
     private void initGUI() {
         this.setLayout(new BorderLayout());
 
-        listView = new ListView(detailedListModel,detailedView);
+        listView = new ListView(pageName, detailedListModel,detailedView);
         
         JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, detailedView, listView);
         split.setOneTouchExpandable(true);

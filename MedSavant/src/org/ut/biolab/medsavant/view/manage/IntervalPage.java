@@ -25,6 +25,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
 import org.ut.biolab.medsavant.importfile.BedFormat;
 import org.ut.biolab.medsavant.importfile.FileFormat;
@@ -56,6 +57,7 @@ public class IntervalPage extends SubSectionView {
 
     public JPanel getView(boolean update) {
         view = new SplitScreenView(
+                getName(),
                 new IntervalListModel(), 
                 new IntervalDetailedView());
         return view;
@@ -100,6 +102,7 @@ public class IntervalPage extends SubSectionView {
         private final String geneListName;
 
         private ImportRegionListWorker(String geneListName, String path, char delimiter, int numHeaderLines, FileFormat ff) {
+            super(getName());
             this.geneListName = geneListName;
             this.path = path;
             this.delim = delimiter;
@@ -147,6 +150,7 @@ public class IntervalPage extends SubSectionView {
 
     @Override
     public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
     }
     
 }

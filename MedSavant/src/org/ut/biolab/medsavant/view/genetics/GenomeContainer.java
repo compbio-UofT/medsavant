@@ -28,15 +28,18 @@ import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
-import org.ut.biolab.medsavant.util.MedSwingWorker;
+import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -55,8 +58,15 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
     private CardLayout cl;
     private static final int MINBINSIZE = 10000000;
     private static final int BINMULTIPLIER = 25;
-
-    public GenomeContainer() {
+    private final String pageName;
+    
+    private final Object updateLock = new Object();
+    private boolean updateRequired = true;
+    private boolean init = false;
+    
+    public GenomeContainer(String pageName) {
+        this.pageName = pageName;
+        
         cl = new CardLayout();
         this.setLayout(cl);
      
@@ -68,6 +78,7 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         this.add(new WaitPanel("Generating Genome View", Color.WHITE), CARD_WAIT);
 
         FilterController.addFilterListener(this);
+        init = true;
     }
 
     @Override
@@ -112,20 +123,48 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         cl.show(this, CARD_SHOW);
     }
 
-    public void filtersChanged() { 
+    /*public void filtersChanged() { 
         showWaitCard();
-        GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker();
+        GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker(pageName);
         gnv.execute();
+    }*/
+    
+    public void filtersChanged() {        
+        synchronized (updateLock){
+            updateRequired = true;
+        }
+        if(ViewController.getInstance().getCurrentSectionView() != null && ViewController.getInstance().getCurrentSectionView().getName().equals(pageName)){
+            updateIfRequired();
+        }
     }
     
-    private class GetNumVariantsSwingWorker extends MedSwingWorker {
+    public void updateIfRequired(){
+        if(!init) return;
+        boolean shouldUpdate = false;
+        synchronized (updateLock){
+            if(updateRequired){
+                updateRequired = false;     
+                shouldUpdate = true;
+            }
+        }
+        if(shouldUpdate){
+            showWaitCard();
+            GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker(pageName);
+            gnv.execute();
+        }
+    }
+    
+    private class GetNumVariantsSwingWorker extends MedSavantWorker implements FiltersChangedListener {
 
         private int maxRegion = 0;
         private int regionsDone = 0;
         private int activeThreads = 0;
         private final Object workerLock = new Object();
         
-        public GetNumVariantsSwingWorker() {}
+        public GetNumVariantsSwingWorker(String pageName) {
+            super(pageName);
+            FilterController.addActiveFilterListener(this);
+        }
         
         @Override
         protected Object doInBackground() throws InterruptedException, SQLException {  
@@ -136,11 +175,12 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
             final int binsize = (int)Math.min(249250621, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
 
             for (final ChromosomePanel p : chrViews){
-                if (this.isCancelled()) return false;
+                if(this.isThreadCancelled()) return null;
 
                 //limit of 5 threads at a time
                 synchronized (workerLock){
                     while(activeThreads > 5){
+                        if(this.isThreadCancelled()) return null;
                         workerLock.wait();
                     }
                     activeThreads++;
@@ -164,19 +204,20 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
             //wait until all threads completed
             synchronized(workerLock){
                 while(regionsDone < chrViews.size()){
+                    if(this.isThreadCancelled()) return null;
                     workerLock.wait();
                 }
             }
 
             //actually draw chromosomes
             for(ChromosomePanel p : chrViews){
-                if(this.isCancelled()) return false;
+                if(this.isThreadCancelled()) return null;
                 p.updateAnnotations(maxRegion, binsize);
             } 
             return true;            
         }
         
-        @Override
+        /*@Override
         protected void done() {
             try {
                 get();
@@ -185,6 +226,22 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
                 // TODO: #90
                 LOG.log(Level.SEVERE, null, x);
             }
-        }      
+        } */     
+        
+        public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+            if(!this.isDone()){
+                this.cancel(true);
+            }    
+        }
+
+        @Override
+        protected void showProgress(double fraction) {
+            //do nothing
+        }
+
+        @Override
+        protected void showSuccess(Object result) {
+            showShowCard();
+        }
     }
 }
