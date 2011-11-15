@@ -180,10 +180,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
                             "Are you sure you want to delete " + refName + "?\nThis cannot be undone.",
                             "Confirm", JOptionPane.YES_NO_OPTION);
                     if (result == JOptionPane.YES_OPTION) {
-                        boolean refRemoved = ReferenceController.getInstance().removeReference(refName);
-                        if (!refRemoved) {
-                            JOptionPane.showMessageDialog(MainFrame.getInstance(), "Cannot remove this reference because projects\nor annotations still refer to it.", "", JOptionPane.ERROR_MESSAGE);
-                        }
+                        ReferenceController.getInstance().removeReference(refName);
                     }
                 }
             });

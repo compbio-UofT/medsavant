@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.db.model.UserLevel;
 import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 
 /**
  *
@@ -46,13 +47,25 @@ public class UserController {
         return instance;
     }
     
-    public void removeUser(String name) {
-        try {
-            UserQueryUtil.removeUser(name);
-            fireUserRemovedEvent(name);
-        } catch (SQLException x) {
-            LOG.log(Level.SEVERE, null, x);
-        }
+    public void removeUser(final String name) {
+        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                "Removing User", 
+                name + " is being removed. Please wait.", 
+                true);
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    UserQueryUtil.removeUser(name);
+                    fireUserRemovedEvent(name);
+                } catch (SQLException x) {
+                    LOG.log(Level.SEVERE, null, x);
+                }
+                dialog.close();  
+            }
+        };
+        thread.start(); 
+        dialog.setVisible(true);
     }
 
     private void fireUserRemovedEvent(String name) {

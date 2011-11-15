@@ -24,6 +24,7 @@ import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -175,12 +176,24 @@ public class IndividualDetailedView extends DetailedView {
                             "Confirm", 
                             JOptionPane.YES_NO_OPTION);
                     if (result != JOptionPane.YES_OPTION) return;
-                    try {
-                        PatientQueryUtil.removePatient(ProjectController.getInstance().getCurrentProjectId(), patientIds);
-                    } catch (SQLException ex) {
-                        Logger.getLogger(IndividualDetailedView.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    parent.refresh();
+                    final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                            "Removing Patient(s)", 
+                            patientIds.length + " patient(s) being removed. Please wait.", 
+                            true);
+                    Thread thread = new Thread() {
+                        @Override
+                        public void run() {
+                            try {
+                                PatientQueryUtil.removePatient(ProjectController.getInstance().getCurrentProjectId(), patientIds);
+                            } catch (SQLException ex) {
+                                Logger.getLogger(IndividualDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            parent.refresh();
+                            dialog.close();  
+                        }
+                    };
+                    thread.start(); 
+                    dialog.setVisible(true);
                 }
             }
         }); 

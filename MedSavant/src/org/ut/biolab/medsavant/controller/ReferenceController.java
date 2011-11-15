@@ -9,6 +9,8 @@ import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
+import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -51,17 +53,25 @@ public class ReferenceController {
         }
     }
 
-    public boolean removeReference(String refName) {
-        try {
-            boolean success = ReferenceQueryUtil.removeReference(ReferenceQueryUtil.getReferenceId(refName));
-            if (success) {
-                this.fireReferenceRemovedEvent(refName);
+    public void removeReference(final String refName) {
+        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                "Removing Reference", 
+                "Reference " + refName + " is being removed. Please wait.", 
+                true);
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    ReferenceQueryUtil.removeReference(ReferenceQueryUtil.getReferenceId(refName));
+                    fireReferenceRemovedEvent(refName);
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(MainFrame.getInstance(), "Cannot remove this reference because projects\nor annotations still refer to it.", "", JOptionPane.ERROR_MESSAGE);
+                }
+                dialog.close();  
             }
-            return success;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return false;
-        }
+        };
+        thread.start(); 
+        dialog.setVisible(true);
     }
 
     private static ReferenceController instance;

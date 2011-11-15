@@ -28,6 +28,8 @@ import javax.swing.*;
 
 import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -54,11 +56,12 @@ public class IntervalDetailedView extends DetailedView {
         //System.err.println("Multiple selections of regions not supported yet!");
     }
     
-    private class RegionDetailsSW extends SwingWorker<List<String>, Object> {
+    private class RegionDetailsSW extends MedSavantWorker<List<String>> {
         private final RegionSet regionSet;
         private final int limit;
 
         public RegionDetailsSW(RegionSet regionSet, int limit) {
+            super(getName());
             this.regionSet = regionSet;
             this.limit = limit;
         }
@@ -68,9 +71,14 @@ public class IntervalDetailedView extends DetailedView {
             numRegionsInRegionList = RegionQueryUtil.getNumberRegions(regionSet.getId());
             return RegionQueryUtil.getRegionNamesInRegionSet(regionSet.getId(), limit);
         }
-        
+
         @Override
-        protected void done() {
+        protected void showProgress(double fraction) {
+            //
+        }
+
+        @Override
+        protected void showSuccess(List<String> result) {
             try {
                 setRegionList(get());
             } catch (Exception x) {
@@ -135,12 +143,25 @@ public class IntervalDetailedView extends DetailedView {
                             "Confirm", 
                             JOptionPane.YES_NO_OPTION);
                     if (result != JOptionPane.YES_OPTION) return;
-                    try {
-                        RegionQueryUtil.removeRegionList(regionSet.getId());
-                    } catch (SQLException ex) {
-                        Logger.getLogger(IntervalDetailedView.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    parent.refresh();
+
+                    final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                            "Removing Region List", 
+                            "Region list " + regionSet.getName() + " is being removed. Please wait.", 
+                            true);
+                    Thread thread = new Thread() {
+                        @Override
+                        public void run() {
+                            try {
+                                RegionQueryUtil.removeRegionList(regionSet.getId());
+                            } catch (SQLException ex) {
+                                Logger.getLogger(IntervalDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            parent.refresh();
+                            dialog.close();  
+                        }
+                    };
+                    thread.start(); 
+                    dialog.setVisible(true);
                 }
             }
         });

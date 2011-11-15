@@ -31,6 +31,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.model.SimplePatient;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.patients.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -186,12 +187,24 @@ public class CohortDetailedView extends DetailedView {
                             "Confirm", 
                             JOptionPane.YES_NO_OPTION);
                     if (result != JOptionPane.YES_OPTION) return;
-                    try {
-                        CohortQueryUtil.removeCohorts(cohorts);
-                    } catch (SQLException ex) {
-                        Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    parent.refresh();
+                    final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                            "Removing Cohort(s)", 
+                            cohorts.length + " cohort(s) being removed. Please wait.", 
+                            true);
+                    Thread thread = new Thread() {
+                        @Override
+                        public void run() {
+                            try {
+                                CohortQueryUtil.removeCohorts(cohorts);
+                            } catch (SQLException ex) {
+                                Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            parent.refresh();   
+                            dialog.close();  
+                        }
+                    };
+                    thread.start(); 
+                    dialog.setVisible(true);
                 }
             }
         }); 
