@@ -253,6 +253,7 @@ public class PatientQueryUtil {
             //remove from patient patientFormatTable
             DeleteQuery query = new DeleteQuery(table.getTable());
             query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID), id));
+            c.createStatement().executeUpdate(query.toString());
         }
         c.commit();
         c.setAutoCommit(true);
