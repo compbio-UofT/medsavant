@@ -115,7 +115,7 @@ public class IndividualDetailedView extends DetailedView {
         content = cp.getContentPane();
         
         details = ViewUtil.getClearPanel();
-        menu = ViewUtil.getButtonPanel();
+        menu = ViewUtil.getClearPanel();
         
         menu.add(addIndividualsButton());
         menu.setVisible(false);
@@ -123,7 +123,7 @@ public class IndividualDetailedView extends DetailedView {
         
         content.add(details,BorderLayout.CENTER);
         
-        viewContainer.add(menu,BorderLayout.SOUTH);
+        this.addBottomComponent(menu);
     }
     
     @Override
@@ -161,6 +161,7 @@ public class IndividualDetailedView extends DetailedView {
     private JButton addIndividualsButton(){
         JButton button = new JButton("Add individual(s) to cohort");
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
+        button.setOpaque(false);
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(patientIds != null && patientIds.length > 0){

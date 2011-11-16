@@ -122,8 +122,6 @@ public class SummaryChart extends JPanel {
 
     private void updateDataAndDrawChart() {
         
-        System.out.println("update");
-
         this.removeAll();
         this.add(new WaitPanel("Getting chart data"), BorderLayout.CENTER);
         this.updateUI();

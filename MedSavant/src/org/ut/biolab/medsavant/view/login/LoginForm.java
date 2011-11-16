@@ -160,7 +160,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             .addGap(0, 150, Short.MAX_VALUE)
         );
 
-        label_versioninformation.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        label_versioninformation.setFont(new java.awt.Font("Tahoma", 0, 14));
         label_versioninformation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_versioninformation.setText("version information");
 
@@ -182,7 +182,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel3.setText("hostname");
 
-        field_hostname.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        field_hostname.setFont(new java.awt.Font("Arial", 1, 18));
         field_hostname.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_hostname.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -193,7 +193,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel4.setText("port");
 
-        field_port.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        field_port.setFont(new java.awt.Font("Arial", 1, 18));
         field_port.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_port.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -221,10 +221,10 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
                 .addGroup(panel_detailsLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(panel_detailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                        .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                        .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE))
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
+                        .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE))
                     .addContainerGap())
                 .addComponent(field_port, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE))
         );
@@ -244,22 +244,23 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
                 .addComponent(button_create_db)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         button_login.setBackground(new java.awt.Color(0, 0, 0));
         button_login.setText("Login");
+        button_login.setOpaque(false);
         button_login.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 button_loginActionPerformed(evt);
             }
         });
 
-        label_status.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        label_status.setFont(new java.awt.Font("Tahoma", 0, 14));
         label_status.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         label_status.setText("  ");
 
-        field_database.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        field_database.setFont(new java.awt.Font("Arial", 1, 18));
         field_database.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_database.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -281,13 +282,13 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
             .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
             .addGroup(panel_titleLayout.createSequentialGroup()
-                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
+                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                 .addContainerGap())
             .addComponent(field_database, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
             .addComponent(panel_details, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panel_titleLayout.createSequentialGroup()
                 .addComponent(jToggleButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 110, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 174, Short.MAX_VALUE)
                 .addComponent(button_login))
             .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
         );
@@ -310,7 +311,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(field_database, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panel_details, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(panel_details, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(label_status)
                 .addGap(3, 3, 3)

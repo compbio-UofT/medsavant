@@ -127,10 +127,7 @@ public class CohortDetailedView extends DetailedView {
         details = ViewUtil.getClearPanel();
         menu = ViewUtil.getClearPanel();// ViewUtil.getButtonPanel();
 
-        //menu.add(setDefaultCaseButton());
-        //menu.add(setDefaultControlButton());
         menu.add(removeIndividualsButton());
-        //menu.add(deleteCohortButton());
         menu.setVisible(false);
 
         content.setLayout(new BorderLayout());
@@ -196,6 +193,7 @@ public class CohortDetailedView extends DetailedView {
     private JButton removeIndividualsButton() {
         JButton button = new JButton("Remove individual(s) from cohort");
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
+        button.setOpaque(false);
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
