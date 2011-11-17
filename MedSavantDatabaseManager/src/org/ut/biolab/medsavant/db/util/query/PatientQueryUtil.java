@@ -103,7 +103,11 @@ public class PatientQueryUtil {
         rs.next();
         Object[] v = new Object[rs.getMetaData().getColumnCount()];
         for(int i = 1; i <= rs.getMetaData().getColumnCount(); i++){
-            v[i - 1] = rs.getObject(i);
+            try {
+                v[i - 1] = rs.getObject(i);
+            } catch (SQLException e){
+                //ignore...probably invalid input (ie. date 0000-00-00)
+            }
         }
         return v;
     }

@@ -11,7 +11,7 @@ import java.util.Vector;
 
 /**
  *
- * @author mfiume
+ * @author mfiume, Andrew
  */
 public class Util {
 
@@ -31,6 +31,24 @@ public class Util {
             result.add(l);
         }
         return result;
+    }
+    
+    public interface DataRetriever {
+        public abstract List<Object[]> retrieve(int start, int limit);
+        public abstract int getTotalNum();
+        public abstract void retrievalComplete();
+    }
+    
+    public static DataRetriever createPrefetchedDataRetriever(final List data){
+        return new DataRetriever() {
+            public List<Object[]> retrieve(int start, int limit) {
+               return data.subList(start, Math.min(start+limit, data.size()));
+            }
+            public int getTotalNum() {
+                return data.size();
+            }
+            public void retrievalComplete(){};
+        };
     }
 
 }

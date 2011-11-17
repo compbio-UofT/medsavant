@@ -186,14 +186,10 @@ public class ListViewTablePanel extends JPanel {
         JScrollPane jsp = new JScrollPane(table);
         jsp.setBorder(null);
         this.add(jsp, BorderLayout.CENTER);
-        
-        
-        
+
         this.updateData(data);
     }
     
-    
-
     private int getTotalRowCount() {
         if (data == null) {
             return 0;

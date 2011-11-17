@@ -32,6 +32,7 @@ import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import com.jidesoft.grid.*;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 
 /**
@@ -103,12 +104,6 @@ public class SearchableTablePanel extends JPanel {
                 return null;
             }
         }
-        
-        /*@Override
-        protected void finish(Object result) {  
-            List<Object[]> pageData = (List<Object[]>)result;
-            applyData(pageData);
-        }*/
 
         @Override
         protected void showProgress(double fraction) {
@@ -495,25 +490,7 @@ public class SearchableTablePanel extends JPanel {
                 hideColumn(table, i);
             }
         }
-    }
-      
-    public interface DataRetriever {
-        public abstract List<Object[]> retrieve(int start, int limit);
-        public abstract int getTotalNum();
-        public abstract void retrievalComplete();
-    }
-    
-    public static DataRetriever createPrefetchedDataRetriever(final List data){
-        return new DataRetriever() {
-            public List<Object[]> retrieve(int start, int limit) {
-               return data.subList(start, Math.min(start+limit, data.size()));
-            }
-            public int getTotalNum() {
-                return data.size();
-            }
-            public void retrievalComplete(){};
-        };
-    }
+    }   
     
     public int getActualRowAt(int row){
         return TableModelWrapperUtils.getActualRowAt(table.getModel(), row);
