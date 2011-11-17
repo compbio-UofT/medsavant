@@ -19,6 +19,7 @@ import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
@@ -57,7 +58,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                 List<String> fieldNames = new ArrayList<String>();
                 List<Class> fieldClasses = new ArrayList<Class>();
                 List<Integer> hiddenColumns = new ArrayList<Integer>();
-
+                            
                 AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
                 for(AnnotationFormat af : afs){
                     for(CustomField field : af.getCustomFields()){
@@ -75,6 +76,11 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                             default:
                                 fieldClasses.add(String.class);
                                 break;
+                        }
+                        if(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID) ||
+                                field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID) ||
+                                field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID)){
+                            hiddenColumns.add(fieldNames.size()-1);
                         }
                     }
                 }
@@ -116,12 +122,6 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                 
                 return null;
             }
-
-            /*@Override
-            protected void finish(Object result) {       
-                instance.add(tablePanel, CARD_SHOW);             
-                FilterController.addFilterListener(instance);       
-            }*/
 
             @Override
             protected void showProgress(double fraction) {
