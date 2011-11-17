@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -41,6 +42,8 @@ public class GeneticsTablePage extends SubSectionView {
 
     public JPanel getView(boolean update) {
         if (panel == null || update) {
+            if(tablePanel != null) FilterController.removeFilterListener(tablePanel);
+            if(gp != null) FilterController.removeFilterListener(gp);
             setPanel();
         }
         tablePanel.updateIfRequired();

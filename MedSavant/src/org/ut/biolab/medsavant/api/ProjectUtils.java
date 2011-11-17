@@ -83,6 +83,10 @@ public class ProjectUtils {
     public static void addFilterListener(FiltersChangedListener l) {
         FilterController.addFilterListener(l);
     }
+    
+    public static void removeFilterListener(FiltersChangedListener l) {
+        FilterController.removeFilterListener(l);
+    }
 
     public static boolean isFilterActive(String filterID, int queryID) {
         return FilterController.isFilterActive(queryID, filterID);

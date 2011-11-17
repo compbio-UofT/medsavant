@@ -17,6 +17,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
@@ -215,5 +216,9 @@ public class ChartView extends JPanel {
         if(sc != null){
             sc.updateIfRequired();
         }
+    }
+    
+    public void cleanUp(){
+        FilterController.removeFilterListener(sc);
     }
 }

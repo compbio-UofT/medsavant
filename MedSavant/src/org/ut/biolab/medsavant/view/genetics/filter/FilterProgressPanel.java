@@ -50,7 +50,7 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
     private Color PREVIOUS_COLOR = new Color(179,255,217);
     private Color NEW_COLOR = new Color(0,153,77);
     
-    public FilterProgressPanel(){
+    public FilterProgressPanel(){      
         this.setName("History");
         this.setLayout(new BorderLayout());
                

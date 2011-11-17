@@ -132,6 +132,10 @@ public class FilterController {
         listeners.add(l);
     }
     
+    public static void removeFilterListener(FiltersChangedListener l) {
+        listeners.remove(l);
+    }
+    
     public static void addActiveFilterListener(FiltersChangedListener l) {
         activeListeners.add(l);
     }

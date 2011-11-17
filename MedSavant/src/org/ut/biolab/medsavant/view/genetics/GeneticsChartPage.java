@@ -7,24 +7,9 @@ package org.ut.biolab.medsavant.view.genetics;
 import org.ut.biolab.medsavant.view.genetics.charts.ChartView;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.model.Chromosome;
-import org.ut.biolab.medsavant.model.record.Genome;
-import org.ut.biolab.medsavant.view.util.PeekingPanel;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
@@ -46,6 +31,7 @@ public class GeneticsChartPage extends SubSectionView {
 
     public JPanel getView(boolean update) {
         if (panel == null || update) {
+            if(cc != null) cc.cleanUp();
             try {
                 setPanel();
             } catch (NonFatalDatabaseException ex) {

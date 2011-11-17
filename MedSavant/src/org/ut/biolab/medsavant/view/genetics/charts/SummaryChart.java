@@ -19,6 +19,7 @@ package org.ut.biolab.medsavant.view.genetics.charts;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Map;
 import javax.swing.JPanel;
@@ -40,6 +41,8 @@ import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
 
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.ViewController;
@@ -50,7 +53,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-public class SummaryChart extends JPanel {
+public class SummaryChart extends JPanel implements FiltersChangedListener {
     private boolean isLogscale = false;
     private boolean isPie = false;
     private boolean isSorted = false;
@@ -66,13 +69,7 @@ public class SummaryChart extends JPanel {
     public SummaryChart(final String pageName) {
         this.pageName = pageName;
         setLayout(new BorderLayout());
-        FilterController.addFilterListener(new FiltersChangedListener() {
-            public void filtersChanged() {
-                synchronized (updateLock){
-                    updateRequired = true;
-                }
-            }
-        });
+        FilterController.addFilterListener(this);
     }
 
     public void setIsLogscale(boolean isLogscale) {
@@ -221,6 +218,12 @@ public class SummaryChart extends JPanel {
 
     void setIsSortedKaryotypically(boolean b) {
         this.isSortedKaryotypically = b;
+    }
+
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        synchronized (updateLock){
+            updateRequired = true;
+        }
     }
 
     public class ChartMapWorker extends MedSavantWorker<ChartFrequencyMap> {
