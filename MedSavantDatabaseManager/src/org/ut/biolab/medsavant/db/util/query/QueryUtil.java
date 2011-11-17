@@ -140,35 +140,6 @@ public class QueryUtil {
         
         return new ArrayList<String>();      
     }
-    
-     public static Map<String, List<String>> getSavantBookmarkPositionsForDNAIds(List<String> dnaIds, int limit) throws SQLException, NonFatalDatabaseException {
-        
-        /*Map<String, List<String>> results = new HashMap<String, List<String>>();
-        
-        TableSchema t = OMedSavantDatabase.getInstance().getVariantTableSchema();
-        SelectQuery q = getCurrentBaseVariantFilterQuery();
-        q.addColumns(t.getDBColumn(VariantTableSchema.ALIAS_DNAID), t.getDBColumn(VariantTableSchema.ALIAS_CHROM), t.getDBColumn(VariantTableSchema.ALIAS_POSITION));
-        
-        Condition[] conditions = new Condition[dnaIds.size()];
-        for(int i = 0; i < dnaIds.size(); i++){
-            conditions[i] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, t.getDBColumn(VariantTableSchema.ALIAS_DNAID), dnaIds.get(i));
-            results.put(dnaIds.get(i), new ArrayList<String>());
-        }
-        q.addCondition(ComboCondition.or(conditions));    
-        
-        Statement s = c.createStatement();
-        ResultSet rs = s.executeQuery(q.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
-
-        while (rs.next()) {
-            results.get(rs.getString(1)).add(rs.getString(2) + ":" + (rs.getLong(3)-100) + "-" + (rs.getLong(3)+100));  
-        }
-        
-        return results;*/
-         
-        System.err.println("NOT IMPLEMENTED YET");
-        
-        return new HashMap<String, List<String>>(); 
-    }
      
     public static String getGenomeBAMPathForVersion(String genomeVersion) throws SQLException, NonFatalDatabaseException {
 

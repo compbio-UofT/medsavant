@@ -315,4 +315,32 @@ public class VariantQueryUtil {
         query.addCondition(ComboCondition.or(c));
     }
 
+    public static Map<String, List<String>> getSavantBookmarkPositionsForDNAIds(int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds, int limit) throws SQLException {
+     
+        Map<String, List<String>> results = new HashMap<String, List<String>>();
+        
+        TableSchema table = getCustomTableSchema(projectId, referenceId);
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addColumns(
+                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), 
+                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), 
+                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION));
+        addConditionsToQuery(query, conditions);
+        Condition[] dnaIdConditions = new Condition[dnaIds.size()];
+        for(int i = 0; i < dnaIds.size(); i++){
+            dnaIdConditions[i] = BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIds.get(i));
+            results.put(dnaIds.get(i), new ArrayList<String>());
+        }
+        query.addCondition(ComboCondition.or(dnaIdConditions));
+
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
+        
+        while(rs.next()){
+            results.get(rs.getString(1)).add(rs.getString(2) + ":" + (rs.getLong(3)-100) + "-" + (rs.getLong(3)+100));  
+        }
+        
+        return results;
+    }
+ 
 }

@@ -16,15 +16,26 @@ import java.awt.Dimension;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.QueryUtil;
+import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -44,11 +55,11 @@ public class SavantExportForm extends javax.swing.JDialog {
     public SavantExportForm() {
         
         
-        System.err.println("NOT IMPLEMENTED YET");
-        this.dispose();
-        return;
+        //System.err.println("NOT IMPLEMENTED YET");
+        //this.dispose();
+        //return;
         
-        /*this.setModalityType(ModalityType.APPLICATION_MODAL);
+        this.setModalityType(ModalityType.APPLICATION_MODAL);
         
         initComponents();
         JPanel container = new JPanel(new BorderLayout());
@@ -59,20 +70,26 @@ public class SavantExportForm extends javax.swing.JDialog {
         exportButton.setEnabled(false);   
 
         //populate individuals
-        try {          
-            dnaIds = QueryUtil.getDistinctDNAIds();
+        try {
+            List<String> temp = VariantQueryUtil.getDistinctValuesForColumn(ProjectController.getInstance().getCurrentPatientTableName(), DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS);
+            dnaIds = new ArrayList<String>();
+            for(String s : temp){
+                for(String s1 : s.split(",")){
+                    if(s1 != null && !s1.equals("") && !dnaIds.contains(s1)){
+                        dnaIds.add(s1);
+                    }
+                }
+            }
             for(String id : dnaIds){
                 addId(id);
             }
         } catch (SQLException ex) {
             Logger.getLogger(SavantExportForm.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NonFatalDatabaseException ex) {
-            Logger.getLogger(SavantExportForm.class.getName()).log(Level.SEVERE, null, ex);
-        }       
-
+        }
+        
         this.pack();
         this.setLocationRelativeTo(null);
-        this.setVisible(true);  */
+        this.setVisible(true);  
     }
     
     private void addId(String id){
@@ -96,66 +113,66 @@ public class SavantExportForm extends javax.swing.JDialog {
             return;
         }
         
+        
         //get bookmarks
         Map<String, List<String>> map = new HashMap<String, List<String>>();
         try {
-            map = org.ut.biolab.medsavant.db.util.query.QueryUtil.getSavantBookmarkPositionsForDNAIds(selectedIds, 1000);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            map = VariantQueryUtil.getSavantBookmarkPositionsForDNAIds(
+                    ProjectController.getInstance().getCurrentProjectId(), 
+                    ReferenceController.getInstance().getCurrentReferenceId(), 
+                    FilterController.getQueryFilterConditions(),
+                    selectedIds, 
+                    -1);
+        } catch (SQLException e){
+            e.printStackTrace();
         }
+        
         
         //get BAM files
         List<String> bamFiles = new ArrayList<String>();
-        try {            
-            bamFiles = org.ut.biolab.medsavant.db.util.query.QueryUtil.getBAMFilesForDNAIds(selectedIds);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        try {
+            bamFiles = PatientQueryUtil.getValuesFromDNAIds(ProjectController.getInstance().getCurrentProjectId(), DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, selectedIds);
+        } catch (SQLException e){
+            e.printStackTrace();
         }
         
-        //TODO: retrieve actual genomeVersion
-        String genomeVersion = "hg19";
-        String genomePath = "";
-        try {            
-            genomePath = QueryUtil.getGenomeBAMPathForVersion(genomeVersion);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        //genome version
+        //TODO: currently hard coded; need to store this somewhere
+        String genomeName = "hg19.fa.savant";
+        String genomeUrl = "http://savantbrowser.com/data/hg19/hg19.fa.savant";
         
-        //TODO: this is a Savant problem...seems that cytoband is required (and not in genome table)
-        int posExt = genomePath.lastIndexOf(".fa.savant");
-        String cytoband = genomePath.substring(0, posExt) + ".cytoband"; 
-           
         //create file
-        String s = "<?xml version=\"1.0\" ?>\n"
-                + "<savant version=\"1\" range=\"chr1:1-1000\">\n"
-                + " <genome name=\"" + genomeVersion + "\" "
-                + "cytoband=\"" + cytoband + "\" "
-                + "uri=\"" + genomePath + "\"></genome>\n"
-                + " <track uri=\"" + genomePath + "\"/>\n";
-        
-        for(String path : bamFiles){
-            s += "  <track uri=\"" + path + "\"/>\n";
-        }  
-        
-        Object[] keys = map.keySet().toArray();
-        for(Object keyObject : keys){
-            String key = (String) keyObject;
-            List<String> positions = map.get(key);
-            for(String p : positions){
-                s += "  <bookmark range=\"" + p + "\">" + key + "</bookmark>\n";
-            }           
-        }
-        
-        s += "</savant>\n";
-
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
-            out.write(s);
+        
+            out.write("<?xml version=\"1.0\" ?>\n"
+                    + "<savant version=\"1\" range=\"chr1:1-1000\">\n"
+                    + " <genome name=\"" + genomeName + "\" uri=\"" + genomeUrl + "\" />\n");
+
+            for(String path : bamFiles){
+                out.write("  <track uri=\"" + path + "\"/>\n");
+            }  
+
+            Object[] keys = map.keySet().toArray();
+            for(Object keyObject : keys){
+                String key = (String) keyObject;
+                List<String> positions = map.get(key);
+                for(String p : positions){
+                    out.write("  <bookmark range=\"" + p + "\">" + key + "</bookmark>\n");
+                }           
+            }
+
+            out.write("</savant>\n");
+
+        
+            //out.write(s);
             out.close();
         } catch (Exception e){
             e.printStackTrace();
         }
-        
+                
+        progressDialog.setVisible(false);
+        this.setVisible(false);
         progressDialog.dispose();
         this.dispose();
     }

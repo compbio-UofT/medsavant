@@ -480,5 +480,57 @@ public class PatientQueryUtil {
         c.commit();
         c.setAutoCommit(true);
     }
+       
+    /*
+     * Given a list of values for field A, get the corresponding values from field B
+     */
+    public static List<Object> getValuesFromField(int projectId, String columnNameA, String columnNameB, List<Object> values) throws SQLException {
+        
+        String tablename = getPatientTablename(projectId);       
+        TableSchema table = CustomTables.getCustomTableSchema(tablename);
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addColumns(table.getDBColumn(columnNameB));
+        Condition[] conditions = new Condition[values.size()];
+        for(int i = 0; i < values.size(); i++){
+            conditions[i] = BinaryConditionMS.equalTo(table.getDBColumn(columnNameA), values.get(i));
+        }
+        query.addCondition(ComboCondition.or(conditions));
+        
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
+        
+        List<Object> result = new ArrayList<Object>();
+        while(rs.next()){
+            result.add(rs.getObject(1));
+        }
+        
+        return result;
+    }
+    
+    public static List<String> getValuesFromDNAIds(int projectId, String columnNameB, List<String> ids) throws SQLException {
+        
+        String tablename = getPatientTablename(projectId);       
+        TableSchema table = CustomTables.getCustomTableSchema(tablename);
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addColumns(table.getDBColumn(columnNameB));
+        Condition[] conditions = new Condition[ids.size()];
+        for(int i = 0; i < ids.size(); i++){
+            conditions[i] = BinaryCondition.like(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS), "%" + ids.get(i) + "%");
+        }
+        query.addCondition(ComboCondition.or(conditions));
+        
+        
+        String s = query.toString();
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
+        
+        List<String> result = new ArrayList<String>();
+        while(rs.next()){
+            result.add(rs.getString(1));
+        }
+        
+        return result;
+    }
+    
     
 }
