@@ -24,6 +24,7 @@ import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.view.genetics.charts.SummaryChart.ChartAxis;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -37,7 +38,8 @@ public class ChartView extends JPanel {
     private Map<String, ChartMapGenerator> mapGenerators;
     private JCheckBox bPie;
     private JCheckBox bSort;
-    private JCheckBox bLog;
+    private JCheckBox bLogY;
+    private JCheckBox bLogX;
     private String pageName;
 
     public ChartView(String pageName) {
@@ -158,7 +160,8 @@ public class ChartView extends JPanel {
 
         bPie = new JCheckBox("Pie chart");
         bSort = new JCheckBox("Sort by frequency");
-        bLog = new JCheckBox("Log scale Y Axis");
+        bLogY = new JCheckBox("Log scale Y axis");
+        bLogX = new JCheckBox("Log scale X axis");        
 
         bPie.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -166,23 +169,30 @@ public class ChartView extends JPanel {
             }
         });
         
-         bSort.addActionListener(new ActionListener() {
+        bSort.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setIsSorted(!sc.isSorted());
             }
         });
-
          
-          bLog.addActionListener(new ActionListener() {
+        bLogY.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setIsLogscale(!sc.isLogscale());
+                setIsLogScale(!sc.isLogScaleY(), ChartAxis.Y);
             }
         });
+        
+        bLogX.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setIsLogScale(!sc.isLogScaleX(), ChartAxis.X);
+            }
+        });
+        
         bottomToolbar.add(ViewUtil.getMediumSeparator());
 
         bottomToolbar.add(ViewUtil.clear(bPie));
         bottomToolbar.add(ViewUtil.clear(bSort));
-        bottomToolbar.add(ViewUtil.clear(bLog));
+        bottomToolbar.add(ViewUtil.clear(bLogY));
+        bottomToolbar.add(ViewUtil.clear(bLogX));
 
         bottomToolbar.add(Box.createHorizontalGlue());
 
@@ -205,12 +215,34 @@ public class ChartView extends JPanel {
         }
     }
     
-    public void setIsLogscale(boolean b) {
-        if (bLog.isEnabled()) {
-            sc.setIsLogscale(!sc.isLogscale());
-            bLog.setSelected(sc.isLogscale());
+    public void setIsLogScale(boolean b, ChartAxis axis){
+        if((axis == ChartAxis.Y && !bLogY.isEnabled()) || (axis == ChartAxis.X && !bLogX.isEnabled())) return;
+        sc.setIsLogScale(b, axis);
+        bLogY.setSelected(sc.isLogScaleY());
+        bLogX.setSelected(sc.isLogScaleX());
+    }
+    
+    /*public void setIsLogScaleY(boolean b) {
+        if (bLogY.isEnabled()) {
+            sc.setIsLogScaleY(!sc.isLogScaleY());
+            bLogY.setSelected(sc.isLogScaleY());
+            if(sc.isLogScaleY()){
+                sc.setIsLogScaleX(false);
+                bLogX.setSelected(false);
+            }
         }
     }
+    
+    public void setIsLogScaleX(boolean b) {
+        if (bLogX.isEnabled()) {
+            sc.setIsLogScaleX(!sc.isLogScaleX());
+            bLogX.setSelected(sc.isLogScaleX());
+            if(sc.isLogScaleX()){
+                sc.setIsLogScaleY(false);
+                bLogY.setSelected(false);
+            }
+        }
+    }*/
     
     public void updateIfRequired(){
         if(sc != null){

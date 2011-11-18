@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public interface ChartMapGenerator {
     
-    public ChartFrequencyMap generateChartMap() throws Exception;
+    public ChartFrequencyMap generateChartMap(boolean isLogScaleX) throws Exception;
     
     public boolean isNumeric();
 

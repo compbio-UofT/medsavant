@@ -54,7 +54,11 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class SummaryChart extends JPanel implements FiltersChangedListener {
-    private boolean isLogscale = false;
+    
+    public static enum ChartAxis {X, Y};
+    
+    private boolean isLogScaleY = false;
+    private boolean isLogScaleX = false;
     private boolean isPie = false;
     private boolean isSorted = false;
     private static final int DEFAULT_NUM_QUANTITATIVE_CATEGORIES = 15;
@@ -71,11 +75,27 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         setLayout(new BorderLayout());
         FilterController.addFilterListener(this);
     }
-
-    public void setIsLogscale(boolean isLogscale) {
-        this.isLogscale = isLogscale;
+    
+    public void setIsLogScale(boolean isLogScale, ChartAxis axis){
+        if(!isLogScale){
+            isLogScaleY = false;
+            isLogScaleX = false;
+        } else {
+            isLogScaleY = (axis == ChartAxis.Y);
+            isLogScaleX = (axis == ChartAxis.X);
+        }
         updateDataAndDrawChart();
     }
+
+    /*public void setIsLogScaleY(boolean isLogscale) {
+        this.isLogScaleY = isLogscale;
+        updateDataAndDrawChart();
+    }
+    
+    public void setIsLogScaleX(boolean isLogscale) {
+        this.isLogScaleX = isLogscale;
+        updateDataAndDrawChart();
+    }*/
 
     public void setIsSorted(boolean isSorted) {
         this.isSorted = isSorted;
@@ -87,8 +107,12 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         updateDataAndDrawChart();
     }
 
-    public boolean isLogscale() {
-        return isLogscale;
+    public boolean isLogScaleY() {
+        return isLogScaleY;
+    }
+    
+    public boolean isLogScaleX() {
+        return isLogScaleX;
     }
 
     public boolean isPie() {
@@ -182,7 +206,7 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
 
             p.setHighlight(h);
             logp.setHighlight(h);
-            if (this.isLogscale()) {
+            if (this.isLogScaleY()) {
                 chartModel.addPoint(logp);
             } else {
                 chartModel.addPoint(p);
@@ -195,10 +219,10 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
 
         CategoryAxis xaxis = new CategoryAxis(categories, "Category");
         chart.setXAxis(xaxis);
-        if (this.isLogscale()) {
-            chart.setYAxis(new Axis(new NumericRange(0, Math.log10(max)), "log(Frequency)"));
+        if (this.isLogScaleY()) {
+            chart.setYAxis(new Axis(new NumericRange(0, Math.log10(max) * 1.1), "log(Frequency)"));
         } else {
-            chart.setYAxis(new Axis(new NumericRange(0, max), "Frequency"));
+            chart.setYAxis(new Axis(new NumericRange(0, max * 1.1), "Frequency"));
         }
         chart.getXAxis().getLabel().setFont(ViewUtil.getMediumTitleFont());
         chart.getYAxis().getLabel().setFont(ViewUtil.getMediumTitleFont());
@@ -241,7 +265,7 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         protected ChartFrequencyMap doInBackground() throws Exception {
             if (mapGenerator == null) { return null; }
             if(this.isThreadCancelled()) return null;
-            return mapGenerator.generateChartMap();
+            return mapGenerator.generateChartMap(isLogScaleX && mapGenerator.isNumeric());
         }
 
         public void showSuccess(ChartFrequencyMap result) {
