@@ -76,6 +76,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
             int step2 = (int)Math.pow(10, getNumDigits(step1));
             int step = step2;
             while (step * 0.5 > step1) step *= 0.5;
+            step = Math.max(step, 1);
             
             int numSteps = (int)(((int)(r.getMax() - min) / step) + 1);
             

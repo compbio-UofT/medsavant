@@ -39,6 +39,7 @@ import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
+import javax.swing.SwingWorker;
 
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
@@ -143,11 +144,19 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
 
     private void updateDataAndDrawChart() {
         
-        this.removeAll();
-        this.add(new WaitPanel("Getting chart data"), BorderLayout.CENTER);
-        this.updateUI();
-
+        //begin creating chart
         new ChartMapWorker().execute();
+        
+        //show wait panel
+        final JPanel instance = this;
+        new Thread() {
+            @Override
+            public void run(){
+                instance.removeAll();
+                instance.add(new WaitPanel("Getting chart data"), BorderLayout.CENTER);
+                instance.updateUI();
+            }
+        }.start();
     }
 
     private synchronized void drawChart(ChartFrequencyMap chartMap) {

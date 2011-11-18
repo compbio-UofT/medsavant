@@ -119,9 +119,8 @@ public class ChartView extends JPanel {
     }
 
     private void addCMG(ChartMapGenerator cmg) {
-        //sc.setChartMapGenerator(cmg);
-        chartChooser.addItem(cmg.getName());
         mapGenerators.put(cmg.getName(), cmg);
+        chartChooser.addItem(cmg.getName());    
     }
 
     private void addCMGs() {
@@ -143,9 +142,6 @@ public class ChartView extends JPanel {
                 addCMG(VariantFieldChartMapGenerator.createPatientChart(field));
             }
         }
-        
-        String alias = (String) chartChooser.getSelectedItem();
-        sc.setChartMapGenerator(mapGenerators.get(alias));
         
     }
 
