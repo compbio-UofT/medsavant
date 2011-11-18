@@ -41,6 +41,7 @@ public class ChartView extends JPanel {
     private JCheckBox bLogY;
     private JCheckBox bLogX;
     private String pageName;
+    private boolean init = false;
 
     public ChartView(String pageName) {
         this.pageName = pageName;
@@ -52,8 +53,10 @@ public class ChartView extends JPanel {
     private void initGUI() {
         this.setLayout(new BorderLayout());
         initToolBar();
-        initCards();
-        initBottomBar();
+        initCards();  
+        initBottomBar();       
+        init = true;
+        chartChooser.setSelectedIndex(0);
     }
 
     private void initToolBar() {
@@ -67,8 +70,11 @@ public class ChartView extends JPanel {
         chartChooser.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
+                if(!init) return;
                 String alias = (String) chartChooser.getSelectedItem();
-                sc.setChartMapGenerator(mapGenerators.get(alias));
+                ChartMapGenerator cmg = mapGenerators.get(alias);
+                sc.setChartMapGenerator(cmg);
+                bLogX.setEnabled(cmg.isNumeric());
                 if (bSort == null) { return; }
                 if (alias.equals(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM))) {
                     bSort.setEnabled(false);
