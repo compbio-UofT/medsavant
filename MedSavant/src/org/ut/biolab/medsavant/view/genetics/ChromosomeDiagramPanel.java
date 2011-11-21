@@ -13,19 +13,13 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.model.Chromosome;
-import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.db.model.Range;
 
 /**
  *
@@ -38,7 +32,7 @@ public class ChromosomeDiagramPanel extends JPanel {
     private List<RangeAnnotation> annotations;
     //private static final int BINSIZE = 15000000;    
     private static final int AMAXBINSIZE = 60000000;
-    private List<Integer> binValues;
+    //private List<Integer> binValues;
 
     public ChromosomeDiagramPanel(Chromosome c) {
         this.chr = c;
@@ -111,56 +105,22 @@ public class ChromosomeDiagramPanel extends JPanel {
         return updateAnnotations(totalNum);
     }*/
     
-    public int createBins(int totalNum, int binsize) {
+    public void updateFrequencyCounts(Map<Range,Integer> binCounts, int max) {
 
-        binValues = new ArrayList<Integer>();       
-        try {
-            if(binsize > AMAXBINSIZE){
-                for(int i = 0; i < chr.getLength(); i += binsize){
-                    int numVariants = VariantQueryUtil.getNumVariantsInRange(
-                            ProjectController.getInstance().getCurrentProjectId(), 
-                            ReferenceController.getInstance().getCurrentReferenceId(), 
-                            FilterController.getQueryFilterConditions(), 
-                            chr.getName(), 
-                            i, i+binsize);       
-                    /*int numVariants = QueryUtil.getNumVariantsInRange(                  
-                            ConnectionController.connect(),
-                            chr.getName(),
-                            i,
-                            i + binsize);*/
-                    binValues.add(numVariants);
-                }           
-            } else {
-                int[] a = VariantQueryUtil.getNumVariantsForBins(
-                        ProjectController.getInstance().getCurrentProjectId(), 
-                        ReferenceController.getInstance().getCurrentReferenceId(), 
-                        FilterController.getQueryFilterConditions(), 
-                        chr.getName(), 
-                        binsize, 
-                        (int)(chr.getLength()/binsize + 1));               
-                /*int[] a = QueryUtil.getNumVariantsForBins(                  
-                            ConnectionController.connect(),
-                            chr.getName(),
-                            binsize,
-                            (int)(chr.getLength()/binsize + 1));*/
-                for(Integer i : a){
-                    binValues.add(i);
-                }
+        List<RangeAnnotation> as = new ArrayList<RangeAnnotation>();
+        if (binCounts != null) {
+            for (Range r : binCounts.keySet()) {
+                int count = binCounts.get(r);
+                float alpha = 0.15f + (0.85f * (float)Math.min(1.0, (double)count/(double) max));
+                as.add(new RangeAnnotation((long) r.getMin(), (long) r.getMax(), new Color(0.0F, 0.7F, 0.87F, alpha)));
             }
-        } catch (NonFatalDatabaseException ex) {
-            Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(ChromosomeDiagramPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
-                 
-        int max = 0;
-        for(Integer i : binValues){
-            if(i > max) max = i;
-        }
-        return max;
+        setAnnotations(as); 
     }
     
+    /*
     public void updateAnnotations(int max, int binsize){
+        
         
         List<RangeAnnotation> as = new ArrayList<RangeAnnotation>();
                    
@@ -178,6 +138,9 @@ public class ChromosomeDiagramPanel extends JPanel {
         }
         
         setAnnotations(as);
+         
     }
+     * 
+     */
     
 }

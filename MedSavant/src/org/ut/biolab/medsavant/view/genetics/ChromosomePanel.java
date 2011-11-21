@@ -12,11 +12,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.sql.SQLException;
+import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Chromosome;
+import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -46,20 +48,9 @@ public class ChromosomePanel extends JPanel {
         cdp.setScaleWithRespectToLength(len);
     }
     
-    /*public void update(int totalNum){
-        cdp.update(totalNum);
-    }*/
-    
-    public int createBins(int totalNum, int binsize){
-        return cdp.createBins(totalNum, binsize);
+    public void updateFrequencyCounts(Map<Range,Integer> binCounts,int max){
+        cdp.updateFrequencyCounts(binCounts,max);
     }
-    
-    public void updateAnnotations(int max, int binsize){
-        cdp.updateAnnotations(max, binsize);
-    }
-    /*public int getNumBins(int binsize){
-        return (int)(chr.getLength()/binsize + 1);
-    }*/
     
     public String getChrName(){
         return chr.getName();

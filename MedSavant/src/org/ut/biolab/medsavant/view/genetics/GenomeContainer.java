@@ -23,6 +23,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -36,6 +37,7 @@ import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Chromosome;
+import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
@@ -56,8 +58,8 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
     private static final String CARD_WAIT = "wait";
     private static final String CARD_SHOW = "show";
     private CardLayout cl;
-    private static final int MINBINSIZE = 10000000;
-    private static final int BINMULTIPLIER = 25;
+    /*private static final int MINBINSIZE = 1000000;
+    private static final int BINMULTIPLIER = 10;*/
     private final String pageName;
     
     private final Object updateLock = new Object();
@@ -169,8 +171,27 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
                                     ProjectController.getInstance().getCurrentProjectId(), 
                                     ReferenceController.getInstance().getCurrentReferenceId(), 
                                     FilterController.getQueryFilterConditions());           
-            final int binsize = (int)Math.min(249250621, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
+            
+            //final int binsize = (int)Math.min(249250621, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
 
+            long start = System.currentTimeMillis();
+            final Map<String,Map<Range,Integer>> map = VariantQueryUtil.getChromosomeHeatMap(
+                    ProjectController.getInstance().getCurrentProjectId(),
+                        ReferenceController.getInstance().getCurrentReferenceId(),
+                        FilterController.getQueryFilterConditions(),
+                        3000000);
+            long time = System.currentTimeMillis() - start;
+            
+            int mmax = 0;
+            for (String s : map.keySet()) {
+                for (Range r : map.get(s).keySet()) {
+                    int val = map.get(s).get(r);
+                    mmax = (val > mmax) ? val : mmax;
+                }
+            }
+            
+            final int max = mmax;
+            
             for (final ChromosomePanel p : chrViews){
                 if(this.isThreadCancelled()) return null;
 
@@ -186,9 +207,8 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
                 Thread thread = new Thread() {
                     @Override
                     public void run() {
-                        int region = p.createBins(totalNum, binsize);
+                        p.updateFrequencyCounts(map.get(p.getChrName()),max);
                         synchronized(workerLock){
-                            if(region > maxRegion) maxRegion = region;
                             regionsDone++;
                             activeThreads--;
                             workerLock.notifyAll();
@@ -206,11 +226,6 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
                 }
             }
 
-            //actually draw chromosomes
-            for(ChromosomePanel p : chrViews){
-                if(this.isThreadCancelled()) return null;
-                p.updateAnnotations(maxRegion, binsize);
-            } 
             return true;            
         }
         
@@ -228,7 +243,7 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
             if(!this.isDone()){
                 this.cancel(true);
-            }    
+            }
         }
 
         @Override
