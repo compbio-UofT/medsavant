@@ -64,11 +64,29 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
     private List<Range> generateBins(Range r, boolean isLogScaleX){
         List<Range> bins = new ArrayList<Range>();
         
+        //log scale
         if(isLogScaleX){
             bins.add(new Range(0,1));
             for(int i = 1; i < r.getMax(); i *= 10){
                 bins.add(new Range(i, i*10));
-            }         
+            }        
+            
+        //percent fields
+        } else if ((field.getColumnType() == ColumnType.DECIMAL || field.getColumnType() == ColumnType.FLOAT) && r.getMax() - r.getMin() <= 1 && r.getMax() <= 1) {
+            
+            double step = 0.05;
+            int numSteps = 20;
+            for(int i = 0; i < numSteps; i++){
+                bins.add(new Range(step * i, step * (i+1)));
+            }
+            
+        //boolean fields
+        } else if ((field.getColumnType() == ColumnType.INTEGER && Integer.parseInt(field.getColumnLength()) == 1) || field.getColumnType() == ColumnType.BOOLEAN){
+            
+            bins.add(new Range(0,1));
+            bins.add(new Range(1,2)); 
+            
+        //other fields
         } else {
             
             int min = (int)(r.getMin() - Math.abs(r.getMin() % (int)Math.pow(10, getNumDigits((int)(r.getMax() - r.getMin()))-1)));

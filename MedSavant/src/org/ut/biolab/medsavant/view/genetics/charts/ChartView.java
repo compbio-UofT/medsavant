@@ -138,6 +138,7 @@ public class ChartView extends JPanel {
                 if(field.isFilterable() &&
                         (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))){
                     addCMG(VariantFieldChartMapGenerator.createVariantChart(field));
+                    if(type == ColumnType.BOOLEAN || (type == ColumnType.INTEGER && Integer.parseInt(field.getColumnLength()) == 1)) System.out.println(field.getAlias());
                 }
             }
         }
