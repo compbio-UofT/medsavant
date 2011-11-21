@@ -16,7 +16,9 @@
 
 package org.ut.biolab.medsavant.db.util.query;
 
+import com.healthmarketscience.common.util.AppendableExt;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -33,12 +35,18 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.dbspec.Column;
+import com.healthmarketscience.sqlbuilder.dbspec.Function;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.model.Chromosome;
+import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
@@ -183,9 +191,7 @@ public class VariantQueryUtil {
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(q.toString());
         
         Map<String, Integer> map = new HashMap<String, Integer>();
-        
-        System.out.println("Got frequency values for " + column.getAbsoluteName());
-        
+
         while (rs.next()) {
             String key = rs.getString(1);
             if (key == null) { key = ""; }
@@ -211,6 +217,84 @@ public class VariantQueryUtil {
         
         rs.next();
         return rs.getInt(1);
+    }
+    
+    public static Map<String,Map<Range,Integer>> getChromosomeHeatMap(int projectId, int referenceId, Condition[][] conditions, int binsize) throws SQLException {
+        
+        TableSchema table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(projectId, referenceId));
+        
+        SelectQuery queryBase = new SelectQuery();
+        queryBase.addFromTable(table.getTable());
+                
+        queryBase.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
+        
+        String roundFunction = "ROUND(" + DefaultVariantTableSchema.COLUMNNAME_OF_POSITION + "/" + binsize + ",0)";
+        
+        queryBase.addCustomColumns(FunctionCall.countAll());
+        queryBase.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
+        
+        
+        addConditionsToQuery(queryBase, conditions);
+
+        String query = queryBase.toString().replace("COUNT(*)", "COUNT(*)," + roundFunction) + "," + roundFunction;
+        
+        Connection conn = ConnectionController.connectPooled();
+        ResultSet rs = conn.createStatement().executeQuery(query);
+        
+        Map<String,Map<Range,Integer>> results = new HashMap<String,Map<Range,Integer>>();
+        while (rs.next()) {
+            
+            String chrom = rs.getString(1);
+            
+            Map<Range,Integer> chromMap;
+            if (!results.containsKey(chrom)) {
+                chromMap = new HashMap<Range,Integer>();
+            } else {
+                chromMap = results.get(chrom);
+            }
+            
+            int binNo = rs.getInt(3);
+            Range binRange = new Range(binNo*binsize,(binNo+1)*binsize);
+            
+            int count = rs.getInt(2);
+            
+            chromMap.put(binRange, count);
+            results.put(chrom, chromMap);
+        }
+        
+        return results;
+        
+        
+        //TODO
+        /*
+        String query = "select y.range as `range`, count(*) as `number of occurences` "
+                + "from ("
+                + "select case ";
+        int pos = 0;
+        for(int i = 0; i < numbins; i++) {
+            query += "when `" + DefaultVariantTableSchema.COLUMNNAME_OF_POSITION + "` between " + pos + " and " + (pos+binsize) + " then " + i + " ";
+            pos += binsize;
+        }
+        
+        query += "end as `range` "
+                + "from (";
+        query += queryBase.toString();
+        query += ") x ) y "
+                + "group by y.`range`";
+
+        
+        Connection conn = ConnectionController.connectPooled();
+        ResultSet rs = conn.createStatement().executeQuery(query.toString());
+        
+        int[] numRows = new int[numbins];
+        for(int i = 0; i < numbins; i++) numRows[i] = 0;
+        while (rs.next()) {
+            int index = rs.getInt(1);
+            numRows[index] = rs.getInt(2);
+        }
+        return numRows;
+         * 
+         */
     }
     
     public static int[] getNumVariantsForBins(int projectId, int referenceId, Condition[][] conditions, String chrom, int binsize, int numbins) throws SQLException, NonFatalDatabaseException {
@@ -248,6 +332,7 @@ public class VariantQueryUtil {
         query += queryBase.toString();
         query += ") x ) y "
                 + "group by y.`range`";
+
         
         Connection conn = ConnectionController.connectPooled();
         ResultSet rs = conn.createStatement().executeQuery(query.toString());
@@ -342,5 +427,5 @@ public class VariantQueryUtil {
         
         return results;
     }
- 
+
 }
