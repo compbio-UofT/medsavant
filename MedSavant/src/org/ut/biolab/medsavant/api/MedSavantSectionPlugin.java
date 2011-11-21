@@ -33,5 +33,8 @@ public abstract class MedSavantSectionPlugin extends MedSavantPlugin {
      * plugin to initialize and show itself.
      */
     public abstract void init(JPanel panel);
+
+    public abstract void viewDidLoad();
+    public abstract void viewDidUnload();
     
 }

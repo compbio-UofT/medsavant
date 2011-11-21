@@ -43,6 +43,7 @@ public class PluginPage extends SubSectionView {
     private static final Logger LOG = Logger.getLogger(PluginPage.class.getName());
     private static PluginController controller = PluginController.getInstance();
     private final PluginDescriptor descriptor;
+    private MedSavantSectionPlugin p;
     JPanel panel;
 
     public PluginPage(SectionView parent, PluginDescriptor desc) {
@@ -52,9 +53,9 @@ public class PluginPage extends SubSectionView {
         panel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-        MedSavantPlugin p = controller.getPlugin(desc.getID());
+        p = (MedSavantSectionPlugin)controller.getPlugin(desc.getID());
         if (p != null) {
-            ((MedSavantSectionPlugin)p).init(panel);
+            p.init(panel);
         } else {
             JLabel placeholder = new JLabel(controller.getPluginStatus(desc.getID()));
             placeholder.setFont(ViewUtil.getBigTitleFont());
@@ -69,9 +70,10 @@ public class PluginPage extends SubSectionView {
                     switch (event.getType()) {
                         case LOADED:
                             panel.removeAll();
-                            MedSavantPlugin p = event.getPlugin();
-                            if (p instanceof MedSavantSectionPlugin) {
-                                ((MedSavantSectionPlugin)p).init(panel);
+                            MedSavantPlugin plug = event.getPlugin();
+                            if (plug instanceof MedSavantSectionPlugin) {
+                                p = (MedSavantSectionPlugin)plug;
+                                p.init(panel);
                             }
                             break;
                         case ERROR:
@@ -96,10 +98,14 @@ public class PluginPage extends SubSectionView {
 
     @Override
     public void viewDidLoad() {
+        if (p != null)
+            ((MedSavantSectionPlugin)p).viewDidLoad();
     }
 
     @Override
     public void viewDidUnload() {
+        if (p != null)
+            ((MedSavantSectionPlugin)p).viewDidUnload();
         ThreadController.getInstance().cancelWorkers(getName());
     }
 }

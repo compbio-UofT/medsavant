@@ -100,6 +100,10 @@ public class CustomField {
         return category;
     }
     
+    public boolean isNumeric() {
+        return this.fieldType == ColumnType.DECIMAL || fieldType == ColumnType.FLOAT || fieldType == ColumnType.INTEGER;
+    }
+    
     @Override
     public String toString(){
         return alias;

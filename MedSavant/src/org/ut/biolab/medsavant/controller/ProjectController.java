@@ -249,8 +249,8 @@ public class ProjectController implements ReferenceListener, LoginListener {
                 }
                 currentAnnotationFormats = af;
             } catch (Exception ex) {
-                ex.printStackTrace();
-                Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+                currentAnnotationFormats = new AnnotationFormat[0];
+                //Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return currentAnnotationFormats;

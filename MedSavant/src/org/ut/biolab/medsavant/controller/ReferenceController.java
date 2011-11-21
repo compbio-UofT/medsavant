@@ -20,6 +20,7 @@ public class ReferenceController {
 
     private int currentReferenceId;
     private String currentReferenceName;
+    private boolean referenceSet = false;
     
     private final ArrayList<ReferenceListener> referenceListeners;
 
@@ -137,6 +138,7 @@ public class ReferenceController {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
+        referenceSet = true;
         return true;
     }
     
@@ -168,6 +170,10 @@ public class ReferenceController {
     
     public List<Chromosome> getChromosomes() throws SQLException {
         return ReferenceQueryUtil.getChromosomes(currentReferenceId);
+    }
+    
+    public boolean isReferenceSet(){
+        return referenceSet;
     }
 
 }
