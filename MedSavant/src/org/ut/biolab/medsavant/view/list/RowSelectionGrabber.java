@@ -1,6 +1,7 @@
 package org.ut.biolab.medsavant.view.list;
 
 import com.jidesoft.grid.SortableTable;
+import com.jidesoft.grid.TableModelWrapperUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -29,7 +30,7 @@ public class RowSelectionGrabber {
         List<Object[]> selected = new ArrayList<Object[]>();
         
         for (int i = 0; i < length; i++) {
-            int currentRow = allRows[i];
+            int currentRow = getActualRowAt(allRows[i]);
             if (currentRow >= 0 && !data.isEmpty() && currentRow < data.size()) {
                 selected.add(data.get(currentRow));
             }
@@ -46,5 +47,9 @@ public class RowSelectionGrabber {
             o[i++] = v1;
         }
         return o;
+    }
+    
+    public int getActualRowAt(int row){
+        return TableModelWrapperUtils.getActualRowAt(table.getModel(), row);
     }
 }
