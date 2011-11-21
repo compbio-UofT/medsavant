@@ -204,7 +204,11 @@ public class CohortDetailedView extends DetailedView {
                     patientIds[i] = ((SimplePatient) selected[i]).getId();
                 }
                 if (patientIds != null && patientIds.length > 0) {
-
+                    
+                    if(JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(null, "Are you sure you want to remove these individual(s)?", "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)){
+                        return;
+                    }
+                    
                     try {
                         CohortQueryUtil.removePatientsFromCohort(patientIds, cohort.getId());
                     } catch (SQLException ex) {
