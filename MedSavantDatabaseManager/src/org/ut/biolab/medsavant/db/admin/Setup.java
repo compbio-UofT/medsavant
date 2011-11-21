@@ -122,6 +122,7 @@ public class Setup {
                 "CREATE TABLE `" + MedSavantDatabase.ReferenceTableSchema.getTablename() + "` ("
                 + "`reference_id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
                 + "`name` varchar(50) COLLATE latin1_bin NOT NULL,"
+                + "`url` varchar(200) COLLATE latin1_bin DEFAULT NULL,"
                 + "PRIMARY KEY (`reference_id`), "
                 + "UNIQUE KEY `name` (`name`)"
                 + ") ENGINE=MyISAM;");
@@ -267,6 +268,8 @@ public class Setup {
 
     public static void createDatabase(String dbHost, int port, String dbname, char[] rootPassword) throws SQLException {
         
+        ConnectionController.setCredentials("root", new String(rootPassword));
+        
         Connection c = ConnectionController.connectUnpooled(dbHost, port, "");
         createDatabase(c,dbname);
 
@@ -305,7 +308,7 @@ public class Setup {
 
     private static void addDefaultReferenceGenomes(Connection c) throws SQLException {
         ReferenceQueryUtil.addReference("hg17", Chromosome.getHg17Chromosomes());
-        ReferenceQueryUtil.addReference("hg18", Chromosome.getHg18Chromosomes());
-        ReferenceQueryUtil.addReference("hg19", Chromosome.getHg19Chromosomes());
+        ReferenceQueryUtil.addReference("hg18", Chromosome.getHg18Chromosomes(), "http://savantbrowser.com/data/hg18/hg18.fa.savant");
+        ReferenceQueryUtil.addReference("hg19", Chromosome.getHg19Chromosomes(), "http://savantbrowser.com/data/hg19/hg19.fa.savant");
     }
 }

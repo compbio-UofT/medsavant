@@ -32,7 +32,9 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
@@ -135,17 +137,25 @@ public class SavantExportForm extends javax.swing.JDialog {
         }
         
         //genome version
-        //TODO: currently hard coded; need to store this somewhere
-        String genomeName = "hg19.fa.savant";
-        String genomeUrl = "http://savantbrowser.com/data/hg19/hg19.fa.savant";
+        String genomeName = ReferenceController.getInstance().getCurrentReferenceName();
+        String genomeUrl = ReferenceController.getInstance().getCurrentReferenceUrl();
         
         //create file
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
         
             out.write("<?xml version=\"1.0\" ?>\n"
-                    + "<savant version=\"1\" range=\"chr1:1-1000\">\n"
-                    + " <genome name=\"" + genomeName + "\" uri=\"" + genomeUrl + "\" />\n");
+                    + "<savant version=\"1\" range=\"chr1:1-1000\">\n");
+            
+            if(genomeUrl != null){
+                out.write(" <genome name=\"" + genomeName + "\" uri=\"" + genomeUrl + "\" />\n");
+            } else {
+                out.write(" <genome name=\"" + genomeName + "\" >\n");               
+                for(Chromosome c : ReferenceController.getInstance().getChromosomes()){
+                    out.write("   <reference name=\"" + c.getName() + "\" length=\"" + c.getLength() + "\" />\n");
+                }  
+                out.write(" </genome>\n");          
+            }
 
             for(String path : bamFiles){
                 out.write("  <track uri=\"" + path + "\"/>\n");

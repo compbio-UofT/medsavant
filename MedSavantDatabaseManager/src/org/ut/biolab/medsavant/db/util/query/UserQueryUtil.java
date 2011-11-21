@@ -108,7 +108,7 @@ public class UserQueryUtil {
                     return UserLevel.ADMIN;
                 }
             }
-            rs = ConnectionController.executeQuery("SELECT Create_tmp_table_priv FROM mysql.db WHERE user=?", name, ConnectionController.getDBName());
+            rs = ConnectionController.executeQuery("SELECT Create_tmp_table_priv FROM mysql.db WHERE user=?", name);
             if (rs.next()) {
                 if (rs.getString(1).equals("Y")) {
                     return UserLevel.USER;

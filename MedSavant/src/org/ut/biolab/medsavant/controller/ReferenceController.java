@@ -44,9 +44,9 @@ public class ReferenceController {
     }
      * 
      */
-    public void addReference(String name, List<Chromosome> contigs) {
+    public void addReference(String name, List<Chromosome> contigs, String url) {
         try {
-            org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil.addReference(name, contigs);
+            org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil.addReference(name, contigs, url);
             fireReferenceAddedEvent(name);
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -156,6 +156,18 @@ public class ReferenceController {
     
     public String getCurrentReferenceName(){
         return this.currentReferenceName;
+    }
+    
+    public String getCurrentReferenceUrl(){
+        try {
+            return ReferenceQueryUtil.getReferenceUrl(currentReferenceId);
+        } catch (Exception e){
+            return null;
+        }
+    }
+    
+    public List<Chromosome> getChromosomes() throws SQLException {
+        return ReferenceQueryUtil.getChromosomes(currentReferenceId);
     }
 
 }

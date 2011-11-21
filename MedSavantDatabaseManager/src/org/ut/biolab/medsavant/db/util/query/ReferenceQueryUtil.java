@@ -27,8 +27,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
+import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
 import org.ut.biolab.medsavant.db.model.Chromosome;
@@ -116,8 +118,11 @@ public class ReferenceQueryUtil {
         return rs.next();
     }
     
+    public static int addReference(String name, List<Chromosome> contigs) throws SQLException {
+        return addReference(name, contigs, null);
+    }
      
-     public static int addReference(String name, List<Chromosome> contigs) throws SQLException {
+    public static int addReference(String name, List<Chromosome> contigs, String url) throws SQLException {
          
         TableSchema referenceTable = MedSavantDatabase.ReferenceTableSchema;
         TableSchema chromTable = MedSavantDatabase.ChromosomeTableSchema;
@@ -126,6 +131,7 @@ public class ReferenceQueryUtil {
         //add reference
         InsertQuery query1 = new InsertQuery(referenceTable.getTable());
         query1.addColumn(referenceTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME), name);
+        query1.addColumn(referenceTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_URL), url);
 
         PreparedStatement stmt = c.prepareStatement(query1.toString(), Statement.RETURN_GENERATED_KEYS);
 
@@ -232,8 +238,46 @@ public class ReferenceQueryUtil {
             result.put(rs.getInt(1), rs.getString(2));
         }
         
-        return result;
+        return result;   
+    }
+    
+    public static String getReferenceUrl(int referenceid) throws SQLException {
         
+        Connection c = ConnectionController.connectPooled();
+        
+        TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(refTable.getTable());
+        query.addColumns(refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_URL));
+        query.addCondition(BinaryConditionMS.equalTo(refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceid));
+        
+        ResultSet rs = c.createStatement().executeQuery(query.toString());
+        rs.next();
+        return rs.getString(1);  
+    }
+    
+    public static List<Chromosome> getChromosomes(int referenceid) throws SQLException {
+        
+        Connection c = ConnectionController.connectPooled();
+        
+        TableSchema table = MedSavantDatabase.ChromosomeTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addAllColumns();
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ChromosomeTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceid));
+        query.addOrdering(table.getDBColumn(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_ID), Dir.ASCENDING);
+        
+        ResultSet rs = c.createStatement().executeQuery(query.toString());
+        
+        List<Chromosome> result = new ArrayList<Chromosome>();
+        while(rs.next()){
+            result.add(new Chromosome(
+                    rs.getString(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_NAME), 
+                    rs.getString(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_NAME), 
+                    rs.getLong(ChromosomeTableSchema.COLUMNNAME_OF_CENTROMERE_POS), 
+                    rs.getLong(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_LENGTH)));
+        }
+        return result;       
     }
 
 }

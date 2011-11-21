@@ -580,9 +580,15 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_NAME = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_NAME = 50;
         public static final String COLUMNNAME_OF_NAME = "name";
+        // reference.url
+        public static final int INDEX_OF_URL = 2;
+        public static final ColumnType TYPE_OF_URL = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_URL = 200;
+        public static final String COLUMNNAME_OF_URL = "url";
         private void addColumns() {
                 addColumn(COLUMNNAME_OF_REFERENCE_ID,COLUMNNAME_OF_REFERENCE_ID,TableSchema.ColumnType.INTEGER,11);
                 addColumn(COLUMNNAME_OF_NAME,COLUMNNAME_OF_NAME,TableSchema.ColumnType.VARCHAR,50);
+                addColumn(COLUMNNAME_OF_URL,COLUMNNAME_OF_URL,TableSchema.ColumnType.VARCHAR,200);
         }
     }
 

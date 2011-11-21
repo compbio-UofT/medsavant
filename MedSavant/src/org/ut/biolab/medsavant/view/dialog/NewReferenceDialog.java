@@ -141,6 +141,8 @@ public class NewReferenceDialog extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         clearButton = new javax.swing.JLabel();
         addRowButton = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        text_reference_url = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
@@ -187,28 +189,32 @@ public class NewReferenceDialog extends javax.swing.JDialog {
         clearButton.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         clearButton.setText("clear");
 
-        addRowButton.setFont(new java.awt.Font("Tahoma", 1, 11));
+        addRowButton.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         addRowButton.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         addRowButton.setText("add row");
+
+        jLabel3.setText("Sequence URL (optional):");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, text_reference_name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(text_reference_name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                    .add(jLabel1)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(button_ok)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(button_cancel))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 272, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(text_reference_url, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
                         .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 103, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 118, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 120, Short.MAX_VALUE)
                         .add(addRowButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 64, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(clearButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
@@ -221,6 +227,10 @@ public class NewReferenceDialog extends javax.swing.JDialog {
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(text_reference_name, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(text_reference_url, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -251,6 +261,7 @@ public class NewReferenceDialog extends javax.swing.JDialog {
     private void button_okActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_okActionPerformed
         try {
             String referenceName = this.text_reference_name.getText();
+            String referenceUrl = this.text_reference_url.getText();
             List<Chromosome> contigs = getContigs();
 
             if (referenceName == null || referenceName.equals("")){
@@ -258,7 +269,7 @@ public class NewReferenceDialog extends javax.swing.JDialog {
             } else if (ReferenceQueryUtil.containsReference(referenceName)) {
                 JOptionPane.showMessageDialog(this, "Reference already exists");
             } else {
-                ReferenceController.getInstance().addReference(referenceName, contigs);
+                ReferenceController.getInstance().addReference(referenceName, contigs, referenceUrl);
                 this.dispose();
             }
         } catch (SQLException ex) {
@@ -297,9 +308,11 @@ public class NewReferenceDialog extends javax.swing.JDialog {
     private javax.swing.JLabel clearButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTable table;
     private javax.swing.JTextField text_reference_name;
+    private javax.swing.JTextField text_reference_url;
     // End of variables declaration//GEN-END:variables
 }
