@@ -23,8 +23,7 @@ public class FishersTest {
      */
     public static BigDecimal fishersExact(int a, int b, int c, int d){
         
-        resetFactMap();
-        
+        resetFactMap();       
         
         // 1. Compute cutoff
         
@@ -54,13 +53,10 @@ public class FishersTest {
         // 3. Compute variations
         
         BigDecimal p_value = new BigDecimal("0");
-        int iterations = 0; //TODO: remove these, just for benchmarking
-        int iterations1 = Math.min(b1, c1) + 1;
         
         // 3a. Compute variations (increasing a1 -> a)
 
         while(a1 < a){
-            iterations++;
             BigDecimal base1Big = new BigDecimal(factBig(a1).multiply(factBig(b1)).multiply(factBig(c1)).multiply(factBig(d1)));
             if(base1Big.compareTo(baseBig) >= 0){  // equivalent to p_value <= p_cutoff                
                 p_value = p_value.add(constantBig.divide(base1Big, 1000, BigDecimal.ROUND_HALF_UP));
@@ -76,7 +72,6 @@ public class FishersTest {
         // 3b. Compute variations (decreasing a2 -> a+1)
         
         while(a2 > a){
-            iterations++;
             BigDecimal base1Big = new BigDecimal(factBig(a2).multiply(factBig(b2)).multiply(factBig(c2)).multiply(factBig(d2)));
             if(base1Big.compareTo(baseBig) >= 0){  // equivalent to p_value <= p_cutoff                
                 p_value = p_value.add(constantBig.divide(base1Big, 1000, BigDecimal.ROUND_HALF_UP));
@@ -92,15 +87,8 @@ public class FishersTest {
         // 3c. Add value for actual a,b,c,d
         
         p_value = p_value.add(constantBig.divide(new BigDecimal(factBig(a).multiply(factBig(b)).multiply(factBig(c)).multiply(factBig(d))), 1000, BigDecimal.ROUND_HALF_UP)); 
-        
-        
-        
-        System.out.println("old iterations = " + iterations1);
-        System.out.println("new iterations = " + iterations);
-                
-        
-        //TODO: clear factMap to free memory
-        //resetFactMap();
+
+        resetFactMap(); // clear here so that memory can be freed. 
         return p_value;
     }
     
@@ -124,8 +112,7 @@ public class FishersTest {
         if(highestMappedValue >= x){
             return factMap.get(x);
         } 
-        
-        
+ 
         int i = highestMappedValue;
         while(i < x){
             i++;
@@ -134,11 +121,5 @@ public class FishersTest {
         highestMappedValue = x;
         return factMap.get(x);         
     }
-    
-    /*private static BigInteger factBig(int x){
-        BigInteger result = new BigInteger("1");
-        while(x > 1) result = result.multiply(new BigInteger(Integer.toString(x--)));
-        return result;
-    }*/
     
 }
