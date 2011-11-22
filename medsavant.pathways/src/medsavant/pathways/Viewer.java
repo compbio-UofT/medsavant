@@ -55,6 +55,7 @@ import org.xml.sax.SAXException;
 import org.ut.biolab.medsavant.api.ProjectUtils;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.TableSchemaAdapter;
+import org.ut.biolab.medsavant.db.model.RangeCondition;
 import org.ut.biolab.medsavant.log.ClientLogger;
 
 
@@ -329,10 +330,9 @@ public class Viewer extends JSplitPane {
         Condition[] results = new Condition[genes.size()];
         int i = 0;               
         for(Gene g : genes){                    
-            Condition[] current = new Condition[3];
+            Condition[] current = new Condition[2];
             current[0] = BinaryCondition.equalTo(chromCol, "chr" + g.getChromosome());
-            current[1] = BinaryCondition.greaterThan(positionCol, Math.min(g.getStart(), g.getEnd()), true);
-            current[2] = BinaryCondition.lessThan(positionCol, Math.max(g.getStart(), g.getEnd()), true);                                   
+            current[1] = new RangeCondition(positionCol, Math.min(g.getStart(), g.getEnd()), Math.max(g.getStart(), g.getEnd()));
             results[i++] = ComboCondition.and(current);
         }
         return results;
