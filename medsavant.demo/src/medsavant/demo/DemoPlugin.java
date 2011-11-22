@@ -51,4 +51,14 @@ public class DemoPlugin extends MedSavantSectionPlugin {
     public String getTitle() {
         return "Demo Plugin";
     }
+
+    @Override
+    public void viewDidLoad() {
+        //do something
+    }
+
+    @Override
+    public void viewDidUnload() {
+        //do something
+    }
 }
