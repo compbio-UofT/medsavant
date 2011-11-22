@@ -23,6 +23,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -195,7 +196,7 @@ public class FishersPanel extends JPanel {
                             continue;
                         }
                         
-                        p_values[i-1] = FishersTest.fishersExact(a, b, c, d);
+                        p_values[i-1] = FishersTest.fishersExact(a, b, c, d).round(MathContext.DECIMAL32);
                         
                     } catch (Exception ex) {
                         Logger.getLogger(FishersPanel.class.getName()).log(Level.SEVERE, null, ex);
