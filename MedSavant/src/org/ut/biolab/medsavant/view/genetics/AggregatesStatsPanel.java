@@ -13,6 +13,7 @@ import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -57,7 +58,9 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
     }
     
     private void updateRegionStats(){
-        
+                  
+        ThreadController.getInstance().cancelWorkers(pageName);            
+      
         this.removeAll();
         this.add(toolBarPanel, BorderLayout.NORTH);
 

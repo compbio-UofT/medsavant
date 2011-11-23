@@ -56,6 +56,8 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
     public JPanel getPanel() {
         if (panel == null) {
             panel = new GeneListPanel();
+        } else {
+            panel.update();
         }
         return panel;
     }
@@ -168,6 +170,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                                     updateBEDRecordVariantValue(r, recordsInRegion);
                                 }                               
                             } else {
+                                System.out.println("interrupted");
                                 return new ArrayList<Object[]>();
                             }                           
                         } catch (Exception e){}
@@ -189,6 +192,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                                     updateBEDRecordPatientValue(r, recordsInRegion);
                                 }
                             } else {
+                                System.out.println("interrupted");
                                 return new ArrayList<Object[]>();
                             }
                         } catch (Exception e){}

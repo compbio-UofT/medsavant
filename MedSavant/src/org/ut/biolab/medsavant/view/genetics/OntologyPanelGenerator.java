@@ -12,6 +12,7 @@ import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.view.genetics.aggregates.AggregatePanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.aggregates.GOsubPanel;
 import org.ut.biolab.medsavant.view.genetics.aggregates.HPOsubPanel;
@@ -66,36 +67,16 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
             
             this.setLayout(new BorderLayout());
             banner = ViewUtil.getSubBannerPanel("Ontology");
-            //banner.setLayout(new BoxLayout(banner,BoxLayout.X_AXIS));
-            //banner.setBorder(ViewUtil.getMediumBorder());
-
+            
             options = new JComboBox();
 
             content = new JPanel();
             content.setLayout(new BorderLayout());
 
-            banner.add(options);
-            
-            /**
-             * @author mfiume
-             */
-            
-            banner.add(ViewUtil.getMediumSeparator());
-            
-            //banner.add(goButton);
+            banner.add(options);           
+            banner.add(ViewUtil.getMediumSeparator());        
             banner.add(Box.createHorizontalGlue());
-             
-            
-            /**
-             * @author nnursimulu
-             */
-//            banner.add(ViewUtil.getMediumSeparator());
-//            banner.add(Box.createHorizontalGlue());
-//            applyButton = new JButton("Apply");
-//            banner.add(applyButton);            
-//            banner.add(Box.createHorizontalGlue());
-//            banner.add(ViewUtil.getMediumSeparator());
-            
+
             progress = new JProgressBar();
             progress.setStringPainted(true);
             
@@ -113,16 +94,11 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
             });
 
             GOsubPanel gopanel = new GOsubPanel(this);
-            HPOsubPanel hpopanel = new HPOsubPanel(this);
+            //HPOsubPanel hpopanel = new HPOsubPanel(this);
             addOntologyAggregator(gopanel.getName(), gopanel);
-            addOntologyAggregator(hpopanel.getName(), hpopanel);
+            //addOntologyAggregator(hpopanel.getName(), hpopanel);
         }
         
-        // @author nnursimulu
-//        public JButton getApplyButton(){
-//            return applyButton;
-//        }
-
         private void showOntology(String ontology) {
             OntologySubPanel o = map.get(ontology);
             

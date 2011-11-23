@@ -5,8 +5,6 @@
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import javax.swing.JPanel;
 import javax.swing.JTree;
@@ -46,8 +44,7 @@ public abstract class OntologySubPanel extends JPanel implements
         
     public OntologySubPanel(OntologyPanelGenerator.OntologyPanel panel, 
             int chromSplitIndex, int startSplitIndex, int endSplitIndex){
-        
-        FilterController.addFilterListener(this);
+             
         this.setLayout(new BorderLayout());
         waitPanel = new WaitPanel("Getting aggregate statistics");
         this.add(waitPanel, BorderLayout.CENTER);
@@ -56,7 +53,7 @@ public abstract class OntologySubPanel extends JPanel implements
         this.startSplitIndex = startSplitIndex;
         this.endSplitIndex = endSplitIndex;
         this.panel = panel;
-//        this.setActionUponApply();
+        FilterController.addFilterListener(this);
     }
     
     
