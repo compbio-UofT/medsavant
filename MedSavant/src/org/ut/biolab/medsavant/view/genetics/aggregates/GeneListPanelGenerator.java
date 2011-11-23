@@ -170,7 +170,6 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                                     updateBEDRecordVariantValue(r, recordsInRegion);
                                 }                               
                             } else {
-                                System.out.println("interrupted");
                                 return new ArrayList<Object[]>();
                             }                           
                         } catch (Exception e){}
@@ -192,7 +191,6 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                                     updateBEDRecordPatientValue(r, recordsInRegion);
                                 }
                             } else {
-                                System.out.println("interrupted");
                                 return new ArrayList<Object[]>();
                             }
                         } catch (Exception e){}

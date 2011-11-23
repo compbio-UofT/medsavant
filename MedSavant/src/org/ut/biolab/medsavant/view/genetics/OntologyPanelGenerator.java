@@ -39,6 +39,8 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
     public JPanel getPanel() {
         if (panel == null) {
             panel = new OntologyPanel();
+        } else {
+            panel.update();
         }
         return panel;
     }
@@ -102,10 +104,14 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
         private void showOntology(String ontology) {
             OntologySubPanel o = map.get(ontology);
             
-            if (currentOntology != null){}
+            if (currentOntology != null){
+                currentOntology.stop();
+                ThreadController.getInstance().cancelWorkers(pageName);
+            }
                 //currentOntology.setUpdate(false);
             
             //o.setUpdate(true);
+            o.run();
             currentOntology = o;
 
             this.content.removeAll();
@@ -121,6 +127,12 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
         private void addOntologyAggregator(String name, OntologySubPanel os) {
             map.put(name,os);
             options.addItem(name);
+        }
+        
+        public void update(){
+            if(currentOntology != null){
+                currentOntology.run();
+            }
         }
     }
     

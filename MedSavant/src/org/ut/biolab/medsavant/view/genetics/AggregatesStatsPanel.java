@@ -49,7 +49,7 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
         //addPanel(new GOsubPanel());
         //addPanel(new HPOsubPanel());
         // Add your panel here.
-        addPanel(new OntologyPanelGenerator(pageName));
+        //addPanel(new OntologyPanelGenerator(pageName));
         addPanel(new GeneListPanelGenerator(pageName));
     }
     

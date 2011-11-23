@@ -60,9 +60,9 @@ public abstract class OntologySubPanel extends JPanel implements
     /**
      * Start to gather info into the tree.
      */
-    public void update(){
-        OntologyStatsWorker.getNewInstance(this);
-    }
+    //public void update(){
+    //    
+    //}
     
     protected abstract boolean treeIsReadyToBeFetched(); 
     
@@ -70,9 +70,9 @@ public abstract class OntologySubPanel extends JPanel implements
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, 
             NonFatalDatabaseException {
-        if (updatePanelUponFilterChanges){
-            this.update();
-        }
+        //if (updatePanelUponFilterChanges){
+        //    this.update();
+        //}
     }
     
     public JPanel getPanel(){
@@ -87,6 +87,11 @@ public abstract class OntologySubPanel extends JPanel implements
     }*/
     
     public void run(){
+        System.out.println("run");
+        OntologyStatsWorker.getNewInstance(this);
+    }
+    
+    public void stop(){
         
     }
     

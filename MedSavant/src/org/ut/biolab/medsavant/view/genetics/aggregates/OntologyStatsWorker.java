@@ -83,7 +83,12 @@ public  class OntologyStatsWorker extends SwingWorker{
 
     @Override
     protected Object doInBackground() throws Exception {
-        return getOntologyStats();
+        try {
+            return getOntologyStats();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return new JTree();
     }
     
     @Override
@@ -139,8 +144,8 @@ public  class OntologyStatsWorker extends SwingWorker{
         if (jTree == null){
             
             // TODO: change this approach: what if the tree is never loaded? Then, we're stuck in an infinite loop!
-            while (!subPanel.treeIsReadyToBeFetched())
-                ;
+            //while (!subPanel.treeIsReadyToBeFetched())
+            //    ;
             jTree = subPanel.getJTree();
             
             topPanel = ViewUtil.getClearPanel();
