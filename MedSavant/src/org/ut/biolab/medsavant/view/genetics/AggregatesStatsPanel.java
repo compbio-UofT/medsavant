@@ -5,27 +5,20 @@
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.TreeMap;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.aggregates.AggregatePanelGenerator;
-import org.ut.biolab.medsavant.view.genetics.aggregates.GOsubPanel;
 import org.ut.biolab.medsavant.view.genetics.aggregates.GeneListPanelGenerator;
-import org.ut.biolab.medsavant.view.genetics.aggregates.HPOsubPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
-
-
 
 /**
  *
@@ -35,6 +28,7 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
     
     private JPanel toolBarPanel;
     private String currentRegionStat;
+    private final String pageName;
     
     /**
      * List containing the name of region stats the user can view.
@@ -42,7 +36,8 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
     private TreeMap<String, AggregatePanelGenerator> panelMap = new TreeMap<String, AggregatePanelGenerator>();
 
     
-    public AggregatesStatsPanel(){
+    public AggregatesStatsPanel(String pageName){
+        this.pageName = pageName;
         this.setLayout(new BorderLayout());
         addPanels();
         initToolBar();
@@ -53,8 +48,8 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
         //addPanel(new GOsubPanel());
         //addPanel(new HPOsubPanel());
         // Add your panel here.
-        addPanel(new OntologyPanelGenerator());
-        addPanel(new GeneListPanelGenerator());
+        addPanel(new OntologyPanelGenerator(pageName));
+        addPanel(new GeneListPanelGenerator(pageName));
     }
     
     private void addPanel(AggregatePanelGenerator p) {
@@ -66,7 +61,7 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
         this.removeAll();
         this.add(toolBarPanel, BorderLayout.NORTH);
 
-        stopAll(currentRegionStat);
+        //stopAll(currentRegionStat);
         AggregatePanelGenerator panelObj = panelMap.get(currentRegionStat);
         
         this.add(panelObj.getPanel());    
@@ -114,15 +109,20 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
     }
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        stopAll(panelMap.firstKey());
-//        ((AggregatePanelGenerator)panelMap.firstEntry()).setUpdate(true);
+        //stopAll(panelMap.firstKey());
+        //((AggregatePanelGenerator)panelMap.firstEntry()).setUpdate(true);
+    }
+    
+    public void update(){
+        if(panelMap != null && currentRegionStat != null)
+            panelMap.get(currentRegionStat).run();
     }
     
     /**
      * Stop updating all panels except for this panel.
      * @param exceptThisPanel 
      */
-    private void stopAll(String exceptThisPanel){        
+    /*private void stopAll(String exceptThisPanel){        
         // Set all panels to not be updated.
         for (String panelName: panelMap.keySet()){
             if (!panelName.equals(exceptThisPanel)){
@@ -132,18 +132,18 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
                 panelMap.get(panelName).setUpdate(true);
             }
         }
-    }
+    }*/
 
     // TODO: test
-    void stopAggregation() {
+    /*void stopAggregation() {
         for (String panelName: panelMap.keySet()){
             panelMap.get(panelName).setUpdate(false);
         }
-    }
+    }*/
 
     // TODO: test
-    void resumeAggregation() {
+    /*void resumeAggregation() {
         stopAll(currentRegionStat);
-    }
+    }*/
       
 }

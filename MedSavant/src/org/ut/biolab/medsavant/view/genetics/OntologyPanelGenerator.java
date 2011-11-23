@@ -8,10 +8,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
-import java.util.Observable;
-import java.util.Observer;
 import javax.swing.Box;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -28,8 +25,10 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class OntologyPanelGenerator implements AggregatePanelGenerator {
     
     private OntologyPanel panel;
+    private final String pageName;
 
-    public OntologyPanelGenerator() {
+    public OntologyPanelGenerator(String pageName) {
+        this.pageName = pageName;
     }
 
     public String getName() {
@@ -43,7 +42,11 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
         return panel;
     }
 
-    public void setUpdate(boolean update) {
+    //public void setUpdate(boolean update) {
+    //}
+    
+    public void run(){
+        
     }
 
     public class OntologyPanel extends JPanel {
@@ -123,10 +126,10 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
         private void showOntology(String ontology) {
             OntologySubPanel o = map.get(ontology);
             
-            if (currentOntology != null)
-                currentOntology.setUpdate(false);
+            if (currentOntology != null){}
+                //currentOntology.setUpdate(false);
             
-            o.setUpdate(true);
+            //o.setUpdate(true);
             currentOntology = o;
 
             this.content.removeAll();

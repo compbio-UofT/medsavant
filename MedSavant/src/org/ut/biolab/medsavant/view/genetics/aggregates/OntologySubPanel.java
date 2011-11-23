@@ -82,11 +82,15 @@ public abstract class OntologySubPanel extends JPanel implements
         return this;
     }
     
-    public void setUpdate(boolean updatePanelUponFilterChanges) {
+    /*public void setUpdate(boolean updatePanelUponFilterChanges) {
         this.updatePanelUponFilterChanges = updatePanelUponFilterChanges;
         if (updatePanelUponFilterChanges){
             this.update();
         }
+    }*/
+    
+    public void run(){
+        
     }
     
     public boolean getUpdateStatus(){

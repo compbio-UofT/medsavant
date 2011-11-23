@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -44,8 +43,10 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
     private static final Logger LOG = Logger.getLogger(GeneListPanelGenerator.class.getName());
 
     private GeneListPanel panel;
+    private final String pageName;
 
-    public GeneListPanelGenerator() {
+    public GeneListPanelGenerator(String pageName) {
+        this.pageName = pageName;
     }
 
     public String getName() {
@@ -59,7 +60,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         return panel;
     }
 
-    public void setUpdate(boolean update) {
+    /*public void setUpdate(boolean update) {
         
         if (panel == null) { return; }
         
@@ -67,8 +68,12 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             
         } else {
             panel.stopThreads();
-
         }
+    }*/
+    
+    public void run(){
+        if(panel != null)
+            panel.update();
     }
 
     public class GeneListPanel extends JPanel implements FiltersChangedListener {
@@ -124,13 +129,18 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             geneLister.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
-                    showGeneAggregates((RegionSet) geneLister.getSelectedItem());
+                    update();
                 }
             });
             
             (new GeneListGetter()).execute();
 
             FilterController.addFilterListener(this);
+        }
+        
+        public void update(){
+            if(geneLister != null && geneLister.getSelectedItem() != null)
+                showGeneAggregates((RegionSet) geneLister.getSelectedItem());
         }
         
         private void createSearchableTable(){
@@ -198,7 +208,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             List<String> columnNames = Arrays.asList(new String[]{"Name", "Chromosome", "Start", "End", "Variants", "Patients"});
             List<Class> columnClasses = Arrays.asList(new Class[]{String.class, String.class, Integer.class, Integer.class, Integer.class, Integer.class});
-            stp = new SearchableTablePanel(GeneListPanelGenerator.class.getName(), columnNames, columnClasses, new ArrayList<Integer>(), limit, retriever);
+            stp = new SearchableTablePanel(pageName, columnNames, columnClasses, new ArrayList<Integer>(), limit, retriever);
             
             showShowCard();
         }
@@ -295,15 +305,6 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         }
 
         public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-
-            /*if (this.gviw != null && !this.gviw.isDone()) {
-                this.gviw.cancel(true);
-            }
-            
-            if (this.gpiw != null && !this.gpiw.isDone()) {
-                this.gpiw.cancel(true);
-            }*/
-
             updateGeneTable();
         }
         
@@ -319,8 +320,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             }
             value = Math.min(value, 100);
             progress.setValue(value);
-            progress.setString(value + "% done ");
-            
+            progress.setString(value + "% done ");            
         }
 
         private void stopThreads() {
@@ -369,82 +369,5 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             }
         }
 
-        /*private class GeneVariantIntersectionWorker extends SwingWorker {
-
-            private final List<BEDRecord> records;
-
-            public GeneVariantIntersectionWorker(List<BEDRecord> records) {
-                this.records = records;
-            }
-
-            @Override
-            protected Object doInBackground() throws Exception {
-                for(int i = 0; i < Math.min(records.size(), limit); i++){
-                    BEDRecord r = records.get(i);
-                    int recordsInRegion = VariantQueryUtil.getNumVariantsInRange(
-                            ProjectController.getInstance().getCurrentProjectId(), 
-                            ReferenceController.getInstance().getCurrentReferenceId(), 
-                            FilterController.getQueryFilterConditions(), 
-                            r.getChrom(), 
-                            r.getStart(), 
-                            r.getEnd());
-                    if (!Thread.interrupted()) {
-                        updateBEDRecordVariantValue(r, recordsInRegion);
-                    } else {
-                        break;
-                    }
-                }
-                return null;
-            }
-            
-            @Override
-            protected void done() {
-                try {
-                    get();
-                    gpiw = new GenePatientIntersectionWorker(records);
-                    gpiw.execute();
-                } catch (Exception x) {
-                    LOG.log(Level.SEVERE, null, x);
-                }
-            }
-        }
-        
-        private class GenePatientIntersectionWorker extends SwingWorker {
-
-            private final List<BEDRecord> records;
-
-            public GenePatientIntersectionWorker(List<BEDRecord> records) {
-                this.records = records;
-            }
-
-            @Override
-            protected Object doInBackground() throws Exception {
-                for(int i = 0; i < Math.min(records.size(), limit); i++){
-                    BEDRecord r = records.get(i);
-                    int recordsInRegion = VariantQueryUtil.getNumPatientsWithVariantsInRange(
-                            ProjectController.getInstance().getCurrentProjectId(), 
-                            ReferenceController.getInstance().getCurrentReferenceId(), 
-                            FilterController.getQueryFilterConditions(), 
-                            r.getChrom(), 
-                            r.getStart(), 
-                            r.getEnd());
-                    if (!Thread.interrupted()) {
-                        updateBEDRecordPatientValue(r, recordsInRegion);
-                    } else {
-                        break;
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    get();
-                } catch (Exception x) {
-                    LOG.log(Level.SEVERE, null, x);
-                }
-            }
-        }*/
     }
 }

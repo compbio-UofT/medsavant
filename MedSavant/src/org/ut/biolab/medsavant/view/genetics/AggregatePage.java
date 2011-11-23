@@ -6,16 +6,10 @@ package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.view.subview.SectionView;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
 /**
@@ -28,7 +22,6 @@ public class AggregatePage extends SubSectionView {
     private AggregatesStatsPanel asp;
     
     public AggregatePage(SectionView parent) { super(parent); }
-
     
     public String getName() {
         return "  Aggregate";
@@ -49,7 +42,7 @@ public class AggregatePage extends SubSectionView {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         
-        asp = new AggregatesStatsPanel();
+        asp = new AggregatesStatsPanel(getName());
         panel.add(asp, BorderLayout.CENTER);
     }
     
@@ -69,14 +62,17 @@ public class AggregatePage extends SubSectionView {
     
     @Override
     public void viewDidLoad() {
-        if (asp != null)
-            asp.resumeAggregation();
+        if(asp != null)
+            asp.update();
+        //if (asp != null)
+        //    asp.resumeAggregation();
     }
 
     @Override
     public void viewDidUnload() {
-        if (asp != null)
-            asp.stopAggregation();
+        ThreadController.getInstance().cancelWorkers(getName());
+        //if (asp != null)
+        //    asp.stopAggregation();
     }
     
 
