@@ -87,7 +87,6 @@ public abstract class OntologySubPanel extends JPanel implements
     }*/
     
     public void run(){
-        System.out.println("run");
         OntologyStatsWorker.getNewInstance(this);
     }
     

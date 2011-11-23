@@ -19,6 +19,7 @@ import java.util.List;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
+import org.ut.biolab.medsavant.settings.DirectorySettings;
 
 
 /**
@@ -107,7 +108,8 @@ public class CreateMappingsFile {
         
         // The destination of the file.
         String sep = File.separator;
-        String destination = (new File("")).getAbsolutePath() + sep + "src" + sep;
+        //String destination = (new File("")).getAbsolutePath() + sep + "src" + sep;
+        String destination = DirectorySettings.getTmpDirectory().getAbsolutePath();
         
         String fileName = 
                 File.separator + "MAPPING_GO_Genome_location_" + version;

@@ -12,6 +12,7 @@ import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.OntologyPanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.filter.HPOFilter;
+import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
 import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
@@ -49,8 +50,13 @@ public class HPOsubPanel extends OntologySubPanel{
             return jTree;
         }
         else {
-            Tree tree = (Tree)FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
-            jTree = ConstructJTree.getTree(tree, false, true, false);
+            //Tree tree = (Tree)FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
+            try {
+                Tree tree = new HPTree();
+                jTree = ConstructJTree.getTree(tree, false, true, false);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
             return jTree;
         }
     }

@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Tree;
 import org.xml.sax.Attributes;
@@ -41,7 +42,7 @@ public class XMLontology {
         
         String sep = File.separator;
         // The location of the temporary XML file
-        String locationOfFile = (new File("")).getAbsolutePath() + sep + "src" + 
+        String locationOfFile = DirectorySettings.getTmpDirectory().getAbsolutePath() +  
             sep + "TEMP_GO_tree.xml";
         File file = new File(locationOfFile);  
         file.createNewFile();
