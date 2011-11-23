@@ -71,14 +71,15 @@ public class SearchableTablePanel extends JPanel {
     private List<Integer> hiddenColumns;
     private DataRetriever retriever;
     private int totalNumRows;
+    private GetDataSwingWorker worker;
 
     public SortableTable getTable() {
         return table;
     }
     
     private synchronized void updateView(boolean newData){
-        GetDataSwingWorker x = new GetDataSwingWorker(pageName, newData);
-        x.execute();
+        if (worker != null) worker.cancel(true);
+        (worker = new GetDataSwingWorker(pageName, newData)).execute();
     }
     
     private class GetDataSwingWorker extends MedSavantWorker {
@@ -118,7 +119,7 @@ public class SearchableTablePanel extends JPanel {
         }
     }
          
-    private void applyData(List<Object[]> pageData){
+    public void applyData(List<Object[]> pageData){
         
         boolean first = false;
         if (model == null) {
