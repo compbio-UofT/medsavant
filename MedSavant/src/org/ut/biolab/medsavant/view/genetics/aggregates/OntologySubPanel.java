@@ -40,11 +40,14 @@ public abstract class OntologySubPanel extends JPanel implements
     protected boolean updatePanelUponFilterChanges;
     
     protected OntologyPanelGenerator.OntologyPanel panel;
-
+    
+    private String pageName;
+    
         
-    public OntologySubPanel(OntologyPanelGenerator.OntologyPanel panel, 
+    public OntologySubPanel(OntologyPanelGenerator.OntologyPanel panel, String pageName,
             int chromSplitIndex, int startSplitIndex, int endSplitIndex){
              
+        this.pageName = pageName;
         this.setLayout(new BorderLayout());
         waitPanel = new WaitPanel("Getting aggregate statistics");
         this.add(waitPanel, BorderLayout.CENTER);
@@ -87,11 +90,11 @@ public abstract class OntologySubPanel extends JPanel implements
     }*/
     
     public void run(){
-        OntologyStatsWorker.getNewInstance(this);
+        OntologyStatsWorker.getNewInstance(this, pageName);
     }
     
     public void stop(){
-        
+        OntologyStatsWorker.stopInstance(this);
     }
     
     public boolean getUpdateStatus(){

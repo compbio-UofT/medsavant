@@ -49,7 +49,8 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
     //}
     
     public void run(){
-        
+        if(panel != null)
+            panel.update();
     }
 
     public class OntologyPanel extends JPanel {
@@ -95,8 +96,8 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
                 }
             });
 
-            GOsubPanel gopanel = new GOsubPanel(this);
-            //HPOsubPanel hpopanel = new HPOsubPanel(this);
+            GOsubPanel gopanel = new GOsubPanel(this, pageName);
+            //HPOsubPanel hpopanel = new HPOsubPanel(this, pageName);
             addOntologyAggregator(gopanel.getName(), gopanel);
             //addOntologyAggregator(hpopanel.getName(), hpopanel);
         }

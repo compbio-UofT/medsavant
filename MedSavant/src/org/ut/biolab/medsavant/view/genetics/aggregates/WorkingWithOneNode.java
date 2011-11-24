@@ -13,6 +13,7 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 
@@ -21,37 +22,42 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
  *
  * @author Nirvana Nursimulu
  */
-  public class WorkingWithOneNode extends Thread{
 
-      private boolean isDoneWorking;
-      private DefaultMutableTreeNode node;
-      private int chromIndex;
-      private int startIndex;
-      private int endIndex;
-      private JTree tree;
-      private OntologySubPanel subPanel;
-      private volatile boolean stop;
+public class WorkingWithOneNode extends MedSavantWorker {
 
-      public WorkingWithOneNode
-              (JTree tree, DefaultMutableTreeNode node, int chromIndex, 
-              int startIndex, int endIndex, OntologySubPanel subPanel){
-          
-          this.isDoneWorking = false;
-          this.node = node;
-          this.chromIndex = chromIndex;
-          this.startIndex = startIndex;
-          this.endIndex = endIndex;
-          this.tree = tree;
-          this.subPanel = subPanel;
-          this.stop = false;
-      }
-      
-      public DefaultMutableTreeNode getNode(){
-          return node;
-      }
-
-    protected Object doTheWork() throws Exception {
-
+    private boolean isDoneWorking;
+    private DefaultMutableTreeNode node;
+    private int chromIndex;
+    private int startIndex;
+    private int endIndex;
+    private JTree tree;
+    private OntologySubPanel subPanel;
+    private volatile boolean stop;
+    
+    public WorkingWithOneNode
+            (String pageName, JTree tree, DefaultMutableTreeNode node, int chromIndex, 
+            int startIndex, int endIndex, OntologySubPanel subPanel){
+        super(pageName);
+        this.isDoneWorking = false;
+        this.node = node;
+        this.chromIndex = chromIndex;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+        this.tree = tree;
+        this.subPanel = subPanel;
+        this.stop = false;
+    }
+    
+    public DefaultMutableTreeNode getNode(){
+        return node;
+    }
+    
+    public synchronized boolean isThreadDoneWorking(){
+        return isDoneWorking;
+    }
+    
+    @Override
+    protected Object doInBackground() throws Exception {
         HashSet<String> locs = ((Node)(node.getUserObject())).getLocs();
         int numVariants = 0;
         
@@ -72,7 +78,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 
         for (String loc: mergedRanges){
 
-            if (this.isInterrupted() || this.stop){
+            if (this.isCancelled() || this.stop){
                 throw new java.util.concurrent.CancellationException();
             }
             String[] split = loc.split("\t");
@@ -96,7 +102,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
                 OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
             }
 
-            if (this.isInterrupted() || this.stop){
+            if (this.isCancelled() || this.stop){
                 throw new java.util.concurrent.CancellationException();
             }
             numVariants = numVariants + numCurr;
@@ -125,38 +131,19 @@ import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
         isDoneWorking = true;
         OntologyStatsWorker.setTotalProgressInPanel(subPanel);
         
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run(){
-                tree.repaint();
-                tree.updateUI();
-            }
-        });
-        
         return numVariants;
     }
-
+    
+    @Override
+    protected void showProgress(double fraction) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
 
     @Override
-    public void run() {
-        try {
-            doTheWork();
-        } catch (Exception ex) {
-        }
+    protected void showSuccess(Object result) {
+        tree.repaint();
+        tree.updateUI();
     }
-    
 
-    /**
-     * Interrupt this thread properly.
-     */
-    public void interrupt(){
-        // Not sure if using this variable changes anything in terms of 
-        // performance
-        this.stop = true;
-        super.interrupt();
-    }
-    
-    public synchronized boolean isThreadDoneWorking(){
-        return isDoneWorking;
-    }
-        
 }
+

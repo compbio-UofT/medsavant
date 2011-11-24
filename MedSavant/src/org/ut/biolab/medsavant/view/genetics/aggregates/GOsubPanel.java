@@ -22,8 +22,8 @@ public class GOsubPanel extends OntologySubPanel{
     private JTree jTree;
     OntologyPanelGenerator.OntologyPanel panel;
 
-    public GOsubPanel(OntologyPanelGenerator.OntologyPanel panel){
-        super(panel, 1, 2, 3);
+    public GOsubPanel(OntologyPanelGenerator.OntologyPanel panel, String pageName){
+        super(panel, pageName, 1, 2, 3);
         this.panel = super.panel;
     }
 

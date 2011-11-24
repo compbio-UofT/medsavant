@@ -26,8 +26,8 @@ public class HPOsubPanel extends OntologySubPanel{
     private JTree jTree;
     OntologyPanelGenerator.OntologyPanel panel;
     
-    public HPOsubPanel(OntologyPanelGenerator.OntologyPanel panel){
-        super(panel, 0, 1, 2);
+    public HPOsubPanel(OntologyPanelGenerator.OntologyPanel panel, String pageName){
+        super(panel, pageName, 0, 1, 2);
         this.panel = super.panel;
     }
 

@@ -59,6 +59,7 @@ public  class OntologyStatsWorker extends SwingWorker{
     private volatile JPanel topPanel;
     
     private static volatile OntologyStatsWorker singleWorker;
+    private static String pageName;
     
     
     private OntologyStatsWorker(OntologySubPanel subPanel){
@@ -66,7 +67,9 @@ public  class OntologyStatsWorker extends SwingWorker{
         OntologyStatsWorker.listIndividualThreads.clear();
     }
     
-    public static void getNewInstance(OntologySubPanel subPanel){
+    public static void getNewInstance(OntologySubPanel subPanel, String pageName1){
+        
+        pageName = pageName1;
         
         if (singleWorker != null){            
             singleWorker.cancel(true);
@@ -81,6 +84,12 @@ public  class OntologyStatsWorker extends SwingWorker{
 
     }
 
+    public static void stopInstance(OntologySubPanel subPanel){
+        if(singleWorker != null){
+            singleWorker.stopEverything(subPanel);
+        }
+    }
+    
     @Override
     protected Object doInBackground() throws Exception {
         try {
@@ -118,7 +127,7 @@ public  class OntologyStatsWorker extends SwingWorker{
      * selected; otherwise, give the path of the tree which has been expanded.
      */
     public static void updateStatistics(TreePath userProvPath){
-        
+                
         if (singleWorker == null){
             return;
         }
@@ -283,10 +292,11 @@ public  class OntologyStatsWorker extends SwingWorker{
             if (Thread.interrupted()){
                 throw new java.util.concurrent.CancellationException();
             }            
-            WorkingWithOneNode curr = new WorkingWithOneNode
-                    (tree, node, chromIndex, startIndex, endIndex, subPanel);
-            listIndividualThreads.add(curr);
-            ((Thread)curr).start();
+            
+            WorkingWithOneNode curr = new WorkingWithOneNode(pageName, tree, node, chromIndex, startIndex, endIndex, subPanel);
+            listIndividualThreads.add(curr); 
+            curr.execute();
+                        
         }
         OntologyStatsWorker.setTotalProgressInPanel(subPanel);
     }
@@ -307,7 +317,7 @@ public  class OntologyStatsWorker extends SwingWorker{
       private synchronized static void killIndividualThreads(OntologySubPanel subPanel){         
           // Kill each of those threads from before.
           for (WorkingWithOneNode thread: listIndividualThreads){
-              ((WorkingWithOneNode)thread).interrupt();
+              thread.cancel(true);
              
           }
           
@@ -375,7 +385,6 @@ public  class OntologyStatsWorker extends SwingWorker{
       }
       
       private synchronized void stopEverything(OntologySubPanel subPanel){
-              
            Stopper stopper = new Stopper(subPanel);
            stopper.execute();
       }      
