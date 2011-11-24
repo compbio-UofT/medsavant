@@ -62,7 +62,7 @@ import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.db.model.ProjectDetails;

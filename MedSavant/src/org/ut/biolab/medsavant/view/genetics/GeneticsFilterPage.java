@@ -89,7 +89,7 @@ public class GeneticsFilterPage extends SubSectionView {
             view.add(new PeekingPanel("History", BorderLayout.EAST, history, true), BorderLayout.WEST);
             
             // uncomment the next line to show the master SQL statement
-            //view.add(new PeekingPanel("SQL", BorderLayout.SOUTH, new FilterSQLPanel(), true), BorderLayout.NORTH);
+            view.add(new PeekingPanel("SQL", BorderLayout.SOUTH, new FilterSQLPanel(), true), BorderLayout.NORTH);
         } else {
             fp.refreshSubPanels();
         }

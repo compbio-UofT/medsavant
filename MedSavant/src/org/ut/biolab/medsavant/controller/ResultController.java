@@ -10,13 +10,15 @@ import java.util.Vector;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 
 /**
  * @author Andrew
  */
-public class ResultController {
+public class ResultController implements FiltersChangedListener {
 
     private List<Object[]> filteredVariants;
     
@@ -29,6 +31,8 @@ public class ResultController {
     private int referenceId;
 
     private static ResultController instance;
+    private int totalNumVariantsRemaining;
+    private boolean updateTotalNumVariantsRemainingIsRequired;
     
     public ResultController() throws NonFatalDatabaseException {
         updateFilteredVariantDBResults(0, DEFAULT_LIMIT);
@@ -82,12 +86,20 @@ public class ResultController {
     
     public int getNumFilteredVariants() {
         try {
-            return VariantQueryUtil.getNumFilteredVariants(
-                    ProjectController.getInstance().getCurrentProjectId(), 
-                    ReferenceController.getInstance().getCurrentReferenceId(), 
-                    FilterController.getQueryFilterConditions());
+            if (updateTotalNumVariantsRemainingIsRequired) {
+                totalNumVariantsRemaining =  VariantQueryUtil.getNumFilteredVariants(
+                        ProjectController.getInstance().getCurrentProjectId(), 
+                        ReferenceController.getInstance().getCurrentReferenceId(), 
+                        FilterController.getQueryFilterConditions());
+                updateTotalNumVariantsRemainingIsRequired = false;
+            }
+            return totalNumVariantsRemaining;
         } catch (SQLException ex) {
             return 0;
         }
+    }
+
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        updateTotalNumVariantsRemainingIsRequired = true;
     }
 }

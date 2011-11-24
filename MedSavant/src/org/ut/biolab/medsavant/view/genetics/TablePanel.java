@@ -48,8 +48,11 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         cl = new CardLayout();
         this.setLayout(cl);
         this.add(new WaitPanel("Generating List View"), CARD_WAIT);
-        showWaitCard();
+        
+        long startTime = System.currentTimeMillis();
 
+        showWaitCard();
+        
         final TablePanel instance = this;
         MedSavantWorker worker = new MedSavantWorker(pageName){
             @Override

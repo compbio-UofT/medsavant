@@ -68,8 +68,6 @@ public class Menu extends JPanel implements MenuItemSelected {
             listeners = new ArrayList<MenuItemSelected>();
             this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
             this.setBorder(ViewUtil.getMenuItemBorder());
-            //this.setBackground(Color.red);
-            //this.setOpaque(false);
             l = ViewUtil.getMenuSubsectionLabel(v.getName());
             this.addMouseListener(new MouseListener() {
 

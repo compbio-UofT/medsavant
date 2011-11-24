@@ -60,7 +60,6 @@ class IndividualDetailEditor extends DetailedListEditor {
             int index = 0;
             for (Object[] v : items) {
                 int id = (Integer) v[keyIndex];
-                System.out.println("Removing individual " + id);
                 patients[index++] = id;
             }
                       

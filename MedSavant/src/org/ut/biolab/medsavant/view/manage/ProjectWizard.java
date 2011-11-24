@@ -44,7 +44,7 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.db.model.ProjectDetails;
@@ -189,11 +189,13 @@ public class ProjectWizard extends WizardDialog {
         formatModel.addColumn("Alias");
         formatModel.addColumn("Description");
         
-        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID, DefaultPatientTableSchema.TYPE_OF_FAMILY_ID + "(" + DefaultPatientTableSchema.LENGTH_OF_FAMILY_ID + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID, ""});
-        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID, DefaultPatientTableSchema.TYPE_OF_PEDIGREE_ID + "(" + DefaultPatientTableSchema.LENGTH_OF_PEDIGREE_ID + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_PEDIGREE_ID, ""});
-        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, DefaultPatientTableSchema.TYPE_OF_HOSPITAL_ID + "(" + DefaultPatientTableSchema.LENGTH_OF_HOSPITAL_ID + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, ""});
-        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultPatientTableSchema.TYPE_OF_DNA_IDS + "(" + DefaultPatientTableSchema.LENGTH_OF_DNA_IDS + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, ""});
-        formatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultPatientTableSchema.TYPE_OF_BAM_URL + "(" + DefaultPatientTableSchema.LENGTH_OF_BAM_URL + ")", false, DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, ""});
+        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID, DefaultpatientTableSchema.TYPE_OF_FAMILY_ID + "(" + DefaultpatientTableSchema.LENGTH_OF_FAMILY_ID + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID, ""});
+        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, DefaultpatientTableSchema.TYPE_OF_HOSPITAL_ID + "(" + DefaultpatientTableSchema.LENGTH_OF_HOSPITAL_ID + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, ""});
+        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM, DefaultpatientTableSchema.TYPE_OF_IDBIOMOM + "(" + DefaultpatientTableSchema.LENGTH_OF_IDBIOMOM + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM, ""});
+        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD, DefaultpatientTableSchema.TYPE_OF_IDBIODAD + "(" + DefaultpatientTableSchema.LENGTH_OF_IDBIODAD + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD, ""});
+        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_GENDER, DefaultpatientTableSchema.TYPE_OF_GENDER + "(" + DefaultpatientTableSchema.LENGTH_OF_GENDER + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_GENDER, ""});
+        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultpatientTableSchema.TYPE_OF_DNA_IDS + "(" + DefaultpatientTableSchema.LENGTH_OF_DNA_IDS + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, ""});
+        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultpatientTableSchema.TYPE_OF_BAM_URL + "(" + DefaultpatientTableSchema.LENGTH_OF_BAM_URL + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, ""});
 
         if(modify){
             for(CustomField f : fields){
@@ -373,7 +375,8 @@ public class ProjectWizard extends WizardDialog {
         
         fields = new ArrayList<CustomField>();
         
-        for(int row = 5; row < formatModel.getRowCount(); row++){
+        // 7 is the number of standard fields
+        for(int row = 7; row < formatModel.getRowCount(); row++){
             String fieldName = (String)formatModel.getValueAt(row, 0);
             String fieldType = (String)formatModel.getValueAt(row, 1);
             Boolean fieldFilterable = (Boolean)formatModel.getValueAt(row, 2);

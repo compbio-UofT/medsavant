@@ -31,7 +31,7 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
@@ -71,7 +71,7 @@ public class SavantExportForm extends javax.swing.JDialog {
 
         //populate individuals
         try {
-            List<String> temp = VariantQueryUtil.getDistinctValuesForColumn(ProjectController.getInstance().getCurrentPatientTableName(), DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS);
+            List<String> temp = VariantQueryUtil.getDistinctValuesForColumn(ProjectController.getInstance().getCurrentPatientTableName(), DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS);
             dnaIds = new ArrayList<String>();
             for(String s : temp){
                 for(String s1 : s.split(",")){
@@ -131,7 +131,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         //get BAM files
         List<String> bamFiles = new ArrayList<String>();
         try {
-            bamFiles = PatientQueryUtil.getValuesFromDNAIds(ProjectController.getInstance().getCurrentProjectId(), DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, selectedIds);
+            bamFiles = PatientQueryUtil.getValuesFromDNAIds(ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, selectedIds);
         } catch (SQLException e){
             e.printStackTrace();
         }

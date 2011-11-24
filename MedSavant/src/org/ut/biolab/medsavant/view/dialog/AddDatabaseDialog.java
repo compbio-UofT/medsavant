@@ -25,6 +25,7 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 import org.ut.biolab.medsavant.db.admin.Setup;
+import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -92,6 +93,8 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         field_database = new javax.swing.JTextField();
         javax.swing.JLabel jLabel6 = new javax.swing.JLabel();
         field_password = new javax.swing.JPasswordField();
+        javax.swing.JLabel jLabel7 = new javax.swing.JLabel();
+        field_user = new javax.swing.JTextField();
 
         setTitle("Create Database");
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -119,6 +122,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel3.setText("hostname");
 
+        field_hostname.setFont(new java.awt.Font("Lucida Grande", 0, 15)); // NOI18N
         field_hostname.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_hostname.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -129,6 +133,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel4.setText("port");
 
+        field_port.setFont(new java.awt.Font("Lucida Grande", 0, 15)); // NOI18N
         field_port.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_port.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -139,6 +144,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel5.setText("database");
 
+        field_database.setFont(new java.awt.Font("Lucida Grande", 0, 15)); // NOI18N
         field_database.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_database.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -147,9 +153,21 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         });
 
         jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel6.setText("root password");
+        jLabel6.setText("admin username");
 
+        field_password.setFont(new java.awt.Font("Lucida Grande", 0, 15)); // NOI18N
         field_password.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+
+        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel7.setText("password");
+
+        field_user.setFont(new java.awt.Font("Lucida Grande", 0, 15)); // NOI18N
+        field_user.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        field_user.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                field_userKeyPressed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout detailsPanelLayout = new org.jdesktop.layout.GroupLayout(detailsPanel);
         detailsPanel.setLayout(detailsPanelLayout);
@@ -165,7 +183,9 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
                     .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
                     .add(field_database, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
                     .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                    .add(field_password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE))
+                    .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                    .add(field_password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, field_user, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE))
                 .addContainerGap())
         );
         detailsPanelLayout.setVerticalGroup(
@@ -185,6 +205,10 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
                 .add(field_database, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel6)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(field_user, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel7)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(field_password, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -208,8 +232,8 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(detailsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(detailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cancelButton)
                     .add(okButton))
@@ -224,7 +248,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 
         try {
-            Setup.createDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_password.getPassword());
+            Setup.createDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword());
             DialogUtils.displayMessage("Database \"" + this.field_database.getText() + "\" created successfuly");
             doClose(RET_OK);
         } catch (Exception x) {
@@ -263,6 +287,10 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         }
 }//GEN-LAST:event_field_databaseKeyPressed
 
+    private void field_userKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_field_userKeyPressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_field_userKeyPressed
+
     private void doClose(int retStatus) {
         returnStatus = retStatus;
         setVisible(false);
@@ -274,6 +302,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
     private javax.swing.JTextField field_hostname;
     private javax.swing.JPasswordField field_password;
     private javax.swing.JTextField field_port;
+    private javax.swing.JTextField field_user;
     private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
     private int returnStatus = RET_CANCEL;

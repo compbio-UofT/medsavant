@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Vector;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.view.dialog.AddPatientsForm;
