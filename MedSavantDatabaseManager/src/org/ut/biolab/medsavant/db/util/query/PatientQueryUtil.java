@@ -553,10 +553,10 @@ public class PatientQueryUtil {
         query.addColumns(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID));
         
         // TODO: replace with OO names
-        query.addColumns(table.getDBColumn("idbiomom"));
-        query.addColumns(table.getDBColumn("idbiodad"));
+        query.addColumns(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM));
+        query.addColumns(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD));
         query.addColumns(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID));
-        query.addColumns(table.getDBColumn("gender"));
+        query.addColumns(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER));
         
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID), family_id));
         
