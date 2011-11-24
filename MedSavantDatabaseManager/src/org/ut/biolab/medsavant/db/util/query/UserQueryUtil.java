@@ -102,6 +102,7 @@ public class UserQueryUtil {
     public static UserLevel getUserLevel(String name) throws SQLException {
         if (userExists(name)) {
             // If the user can create other users, they're assumed to be admin.
+            
             ResultSet rs = ConnectionController.executeQuery("SELECT Create_user_priv FROM mysql.user WHERE user=?;", name);
             if (rs.next()) {
                 if (rs.getString(1).equals("Y")) {

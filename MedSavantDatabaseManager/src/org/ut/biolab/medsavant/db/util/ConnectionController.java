@@ -76,8 +76,8 @@ public class ConnectionController {
         return lastConnection;
     }
     
-    public static Connection connectUnpooled(String dbhost, int port, String dbname) throws SQLException {
-        return connectOnce(dbhost, port, dbname);
+    public static Connection connectUnpooled(String dbhost, int port, String dbname, String userName, String password) throws SQLException {
+        return connectOnce(dbhost, port, dbname, userName, password);
     }
     
     public static void setCredentials(String user, String pw) {
@@ -103,8 +103,12 @@ public class ConnectionController {
     public static void setPort(int value) {
         ConnectionController.dbPort = value;
     }
-
+    
     private static Connection connectOnce(String dbhost, int port, String dbname) throws SQLException {
+        return connectOnce(dbhost,port,dbname,user,pw);
+    }
+
+    private static Connection connectOnce(String dbhost, int port, String dbname, String username, String password) throws SQLException {
         try {
             Class.forName(dbDriver).newInstance();
         } catch (Exception ex) {
@@ -112,7 +116,8 @@ public class ConnectionController {
                 throw new SQLException("Unable to load MySQL driver.");
             }
         }
-        return DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s?%s", dbhost, port, dbname, props), user, pw);
+        
+        return DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s?%s", dbhost, port, dbname, props), username, password);
     }
 
     /**

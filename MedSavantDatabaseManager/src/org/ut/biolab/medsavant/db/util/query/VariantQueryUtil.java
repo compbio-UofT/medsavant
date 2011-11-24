@@ -74,7 +74,15 @@ public class VariantQueryUtil {
         addConditionsToQuery(query, conditions);
         
         Connection conn = ConnectionController.connectPooled();
+        
+        long startTime = System.currentTimeMillis();
+        
+        System.out.println(query.toString() + " LIMIT " + start + ", " + limit);
+        
         ResultSet rs = conn.createStatement().executeQuery(query.toString() + " LIMIT " + start + ", " + limit);
+        
+        System.out.println("Time to execute query: " + (((double)System.currentTimeMillis()-startTime)/1000) + "s");
+        startTime = System.currentTimeMillis();
         
         ResultSetMetaData rsMetaData = rs.getMetaData();
         int numberColumns = rsMetaData.getColumnCount();
@@ -87,6 +95,8 @@ public class VariantQueryUtil {
             }
             result.add(v);
         }
+        
+        System.out.println("Time to parse results: " + (((double)System.currentTimeMillis()-startTime)/1000) + "s");
         
         return result;
     }
@@ -426,6 +436,78 @@ public class VariantQueryUtil {
         }
         
         return results;
+    }
+
+    public static Map<String, Integer> getNumVariantsInFamily(int projectId, int referenceId, String familyId, Condition[][] conditions) throws SQLException {
+        
+        String name = ProjectQueryUtil.getVariantTablename(projectId, referenceId);
+        
+        if (name == null) { return null; }
+        
+        TableSchema table = CustomTables.getCustomTableSchema(name);
+               
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(table.getTable());
+        q.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+        q.addCustomColumns(FunctionCall.countAll());
+        q.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+        addConditionsToQuery(q, conditions);
+        
+        Map<String,String> patientToDNAIDMap = PatientQueryUtil.getDNAIdsForFamily(projectId, familyId);
+        Map<String,List<String>> betterPatientToDNAIDMap = new HashMap<String,List<String>>();
+        
+        List<String> dnaIDs = new ArrayList<String>();
+        for (String patientID : patientToDNAIDMap.keySet()) {
+            String dnaIDString = patientToDNAIDMap.get(patientID);
+            List<String> idList = new ArrayList<String>();
+            for (String dnaID : dnaIDString.split(",")) {
+                if (dnaID != null && !dnaID.isEmpty()) {
+                    dnaIDs.add(dnaID);
+                    idList.add(dnaID);
+                }
+            }
+            betterPatientToDNAIDMap.put(patientID,idList);
+        }
+        patientToDNAIDMap = null; // we don't need it anymore; use betterPatientToDNAIDMap instead
+        
+        Map<String,Integer> dnaIDsToCountMap = new HashMap<String,Integer>();
+        
+        if (!dnaIDs.isEmpty()) {
+        
+            Condition[] dnaIDConditions = new Condition[dnaIDs.size()];
+
+            int i = 0;
+            for (String dnaID : dnaIDs) {
+                dnaIDConditions[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaID);
+                i++;
+            }
+
+            q.addCondition(ComboCondition.or(dnaIDConditions));
+
+            System.out.println(q);
+
+            ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(q.toString());
+
+            while(rs.next()) {
+                dnaIDsToCountMap.put(rs.getString(1), rs.getInt(2));
+            }
+        } else {
+            System.out.println("No DNA IDS in family");
+        }
+        
+        Map<String,Integer> patientIDTOCount = new HashMap<String,Integer>();
+        for (String patientID : betterPatientToDNAIDMap.keySet()) {
+            int count = 0;
+            for (String dnaID : betterPatientToDNAIDMap.get(patientID)) {
+                if (dnaIDsToCountMap.containsKey(dnaID)) {
+                    count += dnaIDsToCountMap.get(dnaID);
+                }
+            }
+            patientIDTOCount.put(patientID,count);
+            //System.out.println("Number of variants for: " + patientID + " = " + count);
+        }
+        
+        return patientIDTOCount; 
     }
 
 }

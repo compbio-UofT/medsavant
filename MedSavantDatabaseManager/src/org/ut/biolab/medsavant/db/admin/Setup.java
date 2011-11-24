@@ -213,8 +213,10 @@ public class Setup {
                 "CREATE TABLE  `default_patient` ("
                 + "`patient_id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
                 + "`family_id` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
-                + "`pedigree_id` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
                 + "`hospital_id` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
+                + "`idbiomom` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
+                + "`idbiodad` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
+                + "`gender` int(11) unsigned DEFAULT NULL,"
                 + "`dna_ids` varchar(1000) COLLATE latin1_bin DEFAULT NULL,"
                 + "`bam_url` varchar(5000) COLLATE latin1_bin DEFAULT NULL,"
                 + "PRIMARY KEY (`patient_id`)"
@@ -266,19 +268,19 @@ public class Setup {
         }
     }
 
-    public static void createDatabase(String dbHost, int port, String dbname, char[] rootPassword) throws SQLException {
+    public static void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword) throws SQLException {
         
-        ConnectionController.setCredentials("root", new String(rootPassword));
+        Connection c = ConnectionController.connectUnpooled(dbHost, port, "", adminName, new String(rootPassword));
         
-        Connection c = ConnectionController.connectUnpooled(dbHost, port, "");
         createDatabase(c,dbname);
 
-        c = ConnectionController.connectUnpooled(dbHost, port, dbname);
+        c = ConnectionController.connectUnpooled(dbHost, port, dbname, adminName, new String(rootPassword));
 
         ConnectionController.setHost(dbHost);
         ConnectionController.setPort(port);
         ConnectionController.setDBName(dbname);
-
+        ConnectionController.setCredentials(adminName, new String(rootPassword));
+        
         dropTables(c);
         createTables(c);
         addRootUser(c, rootPassword);
@@ -302,6 +304,9 @@ public class Setup {
     }
 
     private static void createDatabase(Connection c, String dbname) throws SQLException {
+        
+        System.out.println("CREATE DATABASE " + dbname);
+        
         //TODO: should check if the db exists already
         c.createStatement().execute("CREATE DATABASE " + dbname);
     }

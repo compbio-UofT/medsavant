@@ -26,7 +26,7 @@ public class ObjectOrientTables {
     public static String outputClassName = "MedSavantDatabase";
     
     public static void main(String argv[]) throws SQLException, IOException, Exception {
-        ooTables("localhost",5029,"medsavantkb",TableSchema.class);
+        ooTables("localhost",5029,"big10",TableSchema.class);
     }
 
     private static void ooTables(String dbhost, int port, String dbname,Class tableSchemaClass) throws SQLException, IOException, Exception {
@@ -50,6 +50,7 @@ public class ObjectOrientTables {
         ConnectionController.setPort(port);
         ConnectionController.setHost(dbhost);
         ConnectionController.setDBName(dbname);
+        ConnectionController.setCredentials("root", "");
         
         Connection conn = ConnectionController.connectPooled();
         

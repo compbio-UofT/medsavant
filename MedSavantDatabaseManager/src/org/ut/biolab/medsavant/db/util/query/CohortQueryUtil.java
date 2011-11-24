@@ -33,7 +33,7 @@ import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.CohortTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.CohortMembershipTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.PatientTablemapTableSchema;
 import org.ut.biolab.medsavant.db.model.SimplePatient;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
@@ -74,9 +74,9 @@ public class CohortQueryUtil {
         query.addFromTable(patientTable.getTable());
         query.addColumns(
                 cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), 
-                patientTable.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID));
+                patientTable.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID));
         query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
-        query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID)));
+        query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID)));
         
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
         
@@ -111,9 +111,9 @@ public class CohortQueryUtil {
         SelectQuery query2 = new SelectQuery();
         query2.addFromTable(cohortMembershipTable.getTable());
         query2.addFromTable(patientTable.getTable());
-        query2.addColumns(patientTable.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS));
+        query2.addColumns(patientTable.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS));
         query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
-        query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID));
+        query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID));
         
         rs = c.createStatement().executeQuery(query2.toString());
         
@@ -130,7 +130,7 @@ public class CohortQueryUtil {
     }*/
     
     public static List<String> getDNAIdsInCohort(int cohortId) throws SQLException {
-        List<String> list = getIndividualFieldFromCohort(cohortId, DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS);
+        List<String> list = getIndividualFieldFromCohort(cohortId, DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS);
         List<String> result = new ArrayList<String>();
         for(String s : list){
             String[] dnaIds = s.split(",");
@@ -168,7 +168,7 @@ public class CohortQueryUtil {
         query2.addFromTable(patientTable.getTable());
         query2.addColumns(patientTable.getDBColumn(columnname));
         query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
-        query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID)));
+        query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID)));
         
         rs = c.createStatement().executeQuery(query2.toString());
         
