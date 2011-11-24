@@ -33,8 +33,10 @@ public class IndividualListModel implements DetailedListModel {
         List<String> result = new ArrayList<String>();
         result.add("Patient ID");
         result.add("Family ID");
-        result.add("Pedigree ID");
         result.add("Hospital ID");
+        result.add("ID of Mom");
+        result.add("ID of Dad");
+        result.add("Gender");
         result.add("DNA ID(s)");
         return result;
     }
@@ -46,6 +48,7 @@ public class IndividualListModel implements DetailedListModel {
         result.add(String.class);
         result.add(String.class);
         result.add(String.class);
+        result.add(Integer.class);
         result.add(String.class);
         return result;
     }
@@ -54,16 +57,14 @@ public class IndividualListModel implements DetailedListModel {
         List<Integer> hidden = new ArrayList<Integer>();
         hidden.add(0);
         hidden.add(1);
-        hidden.add(2);
+        hidden.add(3);
         hidden.add(4);
+        hidden.add(5);
+        hidden.add(6);
         return hidden;
     }
     
     public static String getIndividualID(Vector r) {
         return (String) r.get(0);
     }
-
-
-
-    
 }

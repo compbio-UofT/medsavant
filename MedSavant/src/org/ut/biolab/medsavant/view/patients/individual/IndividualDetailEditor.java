@@ -1,12 +1,7 @@
 package org.ut.biolab.medsavant.view.patients.individual;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
@@ -14,7 +9,6 @@ import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.dialog.AddPatientsForm;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
-import org.ut.biolab.medsavant.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -84,32 +78,6 @@ class IndividualDetailEditor extends DetailedListEditor {
             thread.start(); 
             dialog.setVisible(true);
         }
-        
-        
-        /*
-        int[] patientIds = new int[selected.size()];
-        int i = 0;
-        for (Vector v : selected) {
-            patientIds[i++] = (Integer) v.get(0);
-        }
-
-        if (patientIds != null && patientIds.length > 0) {
-            int result = JOptionPane.showConfirmDialog(
-                    null,
-                    "Are you sure you want to delete these individuals?\nThis cannot be undone.",
-                    "Confirm",
-                    JOptionPane.YES_NO_OPTION);
-            if (result != JOptionPane.YES_OPTION) {
-                return;
-            }
-            try {
-                PatientQueryUtil.removePatient(ProjectController.getInstance().getCurrentProjectId(), patientIds);
-            } catch (SQLException ex) {
-                Logger.getLogger(IndividualDetailedView.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-         * 
-         */
     }
 
     @Override

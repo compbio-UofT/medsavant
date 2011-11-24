@@ -43,24 +43,17 @@ import pedviz.graph.Graph;
 import pedviz.loader.CsvGraphLoader;
 import pedviz.view.GraphView2D;
 import pedviz.view.NodeView;
-import pedviz.view.rules.Rule;
 import pedviz.view.rules.ShapeRule;
 import pedviz.view.symbols.Symbol2D;
 import pedviz.view.symbols.SymbolSexFemale;
 import pedviz.view.symbols.SymbolSexMale;
 import pedviz.view.symbols.SymbolSexUndesignated;
-import pedviz.view.symbols.SymbolText;
 
 /**
  *
  * @author mfiume
  */
 public class IndividualDetailedView extends DetailedView {
-
-   
-    
-    
-    
 
     private List<String> fieldNames;
     private IndividualDetailsSW sw;
@@ -273,7 +266,7 @@ public class IndividualDetailedView extends DetailedView {
         int patientId = (Integer) item[0];
         patientIds = new int[1];
         patientIds[0] = patientId;
-        String hospitalId = (String) item[3];
+        String hospitalId = (String) item[2];
         
         setTitle(hospitalId);
         
