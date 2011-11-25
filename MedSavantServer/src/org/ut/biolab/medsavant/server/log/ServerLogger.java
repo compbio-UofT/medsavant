@@ -26,8 +26,6 @@ public class ServerLogger {
     public static void log(Class c, String string) {
         log(c, string, Level.INFO);
     }
-    
-   
 
     private static void openLogFile() throws IOException {
         handler = new FileHandler(logPath, true);
@@ -68,7 +66,6 @@ public class ServerLogger {
                 System.out.println("Opening log file...");
                 openLogFile();
             }
-            System.out.println("Logging message...");
             logger.log(level, "{" + c.toString() + "} " + msg);
             for (Handler h : logger.getHandlers()) {
                 h.flush();
