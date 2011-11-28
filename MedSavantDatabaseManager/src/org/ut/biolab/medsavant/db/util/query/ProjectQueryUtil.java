@@ -169,10 +169,7 @@ public class ProjectQueryUtil {
                 query += f.generateSchema(true);
             }
         }
-        
-        //add custom info field
-        //query += "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,";
-        
+
         //add each annotation
         if(annotationIds != null){
             for(int annotationId : annotationIds){
@@ -461,34 +458,9 @@ public class ProjectQueryUtil {
         return result;
     }
     
-    //Get all the fields between the defaults and the custom_info fields. 
-    //This should be used if you are unsure about whether the table is up-to-date.
-    /*public static List<CustomField> getActualCustomVariantFields(int projectId) throws SQLException {
-        String tablename = getVariantTablename(projectId, ReferenceQueryUtil.getReferenceIdsForProject(projectId).get(0));
-        TableSchema table = DBUtil.importTableSchema(tablename);
-
-        int startIndex = DBUtil.getIndexOfField(table, DefaultVariantTableSchema.COLUMNNAME_OF_FILTER) + 1;
-        int endIndex = DBUtil.getIndexOfField(table, DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO);
-        
-        List<DbColumn> columns = table.getColumns();
-        
-        List<CustomField> result = new ArrayList<CustomField>();
-        for(int i = startIndex; i < endIndex; i++){
-            DbColumn col = columns.get(i);
-            result.add(new CustomField(col.getColumnNameSQL(), col.getTypeNameSQL(), false, col.getColumnNameSQL(), ""));
-        } 
-        return result;
-    }*/
-    
     public static AnnotationFormat getActualCustomFieldAnnotationFormat(int projectId) throws SQLException {
         
-        List<CustomField> customFields;
-        //if(AnnotationLogQueryUtil.hasUnfinishedUpdate(projectId, Action.UPDATE_TABLE)){
-        //    customFields = getActualCustomVariantFields(projectId);
-        //} else {
-            customFields = getCustomVariantFields(projectId);
-        //}
-        //customFields.add(new CustomField("custom_info", "VARCHAR(500)", false, "Custom Info", ""));
+        List<CustomField> customFields = getCustomVariantFields(projectId);
         return new AnnotationFormat(
                 "custom vcf", "custom vcf", 0, "", true, true, AnnotationType.POSITION, customFields);
     }

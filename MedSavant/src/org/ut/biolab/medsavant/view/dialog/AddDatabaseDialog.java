@@ -253,7 +253,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
             doClose(RET_OK);
         } catch (Exception x) {
             x.printStackTrace();
-            DialogUtils.displayException("Sorry", "Database could not be created.\nPlease check the settings and try again.", x);
+            DialogUtils.displayException("Sorry", "Database could not be created:\n" + x.getMessage() + "\nPlease check the settings and try again.", x);
         }
     }//GEN-LAST:event_okButtonActionPerformed
 
