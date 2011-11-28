@@ -116,6 +116,15 @@ public class DBUtil {
         return ts;
     }
     
+    //Returns 0 based position
+    public static int getIndexOfField(TableSchema t, String columnname) throws SQLException {
+        return t.getFieldIndexInDB(columnname) - 1;
+    }
+    
+    public static int getIndexOfField(String tablename, String columnname) throws SQLException {
+        return getIndexOfField(importTableSchema(tablename), columnname);
+    }
+    
     public static void dropTable(String tablename) throws SQLException {
         Connection c = (ConnectionController.connectPooled());
 

@@ -210,6 +210,18 @@ public class Setup {
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
         
         c.createStatement().execute(
+                "CREATE TABLE  `" + MedSavantDatabase.VariantformatTableSchema.getTablename() + "` ("
+                + "`project_id` int(11) unsigned NOT NULL,"
+                + "`position` int(11) unsigned NOT NULL,"
+                + "`column_name` varchar(200) COLLATE latin1_bin NOT NULL,"
+                + "`column_type` varchar(45) COLLATE latin1_bin NOT NULL,"
+                + "`filterable` tinyint(1) NOT NULL,"
+                + "`alias` varchar(200) COLLATE latin1_bin NOT NULL,"
+                + "`description` varchar(500) COLLATE latin1_bin NOT NULL,"
+                + "PRIMARY KEY (`project_id`,`position`)"
+                + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
+                               
+        c.createStatement().execute(
                 "CREATE TABLE  `default_patient` ("
                 + "`patient_id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
                 + "`family_id` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
@@ -235,22 +247,6 @@ public class Setup {
                 + "`alt` varchar(30) COLLATE latin1_bin DEFAULT NULL,"
                 + "`qual` float(10,0) DEFAULT NULL,"
                 + "`filter` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`aa` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`ac` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`af` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`an` int(11) DEFAULT NULL,"
-                + "`bq` float DEFAULT NULL,"
-                + "`cigar` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`db` int(1) DEFAULT NULL,"
-                + "`dp` int(11) DEFAULT NULL,"
-                + "`end` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`h2` int(1) DEFAULT NULL,"
-                + "`mq` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`mq0` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`ns` int(11) DEFAULT NULL,"
-                + "`sb` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`somatic` int(1) DEFAULT NULL,"
-                + "`validated` int(1) DEFAULT NULL,"
                 + "`custom_info` varchar(500) COLLATE latin1_bin DEFAULT NULL"
                 + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
@@ -284,7 +280,7 @@ public class Setup {
         dropTables(c);
         createTables(c);
         addRootUser(c, rootPassword);
-        addDefaultReferenceGenomes(c);
+        addDefaultReferenceGenomes();
         
         for (String user: UserQueryUtil.getUserNames()) {
             UserQueryUtil.grantPrivileges(user, UserQueryUtil.getUserLevel(user));
@@ -311,7 +307,7 @@ public class Setup {
         c.createStatement().execute("CREATE DATABASE " + dbname);
     }
 
-    private static void addDefaultReferenceGenomes(Connection c) throws SQLException {
+    private static void addDefaultReferenceGenomes() throws SQLException {
         ReferenceQueryUtil.addReference("hg17", Chromosome.getHg17Chromosomes());
         ReferenceQueryUtil.addReference("hg18", Chromosome.getHg18Chromosomes(), "http://savantbrowser.com/data/hg18/hg18.fa.savant");
         ReferenceQueryUtil.addReference("hg19", Chromosome.getHg19Chromosomes(), "http://savantbrowser.com/data/hg19/hg19.fa.savant");

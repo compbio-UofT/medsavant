@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.db.format;
 
+import java.sql.Date;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.util.DBUtil;
@@ -83,6 +84,24 @@ public class CustomField {
         return fieldType;
     }
     
+    public Class getColumnClass(){
+        switch(fieldType){
+            case BOOLEAN:
+                return Boolean.class;          
+            case INTEGER:
+                return Integer.class;
+            case DATE:
+                return Date.class;
+            case DECIMAL:
+                return Double.class;
+            case FLOAT:
+                return Float.class;
+            case VARCHAR:
+            default:
+                return String.class;            
+        }
+    }
+    
     public String getColumnLength(){
         int posLeft = columnType.indexOf("(");
         if(posLeft == -1){
@@ -93,7 +112,11 @@ public class CustomField {
     }
     
     public String generateSchema(){
-        return "`" + columnName + "` " + columnType + " DEFAULT NULL,";
+        return generateSchema(false);
+    }
+        
+    public String generateSchema(boolean forceLowerCase){
+        return "`" + (forceLowerCase ? columnName.toLowerCase() : columnName) + "` " + columnType + " DEFAULT NULL,";
     }
     
     public Category getCategory() {

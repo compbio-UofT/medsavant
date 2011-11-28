@@ -8,9 +8,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil.Action;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
@@ -32,13 +34,22 @@ public class ImportVariants {
         //add log
         int updateId = AnnotationLogQueryUtil.addAnnotationLogEntry(projectId, referenceId, Action.ADD_VARIANTS);
         
-        //create the staging table       
+        //get custom fields for vcf
+        /*List<CustomField> customFields = ProjectQueryUtil.getCustomVariantFields(projectId); 
+        String[] infoFields = new String[customFields.size()];
+        Class[] infoClasses = new Class[customFields.size()];
+        for(int i = 0; i < customFields.size(); i++){
+            infoFields[i] = customFields.get(i).getColumnName();
+            infoClasses[i] = customFields.get(i).getColumnClass();
+        }*/
+        
+        //create the staging table 
+        String tableName = DBSettings.createVariantStagingTableName(projectId, referenceId, updateId);
         try {
-            ProjectQueryUtil.createVariantTable(projectId, referenceId, updateId, null, true);
+            tableName = ProjectQueryUtil.createVariantTable(projectId, referenceId, updateId, null, true);
         } catch (SQLException ex) {
             //table already exists?
         }
-        String tableName = DBSettings.createVariantStagingTableName(projectId, referenceId, updateId);
         
         //add files to staging table
         for(int i = 0; i < vcfFiles.length; i++){

@@ -16,8 +16,10 @@ import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
+import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import org.xml.sax.SAXException;
 
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
@@ -32,8 +34,11 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.PatientFormatTableSchema
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.PatientTablemapTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ProjectTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ReferenceTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantFormatTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantTablemapTableSchema;
+import org.ut.biolab.medsavant.db.format.AnnotationFormat.AnnotationType;
 import org.ut.biolab.medsavant.db.format.CustomField;
+import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.DBSettings;
@@ -155,23 +160,18 @@ public class ProjectQueryUtil {
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_ALT + "` varchar(30) COLLATE latin1_bin DEFAULT NULL,"
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_QUAL + "` float(10,0) DEFAULT NULL,"
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_FILTER + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_AA + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_AC + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_AF + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_AN + "` int(11) DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_BQ + "` float DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CIGAR + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_DB + "` int(1) DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_DP + "` int(11) DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_END + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_H2 + "` int(1) DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_MQ + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_MQ0 + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_NS + "` int(11) DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_SB + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_SOMATIC + "` int(1) DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_VALIDATED + "` int(1) DEFAULT NULL,"
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,";
+        
+        //add custom vcf fields
+        if(!isStaging){
+            List<CustomField> customFields = getCustomVariantFields(projectid);
+            for(CustomField f : customFields){
+                query += f.generateSchema(true);
+            }
+        }
+        
+        //add custom info field
+        //query += "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,";
         
         //add each annotation
         if(annotationIds != null){
@@ -200,6 +200,16 @@ public class ProjectQueryUtil {
             query1.addColumn(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceid);
             query1.addColumn(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), variantTableInfoName);
             c.createStatement().execute(query1.toString());
+            
+            //set annotation ids
+            String s = "";
+            if(annotationIds.length > 0){
+                for(Integer i : annotationIds){
+                    s += i + ",";
+                }
+                s = s.substring(0, s.length()-1);
+            }
+            setAnnotations(projectid, referenceid, s);   
         }
 
         return variantTableInfoName;
@@ -390,4 +400,97 @@ public class ProjectQueryUtil {
         
         ConnectionController.connectPooled().createStatement().executeUpdate(query.toString());
     }
+    
+    public static void setCustomVariantFields(int projectId, List<CustomField> fields, boolean firstSet) throws SQLException {
+        
+        Connection c = ConnectionController.connectPooled();
+        TableSchema table = MedSavantDatabase.VariantformatTableSchema;
+        
+        //clear the current fields
+        DeleteQuery clearQuery = new DeleteQuery(table.getTable());
+        clearQuery.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));      
+        c.createStatement().executeUpdate(clearQuery.toString());
+
+        c.setAutoCommit(false);
+        for(int i = 0; i < fields.size(); i++){
+            CustomField f = fields.get(i);
+            InsertQuery insertQuery = new InsertQuery(table.getTable());
+            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
+            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_POSITION), i);
+            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), f.getColumnName());
+            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), f.getColumnTypeString());
+            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (f.isFilterable() ? "1" : "0"));
+            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_ALIAS), f.getAlias());
+            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), f.getDescription());
+            c.createStatement().execute(insertQuery.toString());
+        }
+        c.commit();
+        c.setAutoCommit(true);
+        
+        if(!firstSet){
+            List<Integer> referenceIds = ReferenceQueryUtil.getReferenceIdsForProject(projectId);
+            for(Integer id : referenceIds){
+                AnnotationLogQueryUtil.addAnnotationLogEntry(projectId, id, Action.UPDATE_TABLE, Status.PENDING);
+            }  
+        }
+        
+    }
+    
+    //Get the most up-to-date custom fields, as specified in variant_format table
+    public static List<CustomField> getCustomVariantFields(int projectId) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.VariantformatTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addAllColumns();
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
+        query.addOrdering(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_POSITION), Dir.ASCENDING);
+        
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
+        
+        List<CustomField> result = new ArrayList<CustomField>();
+        while(rs.next()){
+            result.add(new CustomField(
+                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), 
+                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), 
+                    rs.getBoolean(VariantFormatTableSchema.COLUMNNAME_OF_FILTERABLE), 
+                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_ALIAS), 
+                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), 
+                    Category.PHENOTYPE));
+        }
+        return result;
+    }
+    
+    //Get all the fields between the defaults and the custom_info fields. 
+    //This should be used if you are unsure about whether the table is up-to-date.
+    /*public static List<CustomField> getActualCustomVariantFields(int projectId) throws SQLException {
+        String tablename = getVariantTablename(projectId, ReferenceQueryUtil.getReferenceIdsForProject(projectId).get(0));
+        TableSchema table = DBUtil.importTableSchema(tablename);
+
+        int startIndex = DBUtil.getIndexOfField(table, DefaultVariantTableSchema.COLUMNNAME_OF_FILTER) + 1;
+        int endIndex = DBUtil.getIndexOfField(table, DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO);
+        
+        List<DbColumn> columns = table.getColumns();
+        
+        List<CustomField> result = new ArrayList<CustomField>();
+        for(int i = startIndex; i < endIndex; i++){
+            DbColumn col = columns.get(i);
+            result.add(new CustomField(col.getColumnNameSQL(), col.getTypeNameSQL(), false, col.getColumnNameSQL(), ""));
+        } 
+        return result;
+    }*/
+    
+    public static AnnotationFormat getActualCustomFieldAnnotationFormat(int projectId) throws SQLException {
+        
+        List<CustomField> customFields;
+        //if(AnnotationLogQueryUtil.hasUnfinishedUpdate(projectId, Action.UPDATE_TABLE)){
+        //    customFields = getActualCustomVariantFields(projectId);
+        //} else {
+            customFields = getCustomVariantFields(projectId);
+        //}
+        //customFields.add(new CustomField("custom_info", "VARCHAR(500)", false, "Custom Info", ""));
+        return new AnnotationFormat(
+                "custom vcf", "custom vcf", 0, "", true, true, AnnotationType.POSITION, customFields);
+    }
+
 }

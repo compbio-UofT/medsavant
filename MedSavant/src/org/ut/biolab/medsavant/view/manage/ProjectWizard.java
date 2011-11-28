@@ -44,6 +44,7 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Annotation;
@@ -67,11 +68,14 @@ public class ProjectWizard extends WizardDialog {
     private int projectId;
     private String originalProjectName;
     private String projectName;
-    private DefaultTableModel formatModel;
+    private DefaultTableModel patientFormatModel;
+    private DefaultTableModel variantFormatModel;
     private String validationError = "";
-    private List<CustomField> fields;
+    private List<CustomField> patientFields;
+    private List<CustomField> variantFields;
     private List<ProjectDetails> projectDetails = new ArrayList<ProjectDetails>();
     private List<CheckListItem> checkListItems = new ArrayList<CheckListItem>();
+    private boolean variantFieldsChanged = false;
     
     /* modify existing project */
     public ProjectWizard(int projectId, String projectName, List<CustomField> fields, List<ProjectDetails> projectDetails){
@@ -79,7 +83,7 @@ public class ProjectWizard extends WizardDialog {
         this.modify = true;
         this.originalProjectName = projectName;
         this.projectName = projectName;
-        this.fields = fields;
+        this.patientFields = fields;
         this.projectDetails = projectDetails;
         setupWizard();
     }
@@ -97,6 +101,7 @@ public class ProjectWizard extends WizardDialog {
         PageList model = new PageList();
         model.append(getNamePage());
         model.append(getPatientFieldsPage());
+        model.append(getVcfFieldsPage());
         model.append(getReferencePage());
         model.append(getCompletionPage());
         setPageList(model);
@@ -176,34 +181,34 @@ public class ProjectWizard extends WizardDialog {
             }     
         };
         
-        formatModel = new DefaultTableModel(){
+        patientFormatModel = new DefaultTableModel(){
             @Override
             public boolean isCellEditable(int row, int col) {  
                 return row >= 5;   
             }  
         };
              
-        formatModel.addColumn("Name");
-        formatModel.addColumn("Type");
-        formatModel.addColumn("Filterable");
-        formatModel.addColumn("Alias");
-        formatModel.addColumn("Description");
+        patientFormatModel.addColumn("Name");
+        patientFormatModel.addColumn("Type");
+        patientFormatModel.addColumn("Filterable");
+        patientFormatModel.addColumn("Alias");
+        patientFormatModel.addColumn("Description");
         
-        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID, DefaultpatientTableSchema.TYPE_OF_FAMILY_ID + "(" + DefaultpatientTableSchema.LENGTH_OF_FAMILY_ID + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID, ""});
-        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, DefaultpatientTableSchema.TYPE_OF_HOSPITAL_ID + "(" + DefaultpatientTableSchema.LENGTH_OF_HOSPITAL_ID + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, ""});
-        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM, DefaultpatientTableSchema.TYPE_OF_IDBIOMOM + "(" + DefaultpatientTableSchema.LENGTH_OF_IDBIOMOM + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM, ""});
-        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD, DefaultpatientTableSchema.TYPE_OF_IDBIODAD + "(" + DefaultpatientTableSchema.LENGTH_OF_IDBIODAD + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD, ""});
-        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_GENDER, DefaultpatientTableSchema.TYPE_OF_GENDER + "(" + DefaultpatientTableSchema.LENGTH_OF_GENDER + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_GENDER, ""});
-        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultpatientTableSchema.TYPE_OF_DNA_IDS + "(" + DefaultpatientTableSchema.LENGTH_OF_DNA_IDS + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, ""});
-        formatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultpatientTableSchema.TYPE_OF_BAM_URL + "(" + DefaultpatientTableSchema.LENGTH_OF_BAM_URL + ")", false, DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID, DefaultpatientTableSchema.TYPE_OF_FAMILY_ID + getLengthString(DefaultpatientTableSchema.LENGTH_OF_FAMILY_ID), false, DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, DefaultpatientTableSchema.TYPE_OF_HOSPITAL_ID + getLengthString(DefaultpatientTableSchema.LENGTH_OF_HOSPITAL_ID), false, DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM, DefaultpatientTableSchema.TYPE_OF_IDBIOMOM + getLengthString(DefaultpatientTableSchema.LENGTH_OF_IDBIOMOM), false, DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD, DefaultpatientTableSchema.TYPE_OF_IDBIODAD + getLengthString(DefaultpatientTableSchema.LENGTH_OF_IDBIODAD), false, DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_GENDER, DefaultpatientTableSchema.TYPE_OF_GENDER + getLengthString(DefaultpatientTableSchema.LENGTH_OF_GENDER), false, DefaultpatientTableSchema.COLUMNNAME_OF_GENDER, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultpatientTableSchema.TYPE_OF_DNA_IDS + getLengthString(DefaultpatientTableSchema.LENGTH_OF_DNA_IDS), false, DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultpatientTableSchema.TYPE_OF_BAM_URL + getLengthString(DefaultpatientTableSchema.LENGTH_OF_BAM_URL), false, DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, ""});
 
         if(modify){
-            for(CustomField f : fields){
-                formatModel.addRow(new Object[]{f.getColumnName(), f.getColumnType(), f.isFilterable(), f.getAlias(), f.getDescription()});
+            for(CustomField f : patientFields){
+                patientFormatModel.addRow(new Object[]{f.getColumnName(), f.getColumnTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
             }
         }
 
-        table.setModel(formatModel);
+        table.setModel(patientFormatModel);
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         scrollpane.getViewport().add(table);
         page.addComponent(scrollpane);
@@ -211,8 +216,8 @@ public class ProjectWizard extends WizardDialog {
         JButton addFieldButton = new JButton("Add Field");
         addFieldButton.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e){
-                formatModel.addRow(new Object[5]);
-                table.setModel(formatModel);
+                patientFormatModel.addRow(new Object[5]);
+                table.setModel(patientFormatModel);
             }
         });
         page.addComponent(addFieldButton);
@@ -222,14 +227,131 @@ public class ProjectWizard extends WizardDialog {
             public void mouseReleased(MouseEvent e){
                 int row = table.getSelectedRow();
                 if(row >= MedSavantDatabase.DefaultpatientTableSchema.getNumFields()-1){
-                    formatModel.removeRow(row);
+                    patientFormatModel.removeRow(row);
                 }
-                table.setModel(formatModel);
+                table.setModel(patientFormatModel);
             }
         });
         page.addComponent(removeFieldButton);
 
         return page;
+    }
+    
+    private AbstractWizardPage getVcfFieldsPage(){
+        
+        //setup page
+        final DefaultWizardPage page = new DefaultWizardPage("Custom VCF Fields"){          
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);   
+            }     
+        };
+        
+        page.addText("Add extra fields to retrieve from VCF files. ");
+
+        JScrollPane scrollpane = new JScrollPane();
+        scrollpane.setPreferredSize(new Dimension(300,250));    
+        scrollpane.getViewport().setBackground(Color.white);
+        
+        final JTable table = new JTable(){      
+            @Override
+            public Class<?> getColumnClass(int column) {
+                if(column == 2){
+                    return Boolean.class;
+                } else {
+                    return String.class;
+                }
+            }     
+        };
+        
+        variantFormatModel = new DefaultTableModel();
+        
+        variantFormatModel.addColumn("Key");
+        variantFormatModel.addColumn("Type");
+        variantFormatModel.addColumn("Filterable");
+        variantFormatModel.addColumn("Alias");
+        variantFormatModel.addColumn("Description");
+
+        if(modify){
+            try {
+                List<CustomField> fields = ProjectQueryUtil.getCustomVariantFields(projectId);
+                for(CustomField f : fields){
+                    variantFormatModel.addRow(new Object[]{f.getColumnName(), f.getColumnTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
+            }      
+        } else {        
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AA.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AA + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AA), true, DefaultVariantTableSchema.COLUMNNAME_OF_AA, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AC.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AC + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AA), true, DefaultVariantTableSchema.COLUMNNAME_OF_AC, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AF.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AF + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AF), true, DefaultVariantTableSchema.COLUMNNAME_OF_AF, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AN.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AN + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AN), true, DefaultVariantTableSchema.COLUMNNAME_OF_AN, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_BQ.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_BQ + getLengthString(DefaultVariantTableSchema.LENGTH_OF_BQ), true, DefaultVariantTableSchema.COLUMNNAME_OF_BQ, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_CIGAR.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_CIGAR + getLengthString(DefaultVariantTableSchema.LENGTH_OF_CIGAR), true, DefaultVariantTableSchema.COLUMNNAME_OF_CIGAR, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_DB.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_DB + getLengthString(DefaultVariantTableSchema.LENGTH_OF_DB), true, DefaultVariantTableSchema.COLUMNNAME_OF_DB, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_DP.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_DP + getLengthString(DefaultVariantTableSchema.LENGTH_OF_DP), true, DefaultVariantTableSchema.COLUMNNAME_OF_DP, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_END.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_END + getLengthString(DefaultVariantTableSchema.LENGTH_OF_END), true, DefaultVariantTableSchema.COLUMNNAME_OF_END, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_H2.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_H2 + getLengthString(DefaultVariantTableSchema.LENGTH_OF_H2), true, DefaultVariantTableSchema.COLUMNNAME_OF_H2, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_MQ.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_MQ + getLengthString(DefaultVariantTableSchema.LENGTH_OF_MQ), true, DefaultVariantTableSchema.COLUMNNAME_OF_MQ, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_MQ0.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_MQ0 + getLengthString(DefaultVariantTableSchema.LENGTH_OF_MQ0), true, DefaultVariantTableSchema.COLUMNNAME_OF_MQ0, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_NS.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_NS + getLengthString(DefaultVariantTableSchema.LENGTH_OF_NS), true, DefaultVariantTableSchema.COLUMNNAME_OF_NS, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_SB.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_SB + getLengthString(DefaultVariantTableSchema.LENGTH_OF_SB), true, DefaultVariantTableSchema.COLUMNNAME_OF_SB, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_SOMATIC.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_SOMATIC + getLengthString(DefaultVariantTableSchema.LENGTH_OF_SOMATIC), true, DefaultVariantTableSchema.COLUMNNAME_OF_SOMATIC, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_VALIDATED.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_VALIDATED + getLengthString(DefaultVariantTableSchema.LENGTH_OF_VALIDATED), true, DefaultVariantTableSchema.COLUMNNAME_OF_VALIDATED, ""});
+        }
+            
+        table.setModel(variantFormatModel);
+        table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        scrollpane.getViewport().add(table);
+        page.addComponent(scrollpane);
+        
+        table.addKeyListener(new KeyListener() {
+            public void keyTyped(KeyEvent e) {
+                variantFieldsChanged = true;
+            }
+            public void keyPressed(KeyEvent e) {
+                variantFieldsChanged = true;
+            }
+            public void keyReleased(KeyEvent e) {
+                variantFieldsChanged = true;
+            }
+        });
+        
+        JButton addFieldButton = new JButton("Add Field");
+        addFieldButton.addMouseListener(new MouseAdapter() {
+            public void mouseReleased(MouseEvent e){
+                variantFormatModel.addRow(new Object[2]);
+                table.setModel(variantFormatModel);
+                variantFieldsChanged = true;
+            }
+        });
+        page.addComponent(addFieldButton);
+        
+        JButton removeFieldButton = new JButton("Remove Field");
+        removeFieldButton.addMouseListener(new MouseAdapter() {
+            public void mouseReleased(MouseEvent e){
+                int row = table.getSelectedRow();
+                if(row >= 0){
+                    variantFormatModel.removeRow(row);
+                    table.setModel(variantFormatModel);
+                    variantFieldsChanged = true;
+                }
+            }
+        });
+        page.addComponent(removeFieldButton);
+
+        return page;
+    }
+    
+    private String getLengthString(int len){
+        if(len > 0){
+            return "(" + len + ")";
+        } else {
+            return "";
+        }
     }
     
     private AbstractWizardPage getReferencePage(){
@@ -350,8 +472,12 @@ public class ProjectWizard extends WizardDialog {
     private boolean validateProject() throws SQLException {
         if(ProjectQueryUtil.containsProject(projectName) && (!modify || !projectName.equals(originalProjectName))){
             validationError = "Project name already in use";
-        } else if(!validateFormatModel()) {
+        } else if(!validatePatientFormatModel()) {
             validationError = "Patient table format contains errors\n"
+                    + "Name cannot only contain letters, numbers and underscores. \n"
+                    + "Type must be in format: COLUMNTYPE(LENGTH)";
+        } else if(!validateVariantFormatModel()) {
+            validationError = "Variant table format contains errors\n"
                     + "Name cannot only contain letters, numbers and underscores. \n"
                     + "Type must be in format: COLUMNTYPE(LENGTH)";
         } else if (!validateReferences()) {
@@ -371,17 +497,25 @@ public class ProjectWizard extends WizardDialog {
         return false;
     }
     
-    private boolean validateFormatModel() {
-        
-        fields = new ArrayList<CustomField>();
-        
-        // 7 is the number of standard fields
-        for(int row = 7; row < formatModel.getRowCount(); row++){
-            String fieldName = (String)formatModel.getValueAt(row, 0);
-            String fieldType = (String)formatModel.getValueAt(row, 1);
-            Boolean fieldFilterable = (Boolean)formatModel.getValueAt(row, 2);
-            String fieldAlias = (String)formatModel.getValueAt(row, 3);
-            String fieldDescription = (String)formatModel.getValueAt(row, 4);
+    private boolean validatePatientFormatModel() {
+        patientFields = new ArrayList<CustomField>();
+        // 7 is the number of standard patientFields
+        return validateFormatModel(patientFields, patientFormatModel, 7);
+    }
+    
+    private boolean validateVariantFormatModel(){
+        variantFields = new ArrayList<CustomField>();
+        return validateFormatModel(variantFields, variantFormatModel, 0);
+    }
+    
+    private boolean validateFormatModel(List<CustomField> fields, DefaultTableModel model, int firstRow){
+                
+        for(int row = firstRow; row < model.getRowCount(); row++){
+            String fieldName = (String)model.getValueAt(row, 0);
+            String fieldType = (String)model.getValueAt(row, 1);
+            Boolean fieldFilterable = (Boolean)model.getValueAt(row, 2);
+            String fieldAlias = (String)model.getValueAt(row, 3);
+            String fieldDescription = (String)model.getValueAt(row, 4);
             
             if(fieldName == null || fieldType == null){
                 continue;
@@ -411,8 +545,13 @@ public class ProjectWizard extends WizardDialog {
                 ProjectQueryUtil.renameProject(projectId, projectName);            
             }
             
-            //modify fields
-            PatientQueryUtil.updateFields(projectId, fields);
+            //modify patientFields
+            PatientQueryUtil.updateFields(projectId, patientFields);
+            
+            //modify variantFields
+            if(variantFieldsChanged){
+                ProjectQueryUtil.setCustomVariantFields(projectId, variantFields, false);
+            }
             
             //edit references and annotations
             for(CheckListItem cli : checkListItems){
@@ -420,7 +559,8 @@ public class ProjectWizard extends WizardDialog {
                 
                 //add, remove refs
                 if(pd == null && cli.isSelected()){
-                    ProjectQueryUtil.createVariantTable(projectId, cli.getReference().getId(), 0);
+                    //TODO get custom vcf patientFields
+                    //ProjectQueryUtil.createVariantTable(projectId, cli.getReference().getId(), 0);
                 } else if (pd != null && !cli.isSelected()){
                     ProjectQueryUtil.removeReferenceForProject(projectId, cli.getReference().getId());
                 }
@@ -458,12 +598,15 @@ public class ProjectWizard extends WizardDialog {
         } else {
             
             //create project
-            int projectid = ProjectController.getInstance().addProject(projectName, fields);
+            int projectid = ProjectController.getInstance().addProject(projectName, patientFields);
+            
+            //set custom vcf fields
+            ProjectQueryUtil.setCustomVariantFields(projectid, variantFields, true);
             
             //add references and annotations
             for(CheckListItem cli : checkListItems){
                 if(cli.isSelected()){
-                    ProjectQueryUtil.createVariantTable(projectid, cli.getReference().getId(),0);
+                    ProjectQueryUtil.createVariantTable(projectid, cli.getReference().getId(), 0);
                     
                     List<Integer> annotationIds = cli.getAnnotationIds();
                     if(!annotationIds.isEmpty()){

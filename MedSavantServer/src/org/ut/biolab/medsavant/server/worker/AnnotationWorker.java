@@ -33,23 +33,29 @@ public class AnnotationWorker extends SwingWorker {
     @Override
     protected Object doInBackground() throws Exception {
         while (true) {
+            boolean found = false;
             try {
                 ServerLogQueryUtil.addServerLog(LogType.INFO, "Starting pending annotations");
-                kickStartPendingAnnotations();
+                found = kickStartPendingAnnotations();
                 ServerLogQueryUtil.addServerLog(LogType.INFO, "Done starting pending annotations");            
             } catch (Exception e) {
                 ServerLogger.logError(AnnotationWorker.class,e);
                 ServerLogger.logByEmail(AnnotationWorker.class, "Uh oh...", e.getMessage(), Level.SEVERE);
             }
-            Thread.sleep(DELAY);
+            if(!found){
+                Thread.sleep(DELAY);
+            }
         }
     }
 
-    private void kickStartPendingAnnotations() throws SQLException, IOException {
+    private boolean kickStartPendingAnnotations() throws SQLException, IOException {
         ResultSet rs = AnnotationLogQueryUtil.getPendingUpdates();
-
+        boolean found = false;       
         try {
-            while (rs.next()) {
+            //only do one at a time, to ensure proper ordering
+            if (rs.next()) {
+                
+                found= true;
 
                 ServerLogQueryUtil.addServerLog(LogType.INFO, "Starting next annotation");
                 
@@ -71,10 +77,10 @@ public class AnnotationWorker extends SwingWorker {
                             break;
                         case UPDATE_TABLE:
                             // TODO: users shouldnt see ids
-                            ServerLogQueryUtil.addServerLog(ServerLogQueryUtil.LogType.INFO, "Updating table projectid=" + projectId + " referenceid=" + referenceId + " updateid=" + updateId);
-                            UpdateVariantTable.performUpdate(projectId, referenceId, updateId);
+                            ServerLogQueryUtil.addServerLog(ServerLogQueryUtil.LogType.INFO, "Updating table annotations projectid=" + projectId + " referenceid=" + referenceId + " updateid=" + updateId);
+                            UpdateVariantTable.performUpdateAnnotations(projectId, referenceId, updateId);
                             // TODO: users shouldnt see ids
-                            ServerLogQueryUtil.addServerLog(ServerLogQueryUtil.LogType.INFO, "Done updating table projectid=" + projectId + " referenceid=" + referenceId + " updateid=" + updateId);
+                            ServerLogQueryUtil.addServerLog(ServerLogQueryUtil.LogType.INFO, "Done updating table annotations projectid=" + projectId + " referenceid=" + referenceId + " updateid=" + updateId);
                             break;
                         default:
                             ServerLogQueryUtil.addServerLog(ServerLogQueryUtil.LogType.ERROR, "Unknown annotation action: " + action);
@@ -93,5 +99,7 @@ public class AnnotationWorker extends SwingWorker {
             ServerLogger.logError(AnnotationWorker.class,ex);
             ServerLogger.log(AnnotationWorker.class, ex.getLocalizedMessage(), Level.SEVERE);
         }
+        
+        return found;
     }
 }

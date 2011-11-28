@@ -242,14 +242,16 @@ public class ProjectController implements ReferenceListener, LoginListener {
         if(currentAnnotationFormats == null){
             try {
                 int[] annotationIds = AnnotationQueryUtil.getAnnotationIds(this.currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
-                AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+1];
+                AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+2];
                 af[0] = AnnotationFormat.getDefaultAnnotationFormat();
+                af[1] = ProjectQueryUtil.getActualCustomFieldAnnotationFormat(currentProjectId);
                 for(int i = 0; i < annotationIds.length; i++){
-                    af[i+1] = AnnotationQueryUtil.getAnnotationFormat(annotationIds[i]);
+                    af[i+2] = AnnotationQueryUtil.getAnnotationFormat(annotationIds[i]);
                 }
                 currentAnnotationFormats = af;
             } catch (Exception ex) {
                 currentAnnotationFormats = new AnnotationFormat[0];
+                ex.printStackTrace();
                 //Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

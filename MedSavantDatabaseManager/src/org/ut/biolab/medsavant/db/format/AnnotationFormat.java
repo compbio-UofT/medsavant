@@ -105,22 +105,6 @@ public class AnnotationFormat {
         fields.add(new CustomField("alt", "VARCHAR(30)", true, "Alternate", ""));
         fields.add(new CustomField("qual", "FLOAT(10,0)", true, "Quality", ""));
         fields.add(new CustomField("filter", "VARCHAR(500)", false, "Filter", ""));
-        fields.add(new CustomField("aa", "VARCHAR(500)", true, "Ancestral Allele", ""));
-        fields.add(new CustomField("ac", "VARCHAR(500)", true, "Allele Count", ""));
-        fields.add(new CustomField("af", "VARCHAR(500)", true, "Allele Frequency", ""));
-        fields.add(new CustomField("an", "INT(11)", true, "Number of alleles", ""));
-        fields.add(new CustomField("bq", "FLOAT", true, "Base Quality", ""));
-        fields.add(new CustomField("cigar", "VARCHAR(500)", false, "Cigar", ""));
-        fields.add(new CustomField("db", "INT(1)", true, "dbSNP Membership", ""));
-        fields.add(new CustomField("dp", "INT(11)", true, "Depth of Coverage", ""));
-        fields.add(new CustomField("end", "VARCHAR(500)", true, "End Position", ""));
-        fields.add(new CustomField("h2", "INT(1)", true, "HapMap2 Membership", ""));
-        fields.add(new CustomField("mq", "VARCHAR(500)", true, "Mapping Quality", ""));
-        fields.add(new CustomField("mq0", "VARCHAR(500)", true, "Number of MQ0s", ""));
-        fields.add(new CustomField("ns", "INT(11)", true, "Number of samples", ""));
-        fields.add(new CustomField("sb", "VARCHAR(500)", true, "Strand Bias", ""));
-        fields.add(new CustomField("somatic", "INT(1)", true, "Somatic", ""));
-        fields.add(new CustomField("validated", "INT(1)", true, "Validated", ""));
         fields.add(new CustomField("custom_info", "VARCHAR(500)", false, "Custom Info", ""));
         
         return new AnnotationFormat("default", "default", 0, "", true, true, AnnotationType.POSITION, fields);

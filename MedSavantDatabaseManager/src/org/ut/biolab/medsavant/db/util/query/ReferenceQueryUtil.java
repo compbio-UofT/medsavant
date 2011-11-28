@@ -208,9 +208,7 @@ public class ReferenceQueryUtil {
                         refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID), 
                         variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
         query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
-        
-        String a = query.toString();
-        
+                
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
         
         List<String> references = new ArrayList<String>();
@@ -221,6 +219,24 @@ public class ReferenceQueryUtil {
         return references;
     }
     
+    public static List<Integer> getReferenceIdsForProject(int projectid) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
+        
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addColumns(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+                
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
+        
+        List<Integer> references = new ArrayList<Integer>();
+        while (rs.next()) {
+            references.add(rs.getInt(1));
+        }
+        
+        return references;
+    }   
     
     public static Map<Integer, String> getReferencesWithoutTablesInProject(int projectid) throws SQLException {
         

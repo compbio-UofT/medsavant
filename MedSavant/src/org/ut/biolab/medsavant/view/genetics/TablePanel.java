@@ -49,8 +49,6 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         this.setLayout(cl);
         this.add(new WaitPanel("Generating List View"), CARD_WAIT);
         
-        long startTime = System.currentTimeMillis();
-
         showWaitCard();
         
         final TablePanel instance = this;
@@ -121,7 +119,6 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                     }
                 };
                 tablePanel = new SearchableTablePanel(pageName, fieldNames, fieldClasses, hiddenColumns, 1000, retriever);
-                updateIfRequired();
                 
                 return null;
             }
@@ -133,8 +130,10 @@ class TablePanel extends JPanel implements FiltersChangedListener {
 
             @Override
             protected void showSuccess(Object result) {
-                instance.add(tablePanel, CARD_SHOW);             
+                instance.add(tablePanel, CARD_SHOW);   
+                showShowCard();    
                 FilterController.addFilterListener(instance);  
+                updateIfRequired();
                 init = true;
             }
 
