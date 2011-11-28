@@ -123,7 +123,8 @@ public class MedSavantServerUtility {
             ConnectionController.connectPooled();
             flushOK();
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.err.println("\n\nThere was an error while connecting to the database: ");
+            System.err.println(ex.getMessage());
             System.exit(1);
         }
         
