@@ -353,7 +353,7 @@ public class BugReportDialog extends JDialog {
     }
 
     private String getSavantVersion(){
-        return BrowserSettings.VERSION + " " + BrowserSettings.BUILD;
+        return BrowserSettings.getVersionString();
     }
 
     private String getJDKVersion(){

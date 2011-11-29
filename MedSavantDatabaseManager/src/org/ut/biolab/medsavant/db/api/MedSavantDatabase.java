@@ -850,6 +850,29 @@ public class MedSavantDatabase {
                 addColumn(COLUMNNAME_OF_DESCRIPTION,COLUMNNAME_OF_DESCRIPTION,TableSchema.ColumnType.VARCHAR,500);
         }
     }
+    
+    public static class SettingsTableSchema extends TableSchema {
+        public static final String TABLE_NAME = "settings";
+        public SettingsTableSchema(DbSchema s) {
+                super(s.addTable(TABLE_NAME));
+                addColumns();
+        }
+        
+        // settings.key
+        public static final int INDEX_OF_KEY = 0;
+        public static final ColumnType TYPE_OF_KEY = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_KEY = 100;
+        public static final String COLUMNNAME_OF_KEY = "setting_key";
+        // settings.value
+        public static final int INDEX_OF_VALUE = 1;
+        public static final ColumnType TYPE_OF_VALUE = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_VALUE = 300;
+        public static final String COLUMNNAME_OF_VALUE = "setting_value";
+        private void addColumns() {
+            addColumn(COLUMNNAME_OF_KEY, COLUMNNAME_OF_KEY, TableSchema.ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_VALUE, COLUMNNAME_OF_VALUE, TableSchema.ColumnType.VARCHAR, 100);
+        }
+    }
 
     public static final DbSchema schema = (new DbSpec()).addDefaultSchema();
 
@@ -904,4 +927,7 @@ public class MedSavantDatabase {
     //VariantformatTableSchema
     public static final VariantFormatTableSchema VariantformatTableSchema = new VariantFormatTableSchema(schema);
 
+    //SettingsTableSchema
+    public static final SettingsTableSchema SettingsTableSchema = new SettingsTableSchema(schema);
+    
 }

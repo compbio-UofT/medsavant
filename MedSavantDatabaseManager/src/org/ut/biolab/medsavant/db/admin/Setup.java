@@ -28,9 +28,11 @@ import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.model.UserLevel;
+import org.ut.biolab.medsavant.db.settings.Settings;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
 
 /**
@@ -249,6 +251,13 @@ public class Setup {
                 + "`filter` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
                 + "`custom_info` varchar(500) COLLATE latin1_bin DEFAULT NULL"
                 + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
+        
+        c.createStatement().execute(
+                "CREATE TABLE  `" + MedSavantDatabase.SettingsTableSchema.getTablename() + "` ("
+                + "`setting_key` varchar(100) COLLATE latin1_bin NOT NULL,"
+                + "`setting_value` varchar(300) COLLATE latin1_bin NOT NULL,"
+                + "PRIMARY KEY (`setting_key`)"
+                + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
     }
     
@@ -264,7 +273,7 @@ public class Setup {
         }
     }
 
-    public static void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword) throws SQLException {
+    public static void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException {
         
         Connection c = ConnectionController.connectUnpooled(dbHost, port, "", adminName, new String(rootPassword));
         
@@ -281,12 +290,16 @@ public class Setup {
         createTables(c);
         addRootUser(c, rootPassword);
         addDefaultReferenceGenomes();
+        addDbSettings(versionString);
         
         for (String user: UserQueryUtil.getUserNames()) {
             UserQueryUtil.grantPrivileges(user, UserQueryUtil.getUserLevel(user));
         }
     }
     
+    private static void addDbSettings(String versionString) throws SQLException {
+        SettingsQueryUtil.addSetting(Settings.KEY_CLIENT_VERSION, versionString);       
+    }
     
     private static List<String> getValuesFromField(Connection c,String tablename, String fieldname) throws SQLException {
         String q = "SELECT `" + fieldname + "` FROM `" + tablename + "`";

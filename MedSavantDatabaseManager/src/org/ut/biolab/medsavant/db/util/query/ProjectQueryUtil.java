@@ -200,7 +200,7 @@ public class ProjectQueryUtil {
             
             //set annotation ids
             String s = "";
-            if(annotationIds.length > 0){
+            if(annotationIds != null && annotationIds.length > 0){
                 for(Integer i : annotationIds){
                     s += i + ",";
                 }
