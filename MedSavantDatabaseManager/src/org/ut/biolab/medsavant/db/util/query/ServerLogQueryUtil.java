@@ -73,8 +73,6 @@ public class ServerLogQueryUtil {
         //query.addCustomOrderings(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP));
         query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
 
-        System.out.println(query);
-
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString() + " LIMIT 1");
 
         if (rs.next()) {
