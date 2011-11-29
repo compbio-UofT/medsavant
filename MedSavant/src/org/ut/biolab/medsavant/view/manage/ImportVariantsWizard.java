@@ -6,75 +6,35 @@ package org.ut.biolab.medsavant.view.manage;
 
 import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
-import com.jidesoft.dialog.ButtonPanel;
 import com.jidesoft.dialog.PageList;
 import com.jidesoft.wizard.AbstractWizardPage;
 import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.model.Annotation;
-import org.ut.biolab.medsavant.db.model.ProjectDetails;
-import org.ut.biolab.medsavant.db.model.Reference;
 import org.ut.biolab.medsavant.db.util.ImportVariants;
-import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
-import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -93,17 +53,9 @@ public class ImportVariantsWizard extends WizardDialog {
     
     private List<VariantTag> variantTags;
     private File[] variantFiles;
+    
+    private Thread uploadThread = null;
 
-    /*
-    private int projectId;
-    private String originalProjectName;
-    private String projectName;
-    private DefaultTableModel formatModel;
-    private String validationError = "";
-    private List<CustomField> fields;
-    private List<ProjectDetails> projectDetails = new ArrayList<ProjectDetails>();
-    private List<CheckListItem> checkListItems = new ArrayList<CheckListItem>();
-     * 
     
     /* modify existing project */
     public ImportVariantsWizard(boolean modify) {
@@ -355,7 +307,8 @@ public class ImportVariantsWizard extends WizardDialog {
         page.addComponent(progressLabel);
         page.addComponent(progressBar);
         
-        final JButton startButton = new JButton("Start Upload");
+        final JButton cancelButton = new JButton("Cancel");
+        final JButton startButton = new JButton("Start Upload"); 
         
         startButton.addActionListener(new ActionListener() {
 
@@ -364,12 +317,11 @@ public class ImportVariantsWizard extends WizardDialog {
                 progressBar.setIndeterminate(true);
                 startButton.setEnabled(false);
                 
-                Thread thread = new Thread() {
+                uploadThread = new Thread() {
                     @Override
                     public void run() {
                         try {
                             final boolean success = ImportVariants.performImport(variantFiles, projectId, referenceId, progressLabel);
-
 
                             SwingUtilities.invokeLater(new Runnable() {
 
@@ -387,15 +339,45 @@ public class ImportVariantsWizard extends WizardDialog {
 
                             });
                         } catch (SQLException ex){
+                        } catch (InterruptedException ex){
+                            
+                            String[] uploadInfo = ex.getMessage().split(";");
+                            int updateId = Integer.parseInt(uploadInfo[0]);
+                            String tableName = uploadInfo[1];                         
+                            
+                            VariantQueryUtil.cancelUpload(updateId, tableName);
+                            
+                            progressBar.setIndeterminate(false);
+                            progressBar.setValue(0);
+                            progressLabel.setText("Upload cancelled.");
+                            startButton.setVisible(true);
+                            startButton.setEnabled(true);
+                            cancelButton.setText("Cancel");
+                            cancelButton.setEnabled(true);
+                            cancelButton.setVisible(false);       
+                            System.out.println("Update " + updateId + " was cancelled");
                         }
                     }
                 };
-                thread.start(); 
-                
+                cancelButton.setVisible(true);
+                startButton.setVisible(false);
+                uploadThread.start();              
             }
             
         });
+         
+        cancelButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {                               
+                cancelButton.setText("Cancelling...");
+                cancelButton.setEnabled(false);
+                uploadThread.interrupt();
+            }
+        });
+        
         page.addComponent(ViewUtil.alignRight(startButton));
+        cancelButton.setVisible(false);
+        page.addComponent(ViewUtil.alignRight(cancelButton));
         
         return page;
     }

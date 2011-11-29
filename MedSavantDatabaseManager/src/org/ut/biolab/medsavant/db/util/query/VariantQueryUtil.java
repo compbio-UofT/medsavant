@@ -50,6 +50,7 @@ import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.DBUtil;
 
 /**
  *
@@ -508,6 +509,20 @@ public class VariantQueryUtil {
         }
         
         return patientIDTOCount; 
+    }
+    
+    public static void cancelUpload(int uploadId, String tableName){
+        try {
+            
+            //remove log entry
+            AnnotationLogQueryUtil.removeAnnotationLogEntry(uploadId);           
+                        
+            //drop staging table
+            DBUtil.dropTable(tableName);
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(VariantQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }

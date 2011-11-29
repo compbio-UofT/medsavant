@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
@@ -127,6 +128,15 @@ public class AnnotationLogQueryUtil {
         ResultSet rs = stmt.getGeneratedKeys();
         rs.next();
         return rs.getInt(1);
+    }
+    
+    public static void removeAnnotationLogEntry(int updateId) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
+        DeleteQuery query = new DeleteQuery(table.getTable());
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
+        
+        ConnectionController.connectPooled().createStatement().executeUpdate(query.toString());
     }
     
     public static ResultSet getPendingUpdates() throws SQLException, IOException{
