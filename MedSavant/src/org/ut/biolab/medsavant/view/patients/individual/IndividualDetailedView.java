@@ -198,6 +198,11 @@ public class IndividualDetailedView extends DetailedView {
     
     public synchronized void setPatientInformation(Object[] result) {
 
+        System.out.println(fieldNames.size() + " vs " + result.length);
+        for (int i = 0; i < fieldNames.size(); i++) {
+            System.out.println(fieldNames.get(i) + " = " + result[i]);
+        }
+        
         String[][] values = new String[fieldNames.size()][2];
         for (int i = 0; i < fieldNames.size(); i++) {
             values[i][0] = fieldNames.get(i);

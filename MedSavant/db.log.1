@@ -1,0 +1,144 @@
+org.ut.biolab.medsavant.server[SEVERE|AWT-EventQueue-0|3:26:58]: Communications link failure due to underlying exception: 
+
+** BEGIN NESTED EXCEPTION ** 
+
+com.mysql.jdbc.CommunicationsException
+MESSAGE: Communications link failure due to underlying exception: 
+
+** BEGIN NESTED EXCEPTION ** 
+
+java.io.EOFException
+MESSAGE: Can not read response from server. Expected to read 4 bytes, read 0 bytes before connection was unexpectedly lost.
+
+STACKTRACE:
+
+java.io.EOFException: Can not read response from server. Expected to read 4 bytes, read 0 bytes before connection was unexpectedly lost.
+	at com.mysql.jdbc.MysqlIO.readFully(MysqlIO.java:1997)
+	at com.mysql.jdbc.MysqlIO.readPacket(MysqlIO.java:573)
+	at com.mysql.jdbc.MysqlIO.doHandshake(MysqlIO.java:1044)
+	at com.mysql.jdbc.Connection.createNewIO(Connection.java:2775)
+	at com.mysql.jdbc.Connection.<init>(Connection.java:1555)
+	at com.mysql.jdbc.NonRegisteringDriver.connect(NonRegisteringDriver.java:285)
+	at java.sql.DriverManager.getConnection(DriverManager.java:582)
+	at java.sql.DriverManager.getConnection(DriverManager.java:185)
+	at org.ut.biolab.medsavant.db.util.ConnectionController.connectOnce(ConnectionController.java:115)
+	at org.ut.biolab.medsavant.db.util.ConnectionController.connectPooled(ConnectionController.java:73)
+	at org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil.addLog(ServerLogQueryUtil.java:55)
+	at org.ut.biolab.medsavant.controller.LoginController.setLoggedIn(LoginController.java:49)
+	at org.ut.biolab.medsavant.controller.LoginController.logout(LoginController.java:117)
+	at org.ut.biolab.medsavant.view.MainFrame.requestClose(MainFrame.java:185)
+	at org.ut.biolab.medsavant.view.MainFrame$7.handleQuitRequestWith(MainFrame.java:232)
+	at com.apple.eawt._AppEventHandler$_QuitDispatcher.performUsing(_AppEventHandler.java:372)
+	at com.apple.eawt._AppEventHandler$_QuitDispatcher.performUsing(_AppEventHandler.java:365)
+	at com.apple.eawt._AppEventHandler$_AppEventDispatcher$1.run(_AppEventHandler.java:474)
+	at java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:209)
+	at java.awt.EventQueue.dispatchEventImpl(EventQueue.java:677)
+	at java.awt.EventQueue.access$000(EventQueue.java:85)
+	at java.awt.EventQueue$1.run(EventQueue.java:638)
+	at java.awt.EventQueue$1.run(EventQueue.java:636)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.security.AccessControlContext$1.doIntersectionPrivilege(AccessControlContext.java:87)
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:647)
+	at java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:296)
+	at java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:211)
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:201)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:196)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:188)
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:122)
+
+
+** END NESTED EXCEPTION **
+
+
+
+Last packet sent to the server was 1 ms ago.
+
+STACKTRACE:
+
+com.mysql.jdbc.CommunicationsException: Communications link failure due to underlying exception: 
+
+** BEGIN NESTED EXCEPTION ** 
+
+java.io.EOFException
+MESSAGE: Can not read response from server. Expected to read 4 bytes, read 0 bytes before connection was unexpectedly lost.
+
+STACKTRACE:
+
+java.io.EOFException: Can not read response from server. Expected to read 4 bytes, read 0 bytes before connection was unexpectedly lost.
+	at com.mysql.jdbc.MysqlIO.readFully(MysqlIO.java:1997)
+	at com.mysql.jdbc.MysqlIO.readPacket(MysqlIO.java:573)
+	at com.mysql.jdbc.MysqlIO.doHandshake(MysqlIO.java:1044)
+	at com.mysql.jdbc.Connection.createNewIO(Connection.java:2775)
+	at com.mysql.jdbc.Connection.<init>(Connection.java:1555)
+	at com.mysql.jdbc.NonRegisteringDriver.connect(NonRegisteringDriver.java:285)
+	at java.sql.DriverManager.getConnection(DriverManager.java:582)
+	at java.sql.DriverManager.getConnection(DriverManager.java:185)
+	at org.ut.biolab.medsavant.db.util.ConnectionController.connectOnce(ConnectionController.java:115)
+	at org.ut.biolab.medsavant.db.util.ConnectionController.connectPooled(ConnectionController.java:73)
+	at org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil.addLog(ServerLogQueryUtil.java:55)
+	at org.ut.biolab.medsavant.controller.LoginController.setLoggedIn(LoginController.java:49)
+	at org.ut.biolab.medsavant.controller.LoginController.logout(LoginController.java:117)
+	at org.ut.biolab.medsavant.view.MainFrame.requestClose(MainFrame.java:185)
+	at org.ut.biolab.medsavant.view.MainFrame$7.handleQuitRequestWith(MainFrame.java:232)
+	at com.apple.eawt._AppEventHandler$_QuitDispatcher.performUsing(_AppEventHandler.java:372)
+	at com.apple.eawt._AppEventHandler$_QuitDispatcher.performUsing(_AppEventHandler.java:365)
+	at com.apple.eawt._AppEventHandler$_AppEventDispatcher$1.run(_AppEventHandler.java:474)
+	at java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:209)
+	at java.awt.EventQueue.dispatchEventImpl(EventQueue.java:677)
+	at java.awt.EventQueue.access$000(EventQueue.java:85)
+	at java.awt.EventQueue$1.run(EventQueue.java:638)
+	at java.awt.EventQueue$1.run(EventQueue.java:636)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.security.AccessControlContext$1.doIntersectionPrivilege(AccessControlContext.java:87)
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:647)
+	at java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:296)
+	at java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:211)
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:201)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:196)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:188)
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:122)
+
+
+** END NESTED EXCEPTION **
+
+
+
+Last packet sent to the server was 1 ms ago.
+	at com.mysql.jdbc.MysqlIO.readPacket(MysqlIO.java:641)
+	at com.mysql.jdbc.MysqlIO.doHandshake(MysqlIO.java:1044)
+	at com.mysql.jdbc.Connection.createNewIO(Connection.java:2775)
+	at com.mysql.jdbc.Connection.<init>(Connection.java:1555)
+	at com.mysql.jdbc.NonRegisteringDriver.connect(NonRegisteringDriver.java:285)
+	at java.sql.DriverManager.getConnection(DriverManager.java:582)
+	at java.sql.DriverManager.getConnection(DriverManager.java:185)
+	at org.ut.biolab.medsavant.db.util.ConnectionController.connectOnce(ConnectionController.java:115)
+	at org.ut.biolab.medsavant.db.util.ConnectionController.connectPooled(ConnectionController.java:73)
+	at org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil.addLog(ServerLogQueryUtil.java:55)
+	at org.ut.biolab.medsavant.controller.LoginController.setLoggedIn(LoginController.java:49)
+	at org.ut.biolab.medsavant.controller.LoginController.logout(LoginController.java:117)
+	at org.ut.biolab.medsavant.view.MainFrame.requestClose(MainFrame.java:185)
+	at org.ut.biolab.medsavant.view.MainFrame$7.handleQuitRequestWith(MainFrame.java:232)
+	at com.apple.eawt._AppEventHandler$_QuitDispatcher.performUsing(_AppEventHandler.java:372)
+	at com.apple.eawt._AppEventHandler$_QuitDispatcher.performUsing(_AppEventHandler.java:365)
+	at com.apple.eawt._AppEventHandler$_AppEventDispatcher$1.run(_AppEventHandler.java:474)
+	at java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:209)
+	at java.awt.EventQueue.dispatchEventImpl(EventQueue.java:677)
+	at java.awt.EventQueue.access$000(EventQueue.java:85)
+	at java.awt.EventQueue$1.run(EventQueue.java:638)
+	at java.awt.EventQueue$1.run(EventQueue.java:636)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.security.AccessControlContext$1.doIntersectionPrivilege(AccessControlContext.java:87)
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:647)
+	at java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:296)
+	at java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:211)
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:201)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:196)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:188)
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:122)
+
+
+** END NESTED EXCEPTION **
+
+
+
+Last packet sent to the server was 0 ms ago. 

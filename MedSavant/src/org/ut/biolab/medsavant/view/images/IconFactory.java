@@ -45,22 +45,34 @@ public class IconFactory {
         FIRST,
         LAST,
         NEXT,
-        PREVIOUS
+        PREVIOUS,
+        GREEN,
+        ORANGE,
+        RED,
+        WHITE
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/view/images/icon/";
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case GREEN:
+                return getIcon(iconroot + "green.png");
+            case ORANGE:
+                return getIcon(iconroot + "orange.png");
+            case RED:
+                return getIcon(iconroot + "red.png");
+            case WHITE:
+                return getIcon(iconroot + "white.png");
             case EXPAND:
-                return getIcon(iconroot + "expand.png");//"open_normal_green.png");
+                return getIcon(iconroot + "expand.png");
             case COLLAPSE:
-                return getIcon(iconroot + "collapse.png");//"close_normal_green.png");
+                return getIcon(iconroot + "collapse.png");
             case ADD:
-                return getIcon(iconroot + "mac_add.png");//"open_normal_green.png");
+                return getIcon(iconroot + "mac_add.png");
             case REMOVE:
-                return getIcon(iconroot + "mac_remove.png");//"close_normal_green.png");
+                return getIcon(iconroot + "mac_remove.png");
             case EDIT:
-                return getIcon(iconroot + "mac_edit.png");//"close_normal_green.png");
+                return getIcon(iconroot + "mac_edit.png");
             case FILTER:
                 return getIcon(iconroot + "filter.gif");
             case RESULTS:
@@ -82,8 +94,6 @@ public class IconFactory {
             case LAST:
                 return getIcon(iconroot + "last.png");
             case TAB_LEFT:
-                
-                
                 return getIcon(iconroot + "tab_l.png");
             case TAB_RIGHT:
                 return getIcon(iconroot + "tab_r.png");

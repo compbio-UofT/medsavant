@@ -18,6 +18,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.images.ImagePanel;
@@ -40,6 +41,7 @@ public class BottomBar extends JPanel {
     private final JLabel statusLabel;
     private final JLabel loginStatusLabel;
     private final ImagePanel loginImagePanel;
+    private final ServerStatusPanel serverStatusPanel;
 
     public BottomBar() {
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -48,20 +50,26 @@ public class BottomBar extends JPanel {
 
         loginStatusLabel = new JLabel();
 
-
         statusLabel = new JLabel("");
         statusLabel.setFont(ViewUtil.getMediumTitleFont());
-        
+
         ImageIcon im = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOGGED_IN);
-        
+
         loginImagePanel = new ImagePanel(im.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH),15,15);
+
+        serverStatusPanel = new ServerStatusPanel();
+
+        this.add(serverStatusPanel);
+        this.add(ViewUtil.getSmallSeparator());
+        //this.add(new JSeparator(JSeparator.VERTICAL));
+        //this.add(ViewUtil.getSmallSeparator());
         this.add(loginImagePanel);
         this.add(ViewUtil.getSmallSeparator());
         this.add(loginStatusLabel);
         this.add(Box.createHorizontalGlue());
         this.add(statusLabel);
         this.add(Box.createHorizontalGlue());
-        
+
         updateLoginStatus();
     }
 
@@ -74,17 +82,17 @@ public class BottomBar extends JPanel {
 
     public void updateLoginStatus() {
         if (LoginController.isLoggedIn()) {
-            
+
             this.loginStatusLabel.setText("Signed in as " + LoginController.getUsername());
             loginStatusLabel.setToolTipText("Signed in since: " + (new SimpleDateFormat()).format((new Date())));
             loginImagePanel.setVisible(true);
-        
+
         } else {
             this.loginStatusLabel.setText("Not signed in");
             loginStatusLabel.setToolTipText(null);
              loginImagePanel.setVisible(false);
         }
-    } 
+    }
 
     private void setStatus(String status) {
         statusLabel.setText(status);
