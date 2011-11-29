@@ -35,7 +35,7 @@ class ServerStatusPanel extends JPanel implements LoginListener {
 
         lastServerCheckInLabel = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(lastServerCheckInLabel);
-        lastServerCheckInLabel.setPreferredSize(new Dimension(15,15));
+        lastServerCheckInLabel.setPreferredSize(new Dimension(15, 15));
         this.add(lastServerCheckInLabel);
 
         this.add(ViewUtil.getSmallSeparator());
@@ -53,7 +53,7 @@ class ServerStatusPanel extends JPanel implements LoginListener {
             if (serverStateChecker != null) {
                 serverStateChecker.cancel(true);
             }
-            serverStateChecker = new ServerStateChecker(this,UPDATE_INTERVAL);
+            serverStateChecker = new ServerStateChecker(this, UPDATE_INTERVAL);
             serverStateChecker.execute();
         } else {
             setState(ServerState.NOT_CONNECTED);
@@ -69,37 +69,42 @@ class ServerStatusPanel extends JPanel implements LoginListener {
             ImageIcon im = null;
             switch (serverState) {
                 case NOT_CONNECTED:
-                    im = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.WHITE);
+                    //im = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.WHITE);
                     warningLabel.setText("");
                     break;
                 case SERVER_CONNECTED:
                     im = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.GREEN);
-                    warningLabel.setText("");
+                    warningLabel.setText("Server Utility running");
                     break;
                 case SERVER_IDLE:
                     im = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ORANGE);
-                    warningLabel.setText("Server Utility idle");
+                    warningLabel.setText("Server Utility not running");
                     break;
                 case SERVER_NEVER_CONNECTED:
                     im = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.RED);
                     warningLabel.setText("Server Utility not initialized");
                     break;
             }
-            ImagePanel imagePanel = new ImagePanel(im.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH),15,15);
+
             lastServerCheckInLabel.removeAll();
-            lastServerCheckInLabel.add(imagePanel);
+
+            if (im != null) {
+                ImagePanel imagePanel = new ImagePanel(im.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH), 15, 15);
+                lastServerCheckInLabel.add(imagePanel);
+            }
         }
 
         this.updateUI();
     }
-
-    private static int UPDATE_INTERVAL = 1000*60;
+    private static int UPDATE_INTERVAL = 1000 * 60;
 
     private synchronized void setLastServerCheckIn(Date lastCheckIn) {
-        if (lastServerCheckInLabel == null) { return; }
+        if (lastServerCheckInLabel == null) {
+            return;
+        }
         String tip = "";
         if (lastCheckIn != null) {
-            tip = "Last communication was at " + lastCheckIn.toLocaleString();
+            tip = "Last communication was: " + lastCheckIn.toLocaleString();
         }
         this.lastServerCheckInLabel.setToolTipText(tip);
         this.warningLabel.setToolTipText(tip);
@@ -107,11 +112,13 @@ class ServerStatusPanel extends JPanel implements LoginListener {
         this.updateUI();
     }
 
-    private enum ServerState { NOT_CONNECTED, SERVER_CONNECTED, SERVER_IDLE, SERVER_NEVER_CONNECTED };
+    private enum ServerState {
 
+        NOT_CONNECTED, SERVER_CONNECTED, SERVER_IDLE, SERVER_NEVER_CONNECTED
+    };
 
-    private static class ServerStateChecker extends SwingWorker
-    {
+    private static class ServerStateChecker extends SwingWorker {
+
         private final int interval;
         private final ServerStatusPanel serverStatusPanel;
 
@@ -136,7 +143,7 @@ class ServerStatusPanel extends JPanel implements LoginListener {
 
                     long elapsed = System.currentTimeMillis() - lastCheckIn.getTime();
 
-                    if (elapsed > 1000*60*30) { //30 minutes
+                    if (elapsed > 1000 * 60 * 30) { //30 minutes
                         serverStatusPanel.setState(ServerState.SERVER_IDLE);
                     } else {
                         serverStatusPanel.setState(ServerState.SERVER_CONNECTED);
@@ -153,5 +160,4 @@ class ServerStatusPanel extends JPanel implements LoginListener {
             return null;
         }
     }
-
 }

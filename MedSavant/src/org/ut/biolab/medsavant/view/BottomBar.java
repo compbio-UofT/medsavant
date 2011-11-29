@@ -59,13 +59,15 @@ public class BottomBar extends JPanel {
 
         serverStatusPanel = new ServerStatusPanel();
 
-        this.add(serverStatusPanel);
-        this.add(ViewUtil.getSmallSeparator());
+
         //this.add(new JSeparator(JSeparator.VERTICAL));
         //this.add(ViewUtil.getSmallSeparator());
         this.add(loginImagePanel);
         this.add(ViewUtil.getSmallSeparator());
         this.add(loginStatusLabel);
+        this.add(ViewUtil.getSmallSeparator());
+
+        this.add(serverStatusPanel);
         this.add(Box.createHorizontalGlue());
         this.add(statusLabel);
         this.add(Box.createHorizontalGlue());
