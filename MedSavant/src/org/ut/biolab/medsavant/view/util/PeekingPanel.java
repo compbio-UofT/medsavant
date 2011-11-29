@@ -18,7 +18,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -128,7 +127,7 @@ public class PeekingPanel extends JPanel {
 
     public void setExpanded(boolean expanded) {
         this.isExpanded = expanded;
-        String s = this.isExpanded ? " HIDE " + titleString : " SHOW " + titleString;
+        String s = (this.isExpanded ? " HIDE " + titleString : " SHOW " + titleString) + " ";
         titlePanel.setToolTipText(s);
         if (!this.isExpanded) {
             this.title.setText(s);
