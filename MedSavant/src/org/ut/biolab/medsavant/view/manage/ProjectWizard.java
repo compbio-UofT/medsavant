@@ -390,11 +390,7 @@ public class ProjectWizard extends WizardDialog {
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
-                //if(referenceName == null || referenceName.equals("")){                  
-                //    fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);                   
-                //} else {
-                    fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);              
-                //}
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);              
             }     
         };
         page.addText(
@@ -723,6 +719,11 @@ public class ProjectWizard extends WizardDialog {
             this.add(p);
 
             for(final Annotation a : annotations){
+                
+                //make sure annotation is for this reference
+                if(a.getReferenceId() != reference.getId()){
+                    continue;
+                }
                 
                 final JCheckBox b1 = new JCheckBox(a.getProgram() + " " + a.getVersion());
                 b1.setMaximumSize(new Dimension(1000,20));
