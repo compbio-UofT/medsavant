@@ -4,17 +4,16 @@
  */
 package org.ut.biolab.medsavant.view.manage;
 
+import java.awt.event.ActionEvent;
 import org.ut.biolab.medsavant.view.dialog.NewReferenceDialog;
 import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
-import com.jidesoft.dialog.ButtonPanel;
 import com.jidesoft.dialog.PageList;
 import com.jidesoft.wizard.AbstractWizardPage;
 import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -30,14 +29,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractButton;
+import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -55,12 +55,21 @@ import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
  * @author Andrew
  */
 public class ProjectWizard extends WizardDialog {
+        
+    private final String PAGENAME_NAME = "Project Name";
+    private final String PAGENAME_PATIENTS = "Patients";
+    private final String PAGENAME_VCF = "Custom VCF Fields";
+    private final String PAGENAME_REF = "Reference";
+    private String PAGENAME_CREATE = "Create";
+    private final String PAGENAME_COMPLETE = "Complete";
     
     private boolean modify = false;
     private boolean isModified = false;
@@ -70,7 +79,7 @@ public class ProjectWizard extends WizardDialog {
     private String projectName;
     private DefaultTableModel patientFormatModel;
     private DefaultTableModel variantFormatModel;
-    private String validationError = "";
+    //private String validationError = "";
     private List<CustomField> patientFields;
     private List<CustomField> variantFields;
     private List<ProjectDetails> projectDetails = new ArrayList<ProjectDetails>();
@@ -85,6 +94,7 @@ public class ProjectWizard extends WizardDialog {
         this.projectName = projectName;
         this.patientFields = fields;
         this.projectDetails = projectDetails;
+        this.PAGENAME_CREATE = "Modify";
         setupWizard();
     }
     
@@ -103,8 +113,26 @@ public class ProjectWizard extends WizardDialog {
         model.append(getPatientFieldsPage());
         model.append(getVcfFieldsPage());
         model.append(getReferencePage());
+        model.append(getCreatePage());
         model.append(getCompletionPage());
         setPageList(model);
+        
+        //change next action
+        final WizardDialog instance = this;
+        this.setNextAction(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                String pagename = instance.getCurrentPage().getTitle();             
+                if(pagename.equals(PAGENAME_NAME) && validateProjectName()){
+                    instance.setCurrentPage(PAGENAME_PATIENTS);
+                } else if (pagename.equals(PAGENAME_PATIENTS) && validatePatientFormatModel()){
+                    instance.setCurrentPage(PAGENAME_VCF);
+                } else if (pagename.equals(PAGENAME_VCF) && validateVariantFormatModel()){
+                    instance.setCurrentPage(PAGENAME_REF);
+                } else if (pagename.equals(PAGENAME_REF) && validateReferences()){
+                    instance.setCurrentPage(PAGENAME_CREATE);
+                }
+            }
+        });
         
         pack();
         setResizable(false);
@@ -115,7 +143,7 @@ public class ProjectWizard extends WizardDialog {
     private AbstractWizardPage getNamePage(){
         
         //setup page
-        final DefaultWizardPage page = new DefaultWizardPage("Project Name"){          
+        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_NAME){          
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -154,7 +182,7 @@ public class ProjectWizard extends WizardDialog {
     private AbstractWizardPage getPatientFieldsPage(){
         
         //setup page
-        final DefaultWizardPage page = new DefaultWizardPage("Patients"){          
+        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_PATIENTS){          
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
@@ -240,7 +268,7 @@ public class ProjectWizard extends WizardDialog {
     private AbstractWizardPage getVcfFieldsPage(){
         
         //setup page
-        final DefaultWizardPage page = new DefaultWizardPage("Custom VCF Fields"){          
+        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_VCF){          
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
@@ -357,7 +385,7 @@ public class ProjectWizard extends WizardDialog {
     private AbstractWizardPage getReferencePage(){
         
         //setup page
-        final DefaultWizardPage page = new DefaultWizardPage("Reference"){          
+        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_REF){          
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.BACK);
@@ -423,68 +451,82 @@ public class ProjectWizard extends WizardDialog {
         p.repaint();
     }
     
-    private AbstractWizardPage getCompletionPage(){
-        CompletionWizardPage page = new CompletionWizardPage("Complete");
-        String specific = "create";
-        if(modify) specific = "make changes to";
-        page.addText("Click finish to " + specific + " project. ");
+    private AbstractWizardPage getCreatePage() {
+        //setup page
+        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_CREATE){          
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);              
+            }     
+        };
+        page.addText(
+                "You are now ready to " + (modify ? "make changes to" : "create") + " this project. ");
+        
+        final WizardDialog instance = this;
+        
+        final JLabel progressLabel = new JLabel("");
+        final JProgressBar progressBar = new JProgressBar();
+        
+        page.addComponent(progressLabel);
+        page.addComponent(progressBar);
+        
+        final JButton startButton = new JButton((modify ? "Modify Project" : "Create Project"));       
+        startButton.addMouseListener(new MouseAdapter() {
+        
+            public void mouseReleased(MouseEvent e){
+                startButton.setEnabled(false);
+                page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
+                progressBar.setIndeterminate(true);
+                Thread t = new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            createProject();
+                            instance.setCurrentPage(PAGENAME_COMPLETE);
+                        } catch (SQLException ex) {
+                            DialogUtils.displayException("Error", "There was an error while trying to create your project. ", ex);
+                            Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
+                            instance.setVisible(false);
+                            instance.dispose();        
+                        }                       
+                    }
+                };
+                t.start();
+            }
+        
+        });
+
+        page.addComponent(ViewUtil.alignRight(startButton));
+        
         return page;
     }
     
-    @Override
-    public ButtonPanel createButtonPanel(){
-        ButtonPanel bp = super.createButtonPanel();
-        
-        //remove finish button
-        bp.removeButton((AbstractButton)bp.getButtonByName(ButtonNames.FINISH));
-        
-        //add new finish button
-        JButton finishButton = new JButton("Finish");
-        finishButton.setName(ButtonNames.FINISH);      
-        finishButton.addMouseListener(new MouseAdapter() {
-            public void mouseReleased(MouseEvent e){
-                finish();
+    private AbstractWizardPage getCompletionPage(){
+        CompletionWizardPage page = new CompletionWizardPage(PAGENAME_COMPLETE){
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.FINISH);
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);              
             }
-        });       
-        bp.addButton(finishButton);
-        
-        return bp;
+        };
+        page.addText("Project " + projectName + " has been " + (modify ? "modified." : "created."));
+        return page;
     }
     
-    private void finish(){      
+    private boolean validateProjectName(){
         try {
-            if(validateProject()){
-                createProject();
-                this.setVisible(false);
-                this.dispose();
-                return;
-            } 
+            if(ProjectQueryUtil.containsProject(projectName) && (!modify || !projectName.equals(originalProjectName))){
+                JOptionPane.showMessageDialog(this, "Project name already in use. ", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                return true;
+            }
         } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        JOptionPane.showMessageDialog(
-                this, 
-                "<HTML>There was an error while trying to create your project:<BR>" + validationError + "</HTML>", 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);  
-    }
-    
-    private boolean validateProject() throws SQLException {
-        if(ProjectQueryUtil.containsProject(projectName) && (!modify || !projectName.equals(originalProjectName))){
-            validationError = "Project name already in use";
-        } else if(!validatePatientFormatModel()) {
-            validationError = "Patient table format contains errors\n"
-                    + "Name cannot only contain letters, numbers and underscores. \n"
-                    + "Type must be in format: COLUMNTYPE(LENGTH)";
-        } else if(!validateVariantFormatModel()) {
-            validationError = "Variant table format contains errors\n"
-                    + "Name cannot only contain letters, numbers and underscores. \n"
-                    + "Type must be in format: COLUMNTYPE(LENGTH)";
-        } else if (!validateReferences()) {
-            validationError = "You must select at least one reference genome. ";
-        } else {
-            return true;
-        }
+            Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
+            DialogUtils.displayException("Error", "Error trying to create project", ex);
+        }    
         return false;
     }
     
@@ -494,18 +536,39 @@ public class ProjectWizard extends WizardDialog {
                 return true;
             }
         }
+        JOptionPane.showMessageDialog(this, "You must select at least one reference. ", "Error", JOptionPane.ERROR_MESSAGE);
         return false;
     }
     
     private boolean validatePatientFormatModel() {
         patientFields = new ArrayList<CustomField>();
         // 7 is the number of standard patientFields
-        return validateFormatModel(patientFields, patientFormatModel, 7);
+        boolean success = validateFormatModel(patientFields, patientFormatModel, 7);
+        if(!success){
+            JOptionPane.showMessageDialog(
+                    this, 
+                    "Patient table format contains errors\n"
+                    + "Name cannot only contain letters, numbers and underscores. \n"
+                    + "Type must be in format: COLUMNTYPE(LENGTH)", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        return success;
     }
     
     private boolean validateVariantFormatModel(){
         variantFields = new ArrayList<CustomField>();
-        return validateFormatModel(variantFields, variantFormatModel, 0);
+        boolean success = validateFormatModel(variantFields, variantFormatModel, 0);
+        if(!success){
+            JOptionPane.showMessageDialog(
+                    this, 
+                    "Variant table format contains errors\n"
+                    + "Name cannot only contain letters, numbers and underscores. \n"
+                    + "Type must be in format: COLUMNTYPE(LENGTH)", 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        return success;
     }
     
     private boolean validateFormatModel(List<CustomField> fields, DefaultTableModel model, int firstRow){
@@ -559,8 +622,7 @@ public class ProjectWizard extends WizardDialog {
                 
                 //add, remove refs
                 if(pd == null && cli.isSelected()){
-                    //TODO get custom vcf patientFields
-                    //ProjectQueryUtil.createVariantTable(projectId, cli.getReference().getId(), 0);
+                    ProjectQueryUtil.createVariantTable(projectId, cli.getReference().getId(), 0);
                 } else if (pd != null && !cli.isSelected()){
                     ProjectQueryUtil.removeReferenceForProject(projectId, cli.getReference().getId());
                 }
