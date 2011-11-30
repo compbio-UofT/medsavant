@@ -257,6 +257,7 @@ public class DialogUtils {
         }
         fd.setFile(defaultName);
         fd.setAlwaysOnTop(true);
+        fd.setLocationRelativeTo(null);
         fd.setVisible(true);
         String selectedFile = fd.getFile();
         if (selectedFile != null) {

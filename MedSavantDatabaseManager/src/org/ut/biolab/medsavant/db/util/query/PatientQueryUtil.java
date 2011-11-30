@@ -94,6 +94,31 @@ public class PatientQueryUtil {
         return result;
     }
     
+    public static List<Object[]> getPatients(int projectId) throws SQLException {
+        String tablename = getPatientTablename(projectId);
+        
+        TableSchema table = CustomTables.getCustomTableSchema(tablename);
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addAllColumns();
+        
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
+        
+        List<Object[]> result = new ArrayList<Object[]>();
+        while (rs.next()){           
+            Object[] o = new Object[rs.getMetaData().getColumnCount()];
+            for(int i = 0; i < rs.getMetaData().getColumnCount(); i++){
+                try {
+                    o[i] = rs.getObject(i+1);
+                } catch (SQLException e){
+                    //ignore...probably invalid input (ie. date 0000-00-00)
+                }
+            }    
+            result.add(o);
+        }
+        return result;
+    }
+    
     public static Object[] getPatientRecord(int projectId, int patientId) throws SQLException {
         
         String tablename = getPatientTablename(projectId);
@@ -653,6 +678,16 @@ public class PatientQueryUtil {
         }
         
         return patientIDToDNAIDMap;
+    }
+    
+    public static void clearPatients(int projectId) throws SQLException{
+        
+        String tablename = getPatientTablename(projectId);       
+        TableSchema table = CustomTables.getCustomTableSchema(tablename);
+        
+        DeleteQuery query = new DeleteQuery(table.getTable());
+        
+        ConnectionController.connectPooled().createStatement().execute(query.toString());
     }
     
     

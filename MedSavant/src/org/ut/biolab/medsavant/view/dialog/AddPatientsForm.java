@@ -10,11 +10,12 @@
  */
 package org.ut.biolab.medsavant.view.dialog;
 
+import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,15 +25,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.CustomField;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
+import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.ViewController;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
  *
@@ -65,10 +68,6 @@ public class AddPatientsForm extends javax.swing.JDialog {
         model.addColumn("Short Name");
         model.addColumn("Value");
         
-        //List<ModifiableColumn> columns = MedSavantDatabase.getInstance().getPatientTableSchema().getModColumns();
-        //for(ModifiableColumn c : columns){
-        //    model.addRow(new Object[]{c, ""});
-        //}
         try {
             List<CustomField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
             for(int i = 1; i < fields.size(); i++){ //skip patient id
@@ -96,16 +95,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         int index = table.getSelectedRow();
         Object o = table.getValueAt(index, 0);
         if(o == null) return;
-        /*ModifiableColumn c = (ModifiableColumn)o;
-        String s = c.getShortName() + " | " + c.getType().toString() + "(" + c.getLength() + ")  ";
-        switch(c.getType()){
-            case DATE:
-                s += "(yyyy-mm-dd)";
-                break;
-            case BOOLEAN:
-                s += "(true/false)";
-                break;
-        }*/
+
         CustomField f = (CustomField)o;
         String s = f.getAlias() + " | " + f.getColumnType().toString().toLowerCase();
         switch(f.getColumnType()){
@@ -119,16 +109,8 @@ public class AddPatientsForm extends javax.swing.JDialog {
         this.tipLabel.setText(s);   
     }
     
-    private void addPatient() throws SQLException{/*
-        List<String> values = new ArrayList<String>();
-        List<ModifiableColumn> cols = new ArrayList<ModifiableColumn>();
-        for(int i = 0; i < table.getRowCount(); i++){
-            cols.add((ModifiableColumn)table.getModel().getValueAt(i, 0));
-            values.add((String)table.getModel().getValueAt(i, 1));
-        }
-        DBUtil.addPatient(cols, values);
-        clearTable();*/
-        
+    private void addPatient() throws SQLException{
+
         List<String> values = new ArrayList<String>();
         List<CustomField> cols = new ArrayList<CustomField>();
         for(int i = 0; i < table.getRowCount(); i++){
@@ -140,9 +122,9 @@ public class AddPatientsForm extends javax.swing.JDialog {
         }
         
         // replace empty strings for nulls
-                for (int i = 0; i < values.size(); i++) {
-                    values.set(i, values.get(i).equals("") ? null : values.get(i));
-                }
+        for (int i = 0; i < values.size(); i++) {
+            values.set(i, values.get(i).equals("") ? null : values.get(i));
+        }
         
         PatientQueryUtil.addPatient(ProjectController.getInstance().getCurrentProjectId(), cols, values);
         clearTable();    
@@ -155,61 +137,85 @@ public class AddPatientsForm extends javax.swing.JDialog {
     }
     
     private void generateTemplate() throws SQLException{
-        JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Generate Template");
-        fc.setDialogType(JFileChooser.SAVE_DIALOG);
-        fc.setMultiSelectionEnabled(false);
         
-        int result = fc.showDialog(null, null);
-        if (result == JFileChooser.CANCEL_OPTION || result == JFileChooser.ERROR_OPTION) {
-            return;
-        }
+        File file = DialogUtils.chooseFileForSave("Export Patients", "template.csv", new ExtensionFileFilter(new String[]{"csv"}), null);
+        if(file == null) return;
         
-        File file = fc.getSelectedFile();
-        
+        progressBar.setIndeterminate(true);
+        progressMessage.setText("Exporting Patients");
+
         List<CustomField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
+        List<Object[]> patients = PatientQueryUtil.getPatients(ProjectController.getInstance().getCurrentProjectId());
         
         try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(file, false));           
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));      
+            CSVWriter out = new CSVWriter(writer, ',', '"');
+            
+            //write header
+            String[] headerList = new String[fields.size()-1];
             for(int i = 1; i < fields.size(); i++){ //skip patientId
-                out.write(fields.get(i).getAlias());
-                if(i != fields.size()-1)
-                    out.write("\t");
+                headerList[i-1] = fields.get(i).getAlias(); 
             }
-            out.newLine(); 
+            out.writeNext(headerList);
+            
+            //write patients
+            for(Object[] patient : patients){
+                String[] line = new String[patient.length-1];
+                for(int i = 1; i < patient.length; i++){
+                    line[i-1] = valueToString(patient[i]);
+                }                
+                out.writeNext(line);
+            }
+            
             out.close();
+            writer.close();
+            progressMessage.setText("Export successful");
         } catch (IOException ex){
             ex.printStackTrace();
-        }
+            progressMessage.setText("Error exporting patients");
+        } 
+        progressBar.setIndeterminate(false);
+        progressBar.setValue(0);
+    }
+    
+    private String valueToString(Object val){
+        if(val == null){
+            return "";
+        } 
+        return val.toString();
     }
     
     private void importFile() throws SQLException{
-        JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Import File");
-        fc.setDialogType(JFileChooser.OPEN_DIALOG);
-        fc.setMultiSelectionEnabled(false);
         
-        int result = fc.showDialog(null, null);
-        if (result == JFileChooser.CANCEL_OPTION || result == JFileChooser.ERROR_OPTION) {
-            return;
-        }
+        //Warn that data will be replaced
+        if(JOptionPane.NO_OPTION == JOptionPane.showConfirmDialog(
+                null, 
+                "<html>Importing patients will REPLACE all existing patients.<br>Are you sure you want to do this?</html>", 
+                "Confirm", 
+                JOptionPane.YES_NO_OPTION, 
+                JOptionPane.WARNING_MESSAGE)) return;
         
-        File file = fc.getSelectedFile();
-        //List<ModifiableColumn> columns = MedSavantDatabase.getInstance().getPatientTableSchema().getModColumns();
+        //remove current data
+        PatientQueryUtil.clearPatients(ProjectController.getInstance().getCurrentProjectId());
+                
+        File file = DialogUtils.chooseFileForOpen("Import File", new ExtensionFileFilter(new String[]{"csv"}), null);
+        if(file == null) return;
+        
+        progressBar.setIndeterminate(true);
+        progressMessage.setText("Importing Patients");
         
         List<CustomField> fields = PatientQueryUtil.getPatientFields(ProjectController.getInstance().getCurrentProjectId());
         
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-            String line = bufferedReader.readLine();
-            String[] headers = line.split("\t");
-            //List<ModifiableColumn> headerToColumn = new ArrayList<ModifiableColumn>();
+            CSVReader in = new CSVReader(bufferedReader);
+            
+            String[] header = in.readNext();
+            if(header == null) return;
             List<CustomField> headerToField = new ArrayList<CustomField>();
-            for(String s : headers){
+            for(String s : header){
                 boolean found = false;
-                //for(ModifiableColumn m : columns){
                 for(CustomField f : fields){
-                    //if(s.equals(m.getShortName())){
                     if(s.equals(f.getAlias())){
                         headerToField.add(f);
                         found = true;
@@ -222,27 +228,45 @@ public class AddPatientsForm extends javax.swing.JDialog {
                                 "<HTML>The headers in this file do not match those in the database.<BR>Please regenerate the template file.</HTML>", 
                                 "Error", 
                                 JOptionPane.ERROR_MESSAGE);
+                    progressMessage.setText("Error importing patients");
+                    progressBar.setIndeterminate(false);
+                    progressBar.setValue(0);
                     return;
                 }
             }
-            while ((line = bufferedReader.readLine()) != null) {
+            
+            String[] line;
+            while((line = in.readNext()) != null){
                 List<String> values = new ArrayList<String>();
-                values.addAll(Arrays.asList(line.split("\t")));
+                values.addAll(Arrays.asList(line));
                 
-                // replace empty strings for nulls
+                // replace empty strings for nulls and booleans with 0,1
                 for (int i = 0; i < values.size(); i++) {
-                    values.set(i, values.get(i).equals("") ? null : values.get(i));
+                    String s = values.get(i);
+                    if(s.equals("") || s.equals("null")){
+                        values.set(i, null);
+                    } else if (headerToField.get(i).getColumnType() == ColumnType.BOOLEAN){
+                        if(s.toLowerCase().equals("true")){
+                            values.set(i, "1");
+                        } else if (s.toLowerCase().equals("false")){
+                            values.set(i, "0");
+                        }
+                    }
                 }
                 
-                //DBUtil.addPatient(headerToColumn, values);
                 PatientQueryUtil.addPatient(ProjectController.getInstance().getCurrentProjectId(), headerToField, values);
             }
+            
+            in.close();
             bufferedReader.close();
-        } catch (FileNotFoundException ex) {           
+            progressMessage.setText("Import successful");
+        } catch (Exception ex) {           
             ex.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+            progressMessage.setText("Error importing patients");
+        } 
+        
+        progressBar.setIndeterminate(false);
+        progressBar.setValue(0);
     }
 
     private void close(){
@@ -272,6 +296,9 @@ public class AddPatientsForm extends javax.swing.JDialog {
         jSeparator2 = new javax.swing.JSeparator();
         doneButton = new javax.swing.JButton();
         tipLabel = new javax.swing.JLabel();
+        progressLabel = new javax.swing.JLabel();
+        progressBar = new javax.swing.JProgressBar();
+        progressMessage = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Import Patients");
@@ -299,7 +326,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11));
         jLabel1.setText("Add Single Patient:");
 
-        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11));
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel2.setText("Batch Add:");
 
         jButton2.setText("Export CSV");
@@ -325,6 +352,11 @@ public class AddPatientsForm extends javax.swing.JDialog {
 
         tipLabel.setText(" ");
 
+        progressLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+
+        progressMessage.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        progressMessage.setText(" ");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -332,10 +364,11 @@ public class AddPatientsForm extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
                     .addComponent(scrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(tipLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
+                        .addComponent(tipLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jButton1))
                     .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
@@ -343,8 +376,12 @@ public class AddPatientsForm extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3))
-                    .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                        .addComponent(jButton3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(progressMessage, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
+                            .addComponent(progressLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)))
+                    .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
                     .addComponent(doneButton, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
@@ -366,8 +403,12 @@ public class AddPatientsForm extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton2)
-                    .addComponent(jButton3))
-                .addGap(18, 18, 18)
+                    .addComponent(jButton3)
+                    .addComponent(progressLabel)
+                    .addComponent(progressMessage))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(doneButton)
@@ -414,6 +455,9 @@ public class AddPatientsForm extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JProgressBar progressBar;
+    private javax.swing.JLabel progressLabel;
+    private javax.swing.JLabel progressMessage;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JTable table;
     private javax.swing.JLabel tipLabel;
