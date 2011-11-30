@@ -50,6 +50,8 @@ public class TableSchema implements TableSchemaAdapter {
             return ColumnType.DECIMAL;
         } else if (typeNameSQL.contains("date")){
             return ColumnType.DATE;
+        } else if (typeNameSQL.contains("boolean")){
+            return ColumnType.BOOLEAN;
         }
         
         throw new UnsupportedOperationException("Type not supported: " + typeNameSQL);
