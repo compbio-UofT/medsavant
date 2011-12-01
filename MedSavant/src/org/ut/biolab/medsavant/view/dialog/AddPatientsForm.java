@@ -138,7 +138,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
     
     private void generateTemplate() throws SQLException{
         
-        File file = DialogUtils.chooseFileForSave("Export Patients", "template.csv", new ExtensionFileFilter(new String[]{"csv"}), null);
+        File file = DialogUtils.chooseFileForSave("Export Patients", "template.csv", new ExtensionFileFilter(new String[]{"csv"}), null, "csv");
         if(file == null) return;
         
         progressBar.setIndeterminate(true);

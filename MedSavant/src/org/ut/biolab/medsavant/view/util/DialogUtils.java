@@ -234,7 +234,7 @@ public class DialogUtils {
      * @return a File, or null if cancelled
      */
     public static File chooseFileForSave(String title, String defaultName) {
-        return chooseFileForSave(title, defaultName, null, null);
+        return chooseFileForSave(title, defaultName, null, null, null);
     }
 
     /**
@@ -247,7 +247,7 @@ public class DialogUtils {
      * @param initialDir initial directory for the dialog
      * @return a File, or null if cancelled
      */
-    public static File chooseFileForSave(String title, String defaultName, FileFilter filter, File initialDir) {
+    public static File chooseFileForSave(String title, String defaultName, FileFilter filter, File initialDir, String forceExtension) {
         FileDialog fd = getFileDialog(title, FileDialog.SAVE);
         if (filter != null) {
             fd.setFilenameFilter(new FilenameFilterAdapter(filter));
@@ -260,7 +260,10 @@ public class DialogUtils {
         fd.setLocationRelativeTo(null);
         fd.setVisible(true);
         String selectedFile = fd.getFile();
-        if (selectedFile != null) {
+        if (selectedFile != null) {    
+            if(forceExtension != null && !MiscUtils.getExtension(selectedFile).equals(forceExtension)){
+                selectedFile = selectedFile + "." + forceExtension;
+            }
             return new File(fd.getDirectory(), selectedFile);
         }
         return null;
