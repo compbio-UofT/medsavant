@@ -32,6 +32,7 @@ import javax.swing.event.DocumentListener;
 
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
+import org.ut.biolab.medsavant.view.component.SearchableTablePanel.TableSelectionType;
 import org.ut.biolab.medsavant.view.component.Util;
 import org.ut.biolab.medsavant.view.util.PathField;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -298,7 +299,7 @@ public class ImportFileView extends JDialog {
                 columnClasses.add(getFileFormat().getFieldNumberToClassMap().get(i));
             }
 
-            SearchableTablePanel searchableTablePanel = new SearchableTablePanel(ImportFileView.class.getName(), columnNames, columnClasses, new ArrayList<Integer>(), false,false,50,false,false, 1000, Util.createPrefetchedDataRetriever(data));
+            SearchableTablePanel searchableTablePanel = new SearchableTablePanel(ImportFileView.class.getName(), columnNames, columnClasses, new ArrayList<Integer>(), false,false,50,false,TableSelectionType.ROW, 1000, Util.createPrefetchedDataRetriever(data));
 
             //boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection
             previewPanel.add(searchableTablePanel,BorderLayout.CENTER);

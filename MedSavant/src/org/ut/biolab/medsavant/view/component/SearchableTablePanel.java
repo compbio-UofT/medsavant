@@ -72,6 +72,8 @@ public class SearchableTablePanel extends JPanel {
     private DataRetriever retriever;
     private int totalNumRows;
     private GetDataSwingWorker worker;
+    
+    public enum TableSelectionType {DISABLED, CELL, ROW}
 
     public SortableTable getTable() {
         return table;
@@ -192,11 +194,11 @@ public class SearchableTablePanel extends JPanel {
     }
     
     public SearchableTablePanel(String pageName, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, int defaultRowsRetrieved, DataRetriever retriever) {
-        this(pageName, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, true, defaultRowsRetrieved, retriever);
+        this(pageName, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, TableSelectionType.ROW, defaultRowsRetrieved, retriever);
     }
 
     public SearchableTablePanel(String pageName, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
-        boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, boolean allowSelection, int defaultRowsRetrieved, DataRetriever retriever) {
+        boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, TableSelectionType selectionType, int defaultRowsRetrieved, DataRetriever retriever) {
 
         this.pageName = pageName;
         this.ROWSPERPAGE_X = defaultRows;
@@ -232,8 +234,10 @@ public class SearchableTablePanel extends JPanel {
         table.setRowHeight(20);
         table.setSortable(allowSort);
         table.setSortingEnabled(allowSort);
-        table.setFocusable(allowSelection);
-        table.setCellSelectionEnabled(allowSelection);
+        table.setFocusable(selectionType != TableSelectionType.DISABLED);
+        //table.setCellSelectionEnabled(allowSelection);
+        table.setCellSelectionEnabled(selectionType == TableSelectionType.CELL);
+        table.setRowSelectionAllowed(selectionType == TableSelectionType.ROW);
 
         table.setAutoResizeMode(SortableTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
