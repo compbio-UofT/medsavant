@@ -448,7 +448,7 @@ public class ProjectQueryUtil {
         List<CustomField> result = new ArrayList<CustomField>();
         while(rs.next()){
             result.add(new CustomField(
-                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), 
+                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME).toLowerCase(), 
                     rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), 
                     rs.getBoolean(VariantFormatTableSchema.COLUMNNAME_OF_FILTERABLE), 
                     rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_ALIAS), 
