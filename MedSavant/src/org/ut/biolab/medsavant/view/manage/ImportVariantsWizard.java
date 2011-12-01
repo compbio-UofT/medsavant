@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -29,6 +30,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.ImportVariants;
@@ -310,6 +312,8 @@ public class ImportVariantsWizard extends WizardDialog {
         final JButton cancelButton = new JButton("Cancel");
         final JButton startButton = new JButton("Start Upload"); 
         
+        final JDialog instance = this;
+        
         startButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
@@ -320,6 +324,7 @@ public class ImportVariantsWizard extends WizardDialog {
                 uploadThread = new Thread() {
                     @Override
                     public void run() {
+                        instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
                         try {
                             final boolean success = ImportVariants.performImport(variantFiles, projectId, referenceId, progressLabel);
 
@@ -357,6 +362,7 @@ public class ImportVariantsWizard extends WizardDialog {
                             cancelButton.setVisible(false);       
                             System.out.println("Update " + updateId + " was cancelled");
                         }
+                        instance.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     }
                 };
                 cancelButton.setVisible(true);
