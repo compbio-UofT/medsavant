@@ -307,7 +307,7 @@ public class ProjectWizard extends WizardDialog {
             try {
                 List<CustomField> fields = ProjectQueryUtil.getCustomVariantFields(projectId);
                 for(CustomField f : fields){
-                    variantFormatModel.addRow(new Object[]{f.getColumnName(), f.getColumnTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
+                    variantFormatModel.addRow(new Object[]{f.getColumnName().toUpperCase(), f.getColumnTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
