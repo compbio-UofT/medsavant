@@ -36,6 +36,7 @@ import org.ut.biolab.medsavant.controller.ThreadController;
 
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ServerLogTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
@@ -316,7 +317,7 @@ public class ServerLogPage extends SubSectionView {
 
                 Status status = AnnotationLogQueryUtil.intToStatus(rs.getInt(4));
 
-                final int updateId = rs.getInt("update_id");
+                final int updateId = rs.getInt(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPDATE_ID);
                 JButton button = new JButton("Retry");
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent ae) {

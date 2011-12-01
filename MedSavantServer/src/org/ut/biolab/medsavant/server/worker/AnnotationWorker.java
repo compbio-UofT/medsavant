@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import javax.swing.SwingWorker;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil.Action;
 import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
@@ -59,9 +60,9 @@ public class AnnotationWorker extends SwingWorker {
 
                 ServerLogQueryUtil.addServerLog(LogType.INFO, "Starting next annotation");
                 
-                int projectId = rs.getInt("project_id");
-                int referenceId = rs.getInt("reference_id");
-                int updateId = rs.getInt("update_id");
+                int projectId = rs.getInt(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID);
+                int referenceId = rs.getInt(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID);
+                int updateId = rs.getInt(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPDATE_ID);
                 Action action = AnnotationLogQueryUtil.intToAction(rs.getInt("action"));
 
                 AnnotationLogQueryUtil.setAnnotationLogStatus(updateId, AnnotationLogQueryUtil.Status.INPROGRESS);
