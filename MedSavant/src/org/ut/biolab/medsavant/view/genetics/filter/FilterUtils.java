@@ -74,7 +74,7 @@ public class FilterUtils {
         if(fp == null){
             GeneticsFilterPage.getInstance().getView(true);
             GeneticsFilterPage.getInstance().setUpdateRequired(false);
-            fp = GeneticsFilterPage.getInstance().getFilterPanel();;
+            fp = GeneticsFilterPage.getInstance().getFilterPanel();
         }
         return fp;
     }

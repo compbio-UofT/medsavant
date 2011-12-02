@@ -17,9 +17,12 @@
 package org.ut.biolab.medsavant.db.model;
 
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -181,9 +184,24 @@ public class Range implements Comparable<Range> {
                 (range.min >= this.min && range.max <= this.max);
     }
     
+    private static String RANGE_STRING = " - ";
+    
     @Override
     public String toString() {
-        return NumberFormat.getInstance().format(min) + " - " + NumberFormat.getInstance().format(max);
+        return NumberFormat.getInstance().format(min) + RANGE_STRING + NumberFormat.getInstance().format(max);
+    }
+    
+    public static Range rangeFromString(String range){
+        String[] values = range.split(RANGE_STRING);
+        double minValue = 0;
+        double maxValue = 0;
+        try {
+            minValue = NumberFormat.getInstance().parse(values[0]).doubleValue();
+            maxValue = NumberFormat.getInstance().parse(values[1]).doubleValue();
+        } catch (ParseException ex) {
+            Logger.getLogger(Range.class.getName()).log(Level.SEVERE, null, ex);
+        }       
+        return new Range(minValue, maxValue);      
     }
     
     /**

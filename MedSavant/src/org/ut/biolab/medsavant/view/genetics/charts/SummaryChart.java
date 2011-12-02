@@ -19,9 +19,12 @@ package org.ut.biolab.medsavant.view.genetics.charts;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 
 import com.jidesoft.chart.Chart;
@@ -39,14 +42,28 @@ import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.ViewController;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -162,7 +179,9 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
     private synchronized void drawChart(ChartFrequencyMap chartMap) {
         DefaultChartModel chartModel = new DefaultChartModel();
 
-        Chart chart = new Chart(new Dimension(200, 200));
+        final Chart chart = new Chart(new Dimension(200, 200));
+        chart.addModel(chartModel);
+        
         chart.setRolloverEnabled(true);
         chart.setSelectionEnabled(true);
         chart.setSelectionShowsOutline(true);
@@ -171,6 +190,19 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         chart.setBarGap(5);
         chart.setBorder(ViewUtil.getBigBorder());
         chart.setLabellingTraces(true);
+        chart.getSelectionsForModel(chartModel).setSelectionMode(
+                mapGenerator.isNumeric() ? 
+                ListSelectionModel.SINGLE_SELECTION : 
+                ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        
+        chart.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if(SwingUtilities.isRightMouseButton(e)){
+                    JPopupMenu popup = createPopup(chart);
+                    popup.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
 
         AbstractPieSegmentRenderer rpie = new RaisedPieSegmentRenderer();
         chart.setPieSegmentRenderer(rpie);
@@ -239,7 +271,7 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         // rotate 90 degrees (using radians)
         chart.getXAxis().setTickLabelRotation(1.57079633);
 
-        chart.addModel(chartModel);
+        
         chart.setStyle(chartModel, s);
 
         if (isPie) {
@@ -320,5 +352,45 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         public Double inverseTransform(Double t) {
             return Math.pow(10, t);
         }
+    }
+    
+    private JPopupMenu createPopup(final Chart chart){
+
+        JPopupMenu menu = new JPopupMenu();
+          
+        //Filter by selections
+        JMenuItem filter1Item = new JMenuItem("Filter by Selection(s)");
+        filter1Item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                
+                ThreadController.getInstance().cancelWorkers(pageName);
+                
+                List<String> values = new ArrayList<String>();
+                ListSelectionModel selectionModel = chart.getSelectionsForModel(chart.getModel());
+                for(int i = selectionModel.getMinSelectionIndex(); i <= selectionModel.getMaxSelectionIndex(); i++){
+                    if (selectionModel.isSelectedIndex(i)){
+                        values.add(((ChartPoint)chart.getModel().getPoint(i)).getHighlight().name());
+                    }
+                }                
+                if(values.isEmpty()) return;
+
+                try {
+                    if(mapGenerator.isNumeric()){
+                        Range r = Range.rangeFromString(values.get(0)); //there should only be one item here
+                        FilterUtils.createAndApplyNumericFilter(mapGenerator.getFilterId(), mapGenerator.getName(), mapGenerator.getTable(), r.getMin(), r.getMax());
+                    } else {
+                        FilterUtils.createAndApplyStringListFilter(mapGenerator.getFilterId(), mapGenerator.getName(), mapGenerator.getTable(), values);
+                    }
+                } catch (SQLException ex) {
+                    Logger.getLogger(SummaryChart.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                updateDataAndDrawChart();
+            }
+        });
+        menu.add(filter1Item);
+        
+        return menu;
     }
 }

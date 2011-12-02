@@ -36,6 +36,7 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 
 /**
  *
@@ -45,9 +46,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
     private final CustomField field;
     private final Table whichTable;
-    
-    private enum Table {PATIENT, VARIANT};
-    
+        
     public static VariantFieldChartMapGenerator createVariantChart(CustomField field) {
         return new VariantFieldChartMapGenerator(field, Table.VARIANT);
     }
@@ -252,5 +251,13 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
     public String getName() {
         return field.getAlias();
+    }
+
+    public Table getTable() {
+        return whichTable;
+    }
+
+    public String getFilterId() {
+        return field.getColumnName();
     }
 }

@@ -4,7 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.charts;
 
-import java.util.Map;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 
 /**
  *
@@ -17,4 +17,9 @@ public interface ChartMapGenerator {
     public boolean isNumeric();
 
     public String getName();
+    
+    public Table getTable();
+    
+    // usually the column name
+    public String getFilterId();
 }

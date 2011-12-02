@@ -34,13 +34,8 @@ import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSub;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterView;
-import org.ut.biolab.medsavant.view.genetics.filter.NumericFilterView;
-import org.ut.biolab.medsavant.view.genetics.filter.StringListFilterView;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
