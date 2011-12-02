@@ -6,7 +6,6 @@
 package org.ut.biolab.medsavant.controller;
 
 import java.sql.SQLException;
-import java.util.Vector;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,6 +35,7 @@ public class ResultController implements FiltersChangedListener {
     
     public ResultController() throws NonFatalDatabaseException {
         updateFilteredVariantDBResults(0, DEFAULT_LIMIT);
+        FilterController.addFilterListener(this);
     }
 
     

@@ -31,9 +31,12 @@ public class GeneticsTablePage extends SubSectionView {
     private JPanel panel;
     private TablePanel tablePanel;
     private GenomeContainer gp;
+    
+    private static GeneticsTablePage instance;
 
     public GeneticsTablePage(SectionView parent) { 
         super(parent);       
+        instance = this;
     }
 
     public String getName() {
@@ -75,8 +78,7 @@ public class GeneticsTablePage extends SubSectionView {
     public Component[] getBanner() {
         return null;
     }
-    
-    
+        
     @Override
     public void viewDidLoad() {
     }
@@ -87,6 +89,17 @@ public class GeneticsTablePage extends SubSectionView {
         if(!tablePanel.isInit()){
             this.setUpdateRequired(true);
         }
+    }
+    
+    public static GeneticsTablePage getInstance(){
+        return instance;
+    }
+    
+    public void updateContents(){
+        tablePanel.setUpdateRequired(true);
+        gp.setUpdateRequired(true);
+        tablePanel.updateIfRequired();
+        gp.updateIfRequired();
     }
 
 }

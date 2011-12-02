@@ -65,7 +65,7 @@ public class FilterView {
     public FilterViewType getFilterViewType(){
         return _type;
     }
-
+    
     /**
      * Give derived classes a chance to clean up when the filter instance is being removed.
      */

@@ -4,7 +4,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -22,6 +21,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -41,20 +41,37 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Andrew
  */
-public class StringListFilterView {
+public class StringListFilterView extends FilterView {
     
     private enum Table {PATIENT, VARIANT};
     
+    
+    /* Convenience Functions */
+    
     public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
-        return createFilterView(tablename, columnname, queryId, alias, Table.PATIENT);
+        return new StringListFilterView(new JPanel(), tablename, columnname, queryId, alias, Table.PATIENT);
     }
     
     public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
-        return createFilterView(tablename, columnname, queryId, alias, Table.VARIANT);
+        return new StringListFilterView(new JPanel(), tablename, columnname, queryId, alias, Table.VARIANT);
     }
     
-    private static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias, final Table whichTable) throws SQLException, NonFatalDatabaseException {
-
+    
+    /* StringListFilterView */
+    
+    private List<JCheckBox> boxes;
+    private ActionListener al;
+    
+    public void applyFilter(List<String> list){
+        for(JCheckBox box : boxes){
+            box.setSelected(list.contains(box.getText()));
+        }
+        al.actionPerformed(new ActionEvent(this, 0, null));
+    }   
+    
+    private StringListFilterView(JComponent container, String tablename, final String columnname, final int queryId, final String alias, final Table whichTable) throws SQLException{
+        super(alias, container);
+        
         final List<String> uniq;
 
         if (columnname.equals("ac")) {
@@ -85,7 +102,6 @@ public class StringListFilterView {
             Collections.sort(uniq,new ChromosomeComparator());
         }
 
-        JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
         JPanel bottomContainer = new JPanel();
@@ -94,12 +110,12 @@ public class StringListFilterView {
 
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
-        final List<JCheckBox> boxes = new ArrayList<JCheckBox>();
+        boxes = new ArrayList<JCheckBox>();
         
-        ActionListener al = new ActionListener(){
+        al = new ActionListener(){
 
             public void actionPerformed(ActionEvent e) {
-
+                
                 applyButton.setEnabled(false);
 
                 final List<String> acceptableValues = new ArrayList<String>();
@@ -221,7 +237,5 @@ public class StringListFilterView {
         bottomContainer.setAlignmentX(0F);
         container.add(bottomContainer); 
         
-        //al.actionPerformed(null);        
-        return new FilterView(alias, container);
     }
 }

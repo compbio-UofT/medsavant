@@ -34,7 +34,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 public class GeneticsFilterPage extends SubSectionView {
-
+    
     private static class FilterSQLPanel extends JPanel implements FiltersChangedListener {
         private final JTextArea content;
 
@@ -69,8 +69,11 @@ public class GeneticsFilterPage extends SubSectionView {
     private FilterPanel fp;
     private FilterProgressPanel history;
     
+    private static GeneticsFilterPage instance;
+    
     public GeneticsFilterPage(SectionView parent) {
         super(parent);
+        instance = this;
     }
 
     public String getName() {
@@ -104,5 +107,13 @@ public class GeneticsFilterPage extends SubSectionView {
     @Override
     public void viewDidUnload() {
         ThreadController.getInstance().cancelWorkers(getName());
+    }
+    
+    public FilterPanel getFilterPanel(){
+        return fp;
+    }
+    
+    public static GeneticsFilterPage getInstance(){
+        return instance;
     }
 }

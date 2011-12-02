@@ -21,7 +21,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
@@ -31,7 +30,6 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -83,7 +81,7 @@ public class FilterPanel extends javax.swing.JPanel {
         return tmp1;
     }
     
-    private void createNewSubPanel(){
+    public void createNewSubPanel(){
         subs.add(new FilterPanelSub(this, subNum++));
         refreshSubPanels();
     }
@@ -110,6 +108,10 @@ public class FilterPanel extends javax.swing.JPanel {
         container.add(Box.createVerticalGlue());
         
         this.updateUI();
+    }
+    
+    public List<FilterPanelSub> getFilterPanelSubs(){
+        return this.subs;
     }
 
     /** This method is called from within the constructor to

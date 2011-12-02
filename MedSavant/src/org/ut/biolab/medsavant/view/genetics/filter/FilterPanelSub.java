@@ -22,15 +22,12 @@ import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.border.Border;
 
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
@@ -317,6 +314,16 @@ public final class FilterPanelSub extends JPanel{
     
     public int getId(){
         return id;
+    }
+    
+    public void removeFiltersById(String id){
+        //reversed to avoid concurrent mod exception
+        for(int i = subItems.size()-1; i >= 0; i--){
+            FilterPanelSubItem fpsi = subItems.get(i);
+            if(fpsi.getFilterId().equals(id)){
+                fpsi.removeThis();
+            }
+        }
     }
     
     private Map<Category, List<FilterPlaceholder>> getRemainingFilters(){

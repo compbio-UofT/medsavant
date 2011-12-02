@@ -137,6 +137,10 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         }
     }
     
+    void setUpdateRequired(boolean b) {
+        updateRequired = b;
+    }
+    
     public void updateIfRequired(){
         if(!init) return;
         boolean shouldUpdate = false;

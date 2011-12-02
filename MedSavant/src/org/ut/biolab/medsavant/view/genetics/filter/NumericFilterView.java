@@ -4,7 +4,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -20,6 +19,7 @@ import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -42,20 +42,48 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Andrew
  */
-public class NumericFilterView {
+public class NumericFilterView extends FilterView{
     
     private enum Table {PATIENT, VARIANT};
     
+    
+    /* Convenience Functions */
+    
     public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException {
-        return createFilterView(tablename, columnname, queryId, alias, isDecimal, Table.VARIANT);
+        return new NumericFilterView(new JPanel(), tablename, columnname, queryId, alias, isDecimal, Table.VARIANT);
     }
     
     public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException {
-        return createFilterView(tablename, columnname, queryId, alias, isDecimal, Table.PATIENT);
+        return new NumericFilterView(new JPanel(), tablename, columnname, queryId, alias, isDecimal, Table.PATIENT);
+    }
+
+    
+    /* NumericFilterView */
+    
+    private JTextField frombox;
+    private JTextField tobox;
+    private DecimalRangeSlider rs;
+    private JButton applyButton;
+            
+    public void applyFilter(int low, int high) {
+        applyFilter((double)low, (double)high);
     }
     
-    private static FilterView createFilterView(String tablename, final String columnname, final int queryId, final String alias, final boolean isDecimal, final Table whichTable) throws SQLException, NonFatalDatabaseException {
-
+    /*     
+     * Allows filter to be applied without interaction.
+     * Assumes values already checked for consistency.
+     */
+    public void applyFilter(double low, double high){
+        frombox.setText(Double.toString(low));
+        tobox.setText(Double.toString(high));
+        rs.setLow(low);
+        rs.setHigh(high);
+        applyButton.doClick();
+    }
+    
+    private NumericFilterView(JComponent container, String tablename, final String columnname, final int queryId, final String alias, final boolean isDecimal, final Table whichTable) throws SQLException{
+        super(alias, container);
+        
         Range extremeValues = null;
 
         if (columnname.equals("position")) {
@@ -70,7 +98,6 @@ public class NumericFilterView {
             extremeValues = new Range(Math.min(0, extremeValues.getMin()),extremeValues.getMax());
         }
 
-        JPanel container = new JPanel();
         container.setBorder(ViewUtil.getMediumBorder());
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
@@ -83,8 +110,9 @@ public class NumericFilterView {
         } else if (isDecimal && max-min<=10){
             precision = 1;
         }
-        final DecimalRangeSlider rs = new DecimalRangeSlider(precision);
-
+        //final DecimalRangeSlider rs = new DecimalRangeSlider(precision);
+        rs = new DecimalRangeSlider(precision);
+        
         rs.setMinimum(min);
         rs.setMaximum(max);
 
@@ -97,8 +125,8 @@ public class NumericFilterView {
         JPanel rangeContainer = new JPanel();
         rangeContainer.setLayout(new BoxLayout(rangeContainer, BoxLayout.X_AXIS));
 
-        final JTextField frombox = new JTextField(ViewUtil.numToString(min));
-        final JTextField tobox = new JTextField(ViewUtil.numToString(max));
+        frombox = new JTextField(ViewUtil.numToString(min));
+        tobox = new JTextField(ViewUtil.numToString(max));
         frombox.setMaximumSize(new Dimension(10000,24));
         tobox.setMaximumSize(new Dimension(10000,24));
 
@@ -114,7 +142,7 @@ public class NumericFilterView {
         container.add(rangeContainer);
         container.add(Box.createVerticalBox());
 
-        final JButton applyButton = new JButton("Apply");
+        applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
 
         rs.addMouseListener(new MouseListener() {
@@ -261,9 +289,6 @@ public class NumericFilterView {
         bottomContainer.add(applyButton);
 
         container.add(bottomContainer);
-
-        //al.actionPerformed(null);
-        return new FilterView(alias, container);
     }
     
     public static double getNumber(String s) {
