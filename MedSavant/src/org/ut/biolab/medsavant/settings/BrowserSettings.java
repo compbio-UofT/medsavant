@@ -82,7 +82,7 @@ public class BrowserSettings {
         
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(NetworkUtils.openStream(BrowserSettings.VERSION_URL));
+        Document doc = dBuilder.parse(NetworkUtils.openStream(BrowserSettings.VERSION_URL, 10000, 10000));
         
         doc.getDocumentElement().normalize();
         
