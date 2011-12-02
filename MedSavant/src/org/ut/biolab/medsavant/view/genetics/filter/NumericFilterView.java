@@ -36,6 +36,7 @@ import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -43,9 +44,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Andrew
  */
 public class NumericFilterView extends FilterView{
-    
-    private enum Table {PATIENT, VARIANT};
-    
+   
     
     /* Convenience Functions */
     
@@ -55,6 +54,10 @@ public class NumericFilterView extends FilterView{
     
     public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException {
         return new NumericFilterView(new JPanel(), tablename, columnname, queryId, alias, isDecimal, Table.PATIENT);
+    }
+    
+    public NumericFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal, Table whichTable) throws SQLException{
+        this(new JPanel(), tablename, columnname, queryId, alias, isDecimal, whichTable);
     }
 
     

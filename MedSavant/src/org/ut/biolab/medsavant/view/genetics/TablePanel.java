@@ -36,6 +36,8 @@ import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSub;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterView;
 import org.ut.biolab.medsavant.view.genetics.filter.NumericFilterView;
 import org.ut.biolab.medsavant.view.genetics.filter.StringListFilterView;
@@ -218,28 +220,19 @@ class TablePanel extends JPanel implements FiltersChangedListener {
 
             public void actionPerformed(ActionEvent e) {
                 
-                FilterPanel fp = startFilterBy();
+                ThreadController.getInstance().cancelWorkers(pageName);
                 
-                //clear all current position filter panels (also removes actual filters)
-                for(FilterPanelSub fps : fp.getFilterPanelSubs()){
-                    fps.removeFiltersById(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
-                    fps.removeFiltersById(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION);
+                List<String> values = new ArrayList<String>();
+                values.add(chrom);
+                try {
+                    FilterUtils.removeFiltersById(DefaultVariantTableSchema.COLUMNNAME_OF_ALT);
+                    FilterUtils.createAndApplyStringListFilter(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, AnnotationFormat.VARIANT_ALIAS_CHROM, Table.VARIANT, values);
+                    FilterUtils.createAndApplyNumericFilter(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, AnnotationFormat.VARIANT_ALIAS_POSITION, Table.VARIANT, position, position);
+                } catch (SQLException ex) {
+                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
-  
-                //apply position filter to each subquery
-                for(FilterPanelSub fps : fp.getFilterPanelSubs()){
-                    try {
-                        applyStringListFilter(fps, DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, AnnotationFormat.VARIANT_ALIAS_CHROM, chrom);
-                        applyNumericFilter(fps, DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, AnnotationFormat.VARIANT_ALIAS_POSITION, position);                                       
-                    } catch (SQLException ex) {
-                        Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (NonFatalDatabaseException ex) {
-                        Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-
+                
                 GeneticsTablePage.getInstance().updateContents();
-                fp.refreshSubPanels();
             }
         });
         menu.add(filter1Item);
@@ -252,77 +245,28 @@ class TablePanel extends JPanel implements FiltersChangedListener {
             
             public void actionPerformed(ActionEvent e) {
                 
-                FilterPanel fp = startFilterBy();
+                ThreadController.getInstance().cancelWorkers(pageName);
                 
-                //clear all current position filter panels (also removes actual filters)
-                for(FilterPanelSub fps : fp.getFilterPanelSubs()){
-                    fps.removeFiltersById(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
-                    fps.removeFiltersById(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION);
-                    fps.removeFiltersById(DefaultVariantTableSchema.COLUMNNAME_OF_ALT);
+                List<String> chroms = new ArrayList<String>();
+                chroms.add(chrom);
+                
+                List<String> alts = new ArrayList<String>();
+                alts.add(alt);
+                
+                try {
+                    FilterUtils.createAndApplyStringListFilter(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, AnnotationFormat.VARIANT_ALIAS_CHROM, Table.VARIANT, chroms);
+                    FilterUtils.createAndApplyNumericFilter(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, AnnotationFormat.VARIANT_ALIAS_POSITION, Table.VARIANT, position, position);
+                    FilterUtils.createAndApplyStringListFilter(DefaultVariantTableSchema.COLUMNNAME_OF_ALT, AnnotationFormat.VARIANT_ALIAS_ALT, Table.VARIANT, alts);
+                } catch (SQLException ex) {
+                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
-  
-                //apply position filter to each subquery
-                for(FilterPanelSub fps : fp.getFilterPanelSubs()){
-                    try {
-                        applyStringListFilter(fps, DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, AnnotationFormat.VARIANT_ALIAS_CHROM, chrom);
-                        applyNumericFilter(fps, DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, AnnotationFormat.VARIANT_ALIAS_POSITION, position);
-                        applyStringListFilter(fps, DefaultVariantTableSchema.COLUMNNAME_OF_ALT, AnnotationFormat.VARIANT_ALIAS_ALT, alt);
-                    } catch (SQLException ex) {
-                        Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (NonFatalDatabaseException ex) {
-                        Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-
+                
                 GeneticsTablePage.getInstance().updateContents();
-                fp.refreshSubPanels();
             }           
         });
         menu.add(filter2Item);
 
         return menu;
-    }
-
-    private FilterPanel startFilterBy(){
-        ThreadController.getInstance().cancelWorkers(pageName);
-
-        //get filter panel
-        FilterPanel fp = GeneticsFilterPage.getInstance().getFilterPanel();
-        if(fp == null){
-            GeneticsFilterPage.getInstance().getView(true);
-            GeneticsFilterPage.getInstance().setUpdateRequired(false);
-            fp = GeneticsFilterPage.getInstance().getFilterPanel();;
-        }
-
-        //deal with case where no sub panels
-        if(fp.getFilterPanelSubs().isEmpty()){
-            fp.createNewSubPanel();
-        }
-        
-        return fp;
-    }
-    
-    private void applyNumericFilter(FilterPanelSub fps, String column, String alias, int value) throws SQLException, NonFatalDatabaseException{
-        FilterView filter = NumericFilterView.createVariantFilterView(
-                ProjectController.getInstance().getCurrentTableName(), 
-                column, 
-                fps.getId(), 
-                alias, 
-                false);
-        fps.addNewSubItem(filter, column);
-        ((NumericFilterView)filter).applyFilter(value, value);
-    }
-    
-    private void applyStringListFilter(FilterPanelSub fps, String column, String alias, String value) throws SQLException, NonFatalDatabaseException{
-        FilterView filter = StringListFilterView.createVariantFilterView(
-                ProjectController.getInstance().getCurrentTableName(), 
-                column, 
-                fps.getId(), 
-                alias);
-        fps.addNewSubItem(filter, column);
-        List<String> values = new ArrayList<String>();
-        values.add(value);
-        ((StringListFilterView)filter).applyFilter(values);
     }
     
 }

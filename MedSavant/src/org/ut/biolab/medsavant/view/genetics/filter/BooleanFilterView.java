@@ -31,6 +31,7 @@ import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -38,9 +39,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Andrew
  */
 public class BooleanFilterView {
-    
-    private enum Table {PATIENT, VARIANT};
-    
+
     public static FilterView createVariantFilterView(String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
         return createFilterView(columnname, queryId, alias, Table.VARIANT);
     }

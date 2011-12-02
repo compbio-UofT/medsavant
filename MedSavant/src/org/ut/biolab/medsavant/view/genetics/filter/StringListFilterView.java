@@ -34,6 +34,7 @@ import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -43,9 +44,6 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class StringListFilterView extends FilterView {
     
-    private enum Table {PATIENT, VARIANT};
-    
-    
     /* Convenience Functions */
     
     public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
@@ -54,6 +52,10 @@ public class StringListFilterView extends FilterView {
     
     public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
         return new StringListFilterView(new JPanel(), tablename, columnname, queryId, alias, Table.VARIANT);
+    }
+    
+    public StringListFilterView(String tablename, String columnname, int queryId, String alias, Table whichTable) throws SQLException {
+        this(new JPanel(), tablename, columnname, queryId, alias, whichTable);
     }
     
     
