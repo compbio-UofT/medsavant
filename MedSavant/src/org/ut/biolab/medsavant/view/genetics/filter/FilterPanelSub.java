@@ -133,6 +133,10 @@ public final class FilterPanelSub extends JPanel{
         return p;
     }
     
+    public List<FilterPanelSubItem> getSubItems(){
+        return this.subItems;
+    }
+    
     public void refreshSubItems(){
         contentPanel.removeAll();
         
