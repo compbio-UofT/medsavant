@@ -359,7 +359,7 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         JPopupMenu menu = new JPopupMenu();
           
         //Filter by selections
-        JMenuItem filter1Item = new JMenuItem("Filter by Selection(s)");
+        JMenuItem filter1Item = new JMenuItem("Filter by Selection" + (mapGenerator.isNumeric() ? "" : "(s)"));
         filter1Item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
