@@ -4,9 +4,11 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import com.healthmarketscience.sqlbuilder.Condition;
 import java.sql.SQLException;
 import java.util.List;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
 
 /**
@@ -14,10 +16,28 @@ import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
  * @author Andrew
  */
 public class FilterUtils {
-           
+    
     public enum Table {PATIENT, VARIANT};
     
-    public static void createAndApplyNumericFilter(String column, String alias, Table whichTable, double low, double high) throws SQLException{
+    /*
+     * This should generally be used for any filter applications external 
+     * to the TablePanel. 
+     */
+    public static void createAndApplyGenericFixedFilter(String title, String description, Condition c) {
+        
+        FilterPanel fp = getFilterPanel();
+        
+        //create and apply filter to each subquery
+        for(FilterPanelSub fps : fp.getFilterPanelSubs()){
+            String filterId = Long.toString(System.nanoTime());
+            FilterView view = GenericFixedFilterView.createGenericFixedView(title, c, description, fps.getId(), filterId);
+            fps.addNewSubItem(view, filterId);
+        }
+
+        fp.refreshSubPanels();   
+    }
+    
+    public static void createAndApplyNumericFilterView(String column, String alias, Table whichTable, double low, double high) throws SQLException{
         
         FilterPanel fp = startFilterBy(column);
 
@@ -31,7 +51,7 @@ public class FilterUtils {
         fp.refreshSubPanels();
     }
     
-    public static void createAndApplyStringListFilter(String column, String alias, Table whichTable, List<String> values) throws SQLException {
+    public static void createAndApplyStringListFilterView(String column, String alias, Table whichTable, List<String> values) throws SQLException {
         
         FilterPanel fp = startFilterBy(column);
 
@@ -60,12 +80,7 @@ public class FilterUtils {
               
         //remove filters by id
         removeFiltersById(fp, column);
-           
-        //deal with case where no sub panels
-        if(fp.getFilterPanelSubs().isEmpty()){
-            fp.createNewSubPanel();
-        }
-        
+
         return fp;
     }
     
@@ -76,6 +91,12 @@ public class FilterUtils {
             GeneticsFilterPage.getInstance().setUpdateRequired(false);
             fp = GeneticsFilterPage.getInstance().getFilterPanel();
         }
+        
+        //deal with case where no sub panels
+        if(fp.getFilterPanelSubs().isEmpty()){
+            fp.createNewSubPanel();
+        }
+        
         return fp;
     }
     
@@ -90,6 +111,14 @@ public class FilterUtils {
             return ProjectController.getInstance().getCurrentTableName();
         } else {
             return ProjectController.getInstance().getCurrentPatientTableName();
+        }
+    }
+    
+    public static TableSchema getTableSchema(Table whichTable) {
+        if(whichTable == Table.VARIANT){
+            return ProjectController.getInstance().getCurrentVariantTableSchema();
+        } else {
+            return ProjectController.getInstance().getCurrentPatientTableSchema();
         }
     }
     

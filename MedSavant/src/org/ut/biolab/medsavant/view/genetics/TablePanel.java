@@ -5,6 +5,8 @@
 
 package org.ut.biolab.medsavant.view.genetics;
 
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
 import java.awt.event.ActionEvent;
@@ -29,7 +31,11 @@ import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ThreadController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.model.RangeCondition;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
@@ -217,15 +223,23 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                 
                 ThreadController.getInstance().cancelWorkers(pageName);
                 
-                List<String> values = new ArrayList<String>();
+                /*List<String> values = new ArrayList<String>();
                 values.add(chrom);
                 try {
                     FilterUtils.removeFiltersById(DefaultVariantTableSchema.COLUMNNAME_OF_ALT);
-                    FilterUtils.createAndApplyStringListFilter(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, AnnotationFormat.VARIANT_ALIAS_CHROM, Table.VARIANT, values);
-                    FilterUtils.createAndApplyNumericFilter(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, AnnotationFormat.VARIANT_ALIAS_POSITION, Table.VARIANT, position, position);
+                    FilterUtils.createAndApplyStringListFilterView(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, AnnotationFormat.VARIANT_ALIAS_CHROM, Table.VARIANT, values);
+                    FilterUtils.createAndApplyNumericFilterView(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, AnnotationFormat.VARIANT_ALIAS_POSITION, Table.VARIANT, position, position);
                 } catch (SQLException ex) {
                     Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                }*/
+                
+                Condition[] conditions = new Condition[2];
+                conditions[0] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom);
+                conditions[1] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), position);
+                FilterUtils.createAndApplyGenericFixedFilter(
+                        "Table - Filter by Position", 
+                        "Chromosome: " + chrom + ", Position: " + position, 
+                        ComboCondition.and(conditions));
                 
                 GeneticsTablePage.getInstance().updateContents();
             }
@@ -242,19 +256,28 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                 
                 ThreadController.getInstance().cancelWorkers(pageName);
                 
-                List<String> chroms = new ArrayList<String>();
+                /*List<String> chroms = new ArrayList<String>();
                 chroms.add(chrom);
                 
                 List<String> alts = new ArrayList<String>();
                 alts.add(alt);
                 
                 try {
-                    FilterUtils.createAndApplyStringListFilter(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, AnnotationFormat.VARIANT_ALIAS_CHROM, Table.VARIANT, chroms);
-                    FilterUtils.createAndApplyNumericFilter(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, AnnotationFormat.VARIANT_ALIAS_POSITION, Table.VARIANT, position, position);
-                    FilterUtils.createAndApplyStringListFilter(DefaultVariantTableSchema.COLUMNNAME_OF_ALT, AnnotationFormat.VARIANT_ALIAS_ALT, Table.VARIANT, alts);
+                    FilterUtils.createAndApplyStringListFilterView(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, AnnotationFormat.VARIANT_ALIAS_CHROM, Table.VARIANT, chroms);
+                    FilterUtils.createAndApplyNumericFilterView(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, AnnotationFormat.VARIANT_ALIAS_POSITION, Table.VARIANT, position, position);
+                    FilterUtils.createAndApplyStringListFilterView(DefaultVariantTableSchema.COLUMNNAME_OF_ALT, AnnotationFormat.VARIANT_ALIAS_ALT, Table.VARIANT, alts);
                 } catch (SQLException ex) {
                     Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                }*/
+                
+                Condition[] conditions = new Condition[3];
+                conditions[0] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom);
+                conditions[1] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), position);
+                conditions[2] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_ALT), alt);
+                FilterUtils.createAndApplyGenericFixedFilter(
+                        "Table - Filter by Position", 
+                        "Chromosome: " + chrom + ", Position: " + position + ", Alt: " + alt, 
+                        ComboCondition.and(conditions));
                 
                 GeneticsTablePage.getInstance().updateContents();
             }           

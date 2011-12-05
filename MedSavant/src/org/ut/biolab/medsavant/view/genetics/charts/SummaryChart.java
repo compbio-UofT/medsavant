@@ -16,6 +16,8 @@
 
 package org.ut.biolab.medsavant.view.genetics.charts;
 
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -55,10 +57,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.model.RangeCondition;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.ViewController;
@@ -375,15 +381,24 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
                 }                
                 if(values.isEmpty()) return;
 
-                try {
-                    if(mapGenerator.isNumeric()){
-                        Range r = Range.rangeFromString(values.get(0)); //there should only be one item here
-                        FilterUtils.createAndApplyNumericFilter(mapGenerator.getFilterId(), mapGenerator.getName(), mapGenerator.getTable(), r.getMin(), r.getMax());
-                    } else {
-                        FilterUtils.createAndApplyStringListFilter(mapGenerator.getFilterId(), mapGenerator.getName(), mapGenerator.getTable(), values);
+                TableSchema table = FilterUtils.getTableSchema(mapGenerator.getTable());
+                if(mapGenerator.isNumeric()){
+                    Range r = Range.rangeFromString(values.get(0));
+                    RangeCondition condition = new RangeCondition(table.getDBColumn(mapGenerator.getFilterId()), r.getMin(), r.getMax());
+                    FilterUtils.createAndApplyGenericFixedFilter(
+                            "Charts - Filter by Selection", 
+                            mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(), 
+                            ComboCondition.and(condition));
+
+                    //Range r = Range.rangeFromString(values.get(0)); //there should only be one item here
+                    //FilterUtils.createAndApplyNumericFilterView(mapGenerator.getFilterId(), mapGenerator.getName(), mapGenerator.getTable(), r.getMin(), r.getMax());
+                } else {
+                    Condition[] conditions = new Condition[values.size()];
+                    for(int i = 0; i < conditions.length; i++){
+                        conditions[i] = BinaryConditionMS.equalTo(table.getDBColumn(mapGenerator.getFilterId()), values.get(i));
                     }
-                } catch (SQLException ex) {
-                    Logger.getLogger(SummaryChart.class.getName()).log(Level.SEVERE, null, ex);
+                    FilterUtils.createAndApplyGenericFixedFilter("Charts - Filter by Selection", mapGenerator.getName() + ": " + values.size() + " selection(s)", ComboCondition.or(conditions));
+                    //FilterUtils.createAndApplyStringListFilterView(mapGenerator.getFilterId(), mapGenerator.getName(), mapGenerator.getTable(), values);
                 }
 
                 updateDataAndDrawChart();
