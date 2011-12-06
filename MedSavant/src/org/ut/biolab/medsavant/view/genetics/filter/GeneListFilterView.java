@@ -27,12 +27,11 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -46,12 +45,13 @@ import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 
 /**
  *
  * @author mfiume
  */
-class GeneListFilterView {
+class GeneListFilterView extends FilterView {
     private static final Logger LOG = Logger.getLogger(GeneListFilterView.class.getName());
 
     public static final String FILTER_NAME = "Gene List";
@@ -59,10 +59,35 @@ class GeneListFilterView {
     private static final String GENELIST_NONE = "None";
 
     static FilterView getFilterView(int queryId) {
-        return new FilterView(FILTER_NAME, getContentPanel(queryId));
+        return new GeneListFilterView(queryId, new JPanel());
     }
     
-    private static List<RegionSet> getDefaultValues() {
+    public GeneListFilterView(FilterState state, int queryId) {
+        this(queryId, new JPanel());
+        if(state.getValues().get("value") != null){
+            applyFilter(Integer.parseInt(state.getValues().get("value")));
+        }
+    }
+    
+    private Integer appliedId;
+    private ActionListener al;
+    private JComboBox b;
+
+    public void applyFilter(int geneListId){
+        for(int i = 0; i < b.getItemCount(); i++){
+            if(b.getItemAt(i) instanceof RegionSet && ((RegionSet)b.getItemAt(i)).getId() == geneListId){
+                b.setSelectedIndex(i);
+            }
+        }     
+        al.actionPerformed(new ActionEvent(this, 0, null));
+    }
+    
+    private GeneListFilterView(int queryId, JPanel container){
+        super(FILTER_NAME, container);
+        createContentPanel(container, queryId);
+    }
+    
+    private List<RegionSet> getDefaultValues() {
         try {
             return RegionQueryUtil.getRegionSets();
         } catch (Exception ex){
@@ -71,13 +96,12 @@ class GeneListFilterView {
         }
     }
 
-    private static JComponent getContentPanel(final int queryId) {
+    private void createContentPanel(JPanel p, final int queryId) {
 
-        JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
         p.setMaximumSize(new Dimension(1000,80));
 
-        final JComboBox b = new JComboBox();
+        b = new JComboBox();
         b.setMaximumSize(new Dimension(1000,30));
 
         b.addItem(GENELIST_NONE);
@@ -89,7 +113,7 @@ class GeneListFilterView {
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
 
-        ActionListener al = new ActionListener() {
+        al = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
 
@@ -105,6 +129,7 @@ class GeneListFilterView {
                         }
 
                         RegionSet regionSet = (RegionSet) b.getSelectedItem();
+                        appliedId = regionSet.getId();
 
                         try {
 
@@ -138,28 +163,6 @@ class GeneListFilterView {
 
                                 i++;
                             }
-                            
-                            
-                            
-                            
-                            /*Condition[] results = new Condition[regions.size()];
-                            int i = 0;
-                            for (GenomicRegion gr : regions) {
-                                Condition[] tmp = new Condition[2];
-                                
-                                tmp[0] = BinaryConditionMS.equalTo(
-                                        ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), 
-                                        gr.getChrom());
-
-                                tmp[1] = new RangeCondition(
-                                        ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), 
-                                        (long)gr.getRange().getMin(), 
-                                        (long)gr.getRange().getMax());
-                                                                
-                                results[i] = ComboCondition.and(tmp);
-
-                                i++;
-                            }*/
 
                             return results;
 
@@ -206,7 +209,12 @@ class GeneListFilterView {
         p.add(b, BorderLayout.CENTER);
         p.add(bottomContainer, BorderLayout.SOUTH);
 
-        //al.actionPerformed(null);
-        return p;
+    }
+
+    @Override
+    public FilterState saveState() {
+        Map<String, String> map = new HashMap<String, String>();
+        if(appliedId != null) map.put("value", Integer.toString(appliedId));
+        return new FilterState(FilterType.GENELIST, FILTER_NAME, FILTER_ID, map);
     }
 }

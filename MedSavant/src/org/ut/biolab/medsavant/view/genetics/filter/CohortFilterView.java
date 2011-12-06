@@ -17,12 +17,12 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -33,22 +33,48 @@ import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 
 /**
  *
  * @author mfiume
  */
-class CohortFilterView {
+class CohortFilterView extends FilterView{
 
     public static final String FILTER_NAME = "Cohort";
     public static final String FILTER_ID = "cohort";
     private static final String COHORT_ALL = "All Individuals";
 
     static FilterView getCohortFilterView(int queryId) {
-        return new FilterView("Cohort", getContentPanel(queryId));
+        return new CohortFilterView(queryId, new JPanel());
     }
-
-    public static List<Cohort> getDefaultValues() {
+    
+    public CohortFilterView(FilterState state, int queryId) throws SQLException {
+        this(queryId, new JPanel());
+        if(state.getValues().get("value") != null){
+            applyFilter(Integer.parseInt(state.getValues().get("value")));
+        }
+    }
+    
+    private Integer appliedId;
+    private ActionListener al;
+    private JComboBox b;
+    
+    public void applyFilter(int cohortId){
+        for(int i = 0; i < b.getItemCount(); i++){
+            if(b.getItemAt(i) instanceof Cohort && ((Cohort)b.getItemAt(i)).getId() == cohortId){
+                b.setSelectedIndex(i);
+            }
+        }     
+        al.actionPerformed(new ActionEvent(this, 0, null));
+    }
+    
+    private CohortFilterView(int queryId, JPanel container){
+        super(FILTER_NAME, container);
+        createContentPanel(container, queryId);
+    }
+    
+    private List<Cohort> getDefaultValues() {
         try {
             return CohortQueryUtil.getCohorts(ProjectController.getInstance().getCurrentProjectId());
         } catch (SQLException ex) {
@@ -57,13 +83,12 @@ class CohortFilterView {
         return new ArrayList<Cohort>();
     }
 
-    private static JComponent getContentPanel(final int queryId) {
+    private void createContentPanel(JPanel p, final int queryId) {
 
-        JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
         p.setMaximumSize(new Dimension(1000,80));
 
-        final JComboBox b = new JComboBox();
+        b = new JComboBox();
         b.setMaximumSize(new Dimension(1000,30));
 
         b.addItem(COHORT_ALL);
@@ -76,7 +101,7 @@ class CohortFilterView {
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
 
-        ActionListener al = new ActionListener() {
+        al = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
 
@@ -92,6 +117,7 @@ class CohortFilterView {
                         }
 
                         Cohort cohort = (Cohort) b.getSelectedItem();
+                        appliedId = cohort.getId();
 
                         try {
 
@@ -150,8 +176,13 @@ class CohortFilterView {
 
         p.add(b, BorderLayout.CENTER);
         p.add(bottomContainer, BorderLayout.SOUTH);
-        
-        //al.actionPerformed(null);
-        return p;
+
+    }
+
+    @Override
+    public FilterState saveState() {
+        Map<String, String> map = new HashMap<String, String>();
+        if(appliedId != null) map.put("value", Integer.toString(appliedId));
+        return new FilterState(FilterType.COHORT, FILTER_NAME, FILTER_ID, map);
     }
 }

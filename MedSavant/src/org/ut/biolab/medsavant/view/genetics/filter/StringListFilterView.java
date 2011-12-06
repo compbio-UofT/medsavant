@@ -12,7 +12,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -34,6 +36,7 @@ import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -58,11 +61,24 @@ public class StringListFilterView extends FilterView {
         this(new JPanel(), tablename, columnname, queryId, alias, whichTable);
     }
     
-    
+    public StringListFilterView(FilterState state, int queryId) throws SQLException {
+        this(new JPanel(), FilterUtils.getTableName(Table.valueOf(state.getValues().get("table"))), state.getId(), queryId, state.getName(), Table.valueOf(state.getValues().get("table")));
+        String values = state.getValues().get("values");
+        if(values != null){
+            List<String> l = new ArrayList<String>();
+            Collections.addAll(l, values.split(";;;"));
+            applyFilter(l);
+        }
+    }
+       
     /* StringListFilterView */
     
     private List<JCheckBox> boxes;
     private ActionListener al;
+    private String columnname;
+    private String alias;
+    private Table whichTable;
+    private List<String> appliedValues;
     
     public void applyFilter(List<String> list){
         for(JCheckBox box : boxes){
@@ -73,6 +89,10 @@ public class StringListFilterView extends FilterView {
     
     private StringListFilterView(JComponent container, String tablename, final String columnname, final int queryId, final String alias, final Table whichTable) throws SQLException{
         super(alias, container);
+        
+        this.columnname = columnname;
+        this.alias = alias;
+        this.whichTable = whichTable;
         
         final List<String> uniq;
 
@@ -126,6 +146,7 @@ public class StringListFilterView extends FilterView {
                         acceptableValues.add(b.getText());
                     }
                 }
+                appliedValues = acceptableValues;
 
                 Filter f = new QueryFilter() {
 
@@ -240,4 +261,22 @@ public class StringListFilterView extends FilterView {
         container.add(bottomContainer); 
         
     }
+
+    @Override
+    public FilterState saveState() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("table", whichTable.toString());
+        if(appliedValues != null && !appliedValues.isEmpty()){
+            String values = "";
+            for(int i = 0; i < appliedValues.size(); i++){
+                values += appliedValues.get(i);
+                if(i != appliedValues.size()-1){
+                    values += ";;;";
+                }
+            }
+            map.put("values", values);         
+        }
+        return new FilterState(FilterType.STRING, alias, columnname, map);
+    }
+
 }

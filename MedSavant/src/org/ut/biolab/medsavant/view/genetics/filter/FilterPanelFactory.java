@@ -163,6 +163,13 @@ public class FilterPanelFactory {
         // Get elapsed time in seconds
         float elapsedTimeSec = elapsedTimeMillis / 1000F;
 
-        return new FilterView(name, container);
+        return new FilterView(name, container) {
+
+            @Override
+            public FilterState saveState() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+        };
     }
 }

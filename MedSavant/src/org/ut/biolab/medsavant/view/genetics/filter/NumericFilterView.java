@@ -13,7 +13,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -36,6 +38,7 @@ import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -59,6 +62,15 @@ public class NumericFilterView extends FilterView{
     public NumericFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal, Table whichTable) throws SQLException{
         this(new JPanel(), tablename, columnname, queryId, alias, isDecimal, whichTable);
     }
+    
+    public NumericFilterView(FilterState state, int queryId) throws SQLException {
+        this(new JPanel(), FilterUtils.getTableName(Table.valueOf(state.getValues().get("table"))), state.getId(), queryId, state.getName(), Boolean.valueOf(state.getValues().get("isDecimal")), Table.valueOf(state.getValues().get("table")));
+        String minString = state.getValues().get("min");
+        String maxString = state.getValues().get("max");
+        if(minString != null && maxString != null){
+            applyFilter(Double.parseDouble(minString), Double.parseDouble(maxString));
+        }
+    }
 
     
     /* NumericFilterView */
@@ -67,6 +79,11 @@ public class NumericFilterView extends FilterView{
     private JTextField tobox;
     private DecimalRangeSlider rs;
     private JButton applyButton;
+    private String columnname;
+    private String alias;
+    private Table whichTable;
+    private boolean isDecimal;
+    private Double[] appliedValues;
             
     public void applyFilter(int low, int high) {
         applyFilter((double)low, (double)high);
@@ -86,6 +103,11 @@ public class NumericFilterView extends FilterView{
     
     private NumericFilterView(JComponent container, String tablename, final String columnname, final int queryId, final String alias, final boolean isDecimal, final Table whichTable) throws SQLException{
         super(alias, container);
+        
+        this.columnname = columnname;
+        this.alias = alias;
+        this.whichTable = whichTable;
+        this.isDecimal = isDecimal;
         
         Range extremeValues = null;
 
@@ -217,6 +239,7 @@ public class NumericFilterView extends FilterView{
                 tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
                 rs.setLow(acceptableRange.getMin());
                 rs.setHigh(acceptableRange.getMax());
+                appliedValues = new Double[]{acceptableRange.getMin(),acceptableRange.getMax()};
 
                 Filter f = new QueryFilter() {
 
@@ -301,4 +324,17 @@ public class NumericFilterView extends FilterView{
             return 0;
         }
     }
+
+    @Override
+    public FilterState saveState() {        
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("table", whichTable.toString());
+        map.put("isDecimal", Boolean.toString(isDecimal));
+        if(appliedValues != null){
+            map.put("min", Double.toString(appliedValues[0]));
+            map.put("max", Double.toString(appliedValues[1]));
+        }
+        return new FilterState(FilterType.NUMERIC, alias, columnname, map);
+    }
+
 }

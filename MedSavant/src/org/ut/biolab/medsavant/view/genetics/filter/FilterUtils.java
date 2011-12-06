@@ -7,8 +7,13 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 import com.healthmarketscience.sqlbuilder.Condition;
 import java.sql.SQLException;
 import java.util.List;
+import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
+import org.ut.biolab.medsavant.plugin.PluginController;
+import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
 
 /**
@@ -69,6 +74,40 @@ public class FilterUtils {
         removeFiltersById(getFilterPanel(), id);
     }
     
+    public static void loadFilterView(FilterState state, FilterPanelSub fps) throws SQLException{
+        switch(state.getType()){
+            case NUMERIC: 
+                fps.addNewSubItem(new NumericFilterView(state, fps.getId()), state.getId());
+                break;
+            case STRING:
+                fps.addNewSubItem(new StringListFilterView(state, fps.getId()), state.getId());
+                break;
+            case BOOLEAN:
+                fps.addNewSubItem(new BooleanFilterView(state, fps.getId()), state.getId());
+                break;
+            case GENELIST:
+                fps.addNewSubItem(new GeneListFilterView(state, fps.getId()), state.getId());
+                break;
+            case COHORT:
+                fps.addNewSubItem(new CohortFilterView(state, fps.getId()), state.getId());
+                break;
+            case GENERIC:
+                fps.addNewSubItem(new GenericFixedFilterView(state, fps.getId()), state.getId());
+                break;
+            case PLUGIN:
+                PluginController pc = PluginController.getInstance();
+                for (PluginDescriptor desc: pc.getDescriptors()) {
+                    final MedSavantPlugin p = pc.getPlugin(desc.getID());
+                    if (p instanceof MedSavantFilterPlugin && ((MedSavantFilterPlugin)p).getTitle().equals(state.getName())) {
+                        FilterView view = PluginFilterView.getFilterView((MedSavantFilterPlugin)p, fps.getId());
+                        ((MedSavantFilterPlugin)p).loadState(state.getValues(), fps.getId());
+                        fps.addNewSubItem(view, state.getId());
+                    }
+                }
+                break;
+        }
+    }
+    
     
     /*
      * Common functionality for all created filters
@@ -106,7 +145,7 @@ public class FilterUtils {
         }
     }
     
-    private static String getTableName(Table whichTable){
+    public static String getTableName(Table whichTable){
         if(whichTable == Table.VARIANT){
             return ProjectController.getInstance().getCurrentTableName();
         } else {
@@ -120,6 +159,12 @@ public class FilterUtils {
         } else {
             return ProjectController.getInstance().getCurrentPatientTableSchema();
         }
+    }
+    
+    public static void clearFilterSets(){
+        FilterController.removeAllFilters();
+        FilterPanel fp = getFilterPanel();
+        fp.clearAll();
     }
     
 }

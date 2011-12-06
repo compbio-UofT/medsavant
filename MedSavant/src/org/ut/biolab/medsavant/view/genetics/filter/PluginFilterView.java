@@ -32,6 +32,12 @@ public class PluginFilterView {
             public void cleanup() {
                 plugin.cleanup(queryID);
             }
+
+            @Override
+            public FilterState saveState() {
+                return plugin.saveState(queryID);
+            }
+
         };
     }
     

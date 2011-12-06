@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.api;
 
+import java.util.Map;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 
@@ -38,4 +39,9 @@ public abstract class MedSavantFilterPlugin extends MedSavantPlugin {
      * filter to give the filter instance a chance to clean up after itself.
      */
     public abstract void cleanup(int queryID);
+    
+    public abstract FilterStateAdapter saveState(int queryID);
+    
+    public abstract void loadState(Map<String, String> values, int queryID);
+    
 }

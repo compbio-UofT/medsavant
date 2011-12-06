@@ -4,14 +4,16 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -31,6 +33,7 @@ import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -38,23 +41,52 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Andrew
  */
-public class BooleanFilterView {
+public class BooleanFilterView extends FilterView{
 
     public static FilterView createVariantFilterView(String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
-        return createFilterView(columnname, queryId, alias, Table.VARIANT);
+        return new BooleanFilterView(new JPanel(), columnname, queryId, alias, Table.VARIANT);
     }
     
     public static FilterView createPatientFilterView(String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
-        return createFilterView(columnname, queryId, alias, Table.PATIENT);
+        return new BooleanFilterView(new JPanel(), columnname, queryId, alias, Table.PATIENT);
     }
     
-    private static FilterView createFilterView(final String columnname, final int queryId, final String alias, final Table whichTable) throws SQLException, NonFatalDatabaseException {
+    public BooleanFilterView(FilterState state, int queryId) throws SQLException {
+        this(new JPanel(), state.getId(), queryId, state.getName(), Table.valueOf(state.getValues().get("table")));
+        String values = state.getValues().get("values");
+        if(values != null){
+            List<String> l = new ArrayList<String>();
+            Collections.addAll(l, values.split(";;;"));
+            applyFilter(l);
+        }
+    }
+    
+    private ActionListener al;
+    private List<JCheckBox> boxes;
+    private String columnname;
+    private String alias;
+    private Table whichTable;
+    private List<String> appliedValues;
+    
+    public void applyFilter(List<String> list){
+        for(JCheckBox box : boxes){
+            box.setSelected((box.getText().equals("True") && list.contains("1")) || (box.getText().equals("False") && list.contains("0")));
+        }
+        al.actionPerformed(new ActionEvent(this, 0, null));
+    }
+        
+    private BooleanFilterView(final JPanel container, final String columnname, final int queryId, final String alias, final Table whichTable) throws SQLException {
+        
+        super(alias, container);
+        
+        this.columnname = columnname;
+        this.alias = alias;
+        this.whichTable = whichTable;
         
         List<String> uniq = new ArrayList<String>();
         uniq.add("True");
         uniq.add("False");
 
-        JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
         JPanel bottomContainer = new JPanel();
@@ -62,9 +94,9 @@ public class BooleanFilterView {
 
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
-        final List<JCheckBox> boxes = new ArrayList<JCheckBox>();
+        boxes = new ArrayList<JCheckBox>();
 
-        ActionListener al = new ActionListener() {
+        al = new ActionListener() {
             
             public void actionPerformed(ActionEvent e) {
 
@@ -78,6 +110,7 @@ public class BooleanFilterView {
                 if (boxes.get(1).isSelected()) {
                     acceptableValues.add("0");
                 }
+                appliedValues = acceptableValues;
 
                 Filter f = new QueryFilter() {
 
@@ -188,7 +221,22 @@ public class BooleanFilterView {
         bottomContainer.setAlignmentX(0F);
         container.add(bottomContainer);
 
-        //al.actionPerformed(null);       
-        return new FilterView(alias, container);
+    }
+
+    @Override
+    public FilterState saveState() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("table", whichTable.toString());
+        if(appliedValues != null && !appliedValues.isEmpty()){
+            String values = "";
+            for(int i = 0; i < appliedValues.size(); i++){
+                values += appliedValues.get(i);
+                if(i != appliedValues.size()-1){
+                    values += ";;;";
+                }
+            }
+            map.put("values", values);         
+        }
+        return new FilterState(FilterType.BOOLEAN, alias, columnname, map);
     }
 }

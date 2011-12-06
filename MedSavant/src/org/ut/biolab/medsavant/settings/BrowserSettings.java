@@ -27,6 +27,7 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -92,32 +93,16 @@ public class BrowserSettings {
             Node n = nodes.item(i);
             if(n.getNodeType() == Node.ELEMENT_NODE){
                 Element e = (Element) n;
-                String versionNum = getTagValue(e, "name");
+                String versionNum = MiscUtils.getTagValue(e, "name");
                 if(versionNum != null && !versionNum.equals("")){
                     versionMap.put(versionNum, new ArrayList<String>());
                     versionMap.get(versionNum).add(versionNum);
-                    versionMap.get(versionNum).addAll(getTagValues(e, "compatible"));
+                    versionMap.get(versionNum).addAll(MiscUtils.getTagValues(e, "compatible"));
                 }
             }
         }
         
         return versionMap.containsKey(clientVersion) && versionMap.get(clientVersion).contains(dbVersion);
-    }
-    
-    private static String getTagValue(Element e, String tag) {
-	NodeList nlList = e.getElementsByTagName(tag).item(0).getChildNodes();
-        Node nValue = (Node) nlList.item(0);
-	return nValue.getNodeValue();
-    }
-    
-    private static List<String> getTagValues(Element e, String tag) {
-        NodeList nlList = e.getElementsByTagName(tag);
-        List<String> result = new ArrayList<String>();
-        for(int i = 0; i < nlList.getLength(); i++){
-            Node nValue = (Node) nlList.item(i).getChildNodes().item(0);
-            result.add(nValue.getNodeValue());
-        }
-        return result;
     }
     
 }

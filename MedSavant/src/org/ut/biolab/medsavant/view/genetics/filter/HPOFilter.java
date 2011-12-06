@@ -68,7 +68,14 @@ public class HPOFilter {
         
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        FilterView hpontologyView = new FilterView(NAME_FILTER, container);
+        FilterView hpontologyView = new FilterView(NAME_FILTER, container) {
+
+            @Override
+            public FilterState saveState() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+        };
         loadData(container);
         return hpontologyView;
     }

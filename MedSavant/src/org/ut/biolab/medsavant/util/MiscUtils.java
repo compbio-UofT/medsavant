@@ -40,6 +40,9 @@ import com.jidesoft.docking.DockableFrame;
 import com.jidesoft.docking.DockingManager;
 import com.mysql.jdbc.CommunicationsException;
 import net.sf.samtools.SAMRecord;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
 /**
@@ -522,6 +525,22 @@ public class MiscUtils {
             result.moveTo(coords[i], coords[i + 1]);
         }
         result.closePath();
+        return result;
+    }
+    
+    public static String getTagValue(Element e, String tag) {
+	NodeList nlList = e.getElementsByTagName(tag).item(0).getChildNodes();
+        Node nValue = (Node) nlList.item(0);
+	return nValue.getNodeValue();
+    }
+    
+    public static List<String> getTagValues(Element e, String tag) {
+        NodeList nlList = e.getElementsByTagName(tag);
+        List<String> result = new ArrayList<String>();
+        for(int i = 0; i < nlList.getLength(); i++){
+            Node nValue = (Node) nlList.item(i).getChildNodes().item(0);
+            result.add(nValue.getNodeValue());
+        }
         return result;
     }
 }

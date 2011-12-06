@@ -25,15 +25,37 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -81,16 +103,51 @@ public class FilterPanel extends javax.swing.JPanel {
         return tmp1;
     }
 
-    public void createNewSubPanel(){
-        subs.add(new FilterPanelSub(this, subNum++));
+    public FilterPanelSub createNewSubPanel(){
+        FilterPanelSub newSub = new FilterPanelSub(this, subNum++);
+        subs.add(newSub);
         refreshSubPanels();
+        return newSub;
     }
 
     public void refreshSubPanels(){
         container.removeAll();
 
+        JButton saveButton = new JButton("Save Filters");
+        saveButton.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    saveFilters();
+                } catch (IOException ex) {
+                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+
+        JButton loadButton = new JButton("Load Filters");
+        loadButton.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    loadFilters();
+                } catch (ParserConfigurationException ex) {
+                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SAXException ex) {
+                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
         JLabel l = new JLabel("Filter out variants that don't pass any of these filter sets:");
-        container.add(l);
+
+        JPanel topContainer = new JPanel();
+        topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.X_AXIS));               
+        topContainer.add(l);
+        topContainer.add(Box.createHorizontalGlue());
+        topContainer.add(saveButton);
+        topContainer.add(loadButton);
+        container.add(topContainer);
+
         container.add(Box.createVerticalStrut(5));
         //check for removed items
         for(int i = subs.size()-1; i >= 0; i--){
@@ -113,7 +170,100 @@ public class FilterPanel extends javax.swing.JPanel {
     public List<FilterPanelSub> getFilterPanelSubs(){
         return this.subs;
     }
+    
+    public void clearAll(){
+        this.subs.clear();
+        subNum = 1;
+        refreshSubPanels();
+    }
+    
+    private void saveFilters() throws IOException{
+        
+        //choose save file
+        File file = DialogUtils.chooseFileForSave("Save Filters", "saved_filters.xml", new ExtensionFileFilter(new String[]{"xml"}), null, "xml");
+        
+        //write
+        BufferedWriter out = new BufferedWriter(new FileWriter(file, false));      
 
+        out.write("<filters>\n");
+        for(FilterPanelSub sub : subs){
+            out.write("\t<set>\n");
+            for(FilterPanelSubItem item : sub.getSubItems()){
+               out.write(item.getFilterView().saveState().generateXML() + "\n");
+            }
+            out.write("\t</set>\n");
+        }
+        out.write("</filters>");
+
+
+        out.close();
+
+    }
+
+    private void loadFilters() throws ParserConfigurationException, SAXException, IOException{
+        
+        //warn of overwrite
+        if(FilterController.hasFiltersApplied() && DialogUtils.askYesNo("Confirm Load", "<html>Loading filters clears all existing filters. <br>Are you sure you want to continue?</html>") == JOptionPane.NO_OPTION) return;
+        
+        //choose open file
+        File file = DialogUtils.chooseFileForOpen("Load Filters", new ExtensionFileFilter(new String[]{"xml"}), null);
+        
+        //read
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(file);
+        
+        doc.getDocumentElement().normalize();
+        
+        List<List<FilterState>> states = new ArrayList<List<FilterState>>();
+        NodeList nodes = doc.getElementsByTagName("set");
+        for(int i = 0; i < nodes.getLength(); i++){
+            
+            Element set = (Element) nodes.item(i);
+            NodeList filters = set.getElementsByTagName("filter"); 
+            
+            List<FilterState> list = new ArrayList<FilterState>();
+            
+            for(int j = 0; j < filters.getLength(); j++){
+                
+                Element filter = (Element) filters.item(j);
+                
+                String name = filter.getAttribute("name"); 
+                String id = filter.getAttribute("id");
+                FilterType type = FilterType.valueOf(filter.getAttribute("type"));
+                
+                NodeList params = filter.getElementsByTagName("param");
+                Map<String, String> values = new HashMap<String, String>();
+                for(int k = 0; k < params.getLength(); k++){
+                    Element e = (Element)params.item(k);
+                    values.put(e.getAttribute("key"), e.getAttribute("value"));
+                }
+
+                list.add(new FilterState(type, name, id, values));
+            }
+            
+            if(!list.isEmpty()){
+                states.add(list);
+            }
+        }
+        
+        //generate
+        FilterUtils.clearFilterSets();
+        for(int i = 0; i < states.size(); i++){
+            FilterPanelSub fps = createNewSubPanel();
+            List<FilterState> filters = states.get(i);
+            for(FilterState state : filters){
+                try {
+                    FilterUtils.loadFilterView(state, fps);
+                } catch (SQLException ex) {
+                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        refreshSubPanels();
+
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

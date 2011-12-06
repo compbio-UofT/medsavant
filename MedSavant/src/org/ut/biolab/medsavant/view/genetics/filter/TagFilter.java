@@ -3,7 +3,6 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -26,13 +25,9 @@ import javax.swing.JTextArea;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VarianttagTableSchema;
-import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
@@ -45,23 +40,19 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class TagFilter {
+public class TagFilter extends FilterView {
 
-    public static final String FILTER_NAME = "Tag";
-    public static final String FILTER_ID = "tag";
+    public static final String FILTER_NAME = "Tag Filter";
+    public static final String FILTER_ID = "tag_filter";
     //private static final String COHORT_ALL = "All Individuals";
 
-    static FilterView getCohortFilterView() {
-        return new FilterView("Tag", getContentPanel());
+    static FilterView getTagFilterView(int queryId) {
+        return new TagFilter(queryId, new JPanel());
     }
 
-    public static List<Cohort> getDefaultValues() {
-        try {
-            return CohortQueryUtil.getCohorts(ProjectController.getInstance().getCurrentProjectId());
-        } catch (SQLException ex) {
-            Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return new ArrayList<Cohort>();
+    public TagFilter(int queryId, JPanel container) {
+        super(FILTER_NAME, container);
+        createContentPanel(container, queryId);
     }
 
     private static String[][] tagsToStringArray(List<VariantTag> variantTags) {
@@ -78,9 +69,8 @@ public class TagFilter {
                         return result;
                     }
 
-    private static JComponent getContentPanel() {
+    private void createContentPanel(JComponent p, final int queryId) {
 
-        JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
         p.setBorder(ViewUtil.getBigBorder());
         p.setMaximumSize(new Dimension(1000, 80));
@@ -161,51 +151,50 @@ public class TagFilter {
 
              ActionListener al = new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent e) {
 
-                applyButton.setEnabled(false);
+                    applyButton.setEnabled(false);
 
-                Filter f = new QueryFilter() {
+                    Filter f = new QueryFilter() {
 
-                    @Override
-                    public Condition[] getConditions() {
-                            try {
-                                List<Integer> uploadIDs = VariantQueryUtil.getUploadIDsMatchingVariantTags(TagFilter.tagsToStringArray(variantTags));
+                        @Override
+                        public Condition[] getConditions() {
+                                try {
+                                    List<Integer> uploadIDs = VariantQueryUtil.getUploadIDsMatchingVariantTags(TagFilter.tagsToStringArray(variantTags));
 
-                                Condition[] uploadIDConditions = new Condition[uploadIDs.size()];
+                                    Condition[] uploadIDConditions = new Condition[uploadIDs.size()];
 
-                                 TableSchema table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(
-                                         ProjectController.getInstance().getCurrentProjectId(),
-                                         ReferenceController.getInstance().getCurrentReferenceId()));
+                                     TableSchema table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(
+                                             ProjectController.getInstance().getCurrentProjectId(),
+                                             ReferenceController.getInstance().getCurrentReferenceId()));
 
 
-                                for (int i = 0; i < uploadIDs.size(); i++) {
-                                    uploadIDConditions[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadIDs.get(i));
+                                    for (int i = 0; i < uploadIDs.size(); i++) {
+                                        uploadIDConditions[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadIDs.get(i));
+                                    }
+
+                                    return new Condition[] {ComboCondition.or(uploadIDConditions) };
+                                } catch (SQLException ex) {
+                                    return new Condition[0];
                                 }
 
-                                return new Condition[] {ComboCondition.or(uploadIDConditions) };
-                            } catch (SQLException ex) {
-                                return new Condition[0];
-                            }
+                        }
 
-                    }
+                        @Override
+                        public String getName() {
+                            return FILTER_NAME;
+                        }
 
-                    @Override
-                    public String getName() {
-                        return "Tag Filter";
-                    }
-
-                    @Override
-                    public String getId() {
-                        return "TagFilter";
-                    }
+                        @Override
+                        public String getId() {
+                            return FILTER_ID;
+                        }
+                    };
+                    FilterController.addFilter(f, queryId);
+                }
                 };
-                // TODO: not sure what int to supply here
-                FilterController.addFilter(f, -1);
-            }
-        };
 
-        applyButton.addActionListener(al);
+            applyButton.addActionListener(al);
 
             bottomContainer.add(Box.createHorizontalGlue());
             bottomContainer.add(clear);
@@ -222,7 +211,6 @@ public class TagFilter {
         p.add(content, BorderLayout.NORTH);
 
 
-        return p;
     }
 
     private static void updateTagValues(String tagName, JComboBox tagValueCB) {
@@ -242,5 +230,10 @@ public class TagFilter {
         }
 
         tagValueCB.updateUI();
+    }
+
+    @Override
+    public FilterState saveState() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

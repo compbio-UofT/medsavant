@@ -66,7 +66,14 @@ public class GOFilter {
         
         final JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        FilterView gontologyFilterView = new FilterView(NAME_FILTER, container);
+        FilterView gontologyFilterView = new FilterView(NAME_FILTER, container) {
+
+            @Override
+            public FilterState saveState() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            
+        };
         // Add button to ask whether the person wants to see the tree.
 //        final JButton buttonShowTree = new JButton("Show tree");
 //        container.add(buttonShowTree);

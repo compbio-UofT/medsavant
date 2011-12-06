@@ -452,7 +452,7 @@ public final class FilterPanelSub extends JPanel{
         //tag filter
         if(!hasSubItem(TagFilter.FILTER_ID)){
             map.get(Category.VARIANT).add(new FilterPlaceholder() {
-                public FilterView getFilterView() { return TagFilter.getCohortFilterView();}
+                public FilterView getFilterView() { return TagFilter.getTagFilterView(id);}
                 public String getFilterID() { return TagFilter.FILTER_ID;}
                 public String getFilterName() { return TagFilter.FILTER_NAME;}
             });
