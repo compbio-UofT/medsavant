@@ -12,13 +12,20 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -35,6 +42,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.ImportVariants;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -52,13 +60,11 @@ public class ImportVariantsWizard extends WizardDialog {
     private int projectId;
     private int referenceId;
     private JComboBox locationField;
-    
     private List<VariantTag> variantTags;
     private File[] variantFiles;
-    
+
     private Thread uploadThread = null;
 
-    
     /* modify existing project */
     public ImportVariantsWizard(boolean modify) {
         this.modify = modify;
@@ -164,7 +170,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
         page.addComponent(container);
         page.addText("Files can be in Variant Call Format (*.vcf) or BGZipped\nVCF (*.vcf.gz).");
-        //JLabel nameLabel = new JLabel(projectName + " (" + referenceName + ")"); 
+        //JLabel nameLabel = new JLabel(projectName + " (" + referenceName + ")");
         //nameLabel.setFont(ViewUtil.getMediumTitleFont());
         //page.addComponent(nameLabel);
         //page.addText("If the variants are with respect to another reference\ngenome, switch to that reference and try importing again.");
@@ -185,10 +191,10 @@ public class ImportVariantsWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
             }
         };
-        
+
         page.addText("Variants can be filtered by tag value "
                 + "in the Filter section.");
-        
+
 
         page.addText("Add tags for this set of variants:");
 
@@ -200,36 +206,33 @@ public class ImportVariantsWizard extends WizardDialog {
             "Variant Caller Version",
             "Technician"
         };
-        
+
         locationField = new JComboBox(patternExamples);
         locationField.setEditable(true);
-        
+
         final JPanel tagContainer = new JPanel();
         ViewUtil.applyVerticalBoxLayout(tagContainer);
-        
-        
-        
+
         final JTextField valueField = new JTextField();
-        
+
         valueField.setText("Value");
 
         final JTextArea ta = new JTextArea();
         ta.setRows(10);
         ta.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         ta.setEditable(false);
-        
+
         JButton button = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
                 // TODO: actually use uploadId
-                VariantTag tag = new VariantTag((String)locationField.getSelectedItem(),valueField.getText());
+                VariantTag tag = new VariantTag((String) locationField.getSelectedItem(), valueField.getText());
                 variantTags.add(tag);
                 ta.append(tag.toString() + "\n");
             }
-            
         });
-        
+
         JPanel container2 = new JPanel();
         ViewUtil.clear(container2);
         ViewUtil.applyHorizontalBoxLayout(container2);
@@ -237,23 +240,23 @@ public class ImportVariantsWizard extends WizardDialog {
         container2.add(ViewUtil.clear(new JLabel(" = ")));
         container2.add(valueField);
         container2.add(button);
-        
+
         page.addComponent(container2);
         locationField.setToolTipText("Current display range");
-        
+
         locationField.setPreferredSize(LOCATION_SIZE);
         locationField.setMinimumSize(LOCATION_SIZE);
-        
+
         valueField.setPreferredSize(LOCATION_SIZE);
         valueField.setMinimumSize(LOCATION_SIZE);
-        
+
         //tagContainer.setPreferredSize(new Dimension(900,10));
         //tagContainer.setBorder(BorderFactory.createTitledBorder("Tags"));
         page.addComponent(tagContainer);
 
-        
+
         page.addComponent(new JScrollPane(ta));
-        
+
         JButton clear = new JButton("Clear");
         clear.addActionListener(new ActionListener() {
 
@@ -262,13 +265,13 @@ public class ImportVariantsWizard extends WizardDialog {
                 ta.setText("");
             }
         });
-        
+
         page.addComponent(ViewUtil.alignRight(clear));
-        
+
         return page;
 
     }
-    
+
     private AbstractWizardPage getCompletionPage() {
         CompletionWizardPage page = new CompletionWizardPage("Complete");
         String specific = "create";
@@ -278,17 +281,54 @@ public class ImportVariantsWizard extends WizardDialog {
         page.addText("Click finish to " + specific + " project. ");
         return page;
     }
-    
+
+    private enum ServerState {
+
+        NOT_CONNECTED, SERVER_CONNECTED, SERVER_IDLE, SERVER_NEVER_CONNECTED
+    };
+
     private AbstractWizardPage getCompletePage() {
+
+        Date lastCheckIn;
+        ServerState state = ServerState.SERVER_NEVER_CONNECTED;
+
+        try {
+            lastCheckIn = ServerLogQueryUtil.getDateOfLastServerLog();
+
+            if (lastCheckIn == null) {
+                state = ServerState.SERVER_NEVER_CONNECTED;
+            } else {
+
+                long elapsed = System.currentTimeMillis() - lastCheckIn.getTime();
+
+                if (elapsed > 1000 * 60 * 30) { // 30 minutes
+                    state = ServerState.SERVER_IDLE;
+                } else {
+                    state = ServerState.SERVER_CONNECTED;
+                }
+            }
+        } catch (SQLException ex) {
+        }
+
         CompletionWizardPage page = new CompletionWizardPage("Complete");
         page.fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
-        page.addText("You have completed importing your variants.\n\n"
-                + "They are in the process of being annotated "
-                + "and will be\nmade available shortly.");
+        page.addText("You have finished queueing your variants for import.");
+
+        if (state == ServerState.SERVER_CONNECTED) {
+            page.addText("They are in the process of being annotated "
+                    + "and will be\nmade available shortly.");
+        } else {
+            JLabel l = new JLabel("WARNING:");
+            l.setForeground(Color.red);
+            l.setFont(new Font(l.getFont().getFamily(),Font.BOLD,l.getFont().getSize()));
+            page.addComponent(l);
+            page.addText("The MedSavant Server Utility is not running.\n"
+                    + "Please contact your administrator to start this process.\n"
+                    + "In the meantime, these variants will remain queued.");
+        }
         return page;
     }
 
-    
     private AbstractWizardPage getQueuePage() {
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage("Upload files") {
@@ -300,33 +340,43 @@ public class ImportVariantsWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
             }
         };
-        
+
         page.addText("You are now ready to upload variants.");
-        
+
         final JLabel progressLabel = new JLabel("Ready to upload variant files.");
         final JProgressBar progressBar = new JProgressBar();
-        
+
         page.addComponent(progressLabel);
         page.addComponent(progressBar);
-        
+
         final JButton cancelButton = new JButton("Cancel");
-        final JButton startButton = new JButton("Start Upload"); 
-        
+        final JButton startButton = new JButton("Start Upload");
+
         final JDialog instance = this;
-        
+
         startButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
                 page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
                 progressBar.setIndeterminate(true);
                 startButton.setEnabled(false);
-                
+
+
                 uploadThread = new Thread() {
+
                     @Override
                     public void run() {
                         instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
                         try {
-                            final boolean success = ImportVariants.performImport(variantFiles, projectId, referenceId, progressLabel);
+
+                            final int uploadID = ImportVariants.performImport(variantFiles, projectId, referenceId, progressLabel);
+
+
+                            boolean successUploadVariants = uploadID != -1;
+
+                            boolean successUploadTags = ImportVariants.addTagsToUpload(uploadID,tagsToStringArray(variantTags));
+
+                            final boolean success = successUploadVariants && successUploadTags;
 
                             SwingUtilities.invokeLater(new Runnable() {
 
@@ -341,17 +391,16 @@ public class ImportVariantsWizard extends WizardDialog {
                                         progressLabel.setText("An error occured while importing variants.");
                                     }
                                 }
-
                             });
                         } catch (SQLException ex){
                         } catch (InterruptedException ex){
-                            
+
                             String[] uploadInfo = ex.getMessage().split(";");
                             int updateId = Integer.parseInt(uploadInfo[0]);
-                            String tableName = uploadInfo[1];                         
-                            
+                            String tableName = uploadInfo[1];
+
                             VariantQueryUtil.cancelUpload(updateId, tableName);
-                            
+
                             progressBar.setIndeterminate(false);
                             progressBar.setValue(0);
                             progressLabel.setText("Upload cancelled.");
@@ -359,32 +408,45 @@ public class ImportVariantsWizard extends WizardDialog {
                             startButton.setEnabled(true);
                             cancelButton.setText("Cancel");
                             cancelButton.setEnabled(true);
-                            cancelButton.setVisible(false);       
+                            cancelButton.setVisible(false);
                             System.out.println("Update " + updateId + " was cancelled");
                         }
                         instance.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     }
+
+                    private String[][] tagsToStringArray(List<VariantTag> variantTags) {
+
+                        String[][] result = new String[variantTags.size()][2];
+
+                        int row = 0;
+                        for (VariantTag t : variantTags) {
+                            result[row][0] = t.key;
+                            result[row][1] = t.value;
+                            row++;
+                        }
+
+                        return result;
+                    }
                 };
                 cancelButton.setVisible(true);
                 startButton.setVisible(false);
-                uploadThread.start();              
+                uploadThread.start();
             }
-            
         });
-         
+
         cancelButton.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {                               
+            public void actionPerformed(ActionEvent e) {
                 cancelButton.setText("Cancelling...");
                 cancelButton.setEnabled(false);
                 uploadThread.interrupt();
             }
         });
-        
+
         page.addComponent(ViewUtil.alignRight(startButton));
         cancelButton.setVisible(false);
         page.addComponent(ViewUtil.alignRight(cancelButton));
-        
+
         return page;
     }
 

@@ -199,12 +199,12 @@ public class ServerLogPage extends SubSectionView {
         CardLayout cl = (CardLayout) (listPanel.getLayout());
         cl.show(listPanel, CARDNAME_WAIT);
     }
-    
+
     private synchronized void hideWaitPanel() {
         CardLayout cl = (CardLayout) (listPanel.getLayout());
         cl.show(listPanel, currentCard);
     }
-    
+
     private int limit = 1000;
 
     private JPanel getClientCard() {
@@ -241,7 +241,7 @@ public class ServerLogPage extends SubSectionView {
                 } catch (SQLException ex) {
                     return 0;
                 }
-            }    
+            }
             public void retrievalComplete() {}
         };
         serverTable = new SearchableTablePanel(getName(), serverColumnNames, serverColumnClasses, new ArrayList<Integer>(), limit, retriever);
@@ -262,7 +262,7 @@ public class ServerLogPage extends SubSectionView {
                 } catch (SQLException ex) {
                     return 0;
                 }
-            }      
+            }
             public void retrievalComplete() {}
         };
         annotationTable = new SearchableTablePanel(getName(), annotationsColumnNames, annotationsColumnClasses, new ArrayList<Integer>(), limit, retriever);
@@ -273,11 +273,11 @@ public class ServerLogPage extends SubSectionView {
     }
 
     private void refreshClientCard() {
-        clientTable.forceRefreshData();      
+        clientTable.forceRefreshData();
     }
 
     private void refreshServerCard() {
-        serverTable.forceRefreshData();        
+        serverTable.forceRefreshData();
     }
 
     private void refreshAnnotationCard() {
@@ -302,8 +302,8 @@ public class ServerLogPage extends SubSectionView {
         waitPanel = new WaitPanel("Getting log...");
         return waitPanel;
     }
-    
-    
+
+
     private List<Object[]> retrieveAnnotationData(int start, int limit){
         if(!currentCard.equals(CARDNAME_ANNOTATION)) return new ArrayList<Object[]>();
         List<Object[]> v = null;
@@ -317,7 +317,7 @@ public class ServerLogPage extends SubSectionView {
 
                 Status status = AnnotationLogQueryUtil.intToStatus(rs.getInt(4));
 
-                final int updateId = rs.getInt(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPDATE_ID);
+                final int updateId = rs.getInt(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID);
                 JButton button = new JButton("Retry");
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent ae) {
@@ -358,7 +358,7 @@ public class ServerLogPage extends SubSectionView {
         hideWaitPanel();
         return v;
     }
-    
+
     private List<Object[]> retrieveServerData(int start, int limit){
         if(!currentCard.equals(CARDNAME_SERVER)) return new ArrayList<Object[]>();
         List<Object[]> v = null;
@@ -385,7 +385,7 @@ public class ServerLogPage extends SubSectionView {
         hideWaitPanel();
         return v;
     }
-    
+
     private List<Object[]> retrieveClientData(int start, int limit){
         if(!currentCard.equals(CARDNAME_CLIENT)) return new ArrayList<Object[]>();
         List<Object[]> v = null;
@@ -406,7 +406,7 @@ public class ServerLogPage extends SubSectionView {
             }
             if (Thread.currentThread().isInterrupted()) {
                 return null;
-            }           
+            }
         } catch (Exception e){
             waitPanel.setComplete();
             waitPanel.setStatus("Problem getting log");

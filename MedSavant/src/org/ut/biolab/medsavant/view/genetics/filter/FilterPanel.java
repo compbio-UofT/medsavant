@@ -40,22 +40,22 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Andrew
  */
 public class FilterPanel extends javax.swing.JPanel {
-    
+
     private List<FilterPanelSub> subs = new ArrayList<FilterPanelSub>();
     private int subNum = 1;
 
     /** Creates new form FilterPanel */
     public FilterPanel() {
         initComponents();
-        
+
         container.setBorder(BorderFactory.createLineBorder(container.getBackground(), 10));
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        
+
         createNewSubPanel();
     }
- 
+
     private JPanel createNewOrButton(){
-        
+
         final JLabel addLabel = ViewUtil.createIconLabel(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         addLabel.setToolTipText("Add filter set");
         addLabel.addMouseListener(new MouseAdapter() {
@@ -64,8 +64,8 @@ public class FilterPanel extends javax.swing.JPanel {
                 createNewSubPanel();
             }
         });
-        
-        
+
+
         JPanel tmp1 = ViewUtil.getPrimaryBannerPanel();//ViewUtil.getClearPanel();
         tmp1.setBorder(BorderFactory.createCompoundBorder(
                           ViewUtil.getTinyLineBorder(),
@@ -76,19 +76,19 @@ public class FilterPanel extends javax.swing.JPanel {
         JLabel addLabelText = new JLabel("Add filter set");
         addLabelText.setForeground(Color.white);
         tmp1.add(addLabelText);
-        tmp1.add(Box.createHorizontalGlue()); 
-       
+        tmp1.add(Box.createHorizontalGlue());
+
         return tmp1;
     }
-    
+
     public void createNewSubPanel(){
         subs.add(new FilterPanelSub(this, subNum++));
         refreshSubPanels();
     }
-    
+
     public void refreshSubPanels(){
         container.removeAll();
-        
+
         JLabel l = new JLabel("Filter out variants that don't pass any of these filter sets:");
         container.add(l);
         container.add(Box.createVerticalStrut(5));
@@ -98,7 +98,7 @@ public class FilterPanel extends javax.swing.JPanel {
                 subs.remove(i);
             }
         }
-        
+
         //refresh panel
         for(int i = 0; i < subs.size(); i++){
             container.add(subs.get(i));
@@ -106,7 +106,7 @@ public class FilterPanel extends javax.swing.JPanel {
         }
         container.add(createNewOrButton());
         container.add(Box.createVerticalGlue());
-        
+
         this.updateUI();
     }
     

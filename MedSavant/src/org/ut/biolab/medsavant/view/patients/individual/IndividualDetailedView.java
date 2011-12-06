@@ -71,20 +71,20 @@ public class IndividualDetailedView extends DetailedView {
         public IndividualDetailsSW(int pid) {
             this.pid = pid;
         }
-        
+
         @Override
         protected Object doInBackground() throws Exception {
             Object[] fieldValues = PatientQueryUtil.getPatientRecord(ProjectController.getInstance().getCurrentProjectId(), pid);
             return fieldValues;
         }
-        
+
         @Override
         protected void done() {
             try {
                 Object[] result = (Object[]) get();
                 setPatientInformation(result);
             } catch (CancellationException ex){
-                
+
             } catch (Exception ex) {
                 ClientLogger.log(IndividualDetailedView.class, ex.getLocalizedMessage());
                 return;
@@ -92,20 +92,20 @@ public class IndividualDetailedView extends DetailedView {
         }
     }
 
-    
+
     private class PedigreeSW extends SwingWorker {
         private final int pid;
 
         public PedigreeSW(int pid) {
             this.pid = pid;
         }
-        
+
         @Override
         protected Object doInBackground() throws Exception {
             List<Object[]> results = PatientQueryUtil.getFamilyOfPatient(ProjectController.getInstance().getCurrentProjectId(), pid);
-            
+
             File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + pid + ".csv");
-            
+
                 CSVWriter w = new CSVWriter(new FileWriter(outfile),',',CSVWriter.NO_QUOTE_CHARACTER);
                 w.writeNext(new String[] {Pedigree.FIELD_HOSPITALID,Pedigree.FIELD_MOM,Pedigree.FIELD_DAD,
                     Pedigree.FIELD_PATIENTID,Pedigree.FIELD_GENDER});
@@ -119,7 +119,7 @@ public class IndividualDetailedView extends DetailedView {
                 w.close();
             return outfile;
         }
-        
+
         @Override
         protected void done() {
             try {
@@ -127,7 +127,7 @@ public class IndividualDetailedView extends DetailedView {
                 showPedigree(pedigreeCSVFile);
                 pedigreeCSVFile.delete();
             } catch (CancellationException ex){
-                
+
             } catch (Exception ex) {
                 ClientLogger.log(IndividualDetailedView.class, ex.getLocalizedMessage());
                 return;
@@ -136,10 +136,10 @@ public class IndividualDetailedView extends DetailedView {
     }
 
     public synchronized void showPedigree(File pedigreeCSVFile) {
-        
+
         pedigreeDetails.removeAll();
         pedigreeDetails.setLayout(new BorderLayout());
-        
+
         //Step 1
 	Graph graph = new Graph();
 	CsvGraphLoader loader = new CsvGraphLoader(pedigreeCSVFile.getAbsolutePath(), ",");
@@ -152,40 +152,40 @@ public class IndividualDetailedView extends DetailedView {
 
 	//Step 3
 	GraphView2D view = new GraphView2D(s.getLayoutedGraph());
-        
+
         //view.highlight(nodes);
         //view.setSelectionEnabled(true);
-        
+
         view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "2", new SymbolSexMale()));
 	view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "1", new SymbolSexFemale()));
         view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "0", new SymbolSexUndesignated()));
 	view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "null", new SymbolSexUndesignated()));
-        
+
         view.addRule(new PedigreeBasicRule(patientIds));
-        
+
         pedigreeDetails.add(view.getComponent(),BorderLayout.CENTER);
-        
+
         pedigreeDetails.updateUI();
     }
-    
-    
+
+
     public static class HospitalSymbol extends Symbol2D {
         private final String hid;
 
                     public HospitalSymbol(String hid) {
                         this.hid = hid;
                     }
-                    
+
                     @Override
                     public void drawSymbol(Graphics2D gd, Float position, float size, Color color, Color color1, NodeView nv) {
                         gd.setFont(new Font("Arial",Font.PLAIN,1));
                         FontMetrics fm = gd.getFontMetrics();
                         int width = fm.stringWidth(hid);
                         int height = fm.getMaxAscent();
-                        
+
                         float startX = (float) position.getX()-size/2;// (float) (position.getX()-(double)width/2);
                         float startY = (float) (position.getY()+(double) size/2 +height);
-                        
+
                         gd.drawString(hid, startX, startY);
                     }
 
@@ -193,16 +193,11 @@ public class IndividualDetailedView extends DetailedView {
                     public int getPriority() {
                         return 0;
                     }
-                    
+
                 }
-    
+
     public synchronized void setPatientInformation(Object[] result) {
 
-        System.out.println(fieldNames.size() + " vs " + result.length);
-        for (int i = 0; i < fieldNames.size(); i++) {
-            System.out.println(fieldNames.get(i) + " = " + result[i]);
-        }
-        
         String[][] values = new String[fieldNames.size()][2];
         for (int i = 0; i < fieldNames.size(); i++) {
             values[i][0] = fieldNames.get(i);
@@ -210,90 +205,90 @@ public class IndividualDetailedView extends DetailedView {
             if(result[i] != null)
                 values[i][1] = result[i].toString();
         }
-        
+
         infoDetails.removeAll();
         infoDetails.setLayout(new BoxLayout(infoDetails,BoxLayout.Y_AXIS));
-        
+
         infoDetails.add(ViewUtil.getKeyValuePairList(values));
-        
+
         infoDetails.add(Box.createVerticalGlue());
-        
+
         infoDetails.updateUI();
     }
-    
+
     public IndividualDetailedView() {
-        
+
         try {
             fieldNames = PatientQueryUtil.getPatientFieldAliases(ProjectController.getInstance().getCurrentProjectId());
         } catch (SQLException ex) {
             ClientLogger.log(IndividualDetailedView.class,ex.getLocalizedMessage(),Level.SEVERE);
         }
-        
+
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
-        
+
         JPanel infoContainer = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(infoContainer);
-        
+
         viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer),BorderLayout.CENTER);
-        
+
         CollapsablePanel cp = new CollapsablePanel("Patient Information");
         infoContainer.add(cp);
-        
+
         infoContainer.add(ViewUtil.getLargeSeparator());
-        
+
         CollapsablePanel cpPed = new CollapsablePanel("Pedigree");
         infoContainer.add(cpPed);
-        
+
         infoContainer.add(Box.createVerticalGlue());
-        
+
         infoContent = cp.getContentPane();
         pedigreeContent = cpPed.getContentPane();
-        
+
         infoDetails = ViewUtil.getClearPanel();
         pedigreeDetails = ViewUtil.getClearPanel();
-        
+
         menu = ViewUtil.getClearPanel();
-        
+
         menu.add(addIndividualsButton());
         menu.setVisible(false);
         infoContent.setLayout(new BorderLayout());
         pedigreeContent.setLayout(new BorderLayout());
-        
+
         infoContent.add(infoDetails,BorderLayout.CENTER);
         pedigreeContent.add(pedigreeDetails,BorderLayout.CENTER);
-        
+
         this.addBottomComponent(menu);
     }
-    
+
     @Override
     public void setSelectedItem(Object[] item) {
         int patientId = (Integer) item[0];
         patientIds = new int[1];
         patientIds[0] = patientId;
         String hospitalId = (String) item[2];
-        
+
         setTitle(hospitalId);
-        
+
         infoDetails.removeAll();
         infoDetails.updateUI();
-        
+
         if (sw != null) {
             sw.cancel(true);
         }
         sw = new IndividualDetailsSW(patientId);
         sw.execute();
-        
+
         if (sw2 != null) {
             sw2.cancel(true);
         }
-        
+
         sw2 = new PedigreeSW(patientId);
         sw2.execute();
-        
+
         if(menu != null) menu.setVisible(true);
     }
-    
+
     @Override
     public void setMultipleSelections(List<Object[]> items){
         patientIds = new int[items.size()];
@@ -303,8 +298,10 @@ public class IndividualDetailedView extends DetailedView {
         setTitle("Multiple individuals (" + items.size() + ")");
         infoDetails.removeAll();
         infoDetails.updateUI();
+        pedigreeDetails.removeAll();
+        pedigreeDetails.updateUI();
     }
-    
+
     private JButton addIndividualsButton(){
         JButton button = new JButton("Add individual(s) to cohort");
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
@@ -312,22 +309,22 @@ public class IndividualDetailedView extends DetailedView {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(patientIds != null && patientIds.length > 0){
-                    try {    
-                        List<Cohort> cohorts = CohortQueryUtil.getCohorts(ProjectController.getInstance().getCurrentProjectId());                    
+                    try {
+                        List<Cohort> cohorts = CohortQueryUtil.getCohorts(ProjectController.getInstance().getCurrentProjectId());
                         ComboForm form = new ComboForm(cohorts.toArray(), "Select Cohort", "Select which cohort to add to:");
                         Cohort selected = (Cohort) form.getSelectedValue();
                         if (selected == null) {
                             return;
-                        }                        
-                        CohortQueryUtil.addPatientsToCohort(patientIds, selected.getId());                            
+                        }
+                        CohortQueryUtil.addPatientsToCohort(patientIds, selected.getId());
                     } catch (SQLException ex) {
                         Logger.getLogger(IndividualDetailedView.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    parent.refresh();                   
-                }                   
+                    parent.refresh();
+                }
             }
-        }); 
+        });
         return button;
     }
-    
+
 }

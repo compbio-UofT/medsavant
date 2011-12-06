@@ -52,19 +52,19 @@ public class ImportFileView extends JDialog {
     private JPanel previewPanel;
     private JPanel waitPanel = new WaitPanel("Generating preview");
     private static PreviewWorker worker;
-    
+
     /** Creates new form ThreadManagerDialog */
     public ImportFileView(Window parent, String title) {
         super(parent, Dialog.ModalityType.APPLICATION_MODAL);
         this.setTitle(title);
         initGUI();
         this.setLocationRelativeTo(parent);
-        
+
         importAccepted = false;
         formatMap = new HashMap<String,FileFormat>();
-        
+
     }
-    
+
     private void initGUI() {
 
         setMinimumSize(new Dimension(600, 600));
@@ -73,39 +73,39 @@ public class ImportFileView extends JDialog {
 
         JPanel h1 = new JPanel();
         h1.setBorder(ViewUtil.getMediumBorder());
-        
+
         h1.setLayout(new BoxLayout(h1,BoxLayout.Y_AXIS));
-       
+
         //Delimiter bar
-        /*JPanel delimiterBarPanel = new JPanel();
+        JPanel delimiterBarPanel = new JPanel();
         delimiterBarPanel.setLayout(new BoxLayout(delimiterBarPanel,BoxLayout.X_AXIS));
-        
+
         delimiterBarPanel.add(Box.createHorizontalGlue());
-        
+
         ButtonGroup delimiterBG = new ButtonGroup();
         addDelimiterRadioButton("Tab",'\t',delimiterBarPanel,delimiterBG,true);
         addDelimiterRadioButton("Space",' ',delimiterBarPanel,delimiterBG,false);
         addDelimiterRadioButton("Comma",',',delimiterBarPanel,delimiterBG,false);
-        
+
         delimiterBarPanel.add(Box.createHorizontalGlue());
 
         h1.add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel("Delimiter")));
-        h1.add(delimiterBarPanel); 
-              
-        h1.add(ViewUtil.getSmallVerticalSeparator());*/
+        h1.add(delimiterBarPanel);
+
+        h1.add(ViewUtil.getSmallVerticalSeparator());
 
         //File format bar
         h1.add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel("Format")));
-        
+
         formatComboBox = new JComboBox();
         h1.add(formatComboBox);
-        
+
         h1.add(ViewUtil.getSmallVerticalSeparator());
-        
+
         //File chooser bar
         h1.add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel("File")));
         pathField = new PathField(JFileChooser.OPEN_DIALOG);
-        
+
         pathField.getPathArea().getDocument().addDocumentListener(
                 new DocumentListener() {
 
@@ -121,22 +121,22 @@ public class ImportFileView extends JDialog {
             }
 
         });
-        
-        
+
+
         h1.add(pathField);
         h1.add(ViewUtil.getSmallVerticalSeparator());
-        
+
         h1.add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel("Preview")));
-        
+
         h1.add(Box.createVerticalGlue());
-        
+
         add(h1,BorderLayout.NORTH);
-        
+
         previewPanel = new JPanel();
         previewPanel.setBorder(ViewUtil.getTinyLineBorder());
-        
+
         add(previewPanel,BorderLayout.CENTER);
-        
+
         updatePreview();
 
         JPanel bottomPanel = ViewUtil.getSecondaryBannerPanel();
@@ -151,10 +151,10 @@ public class ImportFileView extends JDialog {
                 }
             }
         });
-        
-        
+
+
         JButton cancelButton = new JButton("Cancel");
-        
+
         cancelButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -162,23 +162,23 @@ public class ImportFileView extends JDialog {
                 ImportFileView.this.setVisible(false);
             }
         });
-        
+
         bottomPanel.add(Box.createHorizontalGlue());
         bottomPanel.add(importButton);
         bottomPanel.add(cancelButton);
-        
+
         getRootPane().setDefaultButton(importButton);
 
         add(bottomPanel, BorderLayout.SOUTH);
-        
+
     }
 
     private void addDelimiterRadioButton(
-            String string, final char delim, 
-            JPanel delimiterBarPanel, 
+            String string, final char delim,
+            JPanel delimiterBarPanel,
             ButtonGroup delimiterBG,
             boolean defaultSelected) {
-        
+
         JRadioButton rb = new JRadioButton(string);
         delimiterBarPanel.add(rb);
         delimiterBG.add(rb);
@@ -187,14 +187,14 @@ public class ImportFileView extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 setDelimiter(delim);
             }
-            
+
         });
-        if (defaultSelected) { 
+        if (defaultSelected) {
             rb.setSelected(true);
             this.setDelimiter(delim);
         }
     }
-    
+
     private void setDelimiter(char delim) {
         this.delimiter = delim;
     }
@@ -208,15 +208,15 @@ public class ImportFileView extends JDialog {
     }
 
     public boolean validateForm() {
-        
+
         File f = new File(pathField.getPath());
         if (!f.exists()) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     //private addFormat(FileFormat ff) {
     //}
 
@@ -225,15 +225,15 @@ public class ImportFileView extends JDialog {
         formatMap.put(f.getName(),f);
         this.formatComboBox.updateUI();
     }
-    
+
     public void updatePreview() {
-        
+
         String path = this.pathField.getPath();
         File file = new File(path);
-        
+
         this.previewPanel.removeAll();
         this.previewPanel.setLayout(new BorderLayout());
-        
+
         if (path.equals("")) {
             this.previewPanel.add(
                     ViewUtil.getCenterAlignedComponent(
@@ -245,23 +245,23 @@ public class ImportFileView extends JDialog {
                         new JLabel("No file at path")),
                     BorderLayout.CENTER);
         } else {
-            
+
             worker = new PreviewWorker();
             worker.execute();
         }
-        
+
         this.previewPanel.updateUI();
     }
 
     public FileFormat getFileFormat() {
         return this.formatMap.get((String) this.formatComboBox.getSelectedItem());
     }
-    
-        
+
+
     public String getPath() {
         return this.pathField.getPath();
     }
-    
+
     public int getNumHeaderLines() {
         return this.numHeaderLines;
     }
@@ -288,7 +288,7 @@ public class ImportFileView extends JDialog {
             // This method returns two lists: header and data.  We only care about the data.
             return ImportDelimitedFile.getPreview(pathField.getPath(), getDelimiter(), numHeaderLines, NUM_LINES, getFileFormat())[1];
         }
-        
+
         @SuppressWarnings("unchecked")
         protected void showSuccess(List<String[]> data) {
             int[] fields = getFileFormat().getRequiredFieldIndexes();
@@ -312,7 +312,7 @@ public class ImportFileView extends JDialog {
                 previewPanel.add(waitPanel);
             } else {
                 worker = null;
-                previewPanel.remove(waitPanel);        
+                previewPanel.remove(waitPanel);
             }
         }
     }

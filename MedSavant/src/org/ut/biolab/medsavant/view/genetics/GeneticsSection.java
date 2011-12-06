@@ -63,7 +63,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                
+
                 new ImportVariantsWizard();
                 //new VCFUploadForm();
             }
@@ -107,7 +107,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         result[2] = addShowInSavantButton();
         result[3] = createVcfButton();
         //result[0] = addSaveResultSetButton();
-        
+
         isInitialized = true;
         return result;
     }
@@ -117,7 +117,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
             /*panels = new JPanel[2];
             panels[0] = new FilterPanel();
             panels[1] = new FilterProgressPanel();
-             * 
+             *
              */
             //TODO: account for exception in filter panel instead
         } catch (Exception ex) {

@@ -29,6 +29,9 @@ public class IconFactory {
     }
 
     public enum StandardIcon {
+
+        ADD_ON_TOOLBAR,
+        REMOVE_ON_TOOLBAR,
         ADD,
         REMOVE,
         EXPAND,
@@ -67,10 +70,14 @@ public class IconFactory {
                 return getIcon(iconroot + "expand.png");
             case COLLAPSE:
                 return getIcon(iconroot + "collapse.png");
-            case ADD:
+            case ADD_ON_TOOLBAR:
                 return getIcon(iconroot + "mac_add.png");
-            case REMOVE:
+            case REMOVE_ON_TOOLBAR:
                 return getIcon(iconroot + "mac_remove.png");
+            case ADD:
+                return getIcon(iconroot + "add.png");
+            case REMOVE:
+                return getIcon(iconroot + "remove.png");
             case EDIT:
                 return getIcon(iconroot + "mac_edit.png");
             case FILTER:

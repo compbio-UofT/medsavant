@@ -40,11 +40,11 @@ public class SplitScreenView extends JPanel {
     public DetailedView getDetailedView() {
     return detailedView;
     }
-    
+
     public DetailedListModel getListModel() {
     return detailedListModel;
     }
-     * 
+     *
      */
     private static class ListView extends JPanel {
 
@@ -80,10 +80,10 @@ public class SplitScreenView extends JPanel {
             buttonPanel.add(Box.createHorizontalGlue());
 
             final ListView instance = this;
-            
+
             if (detailedEditer.doesImplementAdding()) {
-                
-                JButton butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+
+                JButton butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD_ON_TOOLBAR));
                 butt.setToolTipText("Add");
                 butt.addActionListener(
                         new ActionListener() {
@@ -98,7 +98,7 @@ public class SplitScreenView extends JPanel {
             }
 
             if (detailedEditer.doesImplementDeleting()) {
-                JButton butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
+                JButton butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
                 butt.setToolTipText("Remove selected");
                 butt.addActionListener(
                         new ActionListener() {
@@ -129,7 +129,7 @@ public class SplitScreenView extends JPanel {
                         });
                 buttonPanel.add(butt);
             }
-            
+
             buttonPanel.add(Box.createHorizontalGlue());
 
             showWaitCard();
@@ -209,7 +209,7 @@ public class SplitScreenView extends JPanel {
                     } else {
                         detailedView.setMultipleSelections(selectedItems);
                     }
-                    
+
                 }
             });
 

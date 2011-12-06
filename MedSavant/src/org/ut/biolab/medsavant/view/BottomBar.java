@@ -41,7 +41,7 @@ public class BottomBar extends JPanel {
     private final JLabel statusLabel;
     private final JLabel loginStatusLabel;
     private final ImagePanel loginImagePanel;
-    private final ServerStatusPanel serverStatusPanel;
+    //private final ServerStatusPanel serverStatusPanel;
 
     public BottomBar() {
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -57,7 +57,7 @@ public class BottomBar extends JPanel {
 
         loginImagePanel = new ImagePanel(im.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH),15,15);
 
-        serverStatusPanel = new ServerStatusPanel();
+        //serverStatusPanel = new ServerStatusPanel();
 
 
         //this.add(new JSeparator(JSeparator.VERTICAL));
@@ -66,8 +66,7 @@ public class BottomBar extends JPanel {
         this.add(ViewUtil.getSmallSeparator());
         this.add(loginStatusLabel);
         this.add(ViewUtil.getSmallSeparator());
-
-        this.add(serverStatusPanel);
+        //this.add(serverStatusPanel);
         this.add(Box.createHorizontalGlue());
         this.add(statusLabel);
         this.add(Box.createHorizontalGlue());

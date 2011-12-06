@@ -24,27 +24,27 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Andrew
  */
 public class FilterPanelSubItem extends JPanel {
-    
+
     private JComponent contentPanel;
     private FilterView filterView;
     private boolean isRemoved;
     private FilterPanelSub parent;
     private String filterId;
-    
+
     private static Color BAR_COLOUR = Color.darkGray;
     private static Color BUTTON_OVER_COLOUR = Color.gray;
-    
-    
-    
+
+
+
     public FilterPanelSubItem(FilterView filterView, FilterPanelSub parent, String filterId) {
-        
+
         this.parent = parent;
         this.filterView = filterView;
         this.filterId = filterId;
-        
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));        
+
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(ViewUtil.getTinyLineBorder());
-        
+
         //title bar
         JPanel titlePanel = ViewUtil.getSecondaryBannerPanel();
         //titlePanel.setBackground(BAR_COLOUR);
@@ -52,13 +52,13 @@ public class FilterPanelSubItem extends JPanel {
         JLabel testLabel = new JLabel(filterView.getTitle());
         testLabel.setForeground(Color.black);
         titlePanel.add(Box.createRigidArea(new Dimension(10,16)));
-        titlePanel.add(testLabel);  
-        titlePanel.add(Box.createHorizontalGlue());     
-        
+        titlePanel.add(testLabel);
+        titlePanel.add(Box.createHorizontalGlue());
+
         final JLabel removeLabel = ViewUtil.createIconLabel(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
         removeLabel.setToolTipText("Remove filter");
         removeLabel.addMouseListener(new MouseAdapter() {
-            
+
             @Override
             public void mouseReleased(MouseEvent e) {
                 removeThis();
@@ -75,8 +75,8 @@ public class FilterPanelSubItem extends JPanel {
             }
         });
         titlePanel.add(removeLabel);
-        titlePanel.add(Box.createRigidArea(new Dimension(10,20)));       
-        
+        titlePanel.add(Box.createRigidArea(new Dimension(10,20)));
+
         this.add(titlePanel);
 
         titlePanel.addMouseListener(new MouseAdapter() {
@@ -87,26 +87,26 @@ public class FilterPanelSubItem extends JPanel {
             }
         });
         titlePanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         contentPanel = filterView.getComponent();
         this.add(contentPanel);
-        
+
     }
-    
+
     public void removeThis() {
         FilterController.removeFilter(filterId, parent.getId());
         isRemoved = true;
         filterView.cleanup();       // Give derived classes (e.g. plugin filters) a chance to clean up.
         parent.refreshSubItems();
     }
-    
+
     public boolean isRemoved() {
         return isRemoved;
     }
-    
+
     public String getFilterId() {
         return filterId;
-    }    
+    }
     
     public FilterView getFilterView() {
         return filterView;

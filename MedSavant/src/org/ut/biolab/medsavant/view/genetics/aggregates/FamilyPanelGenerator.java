@@ -212,7 +212,6 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
             pg = new PedigreeGrabber(familyId);
             pg.execute();
 
-            System.out.println("Getting per individual counts...");
             fa = new FamilyVariantIntersectionAggregator(familyId);
             fa.execute();
 
@@ -334,10 +333,6 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
                 if (this.individualVariantIntersection != null) {
 
-                    for (String patient : individualVariantIntersection.keySet()) {
-                        System.out.println(patient + " has " + individualVariantIntersection.get(patient) + " variants");
-                    }
-
                     for (Node n : pedigree.getAllNodes()) {
                         String id = n.getId().toString();
                         n.setUserData(FIELD_NUMVARIANTS, individualVariantIntersection.get(id));
@@ -391,10 +386,10 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
                 float startY = (float) (position.getY() + (double) size / 2 + height + 0.1 + height);
 
                 float pad = 0.07F;
-                
+
                 gd.setColor(Color.red);
                 gd.fill(new RoundRectangle2D.Float(startX - pad, startY - height - pad + 0.1F, size + 2*pad, height + 2*pad,1F,1F));
-                
+
                 gd.setColor(Color.white);
                 gd.drawString(toWrite, startX, startY);
 

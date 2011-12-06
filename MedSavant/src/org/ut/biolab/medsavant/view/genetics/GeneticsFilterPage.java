@@ -54,11 +54,11 @@ public class GeneticsFilterPage extends SubSectionView {
 
         private void updateSQL() {
             Condition[][] conditions = FilterController.getQueryFilterConditions();
-               
+
             SelectQuery q = new SelectQuery();
             //q.addFromTable(table.getTable());
             VariantQueryUtil.addConditionsToQuery(q, conditions);
-            
+
             String s = q.toString();
             Logger.getLogger(GeneticsFilterPage.class.getName()).log(Level.WARNING, s);
             this.content.setText(s);
@@ -68,7 +68,7 @@ public class GeneticsFilterPage extends SubSectionView {
     private JPanel view;
     private FilterPanel fp;
     private FilterProgressPanel history;
-    
+
     private static GeneticsFilterPage instance;
     
     public GeneticsFilterPage(SectionView parent) {
@@ -86,11 +86,11 @@ public class GeneticsFilterPage extends SubSectionView {
             view.setLayout(new BorderLayout());
             fp = new FilterPanel();
             view.add(fp,BorderLayout.CENTER);
-            
+
             if(history != null) FilterController.removeFilterListener(history);
             history = new FilterProgressPanel();
             view.add(new PeekingPanel("History", BorderLayout.EAST, history, true), BorderLayout.WEST);
-            
+
             // uncomment the next line to show the master SQL statement
             view.add(new PeekingPanel("SQL", BorderLayout.SOUTH, new FilterSQLPanel(), true), BorderLayout.NORTH);
         } else {
