@@ -261,7 +261,7 @@ public class PathwaysTab extends JFrame {
             getById(input);
     }
 
-    private void getById(final String id){
+    public void getById(final String id){
         
         if(!started){
             start(new Runnable() {

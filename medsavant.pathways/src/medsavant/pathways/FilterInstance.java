@@ -27,6 +27,7 @@ import javax.swing.border.Border;
 import com.healthmarketscience.sqlbuilder.Condition;
 
 import org.ut.biolab.medsavant.api.ProjectUtils;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 
 /**
  * Object which holds the UI associated with a given instance of the filter.
@@ -40,6 +41,9 @@ public class FilterInstance {
     private JButton applyButton;
     private JButton removeButton;
     private int queryID;
+    private boolean filterApplied = false;
+    private String pathwayString;
+    private final Object lock = new Object();
 
     /**
      * Create the user-interface which appears within the panel.
@@ -108,6 +112,7 @@ public class FilterInstance {
         buttonPanel.add(removeButton);
         
         applyButton = new JButton("Apply Current Filter");
+        
         applyButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -130,6 +135,11 @@ public class FilterInstance {
     public void setCurrentFilter(String s){
         currentLabel.setText("Current Filter: " + s);
         applyButton.setEnabled(true);
+        
+        //someone may be waiting on lock
+        synchronized(lock){
+            lock.notifyAll();
+        }
     }
     
     private void removeFilter(){
@@ -137,11 +147,14 @@ public class FilterInstance {
         setAppliedFilter("(none)", 0);
         applyButton.setEnabled(true);
         removeButton.setEnabled(false);
+        setFilterApplied(false);
     }
     
     public void addFilter(Condition[] conditions, String pathwayString, int size) {
         ProjectUtils.addFilterConditions(conditions, "WikiPathways", "medsavant.pathways", queryID);
         setAppliedFilter(pathwayString, size);
+        setFilterApplied(true);
+        this.pathwayString = pathwayString;
     }
     
     public void enableApply(boolean enable){
@@ -163,4 +176,39 @@ public class FilterInstance {
         pathwaysTab = null;
         System.out.println("Pretending to clean up " + queryID);
     }
+    
+    public boolean isFilterApplied(){
+        return filterApplied;
+    }
+    
+    public void setFilterApplied(boolean set){
+        filterApplied = set;
+    }
+    
+    public String getPathwayName(){
+        return pathwayString;
+    }
+    
+    public void goToPathwayAndApply(final String pathwayId){   
+        
+        final IndeterminateProgressDialog d = new IndeterminateProgressDialog("WikiPathways", "Getting pathway data. Please wait. ", true);
+        Thread t = new Thread(){
+        
+            @Override
+            public void run(){
+                pathwaysTab.getById(pathwayId);
+                d.setVisible(true);
+                synchronized(lock){
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException ex) {}
+                }
+                d.close();
+                apply();
+            }
+        };
+        t.start();
+        d.setVisible(true);
+    }    
+    
 }

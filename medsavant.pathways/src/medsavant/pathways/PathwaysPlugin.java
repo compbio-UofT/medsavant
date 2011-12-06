@@ -16,14 +16,12 @@
 
 package medsavant.pathways;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.api.FilterStateAdapter;
 
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
-import org.ut.biolab.medsavant.api.ProjectUtils;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 
 
 /**
@@ -58,5 +56,29 @@ public class PathwaysPlugin extends MedSavantFilterPlugin {
     @Override
     public String getTitle() {
         return "WikiPathways";
+    }
+
+    @Override
+    public FilterStateAdapter saveState(int queryId) {
+        
+        FilterInstance instance = instances.get(queryId);
+        
+        Map<String, String> map = new HashMap<String, String>();
+        if(instance.isFilterApplied()){
+            map.put("pathway", instance.getPathwayName());
+        }
+
+        return new FilterStateAdapter(this, map);
+    }
+
+    @Override
+    public void loadState(Map<String, String> values, int queryId) {
+        
+        String pathway = values.get("pathway");
+        if(pathway == null) return;
+
+        FilterInstance instance = instances.get(queryId);
+        instance.goToPathwayAndApply(pathway);
+        
     }
 }
