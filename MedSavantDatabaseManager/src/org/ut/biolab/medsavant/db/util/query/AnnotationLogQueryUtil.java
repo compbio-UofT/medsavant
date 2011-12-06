@@ -44,10 +44,10 @@ import org.ut.biolab.medsavant.db.util.DBUtil;
  */
 public class AnnotationLogQueryUtil {
 
-   
+
     public static enum Action {ADD_VARIANTS, UPDATE_TABLE};
-    public static enum Status {PREPROCESS, PENDING, INPROGRESS, ERROR, COMPLETE}; 
-    
+    public static enum Status {PREPROCESS, PENDING, INPROGRESS, ERROR, COMPLETE};
+
     private static int actionToInt(Action action){
         switch(action){
             case UPDATE_TABLE:
@@ -58,7 +58,7 @@ public class AnnotationLogQueryUtil {
                 return -1;
         }
     }
-    
+
     public static Action intToAction(int action){
         switch(action){
             case 0:
@@ -69,7 +69,7 @@ public class AnnotationLogQueryUtil {
                 return null;
         }
     }
-    
+
     private static int statusToInt(Status status){
         switch(status){
             case PREPROCESS:
@@ -86,7 +86,7 @@ public class AnnotationLogQueryUtil {
                 return -1;
         }
     }
-    
+
     public static Status intToStatus(int status){
         switch(status){
             case 0:
@@ -103,17 +103,17 @@ public class AnnotationLogQueryUtil {
                 return null;
         }
     }
-    
-    public static int addAnnotationLogEntry(int projectId, int referenceId, Action action) throws SQLException{    
+
+    public static int addAnnotationLogEntry(int projectId, int referenceId, Action action) throws SQLException{
         return addAnnotationLogEntry(projectId,referenceId,action,Status.PREPROCESS);
     }
-    
+
     public static int addAnnotationLogEntry(int projectId, int referenceId, Action action, Status status) throws SQLException {
-        
+
         if(action == Action.UPDATE_TABLE && existsDuplicateAnnotation(projectId, referenceId)) return -1;
-        
+
         Timestamp sqlDate = DBUtil.getCurrentTimestamp();
-        
+
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         InsertQuery query = new InsertQuery(table.getTable());
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
@@ -124,70 +124,70 @@ public class AnnotationLogQueryUtil {
 
         PreparedStatement stmt = (ConnectionController.connectPooled()).prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
         stmt.execute();
-        
+
         ResultSet rs = stmt.getGeneratedKeys();
         rs.next();
         return rs.getInt(1);
     }
-    
+
     public static void removeAnnotationLogEntry(int updateId) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         DeleteQuery query = new DeleteQuery(table.getTable());
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
-        
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
+
         ConnectionController.connectPooled().createStatement().executeUpdate(query.toString());
     }
-    
+
     public static ResultSet getPendingUpdates() throws SQLException, IOException{
-        
+
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), statusToInt(Status.PENDING)));
         query.addOrdering(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION), OrderObject.Dir.ASCENDING);
-        
+
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
-        
+
         return rs;
     }
-    
+
     public static void setAnnotationLogStatus(int updateId, Status status) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), statusToInt(status));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
-        
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
+
         ConnectionController.connectPooled().createStatement().executeUpdate(query.toString());
     }
-    
+
     public static void setAnnotationLogStatus(int updateId, Status status, Timestamp sqlDate) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), statusToInt(status));
         query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
-        
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
+
         ConnectionController.connectPooled().createStatement().executeUpdate(query.toString());
     }
-    
+
     private static boolean existsDuplicateAnnotation(int projectId, int referenceId) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPDATE_ID));
+        query.addColumns(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION), actionToInt(Action.UPDATE_TABLE)));
         query.addCondition(BinaryCondition.lessThan(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), statusToInt(Status.PENDING), true));
-        
+
         String q = query.toString();
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
         return rs.next();
     }
-    
+
 }

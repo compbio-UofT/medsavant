@@ -41,7 +41,7 @@ import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
  */
 public class Setup {
     private static final Logger LOG = Logger.getLogger(Setup.class.getName());
-   
+
     private static void dropTables(Connection c) throws SQLException {
 
         if (DBUtil.tableExists( MedSavantDatabase.PatienttablemapTableSchema.getTablename())) {
@@ -50,7 +50,7 @@ public class Setup {
                 DBUtil.dropTable(s);
             }
         }
-        
+
         if (DBUtil.tableExists( MedSavantDatabase.VarianttablemapTableSchema.getTablename())) {
             List<String> variantTables = getValuesFromField(c,MedSavantDatabase.VarianttablemapTableSchema.getTablename(), "variant_tablename");
             for (String s : variantTables) {
@@ -87,7 +87,7 @@ public class Setup {
                   + "PRIMARY KEY (`id`)"
                 + ") ENGINE=MyISAM;"
                 );
-        
+
         c.createStatement().execute(
                 "CREATE TABLE `" + MedSavantDatabase.RegionsetTableSchema.getTablename() + "` ("
                 + "`region_set_id` int(11) NOT NULL AUTO_INCREMENT,"
@@ -165,18 +165,18 @@ public class Setup {
                 + "`annotation_ids` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
                 + "UNIQUE KEY `unique` (`project_id`,`reference_id`,`variant_tablename`)"
                 + ") ENGINE=MyISAM;");
-        
+
         c.createStatement().execute(
                 "CREATE TABLE  `" + MedSavantDatabase.VariantpendingupdateTableSchema.getTablename() + "` ("
-                + "`update_id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
+                + "`upload_id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
                 + "`project_id` int(11) unsigned NOT NULL,"
                 + "`reference_id` int(11) unsigned NOT NULL,"
                 + "`action` int(11) unsigned NOT NULL,"
                 + "`status` int(5) unsigned NOT NULL DEFAULT '0',"
                 + "`timestamp` datetime DEFAULT NULL,"
-                + "PRIMARY KEY (`update_id`) USING BTREE"
+                + "PRIMARY KEY (`upload_id`) USING BTREE"
                 + ") ENGINE=MyISAM;");
-        
+
         c.createStatement().execute(
                 "CREATE TABLE  `" + MedSavantDatabase.ChromosomeTableSchema.getTablename() + "` ("
                 + "`reference_id` int(11) unsigned NOT NULL,"
@@ -186,7 +186,7 @@ public class Setup {
                 + "`centromere_pos` int(11) unsigned NOT NULL,"
                 + "PRIMARY KEY (`reference_id`,`contig_id`) USING BTREE"
                 +") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
-        
+
         c.createStatement().execute(
                 "CREATE TABLE  `" + MedSavantDatabase.AnnotationformatTableSchema.getTablename() + "` ("
                 + "`annotation_id` int(11) unsigned NOT NULL,"
@@ -198,7 +198,7 @@ public class Setup {
                 + "`description` varchar(500) COLLATE latin1_bin NOT NULL,"
                 + "PRIMARY KEY (`annotation_id`,`position`)"
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
-        
+
         c.createStatement().execute(
                 "CREATE TABLE  `" + MedSavantDatabase.PatientformatTableSchema.getTablename() + "` ("
                 + "`project_id` int(11) unsigned NOT NULL,"
@@ -210,7 +210,7 @@ public class Setup {
                 + "`description` varchar(500) COLLATE latin1_bin NOT NULL,"
                 + "PRIMARY KEY (`project_id`,`position`)"
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
-        
+
         c.createStatement().execute(
                 "CREATE TABLE  `" + MedSavantDatabase.VariantformatTableSchema.getTablename() + "` ("
                 + "`project_id` int(11) unsigned NOT NULL,"
@@ -222,7 +222,7 @@ public class Setup {
                 + "`description` varchar(500) COLLATE latin1_bin NOT NULL,"
                 + "PRIMARY KEY (`project_id`,`position`)"
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
-                               
+
         c.createStatement().execute(
                 "CREATE TABLE  `default_patient` ("
                 + "`patient_id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
@@ -235,7 +235,7 @@ public class Setup {
                 + "`bam_url` varchar(5000) COLLATE latin1_bin DEFAULT NULL,"
                 + "PRIMARY KEY (`patient_id`)"
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
-        
+
         c.createStatement().execute(
                 "CREATE TABLE  `default_variant` ("
                 + "`upload_id` int(11) NOT NULL,"
@@ -251,7 +251,7 @@ public class Setup {
                 + "`filter` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
                 + "`custom_info` varchar(500) COLLATE latin1_bin DEFAULT NULL"
                 + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
-        
+
         c.createStatement().execute(
                 "CREATE TABLE  `" + MedSavantDatabase.SettingsTableSchema.getTablename() + "` ("
                 + "`setting_key` varchar(100) COLLATE latin1_bin NOT NULL,"
@@ -259,13 +259,21 @@ public class Setup {
                 + "PRIMARY KEY (`setting_key`)"
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
+        c.createStatement().execute(
+                "CREATE TABLE `" + MedSavantDatabase.VarianttagTableSchema.getTablename() + "` ("
+                  + "`upload_id` int(11) NOT NULL,"
+                  + "`tagkey` varchar(500) COLLATE latin1_bin NOT NULL,"
+                  + "`tagvalue` varchar(1000) COLLATE latin1_bin NOT NULL DEFAULT ''"
+                    + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin"
+                );
+
     }
-    
+
     /**
      * Create a <i>root</i> user if MySQL does not already have one.
      * @param c database connection
      * @param password a character array, supposedly for security's sake
-     * @throws SQLException 
+     * @throws SQLException
      */
     private static void addRootUser(Connection c, char[] password) throws SQLException {
         if (!UserQueryUtil.userExists("root")) {
@@ -274,9 +282,9 @@ public class Setup {
     }
 
     public static void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException {
-        
+
         Connection c = ConnectionController.connectUnpooled(dbHost, port, "", adminName, new String(rootPassword));
-        
+
         createDatabase(c,dbname);
 
         c = ConnectionController.connectUnpooled(dbHost, port, dbname, adminName, new String(rootPassword));
@@ -285,22 +293,22 @@ public class Setup {
         ConnectionController.setPort(port);
         ConnectionController.setDBName(dbname);
         ConnectionController.setCredentials(adminName, new String(rootPassword));
-        
+
         dropTables(c);
         createTables(c);
         addRootUser(c, rootPassword);
         addDefaultReferenceGenomes();
         addDbSettings(versionString);
-        
+
         for (String user: UserQueryUtil.getUserNames()) {
             UserQueryUtil.grantPrivileges(user, UserQueryUtil.getUserLevel(user));
         }
     }
-    
+
     private static void addDbSettings(String versionString) throws SQLException {
-        SettingsQueryUtil.addSetting(Settings.KEY_CLIENT_VERSION, versionString);       
+        SettingsQueryUtil.addSetting(Settings.KEY_CLIENT_VERSION, versionString);
     }
-    
+
     private static List<String> getValuesFromField(Connection c,String tablename, String fieldname) throws SQLException {
         String q = "SELECT `" + fieldname + "` FROM `" + tablename + "`";
         Statement stmt = c.createStatement();
@@ -313,9 +321,9 @@ public class Setup {
     }
 
     private static void createDatabase(Connection c, String dbname) throws SQLException {
-        
+
         System.out.println("CREATE DATABASE " + dbname);
-        
+
         //TODO: should check if the db exists already
         c.createStatement().execute("CREATE DATABASE " + dbname);
     }

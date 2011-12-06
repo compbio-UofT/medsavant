@@ -14,24 +14,22 @@ import org.ut.biolab.medsavant.db.util.DBUtil;
  * @author Andrew
  */
 public class CustomField {
-   
+
     private String columnName;
     private String columnType;
     private boolean filterable;
     private String alias;
     private String description;
-    private ColumnType fieldType;   
+    private ColumnType fieldType;
     private Category category;
-    
-    public static enum Category {PATIENT, GENOTYPE, PHENOTYPE, GENOME_COORDS, PLUGIN}
-    
+
+    public static enum Category {PATIENT, GENOTYPE, VARIANT, GENOME_COORDS, PLUGIN}
+
     public static String categoryToString(Category cat){
         switch(cat){
             case PATIENT:
                 return "Patient & Phenotype";
-            case GENOTYPE:
-                return "Genotype";
-            case PHENOTYPE:
+            case VARIANT:
                 return "Variant Annotation";
             case GENOME_COORDS:
                 return "Genomic Coordinates";
@@ -43,9 +41,9 @@ public class CustomField {
     }
 
     public CustomField(String name, String type, boolean filterable, String alias, String description){
-        this(name, type, filterable, alias, description, Category.PHENOTYPE);
+        this(name, type, filterable, alias, description, Category.VARIANT);
     }
-    
+
     public CustomField(String name, String type, boolean filterable, String alias, String description, Category category){
         this.columnName = name;
         this.columnType = type;
@@ -75,19 +73,19 @@ public class CustomField {
     public boolean isFilterable() {
         return filterable;
     }
-    
+
     private void setColumnType(String type){
         fieldType = TableSchema.convertStringToColumnType(type);
     }
-    
+
     public ColumnType getColumnType(){
         return fieldType;
     }
-    
+
     public Class getColumnClass(){
         switch(fieldType){
             case BOOLEAN:
-                return Boolean.class;          
+                return Boolean.class;
             case INTEGER:
                 return Integer.class;
             case DATE:
@@ -98,10 +96,10 @@ public class CustomField {
                 return Float.class;
             case VARCHAR:
             default:
-                return String.class;            
+                return String.class;
         }
     }
-    
+
     public String getColumnLength(){
         int posLeft = columnType.indexOf("(");
         if(posLeft == -1){
@@ -110,28 +108,28 @@ public class CustomField {
         int posRight = columnType.indexOf(")");
         return columnType.substring(posLeft+1, posRight);
     }
-    
+
     public String generateSchema(){
         return generateSchema(false);
     }
-        
+
     public String generateSchema(boolean forceLowerCase){
         return "`" + (forceLowerCase ? columnName.toLowerCase() : columnName) + "` " + columnType + " DEFAULT NULL,";
     }
-    
+
     public Category getCategory() {
         return category;
     }
-    
+
     public boolean isNumeric() {
         return this.fieldType == ColumnType.DECIMAL || fieldType == ColumnType.FLOAT || fieldType == ColumnType.INTEGER;
     }
-    
+
     @Override
     public String toString(){
         return alias;
     }
-    
+
     @Override
     public boolean equals(Object o){
         if(o == null || !o.getClass().equals(CustomField.class)) return false;

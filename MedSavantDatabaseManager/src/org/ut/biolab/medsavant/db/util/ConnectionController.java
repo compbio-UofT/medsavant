@@ -54,32 +54,32 @@ public class ConnectionController {
             statementCache.clear();
         }
     }
-    
+
     public static Connection connectPooled() throws SQLException {
-        
+
         if (dbHost == null) {
             throw new SQLException("DB host not set");
         }
-        
+
         if (dbName == null) {
             throw new SQLException("DB name not set");
         }
-        
+
         if (dbPort == -1) {
             throw new SQLException("DB port not set");
         }
-        
+
         if (lastConnection == null || lastConnection.isClosed()) {
             lastConnection = connectOnce(dbHost, dbPort, dbName);
         }
-        
+
         return lastConnection;
     }
-    
+
     public static Connection connectUnpooled(String dbhost, int port, String dbname, String userName, String password) throws SQLException {
         return connectOnce(dbhost, port, dbname, userName, password);
     }
-    
+
     public static void setCredentials(String user, String pw) {
         // New user/password, so start with a clean slate.
         disconnectAll();
@@ -103,7 +103,7 @@ public class ConnectionController {
     public static void setPort(int value) {
         ConnectionController.dbPort = value;
     }
-    
+
     private static Connection connectOnce(String dbhost, int port, String dbname) throws SQLException {
         return connectOnce(dbhost,port,dbname,user,pw);
     }
@@ -116,7 +116,7 @@ public class ConnectionController {
                 throw new SQLException("Unable to load MySQL driver.");
             }
         }
-        
+
         return DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s?%s", dbhost, port, dbname, props), username, password);
     }
 
@@ -135,11 +135,11 @@ public class ConnectionController {
 
     /**
      * Utility method to make it easier to execute SELECT-style queries.
-     * 
+     *
      * @param stmt a query, possibly containing '?' placeholder elements
      * @param args arguments for the placeholders
      * @return a ResultSet containing the results of the query
-     * @throws SQLException 
+     * @throws SQLException
      */
     public static ResultSet executeQuery(String query, Object... args) throws SQLException {
         PreparedStatement st = getPreparedStatement(query);
@@ -155,7 +155,7 @@ public class ConnectionController {
      *
      * @param stmt a query, possibly containing '?' placeholder elements
      * @param args arguments for the placeholders
-     * @throws SQLException 
+     * @throws SQLException
      */
     public static void executeUpdate(String query, Object... args) throws SQLException {
         PreparedStatement st = getPreparedStatement(query);

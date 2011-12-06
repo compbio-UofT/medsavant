@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.db.util.query;
 
 import com.healthmarketscience.common.util.AppendableExt;
@@ -33,18 +32,23 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
+import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.Function;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VarianttagTableSchema;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
@@ -57,165 +61,169 @@ import org.ut.biolab.medsavant.db.util.DBUtil;
  * @author Andrew
  */
 public class VariantQueryUtil {
-    
+
     public static TableSchema getCustomTableSchema(int projectId, int referenceId) throws SQLException {
         return CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(projectId, referenceId));
     }
-    
-    public static List<Object[]> getVariants(int projectId, int referenceId, int start, int limit) throws SQLException {       
+
+    public static List<Object[]> getVariants(int projectId, int referenceId, int start, int limit) throws SQLException {
         return getVariants(projectId, referenceId, new Condition[1][], start, limit);
     }
-   
-    public static List<Object[]> getVariants(int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException {            
-        
+
+    public static List<Object[]> getVariants(int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException {
+
         TableSchema table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(projectId, referenceId));
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
         addConditionsToQuery(query, conditions);
-        
+
         Connection conn = ConnectionController.connectPooled();
-        
+
         long startTime = System.currentTimeMillis();
-        
+
         System.out.println(query.toString() + " LIMIT " + start + ", " + limit);
-        
+
         ResultSet rs = conn.createStatement().executeQuery(query.toString() + " LIMIT " + start + ", " + limit);
-        
-        System.out.println("Time to execute query: " + (((double)System.currentTimeMillis()-startTime)/1000) + "s");
+
+        System.out.println("Time to execute query: " + (((double) System.currentTimeMillis() - startTime) / 1000) + "s");
         startTime = System.currentTimeMillis();
-        
+
         ResultSetMetaData rsMetaData = rs.getMetaData();
         int numberColumns = rsMetaData.getColumnCount();
-        
+
         List<Object[]> result = new ArrayList<Object[]>();
         while (rs.next()) {
             Object[] v = new Object[numberColumns];
-            for(int i = 1; i <= numberColumns; i++) {
+            for (int i = 1; i <= numberColumns; i++) {
                 v[i - 1] = rs.getObject(i);
             }
             result.add(v);
         }
-        
-        System.out.println("Time to parse results: " + (((double)System.currentTimeMillis()-startTime)/1000) + "s");
-        
+
+        System.out.println("Time to parse results: " + (((double) System.currentTimeMillis() - startTime) / 1000) + "s");
+
         return result;
     }
-    
-    public static double[] getExtremeValuesForColumn(String tablename, String columnname) throws SQLException { 
-        
+
+    public static double[] getExtremeValuesForColumn(String tablename, String columnname) throws SQLException {
+
         TableSchema table = CustomTables.getCustomTableSchema(tablename);
-        
+
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addCustomColumns(FunctionCall.min().addColumnParams(table.getDBColumn(columnname)));
         query.addCustomColumns(FunctionCall.max().addColumnParams(table.getDBColumn(columnname)));
-      
+
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
         rs.next();
-        return new double[] { rs.getDouble(1), rs.getDouble(2) };
+        return new double[]{rs.getDouble(1), rs.getDouble(2)};
     }
-    
+
     public static List<String> getDistinctValuesForColumn(String tablename, String columnname) throws SQLException {
-        
+
         TableSchema table = CustomTables.getCustomTableSchema(tablename);
-        
+
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.setIsDistinct(true);
-        query.addColumns(table.getDBColumn(columnname)); 
+        query.addColumns(table.getDBColumn(columnname));
         query.addOrdering(table.getDBColumn(columnname), Dir.ASCENDING);
-        
+
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
-        
+
         List<String> result = new ArrayList<String>();
         while (rs.next()) {
             String val = rs.getString(1);
-            if(val == null) {
+            if (val == null) {
                 result.add("");
             } else {
                 result.add(val);
             }
         }
-        
+
         return result;
     }
-    
+
     public static int getNumFilteredVariants(int projectId, int referenceId) throws SQLException {
         return getNumFilteredVariants(projectId, referenceId, new Condition[0][]);
     }
-    
+
     public static int getNumFilteredVariants(int projectId, int referenceId, Condition[][] conditions) throws SQLException {
-        
+
         String name = ProjectQueryUtil.getVariantTablename(projectId, referenceId);
-        
-        if (name == null) { return -1; }
-        
+
+        if (name == null) {
+            return -1;
+        }
+
         TableSchema table = CustomTables.getCustomTableSchema(name);
-               
+
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
 
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(q.toString());
-        
+
         rs.next();
         return rs.getInt(1);
     }
-    
+
     public static int getFilteredFrequencyValuesForColumnInRange(int projectId, int referenceId, Condition[][] conditions, String columnname, double min, double max) throws SQLException {
-        
+
         TableSchema table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(projectId, referenceId));
-               
+
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
-        q.addCondition(BinaryCondition.greaterThan(table.getDBColumn(columnname), min, true)); 
-        q.addCondition(BinaryCondition.lessThan(table.getDBColumn(columnname), max, false)); 
+        q.addCondition(BinaryCondition.greaterThan(table.getDBColumn(columnname), min, true));
+        q.addCondition(BinaryCondition.lessThan(table.getDBColumn(columnname), max, false));
         addConditionsToQuery(q, conditions);
 
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(q.toString());
         rs.next();
-        
-        return rs.getInt(1);        
+
+        return rs.getInt(1);
     }
-    
+
     public static Map<String, Integer> getFilteredFrequencyValuesForColumn(int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException {
-        
+
         TableSchema tableSchema = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(projectId, referenceId));
         DbTable table = tableSchema.getTable();
         DbColumn col = tableSchema.getDBColumnByAlias(columnAlias);
-          
+
         return getFilteredFrequencyValuesForColumn(table, conditions, col);
     }
-    
+
     public static Map<String, Integer> getFilteredFrequencyValuesForColumn(DbTable table, Condition[][] conditions, DbColumn column) throws SQLException {
-                       
+
         SelectQuery q = new SelectQuery();
         q.addFromTable(table);
         q.addColumns(column);
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
         q.addGroupings(column);
-        
+
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(q.toString());
-        
+
         Map<String, Integer> map = new HashMap<String, Integer>();
 
         while (rs.next()) {
             String key = rs.getString(1);
-            if (key == null) { key = ""; }
+            if (key == null) {
+                key = "";
+            }
             map.put(key, rs.getInt(2));
         }
 
-        return map;     
+        return map;
     }
-    
+
     public static int getNumVariantsInRange(int projectId, int referenceId, Condition[][] conditions, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException {
-        
+
         TableSchema table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(projectId, referenceId));
-               
+
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
@@ -223,147 +231,149 @@ public class VariantQueryUtil {
         q.addCondition(BinaryCondition.greaterThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), start, true));
         q.addCondition(BinaryCondition.lessThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), end, false));
         addConditionsToQuery(q, conditions);
-        
+
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(q.toString());
-        
+
         rs.next();
         return rs.getInt(1);
     }
-    
-    public static Map<String,Map<Range,Integer>> getChromosomeHeatMap(int projectId, int referenceId, Condition[][] conditions, int binsize) throws SQLException {
-        
+
+    public static Map<String, Map<Range, Integer>> getChromosomeHeatMap(int projectId, int referenceId, Condition[][] conditions, int binsize) throws SQLException {
+
         TableSchema table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(projectId, referenceId));
-        
+
         SelectQuery queryBase = new SelectQuery();
         queryBase.addFromTable(table.getTable());
-                
+
         queryBase.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
-        
+
         String roundFunction = "ROUND(" + DefaultVariantTableSchema.COLUMNNAME_OF_POSITION + "/" + binsize + ",0)";
-        
+
         queryBase.addCustomColumns(FunctionCall.countAll());
         queryBase.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
-        
-        
+
+
         addConditionsToQuery(queryBase, conditions);
 
         String query = queryBase.toString().replace("COUNT(*)", "COUNT(*)," + roundFunction) + "," + roundFunction;
-        
+
         Connection conn = ConnectionController.connectPooled();
         ResultSet rs = conn.createStatement().executeQuery(query);
-        
-        Map<String,Map<Range,Integer>> results = new HashMap<String,Map<Range,Integer>>();
+
+        Map<String, Map<Range, Integer>> results = new HashMap<String, Map<Range, Integer>>();
         while (rs.next()) {
-            
+
             String chrom = rs.getString(1);
-            
-            Map<Range,Integer> chromMap;
+
+            Map<Range, Integer> chromMap;
             if (!results.containsKey(chrom)) {
-                chromMap = new HashMap<Range,Integer>();
+                chromMap = new HashMap<Range, Integer>();
             } else {
                 chromMap = results.get(chrom);
             }
-            
+
             int binNo = rs.getInt(3);
-            Range binRange = new Range(binNo*binsize,(binNo+1)*binsize);
-            
+            Range binRange = new Range(binNo * binsize, (binNo + 1) * binsize);
+
             int count = rs.getInt(2);
-            
+
             chromMap.put(binRange, count);
             results.put(chrom, chromMap);
         }
-        
+
         return results;
-        
-        
+
+
         //TODO
         /*
         String query = "select y.range as `range`, count(*) as `number of occurences` "
-                + "from ("
-                + "select case ";
+        + "from ("
+        + "select case ";
         int pos = 0;
         for(int i = 0; i < numbins; i++) {
-            query += "when `" + DefaultVariantTableSchema.COLUMNNAME_OF_POSITION + "` between " + pos + " and " + (pos+binsize) + " then " + i + " ";
-            pos += binsize;
+        query += "when `" + DefaultVariantTableSchema.COLUMNNAME_OF_POSITION + "` between " + pos + " and " + (pos+binsize) + " then " + i + " ";
+        pos += binsize;
         }
-        
+
         query += "end as `range` "
-                + "from (";
+        + "from (";
         query += queryBase.toString();
         query += ") x ) y "
-                + "group by y.`range`";
+        + "group by y.`range`";
 
-        
+
         Connection conn = ConnectionController.connectPooled();
         ResultSet rs = conn.createStatement().executeQuery(query.toString());
-        
+
         int[] numRows = new int[numbins];
         for(int i = 0; i < numbins; i++) numRows[i] = 0;
         while (rs.next()) {
-            int index = rs.getInt(1);
-            numRows[index] = rs.getInt(2);
+        int index = rs.getInt(1);
+        numRows[index] = rs.getInt(2);
         }
         return numRows;
-         * 
+         *
          */
     }
-    
+
     public static int[] getNumVariantsForBins(int projectId, int referenceId, Condition[][] conditions, String chrom, int binsize, int numbins) throws SQLException, NonFatalDatabaseException {
-        
+
         TableSchema table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(projectId, referenceId));
-        
+
         SelectQuery queryBase = new SelectQuery();
         queryBase.addFromTable(table.getTable());
         queryBase.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION));
         queryBase.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom));
         addConditionsToQuery(queryBase, conditions);
-        
-        /*String queryBase = 
-                "SELECT `" + VariantTable.FIELDNAME_POSITION + "`" +
-                " FROM " + ProjectQueryUtil.getVariantTablename(projectId, referenceId) + " t0" + 
-                " WHERE `" + VariantTable.FIELDNAME_CHROM + "`=\"" + chrom + "\"";
+
+        /*String queryBase =
+        "SELECT `" + VariantTable.FIELDNAME_POSITION + "`" +
+        " FROM " + ProjectQueryUtil.getVariantTablename(projectId, referenceId) + " t0" +
+        " WHERE `" + VariantTable.FIELDNAME_CHROM + "`=\"" + chrom + "\"";
         if(!conditions.isEmpty()) {
-            queryBase += " AND ";
+        queryBase += " AND ";
         }
         queryBase += conditionsToStringOr(conditions);*/
-        
-        
+
+
         //TODO
         String query = "select y.range as `range`, count(*) as `number of occurences` "
                 + "from ("
                 + "select case ";
         int pos = 0;
-        for(int i = 0; i < numbins; i++) {
-            query += "when `" + DefaultVariantTableSchema.COLUMNNAME_OF_POSITION + "` between " + pos + " and " + (pos+binsize) + " then " + i + " ";
+        for (int i = 0; i < numbins; i++) {
+            query += "when `" + DefaultVariantTableSchema.COLUMNNAME_OF_POSITION + "` between " + pos + " and " + (pos + binsize) + " then " + i + " ";
             pos += binsize;
         }
-        
+
         query += "end as `range` "
                 + "from (";
         query += queryBase.toString();
         query += ") x ) y "
                 + "group by y.`range`";
 
-        
+
         Connection conn = ConnectionController.connectPooled();
         ResultSet rs = conn.createStatement().executeQuery(query.toString());
-        
+
         int[] numRows = new int[numbins];
-        for(int i = 0; i < numbins; i++) numRows[i] = 0;
+        for (int i = 0; i < numbins; i++) {
+            numRows[i] = 0;
+        }
         while (rs.next()) {
             int index = rs.getInt(1);
             numRows[index] = rs.getInt(2);
         }
-        return numRows;     
+        return numRows;
     }
-    
-    public static void uploadFileToVariantTable(File file, String tableName) throws SQLException{
-        
+
+    public static void uploadFileToVariantTable(File file, String tableName) throws SQLException {
+
         // TODO: for some reason the connection is closed going into this function
         Connection c = ConnectionController.connectPooled();
-        
-        System.out.println("Uploading file to variant table: " + 
-                "LOAD DATA LOCAL INFILE '" + file.getAbsolutePath().replaceAll("\\\\", "/") + "' "
+
+        System.out.println("Uploading file to variant table: "
+                + "LOAD DATA LOCAL INFILE '" + file.getAbsolutePath().replaceAll("\\\\", "/") + "' "
                 + "INTO TABLE " + tableName + " "
                 + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
                 + "LINES TERMINATED BY '\\r\\n';");
@@ -374,89 +384,91 @@ public class VariantQueryUtil {
                 "LOAD DATA LOCAL INFILE '" + file.getAbsolutePath().replaceAll("\\\\", "/") + "' "
                 + "INTO TABLE " + tableName + " "
                 + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
-                + "LINES TERMINATED BY '\\r\\n';");    
+                + "LINES TERMINATED BY '\\r\\n';");
     }
-    
+
     public static int getNumPatientsWithVariantsInRange(int projectId, int referenceId, Condition[][] conditions, String chrom, int start, int end) throws SQLException {
-        
+
         TableSchema table = getCustomTableSchema(projectId, referenceId);
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns("COUNT(DISTINCT " + DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID + ")");
         addConditionsToQuery(q, conditions);
-        
+
         Condition[] cond = new Condition[3];
         cond[0] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom);
         cond[1] = new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), start);
-        cond[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), end);       
-        q.addCondition(ComboCondition.and(cond));        
-        
+        cond[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), end);
+        q.addCondition(ComboCondition.and(cond));
+
         String query = q.toString();
         query = query.replaceFirst("'", "").replaceFirst("'", "");
-        
+
         Statement s = ConnectionController.connectPooled().createStatement();
         ResultSet rs = s.executeQuery(query);
         rs.next();
 
         int numrows = rs.getInt(1);
-        
+
         return numrows;
     }
 
     public static void addConditionsToQuery(SelectQuery query, Condition[][] conditions) {
         Condition[] c = new Condition[conditions.length];
-        for(int i = 0; i < conditions.length; i++) {
+        for (int i = 0; i < conditions.length; i++) {
             c[i] = ComboCondition.and(conditions[i]);
         }
         query.addCondition(ComboCondition.or(c));
     }
 
     public static Map<String, List<String>> getSavantBookmarkPositionsForDNAIds(int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds, int limit) throws SQLException {
-     
+
         Map<String, List<String>> results = new HashMap<String, List<String>>();
-        
+
         TableSchema table = getCustomTableSchema(projectId, referenceId);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addColumns(
-                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), 
-                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), 
+                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID),
+                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM),
                 table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION));
         addConditionsToQuery(query, conditions);
         Condition[] dnaIdConditions = new Condition[dnaIds.size()];
-        for(int i = 0; i < dnaIds.size(); i++){
+        for (int i = 0; i < dnaIds.size(); i++) {
             dnaIdConditions[i] = BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIds.get(i));
             results.put(dnaIds.get(i), new ArrayList<String>());
         }
         query.addCondition(ComboCondition.or(dnaIdConditions));
 
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
-        
-        while(rs.next()){
-            results.get(rs.getString(1)).add(rs.getString(2) + ":" + (rs.getLong(3)-100) + "-" + (rs.getLong(3)+100));  
+
+        while (rs.next()) {
+            results.get(rs.getString(1)).add(rs.getString(2) + ":" + (rs.getLong(3) - 100) + "-" + (rs.getLong(3) + 100));
         }
-        
+
         return results;
     }
 
     public static Map<String, Integer> getNumVariantsInFamily(int projectId, int referenceId, String familyId, Condition[][] conditions) throws SQLException {
-        
+
         String name = ProjectQueryUtil.getVariantTablename(projectId, referenceId);
-        
-        if (name == null) { return null; }
-        
+
+        if (name == null) {
+            return null;
+        }
+
         TableSchema table = CustomTables.getCustomTableSchema(name);
-               
+
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
         q.addCustomColumns(FunctionCall.countAll());
         q.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
         addConditionsToQuery(q, conditions);
-        
-        Map<String,String> patientToDNAIDMap = PatientQueryUtil.getDNAIdsForFamily(projectId, familyId);
-        Map<String,List<String>> betterPatientToDNAIDMap = new HashMap<String,List<String>>();
-        
+
+        Map<String, String> patientToDNAIDMap = PatientQueryUtil.getDNAIdsForFamily(projectId, familyId);
+        Map<String, List<String>> betterPatientToDNAIDMap = new HashMap<String, List<String>>();
+
         List<String> dnaIDs = new ArrayList<String>();
         for (String patientID : patientToDNAIDMap.keySet()) {
             String dnaIDString = patientToDNAIDMap.get(patientID);
@@ -467,14 +479,14 @@ public class VariantQueryUtil {
                     idList.add(dnaID);
                 }
             }
-            betterPatientToDNAIDMap.put(patientID,idList);
+            betterPatientToDNAIDMap.put(patientID, idList);
         }
         patientToDNAIDMap = null; // we don't need it anymore; use betterPatientToDNAIDMap instead
-        
-        Map<String,Integer> dnaIDsToCountMap = new HashMap<String,Integer>();
-        
+
+        Map<String, Integer> dnaIDsToCountMap = new HashMap<String, Integer>();
+
         if (!dnaIDs.isEmpty()) {
-        
+
             Condition[] dnaIDConditions = new Condition[dnaIDs.size()];
 
             int i = 0;
@@ -489,14 +501,14 @@ public class VariantQueryUtil {
 
             ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(q.toString());
 
-            while(rs.next()) {
+            while (rs.next()) {
                 dnaIDsToCountMap.put(rs.getString(1), rs.getInt(2));
             }
         } else {
             System.out.println("No DNA IDS in family");
         }
-        
-        Map<String,Integer> patientIDTOCount = new HashMap<String,Integer>();
+
+        Map<String, Integer> patientIDTOCount = new HashMap<String, Integer>();
         for (String patientID : betterPatientToDNAIDMap.keySet()) {
             int count = 0;
             for (String dnaID : betterPatientToDNAIDMap.get(patientID)) {
@@ -504,25 +516,139 @@ public class VariantQueryUtil {
                     count += dnaIDsToCountMap.get(dnaID);
                 }
             }
-            patientIDTOCount.put(patientID,count);
+            patientIDTOCount.put(patientID, count);
             //System.out.println("Number of variants for: " + patientID + " = " + count);
         }
-        
-        return patientIDTOCount; 
+
+        return patientIDTOCount;
     }
-    
-    public static void cancelUpload(int uploadId, String tableName){
+
+    public static void cancelUpload(int uploadId, String tableName) {
         try {
-            
+
             //remove log entry
-            AnnotationLogQueryUtil.removeAnnotationLogEntry(uploadId);           
-                        
+            AnnotationLogQueryUtil.removeAnnotationLogEntry(uploadId);
+
             //drop staging table
             DBUtil.dropTable(tableName);
-            
+
         } catch (SQLException ex) {
             Logger.getLogger(VariantQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
+    public static void addTagsToUpload(int uploadID, String[][] variantTags) throws SQLException {
+
+        Connection conn = ConnectionController.connectPooled();
+        TableSchema variantTagTable = MedSavantDatabase.VarianttagTableSchema;
+
+        conn.setAutoCommit(false);
+
+        //add tags
+        for (int i = 0; i < variantTags.length && !Thread.currentThread().isInterrupted(); i++) {
+            InsertQuery query = new InsertQuery(variantTagTable.getTable());
+            query.addColumn(variantTagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadID);
+            query.addColumn(variantTagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGKEY), variantTags[i][0]);
+            query.addColumn(variantTagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGVALUE), variantTags[i][1]);
+
+            System.out.println(query);
+
+            conn.createStatement().executeUpdate(query.toString());
+        }
+        if (Thread.currentThread().isInterrupted()) {
+            conn.rollback();
+        } else {
+            conn.commit();
+        }
+        conn.setAutoCommit(true);
+    }
+
+    public static List<String> getDistinctTagNames() throws SQLException {
+
+        TableSchema table = MedSavantDatabase.VarianttagTableSchema;
+
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(table.getTable());
+        q.setIsDistinct(true);
+        q.addColumns(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGKEY));
+
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(q.toString());
+
+        List<String> tagNames = new ArrayList<String>();
+        while (rs.next()) {
+            tagNames.add(rs.getString(1));
+        }
+
+        return tagNames;
+    }
+
+    public static List<String> getValuesForTagName(String tagName) throws SQLException {
+
+        TableSchema table = MedSavantDatabase.VarianttagTableSchema;
+
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(table.getTable());
+        q.setIsDistinct(true);
+        q.addColumns(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGVALUE));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGKEY), tagName));
+
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(q.toString());
+
+        List<String> tagValues = new ArrayList<String>();
+        while (rs.next()) {
+            tagValues.add(rs.getString(1));
+        }
+
+        return tagValues;
+
+    }
+
+    public static List<Integer> getUploadIDsMatchingVariantTags(String[][] variantTags) throws SQLException {
+        TableSchema table = MedSavantDatabase.VarianttagTableSchema;
+
+
+
+        /*
+         *
+         * SELECT upload_id FROM (SELECT t17.upload_id, COUNT(*) AS count FROM variant_tag t17 WHERE (((t17.tagkey = 'Sequencer') AND (t17.tagvalue = 'SOLID')) OR ((t17.tagkey = 'Sequencer Version') AND (t17.tagvalue = '5500'))) GROUP BY t17.upload_id) as tbl WHERE count = 2;
+         */
+
+
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(table.getTable());
+        q.addColumns(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID));
+
+        Condition[] orConditions = new Condition[variantTags.length];
+
+        Set<String> seenConditions = new HashSet<String>();
+        int duplicates = 0;
+
+        for (int i = 0; i < variantTags.length; i++) {
+
+            String strRepresentation = variantTags[i][0] + ":" + variantTags[i][1];
+
+            if (seenConditions.contains(strRepresentation)) {
+                duplicates++;
+            } else {
+
+                orConditions[i] = ComboCondition.and(new Condition[]{
+                            BinaryCondition.equalTo(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGKEY), variantTags[i][0]),
+                            BinaryCondition.equalTo(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGVALUE), variantTags[i][1])});
+                seenConditions.add(strRepresentation);
+            }
+        }
+
+        q.addCondition(ComboCondition.or(orConditions));
+        q.addGroupings(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID));
+        q.addHaving(BinaryCondition.equalTo(FunctionCall.countAll(), variantTags.length-duplicates));
+
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(q.toString());
+
+        List<Integer> results = new ArrayList<Integer>();
+        while (rs.next()) {
+            results.add(rs.getInt(1));
+        }
+
+        return results;
+    }
 }

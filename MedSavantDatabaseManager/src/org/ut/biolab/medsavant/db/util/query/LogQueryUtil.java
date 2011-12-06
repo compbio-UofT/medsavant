@@ -41,35 +41,35 @@ import org.ut.biolab.medsavant.db.util.ConnectionController;
 public class LogQueryUtil {
 
     public static ResultSet getClientLog(int start, int limit) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
         query.addCondition(BinaryCondition.notEqualTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
         query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
-        
+
         return ConnectionController.connectPooled().createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
     }
 
     public static ResultSet getServerLog(int start, int limit) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
         query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
-        
+
         return ConnectionController.connectPooled().createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
     }
 
     public static ResultSet getAnnotationLog(int start, int limit) throws SQLException {
-        
+
         TableSchema projectTable = MedSavantDatabase.ProjectTableSchema;
         TableSchema referenceTable = MedSavantDatabase.ReferenceTableSchema;
         TableSchema updateTable = MedSavantDatabase.VariantpendingupdateTableSchema;
-        
+
         SelectQuery query = new SelectQuery();
         query.addFromTable(updateTable.getTable());
         query.addColumns(
@@ -78,39 +78,39 @@ public class LogQueryUtil {
                 updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION),
                 updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS),
                 updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP),
-                updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPDATE_ID));
+                updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID));
         query.addJoin(
-                SelectQuery.JoinType.LEFT_OUTER, 
-                updateTable.getTable(), 
-                projectTable.getTable(), 
+                SelectQuery.JoinType.LEFT_OUTER,
+                updateTable.getTable(),
+                projectTable.getTable(),
                 BinaryConditionMS.equalTo(
-                        updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID), 
+                        updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID),
                         projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID)));
         query.addJoin(
-                SelectQuery.JoinType.LEFT_OUTER, 
-                updateTable.getTable(), 
-                referenceTable.getTable(), 
+                SelectQuery.JoinType.LEFT_OUTER,
+                updateTable.getTable(),
+                referenceTable.getTable(),
                 BinaryConditionMS.equalTo(
-                        updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID), 
+                        updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                         referenceTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
-        
+
         return ConnectionController.connectPooled().createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
     }
-    
+
     public static int getAnnotationLogSize() throws SQLException {
         return getLogSize(MedSavantDatabase.VariantpendingupdateTableSchema, null);
     }
-    
+
     public static int getServerLogSize() throws SQLException {
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         return getLogSize(table, BinaryConditionMS.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
     }
-    
+
     public static int getClientLogSize() throws SQLException {
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         return getLogSize(table, BinaryCondition.notEqualTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
     }
-    
+
     private static int getLogSize(TableSchema table, Condition c) throws SQLException {
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
@@ -118,7 +118,7 @@ public class LogQueryUtil {
         if(c != null){
             query.addCondition(c);
         }
-        
+
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
         rs.next();
         return rs.getInt(1);
