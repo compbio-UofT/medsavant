@@ -133,6 +133,7 @@ public class CohortQueryUtil {
         List<String> list = getIndividualFieldFromCohort(cohortId, DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS);
         List<String> result = new ArrayList<String>();
         for(String s : list){
+            if(s == null) continue;
             String[] dnaIds = s.split(",");
             for(String id : dnaIds){
                 if(!result.contains(id)){
