@@ -36,6 +36,8 @@ public class TableSchema implements TableSchemaAdapter {
         typeNameSQL = typeNameSQL.toLowerCase();
         if (typeNameSQL.contains("float")) {
             return ColumnType.FLOAT;
+        } else if (typeNameSQL.contains("boolean") || (typeNameSQL.contains("int") && typeNameSQL.contains("(1)"))){
+            return ColumnType.BOOLEAN;
         } else if (typeNameSQL.contains("int")) {
             return ColumnType.INTEGER;
         } else if (typeNameSQL.contains("varchar")) {
@@ -50,9 +52,7 @@ public class TableSchema implements TableSchemaAdapter {
             return ColumnType.DECIMAL;
         } else if (typeNameSQL.contains("date")){
             return ColumnType.DATE;
-        } else if (typeNameSQL.contains("boolean")){
-            return ColumnType.BOOLEAN;
-        }
+        } 
         
         throw new UnsupportedOperationException("Type not supported: " + typeNameSQL);
     }
