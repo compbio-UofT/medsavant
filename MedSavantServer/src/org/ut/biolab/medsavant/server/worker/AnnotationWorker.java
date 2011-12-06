@@ -38,7 +38,7 @@ public class AnnotationWorker extends SwingWorker {
             try {
                 ServerLogQueryUtil.addServerLog(LogType.INFO, "Starting pending annotations");
                 found = kickStartPendingAnnotations();
-                ServerLogQueryUtil.addServerLog(LogType.INFO, "Done starting pending annotations");            
+                ServerLogQueryUtil.addServerLog(LogType.INFO, "Done starting pending annotations");
             } catch (Exception e) {
                 ServerLogger.logError(AnnotationWorker.class,e);
                 ServerLogger.logByEmail(AnnotationWorker.class, "Uh oh...", e.getMessage(), Level.SEVERE);
@@ -51,18 +51,18 @@ public class AnnotationWorker extends SwingWorker {
 
     private boolean kickStartPendingAnnotations() throws SQLException, IOException {
         ResultSet rs = AnnotationLogQueryUtil.getPendingUpdates();
-        boolean found = false;       
+        boolean found = false;
         try {
             //only do one at a time, to ensure proper ordering
             if (rs.next()) {
-                
+
                 found= true;
 
                 ServerLogQueryUtil.addServerLog(LogType.INFO, "Starting next annotation");
-                
+
                 int projectId = rs.getInt(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID);
                 int referenceId = rs.getInt(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID);
-                int updateId = rs.getInt(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPDATE_ID);
+                int updateId = rs.getInt(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID);
                 Action action = AnnotationLogQueryUtil.intToAction(rs.getInt("action"));
 
                 AnnotationLogQueryUtil.setAnnotationLogStatus(updateId, AnnotationLogQueryUtil.Status.INPROGRESS);
@@ -87,7 +87,7 @@ public class AnnotationWorker extends SwingWorker {
                             ServerLogQueryUtil.addServerLog(ServerLogQueryUtil.LogType.ERROR, "Unknown annotation action: " + action);
                             break;
                     }
-                    
+
                     AnnotationLogQueryUtil.setAnnotationLogStatus(updateId, AnnotationLogQueryUtil.Status.COMPLETE);
                 } catch (Exception e) {
                     ServerLogger.logError(AnnotationWorker.class,e);
@@ -100,7 +100,7 @@ public class AnnotationWorker extends SwingWorker {
             ServerLogger.logError(AnnotationWorker.class,ex);
             ServerLogger.log(AnnotationWorker.class, ex.getLocalizedMessage(), Level.SEVERE);
         }
-        
+
         return found;
     }
 }

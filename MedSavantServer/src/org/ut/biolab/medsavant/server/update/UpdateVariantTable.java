@@ -34,7 +34,6 @@ import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.server.log.ServerLogger;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 
-
 /**
  *
  * @author Andrew
@@ -62,15 +61,15 @@ public class UpdateVariantTable {
         //dump existing variants
         File variantDumpFile = new File(basedir,"temp_proj" + projectId + "_ref" + referenceId);
         String variantDump = variantDumpFile.getAbsolutePath();
-        ServerLogger.log(UpdateVariantTable.class, "Dumping variants to file: " + variantDump);       
-        variantsToFile(tableName, new File(variantDump));     
+        ServerLogger.log(UpdateVariantTable.class, "Dumping variants to file: " + variantDump);
+        variantsToFile(tableName, new File(variantDump));
         //variantsToFile(tableName, new File(variantDump), ProjectQueryUtil.getActualCustomVariantFields(projectId), new ArrayList<CustomField>());
 
         //sort variants
         ServerLogger.log(UpdateVariantTable.class, "Sorting variants");
         String sortedVariants = variantDump + "_sorted";
         sortFileByPosition(variantDump, sortedVariants);
-        
+
         //add custom vcf fields
         ServerLogger.log(UpdateVariantTable.class, "Adding custom vcf fields");
         List<CustomField> customFields = ProjectQueryUtil.getCustomVariantFields(projectId);
@@ -138,7 +137,7 @@ public class UpdateVariantTable {
         ServerLogger.log(UpdateVariantTable.class, "Adding VCFs to project=" + projectId + " reference=" + referenceId);
 
         String tableName = ProjectQueryUtil.getVariantTablename(projectId, referenceId);
-               
+
         //dump variants from staging table
         String stagingTableName = DBSettings.createVariantStagingTableName(projectId, referenceId, updateId);
         File tempFile = new File(basedir,"temp_proj" + projectId + "_ref" + referenceId + "_update" + updateId);
@@ -152,7 +151,7 @@ public class UpdateVariantTable {
         String sortedVariants = tempFilename + "_sorted";
         sortFileByPosition(tempFilename, sortedVariants);
         logFileSize(sortedVariants);
-        
+
         //add custom fields
         ServerLogger.log(UpdateVariantTable.class, "Adding custom vcf fields");
         List<CustomField> customFields = ProjectQueryUtil.getCustomVariantFields(projectId);
@@ -201,23 +200,23 @@ public class UpdateVariantTable {
 
         ServerLogger.log(UpdateVariantTable.class, "Annotation complete!");
     }
-    
+
     /*public static void performUpdateFormat(int projectId, int referenceId, int updateId) throws SQLException, IOException, Exception {
-        
+
         Date now = new Date();
         String basedir = (now.getYear()+1900) + "_" + now.getMonth() + "_" + now.getDay() + "_" + now.getHours() + "_" + now.getMinutes() + "_project_" + projectId + "_reference_" + referenceId + "_" + (rand).nextInt();
         (new File(basedir)).mkdir();
         (new File(basedir)).setWritable(true);
-        
+
         ServerLogger.log(UpdateVariantTable.class, "Updating project=" + projectId + " reference=" + referenceId);
 
         String tableName = ProjectQueryUtil.getVariantTablename(projectId, referenceId);
 
         //dump existing variants
         File variantDumpFile = new File(basedir,"temp_proj" + projectId + "_ref" + referenceId);
-        String variantDump = variantDumpFile.getAbsolutePath();        
+        String variantDump = variantDumpFile.getAbsolutePath();
         ServerLogger.log(UpdateVariantTable.class, "Dumping variants to file: " + variantDump);
-        
+
         TableSchema table = DBUtil.importTableSchema(tableName);
         int customInfoIndex = DBUtil.getIndexOfField(table, DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO);
         List<DbColumn> columns = table.getColumns();
@@ -226,17 +225,17 @@ public class UpdateVariantTable {
             annotationFields.add(new CustomField(columns.get(i).getColumnNameSQL(), "", false, "", ""));
         }
         variantsToFile(tableName, new File(variantDump), new ArrayList<CustomField>(), annotationFields);
-        
+
         //add custom fields
         ServerLogger.log(UpdateVariantTable.class, "Adding custom vcf fields");
         List<CustomField> customFields = ProjectQueryUtil.getCustomVariantFields(projectId);
         String vcfAnnotatedVariants = variantDump + "_vcf";
         addCustomVcfFields(variantDump, vcfAnnotatedVariants, customFields, DefaultVariantTableSchema.INDEX_OF_FILTER + 1);
-        
+
         //create new table from file
         ServerLogger.log(UpdateVariantTable.class, "Creating new table");
         String newTableName = ProjectQueryUtil.createVariantTable(projectId, referenceId, updateId, AnnotationQueryUtil.getAnnotationIds(projectId, referenceId), false); //recreate with annotations
-        
+
         //upload variants
         ServerLogger.log(UpdateVariantTable.class, "Uploading variants to table: " + newTableName);
         VariantQueryUtil.uploadFileToVariantTable(new File(vcfAnnotatedVariants), newTableName);
@@ -244,13 +243,13 @@ public class UpdateVariantTable {
         //remove temporary files
         ServerLogger.log(UpdateVariantTable.class, "Removing temp files");
         //TODO
-        
+
         //drop old table
         ServerLogger.log(UpdateVariantTable.class, "Dropping old table: " + tableName);
         dropTable(tableName);
-        
+
         ServerLogger.log(UpdateVariantTable.class, "VCF annotation complete!");
-        
+
     }*/
 
     private static void annotateTDF(String tdfFilename, String outputFilename, int[] annotationIds) throws Exception {
@@ -268,10 +267,10 @@ public class UpdateVariantTable {
         writer.close();
         reader.close();
     }
-    
+
     private static void variantsToFile(String tableName, File file) throws SQLException {
         Connection c = (ConnectionController.connectPooled());
-        String query = 
+        String query =
                 "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`,"
                 + " `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, `custom_info`";
         /*for(int i = 0; i < customFields.size(); i++){
@@ -292,14 +291,14 @@ public class UpdateVariantTable {
                 + " FROM " + tableName;
         c.createStatement().executeQuery(query);
     }
-    
+
 //    private static void variantsToFile(String tableName, File file) throws SQLException {
 //        variantsToFile(tableName, file, new ArrayList<CustomField>(), new ArrayList<CustomField>());
 //    }
 //
 //    private static void variantsToFile(String tableName, File file, List<CustomField> customFields, List<CustomField> annotationFields) throws SQLException {
 //        Connection c = (ConnectionController.connectPooled());
-//        String query = 
+//        String query =
 //                "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`,"
 //                + " `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, ";
 //        for(int i = 0; i < customFields.size(); i++){
@@ -430,30 +429,30 @@ public class UpdateVariantTable {
     }
 
     private static void addCustomVcfFields(String infile, String outfile, List<CustomField> customFields, int customInfoIndex) throws FileNotFoundException, IOException {
-        
+
         String[] infoFields = new String[customFields.size()];
         Class[] infoClasses = new Class[customFields.size()];
         for(int i = 0; i < customFields.size(); i++){
             infoFields[i] = customFields.get(i).getColumnName();
             infoClasses[i] = customFields.get(i).getColumnClass();
         }
-        
+
         BufferedReader reader = new BufferedReader(new FileReader(infile));
         BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
         String line = null;
         while((line = reader.readLine()) != null){
             String[] split = line.split(",");
             String info = split[customInfoIndex].substring(1, split[customInfoIndex].length()-1); //remove quotes
-            
+
             writer.write(line + "," + VariantRecord.createTabString(VariantRecord.parseInfo(info, infoFields, infoClasses)) + "\n");
             /*String[] split = line.split(",");
             String info = split[customInfoIndex].substring(1, split[customInfoIndex].length()-1); //remove quotes
-            
+
             int lengthBefore = 0;
             for(int i = 0; i < customInfoIndex; i++){
                 lengthBefore += 1 + split[i].length();
             }
-            
+
             line = line.substring(0, lengthBefore) + VariantRecord.createTabString(VariantRecord.parseInfo(info, infoFields, infoClasses)) + "," + line.substring(lengthBefore, line.length()) + "\n";
             writer.write(line);*/
         }
