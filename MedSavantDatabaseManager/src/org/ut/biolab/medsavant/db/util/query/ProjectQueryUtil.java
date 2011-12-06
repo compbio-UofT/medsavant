@@ -199,14 +199,14 @@ public class ProjectQueryUtil {
             c.createStatement().execute(query1.toString());
             
             //set annotation ids
-            String s = "";
+            /*String s = "";
             if(annotationIds != null && annotationIds.length > 0){
                 for(Integer i : annotationIds){
                     s += i + ",";
                 }
                 s = s.substring(0, s.length()-1);
             }
-            setAnnotations(projectid, referenceid, s);   
+            setAnnotations(projectid, referenceid, s);   */
         }
 
         return variantTableInfoName;
@@ -348,7 +348,7 @@ public class ProjectQueryUtil {
         
     }   
     
-    public static void setAnnotations(int projectid, int refid, String annotation_ids) throws SQLException {
+    public static void setAnnotations(int projectid, int refid, String annotation_ids, boolean logEntry) throws SQLException {
         
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
@@ -358,7 +358,9 @@ public class ProjectQueryUtil {
         
         (ConnectionController.connectPooled()).createStatement().execute(query.toString());
         
-        AnnotationLogQueryUtil.addAnnotationLogEntry(projectid, refid, Action.UPDATE_TABLE, Status.PENDING);
+        if(logEntry){
+            AnnotationLogQueryUtil.addAnnotationLogEntry(projectid, refid, Action.UPDATE_TABLE, Status.PENDING);
+        }
     }
     
     public static List<ProjectDetails> getProjectDetails(int projectId) throws SQLException {

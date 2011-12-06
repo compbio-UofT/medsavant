@@ -646,7 +646,7 @@ public class ProjectWizard extends WizardDialog {
                             }
                             s = s.substring(0, s.length()-1);
                         }
-                        ProjectQueryUtil.setAnnotations(projectId, cli.getReference().getId(), s);
+                        ProjectQueryUtil.setAnnotations(projectId, cli.getReference().getId(), s, true);
                     }
                 }
             }
@@ -664,7 +664,6 @@ public class ProjectWizard extends WizardDialog {
             //add references and annotations
             for(CheckListItem cli : checkListItems){
                 if(cli.isSelected()){
-                    ProjectQueryUtil.createVariantTable(projectid, cli.getReference().getId(), 0);
                     
                     List<Integer> annotationIds = cli.getAnnotationIds();
                     if(!annotationIds.isEmpty()){
@@ -673,8 +672,15 @@ public class ProjectWizard extends WizardDialog {
                             s += i + ",";
                         }
                         s = s.substring(0, s.length()-1);
-                        ProjectQueryUtil.setAnnotations(projectid, cli.getReference().getId(), s);
+                        ProjectQueryUtil.setAnnotations(projectid, cli.getReference().getId(), s, false);
                     }
+                          
+                    int[] annIds = new int[annotationIds.size()];
+                    for(int i = 0; i < annotationIds.size(); i++) { annIds[i] = annotationIds.get(i); }
+                    ProjectQueryUtil.createVariantTable(projectid, cli.getReference().getId(), 0, (annotationIds.isEmpty() ? null : annIds), false);
+                    
+                    //ProjectQueryUtil.createVariantTable(projectid, cli.getReference().getId(), 0);
+                    
                 }
             }
         }
