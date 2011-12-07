@@ -593,7 +593,7 @@ public class PatientQueryUtil {
 
         List<Object[]> result = new ArrayList<Object[]>();
         while(rs.next()){
-            Object[] r = new Object[5];
+            Object[] r = new Object[6];
             r[0] = rs.getString(1);
             r[1] = rs.getString(2);
             r[2] = rs.getString(3);
