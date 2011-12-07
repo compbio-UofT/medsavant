@@ -19,6 +19,8 @@ import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 
 /**
  *
@@ -82,8 +84,12 @@ public class GenericFixedFilterView extends FilterView {
     public FilterState saveState() {
         Map<String, String> map = new HashMap<String, String>();
         map.put("description", description);
-        map.put("condition", c.toString());
+        map.put("condition", replaceAllTableReferences(c.toString()));
         return new FilterState(FilterType.GENERIC, alias, id, map);
+    }
+    
+    private String replaceAllTableReferences(String s){
+        return s.replaceAll("t[0-9]+\\.", "");
     }
     
 }

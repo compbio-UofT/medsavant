@@ -94,6 +94,9 @@ public class FilterUtils {
             case GENERIC:
                 fps.addNewSubItem(new GenericFixedFilterView(state, fps.getId()), state.getId());
                 break;
+            case TAG:
+                fps.addNewSubItem(new TagFilterView(state, fps.getId()), state.getId());
+                break;
             case PLUGIN:
                 PluginController pc = PluginController.getInstance();
                 for (PluginDescriptor desc: pc.getDescriptors()) {

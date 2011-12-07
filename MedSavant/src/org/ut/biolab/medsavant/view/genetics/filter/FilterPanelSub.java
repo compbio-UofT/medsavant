@@ -440,11 +440,11 @@ public final class FilterPanelSub extends JPanel{
         }
 
         //tag filter
-        if(!hasSubItem(TagFilter.FILTER_ID)){
+        if(!hasSubItem(TagFilterView.FILTER_ID)){
             map.get(Category.VARIANT).add(new FilterPlaceholder() {
-                public FilterView getFilterView() { return TagFilter.getTagFilterView(id);}
-                public String getFilterID() { return TagFilter.FILTER_ID;}
-                public String getFilterName() { return TagFilter.FILTER_NAME;}
+                public FilterView getFilterView() { return TagFilterView.getTagFilterView(id);}
+                public String getFilterID() { return TagFilterView.FILTER_ID;}
+                public String getFilterName() { return TagFilterView.FILTER_NAME;}
             });
         }
 

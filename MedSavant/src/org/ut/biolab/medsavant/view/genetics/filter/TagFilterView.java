@@ -12,7 +12,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -33,6 +36,7 @@ import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.VariantTag;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -40,34 +44,47 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class TagFilter extends FilterView {
+public class TagFilterView extends FilterView {
 
     public static final String FILTER_NAME = "Tag Filter";
     public static final String FILTER_ID = "tag_filter";
     //private static final String COHORT_ALL = "All Individuals";
 
     static FilterView getTagFilterView(int queryId) {
-        return new TagFilter(queryId, new JPanel());
+        return new TagFilterView(queryId, new JPanel());
+    }
+    
+    
+    private List<VariantTag> variantTags;
+    private List<VariantTag> appliedTags;
+    private ActionListener al;    
+    private JTextArea ta;
+    
+    public TagFilterView(FilterState state, int queryId){
+        this(queryId, new JPanel());
+        if(state.getValues().get("variantTags") != null){
+            applyFilter(stringToVariantTags(state.getValues().get("variantTags")));
+        }
     }
 
-    public TagFilter(int queryId, JPanel container) {
+    public TagFilterView(int queryId, JPanel container) {
         super(FILTER_NAME, container, queryId);
         createContentPanel(container);
     }
-
-    private static String[][] tagsToStringArray(List<VariantTag> variantTags) {
-
-                        String[][] result = new String[variantTags.size()][2];
-
-                        int row = 0;
-                        for (VariantTag t : variantTags) {
-                            result[row][0] = t.key;
-                            result[row][1] = t.value;
-                            row++;
-                        }
-
-                        return result;
-                    }
+    
+    public void applyFilter(List<VariantTag> tags){
+        this.variantTags = tags;
+        ta.setText("");
+        for(int i = 0; i < variantTags.size(); i++){
+            VariantTag tag = variantTags.get(i);
+            if(i == 0){
+                ta.append(tag.toString() + "\n");
+            } else {
+                ta.append("AND " + tag.toString() + "\n");
+            }
+        }
+        al.actionPerformed(null);
+    }
 
     private void createContentPanel(JComponent p) {
 
@@ -78,7 +95,8 @@ public class TagFilter extends FilterView {
         JPanel content = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(content);
 
-        final List<VariantTag> variantTags = new ArrayList<VariantTag>();
+        variantTags = new ArrayList<VariantTag>();
+        appliedTags = new ArrayList<VariantTag>();
 
         try {
             final JComboBox tagNameCB = new JComboBox();
@@ -96,13 +114,13 @@ public class TagFilter extends FilterView {
                 tagNameCB.addItem(tag);
             }
 
-            final JTextArea ta = new JTextArea();
+            ta = new JTextArea();
             ta.setRows(10);
             ta.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             ta.setEditable(false);
 
-              final JButton applyButton = new JButton("Apply");
-             applyButton.setEnabled(false);
+            final JButton applyButton = new JButton("Apply");
+            applyButton.setEnabled(false);
 
             JButton addButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
             addButton.addActionListener(new ActionListener() {
@@ -149,34 +167,35 @@ public class TagFilter extends FilterView {
             tagNameCB.setSelectedIndex(0);
             updateTagValues((String) tagNameCB.getSelectedItem(), tagValueCB);
 
-             ActionListener al = new ActionListener() {
+            al = new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
 
                     applyButton.setEnabled(false);
+                    
+                    appliedTags = new ArrayList<VariantTag>(variantTags);
 
                     Filter f = new QueryFilter() {
 
                         @Override
                         public Condition[] getConditions() {
-                                try {
-                                    List<Integer> uploadIDs = VariantQueryUtil.getUploadIDsMatchingVariantTags(TagFilter.tagsToStringArray(variantTags));
+                            try {
+                                List<Integer> uploadIDs = VariantQueryUtil.getUploadIDsMatchingVariantTags(TagFilterView.tagsToStringArray(variantTags));
 
-                                    Condition[] uploadIDConditions = new Condition[uploadIDs.size()];
+                                Condition[] uploadIDConditions = new Condition[uploadIDs.size()];
 
-                                     TableSchema table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(
-                                             ProjectController.getInstance().getCurrentProjectId(),
-                                             ReferenceController.getInstance().getCurrentReferenceId()));
+                                TableSchema table = CustomTables.getCustomTableSchema(ProjectQueryUtil.getVariantTablename(
+                                         ProjectController.getInstance().getCurrentProjectId(),
+                                         ReferenceController.getInstance().getCurrentReferenceId()));
 
-
-                                    for (int i = 0; i < uploadIDs.size(); i++) {
-                                        uploadIDConditions[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadIDs.get(i));
-                                    }
-
-                                    return new Condition[] {ComboCondition.or(uploadIDConditions) };
-                                } catch (SQLException ex) {
-                                    return new Condition[0];
+                                for (int i = 0; i < uploadIDs.size(); i++) {
+                                    uploadIDConditions[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadIDs.get(i));
                                 }
+
+                                return new Condition[] {ComboCondition.or(uploadIDConditions) };
+                            } catch (SQLException ex) {
+                                return new Condition[0];
+                            }
 
                         }
 
@@ -225,15 +244,51 @@ public class TagFilter extends FilterView {
                     tagValueCB.addItem(val);
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(TagFilter.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(TagFilterView.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
         tagValueCB.updateUI();
     }
+    
+    private static String[][] tagsToStringArray(List<VariantTag> variantTags) {
+
+        String[][] result = new String[variantTags.size()][2];
+
+        int row = 0;
+        for (VariantTag t : variantTags) {
+            result[row][0] = t.key;
+            result[row][1] = t.value;
+            row++;
+        }
+
+        return result;
+    }
 
     @Override
     public FilterState saveState() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("variantTags", variantTagsToString(appliedTags));
+        return new FilterState(FilterType.TAG, FILTER_NAME, FILTER_ID, map);       
+    }
+    
+    private String variantTagsToString(List<VariantTag> tags){
+        String s = "";
+        for(VariantTag tag : tags){
+            s += tag.key + ":::" + tag.value + ";;;";
+        }
+        return s;
+    }
+    
+    private List<VariantTag> stringToVariantTags(String s){
+        List<VariantTag> list = new ArrayList<VariantTag>();
+        String[] pairs = s.split(";;;");
+        for(String x : pairs){
+            String[] pair = x.split(":::");
+            if(pair.length == 2){
+                list.add(new VariantTag(pair[0], pair[1]));
+            }
+        }
+        return list;
     }
 }
