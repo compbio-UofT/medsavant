@@ -24,6 +24,8 @@ import java.util.Map;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -37,6 +39,7 @@ import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
+import org.ut.biolab.medsavant.view.util.ChromosomeComparator;
 
 /**
  *
@@ -133,7 +136,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                 if(Thread.currentThread().isInterrupted()){
                     return null;
                 }
-                if (whichTable == Table.VARIANT) {                    
+                if (whichTable == Table.VARIANT) {    
                     chartMap.addEntry(
                             binrange.toString(), 
                             VariantQueryUtil.getFilteredFrequencyValuesForColumnInRange(
@@ -239,7 +242,13 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                 }
             }
 
-            Collections.sort(chartMap.getEntries());
+            //sort results
+            if(whichTable == Table.VARIANT && field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM)){
+                chartMap.sortKaryotypically();
+            } else {
+                chartMap.sort();
+            }
+
         }
         return chartMap;
     }
