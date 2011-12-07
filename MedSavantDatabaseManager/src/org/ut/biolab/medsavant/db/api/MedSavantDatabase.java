@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.db.api;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
@@ -23,12 +22,13 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 public class MedSavantDatabase {
 
     public static class AnnotationTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "annotation";
-        public AnnotationTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "annotation";
+
+        public AnnotationTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // annotation.annotation_id
         public static final int INDEX_OF_ANNOTATION_ID = 0;
         public static final ColumnType TYPE_OF_ANNOTATION_ID = TableSchema.ColumnType.INTEGER;
@@ -69,25 +69,27 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_TYPE = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_TYPE = 11;
         public static final String COLUMNNAME_OF_TYPE = "type";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_ANNOTATION_ID,COLUMNNAME_OF_ANNOTATION_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_PROGRAM,COLUMNNAME_OF_PROGRAM,TableSchema.ColumnType.VARCHAR,100);
-                addColumn(COLUMNNAME_OF_VERSION,COLUMNNAME_OF_VERSION,TableSchema.ColumnType.VARCHAR,100);
-                addColumn(COLUMNNAME_OF_REFERENCE_ID,COLUMNNAME_OF_REFERENCE_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_PATH,COLUMNNAME_OF_PATH,TableSchema.ColumnType.VARCHAR,500);
-                addColumn(COLUMNNAME_OF_HAS_REF,COLUMNNAME_OF_HAS_REF,TableSchema.ColumnType.INTEGER,1);
-                addColumn(COLUMNNAME_OF_HAS_ALT,COLUMNNAME_OF_HAS_ALT,TableSchema.ColumnType.INTEGER,1);
-                addColumn(COLUMNNAME_OF_TYPE,COLUMNNAME_OF_TYPE,TableSchema.ColumnType.INTEGER,11);
+            addColumn(COLUMNNAME_OF_ANNOTATION_ID, COLUMNNAME_OF_ANNOTATION_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PROGRAM, COLUMNNAME_OF_PROGRAM, TableSchema.ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_VERSION, COLUMNNAME_OF_VERSION, TableSchema.ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PATH, COLUMNNAME_OF_PATH, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_HAS_REF, COLUMNNAME_OF_HAS_REF, TableSchema.ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_HAS_ALT, COLUMNNAME_OF_HAS_ALT, TableSchema.ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_TYPE, COLUMNNAME_OF_TYPE, TableSchema.ColumnType.INTEGER, 11);
         }
     }
 
     public static class AnnotationFormatTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "annotation_format";
-        public AnnotationFormatTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "annotation_format";
+
+        public AnnotationFormatTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // annotation_format.annotation_id
         public static final int INDEX_OF_ANNOTATION_ID = 0;
         public static final ColumnType TYPE_OF_ANNOTATION_ID = TableSchema.ColumnType.INTEGER;
@@ -123,25 +125,26 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_DESCRIPTION = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_DESCRIPTION = 500;
         public static final String COLUMNNAME_OF_DESCRIPTION = "description";
-        private void addColumns() {
-                addColumn(COLUMNNAME_OF_ANNOTATION_ID,COLUMNNAME_OF_ANNOTATION_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_POSITION,COLUMNNAME_OF_POSITION,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_COLUMN_NAME,COLUMNNAME_OF_COLUMN_NAME,TableSchema.ColumnType.VARCHAR,200);
-                addColumn(COLUMNNAME_OF_COLUMN_TYPE,COLUMNNAME_OF_COLUMN_TYPE,TableSchema.ColumnType.VARCHAR,45);
-                addColumn(COLUMNNAME_OF_FILTERABLE,COLUMNNAME_OF_FILTERABLE,TableSchema.ColumnType.INTEGER,1);
-                addColumn(COLUMNNAME_OF_ALIAS,COLUMNNAME_OF_ALIAS,TableSchema.ColumnType.VARCHAR,200);
-                addColumn(COLUMNNAME_OF_DESCRIPTION,COLUMNNAME_OF_DESCRIPTION,TableSchema.ColumnType.VARCHAR,500);
-        }
 
+        private void addColumns() {
+            addColumn(COLUMNNAME_OF_ANNOTATION_ID, COLUMNNAME_OF_ANNOTATION_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_POSITION, COLUMNNAME_OF_POSITION, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_COLUMN_NAME, COLUMNNAME_OF_COLUMN_NAME, TableSchema.ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_COLUMN_TYPE, COLUMNNAME_OF_COLUMN_TYPE, TableSchema.ColumnType.VARCHAR, 45);
+            addColumn(COLUMNNAME_OF_FILTERABLE, COLUMNNAME_OF_FILTERABLE, TableSchema.ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_ALIAS, COLUMNNAME_OF_ALIAS, TableSchema.ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, TableSchema.ColumnType.VARCHAR, 500);
+        }
     }
 
     public static class ChromosomeTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "chromosome";
-        public ChromosomeTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "chromosome";
+
+        public ChromosomeTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // chromosome.reference_id
         public static final int INDEX_OF_REFERENCE_ID = 0;
         public static final ColumnType TYPE_OF_REFERENCE_ID = TableSchema.ColumnType.INTEGER;
@@ -167,22 +170,24 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_CENTROMERE_POS = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_CENTROMERE_POS = 11;
         public static final String COLUMNNAME_OF_CENTROMERE_POS = "centromere_pos";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_REFERENCE_ID,COLUMNNAME_OF_REFERENCE_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_CONTIG_ID,COLUMNNAME_OF_CONTIG_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_CONTIG_NAME,COLUMNNAME_OF_CONTIG_NAME,TableSchema.ColumnType.VARCHAR,100);
-                addColumn(COLUMNNAME_OF_CONTIG_LENGTH,COLUMNNAME_OF_CONTIG_LENGTH,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_CENTROMERE_POS,COLUMNNAME_OF_CENTROMERE_POS,TableSchema.ColumnType.INTEGER,11);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_CONTIG_ID, COLUMNNAME_OF_CONTIG_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_CONTIG_NAME, COLUMNNAME_OF_CONTIG_NAME, TableSchema.ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_CONTIG_LENGTH, COLUMNNAME_OF_CONTIG_LENGTH, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_CENTROMERE_POS, COLUMNNAME_OF_CENTROMERE_POS, TableSchema.ColumnType.INTEGER, 11);
         }
     }
 
     public static class CohortTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "cohort";
-        public CohortTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "cohort";
+
+        public CohortTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // cohort.cohort_id
         public static final int INDEX_OF_COHORT_ID = 0;
         public static final ColumnType TYPE_OF_COHORT_ID = TableSchema.ColumnType.INTEGER;
@@ -198,20 +203,22 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_NAME = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_NAME = 255;
         public static final String COLUMNNAME_OF_NAME = "name";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_COHORT_ID,COLUMNNAME_OF_COHORT_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_PROJECT_ID,COLUMNNAME_OF_PROJECT_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_NAME,COLUMNNAME_OF_NAME,TableSchema.ColumnType.VARCHAR,255);
+            addColumn(COLUMNNAME_OF_COHORT_ID, COLUMNNAME_OF_COHORT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_NAME, COLUMNNAME_OF_NAME, TableSchema.ColumnType.VARCHAR, 255);
         }
     }
 
     public static class CohortMembershipTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "cohort_membership";
-        public CohortMembershipTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "cohort_membership";
+
+        public CohortMembershipTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // cohort_membership.cohort_id
         public static final int INDEX_OF_COHORT_ID = 0;
         public static final ColumnType TYPE_OF_COHORT_ID = TableSchema.ColumnType.INTEGER;
@@ -222,89 +229,98 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_PATIENT_ID = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_PATIENT_ID = 11;
         public static final String COLUMNNAME_OF_PATIENT_ID = "patient_id";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_COHORT_ID,COLUMNNAME_OF_COHORT_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_PATIENT_ID,COLUMNNAME_OF_PATIENT_ID,TableSchema.ColumnType.INTEGER,11);
+            addColumn(COLUMNNAME_OF_COHORT_ID, COLUMNNAME_OF_COHORT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PATIENT_ID, COLUMNNAME_OF_PATIENT_ID, TableSchema.ColumnType.INTEGER, 11);
         }
     }
 
     public static class DefaultpatientTableSchema extends TableSchema {
-		public static final String TABLE_NAME = "default_patient";
-		public DefaultpatientTableSchema(DbSchema s) {
-			super(s.addTable(TABLE_NAME));
-			addColumns();
-		}
 
-		public DefaultpatientTableSchema(DbSchema s, String tablename) {
-			super(s.addTable(tablename));
-			addColumns();
-		}
+        public static final String TABLE_NAME = "default_patient";
 
-		// default_patient.patient_id
-		public static final int INDEX_OF_PATIENT_ID = 0;
-		public static final ColumnType TYPE_OF_PATIENT_ID = TableSchema.ColumnType.INTEGER;
-		public static final int LENGTH_OF_PATIENT_ID = 11;
-		public static final String COLUMNNAME_OF_PATIENT_ID = "patient_id";
-		// default_patient.family_id
-		public static final int INDEX_OF_FAMILY_ID = 1;
-		public static final ColumnType TYPE_OF_FAMILY_ID = TableSchema.ColumnType.VARCHAR;
-		public static final int LENGTH_OF_FAMILY_ID = 100;
-		public static final String COLUMNNAME_OF_FAMILY_ID = "family_id";
-		// default_patient.hospital_id
-		public static final int INDEX_OF_HOSPITAL_ID = 2;
-		public static final ColumnType TYPE_OF_HOSPITAL_ID = TableSchema.ColumnType.VARCHAR;
-		public static final int LENGTH_OF_HOSPITAL_ID = 100;
-		public static final String COLUMNNAME_OF_HOSPITAL_ID = "hospital_id";
-		// default_patient.idbiomom
-		public static final int INDEX_OF_IDBIOMOM = 3;
-		public static final ColumnType TYPE_OF_IDBIOMOM = TableSchema.ColumnType.VARCHAR;
-		public static final int LENGTH_OF_IDBIOMOM = 100;
-		public static final String COLUMNNAME_OF_IDBIOMOM = "idbiomom";
-		// default_patient.idbiodad
-		public static final int INDEX_OF_IDBIODAD = 4;
-		public static final ColumnType TYPE_OF_IDBIODAD = TableSchema.ColumnType.VARCHAR;
-		public static final int LENGTH_OF_IDBIODAD = 100;
-		public static final String COLUMNNAME_OF_IDBIODAD = "idbiodad";
-		// default_patient.gender
-		public static final int INDEX_OF_GENDER = 5;
-		public static final ColumnType TYPE_OF_GENDER = TableSchema.ColumnType.INTEGER;
-		public static final int LENGTH_OF_GENDER = 11;
-		public static final String COLUMNNAME_OF_GENDER = "gender";
-		// default_patient.dna_ids
-		public static final int INDEX_OF_DNA_IDS = 6;
-		public static final ColumnType TYPE_OF_DNA_IDS = TableSchema.ColumnType.VARCHAR;
-		public static final int LENGTH_OF_DNA_IDS = 1000;
-		public static final String COLUMNNAME_OF_DNA_IDS = "dna_ids";
-		// default_patient.bam_url
-		public static final int INDEX_OF_BAM_URL = 7;
-		public static final ColumnType TYPE_OF_BAM_URL = TableSchema.ColumnType.VARCHAR;
-		public static final int LENGTH_OF_BAM_URL = 5000;
-		public static final String COLUMNNAME_OF_BAM_URL = "bam_url";
-		private void addColumns() {
-			addColumn(COLUMNNAME_OF_PATIENT_ID,COLUMNNAME_OF_PATIENT_ID,TableSchema.ColumnType.INTEGER,11);
-			addColumn(COLUMNNAME_OF_FAMILY_ID,COLUMNNAME_OF_FAMILY_ID,TableSchema.ColumnType.VARCHAR,100);
-			addColumn(COLUMNNAME_OF_HOSPITAL_ID,COLUMNNAME_OF_HOSPITAL_ID,TableSchema.ColumnType.VARCHAR,100);
-			addColumn(COLUMNNAME_OF_IDBIOMOM,COLUMNNAME_OF_IDBIOMOM,TableSchema.ColumnType.VARCHAR,100);
-			addColumn(COLUMNNAME_OF_IDBIODAD,COLUMNNAME_OF_IDBIODAD,TableSchema.ColumnType.VARCHAR,100);
-			addColumn(COLUMNNAME_OF_GENDER,COLUMNNAME_OF_GENDER,TableSchema.ColumnType.INTEGER,11);
-			addColumn(COLUMNNAME_OF_DNA_IDS,COLUMNNAME_OF_DNA_IDS,TableSchema.ColumnType.VARCHAR,1000);
-			addColumn(COLUMNNAME_OF_BAM_URL,COLUMNNAME_OF_BAM_URL,TableSchema.ColumnType.VARCHAR,5000);
-		}
+        public DefaultpatientTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
 
-	}
+        public DefaultpatientTableSchema(DbSchema s, String tablename) {
+            super(s.addTable(tablename));
+            addColumns();
+        }
+        // default_patient.patient_id
+        public static final int INDEX_OF_PATIENT_ID = 0;
+        public static final ColumnType TYPE_OF_PATIENT_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_PATIENT_ID = 11;
+        public static final String COLUMNNAME_OF_PATIENT_ID = "patient_id";
+        // default_patient.family_id
+        public static final int INDEX_OF_FAMILY_ID = 1;
+        public static final ColumnType TYPE_OF_FAMILY_ID = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_FAMILY_ID = 100;
+        public static final String COLUMNNAME_OF_FAMILY_ID = "family_id";
+        // default_patient.hospital_id
+        public static final int INDEX_OF_HOSPITAL_ID = 2;
+        public static final ColumnType TYPE_OF_HOSPITAL_ID = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_HOSPITAL_ID = 100;
+        public static final String COLUMNNAME_OF_HOSPITAL_ID = "hospital_id";
+        // default_patient.idbiomom
+        public static final int INDEX_OF_IDBIOMOM = 3;
+        public static final ColumnType TYPE_OF_IDBIOMOM = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_IDBIOMOM = 100;
+        public static final String COLUMNNAME_OF_IDBIOMOM = "idbiomom";
+        // default_patient.idbiodad
+        public static final int INDEX_OF_IDBIODAD = 4;
+        public static final ColumnType TYPE_OF_IDBIODAD = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_IDBIODAD = 100;
+        public static final String COLUMNNAME_OF_IDBIODAD = "idbiodad";
+        // default_patient.gender
+        public static final int INDEX_OF_GENDER = 5;
+        public static final ColumnType TYPE_OF_GENDER = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_GENDER = 11;
+        public static final String COLUMNNAME_OF_GENDER = "gender";
+        // default_patient.affected
+        public static final int INDEX_OF_AFFECTED = 6;
+        public static final ColumnType TYPE_OF_AFFECTED = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_AFFECTED = 11;
+        public static final String COLUMNNAME_OF_AFFECTED = "affected";
+        // default_patient.dna_ids
+        public static final int INDEX_OF_DNA_IDS = 7;
+        public static final ColumnType TYPE_OF_DNA_IDS = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_DNA_IDS = 1000;
+        public static final String COLUMNNAME_OF_DNA_IDS = "dna_ids";
+        // default_patient.bam_url
+        public static final int INDEX_OF_BAM_URL = 8;
+        public static final ColumnType TYPE_OF_BAM_URL = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_BAM_URL = 5000;
+        public static final String COLUMNNAME_OF_BAM_URL = "bam_url";
+
+        private void addColumns() {
+            addColumn(COLUMNNAME_OF_PATIENT_ID, COLUMNNAME_OF_PATIENT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_FAMILY_ID, COLUMNNAME_OF_FAMILY_ID, TableSchema.ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_HOSPITAL_ID, COLUMNNAME_OF_HOSPITAL_ID, TableSchema.ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_IDBIOMOM, COLUMNNAME_OF_IDBIOMOM, TableSchema.ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_IDBIODAD, COLUMNNAME_OF_IDBIODAD, TableSchema.ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_GENDER, COLUMNNAME_OF_GENDER, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_AFFECTED, COLUMNNAME_OF_AFFECTED, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_DNA_IDS, COLUMNNAME_OF_DNA_IDS, TableSchema.ColumnType.VARCHAR, 1000);
+            addColumn(COLUMNNAME_OF_BAM_URL, COLUMNNAME_OF_BAM_URL, TableSchema.ColumnType.VARCHAR, 5000);
+        }
+    }
 
     public static class DefaultVariantTableSchema extends TableSchema {
+
         public static final String TABLE_NAME = "default_variant";
+
         public DefaultVariantTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
+            super(s.addTable(TABLE_NAME));
+            addColumns();
         }
 
-        public DefaultVariantTableSchema(DbSchema s, String tablename){
-                super(s.addTable(tablename));
-                addColumns();
+        public DefaultVariantTableSchema(DbSchema s, String tablename) {
+            super(s.addTable(tablename));
+            addColumns();
         }
-
         // default_variant.upload_id
         public static final int INDEX_OF_UPLOAD_ID = 0;
         public static final ColumnType TYPE_OF_UPLOAD_ID = TableSchema.ColumnType.INTEGER;
@@ -445,45 +461,47 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_CUSTOM_INFO = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_CUSTOM_INFO = 500;
         public static final String COLUMNNAME_OF_CUSTOM_INFO = "custom_info";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_UPLOAD_ID,COLUMNNAME_OF_UPLOAD_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_FILE_ID,COLUMNNAME_OF_FILE_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_VARIANT_ID,COLUMNNAME_OF_VARIANT_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_DNA_ID,COLUMNNAME_OF_DNA_ID,TableSchema.ColumnType.VARCHAR,100);
-                addColumn(COLUMNNAME_OF_CHROM,COLUMNNAME_OF_CHROM,TableSchema.ColumnType.VARCHAR,5);
-                addColumn(COLUMNNAME_OF_POSITION,COLUMNNAME_OF_POSITION,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_DBSNP_ID,COLUMNNAME_OF_DBSNP_ID,TableSchema.ColumnType.VARCHAR,45);
-                addColumn(COLUMNNAME_OF_REF,COLUMNNAME_OF_REF,TableSchema.ColumnType.VARCHAR,30);
-                addColumn(COLUMNNAME_OF_ALT,COLUMNNAME_OF_ALT,TableSchema.ColumnType.VARCHAR,30);
-                addColumn(COLUMNNAME_OF_QUAL,COLUMNNAME_OF_QUAL,TableSchema.ColumnType.FLOAT,10);
-                addColumn(COLUMNNAME_OF_FILTER,COLUMNNAME_OF_FILTER,TableSchema.ColumnType.VARCHAR,500);
-                addColumn(COLUMNNAME_OF_AA,COLUMNNAME_OF_AA,TableSchema.ColumnType.VARCHAR,500);
-                addColumn(COLUMNNAME_OF_AC,COLUMNNAME_OF_AC,TableSchema.ColumnType.VARCHAR,500);
-                addColumn(COLUMNNAME_OF_AF,COLUMNNAME_OF_AF,TableSchema.ColumnType.VARCHAR,500);
-                addColumn(COLUMNNAME_OF_AN,COLUMNNAME_OF_AN,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_BQ,COLUMNNAME_OF_BQ,TableSchema.ColumnType.FLOAT,-1);
-                addColumn(COLUMNNAME_OF_CIGAR,COLUMNNAME_OF_CIGAR,TableSchema.ColumnType.VARCHAR,500);
-                addColumn(COLUMNNAME_OF_DB,COLUMNNAME_OF_DB,TableSchema.ColumnType.INTEGER,1);
-                addColumn(COLUMNNAME_OF_DP,COLUMNNAME_OF_DP,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_END,COLUMNNAME_OF_END,TableSchema.ColumnType.VARCHAR,500);
-                addColumn(COLUMNNAME_OF_H2,COLUMNNAME_OF_H2,TableSchema.ColumnType.INTEGER,1);
-                addColumn(COLUMNNAME_OF_MQ,COLUMNNAME_OF_MQ,TableSchema.ColumnType.VARCHAR,500);
-                addColumn(COLUMNNAME_OF_MQ0,COLUMNNAME_OF_MQ0,TableSchema.ColumnType.VARCHAR,500);
-                addColumn(COLUMNNAME_OF_NS,COLUMNNAME_OF_NS,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_SB,COLUMNNAME_OF_SB,TableSchema.ColumnType.VARCHAR,500);
-                addColumn(COLUMNNAME_OF_SOMATIC,COLUMNNAME_OF_SOMATIC,TableSchema.ColumnType.INTEGER,1);
-                addColumn(COLUMNNAME_OF_VALIDATED,COLUMNNAME_OF_VALIDATED,TableSchema.ColumnType.INTEGER,1);
-                addColumn(COLUMNNAME_OF_CUSTOM_INFO,COLUMNNAME_OF_CUSTOM_INFO,TableSchema.ColumnType.VARCHAR,500);
+            addColumn(COLUMNNAME_OF_UPLOAD_ID, COLUMNNAME_OF_UPLOAD_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_FILE_ID, COLUMNNAME_OF_FILE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_VARIANT_ID, COLUMNNAME_OF_VARIANT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_DNA_ID, COLUMNNAME_OF_DNA_ID, TableSchema.ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_CHROM, COLUMNNAME_OF_CHROM, TableSchema.ColumnType.VARCHAR, 5);
+            addColumn(COLUMNNAME_OF_POSITION, COLUMNNAME_OF_POSITION, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_DBSNP_ID, COLUMNNAME_OF_DBSNP_ID, TableSchema.ColumnType.VARCHAR, 45);
+            addColumn(COLUMNNAME_OF_REF, COLUMNNAME_OF_REF, TableSchema.ColumnType.VARCHAR, 30);
+            addColumn(COLUMNNAME_OF_ALT, COLUMNNAME_OF_ALT, TableSchema.ColumnType.VARCHAR, 30);
+            addColumn(COLUMNNAME_OF_QUAL, COLUMNNAME_OF_QUAL, TableSchema.ColumnType.FLOAT, 10);
+            addColumn(COLUMNNAME_OF_FILTER, COLUMNNAME_OF_FILTER, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_AA, COLUMNNAME_OF_AA, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_AC, COLUMNNAME_OF_AC, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_AF, COLUMNNAME_OF_AF, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_AN, COLUMNNAME_OF_AN, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_BQ, COLUMNNAME_OF_BQ, TableSchema.ColumnType.FLOAT, -1);
+            addColumn(COLUMNNAME_OF_CIGAR, COLUMNNAME_OF_CIGAR, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_DB, COLUMNNAME_OF_DB, TableSchema.ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_DP, COLUMNNAME_OF_DP, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_END, COLUMNNAME_OF_END, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_H2, COLUMNNAME_OF_H2, TableSchema.ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_MQ, COLUMNNAME_OF_MQ, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_MQ0, COLUMNNAME_OF_MQ0, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_NS, COLUMNNAME_OF_NS, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_SB, COLUMNNAME_OF_SB, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_SOMATIC, COLUMNNAME_OF_SOMATIC, TableSchema.ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_VALIDATED, COLUMNNAME_OF_VALIDATED, TableSchema.ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_CUSTOM_INFO, COLUMNNAME_OF_CUSTOM_INFO, TableSchema.ColumnType.VARCHAR, 500);
         }
     }
 
     public static class PatientFormatTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "patient_format";
-        public PatientFormatTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "patient_format";
+
+        public PatientFormatTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // patient_format.project_id
         public static final int INDEX_OF_PROJECT_ID = 0;
         public static final ColumnType TYPE_OF_PROJECT_ID = TableSchema.ColumnType.INTEGER;
@@ -519,24 +537,26 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_DESCRIPTION = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_DESCRIPTION = 500;
         public static final String COLUMNNAME_OF_DESCRIPTION = "description";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_PROJECT_ID,COLUMNNAME_OF_PROJECT_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_POSITION,COLUMNNAME_OF_POSITION,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_COLUMN_NAME,COLUMNNAME_OF_COLUMN_NAME,TableSchema.ColumnType.VARCHAR,200);
-                addColumn(COLUMNNAME_OF_COLUMN_TYPE,COLUMNNAME_OF_COLUMN_TYPE,TableSchema.ColumnType.VARCHAR,45);
-                addColumn(COLUMNNAME_OF_FILTERABLE,COLUMNNAME_OF_FILTERABLE,TableSchema.ColumnType.INTEGER,1);
-                addColumn(COLUMNNAME_OF_ALIAS,COLUMNNAME_OF_ALIAS,TableSchema.ColumnType.VARCHAR,200);
-                addColumn(COLUMNNAME_OF_DESCRIPTION,COLUMNNAME_OF_DESCRIPTION,TableSchema.ColumnType.VARCHAR,500);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_POSITION, COLUMNNAME_OF_POSITION, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_COLUMN_NAME, COLUMNNAME_OF_COLUMN_NAME, TableSchema.ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_COLUMN_TYPE, COLUMNNAME_OF_COLUMN_TYPE, TableSchema.ColumnType.VARCHAR, 45);
+            addColumn(COLUMNNAME_OF_FILTERABLE, COLUMNNAME_OF_FILTERABLE, TableSchema.ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_ALIAS, COLUMNNAME_OF_ALIAS, TableSchema.ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, TableSchema.ColumnType.VARCHAR, 500);
         }
     }
 
     public static class PatientTablemapTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "patient_tablemap";
-        public PatientTablemapTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "patient_tablemap";
+
+        public PatientTablemapTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // patient_tablemap.project_id
         public static final int INDEX_OF_PROJECT_ID = 0;
         public static final ColumnType TYPE_OF_PROJECT_ID = TableSchema.ColumnType.INTEGER;
@@ -547,19 +567,21 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_PATIENT_TABLENAME = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_PATIENT_TABLENAME = 100;
         public static final String COLUMNNAME_OF_PATIENT_TABLENAME = "patient_tablename";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_PROJECT_ID,COLUMNNAME_OF_PROJECT_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_PATIENT_TABLENAME,COLUMNNAME_OF_PATIENT_TABLENAME,TableSchema.ColumnType.VARCHAR,100);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PATIENT_TABLENAME, COLUMNNAME_OF_PATIENT_TABLENAME, TableSchema.ColumnType.VARCHAR, 100);
         }
     }
 
     public static class ProjectTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "project";
-        public ProjectTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "project";
+
+        public ProjectTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // project.project_id
         public static final int INDEX_OF_PROJECT_ID = 0;
         public static final ColumnType TYPE_OF_PROJECT_ID = TableSchema.ColumnType.INTEGER;
@@ -570,19 +592,21 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_NAME = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_NAME = 50;
         public static final String COLUMNNAME_OF_NAME = "name";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_PROJECT_ID,COLUMNNAME_OF_PROJECT_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_NAME,COLUMNNAME_OF_NAME,TableSchema.ColumnType.VARCHAR,50);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_NAME, COLUMNNAME_OF_NAME, TableSchema.ColumnType.VARCHAR, 50);
         }
     }
 
     public static class ReferenceTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "reference";
-        public ReferenceTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "reference";
+
+        public ReferenceTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // reference.reference_id
         public static final int INDEX_OF_REFERENCE_ID = 0;
         public static final ColumnType TYPE_OF_REFERENCE_ID = TableSchema.ColumnType.INTEGER;
@@ -598,20 +622,22 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_URL = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_URL = 200;
         public static final String COLUMNNAME_OF_URL = "url";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_REFERENCE_ID,COLUMNNAME_OF_REFERENCE_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_NAME,COLUMNNAME_OF_NAME,TableSchema.ColumnType.VARCHAR,50);
-                addColumn(COLUMNNAME_OF_URL,COLUMNNAME_OF_URL,TableSchema.ColumnType.VARCHAR,200);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_NAME, COLUMNNAME_OF_NAME, TableSchema.ColumnType.VARCHAR, 50);
+            addColumn(COLUMNNAME_OF_URL, COLUMNNAME_OF_URL, TableSchema.ColumnType.VARCHAR, 200);
         }
     }
 
     public static class RegionSetTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "region_set";
-        public RegionSetTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "region_set";
+
+        public RegionSetTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // region_set.region_set_id
         public static final int INDEX_OF_REGION_SET_ID = 0;
         public static final ColumnType TYPE_OF_REGION_SET_ID = TableSchema.ColumnType.INTEGER;
@@ -622,19 +648,21 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_NAME = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_NAME = 255;
         public static final String COLUMNNAME_OF_NAME = "name";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_REGION_SET_ID,COLUMNNAME_OF_REGION_SET_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_NAME,COLUMNNAME_OF_NAME,TableSchema.ColumnType.VARCHAR,255);
+            addColumn(COLUMNNAME_OF_REGION_SET_ID, COLUMNNAME_OF_REGION_SET_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_NAME, COLUMNNAME_OF_NAME, TableSchema.ColumnType.VARCHAR, 255);
         }
     }
 
     public static class RegionSetMembershipTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "region_set_membership";
-        public RegionSetMembershipTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "region_set_membership";
+
+        public RegionSetMembershipTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // region_set_membership.region_set_id
         public static final int INDEX_OF_REGION_SET_ID = 0;
         public static final ColumnType TYPE_OF_REGION_SET_ID = TableSchema.ColumnType.INTEGER;
@@ -665,23 +693,25 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_DESCRIPTION = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_DESCRIPTION = 255;
         public static final String COLUMNNAME_OF_DESCRIPTION = "description";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_REGION_SET_ID,COLUMNNAME_OF_REGION_SET_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_GENOME_ID,COLUMNNAME_OF_GENOME_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_CHROM,COLUMNNAME_OF_CHROM,TableSchema.ColumnType.VARCHAR,255);
-                addColumn(COLUMNNAME_OF_START,COLUMNNAME_OF_START,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_END,COLUMNNAME_OF_END,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_DESCRIPTION,COLUMNNAME_OF_DESCRIPTION,TableSchema.ColumnType.VARCHAR,255);
+            addColumn(COLUMNNAME_OF_REGION_SET_ID, COLUMNNAME_OF_REGION_SET_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_GENOME_ID, COLUMNNAME_OF_GENOME_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_CHROM, COLUMNNAME_OF_CHROM, TableSchema.ColumnType.VARCHAR, 255);
+            addColumn(COLUMNNAME_OF_START, COLUMNNAME_OF_START, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_END, COLUMNNAME_OF_END, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, TableSchema.ColumnType.VARCHAR, 255);
         }
     }
 
     public static class ServerLogTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "server_log";
-        public ServerLogTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "server_log";
+
+        public ServerLogTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // server_log.id
         public static final int INDEX_OF_ID = 0;
         public static final ColumnType TYPE_OF_ID = TableSchema.ColumnType.INTEGER;
@@ -707,22 +737,24 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_TIMESTAMP = TableSchema.ColumnType.DATE;
         public static final int LENGTH_OF_TIMESTAMP = -1;
         public static final String COLUMNNAME_OF_TIMESTAMP = "timestamp";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_ID,COLUMNNAME_OF_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_USER,COLUMNNAME_OF_USER,TableSchema.ColumnType.VARCHAR,50);
-                addColumn(COLUMNNAME_OF_EVENT,COLUMNNAME_OF_EVENT,TableSchema.ColumnType.VARCHAR,50);
-                addColumn(COLUMNNAME_OF_DESCRIPTION,COLUMNNAME_OF_DESCRIPTION,TableSchema.ColumnType.VARCHAR,-1);
-                addColumn(COLUMNNAME_OF_TIMESTAMP,COLUMNNAME_OF_TIMESTAMP,TableSchema.ColumnType.DATE,-1);
+            addColumn(COLUMNNAME_OF_ID, COLUMNNAME_OF_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_USER, COLUMNNAME_OF_USER, TableSchema.ColumnType.VARCHAR, 50);
+            addColumn(COLUMNNAME_OF_EVENT, COLUMNNAME_OF_EVENT, TableSchema.ColumnType.VARCHAR, 50);
+            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, TableSchema.ColumnType.VARCHAR, -1);
+            addColumn(COLUMNNAME_OF_TIMESTAMP, COLUMNNAME_OF_TIMESTAMP, TableSchema.ColumnType.DATE, -1);
         }
     }
 
     public static class VariantPendingUpdateTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "variant_pending_update";
-        public VariantPendingUpdateTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "variant_pending_update";
+
+        public VariantPendingUpdateTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // variant_pending_update.upload_id
         public static final int INDEX_OF_UPLOAD_ID = 0;
         public static final ColumnType TYPE_OF_UPLOAD_ID = TableSchema.ColumnType.INTEGER;
@@ -753,23 +785,25 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_TIMESTAMP = TableSchema.ColumnType.DATE;
         public static final int LENGTH_OF_TIMESTAMP = -1;
         public static final String COLUMNNAME_OF_TIMESTAMP = "timestamp";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_UPLOAD_ID,COLUMNNAME_OF_UPLOAD_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_PROJECT_ID,COLUMNNAME_OF_PROJECT_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_REFERENCE_ID,COLUMNNAME_OF_REFERENCE_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_ACTION,COLUMNNAME_OF_ACTION,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_STATUS,COLUMNNAME_OF_STATUS,TableSchema.ColumnType.INTEGER,5);
-                addColumn(COLUMNNAME_OF_TIMESTAMP,COLUMNNAME_OF_TIMESTAMP,TableSchema.ColumnType.DATE,-1);
+            addColumn(COLUMNNAME_OF_UPLOAD_ID, COLUMNNAME_OF_UPLOAD_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_ACTION, COLUMNNAME_OF_ACTION, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_STATUS, COLUMNNAME_OF_STATUS, TableSchema.ColumnType.INTEGER, 5);
+            addColumn(COLUMNNAME_OF_TIMESTAMP, COLUMNNAME_OF_TIMESTAMP, TableSchema.ColumnType.DATE, -1);
         }
     }
 
     public static class VariantTablemapTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "variant_tablemap";
-        public VariantTablemapTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "variant_tablemap";
+
+        public VariantTablemapTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // variant_tablemap.project_id
         public static final int INDEX_OF_PROJECT_ID = 0;
         public static final ColumnType TYPE_OF_PROJECT_ID = TableSchema.ColumnType.INTEGER;
@@ -790,21 +824,23 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_ANNOTATION_IDS = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_ANNOTATION_IDS = 500;
         public static final String COLUMNNAME_OF_ANNOTATION_IDS = "annotation_ids";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_PROJECT_ID,COLUMNNAME_OF_PROJECT_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_REFERENCE_ID,COLUMNNAME_OF_REFERENCE_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_VARIANT_TABLENAME,COLUMNNAME_OF_VARIANT_TABLENAME,TableSchema.ColumnType.VARCHAR,100);
-                addColumn(COLUMNNAME_OF_ANNOTATION_IDS,COLUMNNAME_OF_ANNOTATION_IDS,TableSchema.ColumnType.VARCHAR,500);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_VARIANT_TABLENAME, COLUMNNAME_OF_VARIANT_TABLENAME, TableSchema.ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_ANNOTATION_IDS, COLUMNNAME_OF_ANNOTATION_IDS, TableSchema.ColumnType.VARCHAR, 500);
         }
     }
 
     public static class VariantFormatTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "variant_format";
-        public VariantFormatTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "variant_format";
+
+        public VariantFormatTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // patient_format.project_id
         public static final int INDEX_OF_PROJECT_ID = 0;
         public static final ColumnType TYPE_OF_PROJECT_ID = TableSchema.ColumnType.INTEGER;
@@ -840,54 +876,57 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_DESCRIPTION = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_DESCRIPTION = 500;
         public static final String COLUMNNAME_OF_DESCRIPTION = "description";
+
         private void addColumns() {
-                addColumn(COLUMNNAME_OF_PROJECT_ID,COLUMNNAME_OF_PROJECT_ID,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_POSITION,COLUMNNAME_OF_POSITION,TableSchema.ColumnType.INTEGER,11);
-                addColumn(COLUMNNAME_OF_COLUMN_NAME,COLUMNNAME_OF_COLUMN_NAME,TableSchema.ColumnType.VARCHAR,200);
-                addColumn(COLUMNNAME_OF_COLUMN_TYPE,COLUMNNAME_OF_COLUMN_TYPE,TableSchema.ColumnType.VARCHAR,45);
-                addColumn(COLUMNNAME_OF_FILTERABLE,COLUMNNAME_OF_FILTERABLE,TableSchema.ColumnType.INTEGER,1);
-                addColumn(COLUMNNAME_OF_ALIAS,COLUMNNAME_OF_ALIAS,TableSchema.ColumnType.VARCHAR,200);
-                addColumn(COLUMNNAME_OF_DESCRIPTION,COLUMNNAME_OF_DESCRIPTION,TableSchema.ColumnType.VARCHAR,500);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_POSITION, COLUMNNAME_OF_POSITION, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_COLUMN_NAME, COLUMNNAME_OF_COLUMN_NAME, TableSchema.ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_COLUMN_TYPE, COLUMNNAME_OF_COLUMN_TYPE, TableSchema.ColumnType.VARCHAR, 45);
+            addColumn(COLUMNNAME_OF_FILTERABLE, COLUMNNAME_OF_FILTERABLE, TableSchema.ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_ALIAS, COLUMNNAME_OF_ALIAS, TableSchema.ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, TableSchema.ColumnType.VARCHAR, 500);
         }
     }
 
     public static class VarianttagTableSchema extends TableSchema {
-                public static final String TABLE_NAME = "variant_tag";
-                public VarianttagTableSchema(DbSchema s) {
-                        super(s.addTable(TABLE_NAME));
-                        addColumns();
-                }
 
-                // variant_tag.upload_id
-                public static final int INDEX_OF_UPLOAD_ID = 0;
-                public static final ColumnType TYPE_OF_UPLOAD_ID = TableSchema.ColumnType.INTEGER;
-                public static final int LENGTH_OF_UPLOAD_ID = 11;
-                public static final String COLUMNNAME_OF_UPLOAD_ID = "upload_id";
-                // variant_tag.key
-                public static final int INDEX_OF_TAGKEY = 1;
-                public static final ColumnType TYPE_OF_TAGKEY = TableSchema.ColumnType.VARCHAR;
-                public static final int LENGTH_OF_TAGKEY = 500;
-                public static final String COLUMNNAME_OF_TAGKEY = "tagkey";
-                // variant_tag.value
-                public static final int INDEX_OF_TAGVALUE = 2;
-                public static final ColumnType TYPE_OF_TAGVALUE = TableSchema.ColumnType.VARCHAR;
-                public static final int LENGTH_OF_TAGVALUE = 1000;
-                public static final String COLUMNNAME_OF_TAGVALUE = "tagvalue";
-                private void addColumns() {
-                        addColumn(COLUMNNAME_OF_UPLOAD_ID,COLUMNNAME_OF_UPLOAD_ID,TableSchema.ColumnType.INTEGER,11);
-                        addColumn(COLUMNNAME_OF_TAGKEY,COLUMNNAME_OF_TAGKEY,TableSchema.ColumnType.VARCHAR,500);
-                        addColumn(COLUMNNAME_OF_TAGVALUE,COLUMNNAME_OF_TAGVALUE,TableSchema.ColumnType.VARCHAR,1000);
-                }
+        public static final String TABLE_NAME = "variant_tag";
 
+        public VarianttagTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
         }
+        // variant_tag.upload_id
+        public static final int INDEX_OF_UPLOAD_ID = 0;
+        public static final ColumnType TYPE_OF_UPLOAD_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_UPLOAD_ID = 11;
+        public static final String COLUMNNAME_OF_UPLOAD_ID = "upload_id";
+        // variant_tag.key
+        public static final int INDEX_OF_TAGKEY = 1;
+        public static final ColumnType TYPE_OF_TAGKEY = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_TAGKEY = 500;
+        public static final String COLUMNNAME_OF_TAGKEY = "tagkey";
+        // variant_tag.value
+        public static final int INDEX_OF_TAGVALUE = 2;
+        public static final ColumnType TYPE_OF_TAGVALUE = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_TAGVALUE = 1000;
+        public static final String COLUMNNAME_OF_TAGVALUE = "tagvalue";
+
+        private void addColumns() {
+            addColumn(COLUMNNAME_OF_UPLOAD_ID, COLUMNNAME_OF_UPLOAD_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_TAGKEY, COLUMNNAME_OF_TAGKEY, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_TAGVALUE, COLUMNNAME_OF_TAGVALUE, TableSchema.ColumnType.VARCHAR, 1000);
+        }
+    }
 
     public static class SettingsTableSchema extends TableSchema {
-        public static final String TABLE_NAME = "settings";
-        public SettingsTableSchema(DbSchema s) {
-                super(s.addTable(TABLE_NAME));
-                addColumns();
-        }
 
+        public static final String TABLE_NAME = "settings";
+
+        public SettingsTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
         // settings.key
         public static final int INDEX_OF_KEY = 0;
         public static final ColumnType TYPE_OF_KEY = TableSchema.ColumnType.VARCHAR;
@@ -898,69 +937,49 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_VALUE = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_VALUE = 300;
         public static final String COLUMNNAME_OF_VALUE = "setting_value";
+
         private void addColumns() {
             addColumn(COLUMNNAME_OF_KEY, COLUMNNAME_OF_KEY, TableSchema.ColumnType.VARCHAR, 100);
             addColumn(COLUMNNAME_OF_VALUE, COLUMNNAME_OF_VALUE, TableSchema.ColumnType.VARCHAR, 100);
         }
     }
-
     public static final DbSchema schema = (new DbSpec()).addDefaultSchema();
-
     //AnnotationTableSchema
     public static final AnnotationTableSchema AnnotationTableSchema = new AnnotationTableSchema(schema);
-
     //AnnotationformatTableSchema
     public static final AnnotationFormatTableSchema AnnotationformatTableSchema = new AnnotationFormatTableSchema(schema);
-
     //ChromosomeTableSchema
     public static final ChromosomeTableSchema ChromosomeTableSchema = new ChromosomeTableSchema(schema);
-
     //CohortTableSchema
     public static final CohortTableSchema CohortTableSchema = new CohortTableSchema(schema);
-
     //CohortmembershipTableSchema
     public static final CohortMembershipTableSchema CohortmembershipTableSchema = new CohortMembershipTableSchema(schema);
-
     //DefaultpatientTableSchema
     public static final DefaultpatientTableSchema DefaultpatientTableSchema = new DefaultpatientTableSchema(schema);
-
     //DefaultvariantTableSchema
     public static final DefaultVariantTableSchema DefaultvariantTableSchema = new DefaultVariantTableSchema(schema);
-
     //PatientformatTableSchema
     public static final PatientFormatTableSchema PatientformatTableSchema = new PatientFormatTableSchema(schema);
-
     //PatienttablemapTableSchema
     public static final PatientTablemapTableSchema PatienttablemapTableSchema = new PatientTablemapTableSchema(schema);
-
     //ProjectTableSchema
     public static final ProjectTableSchema ProjectTableSchema = new ProjectTableSchema(schema);
-
     //ReferenceTableSchema
     public static final ReferenceTableSchema ReferenceTableSchema = new ReferenceTableSchema(schema);
-
     //RegionsetTableSchema
     public static final RegionSetTableSchema RegionsetTableSchema = new RegionSetTableSchema(schema);
-
     //RegionsetmembershipTableSchema
     public static final RegionSetMembershipTableSchema RegionsetmembershipTableSchema = new RegionSetMembershipTableSchema(schema);
-
     //ServerlogTableSchema
     public static final ServerLogTableSchema ServerlogTableSchema = new ServerLogTableSchema(schema);
-
     //VariantpendingupdateTableSchema
     public static final VariantPendingUpdateTableSchema VariantpendingupdateTableSchema = new VariantPendingUpdateTableSchema(schema);
-
     //VarianttablemapTableSchema
     public static final VariantTablemapTableSchema VarianttablemapTableSchema = new VariantTablemapTableSchema(schema);
-
     //VariantformatTableSchema
     public static final VariantFormatTableSchema VariantformatTableSchema = new VariantFormatTableSchema(schema);
-
     //VarianttagTableSchema
     public static final VarianttagTableSchema VarianttagTableSchema = new VarianttagTableSchema(schema);
-
     //SettingsTableSchema
     public static final SettingsTableSchema SettingsTableSchema = new SettingsTableSchema(schema);
-
 }

@@ -258,13 +258,18 @@ public class MedSavantDatabase {
 		public static final ColumnType TYPE_OF_GENDER = TableSchema.ColumnType.INTEGER;
 		public static final int LENGTH_OF_GENDER = 11;
 		public static final String COLUMNNAME_OF_GENDER = "gender";
+		// default_patient.affected
+		public static final int INDEX_OF_AFFECTED = 6;
+		public static final ColumnType TYPE_OF_AFFECTED = TableSchema.ColumnType.INTEGER;
+		public static final int LENGTH_OF_AFFECTED = 11;
+		public static final String COLUMNNAME_OF_AFFECTED = "affected";
 		// default_patient.dna_ids
-		public static final int INDEX_OF_DNA_IDS = 6;
+		public static final int INDEX_OF_DNA_IDS = 7;
 		public static final ColumnType TYPE_OF_DNA_IDS = TableSchema.ColumnType.VARCHAR;
 		public static final int LENGTH_OF_DNA_IDS = 1000;
 		public static final String COLUMNNAME_OF_DNA_IDS = "dna_ids";
 		// default_patient.bam_url
-		public static final int INDEX_OF_BAM_URL = 7;
+		public static final int INDEX_OF_BAM_URL = 8;
 		public static final ColumnType TYPE_OF_BAM_URL = TableSchema.ColumnType.VARCHAR;
 		public static final int LENGTH_OF_BAM_URL = 5000;
 		public static final String COLUMNNAME_OF_BAM_URL = "bam_url";
@@ -275,6 +280,7 @@ public class MedSavantDatabase {
 			addColumn(COLUMNNAME_OF_IDBIOMOM,COLUMNNAME_OF_IDBIOMOM,TableSchema.ColumnType.VARCHAR,100);
 			addColumn(COLUMNNAME_OF_IDBIODAD,COLUMNNAME_OF_IDBIODAD,TableSchema.ColumnType.VARCHAR,100);
 			addColumn(COLUMNNAME_OF_GENDER,COLUMNNAME_OF_GENDER,TableSchema.ColumnType.INTEGER,11);
+			addColumn(COLUMNNAME_OF_AFFECTED,COLUMNNAME_OF_AFFECTED,TableSchema.ColumnType.INTEGER,11);
 			addColumn(COLUMNNAME_OF_DNA_IDS,COLUMNNAME_OF_DNA_IDS,TableSchema.ColumnType.VARCHAR,1000);
 			addColumn(COLUMNNAME_OF_BAM_URL,COLUMNNAME_OF_BAM_URL,TableSchema.ColumnType.VARCHAR,5000);
 		}
@@ -790,20 +796,20 @@ public class MedSavantDatabase {
 		public static final ColumnType TYPE_OF_UPLOAD_ID = TableSchema.ColumnType.INTEGER;
 		public static final int LENGTH_OF_UPLOAD_ID = 11;
 		public static final String COLUMNNAME_OF_UPLOAD_ID = "upload_id";
-		// variant_tag.key
-		public static final int INDEX_OF_KEY = 1;
-		public static final ColumnType TYPE_OF_KEY = TableSchema.ColumnType.VARCHAR;
-		public static final int LENGTH_OF_KEY = 500;
-		public static final String COLUMNNAME_OF_KEY = "key";
-		// variant_tag.value
-		public static final int INDEX_OF_VALUE = 2;
-		public static final ColumnType TYPE_OF_VALUE = TableSchema.ColumnType.VARCHAR;
-		public static final int LENGTH_OF_VALUE = 1000;
-		public static final String COLUMNNAME_OF_VALUE = "value";
+		// variant_tag.tagkey
+		public static final int INDEX_OF_TAGKEY = 1;
+		public static final ColumnType TYPE_OF_TAGKEY = TableSchema.ColumnType.VARCHAR;
+		public static final int LENGTH_OF_TAGKEY = 500;
+		public static final String COLUMNNAME_OF_TAGKEY = "tagkey";
+		// variant_tag.tagvalue
+		public static final int INDEX_OF_TAGVALUE = 2;
+		public static final ColumnType TYPE_OF_TAGVALUE = TableSchema.ColumnType.VARCHAR;
+		public static final int LENGTH_OF_TAGVALUE = 1000;
+		public static final String COLUMNNAME_OF_TAGVALUE = "tagvalue";
 		private void addColumns() {
 			addColumn(COLUMNNAME_OF_UPLOAD_ID,COLUMNNAME_OF_UPLOAD_ID,TableSchema.ColumnType.INTEGER,11);
-			addColumn(COLUMNNAME_OF_KEY,COLUMNNAME_OF_KEY,TableSchema.ColumnType.VARCHAR,500);
-			addColumn(COLUMNNAME_OF_VALUE,COLUMNNAME_OF_VALUE,TableSchema.ColumnType.VARCHAR,1000);
+			addColumn(COLUMNNAME_OF_TAGKEY,COLUMNNAME_OF_TAGKEY,TableSchema.ColumnType.VARCHAR,500);
+			addColumn(COLUMNNAME_OF_TAGVALUE,COLUMNNAME_OF_TAGVALUE,TableSchema.ColumnType.VARCHAR,1000);
 		}
 
 	}

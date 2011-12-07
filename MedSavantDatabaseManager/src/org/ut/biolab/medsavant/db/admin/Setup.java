@@ -231,6 +231,7 @@ public class Setup {
                 + "`idbiomom` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
                 + "`idbiodad` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
                 + "`gender` int(11) unsigned DEFAULT NULL,"
+                + "`affected` int(11) unsigned DEFAULT NULL,"
                 + "`dna_ids` varchar(1000) COLLATE latin1_bin DEFAULT NULL,"
                 + "`bam_url` varchar(5000) COLLATE latin1_bin DEFAULT NULL,"
                 + "PRIMARY KEY (`patient_id`)"

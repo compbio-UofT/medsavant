@@ -5,9 +5,12 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.Console;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,10 +29,28 @@ public class ObjectOrientTables {
     public static String outputClassName = "MedSavantDatabase";
 
     public static void main(String argv[]) throws SQLException, IOException, Exception {
-        ooTables("localhost",5029,"agp",TableSchema.class);
+
+        //  prompt the user to enter their name
+        System.out.print("Database name: ");
+
+        //  open up standard input
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        String dbname = null;
+
+        //  read the username from the command-line; need to use try/catch with the
+        //  readLine() method
+        try {
+            dbname = br.readLine();
+        } catch (IOException ioe) {
+            System.out.println("IO error trying to read dbname!");
+            System.exit(1);
+        }
+
+        ooTables("localhost", 5029, "root", "", dbname, TableSchema.class);
     }
 
-    private static void ooTables(String dbhost, int port, String dbname,Class tableSchemaClass) throws SQLException, IOException, Exception {
+    private static void ooTables(String dbhost, int port, String username, String password, String dbname, Class tableSchemaClass) throws SQLException, IOException, Exception {
 
         File outfile = new File(outputClassName + ".java");
 
@@ -50,7 +71,7 @@ public class ObjectOrientTables {
         ConnectionController.setPort(port);
         ConnectionController.setHost(dbhost);
         ConnectionController.setDBName(dbname);
-        ConnectionController.setCredentials("root", "");
+        ConnectionController.setCredentials(username, password);
 
         Connection conn = ConnectionController.connectPooled();
 
@@ -59,9 +80,9 @@ public class ObjectOrientTables {
         bw.write("package " + tableSchemaClass.getPackage().getName() + ";\n\n");
         bw.write("import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;\n");
         bw.write("import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;\n");
-        bw.write("import " + tableSchemaClass.getPackage().getName() + "." + tableSchemaClass.getSimpleName() + ";"+ "\n");
+        bw.write("import " + tableSchemaClass.getPackage().getName() + "." + tableSchemaClass.getSimpleName() + ";" + "\n");
         bw.write("\n");
-        bw.write("public class " + outputClassName + " {"+ "\n\n");
+        bw.write("public class " + outputClassName + " {" + "\n\n");
 
         List<String> classNames = new ArrayList<String>();
 
@@ -70,28 +91,30 @@ public class ObjectOrientTables {
 
             String tableName = t.getTableNameSQL();
 
-            if (tableName.startsWith("z")) { continue; }
+            if (tableName.startsWith("z")) {
+                continue;
+            }
 
             String tableNameSentenceCase = (tableName.charAt(0) + "").toUpperCase() + tableName.substring(1);
             String className = tableNameSentenceCase.replace("_", "") + tableSchemaClass.getSimpleName();
             classNames.add(className);
 
             bw.write("");
-            bw.write("\tpublic static class " + className + " extends " + tableSchemaClass.getSimpleName() + " {"+ "\n");
+            bw.write("\tpublic static class " + className + " extends " + tableSchemaClass.getSimpleName() + " {" + "\n");
 
-            bw.write("\t\tpublic static final String TABLE_NAME = \"" + t.getTableNameSQL() + "\";"+ "\n");
+            bw.write("\t\tpublic static final String TABLE_NAME = \"" + t.getTableNameSQL() + "\";" + "\n");
             bw.write("");
             bw.write("\t\tpublic " + className + "(DbSchema s) {\n"
                     + "\t\t\tsuper(s.addTable(TABLE_NAME));\n"
                     + "\t\t\taddColumns();\n"
-                    + "\t\t}"+ "\n");
-            bw.write(""+ "\n");
-            if(className.toLowerCase().contains("default")){
+                    + "\t\t}" + "\n");
+            bw.write("" + "\n");
+            if (className.toLowerCase().contains("default")) {
                 bw.write("\t\tpublic " + className + "(DbSchema s, String tablename) {\n"
                         + "\t\t\tsuper(s.addTable(tablename));\n"
                         + "\t\t\taddColumns();\n"
-                        + "\t\t}"+ "\n");
-                bw.write(""+ "\n");
+                        + "\t\t}" + "\n");
+                bw.write("" + "\n");
             }
 
             int index = 0;
@@ -99,28 +122,28 @@ public class ObjectOrientTables {
             for (DbColumn c : t.getColumns()) {
                 String cnamelower = c.getColumnNameSQL();
                 String cnameupper = c.getColumnNameSQL().toUpperCase();
-                bw.write("\t\t// " + c.getAbsoluteName()+ "\n");
-                bw.write("\t\tpublic static final int " + indexname(cnameupper) + " = " + (index++)+ ";"+ "\n");
-                bw.write("\t\tpublic static final ColumnType " + typename(cnameupper) + " = " + tableSchemaClass.getSimpleName() + ".ColumnType." + TableSchema.convertStringToColumnType(c.getTypeNameSQL()) + ";"+ "\n");
-                bw.write("\t\tpublic static final int " + lengthname(cnameupper) + " = " + c.getTypeLength()+ ";"+ "\n");
-                bw.write("\t\tpublic static final String " + colname(cnameupper) + " = \"" + cnamelower + "\";"+ "\n");
+                bw.write("\t\t// " + c.getAbsoluteName() + "\n");
+                bw.write("\t\tpublic static final int " + indexname(cnameupper) + " = " + (index++) + ";" + "\n");
+                bw.write("\t\tpublic static final ColumnType " + typename(cnameupper) + " = " + tableSchemaClass.getSimpleName() + ".ColumnType." + TableSchema.convertStringToColumnType(c.getTypeNameSQL()) + ";" + "\n");
+                bw.write("\t\tpublic static final int " + lengthname(cnameupper) + " = " + c.getTypeLength() + ";" + "\n");
+                bw.write("\t\tpublic static final String " + colname(cnameupper) + " = \"" + cnamelower + "\";" + "\n");
                 bw.write("");
             }
 
-            bw.write("\t\tprivate void addColumns() {"+ "\n");
+            bw.write("\t\tprivate void addColumns() {" + "\n");
 
             for (DbColumn c : t.getColumns()) {
 
 
                 String cname = c.getColumnNameSQL().toUpperCase();
                 //bw.write("\t\t\t// " + cname);
-                bw.write("\t\t\taddColumn(" + colname(cname) + "," + colname(cname) + "," + tableSchemaClass.getSimpleName() + ".ColumnType." + TableSchema.convertStringToColumnType(c.getTypeNameSQL()) + "," + c.getTypeLength() + ");"+ "\n");
+                bw.write("\t\t\taddColumn(" + colname(cname) + "," + colname(cname) + "," + tableSchemaClass.getSimpleName() + ".ColumnType." + TableSchema.convertStringToColumnType(c.getTypeNameSQL()) + "," + c.getTypeLength() + ");" + "\n");
                 //bw.write("");
             }
 
-            bw.write("\t\t}"+ "\n");
-            bw.write(""+ "\n");
-            bw.write("\t}"+ "\n");
+            bw.write("\t\t}" + "\n");
+            bw.write("" + "\n");
+            bw.write("\t}" + "\n");
             bw.write("\n");
         }
 
@@ -132,7 +155,7 @@ public class ObjectOrientTables {
         }
 
 
-        bw.write("}"+ "\n");
+        bw.write("}" + "\n");
 
         bw.flush();
         bw.close();
