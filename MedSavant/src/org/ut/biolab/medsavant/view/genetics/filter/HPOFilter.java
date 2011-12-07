@@ -68,7 +68,7 @@ public class HPOFilter {
         
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        FilterView hpontologyView = new FilterView(NAME_FILTER, container) {
+        FilterView hpontologyView = new FilterView(NAME_FILTER, container, 0) { //TODO
 
             @Override
             public FilterState saveState() {

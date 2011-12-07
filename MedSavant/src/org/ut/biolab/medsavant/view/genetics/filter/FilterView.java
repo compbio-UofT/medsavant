@@ -16,10 +16,12 @@ public abstract class FilterView {
     private JComponent _component;
     private JFrame _frame;
     private String _title;    
+    protected int queryId;
 
-    public FilterView(String title, JComponent content) {
+    public FilterView(String title, JComponent content, int queryId) {
         setTitle(title);
         setComponent(content);
+        this.queryId = queryId;
     }
 
     public String getTitle() {
@@ -44,5 +46,9 @@ public abstract class FilterView {
      * Give derived classes a chance to clean up when the filter instance is being removed.
      */
     public void cleanup() {
+    }
+    
+    public int getQueryId(){
+        return queryId;
     }
 }

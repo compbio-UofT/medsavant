@@ -51,8 +51,8 @@ public class TagFilter extends FilterView {
     }
 
     public TagFilter(int queryId, JPanel container) {
-        super(FILTER_NAME, container);
-        createContentPanel(container, queryId);
+        super(FILTER_NAME, container, queryId);
+        createContentPanel(container);
     }
 
     private static String[][] tagsToStringArray(List<VariantTag> variantTags) {
@@ -69,7 +69,7 @@ public class TagFilter extends FilterView {
                         return result;
                     }
 
-    private void createContentPanel(JComponent p, final int queryId) {
+    private void createContentPanel(JComponent p) {
 
         p.setLayout(new BorderLayout());
         p.setBorder(ViewUtil.getBigBorder());
@@ -190,7 +190,7 @@ public class TagFilter extends FilterView {
                             return FILTER_ID;
                         }
                     };
-                    FilterController.addFilter(f, queryId);
+                    FilterController.addFilter(f, getQueryId());
                 }
                 };
 

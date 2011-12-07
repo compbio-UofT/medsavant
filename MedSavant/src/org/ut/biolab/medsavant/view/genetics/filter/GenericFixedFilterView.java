@@ -40,7 +40,7 @@ public class GenericFixedFilterView extends FilterView {
     }
         
     private GenericFixedFilterView(JComponent container, final String alias, final Condition c, String description, int queryId, final String id){
-        super(alias, container);
+        super(alias, container, queryId);
         
         this.alias = alias;
         this.description = description;
@@ -75,7 +75,7 @@ public class GenericFixedFilterView extends FilterView {
             }
 
         };
-        FilterController.addFilter(f, queryId);
+        FilterController.addFilter(f, getQueryId());
     }
 
     @Override

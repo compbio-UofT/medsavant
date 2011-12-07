@@ -83,8 +83,8 @@ class GeneListFilterView extends FilterView {
     }
     
     private GeneListFilterView(int queryId, JPanel container){
-        super(FILTER_NAME, container);
-        createContentPanel(container, queryId);
+        super(FILTER_NAME, container, queryId);
+        createContentPanel(container);
     }
     
     private List<RegionSet> getDefaultValues() {
@@ -96,7 +96,7 @@ class GeneListFilterView extends FilterView {
         }
     }
 
-    private void createContentPanel(JPanel p, final int queryId) {
+    private void createContentPanel(JPanel p) {
 
         p.setLayout(new BorderLayout());
         p.setMaximumSize(new Dimension(1000,80));
@@ -184,7 +184,7 @@ class GeneListFilterView extends FilterView {
                     }
                 };
                 LOG.log(Level.INFO, "Adding filter: {0}.", f.getName());
-                FilterController.addFilter(f, queryId); //TODO
+                FilterController.addFilter(f, getQueryId()); 
             }
         };
         applyButton.addActionListener(al);

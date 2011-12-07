@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 public class PluginFilterView {
     
     public static FilterView getFilterView(final MedSavantFilterPlugin plugin, final int queryID) {
-        return new FilterView(plugin.getTitle(), getContentPanel(plugin, queryID)) {
+        return new FilterView(plugin.getTitle(), getContentPanel(plugin, queryID), queryID) {
             @Override
             public void cleanup() {
                 plugin.cleanup(queryID);

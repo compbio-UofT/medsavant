@@ -66,7 +66,7 @@ public class GOFilter {
         
         final JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        FilterView gontologyFilterView = new FilterView(NAME_FILTER, container) {
+        FilterView gontologyFilterView = new FilterView(NAME_FILTER, container, 0) { //TODO
 
             @Override
             public FilterState saveState() {

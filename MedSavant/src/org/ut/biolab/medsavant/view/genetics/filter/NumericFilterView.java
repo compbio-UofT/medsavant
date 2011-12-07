@@ -101,8 +101,8 @@ public class NumericFilterView extends FilterView{
         applyButton.doClick();
     }
     
-    private NumericFilterView(JComponent container, String tablename, final String columnname, final int queryId, final String alias, final boolean isDecimal, final Table whichTable) throws SQLException{
-        super(alias, container);
+    private NumericFilterView(JComponent container, String tablename, final String columnname, int queryId, final String alias, final boolean isDecimal, final Table whichTable) throws SQLException{
+        super(alias, container, queryId);
         
         this.columnname = columnname;
         this.alias = alias;
@@ -285,7 +285,7 @@ public class NumericFilterView extends FilterView{
                         return columnname;
                     }
                 };
-                FilterController.addFilter(f, queryId);
+                FilterController.addFilter(f, getQueryId());
             }
         };
         applyButton.addActionListener(al);

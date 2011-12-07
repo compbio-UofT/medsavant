@@ -87,8 +87,8 @@ public class StringListFilterView extends FilterView {
         al.actionPerformed(new ActionEvent(this, 0, null));
     }   
     
-    private StringListFilterView(JComponent container, String tablename, final String columnname, final int queryId, final String alias, final Table whichTable) throws SQLException{
-        super(alias, container);
+    private StringListFilterView(JComponent container, String tablename, final String columnname, int queryId, final String alias, final Table whichTable) throws SQLException{
+        super(alias, container, queryId);
         
         this.columnname = columnname;
         this.alias = alias;
@@ -190,7 +190,7 @@ public class StringListFilterView extends FilterView {
                     }
 
                 };
-                FilterController.addFilter(f, queryId);
+                FilterController.addFilter(f, getQueryId());
 
                 //TODO: why does this not work? Freezes GUI
                 //apply.setEnabled(false);

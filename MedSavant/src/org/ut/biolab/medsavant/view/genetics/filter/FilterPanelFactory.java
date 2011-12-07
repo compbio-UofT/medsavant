@@ -4,7 +4,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.awt.event.ActionEvent;
@@ -163,7 +162,7 @@ public class FilterPanelFactory {
         // Get elapsed time in seconds
         float elapsedTimeSec = elapsedTimeMillis / 1000F;
 
-        return new FilterView(name, container) {
+        return new FilterView(name, container, 0) { //TODO
 
             @Override
             public FilterState saveState() {

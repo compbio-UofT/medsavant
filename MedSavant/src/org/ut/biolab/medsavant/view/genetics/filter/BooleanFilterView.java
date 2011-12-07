@@ -75,9 +75,9 @@ public class BooleanFilterView extends FilterView{
         al.actionPerformed(new ActionEvent(this, 0, null));
     }
         
-    private BooleanFilterView(final JPanel container, final String columnname, final int queryId, final String alias, final Table whichTable) throws SQLException {
+    private BooleanFilterView(final JPanel container, final String columnname, int queryId, final String alias, final Table whichTable) throws SQLException {
         
-        super(alias, container);
+        super(alias, container, queryId);
         
         this.columnname = columnname;
         this.alias = alias;
@@ -153,7 +153,7 @@ public class BooleanFilterView extends FilterView{
                         return columnname;
                     }                     
                 };
-                FilterController.addFilter(f, queryId);
+                FilterController.addFilter(f, getQueryId());
 
                 //TODO: why does this not work? Freezes GUI
                 //apply.setEnabled(false);

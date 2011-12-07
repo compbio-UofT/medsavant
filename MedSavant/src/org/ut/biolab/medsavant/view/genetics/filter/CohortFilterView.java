@@ -70,8 +70,8 @@ class CohortFilterView extends FilterView{
     }
     
     private CohortFilterView(int queryId, JPanel container){
-        super(FILTER_NAME, container);
-        createContentPanel(container, queryId);
+        super(FILTER_NAME, container, queryId);
+        createContentPanel(container);
     }
     
     private List<Cohort> getDefaultValues() {
@@ -83,7 +83,7 @@ class CohortFilterView extends FilterView{
         return new ArrayList<Cohort>();
     }
 
-    private void createContentPanel(JPanel p, final int queryId) {
+    private void createContentPanel(JPanel p) {
 
         p.setLayout(new BorderLayout());
         p.setMaximumSize(new Dimension(1000,80));
@@ -152,7 +152,7 @@ class CohortFilterView extends FilterView{
                     }
                 };
                 ClientLogger.log(ClientLogger.class,"Adding filter: " + f.getName());
-                FilterController.addFilter(f, queryId);
+                FilterController.addFilter(f, getQueryId());
 
             }
         };
