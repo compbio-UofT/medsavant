@@ -4,6 +4,8 @@
  */
 package org.ut.biolab.medsavant.server.worker;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -53,6 +55,7 @@ public class AnnotationWorker extends SwingWorker {
         ResultSet rs = AnnotationLogQueryUtil.getPendingUpdates();
         boolean found = false;
         try {
+
             //only do one at a time, to ensure proper ordering
             if (rs.next()) {
 
