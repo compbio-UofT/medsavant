@@ -64,9 +64,10 @@ class CohortFilterView extends FilterView{
         for(int i = 0; i < b.getItemCount(); i++){
             if(b.getItemAt(i) instanceof Cohort && ((Cohort)b.getItemAt(i)).getId() == cohortId){
                 b.setSelectedIndex(i);
+                al.actionPerformed(new ActionEvent(this, 0, null));
+                return;
             }
         }     
-        al.actionPerformed(new ActionEvent(this, 0, null));
     }
     
     private CohortFilterView(int queryId, JPanel container){

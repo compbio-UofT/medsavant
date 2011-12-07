@@ -19,8 +19,6 @@ import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 
 /**
  *

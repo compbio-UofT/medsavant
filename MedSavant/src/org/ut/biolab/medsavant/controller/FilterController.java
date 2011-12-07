@@ -48,9 +48,7 @@ public class FilterController {
     
     private static int filterSetID = 0;
     
-    //private static Map<Integer,Map<String,Filter>> filterMapHistory = new TreeMap<Integer,Map<String,Filter>>();
     private static Map<Integer, Map<Integer, Map<String, Filter>>> filterMapHistory = new TreeMap<Integer, Map<Integer, Map<String, Filter>>>();
-    //private static Map<String,Filter> filterMap = new TreeMap<String,Filter>();
     private static Map<Integer, Map<String, Filter>> filterMap = new TreeMap<Integer, Map<String, Filter>>();   
     private static List<FiltersChangedListener> listeners = new ArrayList<FiltersChangedListener>();
     private static List<FiltersChangedListener> activeListeners = new ArrayList<FiltersChangedListener>();

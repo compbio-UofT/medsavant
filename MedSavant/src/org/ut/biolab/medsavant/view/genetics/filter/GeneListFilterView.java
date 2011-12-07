@@ -77,9 +77,10 @@ class GeneListFilterView extends FilterView {
         for(int i = 0; i < b.getItemCount(); i++){
             if(b.getItemAt(i) instanceof RegionSet && ((RegionSet)b.getItemAt(i)).getId() == geneListId){
                 b.setSelectedIndex(i);
+                al.actionPerformed(new ActionEvent(this, 0, null));
+                return;
             }
-        }     
-        al.actionPerformed(new ActionEvent(this, 0, null));
+        }
     }
     
     private GeneListFilterView(int queryId, JPanel container){
