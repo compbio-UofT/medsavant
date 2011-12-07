@@ -480,6 +480,8 @@ public class ProjectWizard extends WizardDialog {
                     public void run() {
                         try {
                             createProject();
+                            ((CompletionWizardPage)instance.getPageByTitle(PAGENAME_COMPLETE)).addText(
+                                    "Project " + projectName + " has been " + (modify ? "modified." : "created."));
                             instance.setCurrentPage(PAGENAME_COMPLETE);
                         } catch (SQLException ex) {
                             DialogUtils.displayException("Error", "There was an error while trying to create your project. ", ex);
@@ -508,7 +510,6 @@ public class ProjectWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);              
             }
         };
-        page.addText("Project " + projectName + " has been " + (modify ? "modified." : "created."));
         return page;
     }
     
