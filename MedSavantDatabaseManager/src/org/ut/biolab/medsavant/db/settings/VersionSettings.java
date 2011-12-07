@@ -66,7 +66,7 @@ public class VersionSettings {
         return SettingsQueryUtil.getSetting(Settings.KEY_CLIENT_VERSION);
     }
     
-    public static boolean isCompatible(String clientVersion, String dbVersion) throws ParserConfigurationException, IOException, SAXException{
+    public static boolean isCompatible(String programVersion, String dbVersion, boolean isServer) throws ParserConfigurationException, IOException, SAXException{
         
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -75,12 +75,13 @@ public class VersionSettings {
         doc.getDocumentElement().normalize();
         
         Map<String, List<String>> versionMap = new HashMap<String, List<String>>();
-        NodeList nodes = doc.getElementsByTagName("version");
+        String nodeName = (isServer ? "server" : "client");
+        NodeList nodes = doc.getElementsByTagName(nodeName);
         for(int i = 0; i < nodes.getLength(); i++){
             Node n = nodes.item(i);
             if(n.getNodeType() == Node.ELEMENT_NODE){
                 Element e = (Element) n;
-                String versionNum = MiscUtils.getTagValue(e, "name");
+                String versionNum = e.getAttribute("name");
                 if(versionNum != null && !versionNum.equals("")){
                     versionMap.put(versionNum, new ArrayList<String>());
                     versionMap.get(versionNum).add(versionNum);
@@ -89,7 +90,7 @@ public class VersionSettings {
             }
         }
         
-        return versionMap.containsKey(clientVersion) && versionMap.get(clientVersion).contains(dbVersion);
+        return versionMap.containsKey(programVersion) && versionMap.get(programVersion).contains(dbVersion);
     }
     
 }

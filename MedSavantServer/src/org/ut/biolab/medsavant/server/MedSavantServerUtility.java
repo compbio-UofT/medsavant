@@ -4,15 +4,13 @@
  */
 package org.ut.biolab.medsavant.server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingWorker;
+
+import org.ut.biolab.medsavant.db.settings.VersionSettings;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil.LogType;
@@ -45,6 +43,8 @@ public class MedSavantServerUtility {
         String annotationFile = null;
         String annotationFormat = null;
         
+        boolean versionCheck = true;
+        
         try {
             for(int i = 0; i < args.length; i++){
                 String arg = args[i];
@@ -69,6 +69,8 @@ public class MedSavantServerUtility {
                     ServerLogger.setMailRecipient(args[++i]);
                 } else if (arg.equals("--help")){
                     exitWithUsage();
+                } else if (arg.equals("-f")){
+                    versionCheck = false;
                 }
             }
         } catch (Exception e){
@@ -128,6 +130,24 @@ public class MedSavantServerUtility {
             System.exit(1);
         }
         
+        flush("Checking version...");
+        String databaseVersion;
+        try {
+            databaseVersion = VersionSettings.getDatabaseVersion();
+            if(!VersionSettings.isCompatible(VersionSettings.getVersionString(), databaseVersion, true)){
+                throw new Exception();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            if(versionCheck){
+                System.err.println("\n\nCompatibility between server and database could not be determined. ");
+                System.exit(1);
+            } else {
+                flush("Warning: could not determine compatibility with database!");
+            }
+        }      
+        flushOK();
+            
         flush("Initiating registration...");
         PhoneHomeWorker phoneHomeSwingWorker = new PhoneHomeWorker();
         phoneHomeSwingWorker.execute();
@@ -169,7 +189,8 @@ public class MedSavantServerUtility {
                 + "-af formattedAnnotationFile formatFile\tAdd tabix annotation file.\n"
                 + "\t\t\t\t\tIndex file should be in same directory.\n"
                 + "\t\t\t\t\t(overrides default behaviour)\n"
-                + "-e emailAddress\t\t\t\tSpecify email address for notifications."
+                + "-e emailAddress\t\t\t\tSpecify email address for notifications.\n"
+                + "-f\t\t\t\t\tSkip version checking (not recommended).\n"
                 + "");
         System.exit(0);
     }

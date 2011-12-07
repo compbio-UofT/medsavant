@@ -105,7 +105,7 @@ public class LoginController {
         //check db version
         try {
             String databaseVersion = VersionSettings.getDatabaseVersion();
-            if(!VersionSettings.isCompatible(VersionSettings.getVersionString(), databaseVersion)){
+            if(!VersionSettings.isCompatible(VersionSettings.getVersionString(), databaseVersion, false)){
                 JOptionPane.showMessageDialog(
                         null, 
                         "<html>Your client version (" + VersionSettings.getVersionString() + ") does not match that of the database (" + databaseVersion + ").<br>Visit " + VersionSettings.URL + " to get the correct version.</html>" , 
