@@ -19,16 +19,14 @@ package org.ut.biolab.medsavant.controller;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
-import org.ut.biolab.medsavant.db.settings.Settings;
 
+import org.ut.biolab.medsavant.db.settings.VersionSettings;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil.LogType;
-import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
-import org.ut.biolab.medsavant.settings.BrowserSettings;
 
 /**
  *
@@ -106,14 +104,22 @@ public class LoginController {
 
         //check db version
         try {
-            String databaseVersion = SettingsQueryUtil.getSetting(Settings.KEY_CLIENT_VERSION);
-            if(!BrowserSettings.isCompatible(BrowserSettings.getVersionString(), databaseVersion)){
-                JOptionPane.showMessageDialog(null, "<html>Your client version (" + BrowserSettings.getVersionString() + ") does not match that of the database (" + databaseVersion + ").<br>Visit " + BrowserSettings.URL + " to get the correct version.</html>" , "Version Out-of-Date", JOptionPane.WARNING_MESSAGE);
+            String databaseVersion = VersionSettings.getDatabaseVersion();
+            if(!VersionSettings.isCompatible(VersionSettings.getVersionString(), databaseVersion)){
+                JOptionPane.showMessageDialog(
+                        null, 
+                        "<html>Your client version (" + VersionSettings.getVersionString() + ") does not match that of the database (" + databaseVersion + ").<br>Visit " + VersionSettings.URL + " to get the correct version.</html>" , 
+                        "Version Out-of-Date", 
+                        JOptionPane.WARNING_MESSAGE);
                 fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
                 return;
             }
         } catch (Exception ex){
-            JOptionPane.showMessageDialog(null, "<html>We could not determine compatibility between MedSavant and your database. <br>Please ensure that your versions are compatible before continuing.</html>" , "Error Comparing Versions", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    null, 
+                    "<html>We could not determine compatibility between MedSavant and your database. <br>Please ensure that your versions are compatible before continuing.</html>" , 
+                    "Error Comparing Versions", 
+                    JOptionPane.WARNING_MESSAGE);
             ex.printStackTrace();
         }
         

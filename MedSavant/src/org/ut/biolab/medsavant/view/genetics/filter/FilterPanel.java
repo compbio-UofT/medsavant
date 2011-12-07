@@ -47,7 +47,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;

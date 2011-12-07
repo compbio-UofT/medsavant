@@ -23,17 +23,16 @@ package org.ut.biolab.medsavant.plugin;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.Frame;
 import java.awt.Window;
 import java.io.File;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
-import org.ut.biolab.medsavant.settings.BrowserSettings;
+import org.ut.biolab.medsavant.db.settings.VersionSettings;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.util.NetworkUtils;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.db.util.NetworkUtils;
+import org.ut.biolab.medsavant.db.util.MiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 
@@ -165,12 +164,12 @@ public class PluginManagerDialog extends JDialog {
     private void fromRepositoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fromRepositoryButtonActionPerformed
         try {
             if (repositoryBrowser == null) {
-                File file = NetworkUtils.downloadFile(BrowserSettings.PLUGIN_URL, DirectorySettings.getTmpDirectory(), null);
+                File file = NetworkUtils.downloadFile(VersionSettings.PLUGIN_URL, DirectorySettings.getTmpDirectory(), null);
                 repositoryBrowser = new PluginRepositoryDialog(this, "Install Plugins", "Install", file);
             }
             repositoryBrowser.setVisible(true);
         } catch (Exception x) {
-            DialogUtils.displayException("Installation Error", String.format("<html>Problem downloading file <i>%s</i>.</html>", BrowserSettings.PLUGIN_URL), x);
+            DialogUtils.displayException("Installation Error", String.format("<html>Problem downloading file <i>%s</i>.</html>", VersionSettings.PLUGIN_URL), x);
         }
     }//GEN-LAST:event_fromRepositoryButtonActionPerformed
 

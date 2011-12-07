@@ -24,7 +24,7 @@ import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.controller.UserController;
 import org.ut.biolab.medsavant.db.model.UserLevel;
 import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.db.util.MiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**

@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.util;
 
+import org.ut.biolab.medsavant.db.util.MiscUtils;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;

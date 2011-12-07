@@ -42,18 +42,18 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane1" pref="532" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" pref="543" max="32767" attributes="0"/>
                           <Component id="attachment_panel" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="button_send" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="button_cancel" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jSeparator1" alignment="1" pref="532" max="32767" attributes="0"/>
-                          <Component id="field_email" pref="532" max="32767" attributes="0"/>
-                          <Component id="field_name" alignment="0" pref="532" max="32767" attributes="0"/>
-                          <Component id="field_institution" alignment="1" pref="532" max="32767" attributes="0"/>
-                          <Component id="field_requesttype" alignment="0" pref="532" max="32767" attributes="0"/>
+                          <Component id="jSeparator1" alignment="1" pref="543" max="32767" attributes="0"/>
+                          <Component id="field_email" pref="543" max="32767" attributes="0"/>
+                          <Component id="field_name" alignment="0" pref="543" max="32767" attributes="0"/>
+                          <Component id="field_institution" alignment="1" pref="543" max="32767" attributes="0"/>
+                          <Component id="field_requesttype" alignment="0" pref="543" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
@@ -275,7 +275,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="532" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="543" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">

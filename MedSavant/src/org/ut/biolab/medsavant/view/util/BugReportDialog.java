@@ -22,7 +22,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 
 import org.ut.biolab.medsavant.mail.Mail;
-import org.ut.biolab.medsavant.settings.BrowserSettings;
+import org.ut.biolab.medsavant.db.settings.VersionSettings;
 
 /**
  *
@@ -353,7 +353,7 @@ public class BugReportDialog extends JDialog {
     }
 
     private String getSavantVersion(){
-        return BrowserSettings.getVersionString();
+        return VersionSettings.getVersionString();
     }
 
     private String getJDKVersion(){

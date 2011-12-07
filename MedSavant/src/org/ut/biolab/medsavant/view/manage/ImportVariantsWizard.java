@@ -44,7 +44,7 @@ import org.ut.biolab.medsavant.db.util.ImportVariants;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.model.VariantTag;
-import org.ut.biolab.medsavant.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;

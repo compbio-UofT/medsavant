@@ -22,13 +22,13 @@ import java.net.URLClassLoader;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ut.biolab.medsavant.db.settings.VersionSettings;
 
-import org.ut.biolab.medsavant.settings.BrowserSettings;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.util.NetworkUtils;
+import org.ut.biolab.medsavant.db.util.NetworkUtils;
 import org.ut.biolab.medsavant.util.Controller;
-import org.ut.biolab.medsavant.util.IOUtils;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.db.util.IOUtils;
+import org.ut.biolab.medsavant.db.util.MiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 
@@ -106,7 +106,7 @@ public class PluginController extends Controller {
                 }
             }
             if (updated.size() > 0) {
-                DialogUtils.displayMessage("Plugins Updated", String.format("<html>The following plugins were updated to be compatible with MedSavant %s:<br><br><i>%s</i></html>", BrowserSettings.VERSION, MiscUtils.join(updated, ", ")));
+                DialogUtils.displayMessage("Plugins Updated", String.format("<html>The following plugins were updated to be compatible with MedSavant %s:<br><br><i>%s</i></html>", VersionSettings.VERSION, MiscUtils.join(updated, ", ")));
                 for (String s: updated) {
                     pluginErrors.remove(s);
                 }
@@ -339,7 +339,7 @@ public class PluginController extends Controller {
     private boolean checkForPluginUpdate(String id) {
         try {
             if (repositoryIndex == null) {
-                repositoryIndex = new PluginIndex(BrowserSettings.PLUGIN_URL);
+                repositoryIndex = new PluginIndex(VersionSettings.PLUGIN_URL);
             }
             URL updateURL = repositoryIndex.getPluginURL(id);
             if (updateURL != null) {

@@ -18,7 +18,7 @@ package org.ut.biolab.medsavant.settings;
 
 import java.io.File;
 import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.db.util.MiscUtils;
 
 
 /**

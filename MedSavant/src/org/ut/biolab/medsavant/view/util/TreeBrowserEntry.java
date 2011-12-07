@@ -24,7 +24,7 @@ import javax.swing.filechooser.FileSystemView;
 
 import com.jidesoft.grid.AbstractExpandableRow;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.db.util.MiscUtils;
 
 /**
  * Class which represents an entry in a tree-like display.  Used for the repository

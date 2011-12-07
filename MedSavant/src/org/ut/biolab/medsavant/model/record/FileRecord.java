@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import org.ut.biolab.medsavant.util.Util;
+import org.ut.biolab.medsavant.db.util.Util;
 
 /**
  *

@@ -28,7 +28,7 @@ import javax.swing.WindowConstants;
 import org.ut.biolab.medsavant.util.NetworkUtils;
 import org.ut.biolab.medsavant.util.DownloadEvent;
 import org.ut.biolab.medsavant.util.DownloadMonitor;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.db.util.MiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**

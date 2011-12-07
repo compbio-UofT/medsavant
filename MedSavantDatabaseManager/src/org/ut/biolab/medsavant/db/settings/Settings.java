@@ -12,5 +12,5 @@ public class Settings {
     
     /* Version of client used to create database */
     public static final String KEY_CLIENT_VERSION = "client version";
-    
+       
 }

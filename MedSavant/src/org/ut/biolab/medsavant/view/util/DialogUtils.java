@@ -34,7 +34,7 @@ import javax.swing.filechooser.FileFilter;
 
 import com.jidesoft.dialog.JideOptionPane;
 
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.db.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MainFrame;
 
 

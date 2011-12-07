@@ -41,7 +41,7 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.db.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.DownloadDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.TreeBrowserEntry;

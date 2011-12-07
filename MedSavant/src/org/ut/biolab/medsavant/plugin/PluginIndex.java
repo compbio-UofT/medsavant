@@ -27,7 +27,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.ut.biolab.medsavant.util.NetworkUtils;
+import org.ut.biolab.medsavant.db.util.NetworkUtils;
 
 /**
  * Given a file (typically the plugin.xml file from our web-site), create an index of plugin versions.

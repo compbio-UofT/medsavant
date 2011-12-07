@@ -33,7 +33,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
-import org.ut.biolab.medsavant.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
