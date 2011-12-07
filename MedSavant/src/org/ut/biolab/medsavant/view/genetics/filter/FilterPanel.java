@@ -115,7 +115,7 @@ public class FilterPanel extends javax.swing.JPanel {
 
         JButton saveButton = new JButton("Save Filters");
         saveButton.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
+            public void mouseReleased(MouseEvent e) {
                 try {
                     saveFilters();
                 } catch (IOException ex) {
@@ -126,7 +126,7 @@ public class FilterPanel extends javax.swing.JPanel {
 
         JButton loadButton = new JButton("Load Filters");
         loadButton.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
+            public void mouseReleased(MouseEvent e) {
                 try {
                     loadFilters();
                 } catch (ParserConfigurationException ex) {
@@ -181,6 +181,7 @@ public class FilterPanel extends javax.swing.JPanel {
         
         //choose save file
         File file = DialogUtils.chooseFileForSave("Save Filters", "saved_filters.xml", new ExtensionFileFilter(new String[]{"xml"}), null, "xml");
+        if(file == null) return;
         
         //write
         BufferedWriter out = new BufferedWriter(new FileWriter(file, false));      
@@ -207,6 +208,7 @@ public class FilterPanel extends javax.swing.JPanel {
         
         //choose open file
         File file = DialogUtils.chooseFileForOpen("Load Filters", new ExtensionFileFilter(new String[]{"xml"}), null);
+        if(file == null) return;
         
         //read
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
