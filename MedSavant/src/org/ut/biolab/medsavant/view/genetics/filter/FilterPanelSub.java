@@ -49,6 +49,7 @@ public final class FilterPanelSub extends JPanel{
     private List<FilterPanelSubItem> subItems = new ArrayList<FilterPanelSubItem>();
     private FilterPanel parent;
     private boolean isRemoved = false;
+    private JLabel titleLabel;
 
     private static Color BAR_COLOUR = Color.black;
     private static Color BUTTON_OVER_COLOUR = Color.gray;
@@ -74,7 +75,7 @@ public final class FilterPanelSub extends JPanel{
         });
         titlePanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        JLabel titleLabel = new JLabel("Filter Set " + id);
+        titleLabel = new JLabel("Filter Set (0 filters)");
         titleLabel.setForeground(Color.white);
         titlePanel.add(Box.createRigidArea(new Dimension(10,20)));
         titlePanel.add(titleLabel);
@@ -117,20 +118,6 @@ public final class FilterPanelSub extends JPanel{
 
         refreshSubItems();
 
-    }
-
-    private JPanel createAndLabel(){
-        JPanel p = new JPanel();
-        p.setMaximumSize(new Dimension(10000,40));
-        p.setLayout(new BorderLayout());
-
-        JLabel label = new JLabel("AND");
-        label.setHorizontalAlignment(JLabel.CENTER);
-        //label.setBorder(BorderFactory.createLineBorder(label.getBackground(), 8));
-        //label.setFont(ViewUtil.getMediumTitleFont());
-
-        p.add(label, BorderLayout.CENTER);
-        return p;
     }
 
     public List<FilterPanelSubItem> getSubItems(){
@@ -286,6 +273,9 @@ public final class FilterPanelSub extends JPanel{
         tmp1.add(new JLabel("Add filter"));
         tmp1.add(Box.createHorizontalGlue());
         contentPanel.add(tmp1);
+        
+        //update panel title
+        this.titleLabel.setText("Filter Set  (" + subItems.size() + " filter" + (subItems.size() == 1 ? "" : "s") + ")");
 
         this.updateUI();
     }
