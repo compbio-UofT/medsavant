@@ -61,7 +61,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         public boolean doesImplementDeleting() {
             return true;
         }
-        
+
         @Override
         public boolean doesImplementEditing() {
             return true;
@@ -75,9 +75,9 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         @Override
         public void editItems(Object[] items) {
             try {
-                
+
                 String projectName = (String) items[0];
-                
+
                         int projectId = ProjectQueryUtil.getProjectId(projectName);
                         ProjectWizard wiz = new ProjectWizard(
                                 projectId,
@@ -97,26 +97,26 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         public void deleteItems(List<Object[]> items) {
            int nameIndex = 0;
            int keyIndex = 0;
-            
+
             int result;
-            
+
             if (items.size() == 1) {
                 String name = (String) items.get(0)[nameIndex];
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(), 
+                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
                              "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
                              "Confirm", JOptionPane.YES_NO_OPTION);
             } else {
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(), 
+                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
                              "Are you sure you want to remove these " + items.size() + " projects?\nThis cannot be undone.",
                              "Confirm", JOptionPane.YES_NO_OPTION);
             }
-            
+
             if (result == JOptionPane.YES_OPTION) {
                 for (Object[] v : items) {
                     String projectName = (String) v[keyIndex];
                     ProjectController.getInstance().removeProject(projectName);
                 }
-                
+
                 DialogUtils.displayMessage("Successfully removed " + items.size() + " project(s)");
             }
         }
@@ -126,11 +126,11 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         if (panel != null) {
             /*try {
             int projectid = ProjectController.getInstance().getProjectName(projectName);
-            
+
             NewVariantTableDialog d = new NewVariantTableDialog(projectid, MainFrame.getInstance(), true);
             d.setCancellable(false);
             d.setVisible(true);
-            
+
             } catch (SQLException ex) {
             ex.printStackTrace();
             Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
@@ -218,7 +218,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                 super(getName());
                 this.projectName = projectName;
             }
-            
+
 
             @Override
             protected Object doInBackground() throws Exception {
@@ -324,7 +324,11 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
         @Override
         public void setMultipleSelections(List<Object[]> items) {
+            if (items.isEmpty()) {
+                setTitle("");
+            } else {
             setTitle("Multiple projects (" + items.size() + ")");
+            }
             details.removeAll();
             details.updateUI();
         }
@@ -349,7 +353,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             list = (JList) ViewUtil.clear(new JList(lm));
             list.setBackground(ViewUtil.getDetailsBackgroundColor());
             list.setForeground(Color.white);
-             * 
+             *
              */
             JScrollPane jsp = ViewUtil.getClearBorderlessJSP(p);
             details.add(jsp, BorderLayout.CENTER);

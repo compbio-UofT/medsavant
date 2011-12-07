@@ -86,6 +86,7 @@ public class IndividualDetailedView extends DetailedView {
             } catch (CancellationException ex){
 
             } catch (Exception ex) {
+                ex.printStackTrace();
                 ClientLogger.log(IndividualDetailedView.class, ex.getLocalizedMessage());
                 return;
             }
@@ -106,9 +107,11 @@ public class IndividualDetailedView extends DetailedView {
 
             File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + pid + ".csv");
 
+            //System.out.println("Writing " + outfile.getAbsolutePath());
+
                 CSVWriter w = new CSVWriter(new FileWriter(outfile),',',CSVWriter.NO_QUOTE_CHARACTER);
                 w.writeNext(new String[] {Pedigree.FIELD_HOSPITALID,Pedigree.FIELD_MOM,Pedigree.FIELD_DAD,
-                    Pedigree.FIELD_PATIENTID,Pedigree.FIELD_GENDER});
+                    Pedigree.FIELD_PATIENTID,Pedigree.FIELD_GENDER,Pedigree.FIELD_AFFECTED});
                 for (Object[] row : results) {
                     String[] srow = new String[row.length];
                     for (int i = 0; i < row.length; i++) {
@@ -129,6 +132,7 @@ public class IndividualDetailedView extends DetailedView {
             } catch (CancellationException ex){
 
             } catch (Exception ex) {
+                ex.printStackTrace();
                 ClientLogger.log(IndividualDetailedView.class, ex.getLocalizedMessage());
                 return;
             }
@@ -221,6 +225,7 @@ public class IndividualDetailedView extends DetailedView {
         try {
             fieldNames = PatientQueryUtil.getPatientFieldAliases(ProjectController.getInstance().getCurrentProjectId());
         } catch (SQLException ex) {
+            ex.printStackTrace();
             ClientLogger.log(IndividualDetailedView.class,ex.getLocalizedMessage(),Level.SEVERE);
         }
 
@@ -295,7 +300,11 @@ public class IndividualDetailedView extends DetailedView {
         for(int i = 0; i < items.size(); i++){
             patientIds[i] = (Integer) items.get(i)[0];
         }
+        if (items.isEmpty()) {
+                setTitle("");
+            } else {
         setTitle("Multiple individuals (" + items.size() + ")");
+        }
         infoDetails.removeAll();
         infoDetails.updateUI();
         pedigreeDetails.removeAll();

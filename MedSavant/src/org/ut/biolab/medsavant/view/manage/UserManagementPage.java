@@ -39,14 +39,18 @@ public class UserManagementPage extends SubSectionView implements UserListener {
     private static class UserDetailedListEditor extends DetailedListEditor {
 
         @Override
-        public boolean doesImplementAdding() { return true; }
-        
+        public boolean doesImplementAdding() {
+            return true;
+        }
+
         @Override
-        public boolean doesImplementDeleting() { return true; }
-        
+        public boolean doesImplementDeleting() {
+            return true;
+        }
+
         @Override
         public void addItems() {
-            NewUserDialog npd = new NewUserDialog(MainFrame.getInstance(),true);
+            NewUserDialog npd = new NewUserDialog(MainFrame.getInstance(), true);
             npd.setVisible(true);
         }
 
@@ -57,26 +61,26 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         @Override
         public void deleteItems(List<Object[]> results) {
             int nameIndex = 0;
-            
+
             int result;
-            
+
             if (results.size() == 1) {
                 String name = (String) results.get(0)[nameIndex];
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(), 
-                             "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
-                             "Confirm", JOptionPane.YES_NO_OPTION);
+                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                        "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
+                        "Confirm", JOptionPane.YES_NO_OPTION);
             } else {
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(), 
-                             "Are you sure you want to remove these " + results.size() + " users?\nThis cannot be undone.",
-                             "Confirm", JOptionPane.YES_NO_OPTION);
+                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                        "Are you sure you want to remove these " + results.size() + " users?\nThis cannot be undone.",
+                        "Confirm", JOptionPane.YES_NO_OPTION);
             }
-            
+
             if (result == JOptionPane.YES_OPTION) {
                 for (Object[] v : results) {
                     String name = (String) v[nameIndex];
                     UserController.getInstance().removeUser(name);
                 }
-                
+
                 DialogUtils.displayMessage("Successfully removed " + results.size() + " user(s)");
             }
         }
@@ -94,62 +98,64 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         panel.refresh();
     }
 
-     private static class UserDetailedView extends DetailedView  {
+    private static class UserDetailedView extends DetailedView {
+
         private final JPanel details;
         private final JPanel content;
         private String name;
         private DetailsSW sw;
 
         public UserDetailedView() {
-        
-        content = this.getContentPanel();
-        
-        details = ViewUtil.getClearPanel();
-        
-        content.setLayout(new BorderLayout());
-        
-        content.add(details,BorderLayout.CENTER);
-    }
-        
-    @Override
-    public void setSelectedItem(Object[] item) {
-        name = (String) item[0];
-        setTitle(name);
-        
-        details.removeAll();
-        details.updateUI();
-        
-        if (sw != null) {
-            sw.cancel(true);
-        }
-        sw = new DetailsSW(name);
-        sw.execute();
-    }
 
-        
-    
-    private static class DetailsSW extends SwingWorker {
+            content = this.getContentPanel();
 
-        public DetailsSW(String projectName) {
+            details = ViewUtil.getClearPanel();
+
+            content.setLayout(new BorderLayout());
+
+            content.add(details, BorderLayout.CENTER);
         }
+
+        @Override
+        public void setSelectedItem(Object[] item) {
+            name = (String) item[0];
+            setTitle(name);
+
+            details.removeAll();
+            details.updateUI();
+
+            if (sw != null) {
+                sw.cancel(true);
+            }
+            sw = new DetailsSW(name);
+            sw.execute();
+        }
+
+        private static class DetailsSW extends SwingWorker {
+
+            public DetailsSW(String projectName) {
+            }
 
             @Override
             protected Object doInBackground() throws Exception {
                 return null;
             }
+        }
 
-    }
-    
-    @Override
-    public void setMultipleSelections(List<Object[]> items){
-        setTitle("Multiple users (" + items.size() + ")");
-        details.removeAll();
-        details.updateUI();
-    }
-    
+        @Override
+        public void setMultipleSelections(List<Object[]> items) {
+            if (items.isEmpty()) {
+                setTitle("");
+            } else {
+                setTitle("Multiple users (" + items.size() + ")");
+            }
+            details.removeAll();
+            details.updateUI();
+        }
     }
 
     private static class UserListModel implements DetailedListModel {
+
         private ArrayList<String> cnames;
         private ArrayList<Class> cclasses;
         private ArrayList<Integer> chidden;
@@ -191,10 +197,9 @@ public class UserManagementPage extends SubSectionView implements UserListener {
             return chidden;
         }
     }
-
     private SplitScreenView panel;
 
-    public UserManagementPage(SectionView parent) { 
+    public UserManagementPage(SectionView parent) {
         super(parent);
         UserController.getInstance().addUserListener(this);
     }
@@ -209,32 +214,33 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         }
         return panel;
     }
-    
-    public void setPanel() { 
+
+    public void setPanel() {
         panel = new SplitScreenView(
-                new UserListModel(), 
+                new UserListModel(),
                 new UserDetailedView(),
                 new UserDetailedListEditor());
     }
-    
+
     @Override
     public Component[] getBanner() {
         Component[] result = new Component[0];
         //result[0] = getAddButton();
         return result;
     }
-    
-    private JButton getAddButton(){
+
+    private JButton getAddButton() {
         JButton button = new JButton("Add User");
         button.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                NewUserDialog npd = new NewUserDialog(MainFrame.getInstance(),true);
+                NewUserDialog npd = new NewUserDialog(MainFrame.getInstance(), true);
                 npd.setVisible(true);
             }
         });
         return button;
     }
-    
+
     @Override
     public void viewDidLoad() {
     }
@@ -243,7 +249,4 @@ public class UserManagementPage extends SubSectionView implements UserListener {
     public void viewDidUnload() {
         ThreadController.getInstance().cancelWorkers(getName());
     }
-    
-    
-    
 }

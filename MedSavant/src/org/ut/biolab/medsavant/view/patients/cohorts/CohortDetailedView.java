@@ -51,7 +51,6 @@ public class CohortDetailedView extends DetailedView {
     private Cohort[] cohorts;
     private final CollapsablePanel membersPane;
 
-
     private class CohortDetailsSW extends SwingWorker {
 
         private final Cohort cohort;
@@ -109,21 +108,21 @@ public class CohortDetailedView extends DetailedView {
     }
 
     public CohortDetailedView() {
-        
+
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
-        
+
         JPanel infoContainer = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(infoContainer);
-        
-        viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer),BorderLayout.CENTER);
-        
+
+        viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer), BorderLayout.CENTER);
+
         membersPane = new CollapsablePanel("Members");
         infoContainer.add(membersPane);
         infoContainer.add(Box.createVerticalGlue());
-        
+
         content = membersPane.getContentPane();
-        
+
         details = ViewUtil.getClearPanel();
         menu = ViewUtil.getClearPanel();// ViewUtil.getButtonPanel();
 
@@ -161,7 +160,11 @@ public class CohortDetailedView extends DetailedView {
         for (int i = 0; i < items.size(); i++) {
             cohorts[i] = (Cohort) items.get(i)[0];
         }
-        setTitle("Multiple cohorts (" + items.size() + ")");
+        if (items.isEmpty()) {
+            setTitle("");
+        } else {
+            setTitle("Multiple cohorts (" + items.size() + ")");
+        }
         details.removeAll();
         details.updateUI();
     }
@@ -174,10 +177,10 @@ public class CohortDetailedView extends DetailedView {
     public void actionPerformed(ActionEvent e) {
     //TODO
     }
-    }); 
+    });
     return button;
     }
-    
+
     private JButton setDefaultControlButton(){
     JButton button = new JButton("Set default Control cohort");
     button.setBackground(ViewUtil.getDetailsBackgroundColor());
@@ -185,10 +188,10 @@ public class CohortDetailedView extends DetailedView {
     public void actionPerformed(ActionEvent e) {
     //TODO
     }
-    }); 
+    });
     return button;
     }
-     * 
+     *
      */
     private JButton removeIndividualsButton() {
         JButton button = new JButton("Remove individual(s) from cohort");
@@ -204,11 +207,11 @@ public class CohortDetailedView extends DetailedView {
                     patientIds[i] = ((SimplePatient) selected[i]).getId();
                 }
                 if (patientIds != null && patientIds.length > 0) {
-                    
-                    if(JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(null, "Are you sure you want to remove these individual(s)?", "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)){
+
+                    if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(null, "Are you sure you want to remove these individual(s)?", "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
                         return;
                     }
-                    
+
                     try {
                         CohortQueryUtil.removePatientsFromCohort(patientIds, cohort.getId());
                     } catch (SQLException ex) {
@@ -222,5 +225,4 @@ public class CohortDetailedView extends DetailedView {
         });
         return button;
     }
-
 }

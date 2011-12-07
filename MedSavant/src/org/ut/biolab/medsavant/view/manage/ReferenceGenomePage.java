@@ -58,31 +58,31 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
         @Override
         public void deleteItems(List<Object[]> items) {
-            
+
             int nameIndex = 0;
            int keyIndex = 0;
-            
+
             int result;
 
-            
+
             if (items.size() == 1) {
                 String name = (String) items.get(0)[nameIndex];
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(), 
+                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
                              "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
                              "Confirm", JOptionPane.YES_NO_OPTION);
             } else {
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(), 
+                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
                              "Are you sure you want to remove these " + items.size() + " references?\nThis cannot be undone.",
                              "Confirm", JOptionPane.YES_NO_OPTION);
             }
-            
+
             if (result == JOptionPane.YES_OPTION) {
                 int numCouldntRemove = 0;
                 for (Object[] v : items) {
                     String refName = (String) v[keyIndex];
                     ReferenceController.getInstance().removeReference(refName);
                 }
-                
+
                 if (items.size() != numCouldntRemove) {
                     DialogUtils.displayMessage("Successfully removed " + (items.size()-numCouldntRemove) + " reference(s)");
                 }
@@ -242,7 +242,11 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
         @Override
         public void setMultipleSelections(List<Object[]> selectedRows) {
+            if (selectedRows.isEmpty()) {
+                setTitle("");
+            } else {
             setTitle("Multiple references (" + selectedRows.size() + ")");
+            }
             details.removeAll();
             details.updateUI();
         }

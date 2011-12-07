@@ -47,9 +47,9 @@ public class AnnotationsPage extends SubSectionView {
 
         @Override
         public void addItems() {
-            JOptionPane.showMessageDialog(MainFrame.getInstance(), 
+            JOptionPane.showMessageDialog(MainFrame.getInstance(),
                         "Annotations can only be added using the \n"
-                        + "MedSavant Database Utility.", 
+                        + "MedSavant Database Utility.",
                         "",JOptionPane.INFORMATION_MESSAGE);
         }
 
@@ -59,12 +59,12 @@ public class AnnotationsPage extends SubSectionView {
 
         @Override
         public void deleteItems(List<Object[]> items) {
-            JOptionPane.showMessageDialog(MainFrame.getInstance(), 
+            JOptionPane.showMessageDialog(MainFrame.getInstance(),
                         "Annotations can only be deleted using the \n"
-                        + "MedSavant Database Utility.", 
+                        + "MedSavant Database Utility.",
                         "",JOptionPane.INFORMATION_MESSAGE);
         }
-        
+
     }
 //implements ExternalAnnotationListener {
 
@@ -79,7 +79,7 @@ public class AnnotationsPage extends SubSectionView {
     public void referenceChanged(String name) {
         panel.refresh();
     }
-    
+
     private SplitScreenView panel;
 
     public AnnotationsPage(SectionView parent) {
@@ -111,9 +111,9 @@ public class AnnotationsPage extends SubSectionView {
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(MainFrame.getInstance(), 
+                JOptionPane.showMessageDialog(MainFrame.getInstance(),
                         "Annotations can only be added using the \n"
-                        + "MedSavant Database Utility.", 
+                        + "MedSavant Database Utility.",
                         "",JOptionPane.INFORMATION_MESSAGE);
                 //NewReferenceDialog npd = new ADialog(MainFrame.getInstance(), true);
                 //npd.setVisible(true);
@@ -182,8 +182,8 @@ public class AnnotationsPage extends SubSectionView {
     public void viewDidUnload() {
         ThreadController.getInstance().cancelWorkers(getName());
     }
-    
-    
+
+
     private class ExternalAnnotationDetailedView extends DetailedView {
 
         private final JPanel details;
@@ -200,26 +200,26 @@ public class AnnotationsPage extends SubSectionView {
 
             content.add(details, BorderLayout.CENTER);
         }
-        
+
         public JButton deleteButton() {
             JButton b = new JButton("Delete Annotation");
             b.setOpaque(false);
             b.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    JOptionPane.showMessageDialog(MainFrame.getInstance(), 
+                    JOptionPane.showMessageDialog(MainFrame.getInstance(),
                         "Annotations can only be deleted using the \n"
-                        + "MedSavant Database Utility.", 
+                        + "MedSavant Database Utility.",
                         "",JOptionPane.INFORMATION_MESSAGE);
                 }
             });
-             
+
             return b;
         }
 
         @Override
         public void setSelectedItem(Object[] item) {
-            
+
             String title = (String) item[0] + " (v" + item[1] + ")";
             setTitle(title);
 
@@ -231,7 +231,11 @@ public class AnnotationsPage extends SubSectionView {
 
         @Override
         public void setMultipleSelections(List<Object[]> selectedRows) {
-            setTitle("Multiple annotations (" + selectedRows.size() + ")");
+            if (selectedRows.isEmpty()) {
+                setTitle("");
+            } else {
+                setTitle("Multiple annotations (" + selectedRows.size() + ")");
+            }
             details.removeAll();
             details.updateUI();
         }

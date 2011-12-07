@@ -226,10 +226,23 @@ public class ImportVariantsWizard extends WizardDialog {
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                // TODO: actually use uploadId
+
+                if (locationField.getSelectedItem().toString().isEmpty()) {
+                    DialogUtils.displayError("Tag cannot be empty");
+                    locationField.requestFocus();
+                    return;
+                }
+
+                if (valueField.getText().toString().isEmpty()) {
+                    DialogUtils.displayError("Value cannot be empty");
+                    valueField.requestFocus();
+                    return;
+                }
+
                 VariantTag tag = new VariantTag((String) locationField.getSelectedItem(), valueField.getText());
                 variantTags.add(tag);
                 ta.append(tag.toString() + "\n");
+                valueField.setText("");
             }
         });
 

@@ -266,7 +266,8 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
                             Pedigree.FIELD_MOM,
                             Pedigree.FIELD_DAD,
                             Pedigree.FIELD_PATIENTID,
-                            Pedigree.FIELD_GENDER});
+                            Pedigree.FIELD_GENDER,
+                            Pedigree.FIELD_AFFECTED});
                 for (Object[] row : results) {
                     String[] srow = new String[row.length];
                     for (int i = 0; i < row.length; i++) {
