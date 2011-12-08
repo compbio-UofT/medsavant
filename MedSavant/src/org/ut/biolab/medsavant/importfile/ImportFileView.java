@@ -300,7 +300,8 @@ public class ImportFileView extends JDialog {
             }
 
             SearchableTablePanel searchableTablePanel = new SearchableTablePanel(ImportFileView.class.getName(), columnNames, columnClasses, new ArrayList<Integer>(), false,false,50,false,TableSelectionType.ROW, 1000, Util.createPrefetchedDataRetriever(data));
-
+            searchableTablePanel.forceRefreshData();
+            
             //boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection
             previewPanel.add(searchableTablePanel,BorderLayout.CENTER);
             previewPanel.updateUI();
