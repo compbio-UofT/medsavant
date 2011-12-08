@@ -223,16 +223,6 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                 
                 ThreadController.getInstance().cancelWorkers(pageName);
                 
-                /*List<String> values = new ArrayList<String>();
-                values.add(chrom);
-                try {
-                    FilterUtils.removeFiltersById(DefaultVariantTableSchema.COLUMNNAME_OF_ALT);
-                    FilterUtils.createAndApplyStringListFilterView(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, AnnotationFormat.VARIANT_ALIAS_CHROM, Table.VARIANT, values);
-                    FilterUtils.createAndApplyNumericFilterView(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, AnnotationFormat.VARIANT_ALIAS_POSITION, Table.VARIANT, position, position);
-                } catch (SQLException ex) {
-                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-                }*/
-                
                 Condition[] conditions = new Condition[2];
                 conditions[0] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom);
                 conditions[1] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), position);
@@ -255,20 +245,6 @@ class TablePanel extends JPanel implements FiltersChangedListener {
             public void actionPerformed(ActionEvent e) {
                 
                 ThreadController.getInstance().cancelWorkers(pageName);
-                
-                /*List<String> chroms = new ArrayList<String>();
-                chroms.add(chrom);
-                
-                List<String> alts = new ArrayList<String>();
-                alts.add(alt);
-                
-                try {
-                    FilterUtils.createAndApplyStringListFilterView(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, AnnotationFormat.VARIANT_ALIAS_CHROM, Table.VARIANT, chroms);
-                    FilterUtils.createAndApplyNumericFilterView(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, AnnotationFormat.VARIANT_ALIAS_POSITION, Table.VARIANT, position, position);
-                    FilterUtils.createAndApplyStringListFilterView(DefaultVariantTableSchema.COLUMNNAME_OF_ALT, AnnotationFormat.VARIANT_ALIAS_ALT, Table.VARIANT, alts);
-                } catch (SQLException ex) {
-                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-                }*/
                 
                 Condition[] conditions = new Condition[3];
                 conditions[0] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom);

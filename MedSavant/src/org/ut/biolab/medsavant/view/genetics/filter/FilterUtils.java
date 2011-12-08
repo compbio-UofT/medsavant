@@ -6,6 +6,7 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -28,18 +29,20 @@ public class FilterUtils {
      * This should generally be used for any filter applications external 
      * to the TablePanel. 
      */
-    public static void createAndApplyGenericFixedFilter(String title, String description, Condition c) {
+    public static List<FilterPanelSubItem> createAndApplyGenericFixedFilter(String title, String description, Condition c) {
         
         FilterPanel fp = getFilterPanel();
         
         //create and apply filter to each subquery
+        List<FilterPanelSubItem> filterPanels = new ArrayList<FilterPanelSubItem>();
         for(FilterPanelSub fps : fp.getFilterPanelSubs()){
             String filterId = Long.toString(System.nanoTime());
             FilterView view = GenericFixedFilterView.createGenericFixedView(title, c, description, fps.getId(), filterId);
-            fps.addNewSubItem(view, filterId);
+            filterPanels.add(fps.addNewSubItem(view, filterId));
         }
 
-        fp.refreshSubPanels();   
+        fp.refreshSubPanels(); 
+        return filterPanels;
     }
     
     public static void createAndApplyNumericFilterView(String column, String alias, Table whichTable, double low, double high) throws SQLException{

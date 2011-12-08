@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.list;
 
+import com.jidesoft.grid.TableModelWrapperUtils;
 import java.awt.event.ActionEvent;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 import com.jidesoft.utils.SwingWorker;
@@ -11,10 +12,13 @@ import org.ut.biolab.medsavant.view.component.Util;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
@@ -212,6 +216,14 @@ public class SplitScreenView extends JPanel {
                         detailedView.setMultipleSelections(selectedItems);
                     }
 
+                }
+            });
+            
+            stp.getTable().addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {  
+                    if(SwingUtilities.isRightMouseButton(e)){
+                        detailedView.setRightClick(e);    
+                    }                    
                 }
             });
 

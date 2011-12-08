@@ -209,6 +209,11 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             sw.execute();
         }
 
+        @Override
+        public void setRightClick(MouseEvent e) {
+            //nothing yet
+        }
+
         private class ProjectDetailsSW extends MedSavantWorker {
 
             private String projectName;

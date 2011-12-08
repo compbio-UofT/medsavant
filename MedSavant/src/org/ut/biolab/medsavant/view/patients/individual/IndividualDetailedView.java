@@ -5,6 +5,9 @@
 package org.ut.biolab.medsavant.view.patients.individual;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -13,35 +16,48 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D.Float;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.Writer;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.model.Cohort;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.view.component.CollapsablePanel;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import pedviz.algorithms.Sugiyama;
 import pedviz.graph.Graph;
+import pedviz.graph.Node;
 import pedviz.loader.CsvGraphLoader;
 import pedviz.view.GraphView2D;
+import pedviz.view.NodeEvent;
+import pedviz.view.NodeListener;
 import pedviz.view.NodeView;
 import pedviz.view.rules.ShapeRule;
 import pedviz.view.symbols.Symbol2D;
@@ -64,7 +80,10 @@ public class IndividualDetailedView extends DetailedView {
     private final JPanel pedigreeContent;
     private final JPanel pedigreeDetails;
     private PedigreeSW sw2;
-
+    private Node selectedNode = null;
+    private String familyId;
+    private static List<FilterPanelSubItem> filterPanels;
+    
     private class IndividualDetailsSW extends SwingWorker {
         private final int pid;
 
@@ -103,8 +122,10 @@ public class IndividualDetailedView extends DetailedView {
 
         @Override
         protected Object doInBackground() throws Exception {
+            
             List<Object[]> results = PatientQueryUtil.getFamilyOfPatient(ProjectController.getInstance().getCurrentProjectId(), pid);
-
+            familyId = PatientQueryUtil.getFamilyIdOfPatient(ProjectController.getInstance().getCurrentProjectId(), pid);
+            
             File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + pid + ".csv");
 
             //System.out.println("Writing " + outfile.getAbsolutePath());
@@ -138,14 +159,14 @@ public class IndividualDetailedView extends DetailedView {
             }
         }
     }
-
+    
     public synchronized void showPedigree(File pedigreeCSVFile) {
 
         pedigreeDetails.removeAll();
         pedigreeDetails.setLayout(new BorderLayout());
 
         //Step 1
-	Graph graph = new Graph();
+	final Graph graph = new Graph();
 	CsvGraphLoader loader = new CsvGraphLoader(pedigreeCSVFile.getAbsolutePath(), ",");
 	loader.setSettings(Pedigree.FIELD_HOSPITALID,Pedigree.FIELD_MOM,Pedigree.FIELD_DAD);
 	loader.load(graph);
@@ -166,7 +187,40 @@ public class IndividualDetailedView extends DetailedView {
 	view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "null", new SymbolSexUndesignated()));
 
         view.addRule(new PedigreeBasicRule(patientIds));
-
+        
+        //add ability to click
+        view.addNodeListener(new NodeListener() {
+            public void onNodeEvent(NodeEvent ne) {
+                if(ne.getType() == NodeEvent.MOUSE_ENTER){
+                    selectedNode = ne.getNode();
+                } else if (ne.getType() == NodeEvent.MOUSE_LEAVE){
+                    selectedNode = null;
+                }
+            }
+        });
+        
+        view.getComponent().addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if(selectedNode != null){
+                    String hospitalId = (String)selectedNode.getId();
+                    int patientId = Integer.parseInt((String)selectedNode.getUserData(Pedigree.FIELD_PATIENTID));
+                    if(SwingUtilities.isRightMouseButton(e)){
+                        JPopupMenu popup = createPopup(patientId);
+                        popup.show(e.getComponent(), e.getX(), e.getY());
+                        pedigreeDetails.repaint();
+                    } else if(SwingUtilities.isLeftMouseButton(e)) { 
+                        setSelectedItem(patientId, hospitalId);
+                    }             
+                } else {
+                    if(SwingUtilities.isRightMouseButton(e) && familyId != null){
+                        JPopupMenu popup = createPopup(familyId);
+                        popup.show(e.getComponent(), e.getX(), e.getY());
+                        pedigreeDetails.repaint();
+                    }
+                }
+            }
+        });
+        
         pedigreeDetails.add(view.getComponent(),BorderLayout.CENTER);
 
         pedigreeDetails.updateUI();
@@ -270,10 +324,15 @@ public class IndividualDetailedView extends DetailedView {
     @Override
     public void setSelectedItem(Object[] item) {
         int patientId = (Integer) item[0];
+        String hospitalId = (String) item[2];        
+        setSelectedItem(patientId, hospitalId);
+    }
+    
+    public void setSelectedItem(int patientId, String hospitalId){
+        
         patientIds = new int[1];
         patientIds[0] = patientId;
-        String hospitalId = (String) item[2];
-
+        
         setTitle(hospitalId);
 
         infoDetails.removeAll();
@@ -311,6 +370,15 @@ public class IndividualDetailedView extends DetailedView {
         pedigreeDetails.removeAll();
         pedigreeDetails.updateUI();
     }
+    
+    
+    @Override
+    public void setRightClick(MouseEvent e) {
+        if(patientIds != null && patientIds.length > 0){
+            JPopupMenu popup = createPopup(patientIds);
+            popup.show(e.getComponent(), e.getX(), e.getY()); 
+        }
+    }
 
     private JButton addIndividualsButton(){
         JButton button = new JButton("Add individual(s) to cohort");
@@ -337,4 +405,141 @@ public class IndividualDetailedView extends DetailedView {
         return button;
     }
 
+    private JPopupMenu createPopup(final int patientId){
+        JPopupMenu popupMenu = new JPopupMenu();
+        
+        if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
+            popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
+        } else {
+
+            //Filter by patient
+            JMenuItem filter1Item = new JMenuItem("Filter by Patient");
+            filter1Item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+
+                    List<Object> values = new ArrayList<Object>();
+                    values.add(patientId);
+
+                    List<String> dnaIds = null;
+                    try {
+                        dnaIds = PatientQueryUtil.getDNAIdsFromField(ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID, values); 
+                    } catch (SQLException ex) {}
+
+                    DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
+                    Condition[] conditions = new Condition[dnaIds.size()];
+                    for(int i = 0; i < dnaIds.size(); i++){
+                        conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
+                    }
+                    removeExistingFilters();
+                    filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
+                            "Individuals - Filter by Patient", 
+                            "1 Patient (" + dnaIds.size() + " DNA Id(s))", 
+                            ComboCondition.or(conditions));
+
+                }
+            });
+            popupMenu.add(filter1Item);          
+        }
+
+        return popupMenu;
+    }
+    
+    private JPopupMenu createPopup(final String familyId){
+        JPopupMenu popupMenu = new JPopupMenu();
+        
+        if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
+            popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
+        } else {
+
+            //Filter by patient
+            JMenuItem filter1Item = new JMenuItem("Filter by Family");
+            filter1Item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+
+                    List<String> dnaIds = new ArrayList<String>();
+                    int numPatients = 0;
+                    try {
+                        Map<String, String> patientIDToDNAIDMap = PatientQueryUtil.getDNAIdsForFamily(ProjectController.getInstance().getCurrentProjectId(), familyId);
+                        numPatients = patientIDToDNAIDMap.size();
+                        Object[] values = patientIDToDNAIDMap.values().toArray();
+                        for(Object o : values){
+                            String[] d = ((String) o).split(",");
+                            for(String id : d){
+                                if(!dnaIds.contains(id)){
+                                    dnaIds.add(id);
+                                }
+                            }
+                        }
+                    } catch (SQLException ex) {}
+
+                    DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
+                    Condition[] conditions = new Condition[dnaIds.size()];
+                    for(int i = 0; i < dnaIds.size(); i++){
+                        conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
+                    }
+                    removeExistingFilters();
+                    filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
+                            "Individuals - Filter by Family", 
+                            numPatients + " Patient(s) (" + dnaIds.size() + " DNA Id(s))", 
+                            ComboCondition.or(conditions));
+
+                }
+            });
+            popupMenu.add(filter1Item);          
+        }
+
+        return popupMenu;
+    }
+    
+    private JPopupMenu createPopup(final int[] patientIds){
+        JPopupMenu popupMenu = new JPopupMenu();
+        
+        if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
+            popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
+        } else {
+
+            //Filter by patient
+            JMenuItem filter1Item = new JMenuItem("Filter by Selected Patient(s)");
+            filter1Item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+
+                    List<Object> values = new ArrayList<Object>();
+                    for(int i = 0; i < patientIds.length; i++){
+                        values.add(patientIds[i]);
+                    }
+
+                    List<String> dnaIds = null;
+                    try {
+                        dnaIds = PatientQueryUtil.getDNAIdsFromField(ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID, values); 
+                    } catch (SQLException ex) {}
+
+                    DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
+                    Condition[] conditions = new Condition[dnaIds.size()];
+                    for(int i = 0; i < dnaIds.size(); i++){
+                        conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
+                    }
+                    removeExistingFilters();
+                    filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
+                            "Individuals - Filter by Selected Patient(s)", 
+                            patientIds.length + " Patient(s) (" + dnaIds.size() + " DNA Id(s))", 
+                            ComboCondition.or(conditions));
+
+                }
+            });
+            popupMenu.add(filter1Item);          
+        }
+
+        return popupMenu;
+    }
+    
+    private void removeExistingFilters(){
+        if(filterPanels != null){
+            for(FilterPanelSubItem panel : filterPanels){
+                panel.removeThis();
+            }
+        }
+    }
 }

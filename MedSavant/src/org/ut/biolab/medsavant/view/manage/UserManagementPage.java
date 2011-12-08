@@ -10,6 +10,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -129,6 +130,11 @@ public class UserManagementPage extends SubSectionView implements UserListener {
             }
             sw = new DetailsSW(name);
             sw.execute();
+        }
+
+        @Override
+        public void setRightClick(MouseEvent e) {
+            //nothing yet
         }
 
         private static class DetailsSW extends SwingWorker {

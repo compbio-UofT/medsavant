@@ -542,6 +542,21 @@ public class PatientQueryUtil {
 
         return result;
     }
+    
+    public static List<String> getDNAIdsFromField(int projectId, String columnNameA, List<Object> values) throws SQLException {
+        
+        List<Object> l1 = getValuesFromField(projectId, columnNameA, DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, values);
+        List<String> result = new ArrayList<String>();
+        for(Object o : l1){
+            String[] dnaIds = ((String) o).split(",");
+            for(String id : dnaIds){
+                if(!result.contains(id)){
+                    result.add(id);
+                }
+            }
+        }
+        return result;        
+    }
 
     public static List<String> getValuesFromDNAIds(int projectId, String columnNameB, List<String> ids) throws SQLException {
 
@@ -609,6 +624,15 @@ public class PatientQueryUtil {
 
     public static List<Object[]> getFamilyOfPatient(int projectId, int pid) throws SQLException {
 
+        String family_id = getFamilyIdOfPatient(projectId, pid);
+        if(family_id == null){
+            return new ArrayList<Object[]>();
+        }
+
+        return getFamily(projectId, family_id);
+    }
+    
+    public static String getFamilyIdOfPatient(int projectId, int pid) throws SQLException {
         String tablename = getPatientTablename(projectId);
         TableSchema table = CustomTables.getCustomTableSchema(tablename);
 
@@ -620,12 +644,11 @@ public class PatientQueryUtil {
         ResultSet rs1 = ConnectionController.connectPooled().createStatement().executeQuery(q1.toString());
 
         if (!rs1.next()) {
-            return new ArrayList<Object[]>();
+            return null;
         }
 
         String family_id = rs1.getString(1);
-
-        return getFamily(projectId, family_id);
+        return family_id;
     }
 
     public static List<String> getFamilyIds(int projectId) throws SQLException {

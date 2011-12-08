@@ -10,6 +10,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.BorderFactory;
@@ -78,10 +79,11 @@ public abstract class DetailedView extends JPanel {
         PaintUtil.paintDrillDown(g, this);
     }
 
-    
     public abstract void setSelectedItem(Object[] selectedRow);
 
     public abstract void setMultipleSelections(List<Object[]> selectedRows);
+    
+    public abstract void setRightClick(MouseEvent e);
 
     public void setTitle(String str) {
         this.title.setText(str);

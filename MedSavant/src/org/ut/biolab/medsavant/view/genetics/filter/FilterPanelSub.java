@@ -292,9 +292,11 @@ public final class FilterPanelSub extends JPanel{
         return isRemoved;
     }
 
-    public void addNewSubItem(FilterView view, String filterId){
-        subItems.add(new FilterPanelSubItem(view, this, filterId));
+    public FilterPanelSubItem addNewSubItem(FilterView view, String filterId){
+        FilterPanelSubItem result = new FilterPanelSubItem(view, this, filterId);
+        subItems.add(result);
         refreshSubItems();
+        return result;
     }
 
     public boolean hasSubItem(String filterId){
