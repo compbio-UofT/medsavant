@@ -4,6 +4,8 @@
  */
 package org.ut.biolab.medsavant.view.patients.cohorts;
 
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
@@ -14,24 +16,27 @@ import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.model.SimplePatient;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.view.component.CollapsablePanel;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -51,6 +56,8 @@ public class CohortDetailedView extends DetailedView {
     private Cohort cohort;
     private Cohort[] cohorts;
     private final CollapsablePanel membersPane;
+    private boolean multipleSelected = false;
+    private static List<FilterPanelSubItem> filterPanels;
 
     private class CohortDetailsSW extends SwingWorker {
 
@@ -138,6 +145,7 @@ public class CohortDetailedView extends DetailedView {
 
     @Override
     public void setSelectedItem(Object[] item) {
+        multipleSelected = false;
         cohort = ((Cohort) item[0]);
         setTitle(cohort.getName());
 
@@ -157,6 +165,7 @@ public class CohortDetailedView extends DetailedView {
 
     @Override
     public void setMultipleSelections(List<Object[]> items) {
+        multipleSelected = true;
         cohorts = new Cohort[items.size()];
         for (int i = 0; i < items.size(); i++) {
             cohorts[i] = (Cohort) items.get(i)[0];
@@ -172,7 +181,16 @@ public class CohortDetailedView extends DetailedView {
         
     @Override
     public void setRightClick(MouseEvent e) {
-        //nothing yet
+        Cohort[] selected;
+        if(multipleSelected){
+            selected = cohorts;
+        } else {
+            selected = new Cohort[1];
+            selected[0] = cohort;
+        }
+        
+        JPopupMenu popup = createPopup(selected);
+        popup.show(e.getComponent(), e.getX(), e.getY()); 
     }
 
     /*
@@ -230,5 +248,61 @@ public class CohortDetailedView extends DetailedView {
             }
         });
         return button;
+    }
+    
+    private JPopupMenu createPopup(final Cohort[] cohorts){
+        JPopupMenu popupMenu = new JPopupMenu();
+        
+        if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
+            popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
+        } else {
+
+            //Filter by patient
+            JMenuItem filter1Item = new JMenuItem("Filter by Cohort(s)");
+            filter1Item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+
+                    List<String> dnaIds = new ArrayList<String>();
+                    
+                    for(Cohort c : cohorts){
+                        try {
+                            List<String> current = CohortQueryUtil.getDNAIdsInCohort(c.getId());
+                            for(String s : current){
+                                if(!dnaIds.contains(s)){
+                                    dnaIds.add(s);
+                                }
+                            }
+                        } catch (SQLException ex) {
+                            Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    
+                    
+                    DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
+                    Condition[] conditions = new Condition[dnaIds.size()];
+                    for(int i = 0; i < dnaIds.size(); i++){
+                        conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
+                    }
+                    removeExistingFilters();
+                    filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
+                            "Cohorts - Filter by Cohort(s)", 
+                            cohorts.length + " Cohort(s) (" + dnaIds.size() + " DNA Id(s))", 
+                            ComboCondition.or(conditions));
+                    
+                }
+            });
+            popupMenu.add(filter1Item);          
+        }
+
+        return popupMenu;
+    }
+    
+    private void removeExistingFilters(){
+        if(filterPanels != null){
+            for(FilterPanelSubItem panel : filterPanels){
+                panel.removeThis();
+            }
+        }
     }
 }
