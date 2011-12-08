@@ -305,6 +305,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
         private synchronized void setPedigree(Graph pedigree) {
 
+
             Sugiyama s = new Sugiyama(pedigree);
             s.run();
 
@@ -392,7 +393,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
                 gd.fill(new RoundRectangle2D.Float(startX - pad, startY - height - pad + 0.1F, size + 2*pad, height + 2*pad,1F,1F));
 
                 gd.setColor(Color.white);
-                gd.drawString(toWrite, startX, startY);
+                gd.drawString(toWrite, startX+ size*0.1F, startY);
 
             }
         }

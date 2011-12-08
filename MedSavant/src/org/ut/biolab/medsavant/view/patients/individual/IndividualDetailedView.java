@@ -243,6 +243,7 @@ public class IndividualDetailedView extends DetailedView {
         infoContainer.add(ViewUtil.getLargeSeparator());
 
         CollapsablePanel cpPed = new CollapsablePanel("Pedigree");
+        cpPed.setContentPaneVisible(false);
         infoContainer.add(cpPed);
 
         infoContainer.add(Box.createVerticalGlue());

@@ -62,7 +62,6 @@ public class ImportFileView extends JDialog {
 
         importAccepted = false;
         formatMap = new HashMap<String,FileFormat>();
-
     }
 
     private void initGUI() {
@@ -299,9 +298,20 @@ public class ImportFileView extends JDialog {
                 columnClasses.add(getFileFormat().getFieldNumberToClassMap().get(i));
             }
 
-            SearchableTablePanel searchableTablePanel = new SearchableTablePanel(ImportFileView.class.getName(), columnNames, columnClasses, new ArrayList<Integer>(), false,false,50,false,TableSelectionType.ROW, 1000, Util.createPrefetchedDataRetriever(data));
+            SearchableTablePanel searchableTablePanel = new SearchableTablePanel(
+                    ImportFileView.class.getName(),
+                    columnNames,
+                    columnClasses,
+                    new ArrayList<Integer>(),
+                    false,
+                    false,
+                    50,
+                    false,
+                    TableSelectionType.ROW,
+                    1000,
+                    Util.createPrefetchedDataRetriever(data));
             searchableTablePanel.forceRefreshData();
-            
+
             //boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection
             previewPanel.add(searchableTablePanel,BorderLayout.CENTER);
             previewPanel.updateUI();

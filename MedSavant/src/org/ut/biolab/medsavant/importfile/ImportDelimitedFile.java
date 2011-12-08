@@ -114,6 +114,18 @@ public class ImportDelimitedFile {
             e.printStackTrace();
         }
 
+        /*
+        System.out.println("START Preview");
+        for (String[] line : previewLines) {
+            for (String value : line) {
+                System.out.print(value + "\t");
+            }
+            System.out.println();
+        }
+        System.out.println("END Preview");
+         * 
+         */
+
         return (List<String[]>[])new List[] { headerLines, previewLines };
     }
 
@@ -127,7 +139,7 @@ public class ImportDelimitedFile {
         for (int i = 0; i < numLines; i++) {
             try {
                 String[] line = reader.readNext();
-                
+
                 if(line == null) break;
 
                 if (fields == null) {

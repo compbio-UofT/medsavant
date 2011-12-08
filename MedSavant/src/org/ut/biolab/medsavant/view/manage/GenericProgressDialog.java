@@ -44,40 +44,41 @@ class GenericProgressDialog extends JDialog {
             wp.setStatus(string);
         }
     }
-    
+
     public interface CancelRequestListener {
         public void cancelRequested();
     }
-    
-    
+
+
     public GenericProgressDialog(String title, String message) {
-        
+        this.setModal(true);
+
         this.setTitle(title);
         this.setLayout(new BorderLayout());
-        
+
         this.setMinimumSize(new Dimension(300,200));
         this.setPreferredSize(new Dimension(300,200));
         this.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        
+
         cancelRequested = false;
-        
+
         wp = new WaitPanel(message);
-                
+
         this.add(wp,BorderLayout.CENTER);
-        
+
         buttonPane = ViewUtil.getSecondaryBannerPanel();
         buttonPane.setLayout(new BoxLayout(buttonPane,BoxLayout.X_AXIS));
         buttonPane.add(Box.createHorizontalGlue());
-        
+
         okButton = new JButton("OK");
         okButton.setVisible(false);
         okButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                closeDialog();
             }
-            
+
         });
-        
+
         cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -89,20 +90,20 @@ class GenericProgressDialog extends JDialog {
                okButton.setVisible(true);
             }
         });
-        
+
         buttonPane.add(okButton);
         buttonPane.add(cancelButton);
-        
+
         this.add(buttonPane,BorderLayout.SOUTH);
-        
+
         this.setLocationRelativeTo(null);
-        
+
     }
-    
+
     private void closeDialog() {
         this.dispose();
     }
-    
+
     public void setComplete() {
         okButton.setVisible(true);
         cancelButton.setVisible(false);

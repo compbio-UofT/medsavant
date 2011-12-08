@@ -77,6 +77,7 @@ class IntervalDetailedListEditor extends DetailedListEditor {
             importsw.execute();
 
             importpd.setVisible(true);
+
         }
 
         d.dispose();
@@ -103,10 +104,10 @@ class IntervalDetailedListEditor extends DetailedListEditor {
         }
 
         if (result == JOptionPane.YES_OPTION) {
-            
+
             final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                    "Removing Region List(s)", 
-                    "Removing region list(s). Please wait.", 
+                    "Removing Region List(s)",
+                    "Removing region list(s). Please wait.",
                     true);
             Thread thread = new Thread() {
                 @Override
@@ -123,13 +124,13 @@ class IntervalDetailedListEditor extends DetailedListEditor {
                             DialogUtils.displayErrorMessage("Could remove " + listName + ".", ex);
                         }
                     }
-                    dialog.close(); 
+                    dialog.close();
                     if (numCouldntRemove != items.size()) {
                         DialogUtils.displayMessage("Successfully removed " + (items.size()) + " list(s)");
-                    } 
+                    }
                 }
             };
-            thread.start(); 
+            thread.start();
             dialog.setVisible(true);
         }
     }
