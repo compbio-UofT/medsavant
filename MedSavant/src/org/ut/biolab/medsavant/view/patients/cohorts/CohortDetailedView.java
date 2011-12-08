@@ -34,7 +34,7 @@ import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.model.SimplePatient;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
-import org.ut.biolab.medsavant.view.component.CollapsablePanel;
+import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedView;
@@ -55,7 +55,7 @@ public class CohortDetailedView extends DetailedView {
     private JList list;
     private Cohort cohort;
     private Cohort[] cohorts;
-    private final CollapsablePanel membersPane;
+    private final CollapsiblePanel membersPane;
     private boolean multipleSelected = false;
     private static List<FilterPanelSubItem> filterPanels;
 
@@ -125,7 +125,7 @@ public class CohortDetailedView extends DetailedView {
 
         viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer), BorderLayout.CENTER);
 
-        membersPane = new CollapsablePanel("Members");
+        membersPane = new CollapsiblePanel("Members");
         infoContainer.add(membersPane);
         infoContainer.add(Box.createVerticalGlue());
 
@@ -178,7 +178,7 @@ public class CohortDetailedView extends DetailedView {
         details.removeAll();
         details.updateUI();
     }
-        
+
     @Override
     public void setRightClick(MouseEvent e) {
         Cohort[] selected;
@@ -188,9 +188,9 @@ public class CohortDetailedView extends DetailedView {
             selected = new Cohort[1];
             selected[0] = cohort;
         }
-        
+
         JPopupMenu popup = createPopup(selected);
-        popup.show(e.getComponent(), e.getX(), e.getY()); 
+        popup.show(e.getComponent(), e.getX(), e.getY());
     }
 
     /*
@@ -249,10 +249,10 @@ public class CohortDetailedView extends DetailedView {
         });
         return button;
     }
-    
+
     private JPopupMenu createPopup(final Cohort[] cohorts){
         JPopupMenu popupMenu = new JPopupMenu();
-        
+
         if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
             popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
         } else {
@@ -264,7 +264,7 @@ public class CohortDetailedView extends DetailedView {
                 public void actionPerformed(ActionEvent e) {
 
                     List<String> dnaIds = new ArrayList<String>();
-                    
+
                     for(Cohort c : cohorts){
                         try {
                             List<String> current = CohortQueryUtil.getDNAIdsInCohort(c.getId());
@@ -277,8 +277,8 @@ public class CohortDetailedView extends DetailedView {
                             Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                    
-                    
+
+
                     DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
                     Condition[] conditions = new Condition[dnaIds.size()];
                     for(int i = 0; i < dnaIds.size(); i++){
@@ -286,18 +286,18 @@ public class CohortDetailedView extends DetailedView {
                     }
                     removeExistingFilters();
                     filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                            "Cohorts - Filter by Cohort(s)", 
-                            cohorts.length + " Cohort(s) (" + dnaIds.size() + " DNA Id(s))", 
+                            "Cohorts - Filter by Cohort(s)",
+                            cohorts.length + " Cohort(s) (" + dnaIds.size() + " DNA Id(s))",
                             ComboCondition.or(conditions));
-                    
+
                 }
             });
-            popupMenu.add(filter1Item);          
+            popupMenu.add(filter1Item);
         }
 
         return popupMenu;
     }
-    
+
     private void removeExistingFilters(){
         if(filterPanels != null){
             for(FilterPanelSubItem panel : filterPanels){

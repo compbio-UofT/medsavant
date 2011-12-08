@@ -63,7 +63,8 @@ import org.xml.sax.SAXException;
  */
 public class FilterPanel extends javax.swing.JPanel {
 
-    private List<FilterPanelSub> subs = new ArrayList<FilterPanelSub>();
+    //private List<FilterPanelSub> subs = new ArrayList<FilterPanelSub>();
+    private List<FilterPanelSub> subs2 = new ArrayList<FilterPanelSub>();
     private int subNum = 1;
 
     /** Creates new form FilterPanel */
@@ -104,10 +105,19 @@ public class FilterPanel extends javax.swing.JPanel {
     }
 
     public FilterPanelSub createNewSubPanel(){
+
+        /*
         FilterPanelSub newSub = new FilterPanelSub(this, subNum++);
         subs.add(newSub);
+        */
+
+        FilterPanelSub cp = new FilterPanelSub(this, subNum++);
+        container.add(cp);
+        subs2.add(cp);
+
         refreshSubPanels();
-        return newSub;
+
+        return cp;
     }
 
     public void refreshSubPanels(){
@@ -141,7 +151,7 @@ public class FilterPanel extends javax.swing.JPanel {
         JLabel l = new JLabel("Filter out variants that don't pass any of these filter sets:");
 
         JPanel topContainer = new JPanel();
-        topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.X_AXIS));               
+        topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.X_AXIS));
         topContainer.add(l);
         topContainer.add(Box.createHorizontalGlue());
         topContainer.add(saveButton);
@@ -150,15 +160,15 @@ public class FilterPanel extends javax.swing.JPanel {
 
         container.add(Box.createVerticalStrut(5));
         //check for removed items
-        for(int i = subs.size()-1; i >= 0; i--){
-            if(subs.get(i).isRemoved()){
-                subs.remove(i);
+        for(int i = subs2.size()-1; i >= 0; i--){
+            if(subs2.get(i).isRemoved()){
+                subs2.remove(i);
             }
         }
 
         //refresh panel
-        for(int i = 0; i < subs.size(); i++){
-            container.add(subs.get(i));
+        for(int i = 0; i < subs2.size(); i++){
+            container.add(subs2.get(i));
             container.add(Box.createVerticalStrut(5));
         }
         container.add(createNewOrButton());
@@ -166,28 +176,28 @@ public class FilterPanel extends javax.swing.JPanel {
 
         this.updateUI();
     }
-    
+
     public List<FilterPanelSub> getFilterPanelSubs(){
-        return this.subs;
+        return this.subs2;
     }
-    
+
     public void clearAll(){
-        this.subs.clear();
+        this.subs2.clear();
         subNum = 1;
         refreshSubPanels();
     }
-    
+
     private void saveFilters() throws IOException{
-        
+
         //choose save file
         File file = DialogUtils.chooseFileForSave("Save Filters", "saved_filters.xml", new ExtensionFileFilter(new String[]{"xml"}), null, "xml");
         if(file == null) return;
-        
+
         //write
-        BufferedWriter out = new BufferedWriter(new FileWriter(file, false));      
+        BufferedWriter out = new BufferedWriter(new FileWriter(file, false));
 
         out.write("<filters>\n");
-        for(FilterPanelSub sub : subs){
+        for(FilterPanelSub sub : subs2){
             out.write("\t<set>\n");
             for(FilterPanelSubItem item : sub.getSubItems()){
                out.write(item.getFilterView().saveState().generateXML() + "\n");
@@ -202,38 +212,38 @@ public class FilterPanel extends javax.swing.JPanel {
     }
 
     private void loadFilters() throws ParserConfigurationException, SAXException, IOException{
-        
+
         //warn of overwrite
         if(FilterController.hasFiltersApplied() && DialogUtils.askYesNo("Confirm Load", "<html>Loading filters clears all existing filters. <br>Are you sure you want to continue?</html>") == JOptionPane.NO_OPTION) return;
-        
+
         //choose open file
         File file = DialogUtils.chooseFileForOpen("Load Filters", new ExtensionFileFilter(new String[]{"xml"}), null);
         if(file == null) return;
-        
+
         //read
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(file);
-        
+
         doc.getDocumentElement().normalize();
-        
+
         List<List<FilterState>> states = new ArrayList<List<FilterState>>();
         NodeList nodes = doc.getElementsByTagName("set");
         for(int i = 0; i < nodes.getLength(); i++){
-            
+
             Element set = (Element) nodes.item(i);
-            NodeList filters = set.getElementsByTagName("filter"); 
-            
+            NodeList filters = set.getElementsByTagName("filter");
+
             List<FilterState> list = new ArrayList<FilterState>();
-            
+
             for(int j = 0; j < filters.getLength(); j++){
-                
+
                 Element filter = (Element) filters.item(j);
-                
-                String name = filter.getAttribute("name"); 
+
+                String name = filter.getAttribute("name");
                 String id = filter.getAttribute("id");
                 FilterType type = FilterType.valueOf(filter.getAttribute("type"));
-                
+
                 NodeList params = filter.getElementsByTagName("param");
                 Map<String, String> values = new HashMap<String, String>();
                 for(int k = 0; k < params.getLength(); k++){
@@ -243,12 +253,12 @@ public class FilterPanel extends javax.swing.JPanel {
 
                 list.add(new FilterState(type, name, id, values));
             }
-            
+
             if(!list.isEmpty()){
                 states.add(list);
             }
         }
-        
+
         //generate
         FilterUtils.clearFilterSets();
         for(int i = 0; i < states.size(); i++){
@@ -265,7 +275,7 @@ public class FilterPanel extends javax.swing.JPanel {
         refreshSubPanels();
 
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

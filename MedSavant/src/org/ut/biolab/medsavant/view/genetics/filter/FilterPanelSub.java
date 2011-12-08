@@ -1,10 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import java.awt.BorderLayout;
+import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -40,47 +36,36 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
- * @author Andrew
+ * @author mfiume
  */
-public final class FilterPanelSub extends JPanel{
+public class FilterPanelSub extends CollapsiblePanel {
 
     private int id;
     private JPanel contentPanel;
     private List<FilterPanelSubItem> subItems = new ArrayList<FilterPanelSubItem>();
     private FilterPanel parent;
     private boolean isRemoved = false;
-    private JLabel titleLabel;
 
     private static Color BAR_COLOUR = Color.black;
     private static Color BUTTON_OVER_COLOUR = Color.gray;
 
-    public FilterPanelSub(final FilterPanel parent, int id){
+    public FilterPanelSub(final FilterPanel parent, int id) {
+        super("",true);
+        init(parent,id);
+    }
+
+    public FilterPanelSub(boolean isCollapsible, final FilterPanel parent, int id) {
+        super("",isCollapsible);
+        init(parent,id);
+    }
+
+    public final void init(final FilterPanel parent, int id){
 
         this.id = id;
         this.parent = parent;
+
+
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(ViewUtil.getTinyLineBorder());
-
-        //title bar
-        JPanel titlePanel = ViewUtil.getPrimaryBannerPanel();//new JPanel();
-
-        //titlePanel.setBackground(BAR_COLOUR);
-        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
-        titlePanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                contentPanel.setVisible(!contentPanel.isVisible());
-                contentPanel.invalidate();
-            }
-        });
-        titlePanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        titleLabel = new JLabel("Filter Set (0 filters)");
-        titleLabel.setForeground(Color.white);
-        titlePanel.add(Box.createRigidArea(new Dimension(10,20)));
-        titlePanel.add(titleLabel);
-
-        titlePanel.add(Box.createHorizontalGlue());
 
         final JLabel removeLabel = ViewUtil.createIconLabel(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
         removeLabel.setBackground(Color.RED);
@@ -102,28 +87,23 @@ public final class FilterPanelSub extends JPanel{
                 removeLabel.setBackground(BAR_COLOUR);
             }
         });
-        titlePanel.add(removeLabel);
-        titlePanel.add(Box.createRigidArea(new Dimension(10,20)));
 
-        this.add(titlePanel);
+        this.addTitleComponent(removeLabel);
 
-
-        //content pane
-        contentPanel = new JPanel();
+        contentPanel = this.getContentPane();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBorder(BorderFactory.createLineBorder(contentPanel.getBackground(), 6));
-        //contentPanel.add(Box.createRigidArea(new Dimension(100,100)));
         this.add(contentPanel);
-
 
         refreshSubItems();
 
     }
 
+
     public List<FilterPanelSubItem> getSubItems(){
         return this.subItems;
     }
-    
+
     public void refreshSubItems(){
         contentPanel.removeAll();
 
@@ -273,9 +253,9 @@ public final class FilterPanelSub extends JPanel{
         tmp1.add(new JLabel("Add filter"));
         tmp1.add(Box.createHorizontalGlue());
         contentPanel.add(tmp1);
-        
+
         //update panel title
-        this.titleLabel.setText("Filter Set  (" + subItems.size() + " filter" + (subItems.size() == 1 ? "" : "s") + ")");
+        this.setTitle("Filter Set  (" + subItems.size() + " filter" + (subItems.size() == 1 ? "" : "s") + ")");
 
         this.updateUI();
     }
@@ -321,7 +301,7 @@ public final class FilterPanelSub extends JPanel{
             }
         }
     }
-    
+
     private Map<Category, List<FilterPlaceholder>> getRemainingFilters(){
 
         Map<Category, List<FilterPlaceholder>> map = new EnumMap<Category, List<FilterPlaceholder>>(Category.class);
@@ -486,4 +466,6 @@ public final class FilterPanelSub extends JPanel{
             return o1.getFilterName().compareTo(o2.getFilterName());
         }
     }
+
+
 }

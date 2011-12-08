@@ -22,17 +22,17 @@ import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
  * @author Andrew
  */
 public class FilterUtils {
-    
+
     public enum Table {PATIENT, VARIANT};
-    
+
     /*
-     * This should generally be used for any filter applications external 
-     * to the TablePanel. 
+     * This should generally be used for any filter applications external
+     * to the TablePanel.
      */
     public static List<FilterPanelSubItem> createAndApplyGenericFixedFilter(String title, String description, Condition c) {
-        
+
         FilterPanel fp = getFilterPanel();
-        
+
         //create and apply filter to each subquery
         List<FilterPanelSubItem> filterPanels = new ArrayList<FilterPanelSubItem>();
         for(FilterPanelSub fps : fp.getFilterPanelSubs()){
@@ -41,12 +41,12 @@ public class FilterUtils {
             filterPanels.add(fps.addNewSubItem(view, filterId));
         }
 
-        fp.refreshSubPanels(); 
+        fp.refreshSubPanels();
         return filterPanels;
     }
-    
+
     public static void createAndApplyNumericFilterView(String column, String alias, Table whichTable, double low, double high) throws SQLException{
-        
+
         FilterPanel fp = startFilterBy(column);
 
         //create and apply filter to each subquery
@@ -58,9 +58,9 @@ public class FilterUtils {
 
         fp.refreshSubPanels();
     }
-    
+
     public static void createAndApplyStringListFilterView(String column, String alias, Table whichTable, List<String> values) throws SQLException {
-        
+
         FilterPanel fp = startFilterBy(column);
 
         //create and apply filter to each subquery
@@ -72,14 +72,14 @@ public class FilterUtils {
 
         fp.refreshSubPanels();
     }
-    
+
     public static void removeFiltersById(String id){
         removeFiltersById(getFilterPanel(), id);
     }
-    
+
     public static void loadFilterView(FilterState state, FilterPanelSub fps) throws SQLException{
         switch(state.getType()){
-            case NUMERIC: 
+            case NUMERIC:
                 fps.addNewSubItem(new NumericFilterView(state, fps.getId()), state.getId());
                 break;
             case STRING:
@@ -113,22 +113,22 @@ public class FilterUtils {
                 break;
         }
     }
-    
-    
+
+
     /*
      * Common functionality for all created filters
      */
     private static FilterPanel startFilterBy(String column){
-        
+
         //get filter panel
         FilterPanel fp = getFilterPanel();
-              
+
         //remove filters by id
         removeFiltersById(fp, column);
 
         return fp;
     }
-    
+
     private static FilterPanel getFilterPanel(){
         FilterPanel fp = GeneticsFilterPage.getInstance().getFilterPanel();
         if(fp == null){
@@ -136,21 +136,21 @@ public class FilterUtils {
             GeneticsFilterPage.getInstance().setUpdateRequired(false);
             fp = GeneticsFilterPage.getInstance().getFilterPanel();
         }
-        
+
         //deal with case where no sub panels
         if(fp.getFilterPanelSubs().isEmpty()){
             fp.createNewSubPanel();
         }
-        
+
         return fp;
     }
-    
+
     private static void removeFiltersById(FilterPanel fp, String id){
         for(FilterPanelSub fps : fp.getFilterPanelSubs()){
             fps.removeFiltersById(id);
         }
     }
-    
+
     public static String getTableName(Table whichTable){
         if(whichTable == Table.VARIANT){
             return ProjectController.getInstance().getCurrentTableName();
@@ -158,7 +158,7 @@ public class FilterUtils {
             return ProjectController.getInstance().getCurrentPatientTableName();
         }
     }
-    
+
     public static TableSchema getTableSchema(Table whichTable) {
         if(whichTable == Table.VARIANT){
             return ProjectController.getInstance().getCurrentVariantTableSchema();
@@ -166,11 +166,11 @@ public class FilterUtils {
             return ProjectController.getInstance().getCurrentPatientTableSchema();
         }
     }
-    
+
     public static void clearFilterSets(){
         FilterController.removeAllFilters();
         FilterPanel fp = getFilterPanel();
         fp.clearAll();
     }
-    
+
 }

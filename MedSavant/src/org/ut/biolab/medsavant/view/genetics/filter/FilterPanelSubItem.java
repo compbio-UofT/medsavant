@@ -107,7 +107,7 @@ public class FilterPanelSubItem extends JPanel {
     public String getFilterId() {
         return filterId;
     }
-    
+
     public FilterView getFilterView() {
         return filterView;
     }

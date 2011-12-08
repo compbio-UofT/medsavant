@@ -45,7 +45,7 @@ import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.view.component.CollapsablePanel;
+import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
@@ -85,7 +85,7 @@ public class IndividualDetailedView extends DetailedView {
     private List<Integer> selectedNodes;
     private String familyId;
     private static List<FilterPanelSubItem> filterPanels;
-    
+
     private class IndividualDetailsSW extends SwingWorker {
         private final int pid;
 
@@ -124,10 +124,10 @@ public class IndividualDetailedView extends DetailedView {
 
         @Override
         protected Object doInBackground() throws Exception {
-            
+
             List<Object[]> results = PatientQueryUtil.getFamilyOfPatient(ProjectController.getInstance().getCurrentProjectId(), pid);
             familyId = PatientQueryUtil.getFamilyIdOfPatient(ProjectController.getInstance().getCurrentProjectId(), pid);
-            
+
             File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + pid + ".csv");
 
             //System.out.println("Writing " + outfile.getAbsolutePath());
@@ -161,7 +161,7 @@ public class IndividualDetailedView extends DetailedView {
             }
         }
     }
-    
+
     public synchronized void showPedigree(File pedigreeCSVFile) {
 
         pedigreeDetails.removeAll();
@@ -189,7 +189,7 @@ public class IndividualDetailedView extends DetailedView {
 	view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "null", new SymbolSexUndesignated()));
 
         view.addRule(new PedigreeBasicRule(patientIds));
-        
+
         selectedNodes = new ArrayList<Integer>();
         for(Integer i : patientIds){
             selectedNodes.add(i);
@@ -207,7 +207,7 @@ public class IndividualDetailedView extends DetailedView {
                 }
             }
         });
-        
+
         view.getComponent().addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if(overNode != null){
@@ -225,11 +225,11 @@ public class IndividualDetailedView extends DetailedView {
                             selectedNodes.add(patientId);
                             overNodeView.setBorderColor(ViewUtil.detailSelectedBackground);
                         }
-                    } else if(SwingUtilities.isLeftMouseButton(e)) { 
+                    } else if(SwingUtilities.isLeftMouseButton(e)) {
                         if(patientId != null && patientId > 0){
                             setSelectedItem(patientId, hospitalId);
                         }
-                    }             
+                    }
                 } else {
                     if(SwingUtilities.isRightMouseButton(e) && familyId != null){
                         JPopupMenu popup = createPopup(familyId);
@@ -240,7 +240,7 @@ public class IndividualDetailedView extends DetailedView {
                 pedigreeDetails.repaint();
             }
         });
-        
+
         pedigreeDetails.add(view.getComponent(),BorderLayout.CENTER);
 
         pedigreeDetails.updateUI();
@@ -310,13 +310,13 @@ public class IndividualDetailedView extends DetailedView {
 
         viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer),BorderLayout.CENTER);
 
-        CollapsablePanel cp = new CollapsablePanel("Patient Information");
+        CollapsiblePanel cp = new CollapsiblePanel("Patient Information");
         cp.setContentPaneVisible(false);
         infoContainer.add(cp);
 
         infoContainer.add(ViewUtil.getLargeSeparator());
 
-        CollapsablePanel cpPed = new CollapsablePanel("Pedigree");
+        CollapsiblePanel cpPed = new CollapsiblePanel("Pedigree");
         cpPed.setContentPaneVisible(false);
         infoContainer.add(cpPed);
 
@@ -348,15 +348,15 @@ public class IndividualDetailedView extends DetailedView {
     @Override
     public void setSelectedItem(Object[] item) {
         int patientId = (Integer) item[0];
-        String hospitalId = (String) item[2];        
+        String hospitalId = (String) item[2];
         setSelectedItem(patientId, hospitalId);
     }
-    
+
     public void setSelectedItem(int patientId, String hospitalId){
-        
+
         patientIds = new int[1];
         patientIds[0] = patientId;
-        
+
         setTitle(hospitalId);
 
         infoDetails.removeAll();
@@ -394,13 +394,13 @@ public class IndividualDetailedView extends DetailedView {
         pedigreeDetails.removeAll();
         pedigreeDetails.updateUI();
     }
-    
-    
+
+
     @Override
     public void setRightClick(MouseEvent e) {
         if(patientIds != null && patientIds.length > 0){
             JPopupMenu popup = createPopup(patientIds);
-            popup.show(e.getComponent(), e.getX(), e.getY()); 
+            popup.show(e.getComponent(), e.getX(), e.getY());
         }
     }
 
@@ -428,10 +428,10 @@ public class IndividualDetailedView extends DetailedView {
         });
         return button;
     }
-    
+
     private JPopupMenu createPopup(final String familyId){
         JPopupMenu popupMenu = new JPopupMenu();
-        
+
         if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
             popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
         } else {
@@ -465,21 +465,21 @@ public class IndividualDetailedView extends DetailedView {
                     }
                     removeExistingFilters();
                     filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                            "Individuals - Filter by Family", 
-                            numPatients + " Patient(s) (" + dnaIds.size() + " DNA Id(s))", 
+                            "Individuals - Filter by Family",
+                            numPatients + " Patient(s) (" + dnaIds.size() + " DNA Id(s))",
                             ComboCondition.or(conditions));
 
                 }
             });
-            popupMenu.add(filter1Item);          
+            popupMenu.add(filter1Item);
         }
 
         return popupMenu;
     }
-    
+
     private JPopupMenu createPopup(final int[] patientIds){
         JPopupMenu popupMenu = new JPopupMenu();
-        
+
         if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
             popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
         } else {
@@ -497,7 +497,7 @@ public class IndividualDetailedView extends DetailedView {
 
                     List<String> dnaIds = null;
                     try {
-                        dnaIds = PatientQueryUtil.getDNAIdsFromField(ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID, values); 
+                        dnaIds = PatientQueryUtil.getDNAIdsFromField(ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID, values);
                     } catch (SQLException ex) {}
 
                     DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
@@ -507,18 +507,18 @@ public class IndividualDetailedView extends DetailedView {
                     }
                     removeExistingFilters();
                     filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                            "Individuals - Filter by Selected Patient(s)", 
-                            patientIds.length + " Patient(s) (" + dnaIds.size() + " DNA Id(s))", 
+                            "Individuals - Filter by Selected Patient(s)",
+                            patientIds.length + " Patient(s) (" + dnaIds.size() + " DNA Id(s))",
                             ComboCondition.or(conditions));
 
                 }
             });
-            popupMenu.add(filter1Item);          
+            popupMenu.add(filter1Item);
         }
 
         return popupMenu;
     }
-    
+
     private void removeExistingFilters(){
         if(filterPanels != null){
             for(FilterPanelSubItem panel : filterPanels){
