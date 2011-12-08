@@ -91,6 +91,7 @@ public class FilterPanelSub extends CollapsiblePanel {
         this.addTitleComponent(removeLabel);
 
         contentPanel = this.getContentPane();
+        contentPanel.setBackground(Color.darkGray);
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBorder(BorderFactory.createLineBorder(contentPanel.getBackground(), 6));
         this.add(contentPanel);

@@ -89,7 +89,7 @@ public class FilterPanel extends javax.swing.JPanel {
         });
 
 
-        JPanel tmp1 = ViewUtil.getPrimaryBannerPanel();//ViewUtil.getClearPanel();
+        JPanel tmp1 = ViewUtil.getSecondaryBannerPanel();//ViewUtil.getClearPanel();
         tmp1.setBorder(BorderFactory.createCompoundBorder(
                           ViewUtil.getTinyLineBorder(),
                           ViewUtil.getMediumBorder()));
@@ -97,7 +97,6 @@ public class FilterPanel extends javax.swing.JPanel {
         tmp1.setMaximumSize(new Dimension(9999,40));
         tmp1.add(Box.createHorizontalStrut(5));
         JLabel addLabelText = new JLabel("Add filter set");
-        addLabelText.setForeground(Color.white);
         tmp1.add(addLabelText);
         tmp1.add(Box.createHorizontalGlue());
 
