@@ -38,6 +38,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.ImportVariants;
@@ -198,8 +199,8 @@ public class ImportVariantsWizard extends WizardDialog {
 
         page.addText("Add tags for this set of variants:");
 
-        String[] patternExamples = {
-            "Tag",
+        final String[] patternExamples = {
+            "<Tag Name>",
             "Sequencer",
             "Sequencer Version",
             "Variant Caller",
@@ -215,7 +216,9 @@ public class ImportVariantsWizard extends WizardDialog {
 
         final JTextField valueField = new JTextField();
 
-        valueField.setText("Value");
+
+        final String startingValue = "<Value>";
+        valueField.setText(startingValue);
 
         final JTextArea ta = new JTextArea();
         ta.setRows(10);
@@ -231,15 +234,25 @@ public class ImportVariantsWizard extends WizardDialog {
                     DialogUtils.displayError("Tag cannot be empty");
                     locationField.requestFocus();
                     return;
+                } else if (locationField.getSelectedItem().toString().equals(patternExamples[0])) {
+                    DialogUtils.displayError("Enter a valid tag name");
+                    locationField.requestFocus();
+                    return;
                 }
 
                 if (valueField.getText().toString().isEmpty()) {
                     DialogUtils.displayError("Value cannot be empty");
                     valueField.requestFocus();
                     return;
+                } else if (valueField.getText().equals(startingValue)) {
+                    DialogUtils.displayError("Enter a valid value");
+                    valueField.requestFocus();
+                    return;
                 }
 
                 VariantTag tag = new VariantTag((String) locationField.getSelectedItem(), valueField.getText());
+
+
                 variantTags.add(tag);
                 ta.append(tag.toString() + "\n");
                 valueField.setText("");
@@ -267,7 +280,6 @@ public class ImportVariantsWizard extends WizardDialog {
         //tagContainer.setBorder(BorderFactory.createTitledBorder("Tags"));
         page.addComponent(tagContainer);
 
-
         page.addComponent(new JScrollPane(ta));
 
         JButton clear = new JButton("Clear");
@@ -276,8 +288,11 @@ public class ImportVariantsWizard extends WizardDialog {
             public void actionPerformed(ActionEvent ae) {
                 variantTags.clear();
                 ta.setText("");
+                addDefaultTags(variantTags,ta);
             }
         });
+
+        addDefaultTags(variantTags,ta);
 
         page.addComponent(ViewUtil.alignRight(clear));
 
@@ -293,6 +308,16 @@ public class ImportVariantsWizard extends WizardDialog {
         }
         page.addText("Click finish to " + specific + " project. ");
         return page;
+    }
+
+    private void addDefaultTags(List<VariantTag> variantTags, JTextArea ta) {
+
+        VariantTag tag1 = new VariantTag("Uploader",LoginController.getUsername());
+        VariantTag tag2 = new VariantTag("Upload Date",(new Date()).toString());
+        variantTags.add(tag1);
+        variantTags.add(tag2);
+        ta.append(tag1.toString() + "\n");
+        ta.append(tag2.toString() + "\n");
     }
 
     private enum ServerState {
