@@ -80,7 +80,9 @@ public class IndividualDetailedView extends DetailedView {
     private final JPanel pedigreeContent;
     private final JPanel pedigreeDetails;
     private PedigreeSW sw2;
-    private Node selectedNode = null;
+    private Node overNode = null;
+    private NodeView overNodeView = null;
+    private List<Integer> selectedNodes;
     private String familyId;
     private static List<FilterPanelSubItem> filterPanels;
     
@@ -188,36 +190,54 @@ public class IndividualDetailedView extends DetailedView {
 
         view.addRule(new PedigreeBasicRule(patientIds));
         
+        selectedNodes = new ArrayList<Integer>();
+        for(Integer i : patientIds){
+            selectedNodes.add(i);
+        }
+        
         //add ability to click
         view.addNodeListener(new NodeListener() {
             public void onNodeEvent(NodeEvent ne) {
                 if(ne.getType() == NodeEvent.MOUSE_ENTER){
-                    selectedNode = ne.getNode();
+                    overNode = ne.getNode();
+                    overNodeView = ne.getNodeView();
                 } else if (ne.getType() == NodeEvent.MOUSE_LEAVE){
-                    selectedNode = null;
+                    overNode = null;
+                    overNodeView = null;
                 }
             }
         });
         
         view.getComponent().addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                if(selectedNode != null){
-                    String hospitalId = (String)selectedNode.getId();
-                    int patientId = Integer.parseInt((String)selectedNode.getUserData(Pedigree.FIELD_PATIENTID));
+                if(overNode != null){
+                    String hospitalId = (String)overNode.getId();
+                    Integer patientId = Integer.parseInt((String)overNode.getUserData(Pedigree.FIELD_PATIENTID));
                     if(SwingUtilities.isRightMouseButton(e)){
-                        JPopupMenu popup = createPopup(patientId);
+                        int[] patientIds = new int[selectedNodes.size()];
+                        for(int i = 0; i < selectedNodes.size(); i++){
+                            patientIds[i] = selectedNodes.get(i);
+                        }                        
+                        JPopupMenu popup = createPopup(patientIds);
                         popup.show(e.getComponent(), e.getX(), e.getY());
-                        pedigreeDetails.repaint();
+                    } else if (SwingUtilities.isLeftMouseButton(e) && e.isControlDown()){ 
+                        if(!selectedNodes.contains(patientId)){
+                            selectedNodes.add(patientId);
+                            overNodeView.setBorderColor(ViewUtil.detailSelectedBackground);
+                        }
                     } else if(SwingUtilities.isLeftMouseButton(e)) { 
-                        setSelectedItem(patientId, hospitalId);
+                        if(patientId != null && patientId > 0){
+                            setSelectedItem(patientId, hospitalId);
+                        }
                     }             
                 } else {
                     if(SwingUtilities.isRightMouseButton(e) && familyId != null){
                         JPopupMenu popup = createPopup(familyId);
                         popup.show(e.getComponent(), e.getX(), e.getY());
-                        pedigreeDetails.repaint();
+                        
                     }
                 }
+                pedigreeDetails.repaint();
             }
         });
         
@@ -407,46 +427,6 @@ public class IndividualDetailedView extends DetailedView {
             }
         });
         return button;
-    }
-
-    private JPopupMenu createPopup(final int patientId){
-        JPopupMenu popupMenu = new JPopupMenu();
-        
-        if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
-            popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
-        } else {
-
-            //Filter by patient
-            JMenuItem filter1Item = new JMenuItem("Filter by Patient");
-            filter1Item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-
-                    List<Object> values = new ArrayList<Object>();
-                    values.add(patientId);
-
-                    List<String> dnaIds = null;
-                    try {
-                        dnaIds = PatientQueryUtil.getDNAIdsFromField(ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID, values); 
-                    } catch (SQLException ex) {}
-
-                    DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
-                    Condition[] conditions = new Condition[dnaIds.size()];
-                    for(int i = 0; i < dnaIds.size(); i++){
-                        conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
-                    }
-                    removeExistingFilters();
-                    filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                            "Individuals - Filter by Patient", 
-                            "1 Patient (" + dnaIds.size() + " DNA Id(s))", 
-                            ComboCondition.or(conditions));
-
-                }
-            });
-            popupMenu.add(filter1Item);          
-        }
-
-        return popupMenu;
     }
     
     private JPopupMenu createPopup(final String familyId){

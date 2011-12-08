@@ -35,6 +35,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
     public GeneticsSection() {
         setPersistencePanels();
+        getBanner(); // force banner to be active, in turn forcing default reference selection
     }
 
     @Override
