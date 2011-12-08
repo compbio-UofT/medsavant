@@ -108,11 +108,8 @@ public class ImportDelimitedFile {
 
         List<String[]> headerLines = getLinesFromReader(reader, numHeaderLines);
         List<String[]> previewLines = null;
-        try {
-            previewLines = getLinesFromReader(reader, numLines, fields);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
+
+        previewLines = getLinesFromReader(reader, numLines, fields);
 
         /*
         System.out.println("START Preview");
@@ -123,7 +120,7 @@ public class ImportDelimitedFile {
             System.out.println();
         }
         System.out.println("END Preview");
-         * 
+         *
          */
 
         return (List<String[]>[])new List[] { headerLines, previewLines };

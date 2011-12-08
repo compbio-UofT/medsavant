@@ -53,13 +53,13 @@ public class TagFilterView extends FilterView {
     static FilterView getTagFilterView(int queryId) {
         return new TagFilterView(queryId, new JPanel());
     }
-    
-    
+
+
     private List<VariantTag> variantTags;
     private List<VariantTag> appliedTags;
-    private ActionListener al;    
+    private ActionListener al;
     private JTextArea ta;
-    
+
     public TagFilterView(FilterState state, int queryId){
         this(queryId, new JPanel());
         if(state.getValues().get("variantTags") != null){
@@ -71,7 +71,7 @@ public class TagFilterView extends FilterView {
         super(FILTER_NAME, container, queryId);
         createContentPanel(container);
     }
-    
+
     public void applyFilter(List<VariantTag> tags){
         this.variantTags = tags;
         ta.setText("");
@@ -126,6 +126,11 @@ public class TagFilterView extends FilterView {
             addButton.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
+
+                    if (tagNameCB.getSelectedItem() == null || tagValueCB.getSelectedItem() == null) {
+                        return;
+                    }
+
                     VariantTag tag = new VariantTag((String) tagNameCB.getSelectedItem(), (String) tagValueCB.getSelectedItem());
                     if (variantTags.isEmpty()) {
                         ta.append(tag.toString() + "\n");
@@ -164,15 +169,17 @@ public class TagFilterView extends FilterView {
                 }
             });
 
-            tagNameCB.setSelectedIndex(0);
-            updateTagValues((String) tagNameCB.getSelectedItem(), tagValueCB);
+            if (tagNameCB.getItemCount() > 0) {
+                tagNameCB.setSelectedIndex(0);
+                updateTagValues((String) tagNameCB.getSelectedItem(), tagValueCB);
+            }
 
             al = new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
 
                     applyButton.setEnabled(false);
-                    
+
                     appliedTags = new ArrayList<VariantTag>(variantTags);
 
                     Filter f = new QueryFilter() {
@@ -250,7 +257,7 @@ public class TagFilterView extends FilterView {
 
         tagValueCB.updateUI();
     }
-    
+
     private static String[][] tagsToStringArray(List<VariantTag> variantTags) {
 
         String[][] result = new String[variantTags.size()][2];
@@ -269,9 +276,9 @@ public class TagFilterView extends FilterView {
     public FilterState saveState() {
         Map<String, String> map = new HashMap<String, String>();
         map.put("variantTags", variantTagsToString(appliedTags));
-        return new FilterState(FilterType.TAG, FILTER_NAME, FILTER_ID, map);       
+        return new FilterState(FilterType.TAG, FILTER_NAME, FILTER_ID, map);
     }
-    
+
     private String variantTagsToString(List<VariantTag> tags){
         String s = "";
         for(VariantTag tag : tags){
@@ -279,7 +286,7 @@ public class TagFilterView extends FilterView {
         }
         return s;
     }
-    
+
     private List<VariantTag> stringToVariantTags(String s){
         List<VariantTag> list = new ArrayList<VariantTag>();
         String[] pairs = s.split(";;;");

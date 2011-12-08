@@ -50,8 +50,9 @@ public class ImportFileView extends JDialog {
     private int numHeaderLines = 0;
     private final HashMap<String, FileFormat> formatMap;
     private JPanel previewPanel;
-    private JPanel waitPanel = new WaitPanel("Generating preview");
+    private WaitPanel waitPanel = new WaitPanel("Generating preview");
     private static PreviewWorker worker;
+    private JButton importButton;
 
     /** Creates new form ThreadManagerDialog */
     public ImportFileView(Window parent, String title) {
@@ -140,17 +141,16 @@ public class ImportFileView extends JDialog {
 
         JPanel bottomPanel = ViewUtil.getSecondaryBannerPanel();
 
-        JButton importButton = new JButton("Import");
+        importButton = new JButton("Import");
         importButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                if (validateForm()) {
-                    importAccepted = true;
+                if (validateForm() && importAccepted) {
                     ImportFileView.this.setVisible(false);
                 }
             }
         });
-
+        importButton.setEnabled(false);
 
         JButton cancelButton = new JButton("Cancel");
 
@@ -196,6 +196,7 @@ public class ImportFileView extends JDialog {
 
     private void setDelimiter(char delim) {
         this.delimiter = delim;
+        this.updatePreview();
     }
 
     public char getDelimiter() {
@@ -226,6 +227,8 @@ public class ImportFileView extends JDialog {
     }
 
     public void updatePreview() {
+
+        if (this.pathField == null) { return; }
 
         String path = this.pathField.getPath();
         File file = new File(path);
@@ -285,36 +288,54 @@ public class ImportFileView extends JDialog {
         protected List<String[]> doInBackground() throws Exception {
             showProgress(-1.0);
             // This method returns two lists: header and data.  We only care about the data.
-            return ImportDelimitedFile.getPreview(pathField.getPath(), getDelimiter(), numHeaderLines, NUM_LINES, getFileFormat())[1];
+
+            try {
+                return ImportDelimitedFile.getPreview(pathField.getPath(), getDelimiter(), numHeaderLines, NUM_LINES, getFileFormat())[1];
+            }
+            catch (Exception e) {
+                return null;
+            }
         }
 
         @SuppressWarnings("unchecked")
         protected void showSuccess(List<String[]> data) {
-            int[] fields = getFileFormat().getRequiredFieldIndexes();
-            List<String> columnNames = new ArrayList<String>();
-            List<Class> columnClasses = new ArrayList<Class>();
-            for (int i : fields) {
-                columnNames.add(getFileFormat().getFieldNumberToFieldNameMap().get(i));
-                columnClasses.add(getFileFormat().getFieldNumberToClassMap().get(i));
+
+            if (data == null) {
+                waitPanel.setStatus("Problem generating preview.\nPlease check that the file is formatted correctly.");
+                waitPanel.setComplete();
+                previewPanel.add(waitPanel,BorderLayout.CENTER);
+                previewPanel.updateUI();
+                importAccepted = false;
+            } else {
+                int[] fields = getFileFormat().getRequiredFieldIndexes();
+                List<String> columnNames = new ArrayList<String>();
+                List<Class> columnClasses = new ArrayList<Class>();
+                for (int i : fields) {
+                    columnNames.add(getFileFormat().getFieldNumberToFieldNameMap().get(i));
+                    columnClasses.add(getFileFormat().getFieldNumberToClassMap().get(i));
+                }
+
+                SearchableTablePanel searchableTablePanel = new SearchableTablePanel(
+                        ImportFileView.class.getName(),
+                        columnNames,
+                        columnClasses,
+                        new ArrayList<Integer>(),
+                        false,
+                        false,
+                        50,
+                        false,
+                        TableSelectionType.ROW,
+                        1000,
+                        Util.createPrefetchedDataRetriever(data));
+                searchableTablePanel.forceRefreshData();
+
+                //boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection
+                previewPanel.add(searchableTablePanel,BorderLayout.CENTER);
+                previewPanel.updateUI();
+                importAccepted = true;
             }
 
-            SearchableTablePanel searchableTablePanel = new SearchableTablePanel(
-                    ImportFileView.class.getName(),
-                    columnNames,
-                    columnClasses,
-                    new ArrayList<Integer>(),
-                    false,
-                    false,
-                    50,
-                    false,
-                    TableSelectionType.ROW,
-                    1000,
-                    Util.createPrefetchedDataRetriever(data));
-            searchableTablePanel.forceRefreshData();
-
-            //boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection
-            previewPanel.add(searchableTablePanel,BorderLayout.CENTER);
-            previewPanel.updateUI();
+            updateImportButton();
         }
 
         @Override
@@ -324,6 +345,12 @@ public class ImportFileView extends JDialog {
             } else {
                 worker = null;
                 previewPanel.remove(waitPanel);
+            }
+        }
+
+        private void updateImportButton() {
+            if (importButton != null) {
+                importButton.setEnabled(validateForm() && importAccepted);
             }
         }
     }
