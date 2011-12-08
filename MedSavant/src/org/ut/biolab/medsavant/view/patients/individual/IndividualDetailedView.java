@@ -264,12 +264,11 @@ public class IndividualDetailedView extends DetailedView {
                 values[i][1] = result[i].toString();
         }
 
+
         infoDetails.removeAll();
-        infoDetails.setLayout(new BoxLayout(infoDetails,BoxLayout.Y_AXIS));
+        ViewUtil.setBoxYLayout(infoDetails);
 
         infoDetails.add(ViewUtil.getKeyValuePairList(values));
-
-        infoDetails.add(Box.createVerticalGlue());
 
         infoDetails.updateUI();
     }
@@ -292,6 +291,7 @@ public class IndividualDetailedView extends DetailedView {
         viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer),BorderLayout.CENTER);
 
         CollapsablePanel cp = new CollapsablePanel("Patient Information");
+        cp.setContentPaneVisible(false);
         infoContainer.add(cp);
 
         infoContainer.add(ViewUtil.getLargeSeparator());
@@ -312,10 +312,14 @@ public class IndividualDetailedView extends DetailedView {
 
         menu.add(addIndividualsButton());
         menu.setVisible(false);
-        infoContent.setLayout(new BorderLayout());
+
+
+        ViewUtil.setBoxYLayout(infoContent);
+
+        //infoContent.setLayout(new BorderLayout());
         pedigreeContent.setLayout(new BorderLayout());
 
-        infoContent.add(infoDetails,BorderLayout.CENTER);
+        infoContent.add(infoDetails);
         pedigreeContent.add(pedigreeDetails,BorderLayout.CENTER);
 
         this.addBottomComponent(menu);
