@@ -202,6 +202,8 @@ public class SplitScreenView extends JPanel {
             stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
                 public void valueChanged(ListSelectionEvent e) {
+                    
+                    if(e.getValueIsAdjusting()) return;
 
                     List<Object[]> selectedItems = selectionGrabber.getSelectedItems();
                     if (selectedItems.size() == 1) {
