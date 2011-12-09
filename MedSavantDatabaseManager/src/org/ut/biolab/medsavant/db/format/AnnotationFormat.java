@@ -106,7 +106,7 @@ public class AnnotationFormat {
         fields.add(new CustomField("ref", "VARCHAR(30)", true, "Reference", ""));
         fields.add(new CustomField("alt", "VARCHAR(30)", true, VARIANT_ALIAS_ALT, ""));
         fields.add(new CustomField("qual", "FLOAT(10,0)", true, "Quality", ""));
-        fields.add(new CustomField("filter", "VARCHAR(500)", true, "Filter", ""));
+        fields.add(new CustomField("filter", "VARCHAR(500)", false, "Filter", ""));
         fields.add(new CustomField("custom_info", "VARCHAR(500)", false, "Custom Info", ""));
         
         return new AnnotationFormat("default", "default", 0, "", true, true, AnnotationType.POSITION, fields);
