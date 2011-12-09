@@ -144,7 +144,7 @@ public class ChartView extends JPanel {
         for(CustomField field : ProjectController.getInstance().getCurrentPatientFormat()){
             ColumnType type = field.getColumnType();
             if(field.isFilterable() &&
-                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))){
+                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))){              
                 addCMG(VariantFieldChartMapGenerator.createPatientChart(field));
             }
         }

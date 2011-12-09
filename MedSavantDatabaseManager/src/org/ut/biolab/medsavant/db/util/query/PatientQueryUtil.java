@@ -334,7 +334,9 @@ public class PatientQueryUtil {
             Object o = rs.getObject(columnName);
             if(o == null) o = "";
             if(map.get(o) == null) map.put(o, new ArrayList<String>());
-            String[] dnaIds = rs.getString(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS).split(",");
+            String dnaIdsString = rs.getString(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS);
+            if(dnaIdsString == null) continue;
+            String[] dnaIds = dnaIdsString.split(",");
             for(String id : dnaIds){
                 if(!map.get(o).contains(id)){
                     map.get(o).add(id);

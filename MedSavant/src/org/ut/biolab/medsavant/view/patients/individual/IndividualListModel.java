@@ -4,17 +4,12 @@
  */
 package org.ut.biolab.medsavant.view.patients.individual;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.format.PatientFormat;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
-import org.ut.biolab.medsavant.view.dialog.AddPatientsForm;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
 
 /**
@@ -31,13 +26,13 @@ public class IndividualListModel implements DetailedListModel {
     public List<String> getColumnNames() {
         //TableSchema table = MedSavantDatabase.DefaultpatientTableSchema;
         List<String> result = new ArrayList<String>();
-        result.add("Patient ID");
-        result.add("Family ID");
-        result.add("Hospital ID");
-        result.add("ID of Mom");
-        result.add("ID of Dad");
-        result.add("Gender");
-        result.add("DNA ID(s)");
+        result.add(PatientFormat.ALIAS_PATIENT_ID);
+        result.add(PatientFormat.ALIAS_FAMILY_ID);
+        result.add(PatientFormat.ALIAS_HOSPITAL_ID);
+        result.add(PatientFormat.ALIAS_IDBIOMOM);
+        result.add(PatientFormat.ALIAS_IDBIODAD);
+        result.add(PatientFormat.ALIAS_GENDER);
+        result.add(PatientFormat.ALIAS_DNA_IDS);
         return result;
     }
 

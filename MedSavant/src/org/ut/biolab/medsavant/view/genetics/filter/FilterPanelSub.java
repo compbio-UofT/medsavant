@@ -24,6 +24,7 @@ import javax.swing.JPopupMenu;
 
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
@@ -393,6 +394,12 @@ public class FilterPanelSub extends CollapsiblePanel {
 
                     public FilterView getFilterView() {
                         try {
+                            
+                            //special cases:
+                            if(field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+                                return StringListFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias());
+                            }                            
+                            
                             switch(field.getColumnType()){
                                 case INTEGER:
                                     return NumericFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias(), false);

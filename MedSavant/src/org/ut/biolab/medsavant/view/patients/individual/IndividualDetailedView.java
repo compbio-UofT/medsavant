@@ -30,11 +30,14 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.db.format.PatientFormat;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.view.list.DetailedView;
@@ -273,8 +276,20 @@ public class IndividualDetailedView extends DetailedView {
         for (int i = 0; i < fieldNames.size(); i++) {
             values[i][0] = fieldNames.get(i);
             values[i][1] = "";
-            if(result[i] != null)
+            if(result[i] != null){
                 values[i][1] = result[i].toString();
+                
+                //special case for gender
+                if(values[i][0].equals(PatientFormat.ALIAS_GENDER)){
+                    String s;
+                    if(result[i] instanceof Long || result[i] instanceof Integer){
+                        s = MiscUtils.genderToString(MiscUtils.safeLongToInt((Long)result[i]));
+                    } else {
+                        s = MiscUtils.GENDER_UNKNOWN;
+                    }
+                    values[i][1] = s;
+                }
+            }
         }
 
 

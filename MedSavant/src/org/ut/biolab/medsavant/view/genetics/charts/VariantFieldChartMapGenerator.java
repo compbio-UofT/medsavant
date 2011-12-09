@@ -17,20 +17,19 @@
 package org.ut.biolab.medsavant.view.genetics.charts;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Range;
@@ -38,8 +37,8 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
-import org.ut.biolab.medsavant.view.util.ChromosomeComparator;
 
 /**
  *
@@ -120,7 +119,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
     public ChartFrequencyMap generateChartMap(boolean isLogScaleX) throws SQLException, NonFatalDatabaseException {
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
                      
-        if (isNumeric()) {
+        if (isNumeric() && !field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
 
             String tablename = null;
             if (whichTable == Table.VARIANT) {
@@ -200,6 +199,11 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
             } else if (whichTable == Table.PATIENT) {
                 Map<Object, List<String>> map = PatientQueryUtil.getDNAIdsForValues(ProjectController.getInstance().getCurrentProjectId(), field.getColumnName());
                 Condition[][] filterConditions = FilterController.getQueryFilterConditions();
+                
+                if(field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+                    map = modifyGenderMap(map);
+                }
+                
                 for (Object key : map.keySet()) {
 
                     if(Thread.currentThread().isInterrupted()){
@@ -268,5 +272,23 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
     public String getFilterId() {
         return field.getColumnName();
+    }
+    
+    private Map<Object, List<String>> modifyGenderMap(Map<Object, List<String>> original){
+        Map<Object, List<String>> result = new HashMap<Object, List<String>>();
+        for (Object key : original.keySet()) {
+            String s;
+            if(key instanceof Long || key instanceof Integer){
+                s = MiscUtils.genderToString(MiscUtils.safeLongToInt((Long)key));
+            } else {
+                s = MiscUtils.GENDER_UNKNOWN;
+            }
+            if(result.get(s) == null){
+                result.put(s, original.get(key));
+            } else {
+                result.get(s).addAll(original.get(key));
+            }
+        }
+        return result;
     }
 }

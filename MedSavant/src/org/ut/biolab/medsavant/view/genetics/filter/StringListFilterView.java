@@ -32,10 +32,12 @@ import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ChromosomeComparator;
@@ -96,31 +98,36 @@ public class StringListFilterView extends FilterView {
         
         final List<String> uniq;
 
-        if (columnname.equals("ac")) {
+        if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_AC)) {
             uniq = new ArrayList<String>();
             uniq.addAll(Arrays.asList(
                     new String[]{
                         "1","2"
                     }));
-        } else if (columnname.equals("af")) {
+        } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_AF)) {
             uniq = new ArrayList<String>();
             uniq.addAll(Arrays.asList(
                     new String[]{
                         "0.50","1.00"
                     }));
-        } else if (columnname.equals("ref")
-                || columnname.equals("alt")) {
+        } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)
+                || columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT)) {
             uniq = new ArrayList<String>();
             uniq.addAll(Arrays.asList(
                     new String[]{
                         "A","C","G","T"
                     }));
-        } 
-        else {
+        } else if (columnname.equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+            uniq = new ArrayList<String>();
+            uniq.addAll(Arrays.asList(
+                    new String[]{
+                        MiscUtils.GENDER_MALE, MiscUtils.GENDER_FEMALE, MiscUtils.GENDER_UNKNOWN
+                    }));
+        } else {
             uniq = VariantQueryUtil.getDistinctValuesForColumn(tablename, columnname);
         }
 
-        if (columnname.equals("chrom")) {
+        if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM)) {
             Collections.sort(uniq,new ChromosomeComparator());
         }
 
@@ -143,7 +150,11 @@ public class StringListFilterView extends FilterView {
                 final List<String> acceptableValues = new ArrayList<String>();
                 for (JCheckBox b : boxes) {
                     if (b.isSelected()) {
-                        acceptableValues.add(b.getText());
+                        if(columnname.equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+                            acceptableValues.add(Integer.toString(MiscUtils.stringToGender(b.getText())));
+                        } else {
+                            acceptableValues.add(b.getText());
+                        }
                     }
                 }
                 appliedValues = acceptableValues;
