@@ -5,9 +5,6 @@
 package org.ut.biolab.medsavant.view.patients.individual;
 
 import au.com.bytecode.opencsv.CSVWriter;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -24,31 +21,22 @@ import java.io.FileWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.model.Cohort;
-import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import pedviz.algorithms.Sugiyama;
@@ -84,7 +72,6 @@ public class IndividualDetailedView extends DetailedView {
     private NodeView overNodeView = null;
     private List<Integer> selectedNodes;
     private String familyId;
-    private static List<FilterPanelSubItem> filterPanels;
 
     private class IndividualDetailsSW extends SwingWorker {
         private final int pid;
@@ -218,12 +205,18 @@ public class IndividualDetailedView extends DetailedView {
                         for(int i = 0; i < selectedNodes.size(); i++){
                             patientIds[i] = selectedNodes.get(i);
                         }                        
-                        JPopupMenu popup = createPopup(patientIds);
+                        JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(patientIds);
                         popup.show(e.getComponent(), e.getX(), e.getY());
                     } else if (SwingUtilities.isLeftMouseButton(e) && e.isControlDown()){ 
                         if(!selectedNodes.contains(patientId)){
                             selectedNodes.add(patientId);
                             overNodeView.setBorderColor(ViewUtil.detailSelectedBackground);
+                        } else {
+                            for(int i : patientIds){
+                                if(i == patientId) return;
+                            }                          
+                            selectedNodes.remove(patientId);
+                            overNodeView.setBorderColor(Color.black);
                         }
                     } else if(SwingUtilities.isLeftMouseButton(e)) {
                         if(patientId != null && patientId > 0){
@@ -232,7 +225,7 @@ public class IndividualDetailedView extends DetailedView {
                     }
                 } else {
                     if(SwingUtilities.isRightMouseButton(e) && familyId != null){
-                        JPopupMenu popup = createPopup(familyId);
+                        JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(familyId);
                         popup.show(e.getComponent(), e.getX(), e.getY());
                         
                     }
@@ -399,7 +392,7 @@ public class IndividualDetailedView extends DetailedView {
     @Override
     public void setRightClick(MouseEvent e) {
         if(patientIds != null && patientIds.length > 0){
-            JPopupMenu popup = createPopup(patientIds);
+            JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(patientIds);
             popup.show(e.getComponent(), e.getX(), e.getY());
         }
     }
@@ -429,101 +422,4 @@ public class IndividualDetailedView extends DetailedView {
         return button;
     }
 
-    private JPopupMenu createPopup(final String familyId){
-        JPopupMenu popupMenu = new JPopupMenu();
-
-        if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
-            popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
-        } else {
-
-            //Filter by patient
-            JMenuItem filter1Item = new JMenuItem("Filter by Family");
-            filter1Item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-
-                    List<String> dnaIds = new ArrayList<String>();
-                    int numPatients = 0;
-                    try {
-                        Map<String, String> patientIDToDNAIDMap = PatientQueryUtil.getDNAIdsForFamily(ProjectController.getInstance().getCurrentProjectId(), familyId);
-                        numPatients = patientIDToDNAIDMap.size();
-                        Object[] values = patientIDToDNAIDMap.values().toArray();
-                        for(Object o : values){
-                            String[] d = ((String) o).split(",");
-                            for(String id : d){
-                                if(!dnaIds.contains(id)){
-                                    dnaIds.add(id);
-                                }
-                            }
-                        }
-                    } catch (SQLException ex) {}
-
-                    DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
-                    Condition[] conditions = new Condition[dnaIds.size()];
-                    for(int i = 0; i < dnaIds.size(); i++){
-                        conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
-                    }
-                    removeExistingFilters();
-                    filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                            "Individuals - Filter by Family",
-                            numPatients + " Patient(s) (" + dnaIds.size() + " DNA Id(s))",
-                            ComboCondition.or(conditions));
-
-                }
-            });
-            popupMenu.add(filter1Item);
-        }
-
-        return popupMenu;
-    }
-
-    private JPopupMenu createPopup(final int[] patientIds){
-        JPopupMenu popupMenu = new JPopupMenu();
-
-        if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
-            popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
-        } else {
-
-            //Filter by patient
-            JMenuItem filter1Item = new JMenuItem("Filter by Selected Patient(s)");
-            filter1Item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-
-                    List<Object> values = new ArrayList<Object>();
-                    for(int i = 0; i < patientIds.length; i++){
-                        values.add(patientIds[i]);
-                    }
-
-                    List<String> dnaIds = null;
-                    try {
-                        dnaIds = PatientQueryUtil.getDNAIdsFromField(ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID, values);
-                    } catch (SQLException ex) {}
-
-                    DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
-                    Condition[] conditions = new Condition[dnaIds.size()];
-                    for(int i = 0; i < dnaIds.size(); i++){
-                        conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
-                    }
-                    removeExistingFilters();
-                    filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                            "Individuals - Filter by Selected Patient(s)",
-                            patientIds.length + " Patient(s) (" + dnaIds.size() + " DNA Id(s))",
-                            ComboCondition.or(conditions));
-
-                }
-            });
-            popupMenu.add(filter1Item);
-        }
-
-        return popupMenu;
-    }
-
-    private void removeExistingFilters(){
-        if(filterPanels != null){
-            for(FilterPanelSubItem panel : filterPanels){
-                panel.removeThis();
-            }
-        }
-    }
 }

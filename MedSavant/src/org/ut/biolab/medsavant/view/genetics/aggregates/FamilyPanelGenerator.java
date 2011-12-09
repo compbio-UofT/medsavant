@@ -11,37 +11,34 @@ import java.awt.geom.Point2D.Float;
 import java.sql.SQLException;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.model.BEDRecord;
 import com.jidesoft.utils.SwingWorker;
-import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Rectangle2D;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
@@ -54,8 +51,9 @@ import pedviz.graph.Graph;
 import pedviz.graph.Node;
 import pedviz.loader.CsvGraphLoader;
 import pedviz.view.GraphView2D;
+import pedviz.view.NodeEvent;
+import pedviz.view.NodeListener;
 import pedviz.view.NodeView;
-import pedviz.view.Symbol;
 import pedviz.view.rules.Rule;
 import pedviz.view.rules.ShapeRule;
 import pedviz.view.symbols.Symbol2D;
@@ -114,6 +112,10 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
         private PedigreeGrabber pg;
         private FamilyVariantIntersectionAggregator fa;
         private Graph pedigree;
+        private Node overNode = null;
+        private NodeView overNodeView = null;
+        private List<Integer> selectedNodes = new ArrayList<Integer>();
+        private String familyId;
 
         public FamilyPanel() {
 
@@ -204,6 +206,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
             this.pedigreePanel.removeAll();
             this.pedigreePanel.add(new WaitPanel("Getting pedigree"));
             this.pedigreePanel.updateUI();
+            this.familyId = familyId;
 
             stopThreads();
 
@@ -321,6 +324,57 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
             this.pedigree = pedigree;
             this.graphView = view;
+            
+            //add ability to click
+            view.addNodeListener(new NodeListener() {
+                public void onNodeEvent(NodeEvent ne) {
+                    if(ne.getType() == NodeEvent.MOUSE_ENTER){
+                        overNode = ne.getNode();
+                        overNodeView = ne.getNodeView();
+                    } else if (ne.getType() == NodeEvent.MOUSE_LEAVE){
+                        overNode = null;
+                        overNodeView = null;
+                    }
+                }
+            });
+
+            view.getComponent().addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    if(overNode != null){
+                        String hospitalId = (String)overNode.getId();
+                        Integer patientId = Integer.parseInt((String)overNode.getUserData(Pedigree.FIELD_PATIENTID));
+                        if(SwingUtilities.isRightMouseButton(e)){
+                            int[] patientIds;
+                            if(selectedNodes != null && !selectedNodes.isEmpty()){
+                                patientIds = new int[selectedNodes.size()];
+                                for(int i = 0; i < selectedNodes.size(); i++){
+                                    patientIds[i] = selectedNodes.get(i);
+                                }  
+                            } else {
+                                patientIds = new int[]{patientId};
+                            }
+                            JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(patientIds);
+                            popup.show(e.getComponent(), e.getX(), e.getY());
+                        } else if (SwingUtilities.isLeftMouseButton(e)){ 
+                            if(!selectedNodes.contains(patientId)){
+                                selectedNodes.add(patientId);
+                                overNodeView.setBorderColor(ViewUtil.detailSelectedBackground);
+                            } else {
+                                selectedNodes.remove(patientId);
+                                overNodeView.setBorderColor(Color.black);
+                            }
+                        } 
+                    } else {
+                        if(SwingUtilities.isRightMouseButton(e) && familyId != null){
+                            JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(familyId);
+                            popup.show(e.getComponent(), e.getX(), e.getY());
+
+                        }
+                    }
+                    pedigreePanel.repaint();
+                }
+            });
+            
 
             updateResultView();
         }
