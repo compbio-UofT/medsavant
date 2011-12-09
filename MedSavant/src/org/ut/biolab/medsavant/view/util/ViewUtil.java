@@ -609,10 +609,13 @@ public class ViewUtil {
 
     }
 
-    public static JLabel createIconLabel(ImageIcon i) {
+    /*
+     * Use this to create an icon button. JLabel is used instead of JButton
+     * for proper display on Windows. MouseListeners can be added as usual. 
+     */
+    public static JLabel createIconButton(ImageIcon i) {
         JLabel b = new JLabel();
         b.setBorder(null);
-        //b.setBorderPainted(false);
         b.setOpaque(false);
         b.setPreferredSize(new Dimension(i.getIconWidth(),i.getIconHeight()));
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -620,7 +623,7 @@ public class ViewUtil {
         return b;
     }
 
-    public static JButton createIconButton(ImageIcon i) {
+    /*public static JButton createIconButton(ImageIcon i) {
         JButton b = new JButton();
         b.setBorder(null);
         b.setBorderPainted(false);
@@ -629,7 +632,7 @@ public class ViewUtil {
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         b.setIcon(i);
         return b;
-    }
+    }*/
 
 
 }

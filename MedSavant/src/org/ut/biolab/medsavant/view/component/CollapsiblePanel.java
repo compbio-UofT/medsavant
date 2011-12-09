@@ -1,14 +1,11 @@
 package org.ut.biolab.medsavant.view.component;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -24,8 +21,8 @@ public class CollapsiblePanel extends JPanel {
     private final JPanel contentPanel;
 
     private final boolean isCollapsable;
-    private final JButton expandButton;
-    private final JButton collapseButton;
+    private final JLabel expandButton;
+    private final JLabel collapseButton;
 
     private final MouseListener toggler = new MouseListener() {
 

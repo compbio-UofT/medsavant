@@ -16,16 +16,14 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -225,10 +223,10 @@ public class ImportVariantsWizard extends WizardDialog {
         ta.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         ta.setEditable(false);
 
-        JButton button = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
-        button.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent ae) {
+        JLabel button = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
 
                 if (locationField.getSelectedItem().toString().isEmpty()) {
                     DialogUtils.displayError("Tag cannot be empty");

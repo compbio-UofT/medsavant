@@ -67,7 +67,7 @@ public class FilterPanelSub extends CollapsiblePanel {
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        final JLabel removeLabel = ViewUtil.createIconLabel(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
+        final JLabel removeLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
         removeLabel.setBackground(Color.RED);
         removeLabel.setToolTipText("Remove sub query and all contained filters");
         removeLabel.addMouseListener(new MouseListener() {
@@ -123,7 +123,7 @@ public class FilterPanelSub extends CollapsiblePanel {
 
         JPanel addFilterPanel = new JPanel();
         ViewUtil.applyHorizontalBoxLayout(addFilterPanel);
-        final JLabel addLabel = ViewUtil.createIconLabel(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+        final JLabel addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         addLabel.setToolTipText("Add new filter");
         addLabel.addMouseListener(new MouseListener() {
 

@@ -4,19 +4,16 @@
  */
 package org.ut.biolab.medsavant.view.list;
 
-import com.jidesoft.grid.TableModelWrapperUtils;
-import java.awt.event.ActionEvent;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 import com.jidesoft.utils.SwingWorker;
 import org.ut.biolab.medsavant.view.component.Util;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.Box;
-import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -87,50 +84,47 @@ public class SplitScreenView extends JPanel {
 
             if (detailedEditer.doesImplementAdding()) {
 
-                JButton butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD_ON_TOOLBAR));
+                JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD_ON_TOOLBAR));
                 butt.setToolTipText("Add");
-                butt.addActionListener(
-                        new ActionListener() {
-
-                            public void actionPerformed(ActionEvent ae) {
-                                detailedEditer.addItems();
-                                instance.refreshList();
-                            }
-                        });
+                butt.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        detailedEditer.addItems();
+                        instance.refreshList();
+                    }
+                });
                 buttonPanel.add(butt);
                 buttonPanel.add(ViewUtil.getSmallSeparator());
             }
 
             if (detailedEditer.doesImplementDeleting()) {
-                JButton butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
+                JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
                 butt.setToolTipText("Remove selected");
-                butt.addActionListener(
-                        new ActionListener() {
-
-                            public void actionPerformed(ActionEvent ae) {
-                                detailedEditer.deleteItems(selectionGrabber.getSelectedItems());
-                                instance.refreshList();
-                            }
-                        });
+                butt.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        detailedEditer.deleteItems(selectionGrabber.getSelectedItems());
+                        instance.refreshList();
+                    }
+                });
                 buttonPanel.add(butt);
                 buttonPanel.add(ViewUtil.getSmallSeparator());
             }
 
             if (detailedEditer.doesImplementEditing()) {
-                JButton butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EDIT));
+                JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EDIT));
                 butt.setToolTipText("Edit selected");
-                butt.addActionListener(
-                        new ActionListener() {
-
-                            public void actionPerformed(ActionEvent ae) {
-                                if (selectionGrabber.getSelectedItems().size() > 0) {
-                                    detailedEditer.editItems(selectionGrabber.getSelectedItems().get(0));
-                                    instance.refreshList();
-                                } else {
-                                    DialogUtils.displayMessage("Choose one item to edit");
-                                }
-                            }
-                        });
+                butt.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (selectionGrabber.getSelectedItems().size() > 0) {
+                            detailedEditer.editItems(selectionGrabber.getSelectedItems().get(0));
+                            instance.refreshList();
+                        } else {
+                            DialogUtils.displayMessage("Choose one item to edit");
+                        }
+                    }
+                });
                 buttonPanel.add(butt);
             }
 

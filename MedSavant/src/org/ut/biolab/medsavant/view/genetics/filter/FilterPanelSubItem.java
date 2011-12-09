@@ -55,7 +55,7 @@ public class FilterPanelSubItem extends JPanel {
         titlePanel.add(testLabel);
         titlePanel.add(Box.createHorizontalGlue());
 
-        final JLabel removeLabel = ViewUtil.createIconLabel(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
+        final JLabel removeLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
         removeLabel.setToolTipText("Remove filter");
         removeLabel.addMouseListener(new MouseAdapter() {
 
