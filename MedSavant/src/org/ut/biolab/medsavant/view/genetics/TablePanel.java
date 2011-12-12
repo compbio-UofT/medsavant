@@ -31,17 +31,15 @@ import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.model.RangeCondition;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.format.VariantFormat;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
@@ -96,9 +94,14 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                                 fieldClasses.add(String.class);
                                 break;
                         }
-                        if(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID) ||
-                                field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID) ||
-                                field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID)){
+                        
+                        //only show vcf fields (except custom info)
+                        if(!((af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_DEFAULT) && 
+                                    !(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID) || 
+                                    field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID) || 
+                                    field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID) ||
+                                    field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO))) 
+                                || af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_CUSTOM_VCF))){
                             hiddenColumns.add(fieldNames.size()-1);
                         }
                     }

@@ -4,18 +4,24 @@
  */
 package org.ut.biolab.medsavant.db.format;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat.AnnotationType;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
+import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 
 /**
  *
  * @author Andrew
  */
 public class VariantFormat {
+            
+    public static String ANNOTATION_FORMAT_DEFAULT = "default";
+    public static String ANNOTATION_FORMAT_CUSTOM_VCF = "custom vcf";
     
+    //default fields
     public static String ALIAS_OF_UPLOAD_ID = "Upload ID";
     public static String ALIAS_OF_FILE_ID = "File ID";
     public static String ALIAS_OF_VARIANT_ID = "Variant ID";
@@ -29,7 +35,7 @@ public class VariantFormat {
     public static String ALIAS_OF_FILTER = "Filter";
     public static String ALIAS_OF_CUSTOM_INFO = "Custom Info";
     
-    //recommended fields
+    //recommended fields (from vcf)
     public static String ALIAS_OF_AA = "Ancestral Allele";
     public static String ALIAS_OF_AC = "Allele Count";
     public static String ALIAS_OF_AF = "Allele Frequency";
@@ -65,5 +71,11 @@ public class VariantFormat {
         return new AnnotationFormat("default", "default", 0, "", true, true, AnnotationType.POSITION, fields);
     }
     
+    public static AnnotationFormat getCustomFieldAnnotationFormat(int projectId) throws SQLException {
+
+        List<CustomField> customFields = ProjectQueryUtil.getCustomVariantFields(projectId);
+        return new AnnotationFormat(
+                ANNOTATION_FORMAT_CUSTOM_VCF, ANNOTATION_FORMAT_CUSTOM_VCF, 0, "", true, true, AnnotationType.POSITION, customFields);
+    }    
     
 }

@@ -1,6 +1,5 @@
 package org.ut.biolab.medsavant.db.util.query;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,15 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import org.xml.sax.SAXException;
 
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
@@ -36,7 +32,6 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ProjectTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ReferenceTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantFormatTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantTablemapTableSchema;
-import org.ut.biolab.medsavant.db.format.AnnotationFormat.AnnotationType;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
@@ -458,13 +453,6 @@ public class ProjectQueryUtil {
                     Category.VARIANT));
         }
         return result;
-    }
-
-    public static AnnotationFormat getActualCustomFieldAnnotationFormat(int projectId) throws SQLException {
-
-        List<CustomField> customFields = getCustomVariantFields(projectId);
-        return new AnnotationFormat(
-                "custom vcf", "custom vcf", 0, "", true, true, AnnotationType.POSITION, customFields);
     }
 
 }

@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,7 +32,11 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import com.jidesoft.grid.*;
+import java.awt.Window;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 
@@ -262,6 +267,14 @@ public class SearchableTablePanel extends JPanel {
         if (allowSearch) {
             fieldPanel.add(filterField);
         }
+        
+        JButton chooseColumnButton = new JButton("Choose Columns");
+        chooseColumnButton.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                columnChooser.showDialog();
+            }
+        });
+        fieldPanel.add(chooseColumnButton);
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
@@ -495,6 +508,15 @@ public class SearchableTablePanel extends JPanel {
                 hideColumn(table, i);
             }
         }
+        
+        public void showDialog(){
+            TableColumnChooserDialog dialog = super.createTableColumnChooserDialog(MainFrame.getInstance(), "Choose Columns to Display", table);
+            dialog.setPreferredSize(new Dimension(300,500));
+            dialog.setSize(new Dimension(300,500));
+            dialog.setLocationRelativeTo(null);
+            dialog.setVisible(true);
+        }
+        
     }   
     
     public int getActualRowAt(int row){

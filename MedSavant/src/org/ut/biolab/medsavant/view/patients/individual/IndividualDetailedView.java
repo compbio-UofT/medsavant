@@ -173,8 +173,8 @@ public class IndividualDetailedView extends DetailedView {
         //view.highlight(nodes);
         //view.setSelectionEnabled(true);
 
-        view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "2", new SymbolSexMale()));
-	view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "1", new SymbolSexFemale()));
+        view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "1", new SymbolSexMale()));
+	view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "2", new SymbolSexFemale()));
         view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "0", new SymbolSexUndesignated()));
 	view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "null", new SymbolSexUndesignated()));
 

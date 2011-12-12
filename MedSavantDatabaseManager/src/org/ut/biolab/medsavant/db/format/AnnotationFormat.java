@@ -6,7 +6,6 @@ package org.ut.biolab.medsavant.db.format;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.ut.biolab.medsavant.db.format.CustomField.Category;
 
 /**
  *
@@ -90,6 +89,14 @@ public class AnnotationFormat {
     
     public List<CustomField> getCustomFields(){
         return fields;
+    }
+    
+    public String getProgram(){
+        return program;
+    }
+    
+    public String getVersion(){
+        return version;
     }
     
 }

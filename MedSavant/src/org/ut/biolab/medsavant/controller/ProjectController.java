@@ -245,7 +245,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
                 int[] annotationIds = AnnotationQueryUtil.getAnnotationIds(this.currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
                 AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+2];
                 af[0] = VariantFormat.getDefaultAnnotationFormat();
-                af[1] = ProjectQueryUtil.getActualCustomFieldAnnotationFormat(currentProjectId);
+                af[1] = VariantFormat.getCustomFieldAnnotationFormat(currentProjectId);
                 for(int i = 0; i < annotationIds.length; i++){
                     af[i+2] = AnnotationQueryUtil.getAnnotationFormat(annotationIds[i]);
                 }
