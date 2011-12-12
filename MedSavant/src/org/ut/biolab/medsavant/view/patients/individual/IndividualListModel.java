@@ -26,13 +26,13 @@ public class IndividualListModel implements DetailedListModel {
     public List<String> getColumnNames() {
         //TableSchema table = MedSavantDatabase.DefaultpatientTableSchema;
         List<String> result = new ArrayList<String>();
-        result.add(PatientFormat.ALIAS_PATIENT_ID);
-        result.add(PatientFormat.ALIAS_FAMILY_ID);
-        result.add(PatientFormat.ALIAS_HOSPITAL_ID);
-        result.add(PatientFormat.ALIAS_IDBIOMOM);
-        result.add(PatientFormat.ALIAS_IDBIODAD);
-        result.add(PatientFormat.ALIAS_GENDER);
-        result.add(PatientFormat.ALIAS_DNA_IDS);
+        result.add(PatientFormat.ALIAS_OF_PATIENT_ID);
+        result.add(PatientFormat.ALIAS_OF_FAMILY_ID);
+        result.add(PatientFormat.ALIAS_OF_HOSPITAL_ID);
+        result.add(PatientFormat.ALIAS_OF_IDBIOMOM);
+        result.add(PatientFormat.ALIAS_OF_IDBIODAD);
+        result.add(PatientFormat.ALIAS_OF_GENDER);
+        result.add(PatientFormat.ALIAS_OF_DNA_IDS);
         return result;
     }
 

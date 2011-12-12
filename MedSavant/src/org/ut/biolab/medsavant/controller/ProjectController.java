@@ -11,6 +11,7 @@ import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
+import org.ut.biolab.medsavant.db.format.VariantFormat;
 import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
@@ -243,7 +244,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
             try {
                 int[] annotationIds = AnnotationQueryUtil.getAnnotationIds(this.currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
                 AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+2];
-                af[0] = AnnotationFormat.getDefaultAnnotationFormat();
+                af[0] = VariantFormat.getDefaultAnnotationFormat();
                 af[1] = ProjectQueryUtil.getActualCustomFieldAnnotationFormat(currentProjectId);
                 for(int i = 0; i < annotationIds.length; i++){
                     af[i+2] = AnnotationQueryUtil.getAnnotationFormat(annotationIds[i]);

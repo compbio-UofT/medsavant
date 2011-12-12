@@ -47,6 +47,8 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.format.CustomField;
+import org.ut.biolab.medsavant.db.format.PatientFormat;
+import org.ut.biolab.medsavant.db.format.VariantFormat;
 import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.db.model.ProjectDetails;
 import org.ut.biolab.medsavant.db.model.Reference;
@@ -222,14 +224,14 @@ public class ProjectWizard extends WizardDialog {
         patientFormatModel.addColumn("Alias");
         patientFormatModel.addColumn("Description");
 
-        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID, DefaultpatientTableSchema.TYPE_OF_FAMILY_ID + getLengthString(DefaultpatientTableSchema.LENGTH_OF_FAMILY_ID), true, DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID, ""});
-        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, DefaultpatientTableSchema.TYPE_OF_HOSPITAL_ID + getLengthString(DefaultpatientTableSchema.LENGTH_OF_HOSPITAL_ID), true, DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, ""});
-        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM, DefaultpatientTableSchema.TYPE_OF_IDBIOMOM + getLengthString(DefaultpatientTableSchema.LENGTH_OF_IDBIOMOM), true, DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM, ""});
-        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD, DefaultpatientTableSchema.TYPE_OF_IDBIODAD + getLengthString(DefaultpatientTableSchema.LENGTH_OF_IDBIODAD), true, DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD, ""});
-        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_GENDER, DefaultpatientTableSchema.TYPE_OF_GENDER + getLengthString(DefaultpatientTableSchema.LENGTH_OF_GENDER), true, DefaultpatientTableSchema.COLUMNNAME_OF_GENDER, ""});
-        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_AFFECTED, DefaultpatientTableSchema.TYPE_OF_AFFECTED + getLengthString(DefaultpatientTableSchema.LENGTH_OF_AFFECTED), true, DefaultpatientTableSchema.COLUMNNAME_OF_AFFECTED, ""});
-        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultpatientTableSchema.TYPE_OF_DNA_IDS + getLengthString(DefaultpatientTableSchema.LENGTH_OF_DNA_IDS), true, DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, ""});
-        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultpatientTableSchema.TYPE_OF_BAM_URL + getLengthString(DefaultpatientTableSchema.LENGTH_OF_BAM_URL), false, DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID, DefaultpatientTableSchema.TYPE_OF_FAMILY_ID + getLengthString(DefaultpatientTableSchema.LENGTH_OF_FAMILY_ID), true, PatientFormat.ALIAS_OF_FAMILY_ID, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, DefaultpatientTableSchema.TYPE_OF_HOSPITAL_ID + getLengthString(DefaultpatientTableSchema.LENGTH_OF_HOSPITAL_ID), true, PatientFormat.ALIAS_OF_HOSPITAL_ID, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM, DefaultpatientTableSchema.TYPE_OF_IDBIOMOM + getLengthString(DefaultpatientTableSchema.LENGTH_OF_IDBIOMOM), true, PatientFormat.ALIAS_OF_IDBIOMOM, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD, DefaultpatientTableSchema.TYPE_OF_IDBIODAD + getLengthString(DefaultpatientTableSchema.LENGTH_OF_IDBIODAD), true, PatientFormat.ALIAS_OF_IDBIODAD, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_GENDER, DefaultpatientTableSchema.TYPE_OF_GENDER + getLengthString(DefaultpatientTableSchema.LENGTH_OF_GENDER), true, PatientFormat.ALIAS_OF_GENDER, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_AFFECTED, DefaultpatientTableSchema.TYPE_OF_AFFECTED + getLengthString(DefaultpatientTableSchema.LENGTH_OF_AFFECTED), true, PatientFormat.ALIAS_OF_AFFECTED, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultpatientTableSchema.TYPE_OF_DNA_IDS + getLengthString(DefaultpatientTableSchema.LENGTH_OF_DNA_IDS), true, PatientFormat.ALIAS_OF_DNA_IDS, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultpatientTableSchema.TYPE_OF_BAM_URL + getLengthString(DefaultpatientTableSchema.LENGTH_OF_BAM_URL), false, PatientFormat.ALIAS_OF_BAM_URL, ""});
 
         if(modify){
             for(CustomField f : patientFields){
@@ -314,22 +316,22 @@ public class ProjectWizard extends WizardDialog {
                 Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AA.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AA + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AA), true, DefaultVariantTableSchema.COLUMNNAME_OF_AA, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AC.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AC + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AA), true, DefaultVariantTableSchema.COLUMNNAME_OF_AC, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AF.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AF + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AF), true, DefaultVariantTableSchema.COLUMNNAME_OF_AF, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AN.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AN + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AN), true, DefaultVariantTableSchema.COLUMNNAME_OF_AN, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_BQ.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_BQ + getLengthString(DefaultVariantTableSchema.LENGTH_OF_BQ), true, DefaultVariantTableSchema.COLUMNNAME_OF_BQ, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_CIGAR.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_CIGAR + getLengthString(DefaultVariantTableSchema.LENGTH_OF_CIGAR), true, DefaultVariantTableSchema.COLUMNNAME_OF_CIGAR, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_DB.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_DB + getLengthString(DefaultVariantTableSchema.LENGTH_OF_DB), true, DefaultVariantTableSchema.COLUMNNAME_OF_DB, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_DP.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_DP + getLengthString(DefaultVariantTableSchema.LENGTH_OF_DP), true, DefaultVariantTableSchema.COLUMNNAME_OF_DP, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_END.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_END + getLengthString(DefaultVariantTableSchema.LENGTH_OF_END), true, DefaultVariantTableSchema.COLUMNNAME_OF_END, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_H2.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_H2 + getLengthString(DefaultVariantTableSchema.LENGTH_OF_H2), true, DefaultVariantTableSchema.COLUMNNAME_OF_H2, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_MQ.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_MQ + getLengthString(DefaultVariantTableSchema.LENGTH_OF_MQ), true, DefaultVariantTableSchema.COLUMNNAME_OF_MQ, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_MQ0.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_MQ0 + getLengthString(DefaultVariantTableSchema.LENGTH_OF_MQ0), true, DefaultVariantTableSchema.COLUMNNAME_OF_MQ0, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_NS.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_NS + getLengthString(DefaultVariantTableSchema.LENGTH_OF_NS), true, DefaultVariantTableSchema.COLUMNNAME_OF_NS, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_SB.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_SB + getLengthString(DefaultVariantTableSchema.LENGTH_OF_SB), true, DefaultVariantTableSchema.COLUMNNAME_OF_SB, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_SOMATIC.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_SOMATIC + getLengthString(DefaultVariantTableSchema.LENGTH_OF_SOMATIC), true, DefaultVariantTableSchema.COLUMNNAME_OF_SOMATIC, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_VALIDATED.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_VALIDATED + getLengthString(DefaultVariantTableSchema.LENGTH_OF_VALIDATED), true, DefaultVariantTableSchema.COLUMNNAME_OF_VALIDATED, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AA.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AA + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AA), true, VariantFormat.ALIAS_OF_AA, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AC.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AC + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AA), true, VariantFormat.ALIAS_OF_AC, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AF.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AF + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AF), true, VariantFormat.ALIAS_OF_AF, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AN.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AN + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AN), true, VariantFormat.ALIAS_OF_AN, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_BQ.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_BQ + getLengthString(DefaultVariantTableSchema.LENGTH_OF_BQ), true, VariantFormat.ALIAS_OF_BQ, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_CIGAR.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_CIGAR + getLengthString(DefaultVariantTableSchema.LENGTH_OF_CIGAR), true, VariantFormat.ALIAS_OF_CIGAR, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_DB.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_DB + getLengthString(DefaultVariantTableSchema.LENGTH_OF_DB), true, VariantFormat.ALIAS_OF_DB, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_DP.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_DP + getLengthString(DefaultVariantTableSchema.LENGTH_OF_DP), true, VariantFormat.ALIAS_OF_DP, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_END.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_END + getLengthString(DefaultVariantTableSchema.LENGTH_OF_END), true, VariantFormat.ALIAS_OF_END, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_H2.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_H2 + getLengthString(DefaultVariantTableSchema.LENGTH_OF_H2), true, VariantFormat.ALIAS_OF_H2, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_MQ.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_MQ + getLengthString(DefaultVariantTableSchema.LENGTH_OF_MQ), true, VariantFormat.ALIAS_OF_MQ, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_MQ0.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_MQ0 + getLengthString(DefaultVariantTableSchema.LENGTH_OF_MQ0), true, VariantFormat.ALIAS_OF_MQ0, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_NS.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_NS + getLengthString(DefaultVariantTableSchema.LENGTH_OF_NS), true, VariantFormat.ALIAS_OF_NS, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_SB.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_SB + getLengthString(DefaultVariantTableSchema.LENGTH_OF_SB), true, VariantFormat.ALIAS_OF_SB, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_SOMATIC.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_SOMATIC + getLengthString(DefaultVariantTableSchema.LENGTH_OF_SOMATIC), true, VariantFormat.ALIAS_OF_SOMATIC, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_VALIDATED.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_VALIDATED + getLengthString(DefaultVariantTableSchema.LENGTH_OF_VALIDATED), true, VariantFormat.ALIAS_OF_VALIDATED, ""});
         }
 
         table.setModel(variantFormatModel);

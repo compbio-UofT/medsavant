@@ -280,7 +280,7 @@ public class IndividualDetailedView extends DetailedView {
                 values[i][1] = result[i].toString();
                 
                 //special case for gender
-                if(values[i][0].equals(PatientFormat.ALIAS_GENDER)){
+                if(values[i][0].equals(PatientFormat.ALIAS_OF_GENDER)){
                     String s;
                     if(result[i] instanceof Long || result[i] instanceof Integer){
                         s = MiscUtils.genderToString(MiscUtils.safeLongToInt((Long)result[i]));

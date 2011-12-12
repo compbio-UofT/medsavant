@@ -92,28 +92,4 @@ public class AnnotationFormat {
         return fields;
     }
     
-    //TODO: move below somewhere else...
-    
-    public static AnnotationFormat getDefaultAnnotationFormat(){
-        List<CustomField> fields = new ArrayList<CustomField>();
-        fields.add(new CustomField("upload_id", "INT(11)", true, "Upload ID", ""));
-        fields.add(new CustomField("file_id", "INT(11)", true, "File ID", ""));
-        fields.add(new CustomField("variant_id", "INT(11)", true, "Variant ID", ""));
-        fields.add(new CustomField("dna_id", "VARCHAR(10)", true, "DNA ID", "", Category.PATIENT));
-        fields.add(new CustomField("chrom", "VARCHAR(5)", true, VARIANT_ALIAS_CHROM, ""));
-        fields.add(new CustomField("position", "INT(11)", true, VARIANT_ALIAS_POSITION, ""));
-        fields.add(new CustomField("dbsnp_id", "(VARCHAR(45)", true, "dbSNP ID", ""));
-        fields.add(new CustomField("ref", "VARCHAR(30)", true, "Reference", ""));
-        fields.add(new CustomField("alt", "VARCHAR(30)", true, VARIANT_ALIAS_ALT, ""));
-        fields.add(new CustomField("qual", "FLOAT(10,0)", true, "Quality", ""));
-        fields.add(new CustomField("filter", "VARCHAR(500)", false, "Filter", ""));
-        fields.add(new CustomField("custom_info", "VARCHAR(500)", false, "Custom Info", ""));
-        
-        return new AnnotationFormat("default", "default", 0, "", true, true, AnnotationType.POSITION, fields);
-    }
-    
-    public static final String VARIANT_ALIAS_POSITION = "Position";
-    public static final String VARIANT_ALIAS_ALT = "Alternate";
-    public static final String VARIANT_ALIAS_CHROM = "Chromosome";
-    
 }
