@@ -9,9 +9,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +29,6 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
@@ -89,9 +88,8 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
         modePanel.add(relativeButton);
         this.add(modePanel, BorderLayout.NORTH);
         
-        JScrollPane scrollPane = new JScrollPane();
-        scrollPane.getViewport().setLayout(new BorderLayout());
-        scrollPane.getViewport().add(table, BorderLayout.CENTER);
+        final JScrollPane scrollPane = new JScrollPane();
+        scrollPane.getViewport().add(table);
         this.add(scrollPane, BorderLayout.CENTER);
         
         try {
@@ -146,6 +144,7 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
         Filter filter = FilterController.getLastFilter();
         String action = FilterController.getLastActionString();
         model.addRow(filter.getName(), action, numRecords); 
+        table.updateUI();
         this.repaint();
     }
     
