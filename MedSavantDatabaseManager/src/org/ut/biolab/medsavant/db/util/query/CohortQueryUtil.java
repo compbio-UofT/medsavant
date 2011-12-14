@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
@@ -74,7 +75,8 @@ public class CohortQueryUtil {
         query.addFromTable(patientTable.getTable());
         query.addColumns(
                 cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), 
-                patientTable.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID));
+                patientTable.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID),
+                patientTable.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS));
         query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
         query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID)));
         
@@ -82,7 +84,7 @@ public class CohortQueryUtil {
         
         List<SimplePatient> result = new ArrayList<SimplePatient>();
         while(rs.next()){
-            result.add(new SimplePatient(rs.getInt(1), rs.getString(2)));
+            result.add(new SimplePatient(rs.getInt(1), rs.getString(2), PatientQueryUtil.parseDnaIds(rs.getString(3))));
         }
         return result;
     }
@@ -307,6 +309,11 @@ public class CohortQueryUtil {
             query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientId));
             c.createStatement().executeUpdate(query.toString());
         }
+    }
+    
+    public static int getNumVariantsInCohort(int projectId, int referenceId, int cohortId, Condition[][] conditions) throws SQLException, InterruptedException {       
+        List<String> dnaIds = getDNAIdsInCohort(cohortId);        
+        return VariantQueryUtil.getNumVariantsForDnaIds(projectId, referenceId, conditions, dnaIds);
     }
 
 }

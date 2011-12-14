@@ -33,9 +33,7 @@ import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
-import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
@@ -718,5 +716,16 @@ public class PatientQueryUtil {
         ConnectionController.connectPooled().createStatement().execute(query.toString());
     }
 
+    public static List<String> parseDnaIds(String s){
+        List<String> result = new ArrayList<String>();
+        if(s == null) return result;
+        String[] dnaIds = s.split(",");
+        for(String id : dnaIds){
+            if(!result.contains(id)){
+                result.add(id);
+            }
+        }
+        return result;
+    }
 
 }

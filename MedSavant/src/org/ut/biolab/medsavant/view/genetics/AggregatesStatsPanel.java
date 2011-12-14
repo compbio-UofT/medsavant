@@ -18,8 +18,8 @@ import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.aggregates.AggregatePanelGenerator;
+import org.ut.biolab.medsavant.view.genetics.aggregates.CohortPanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.aggregates.FamilyPanelGenerator;
-import org.ut.biolab.medsavant.view.genetics.aggregates.GOsubPanel;
 import org.ut.biolab.medsavant.view.genetics.aggregates.GeneListPanelGenerator;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -53,6 +53,7 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
         // Add your panel here.
         addPanel(new OntologyPanelGenerator(pageName));
         addPanel(new GeneListPanelGenerator(pageName));
+        addPanel(new CohortPanelGenerator(pageName));
         addPanel(new FamilyPanelGenerator());
     }
     

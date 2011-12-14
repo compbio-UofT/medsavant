@@ -169,6 +169,36 @@ public class VariantQueryUtil {
         rs.next();
         return rs.getInt(1);
     }
+    
+    public static int getNumVariantsForDnaIds(int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException {
+        String name = ProjectQueryUtil.getVariantTablename(projectId, referenceId);
+
+        if (name == null) {
+            return -1;
+        }
+        
+        if(dnaIds.isEmpty()){
+            return 0;
+        }
+
+        TableSchema table = CustomTables.getCustomTableSchema(name);
+
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(table.getTable());
+        q.addCustomColumns(FunctionCall.countAll());
+        addConditionsToQuery(q, conditions);
+        
+        Condition[] dnaConditions = new Condition[dnaIds.size()];
+        for(int i = 0; i < dnaIds.size(); i++){
+            dnaConditions[i] = BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIds.get(i));
+        }
+        q.addCondition(ComboCondition.or(dnaConditions));
+
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(q.toString());
+
+        rs.next();
+        return rs.getInt(1);
+    }
 
     public static int getFilteredFrequencyValuesForColumnInRange(int projectId, int referenceId, Condition[][] conditions, String columnname, double min, double max) throws SQLException {
 
