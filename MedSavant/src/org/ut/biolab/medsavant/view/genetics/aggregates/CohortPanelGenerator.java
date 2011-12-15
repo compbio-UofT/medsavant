@@ -185,6 +185,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         public synchronized void refresh(){
             if(resortPending){
                 sortableTreeTableModel.resort();
+                table.repaint();
                 resortPending = false;
             }
         }
