@@ -158,6 +158,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         
         public void update(){
             for(CohortNode n : nodes){
+                table.collapseAll();
                 n.reset();
             }
             startResortWorker();
@@ -257,6 +258,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         public void reset(){
             value = -1;
             setExpanded(false);
+            
             for(Object o : getChildren()){
                 ((PatientNode)o).reset();
             }
