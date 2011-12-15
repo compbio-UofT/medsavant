@@ -184,7 +184,7 @@ public class IndividualDetailedView extends DetailedView {
         for(Integer i : patientIds){
             selectedNodes.add(i);
         }
-        
+
         //add ability to click
         view.addNodeListener(new NodeListener() {
             public void onNodeEvent(NodeEvent ne) {
@@ -207,10 +207,10 @@ public class IndividualDetailedView extends DetailedView {
                         int[] patientIds = new int[selectedNodes.size()];
                         for(int i = 0; i < selectedNodes.size(); i++){
                             patientIds[i] = selectedNodes.get(i);
-                        }                        
+                        }
                         JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(patientIds);
                         popup.show(e.getComponent(), e.getX(), e.getY());
-                    } else if (SwingUtilities.isLeftMouseButton(e) && e.isControlDown()){ 
+                    } else if (SwingUtilities.isLeftMouseButton(e) && e.isControlDown()){
                         if(!selectedNodes.contains(patientId)){
                             selectedNodes.add(patientId);
                             overNodeView.setBorderColor(ViewUtil.detailSelectedBackground);
@@ -230,7 +230,7 @@ public class IndividualDetailedView extends DetailedView {
                     if(SwingUtilities.isRightMouseButton(e) && familyId != null){
                         JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(familyId);
                         popup.show(e.getComponent(), e.getX(), e.getY());
-                        
+
                     }
                 }
                 pedigreeDetails.repaint();

@@ -44,6 +44,7 @@ import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -405,8 +406,7 @@ public class ImportVariantsWizard extends WizardDialog {
                         instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
                         try {
 
-                            final int uploadID = ImportVariants.performImport(variantFiles, projectId, referenceId, progressLabel);
-
+                            final int uploadID = ImportVariants.performImport(variantFiles, DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()), projectId, referenceId, progressLabel);
 
                             boolean successUploadVariants = uploadID != -1;
 
@@ -419,6 +419,7 @@ public class ImportVariantsWizard extends WizardDialog {
                                 public void run() {
                                     progressBar.setIndeterminate(false);
                                     if (success) {
+                                        cancelButton.setEnabled(false);
                                         progressBar.setValue(100);
                                         progressLabel.setText("Upload complete.");
                                         page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
