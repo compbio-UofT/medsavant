@@ -4,7 +4,11 @@
  */
 package org.ut.biolab.medsavant.db.util;
 
+import au.com.bytecode.opencsv.CSVReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,6 +17,7 @@ import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil.Action;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
+import org.ut.biolab.medsavant.vcf.VCFHeader;
 import org.ut.biolab.medsavant.vcf.VCFParser;
 
 /**
@@ -28,7 +33,9 @@ public class ImportVariants {
      *
      */
 
-    public static int performImport(File[] vcfFiles, int projectId, int referenceId, JLabel progressLabel) throws SQLException, InterruptedException {
+    private static final int outputLinesLimit = 1000000;
+
+    public static int performImport(File[] vcfFiles, File tmpDir, int projectId, int referenceId, JLabel progressLabel) throws SQLException, InterruptedException {
 
         //add log
         int updateId = AnnotationLogQueryUtil.addAnnotationLogEntry(projectId, referenceId, Action.ADD_VARIANTS);
@@ -58,33 +65,82 @@ public class ImportVariants {
             checkInterrupt(updateId, tableName);
 
             //update progress
-            String progress = "Importing file " + (i+1) + " of " + vcfFiles.length + "...";
+            /*
+            String progress = "Parsing file " + (i+1) + " of " + vcfFiles.length + "...";
             if(progressLabel != null){
                 progressLabel.setText(progress);
             }
+             * 
+             */
+
 
             //create temp file
-            File outfile = new File("temp_tdf"); //TODO: should put this in a temp dir or something
+            boolean didParseWholeFile = false;
+            int iteration = 0;
 
-            //parse vcf file
+            CSVReader r;
             try {
-                VCFParser.parseVariants(vcfFiles[i], outfile, updateId, i);
-            } catch (Exception ex) {
+                r = new CSVReader(new FileReader(vcfFiles[i]), VCFParser.defaultDelimiter);
+                if (r == null) {
+                    return -1;
+                }
+            } catch (FileNotFoundException ex) {
                 Logger.getLogger(ImportVariants.class.getName()).log(Level.SEVERE, null, ex);
                 return -1;
             }
 
-            //add to staging table
-            checkInterrupt(updateId, tableName);
+            VCFHeader header = null;
             try {
-                if(progressLabel != null){
-                    progressLabel.setText("Uploading file " + (i+1) + " of " + vcfFiles.length + "...");
-                    progressLabel.updateUI();
-                }
-                VariantQueryUtil.uploadFileToVariantTable(outfile, tableName);
-            } catch (SQLException ex) {
+                header = VCFParser.parseVCFHeader(r);
+            } catch (IOException ex) {
                 Logger.getLogger(ImportVariants.class.getName()).log(Level.SEVERE, null, ex);
                 return -1;
+            }
+
+            while (!didParseWholeFile) {
+
+                File outfile = new File(tmpDir,iteration + "_tmp.tdf");
+                iteration++;
+
+                //parse vcf file
+                try {
+                    if(progressLabel != null){
+                        if (!didParseWholeFile) {
+                            progressLabel.setText("Parsing part " + iteration + " of file " + (i+1) + " of " + vcfFiles.length + "...");
+                        } else {
+                            progressLabel.setText("Parsing file " + (i+1) + " of " + vcfFiles.length + "...");
+                        }
+                        progressLabel.updateUI();
+                    }
+                    didParseWholeFile = VCFParser.parseVariantsFromReader(r, header, outputLinesLimit, outfile, updateId, i);
+                } catch (Exception ex) {
+                    Logger.getLogger(ImportVariants.class.getName()).log(Level.SEVERE, null, ex);
+                    return -1;
+                }
+
+                //add to staging table
+                checkInterrupt(updateId, tableName);
+                try {
+                    if(progressLabel != null){
+                        if (!didParseWholeFile) {
+                            progressLabel.setText("Uploading part " + iteration + " of file " + (i+1) + " of " + vcfFiles.length + "...");
+                        } else {
+                            progressLabel.setText("Uploading file " + (i+1) + " of " + vcfFiles.length + "...");
+                        }
+                        progressLabel.updateUI();
+                    }
+                    VariantQueryUtil.uploadFileToVariantTable(outfile, tableName);
+                } catch (SQLException ex) {
+                    Logger.getLogger(ImportVariants.class.getName()).log(Level.SEVERE, null, ex);
+                    return -1;
+                }
+
+                outfile.delete();
+            }
+
+            try {
+                r.close();
+            } catch (IOException ex) {
             }
 
             //cleanup
