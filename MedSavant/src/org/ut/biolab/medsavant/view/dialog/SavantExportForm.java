@@ -36,7 +36,7 @@ import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
-import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.db.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
@@ -314,7 +314,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Save Savant Project");
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
-        fc.addChoosableFileFilter(new ExtensionFileFilter("svp"));
+        fc.addChoosableFileFilter(new ExtensionsFileFilter("svp"));
         fc.setMultiSelectionEnabled(false);
         
         int result = fc.showDialog(null, null);

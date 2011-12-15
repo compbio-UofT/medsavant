@@ -10,47 +10,64 @@ import javax.swing.filechooser.FileFilter;
 
 /**
  *
- * @author mfiume
+ * Used for save dialogs. 
+ * 
+ * @author Andrew
  */
 public class ExtensionFileFilter extends FileFilter {
 
-    private final String[] extensions;
-
-    public ExtensionFileFilter(String extension) {
-        this(new String[] {extension});
+    private final String extension;
+    
+    public static ExtensionFileFilter[] createFilters(String[] extensions){
+        ExtensionFileFilter[] filters = new ExtensionFileFilter[extensions.length];
+        for(int i = 0; i < extensions.length; i++){
+            filters[i] = new ExtensionFileFilter(extensions[i]);
+        }
+        return filters;
     }
 
-    public ExtensionFileFilter(String[] exts) {
-        this.extensions = exts;
+    public ExtensionFileFilter(String extension) {
+        this.extension = extension;
     }
 
     public boolean accept(File f) {
-        if (f.isDirectory()) { return true; }
-        if (f.isFile()) {
-            for (String extension : extensions) {
-                if (f.getAbsolutePath().toLowerCase().endsWith("." + extension)) { return true; }
-            }
+        if (f.isDirectory()) { 
+            return true; 
+        } else {
+            if (f.getAbsolutePath().toLowerCase().endsWith("." + extension)) { return true; }
         }
         return false;
     }
 
     @Override
     public String getDescription() {
-        if(extensions[0].equals("vcf")){
+        if(extension.equals("vcf")){
             return "VCF files | " + getExtensionString();
-        } else if (extensions[0].equals("svp")){
+        } else if (extension.equals("svp")){
             return "Savant Project Files | " + getExtensionString();
         } else {
-            return "*." + extensions[0];
+            return "*." + extension;
         }        
     }
 
     private String getExtensionString() {
-        String s = "";
-        for (String e : extensions) {
-            s += " *." + e;
+        return "." + extension;
+    }
+    
+    public String forceExtension(String dir, String name){
+        if(accept(new File(dir, name))){
+            return name;
+        } else {
+            return name + "." + extension;
         }
-        return s;
+    }
+    
+    public String forceExtension(File f){
+        if(accept(f)){
+            return f.getAbsolutePath();
+        } else {
+            return f.getAbsolutePath() + "." + extension;
+        }
     }
 
 }

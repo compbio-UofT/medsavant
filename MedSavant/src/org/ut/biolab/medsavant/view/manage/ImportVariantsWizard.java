@@ -43,7 +43,7 @@ import org.ut.biolab.medsavant.db.util.ImportVariants;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.model.VariantTag;
-import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.db.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -143,7 +143,7 @@ public class ImportVariantsWizard extends WizardDialog {
         chooseFileButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                variantFiles = DialogUtils.chooseFilesForOpen("Import Variants", new ExtensionFileFilter(new String[]{"vcf", "vcf.gz"}), null);
+                variantFiles = DialogUtils.chooseFilesForOpen("Import Variants", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz"}), null);
                 String path = getPathString(variantFiles);
                 outputFileField.setText(path);
                 if (variantFiles.length > 0) {

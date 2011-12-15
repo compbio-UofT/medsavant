@@ -33,6 +33,8 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import com.jidesoft.dialog.JideOptionPane;
+import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.db.util.ExtensionsFileFilter;
 
 import org.ut.biolab.medsavant.db.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MainFrame;
@@ -214,7 +216,7 @@ public class DialogUtils {
             fd.setDialogType(JFileChooser.OPEN_DIALOG);
             if (filter != null) {
                 fd.setFileFilter(filter);
-            }
+                }
             fd.setMultiSelectionEnabled(true);
             int result = fd.showOpenDialog(MainFrame.getInstance());
             if (result == JFileChooser.APPROVE_OPTION) {
@@ -234,7 +236,19 @@ public class DialogUtils {
      * @return a File, or null if cancelled
      */
     public static File chooseFileForSave(String title, String defaultName) {
-        return chooseFileForSave(title, defaultName, null, null, null);
+        
+        FileDialog fd = getFileDialog(title, FileDialog.SAVE);
+        fd.setFile(defaultName);
+        fd.setAlwaysOnTop(true);
+        fd.setLocationRelativeTo(null);
+        fd.setVisible(true);
+        String selectedFile = fd.getFile();
+
+        if (selectedFile != null) {          
+            return new File(fd.getDirectory(), selectedFile);
+        }
+
+        return null;
     }
 
     /**
@@ -247,26 +261,36 @@ public class DialogUtils {
      * @param initialDir initial directory for the dialog
      * @return a File, or null if cancelled
      */
-    public static File chooseFileForSave(String title, String defaultName, FileFilter filter, File initialDir, String forceExtension) {
-        FileDialog fd = getFileDialog(title, FileDialog.SAVE);
-        if (filter != null) {
-            fd.setFilenameFilter(new FilenameFilterAdapter(filter));
-        }
-        if (initialDir != null) {
-            fd.setDirectory(initialDir.getAbsolutePath());
-        }
-        fd.setFile(defaultName);
-        fd.setAlwaysOnTop(true);
-        fd.setLocationRelativeTo(null);
-        fd.setVisible(true);
-        String selectedFile = fd.getFile();
-        if (selectedFile != null) {    
-            if(forceExtension != null && !MiscUtils.getExtension(selectedFile).equals(forceExtension)){
-                selectedFile = selectedFile + "." + forceExtension;
+    public static File chooseFileForSave(String title, String defaultName, ExtensionFileFilter[] filters, File initialDir) {
+        
+        // unfortunately, we need function over aesthetics... 
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(title);
+        chooser.setSelectedFile(new File(initialDir, defaultName));
+        if(initialDir != null){
+            chooser.setSelectedFile(initialDir);
+        }           
+        chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+        if (filters != null) {
+            for(ExtensionFileFilter filter : filters){
+                chooser.addChoosableFileFilter(filter);
             }
-            return new File(fd.getDirectory(), selectedFile);
+            chooser.setFileFilter(filters[0]);
         }
-        return null;
+        chooser.setMultiSelectionEnabled(false);
+        int result = chooser.showSaveDialog(null);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File f = chooser.getSelectedFile();
+            if(f == null) return null;
+
+            String selectedFile = f.getAbsolutePath();
+            if(chooser.getFileFilter() != null && chooser.getFileFilter() instanceof ExtensionFileFilter){
+                selectedFile = ((ExtensionFileFilter)chooser.getFileFilter()).forceExtension(f);
+            }
+            return new File(selectedFile);              
+        }
+        return null;        
     }
 
     /**

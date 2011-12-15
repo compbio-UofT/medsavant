@@ -48,6 +48,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.db.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -189,7 +190,7 @@ public class FilterPanel extends javax.swing.JPanel {
     private void saveFilters() throws IOException{
 
         //choose save file
-        File file = DialogUtils.chooseFileForSave("Save Filters", "saved_filters.xml", new ExtensionFileFilter(new String[]{"xml"}), null, "xml");
+        File file = DialogUtils.chooseFileForSave("Save Filters", "saved_filters.xml", ExtensionFileFilter.createFilters(new String[]{"xml"}), null);
         if(file == null) return;
 
         //write
@@ -216,7 +217,7 @@ public class FilterPanel extends javax.swing.JPanel {
         if(FilterController.hasFiltersApplied() && DialogUtils.askYesNo("Confirm Load", "<html>Loading filters clears all existing filters. <br>Are you sure you want to continue?</html>") == JOptionPane.NO_OPTION) return;
 
         //choose open file
-        File file = DialogUtils.chooseFileForOpen("Load Filters", new ExtensionFileFilter(new String[]{"xml"}), null);
+        File file = DialogUtils.chooseFileForOpen("Load Filters", new ExtensionsFileFilter("xml"), null);
         if(file == null) return;
 
         //read

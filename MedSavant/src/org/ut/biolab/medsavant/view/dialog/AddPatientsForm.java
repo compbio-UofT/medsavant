@@ -32,8 +32,9 @@ import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
-import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
+import org.ut.biolab.medsavant.db.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -138,7 +139,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
     
     private void generateTemplate() throws SQLException{
         
-        File file = DialogUtils.chooseFileForSave("Export Patients", "template.csv", new ExtensionFileFilter(new String[]{"csv"}), null, "csv");
+        File file = DialogUtils.chooseFileForSave("Export Patients", "template.csv", ExtensionFileFilter.createFilters(new String[]{"csv"}), null);
         if(file == null) return;
         
         progressBar.setIndeterminate(true);
@@ -198,7 +199,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         //remove current data
         PatientQueryUtil.clearPatients(ProjectController.getInstance().getCurrentProjectId());
                 
-        File file = DialogUtils.chooseFileForOpen("Import File", new ExtensionFileFilter(new String[]{"csv"}), null);
+        File file = DialogUtils.chooseFileForOpen("Import File", new ExtensionsFileFilter(new String[]{"csv"}), null);
         if(file == null) return;
         
         progressBar.setIndeterminate(true);
