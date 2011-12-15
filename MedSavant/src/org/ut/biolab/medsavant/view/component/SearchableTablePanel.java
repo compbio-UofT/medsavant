@@ -285,7 +285,7 @@ public class SearchableTablePanel extends JPanel {
         });
         fieldPanel.add(chooseColumnButton);
         
-        /*JButton exportButton = new JButton("Export");
+        JButton exportButton = new JButton("Export");
         exportButton.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e) {
                 try {
@@ -297,7 +297,7 @@ public class SearchableTablePanel extends JPanel {
                 }
             }
         });
-        fieldPanel.add(exportButton);*/
+        fieldPanel.add(exportButton);
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));

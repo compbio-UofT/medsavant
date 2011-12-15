@@ -4,9 +4,12 @@
  */
 package org.ut.biolab.medsavant.util;
 
+import au.com.bytecode.opencsv.CSVWriter;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import javax.swing.JTable;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -14,6 +17,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.db.util.MiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -23,20 +27,25 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
 public class ExportUtils {
     
     public static void exportTable(JTable table) throws FileNotFoundException, IOException{
-        File out = DialogUtils.chooseFileForSave("Export Table", "table.xls", ExtensionFileFilter.createFilters(new String[]{"xls", "xlsx"}), null);
+        File out = DialogUtils.chooseFileForSave("Export Table", "table_export", ExtensionFileFilter.createFilters(new String[]{"xls", "xlsx", "csv"}), null);
         
-        if(out == null){
-            return;
+        if(out == null) return;
+
+        String extension = MiscUtils.getExtension(out.getAbsolutePath());
+        
+        if(extension.equals("xls") || extension.equals("xlsx")){
+            exportExcel(out, table);
+        } else { // default
+            exportCSV(out, table);
         }
         
-        exportExcel(out.getAbsolutePath(), table);
     }
     
-    private static void exportExcel(String filename, JTable table) throws FileNotFoundException, IOException{
+    private static void exportExcel(File file, JTable table) throws FileNotFoundException, IOException{
         
         //create workbook
         Workbook wb;
-        if(filename.endsWith(".xlsx")){
+        if(file.getAbsolutePath().endsWith(".xlsx")){
             wb = new XSSFWorkbook();
         } else {
             wb = new HSSFWorkbook();            
@@ -58,9 +67,37 @@ public class ExportUtils {
         }
         
         //write output
-        FileOutputStream fileOut = new FileOutputStream(filename);
+        FileOutputStream fileOut = new FileOutputStream(file);
         wb.write(fileOut);
         fileOut.close();
+    }
+    
+    private static void exportCSV(File file, JTable table) throws IOException {
+
+        //setup file
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));      
+        CSVWriter out = new CSVWriter(writer, ',', '"');
+
+        //add headers
+        String[] header = new String[table.getColumnCount()];
+        for(int j = 0; j < table.getColumnCount(); j++){
+            header[j] = table.getColumnName(j);
+        }
+        out.writeNext(header);
+        
+        //add cells
+        for(int i = 0; i < table.getRowCount(); i++){
+            String[] row = new String[table.getColumnCount()];
+            for(int j = 0; j < table.getColumnCount(); j++){
+                row[j] = table.getValueAt(i, j).toString();
+            }
+            out.writeNext(row);
+        }
+        
+        //close output
+        out.close();
+        writer.close();
+
     }
     
 }
