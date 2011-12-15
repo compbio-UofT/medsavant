@@ -95,6 +95,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         private List<CohortNode> nodes = new ArrayList<CohortNode>();
         private ResortWorker resortWorker;
         private JScrollPane container;
+        private boolean resortPending = true;
         
         public CohortPanel() throws SQLException {
             
@@ -182,7 +183,14 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         }
         
         public synchronized void refresh(){
-            sortableTreeTableModel.resort();
+            if(resortPending){
+                sortableTreeTableModel.resort();
+                resortPending = false;
+            }
+        }
+        
+        public synchronized void setResortPending(boolean pending){
+            resortPending = pending;
         }
     }
 
@@ -236,6 +244,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
                 @Override
                 protected void showSuccess(Object result) {
                     value = (Integer) result;
+                    panel.setResortPending(true);
                     panel.repaint();
                     cleanup();
                 }
@@ -334,6 +343,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
                     } else {
                         value = (Integer) result;
                     }       
+                    panel.setResortPending(true);
                     panel.repaint();
                     cleanup();
                 }
