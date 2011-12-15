@@ -285,13 +285,14 @@ public class SearchableTablePanel extends JPanel {
         });
         fieldPanel.add(chooseColumnButton);
         
-        JButton exportButton = new JButton("Export");
+        JButton exportButton = new JButton("Export Page");
         exportButton.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e) {
                 try {
                     ExportUtils.exportTable(table);
                 } catch (Exception ex) {
                     DialogUtils.displayException("MedSavant", "A problem occurred while exporting.", ex);
+                    ex.printStackTrace();
                 }
             }
         });
