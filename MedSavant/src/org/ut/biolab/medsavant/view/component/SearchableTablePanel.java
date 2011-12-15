@@ -290,10 +290,8 @@ public class SearchableTablePanel extends JPanel {
             public void mouseReleased(MouseEvent e) {
                 try {
                     ExportUtils.exportTable(table);
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(SearchableTablePanel.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(SearchableTablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (Exception ex) {
+                    DialogUtils.displayException("MedSavant", "A problem occurred while exporting.", ex);
                 }
             }
         });
