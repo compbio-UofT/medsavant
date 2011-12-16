@@ -291,7 +291,7 @@ public class SearchableTablePanel extends JPanel {
                 try {
                     ExportUtils.exportTable(table);
                 } catch (Exception ex) {
-                    DialogUtils.displayException("MedSavant", "A problem occurred while exporting.", ex);
+                    DialogUtils.displayException("MedSavant", "<HTML>A problem occurred while exporting.<BR>Make sure the output file is not being used. </HTML>", ex);
                     ex.printStackTrace();
                 }
             }
