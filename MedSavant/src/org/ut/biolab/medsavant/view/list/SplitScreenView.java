@@ -216,6 +216,8 @@ public class SplitScreenView extends JPanel {
             stp.getTable().addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {  
                     if(SwingUtilities.isRightMouseButton(e)){
+                        int row = stp.getTable().rowAtPoint(e.getPoint());
+                        stp.getTable().getSelectionModel().setSelectionInterval(row, row);
                         detailedView.setRightClick(e);    
                     }                    
                 }
