@@ -40,16 +40,6 @@ public class ImportVariants {
         //add log
         int updateId = AnnotationLogQueryUtil.addAnnotationLogEntry(projectId, referenceId, Action.ADD_VARIANTS);
 
-
-        //get custom fields for vcf
-        /*List<CustomField> customFields = ProjectQueryUtil.getCustomVariantFields(projectId);
-        String[] infoFields = new String[customFields.size()];
-        Class[] infoClasses = new Class[customFields.size()];
-        for(int i = 0; i < customFields.size(); i++){
-            infoFields[i] = customFields.get(i).getColumnName();
-            infoClasses[i] = customFields.get(i).getColumnClass();
-        }*/
-
         //create the staging table
         String tableName = DBSettings.createVariantStagingTableName(projectId, referenceId, updateId);
         checkInterrupt(updateId, tableName);
@@ -63,16 +53,6 @@ public class ImportVariants {
         for(int i = 0; i < vcfFiles.length; i++){
 
             checkInterrupt(updateId, tableName);
-
-            //update progress
-            /*
-            String progress = "Parsing file " + (i+1) + " of " + vcfFiles.length + "...";
-            if(progressLabel != null){
-                progressLabel.setText(progress);
-            }
-             * 
-             */
-
 
             //create temp file
             boolean didParseWholeFile = false;
@@ -103,6 +83,7 @@ public class ImportVariants {
                 iteration++;
 
                 //parse vcf file
+                checkInterrupt(updateId, tableName);
                 try {
                     if(progressLabel != null){
                         if (!didParseWholeFile) {

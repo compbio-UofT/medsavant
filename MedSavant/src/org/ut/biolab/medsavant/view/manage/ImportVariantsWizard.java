@@ -55,8 +55,6 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class ImportVariantsWizard extends WizardDialog {
 
-    private boolean modify = false;
-    private boolean isModified = false;
     private int projectId;
     private int referenceId;
     private JComboBox locationField;
@@ -65,14 +63,8 @@ public class ImportVariantsWizard extends WizardDialog {
 
     private Thread uploadThread = null;
 
-    /* modify existing project */
-    public ImportVariantsWizard(boolean modify) {
-        this.modify = modify;
-        setupWizard();
-    }
-
     public ImportVariantsWizard() {
-        this(false);
+        setupWizard();
     }
 
     private void setupWizard() {
@@ -105,6 +97,7 @@ public class ImportVariantsWizard extends WizardDialog {
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
             }
         };
 
@@ -132,18 +125,28 @@ public class ImportVariantsWizard extends WizardDialog {
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
-                fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                if(variantFiles != null && variantFiles.length > 0){
+                    fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                } else {
+                    fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                }              
             }
         };
 
         page.addText("Choose the variant file(s) to be imported:");
 
         final JTextField outputFileField = new JTextField();
+        outputFileField.setEnabled(false);
         JButton chooseFileButton = new JButton("...");
         chooseFileButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
                 variantFiles = DialogUtils.chooseFilesForOpen("Import Variants", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz"}), null);
+                if(variantFiles == null || variantFiles.length == 0){
+                    page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                } else {
+                    page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                }
                 String path = getPathString(variantFiles);
                 outputFileField.setText(path);
                 if (variantFiles.length > 0) {
@@ -170,10 +173,6 @@ public class ImportVariantsWizard extends WizardDialog {
 
         page.addComponent(container);
         page.addText("Files can be in Variant Call Format (*.vcf) or BGZipped\nVCF (*.vcf.gz).");
-        //JLabel nameLabel = new JLabel(projectName + " (" + referenceName + ")");
-        //nameLabel.setFont(ViewUtil.getMediumTitleFont());
-        //page.addComponent(nameLabel);
-        //page.addText("If the variants are with respect to another reference\ngenome, switch to that reference and try importing again.");
 
         return page;
 
@@ -297,16 +296,6 @@ public class ImportVariantsWizard extends WizardDialog {
 
         return page;
 
-    }
-
-    private AbstractWizardPage getCompletionPage() {
-        CompletionWizardPage page = new CompletionWizardPage("Complete");
-        String specific = "create";
-        if (modify) {
-            specific = "make changes to";
-        }
-        page.addText("Click finish to " + specific + " project. ");
-        return page;
     }
 
     private void addDefaultTags(List<VariantTag> variantTags, JTextArea ta) {
@@ -487,7 +476,4 @@ public class ImportVariantsWizard extends WizardDialog {
         return page;
     }
 
-    public boolean isModified() {
-        return isModified;
-    }
 }
