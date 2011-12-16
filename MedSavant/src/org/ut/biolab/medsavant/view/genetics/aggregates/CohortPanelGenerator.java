@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingWorker;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -96,10 +97,16 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         private ResortWorker resortWorker;
         private JScrollPane container;
         private boolean resortPending = true;
+        private JProgressBar progress;
+        private int numWorking = 0;
+        private int numCompleted = 0;
         
         public CohortPanel() throws SQLException {
             
             this.setLayout(new BorderLayout());
+            
+            progress = new JProgressBar();
+            progress.setStringPainted(true);
             
             showWaitCard();
             
@@ -112,10 +119,11 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
 
                     List rows = new ArrayList();
                     List<Cohort> cohorts = CohortQueryUtil.getCohorts(ProjectController.getInstance().getCurrentProjectId());
+                    addToWorking(cohorts.size());
                     for(Cohort c : cohorts){
                         CohortNode n = new CohortNode(c);      
                         nodes.add(n);
-                        List<SimplePatient> simplePatients = CohortQueryUtil.getIndividualsInCohort(ProjectController.getInstance().getCurrentProjectId(), c.getId());               
+                        List<SimplePatient> simplePatients = CohortQueryUtil.getIndividualsInCohort(ProjectController.getInstance().getCurrentProjectId(), c.getId());                       
                         for(SimplePatient sp : simplePatients){
                             n.addChild(new PatientNode(sp));
                         }
@@ -131,6 +139,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
                     table = new TreeTable(sortableTreeTableModel);
 
                     container.getViewport().add(table);
+                    
                     return null;
                 }
                 
@@ -151,12 +160,15 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         }
 
         private void showShowCard(){
-            removeAll();           
+            removeAll();     
+            add(progress, BorderLayout.NORTH);
             add(container, BorderLayout.CENTER);
             updateUI();
         }
         
         public void update(){
+            resetProgress();
+            addToWorking(nodes.size());
             for(CohortNode n : nodes){
                 table.collapseAll();
                 n.reset();
@@ -165,6 +177,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         }
         
         public void finish(){
+            resetProgress();
             for(CohortNode n : nodes){
                 n.finish();
             }
@@ -193,6 +206,42 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         
         public synchronized void setResortPending(boolean pending){
             resortPending = pending;
+        }
+        
+        
+        /* Progress */
+        
+        public synchronized void resetProgress(){
+            numCompleted = 0;
+            numWorking = 0;
+        }
+        
+        public synchronized void incrementCompleted(){
+            numCompleted++;
+            updateProgress();
+        }
+        
+        public synchronized void decrementWorking(){
+            numWorking--;
+            updateProgress();
+        }
+        
+        public synchronized void addToWorking(int num){
+            numWorking += num;
+            updateProgress();
+        }
+        
+        public synchronized void updateProgress(){
+            if(numWorking == 0){
+                numCompleted = 0;
+                progress.setValue(100);
+            } else if (numWorking <= numCompleted){
+                numWorking = 0;
+                numCompleted = 0;
+                progress.setValue(100);
+            } else {
+                progress.setValue((int)((double)numCompleted / (double)numWorking * 100.0));
+            }
         }
     }
 
@@ -248,6 +297,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
                     value = (Integer) result;
                     panel.setResortPending(true);
                     panel.repaint();
+                    panel.incrementCompleted();
                     cleanup();
                 }
                
@@ -266,14 +316,28 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         }
         
         public void finish(){
+            if(value == -1){
+                panel.addToWorking(1);
+                run();
+            }
+            
             if(this.isExpanded()){
                 expand();
             }
         }
         
         private void expand(){
+            int todo = 0;
             for(Object o : getChildren()){
-                ((PatientNode)o).finish();
+                if(!((PatientNode)o).isFinished()){
+                    todo++;
+                }             
+            }
+            panel.addToWorking(todo);
+            for(Object o : getChildren()){
+                if(!((PatientNode)o).isFinished()){
+                    ((PatientNode)o).finish();
+                }             
             }
         }
 
@@ -313,15 +377,20 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
             value = -1;
         }
         
+        public boolean isFinished(){
+            return value != -1;
+        }
+        
         public void finish(){
-            if(value == -1){
-                run();
-            }
+            run();
         }
         
         public void cancel(){
             if(worker != null){
                 worker.cancel(true);
+                if(!isFinished()){
+                    panel.decrementWorking();
+                }
             }
         }
         
@@ -348,6 +417,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
                     }       
                     panel.setResortPending(true);
                     panel.repaint();
+                    panel.incrementCompleted();
                     cleanup();
                 }
                
