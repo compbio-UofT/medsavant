@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.JTree;
@@ -14,6 +15,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 
@@ -89,13 +91,18 @@ public class WorkingWithOneNode extends MedSavantWorker {
             String key = chrom + "_" + start + "_" + end;
             Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
             if (numCurr == null){;
-                numCurr = VariantQueryUtil.getNumVariantsInRange(
-                            ProjectController.getInstance().getCurrentProjectId(), 
-                            ReferenceController.getInstance().getCurrentReferenceId(), 
-                            FilterController.getQueryFilterConditions(), 
-                            chrom, 
-                            start, 
-                            end);
+                try {
+                    numCurr = VariantQueryUtil.getNumVariantsInRange(
+                                ProjectController.getInstance().getCurrentProjectId(), 
+                                ReferenceController.getInstance().getCurrentReferenceId(), 
+                                FilterController.getQueryFilterConditions(), 
+                                chrom, 
+                                start, 
+                                end);
+                } catch (SQLException ex) {
+                    MiscUtils.checkSQLException(ex);
+                    throw ex;
+                }
                 OntologyStatsWorker.mapLocToFreq.put(key, numCurr);
             }
             else{

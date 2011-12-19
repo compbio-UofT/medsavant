@@ -49,6 +49,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.db.util.ExtensionsFileFilter;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -268,6 +269,7 @@ public class FilterPanel extends javax.swing.JPanel {
                 try {
                     FilterUtils.loadFilterView(state, fps);
                 } catch (SQLException ex) {
+                    MiscUtils.checkSQLException(ex);
                     Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }

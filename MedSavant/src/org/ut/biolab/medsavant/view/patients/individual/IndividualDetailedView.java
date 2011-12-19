@@ -85,8 +85,12 @@ public class IndividualDetailedView extends DetailedView {
 
         @Override
         protected Object doInBackground() throws Exception {
-            Object[] fieldValues = PatientQueryUtil.getPatientRecord(ProjectController.getInstance().getCurrentProjectId(), pid);
-            return fieldValues;
+            try {
+                return PatientQueryUtil.getPatientRecord(ProjectController.getInstance().getCurrentProjectId(), pid);
+            } catch (SQLException ex) {
+                MiscUtils.checkSQLException(ex);
+                throw ex;
+            }
         }
 
         @Override
@@ -115,9 +119,15 @@ public class IndividualDetailedView extends DetailedView {
         @Override
         protected Object doInBackground() throws Exception {
 
-            List<Object[]> results = PatientQueryUtil.getFamilyOfPatient(ProjectController.getInstance().getCurrentProjectId(), pid);
-            familyId = PatientQueryUtil.getFamilyIdOfPatient(ProjectController.getInstance().getCurrentProjectId(), pid);
-
+            List<Object[]> results;
+            try {
+                results = PatientQueryUtil.getFamilyOfPatient(ProjectController.getInstance().getCurrentProjectId(), pid);
+                familyId = PatientQueryUtil.getFamilyIdOfPatient(ProjectController.getInstance().getCurrentProjectId(), pid);
+            } catch (SQLException ex) {
+                MiscUtils.checkSQLException(ex);
+                throw ex;
+            }
+            
             File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + pid + ".csv");
 
             //System.out.println("Writing " + outfile.getAbsolutePath());
@@ -306,6 +316,7 @@ public class IndividualDetailedView extends DetailedView {
         try {
             fieldNames = PatientQueryUtil.getPatientFieldAliases(ProjectController.getInstance().getCurrentProjectId());
         } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
             ex.printStackTrace();
             ClientLogger.log(IndividualDetailedView.class,ex.getLocalizedMessage(),Level.SEVERE);
         }

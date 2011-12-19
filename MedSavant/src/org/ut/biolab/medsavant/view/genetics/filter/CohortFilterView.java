@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 
 /**
@@ -136,10 +137,12 @@ class CohortFilterView extends FilterView{
 
                             return resultsCombined;
 
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            return null;
+                        } catch (SQLException ex) {
+                            MiscUtils.checkSQLException(ex);
+                        } catch (Exception ex) {                           
+                            ex.printStackTrace();                           
                         }
+                        return null;
                     }
 
                     @Override

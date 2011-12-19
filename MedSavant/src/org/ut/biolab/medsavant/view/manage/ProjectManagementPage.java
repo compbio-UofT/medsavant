@@ -34,6 +34,7 @@ import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -89,6 +90,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                             ProjectController.getInstance().fireProjectAddedEvent(ProjectQueryUtil.getProjectName(projectId));
                         }
                     } catch (SQLException ex) {
+                        MiscUtils.checkSQLException(ex);
                         Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
                     }
         }

@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.patients.individual.Pedigree;
 import org.ut.biolab.medsavant.view.patients.individual.PedigreeBasicRule;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -187,7 +188,12 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected List<String> doInBackground() throws Exception {
-                return PatientQueryUtil.getFamilyIds(ProjectController.getInstance().getCurrentProjectId());
+                try {
+                    return PatientQueryUtil.getFamilyIds(ProjectController.getInstance().getCurrentProjectId());
+                } catch (SQLException ex) {
+                    MiscUtils.checkSQLException(ex);
+                    throw ex;
+                }
             }
 
             @Override
@@ -232,10 +238,15 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected Map<String, Integer> doInBackground() throws Exception {
-                return VariantQueryUtil.getNumVariantsInFamily(
-                        ProjectController.getInstance().getCurrentProjectId(),
-                        ReferenceController.getInstance().getCurrentReferenceId(),
-                        familyId, FilterController.getQueryFilterConditions());
+                try {
+                    return VariantQueryUtil.getNumVariantsInFamily(
+                            ProjectController.getInstance().getCurrentProjectId(),
+                            ReferenceController.getInstance().getCurrentReferenceId(),
+                            familyId, FilterController.getQueryFilterConditions());
+                } catch (SQLException ex) {
+                    MiscUtils.checkSQLException(ex);
+                    throw ex;
+                }
             }
 
             protected void done() {
@@ -260,7 +271,13 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
             @Override
             protected File doInBackground() throws Exception {
 
-                List<Object[]> results = PatientQueryUtil.getFamily(ProjectController.getInstance().getCurrentProjectId(), familyId);
+                List<Object[]> results;
+                try {
+                    results = PatientQueryUtil.getFamily(ProjectController.getInstance().getCurrentProjectId(), familyId);
+                } catch (SQLException ex) {
+                    MiscUtils.checkSQLException(ex);
+                    throw ex;
+                }
 
                 File outfile = new File(DirectorySettings.getTmpDirectory(), "pedigree" + familyId + ".csv");
 

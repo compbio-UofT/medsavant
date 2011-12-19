@@ -31,6 +31,7 @@ import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
@@ -171,7 +172,9 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                                 }                               
                             } else {
                                 return new ArrayList<Object[]>();
-                            }                           
+                            }       
+                        } catch (SQLException ex) {
+                            MiscUtils.checkSQLException(ex);
                         } catch (Exception e){}
                     }
                     
@@ -193,6 +196,8 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                             } else {
                                 return new ArrayList<Object[]>();
                             }
+                        } catch (SQLException ex) {
+                            MiscUtils.checkSQLException(ex);
                         } catch (Exception e){}
                     }                    
                     

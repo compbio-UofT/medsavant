@@ -4,12 +4,14 @@
  */
 package org.ut.biolab.medsavant.view.patients.individual;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.PatientFormat;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
 
 /**
@@ -19,8 +21,12 @@ import org.ut.biolab.medsavant.view.list.DetailedListModel;
 public class IndividualListModel implements DetailedListModel {
 
     public List<Object[]> getList(int limit) throws Exception {
-        List<Object[]> table = PatientQueryUtil.getBasicPatientInfo(ProjectController.getInstance().getCurrentProjectId(), limit);
-        return table;
+        try {
+            return PatientQueryUtil.getBasicPatientInfo(ProjectController.getInstance().getCurrentProjectId(), limit);
+        } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
+            throw ex;
+        }
     }
 
     public List<String> getColumnNames() {

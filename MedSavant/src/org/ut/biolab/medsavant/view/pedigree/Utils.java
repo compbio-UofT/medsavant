@@ -20,6 +20,7 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchem
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 
@@ -54,7 +55,9 @@ public class Utils {
                             }
                         }
                     }
-                } catch (SQLException ex) {}
+                } catch (SQLException ex) {
+                    MiscUtils.checkSQLException(ex);
+                }
 
                 DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
                 Condition[] conditions = new Condition[dnaIds.size()];
@@ -91,7 +94,9 @@ public class Utils {
                 List<String> dnaIds = null;
                 try {
                     dnaIds = PatientQueryUtil.getDNAIdsFromField(ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID, values);
-                } catch (SQLException ex) {}
+                } catch (SQLException ex) {
+                    MiscUtils.checkSQLException(ex);
+                }
 
                 DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
                 Condition[] conditions = new Condition[dnaIds.size()];

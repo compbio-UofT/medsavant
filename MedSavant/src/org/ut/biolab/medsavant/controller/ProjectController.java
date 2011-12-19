@@ -21,6 +21,7 @@ import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -217,6 +218,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
         try {
             return PatientQueryUtil.getPatientTablename(currentProjectId);
         } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
@@ -264,6 +266,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
             try {
                 currentPatientFormat = PatientQueryUtil.getPatientFields(currentProjectId); 
             } catch (SQLException ex) {
+                MiscUtils.checkSQLException(ex);
                 Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

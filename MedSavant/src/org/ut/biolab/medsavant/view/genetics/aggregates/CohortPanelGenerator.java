@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
@@ -289,7 +290,12 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
                 @Override
                 protected Object doInBackground() throws Exception {
                     if(this.isThreadCancelled()) return -1;
-                    return CohortQueryUtil.getNumVariantsInCohort(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), cohort.getId(), FilterController.getQueryFilterConditions());
+                    try {
+                        return CohortQueryUtil.getNumVariantsInCohort(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), cohort.getId(), FilterController.getQueryFilterConditions());
+                    } catch (SQLException ex) {
+                        MiscUtils.checkSQLException(ex);
+                        return -1;
+                    }
                 }
 
                 @Override
@@ -405,7 +411,12 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
                     if(this.isThreadCancelled()) {
                         return -1;
                     }
-                    return VariantQueryUtil.getNumVariantsForDnaIds(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), FilterController.getQueryFilterConditions(), patient.getDnaIds());
+                    try {
+                        return VariantQueryUtil.getNumVariantsForDnaIds(ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), FilterController.getQueryFilterConditions(), patient.getDnaIds());
+                    } catch (SQLException ex) {
+                        MiscUtils.checkSQLException(ex);
+                    }
+                    return -1;
                 }
 
                 @Override

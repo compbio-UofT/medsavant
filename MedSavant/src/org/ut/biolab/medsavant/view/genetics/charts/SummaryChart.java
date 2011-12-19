@@ -314,7 +314,12 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
         protected ChartFrequencyMap doInBackground() throws Exception {
             if (mapGenerator == null) { return null; }
             if(this.isThreadCancelled()) return null;
-            return mapGenerator.generateChartMap(isLogScaleX && mapGenerator.isNumeric());
+            try {
+                return mapGenerator.generateChartMap(isLogScaleX && mapGenerator.isNumeric());
+            } catch (SQLException ex) {
+                MiscUtils.checkSQLException(ex);
+                throw ex;
+            }
         }
 
         public void showSuccess(ChartFrequencyMap result) {
@@ -406,6 +411,8 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
                                 "Charts - Filter by Selection", 
                                 mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(), 
                                 ComboCondition.or(conditions));
+                        } catch (SQLException ex) {
+                            MiscUtils.checkSQLException(ex);
                         } catch (Exception ex) {
                             Logger.getLogger(SummaryChart.class.getName()).log(Level.SEVERE, null, ex);
                         }                    
@@ -443,6 +450,8 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
                                 "Charts - Filter by Selection", 
                                 mapGenerator.getName() + ": " + values.size() + " selection(s)", 
                                 ComboCondition.or(conditions));
+                        } catch (SQLException ex) {
+                            MiscUtils.checkSQLException(ex);
                         } catch (Exception ex) {
                             Logger.getLogger(SummaryChart.class.getName()).log(Level.SEVERE, null, ex);
                         } 

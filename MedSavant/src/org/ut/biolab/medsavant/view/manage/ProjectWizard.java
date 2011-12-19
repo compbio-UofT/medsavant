@@ -56,6 +56,7 @@ import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -231,7 +232,7 @@ public class ProjectWizard extends WizardDialog {
         patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_GENDER, DefaultpatientTableSchema.TYPE_OF_GENDER + getLengthString(DefaultpatientTableSchema.LENGTH_OF_GENDER), true, PatientFormat.ALIAS_OF_GENDER, ""});
         patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_AFFECTED, DefaultpatientTableSchema.TYPE_OF_AFFECTED + getLengthString(DefaultpatientTableSchema.LENGTH_OF_AFFECTED), true, PatientFormat.ALIAS_OF_AFFECTED, ""});
         patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultpatientTableSchema.TYPE_OF_DNA_IDS + getLengthString(DefaultpatientTableSchema.LENGTH_OF_DNA_IDS), true, PatientFormat.ALIAS_OF_DNA_IDS, ""});
-        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultpatientTableSchema.TYPE_OF_BAM_URL + getLengthString(DefaultpatientTableSchema.LENGTH_OF_BAM_URL), false, PatientFormat.ALIAS_OF_BAM_URL, ""});
+        patientFormatModel.addRow(new Object[]{DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultpatientTableSchema.TYPE_OF_BAM_URL + getLengthString(DefaultpatientTableSchema.LENGTH_OF_BAM_URL), true, PatientFormat.ALIAS_OF_BAM_URL, ""});
 
         if(modify){
             for(CustomField f : patientFields){
@@ -487,6 +488,7 @@ public class ProjectWizard extends WizardDialog {
                                     "Project " + projectName + " has been " + (modify ? "modified." : "created."));
                             instance.setCurrentPage(PAGENAME_COMPLETE);
                         } catch (SQLException ex) {
+                            MiscUtils.checkSQLException(ex);
                             DialogUtils.displayException("Error", "There was an error while trying to create your project. ", ex);
                             Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
                             instance.setVisible(false);

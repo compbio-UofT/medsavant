@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.util.ExtensionsFileFilter;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
@@ -84,6 +85,7 @@ public class SavantExportForm extends javax.swing.JDialog {
                 addId(id);
             }
         } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
             Logger.getLogger(SavantExportForm.class.getName()).log(Level.SEVERE, null, ex);
         }
         
@@ -123,8 +125,9 @@ public class SavantExportForm extends javax.swing.JDialog {
                     FilterController.getQueryFilterConditions(),
                     selectedIds, 
                     -1);
-        } catch (SQLException e){
-            e.printStackTrace();
+        } catch (SQLException ex){
+            MiscUtils.checkSQLException(ex);
+            ex.printStackTrace();
         }
         
         
@@ -132,8 +135,9 @@ public class SavantExportForm extends javax.swing.JDialog {
         List<String> bamFiles = new ArrayList<String>();
         try {
             bamFiles = PatientQueryUtil.getValuesFromDNAIds(ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, selectedIds);
-        } catch (SQLException e){
-            e.printStackTrace();
+        } catch (SQLException ex){
+            MiscUtils.checkSQLException(ex);
+            ex.printStackTrace();
         }
         
         //genome version

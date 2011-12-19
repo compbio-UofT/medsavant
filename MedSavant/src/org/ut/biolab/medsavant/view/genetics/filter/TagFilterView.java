@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.VariantTag;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -202,6 +203,7 @@ public class TagFilterView extends FilterView {
 
                                 return new Condition[] {ComboCondition.or(uploadIDConditions) };
                             } catch (SQLException ex) {
+                                MiscUtils.checkSQLException(ex);
                                 return new Condition[0];
                             }
 
@@ -232,6 +234,7 @@ public class TagFilterView extends FilterView {
             p.add(bottomContainer,BorderLayout.SOUTH);
 
         } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
             content.add(new JLabel("Problem getting tag information"));
         }
 
@@ -252,6 +255,7 @@ public class TagFilterView extends FilterView {
                     tagValueCB.addItem(val);
                 }
             } catch (SQLException ex) {
+                MiscUtils.checkSQLException(ex);
                 Logger.getLogger(TagFilterView.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

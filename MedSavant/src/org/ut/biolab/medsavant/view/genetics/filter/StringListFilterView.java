@@ -184,6 +184,7 @@ public class StringListFilterView extends FilterView {
                             } catch (NonFatalDatabaseException ex) {
                                 Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (SQLException ex) {
+                                MiscUtils.checkSQLException(ex);
                                 Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }

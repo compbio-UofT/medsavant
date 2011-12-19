@@ -45,6 +45,7 @@ import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.db.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -419,6 +420,7 @@ public class ImportVariantsWizard extends WizardDialog {
                                 }
                             });
                         } catch (SQLException ex){
+                            MiscUtils.checkSQLException(ex);
                         } catch (InterruptedException ex){
 
                             String[] uploadInfo = ex.getMessage().split(";");

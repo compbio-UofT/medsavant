@@ -329,8 +329,7 @@ public class DialogUtils {
     }
         
     public static void displayErrorMessage(String msg, Exception ex) {
-        JOptionPane p = new JOptionPane(msg, JOptionPane.ERROR_MESSAGE);
-        p.setVisible(true);
+        JOptionPane.showMessageDialog(null, msg, "Database Error", JOptionPane.ERROR_MESSAGE);
     }
     
     /**

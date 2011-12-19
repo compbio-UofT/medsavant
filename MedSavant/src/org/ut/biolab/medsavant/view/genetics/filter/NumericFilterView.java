@@ -38,6 +38,7 @@ import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -269,6 +270,7 @@ public class NumericFilterView extends FilterView{
                             } catch (NonFatalDatabaseException ex) {
                                 Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (SQLException ex) {
+                                MiscUtils.checkSQLException(ex);
                                 Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }

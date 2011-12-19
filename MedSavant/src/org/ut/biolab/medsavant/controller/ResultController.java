@@ -13,6 +13,7 @@ import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.util.MiscUtils;
 
 /**
  * @author Andrew
@@ -80,6 +81,7 @@ public class ResultController implements FiltersChangedListener {
                     start, 
                     limit);
         } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
             Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -95,6 +97,7 @@ public class ResultController implements FiltersChangedListener {
             }
             return totalNumVariantsRemaining;
         } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
             ex.printStackTrace();
             return 0;
         }

@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import com.mysql.jdbc.exceptions.MySQLSyntaxErrorException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -29,6 +30,7 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 
 /**
@@ -95,6 +97,8 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
                 ProjectController.getInstance().getCurrentProjectId(), 
                 ReferenceController.getInstance().getCurrentReferenceId(), 
                 FilterController.getQueryFilterConditions());
+        } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
         } catch (Exception ex) {
             Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -128,7 +132,8 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
                             ProjectController.getInstance().getCurrentProjectId(), 
                             ReferenceController.getInstance().getCurrentReferenceId(), 
                             FilterController.getQueryFilterConditions()));
-                } catch (SQLException ex) {
+                } catch (SQLException ex) {              
+                    MiscUtils.checkSQLException(ex);
                     Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 dialog.close();  

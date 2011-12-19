@@ -41,6 +41,7 @@ import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
@@ -171,66 +172,72 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         
         @Override
         protected Object doInBackground() throws InterruptedException, SQLException {  
-            final int totalNum = VariantQueryUtil.getNumFilteredVariants(
+            /*final int totalNum = VariantQueryUtil.getNumFilteredVariants(
                                     ProjectController.getInstance().getCurrentProjectId(), 
                                     ReferenceController.getInstance().getCurrentReferenceId(), 
-                                    FilterController.getQueryFilterConditions());           
+                                    FilterController.getQueryFilterConditions()); */          
             
             //final int binsize = (int)Math.min(249250621, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
 
-            long start = System.currentTimeMillis();
-            final Map<String,Map<Range,Integer>> map = VariantQueryUtil.getChromosomeHeatMap(
-                    ProjectController.getInstance().getCurrentProjectId(),
-                        ReferenceController.getInstance().getCurrentReferenceId(),
-                        FilterController.getQueryFilterConditions(),
-                        3000000);
-            long time = System.currentTimeMillis() - start;
+            try {
             
-            int mmax = 0;
-            for (String s : map.keySet()) {
-                for (Range r : map.get(s).keySet()) {
-                    int val = map.get(s).get(r);
-                    mmax = (val > mmax) ? val : mmax;
-                }
-            }
-            
-            final int max = mmax;
-            
-            for (final ChromosomePanel p : chrViews){
-                if(this.isThreadCancelled()) return null;
+                long start = System.currentTimeMillis();
+                final Map<String,Map<Range,Integer>> map = VariantQueryUtil.getChromosomeHeatMap(
+                        ProjectController.getInstance().getCurrentProjectId(),
+                            ReferenceController.getInstance().getCurrentReferenceId(),
+                            FilterController.getQueryFilterConditions(),
+                            3000000);
+                long time = System.currentTimeMillis() - start;
 
-                //limit of 5 threads at a time
-                synchronized (workerLock){
-                    while(activeThreads > 5){
+                int mmax = 0;
+                for (String s : map.keySet()) {
+                    for (Range r : map.get(s).keySet()) {
+                        int val = map.get(s).get(r);
+                        mmax = (val > mmax) ? val : mmax;
+                    }
+                }
+
+                final int max = mmax;
+
+                for (final ChromosomePanel p : chrViews){
+                    if(this.isThreadCancelled()) return null;
+
+                    //limit of 5 threads at a time
+                    synchronized (workerLock){
+                        while(activeThreads > 5){
+                            if(this.isThreadCancelled()) return null;
+                            workerLock.wait();
+                        }
+                        activeThreads++;
+                    }
+
+                    Thread thread = new Thread() {
+                        @Override
+                        public void run() {
+                            p.updateFrequencyCounts(map.get(p.getChrName()),max);
+                            synchronized(workerLock){
+                                regionsDone++;
+                                activeThreads--;
+                                workerLock.notifyAll();
+                            }          
+                        }
+                    };
+                    thread.start();
+                } 
+
+                //wait until all threads completed
+                synchronized(workerLock){
+                    while(regionsDone < chrViews.size()){
                         if(this.isThreadCancelled()) return null;
                         workerLock.wait();
                     }
-                    activeThreads++;
                 }
 
-                Thread thread = new Thread() {
-                    @Override
-                    public void run() {
-                        p.updateFrequencyCounts(map.get(p.getChrName()),max);
-                        synchronized(workerLock){
-                            regionsDone++;
-                            activeThreads--;
-                            workerLock.notifyAll();
-                        }          
-                    }
-                };
-                thread.start();
-            } 
-
-            //wait until all threads completed
-            synchronized(workerLock){
-                while(regionsDone < chrViews.size()){
-                    if(this.isThreadCancelled()) return null;
-                    workerLock.wait();
-                }
+                return true;  
+            } catch (SQLException ex){
+                MiscUtils.checkSQLException(ex);
+                throw ex;
             }
-
-            return true;            
         }
         
         /*@Override

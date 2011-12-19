@@ -6,6 +6,10 @@ package org.ut.biolab.medsavant.util;
 
 import com.jidesoft.docking.DockableFrame;
 import com.jidesoft.docking.DockingManager;
+import com.mysql.jdbc.exceptions.MySQLSyntaxErrorException;
+import java.sql.SQLException;
+import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
  *
@@ -53,5 +57,12 @@ public class MiscUtils {
                 (l + " cannot be cast to int without changing its value.");
         }
         return (int) l;
+    }
+    
+    public static void checkSQLException(SQLException e){
+        if(e instanceof MySQLSyntaxErrorException && (e.getMessage().contains("Unknown column") || e.getMessage().contains("doesn't exist"))){            
+            DialogUtils.displayErrorMessage("<HTML>It appears that the database structure has been modified. <BR>Please log back in for the changes to take effect.</HTML>", e);
+            LoginController.logout();
+        }
     }
 }

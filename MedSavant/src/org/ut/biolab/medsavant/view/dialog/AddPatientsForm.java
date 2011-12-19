@@ -35,6 +35,7 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.ExtensionsFileFilter;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -75,6 +76,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
                 model.addRow(new Object[]{fields.get(i), ""});
             }
         } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
         
@@ -261,6 +263,8 @@ public class AddPatientsForm extends javax.swing.JDialog {
             in.close();
             bufferedReader.close();
             progressMessage.setText("Import successful");
+        } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
         } catch (Exception ex) {           
             ex.printStackTrace();
             progressMessage.setText("Error importing patients");
@@ -427,6 +431,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         try {
             addPatient();
         } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -435,6 +440,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         try {
             generateTemplate();
         } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -443,6 +449,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         try {
             importFile();
         } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButton3ActionPerformed

@@ -34,6 +34,7 @@ import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.model.SimplePatient;
 import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
@@ -274,6 +275,7 @@ public class CohortDetailedView extends DetailedView {
                                 }
                             }
                         } catch (SQLException ex) {
+                            MiscUtils.checkSQLException(ex);
                             Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }

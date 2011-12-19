@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -32,6 +33,7 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -369,10 +371,12 @@ public class FilterPanelSub extends CollapsiblePanel {
                                     default:
                                         return StringListFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias());
                                 }
+                            } catch (SQLException e) {
+                                MiscUtils.checkSQLException(e);
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                return null;
                             }
+                            return null;
                         }
 
                         public String getFilterID() {
@@ -412,10 +416,12 @@ public class FilterPanelSub extends CollapsiblePanel {
                                 default:
                                     return StringListFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias());
                             }
+                        } catch (SQLException e) {
+                            MiscUtils.checkSQLException(e);
                         } catch (Exception e) {
-                            e.printStackTrace();
-                            return null;
+                            e.printStackTrace();                          
                         }
+                        return null;
                     }
 
                     public String getFilterID() {
