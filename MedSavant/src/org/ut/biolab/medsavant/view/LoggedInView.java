@@ -64,6 +64,7 @@ public class LoggedInView extends JPanel implements ProjectListener {
     }
 
     private void initViewContainer() {
+        ViewController.reset();
         viewController = ViewController.getInstance();
         this.add(viewController,BorderLayout.CENTER);
     }

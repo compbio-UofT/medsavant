@@ -107,6 +107,10 @@ public class ViewController extends JPanel {
         }
         return instance;
     }
+    
+    public static void reset() {
+        instance = null;
+    }
 
     public void changeSubSectionTo(SubSectionView view) {
 
