@@ -6,7 +6,6 @@ package org.ut.biolab.medsavant.vcf;
 
 import au.com.bytecode.opencsv.CSVReader;
 import java.io.BufferedWriter;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -44,7 +43,7 @@ public class VCFParser {
         return null;
     }
 
-    public static boolean parseVariantsFromReader(CSVReader r, int outputLinesLimit, File outfile, int updateId, int fileId) throws IOException {
+    public static int parseVariantsFromReader(CSVReader r, int outputLinesLimit, File outfile, int updateId, int fileId) throws IOException {
         return parseVariantsFromReader(r, null, outputLinesLimit, outfile, updateId, fileId);
     }
 
@@ -57,17 +56,16 @@ public class VCFParser {
      * @param outfile The temporary output file, with variants parsed 1 per position per individual
      * @param updateId The updateId to prepend to each line
      * @param fileId The fileId to prepend to each line
-     * @return Whether or not the function quit early (as per outputLinesLimit) or finished the file
+     * @return number of lines written to outfile
      * @throws IOException
      */
-    public static boolean parseVariantsFromReader(CSVReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId) throws IOException {
+    public static int parseVariantsFromReader(CSVReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId) throws IOException {
 
         System.out.println("Starting to parse variants from reader");
 
         String[] nextLine;
         int numRecords = 0;
 
-        boolean didParseCompleteFile = false;
 
         BufferedWriter out = new BufferedWriter(new FileWriter(outfile, false));
 
@@ -75,11 +73,10 @@ public class VCFParser {
         int numLinesWritten = 0;
 
         while (true) {
-            if (numLinesWritten > outputLinesLimit) {
+            if (numLinesWritten >= outputLinesLimit) {
                 break;
             }
             if ((nextLine = r.readNext()) == null) {
-                didParseCompleteFile = true;
                 break;
             }
 
@@ -114,8 +111,7 @@ public class VCFParser {
 
         System.out.println("Read " + numRecords + " lines");
 
-
-        return didParseCompleteFile;
+        return numLinesWritten;
     }
 
     public static void parseVariants(File vcffile, File outfile, char delimiter, int updateId, int fileId) throws FileNotFoundException, IOException {
