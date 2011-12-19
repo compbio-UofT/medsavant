@@ -21,10 +21,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -394,51 +398,45 @@ public class ImportVariantsWizard extends WizardDialog {
                     @Override
                     public void run() {
                         instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+                        
                         try {
-
-                            final int uploadID = ImportVariants.performImport(variantFiles, DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()), projectId, referenceId, progressLabel);
-
-                            boolean successUploadVariants = uploadID != -1;
-
-                            boolean successUploadTags = ImportVariants.addTagsToUpload(uploadID,tagsToStringArray(variantTags));
-
-                            final boolean success = successUploadVariants && successUploadTags;
-
-                            SwingUtilities.invokeLater(new Runnable() {
-
-                                public void run() {
-                                    progressBar.setIndeterminate(false);
-                                    if (success) {
-                                        cancelButton.setEnabled(false);
-                                        progressBar.setValue(100);
-                                        progressLabel.setText("Upload complete.");
-                                        page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                                    } else {
-                                        startButton.setEnabled(false);
-                                        progressLabel.setText("An error occured while importing variants.");
-                                    }
-                                }
-                            });
-                        } catch (SQLException ex){
-                            MiscUtils.checkSQLException(ex);
-                        } catch (InterruptedException ex){
-
-                            String[] uploadInfo = ex.getMessage().split(";");
-                            int updateId = Integer.parseInt(uploadInfo[0]);
-                            String tableName = uploadInfo[1];
-
-                            VariantQueryUtil.cancelUpload(updateId, tableName);
-
-                            progressBar.setIndeterminate(false);
-                            progressBar.setValue(0);
-                            progressLabel.setText("Upload cancelled.");
-                            startButton.setVisible(true);
-                            startButton.setEnabled(true);
-                            cancelButton.setText("Cancel");
-                            cancelButton.setEnabled(true);
-                            cancelButton.setVisible(false);
-                            System.out.println("Update " + updateId + " was cancelled");
-                        }
+                            int uploadId = ImportVariants.performImport(variantFiles, DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()), projectId, referenceId, progressLabel);
+                            ImportVariants.addTagsToUpload(uploadId, tagsToStringArray(variantTags));
+                        } catch (Exception ex) {
+                            
+                            //cancellation
+                            if(ex instanceof InterruptedException){
+                                progressBar.setIndeterminate(false);
+                                progressBar.setValue(0);
+                                progressLabel.setText("Upload cancelled.");
+                                startButton.setVisible(true);
+                                startButton.setEnabled(true);
+                                cancelButton.setText("Cancel");
+                                cancelButton.setEnabled(true);
+                                cancelButton.setVisible(false);
+                                
+                            //failure
+                            } else {
+                                if(ex instanceof SQLException){
+                                    MiscUtils.checkSQLException((SQLException)ex);
+                                }                   
+                                progressBar.setIndeterminate(false);
+                                progressBar.setValue(0);
+                                progressLabel.setForeground(Color.red);
+                                progressLabel.setText(ex.getMessage());
+                                startButton.setVisible(false);
+                                cancelButton.setVisible(false);
+                            }                        
+                            Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex);
+                        }    
+                        
+                        //success
+                        progressBar.setIndeterminate(false);
+                        cancelButton.setEnabled(false);
+                        progressBar.setValue(100);
+                        progressLabel.setText("Upload complete.");
+                        page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                        
                         instance.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     }
 
@@ -477,5 +475,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
         return page;
     }
+    
+    
 
 }
