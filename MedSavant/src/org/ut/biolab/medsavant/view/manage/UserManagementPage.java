@@ -11,17 +11,22 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
+import javax.swing.Box;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.controller.UserController;
 import org.ut.biolab.medsavant.controller.UserController.UserListener;
+import org.ut.biolab.medsavant.db.model.UserLevel;
+import org.ut.biolab.medsavant.db.util.MiscUtils;
+import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
 import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.view.list.DetailedView;
@@ -105,10 +110,27 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         private final JPanel content;
         private String name;
         private DetailsSW sw;
+        private List<String> fieldNames;
+        private CollapsiblePanel infoPanel;
 
         public UserDetailedView() {
+            
+            fieldNames = new ArrayList<String>();
+            fieldNames.add("User Level");
+        
+            JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
+            viewContainer.setLayout(new BorderLayout());
 
-            content = this.getContentPanel();
+            JPanel infoContainer = ViewUtil.getClearPanel();
+            ViewUtil.applyVerticalBoxLayout(infoContainer);
+
+            viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer), BorderLayout.CENTER);
+
+            infoPanel = new CollapsiblePanel("User Information");
+            infoContainer.add(infoPanel);
+            infoContainer.add(Box.createVerticalGlue());
+
+            content = infoPanel.getContentPane();
 
             details = ViewUtil.getClearPanel();
 
@@ -136,15 +158,52 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         public void setRightClick(MouseEvent e) {
             //nothing yet
         }
+        
+        public synchronized void setUserInfoList(List<String> info) {
+            
+            details.removeAll();
+            
+            details.setLayout(new BorderLayout());
+            ViewUtil.setBoxYLayout(details);
+            
+            String[][] values = new String[fieldNames.size()][2];
+            for(int i = 0; i < fieldNames.size(); i++){
+                values[i][0] = fieldNames.get(0);
+                values[i][1] = info.get(0);
+            }
+            details.add(ViewUtil.getKeyValuePairList(values));
+            
+            details.updateUI();
+            
+        }
+        
+        private class DetailsSW extends SwingWorker {
 
-        private static class DetailsSW extends SwingWorker {
-
-            public DetailsSW(String projectName) {
+            private String userName;
+            
+            public DetailsSW(String userName) {
+                this.userName = userName;
             }
 
             @Override
             protected Object doInBackground() throws Exception {
-                return null;
+                try {
+                    return UserQueryUtil.getUserLevel(userName);
+                } catch (SQLException ex) {
+                    return null;
+                }
+            }
+            
+            @Override
+            protected void done() {
+                List<String> infoList = new ArrayList<String>();
+                try {
+                    UserLevel level = (UserLevel) get();
+                    infoList.add(MiscUtils.userLevelToString(level)); 
+                } catch (Exception ex){
+                    infoList.add("Unknown");
+                }
+                setUserInfoList(infoList);
             }
         }
 
