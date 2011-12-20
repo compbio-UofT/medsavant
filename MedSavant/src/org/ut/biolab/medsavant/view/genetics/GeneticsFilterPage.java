@@ -34,7 +34,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 public class GeneticsFilterPage extends SubSectionView {
-    
+
     private static class FilterSQLPanel extends JPanel implements FiltersChangedListener {
         private final JTextArea content;
 
@@ -70,7 +70,7 @@ public class GeneticsFilterPage extends SubSectionView {
     private FilterProgressPanel history;
 
     private static GeneticsFilterPage instance;
-    
+
     public GeneticsFilterPage(SectionView parent) {
         super(parent);
         instance = this;
@@ -89,10 +89,10 @@ public class GeneticsFilterPage extends SubSectionView {
 
             if(history != null) FilterController.removeFilterListener(history);
             history = new FilterProgressPanel();
-            view.add(new PeekingPanel("History", BorderLayout.EAST, history, true), BorderLayout.WEST);
+            view.add(new PeekingPanel("History", BorderLayout.EAST, history, false), BorderLayout.WEST);
 
             // uncomment the next line to show the master SQL statement
-            view.add(new PeekingPanel("SQL", BorderLayout.SOUTH, new FilterSQLPanel(), true), BorderLayout.NORTH);
+            view.add(new PeekingPanel("SQL", BorderLayout.SOUTH, new FilterSQLPanel(), false), BorderLayout.NORTH);
         } else {
             fp.refreshSubPanels();
         }
@@ -108,11 +108,11 @@ public class GeneticsFilterPage extends SubSectionView {
     public void viewDidUnload() {
         ThreadController.getInstance().cancelWorkers(getName());
     }
-    
+
     public FilterPanel getFilterPanel(){
         return fp;
     }
-    
+
     public static GeneticsFilterPage getInstance(){
         return instance;
     }
