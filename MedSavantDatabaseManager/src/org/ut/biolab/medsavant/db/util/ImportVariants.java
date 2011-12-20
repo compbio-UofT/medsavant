@@ -27,12 +27,12 @@ public class ImportVariants {
 
     private static final int outputLinesLimit = 1000000;
 
-    public static int performImport(File[] vcfFiles, File tmpDir, int projectId, int referenceId, JLabel progressLabel) throws Exception {
+    public static int performImport(File[] vcfFiles, File tmpDir, int projectId, int referenceId, JLabel progressLabel, String user) throws Exception {
         
         //add log
         int updateId = -1;
         try {
-            updateId = AnnotationLogQueryUtil.addAnnotationLogEntry(projectId, referenceId, Action.ADD_VARIANTS);
+            updateId = AnnotationLogQueryUtil.addAnnotationLogEntry(projectId, referenceId, Action.ADD_VARIANTS, user);
         } catch (SQLException e){
             throw new SQLException("Could not start update. ", e);
         }

@@ -78,6 +78,7 @@ public class LogQueryUtil {
                 updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION),
                 updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS),
                 updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP),
+                updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_USER),
                 updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID));
         query.addJoin(
                 SelectQuery.JoinType.LEFT_OUTER,

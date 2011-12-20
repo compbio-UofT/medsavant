@@ -343,7 +343,7 @@ public class ProjectQueryUtil {
 
     }
 
-    public static void setAnnotations(int projectid, int refid, String annotation_ids, boolean logEntry) throws SQLException {
+    public static void setAnnotations(int projectid, int refid, String annotation_ids, boolean logEntry, String user) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
@@ -354,7 +354,7 @@ public class ProjectQueryUtil {
         (ConnectionController.connectPooled()).createStatement().execute(query.toString());
 
         if(logEntry){
-            AnnotationLogQueryUtil.addAnnotationLogEntry(projectid, refid, Action.UPDATE_TABLE, Status.PENDING);
+            AnnotationLogQueryUtil.addAnnotationLogEntry(projectid, refid, Action.UPDATE_TABLE, Status.PENDING, user);
         }
     }
 
@@ -395,7 +395,7 @@ public class ProjectQueryUtil {
         ConnectionController.connectPooled().createStatement().executeUpdate(query.toString());
     }
 
-    public static void setCustomVariantFields(int projectId, List<CustomField> fields, boolean firstSet) throws SQLException {
+    public static void setCustomVariantFields(int projectId, List<CustomField> fields, boolean firstSet, String user) throws SQLException {
 
         Connection c = ConnectionController.connectPooled();
         TableSchema table = MedSavantDatabase.VariantformatTableSchema;
@@ -424,7 +424,7 @@ public class ProjectQueryUtil {
         if(!firstSet){
             List<Integer> referenceIds = ReferenceQueryUtil.getReferenceIdsForProject(projectId);
             for(Integer id : referenceIds){
-                AnnotationLogQueryUtil.addAnnotationLogEntry(projectId, id, Action.UPDATE_TABLE, Status.PENDING);
+                AnnotationLogQueryUtil.addAnnotationLogEntry(projectId, id, Action.UPDATE_TABLE, Status.PENDING, user);
             }
         }
 

@@ -24,7 +24,6 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject;
@@ -104,11 +103,11 @@ public class AnnotationLogQueryUtil {
         }
     }
 
-    public static int addAnnotationLogEntry(int projectId, int referenceId, Action action) throws SQLException{
-        return addAnnotationLogEntry(projectId,referenceId,action,Status.PREPROCESS);
+    public static int addAnnotationLogEntry(int projectId, int referenceId, Action action, String user) throws SQLException{
+        return addAnnotationLogEntry(projectId,referenceId,action,Status.PREPROCESS, user);
     }
 
-    public static int addAnnotationLogEntry(int projectId, int referenceId, Action action, Status status) throws SQLException {
+    public static int addAnnotationLogEntry(int projectId, int referenceId, Action action, Status status, String user) throws SQLException {
 
         if(action == Action.UPDATE_TABLE && existsDuplicateAnnotation(projectId, referenceId)) return -1;
 
@@ -121,6 +120,7 @@ public class AnnotationLogQueryUtil {
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION), actionToInt(action));
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), statusToInt(status));
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);
+        query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_USER), user);
 
         PreparedStatement stmt = (ConnectionController.connectPooled()).prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
         stmt.execute();
@@ -188,6 +188,34 @@ public class AnnotationLogQueryUtil {
         String q = query.toString();
         ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
         return rs.next();
+    }
+
+    public static Status getUserPriorityStatus(String user) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
+        SelectQuery query = new SelectQuery();       
+        query.addColumns(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS));        
+        query.addGroupings(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS));      
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_USER), user));
+        
+        ResultSet rs = ConnectionController.connectPooled().createStatement().executeQuery(query.toString());
+        Status maxStatus = Status.COMPLETE;
+        while(rs.next()){
+            Status current = intToStatus(rs.getInt(1));
+            switch(current){
+                case ERROR:
+                    maxStatus = current;
+                    break;
+                case PREPROCESS:
+                case PENDING:
+                case INPROGRESS:
+                    if(maxStatus != Status.ERROR){
+                        maxStatus = current;
+                    }
+                    break;
+            }
+        }
+        return maxStatus;
     }
 
 }

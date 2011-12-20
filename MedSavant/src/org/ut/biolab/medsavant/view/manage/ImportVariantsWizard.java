@@ -400,7 +400,7 @@ public class ImportVariantsWizard extends WizardDialog {
                         instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
                         
                         try {
-                            int uploadId = ImportVariants.performImport(variantFiles, DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()), projectId, referenceId, progressLabel);
+                            int uploadId = ImportVariants.performImport(variantFiles, DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()), projectId, referenceId, progressLabel, LoginController.getUsername());
                             ImportVariants.addTagsToUpload(uploadId, tagsToStringArray(variantTags));
                         } catch (Exception ex) {
                             

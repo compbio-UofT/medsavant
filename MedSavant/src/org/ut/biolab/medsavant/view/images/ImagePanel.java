@@ -4,13 +4,9 @@
  */
 package org.ut.biolab.medsavant.view.images;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
 /**
@@ -26,8 +22,10 @@ public class ImagePanel extends JPanel {
         this.setMaximumSize(dim);
         this.setMinimumSize(dim);
         this.setPreferredSize(dim);
+        this.setOpaque(false);
     }
     
+    @Override
     public void paintComponent(Graphics g) {
         g.drawImage(image, 0, 0, this.getWidth(), this.getHeight(), this);
     }

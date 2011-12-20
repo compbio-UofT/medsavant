@@ -785,6 +785,11 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_TIMESTAMP = TableSchema.ColumnType.DATE;
         public static final int LENGTH_OF_TIMESTAMP = -1;
         public static final String COLUMNNAME_OF_TIMESTAMP = "timestamp";
+        // variant_pending_update.user
+        public static final int INDEX_OF_USER = 6;
+        public static final ColumnType TYPE_OF_USER = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_USER = 200;
+        public static final String COLUMNNAME_OF_USER = "user";
 
         private void addColumns() {
             addColumn(COLUMNNAME_OF_UPLOAD_ID, COLUMNNAME_OF_UPLOAD_ID, TableSchema.ColumnType.INTEGER, 11);
@@ -793,6 +798,7 @@ public class MedSavantDatabase {
             addColumn(COLUMNNAME_OF_ACTION, COLUMNNAME_OF_ACTION, TableSchema.ColumnType.INTEGER, 11);
             addColumn(COLUMNNAME_OF_STATUS, COLUMNNAME_OF_STATUS, TableSchema.ColumnType.INTEGER, 5);
             addColumn(COLUMNNAME_OF_TIMESTAMP, COLUMNNAME_OF_TIMESTAMP, TableSchema.ColumnType.DATE, -1);
+            addColumn(COLUMNNAME_OF_USER, COLUMNNAME_OF_USER, TableSchema.ColumnType.VARCHAR, 200);
         }
     }
 

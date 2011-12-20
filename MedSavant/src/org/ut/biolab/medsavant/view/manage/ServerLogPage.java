@@ -70,10 +70,10 @@ public class ServerLogPage extends SubSectionView {
     private SearchableTablePanel annotationTable;
     private static final List<String> clientColumnNames = Arrays.asList(new String[]{"User", "Type", "Description", "Time"});
     private static final List<String> serverColumnNames = Arrays.asList(new String[]{"Type", "Description", "Time"});
-    private static final List<String> annotationsColumnNames = Arrays.asList(new String[]{"Project", "Reference", "Action", "Status", "Time", "Restart"});
+    private static final List<String> annotationsColumnNames = Arrays.asList(new String[]{"Project", "Reference", "Action", "Status", "Time", "User", "Restart"});
     private static final List<Class> clientColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class, String.class});
     private static final List<Class> serverColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class});
-    private static final List<Class> annotationsColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class, String.class, String.class, JButton.class});
+    private static final List<Class> annotationsColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class, String.class, String.class, String.class, JButton.class});
     private String currentCard;
     private WaitPanel waitPanel;
 
@@ -330,7 +330,7 @@ public class ServerLogPage extends SubSectionView {
                     }
                 });
 
-                Object[] r = new Object[6];
+                Object[] r = new Object[7];
                 r[0] = rs.getString(1);
                 r[1] = rs.getString(2);
                 r[2] = AnnotationLogQueryUtil.intToAction(rs.getInt(3));
@@ -340,11 +340,13 @@ public class ServerLogPage extends SubSectionView {
                     r[4] = rs.getTimestamp(5);
                 } catch (Exception e) {
                 }
+                
+                r[5] = rs.getString(6);
 
                 if (status != Status.ERROR) {
-                    r[5] = new JPanel();
+                    r[6] = new JPanel();
                 } else {
-                    r[5] = button;
+                    r[6] = button;
                 }
 
                 v.add(r);

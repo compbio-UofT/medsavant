@@ -174,6 +174,7 @@ public class Setup {
                 + "`action` int(11) unsigned NOT NULL,"
                 + "`status` int(5) unsigned NOT NULL DEFAULT '0',"
                 + "`timestamp` datetime DEFAULT NULL,"
+                + "`user` varchar(200) COLLATE latin1_bin DEFAULT NULL,"
                 + "PRIMARY KEY (`upload_id`) USING BTREE"
                 + ") ENGINE=MyISAM;");
 

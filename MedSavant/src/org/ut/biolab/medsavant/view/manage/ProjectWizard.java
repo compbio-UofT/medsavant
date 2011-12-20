@@ -42,6 +42,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
@@ -615,7 +616,7 @@ public class ProjectWizard extends WizardDialog {
 
             //modify variantFields
             if(variantFieldsChanged){
-                ProjectQueryUtil.setCustomVariantFields(projectId, variantFields, false);
+                ProjectQueryUtil.setCustomVariantFields(projectId, variantFields, false, LoginController.getUsername());
             }
 
             //edit references and annotations
@@ -652,7 +653,7 @@ public class ProjectWizard extends WizardDialog {
                             }
                             s = s.substring(0, s.length()-1);
                         }
-                        ProjectQueryUtil.setAnnotations(projectId, cli.getReference().getId(), s, true);
+                        ProjectQueryUtil.setAnnotations(projectId, cli.getReference().getId(), s, true, LoginController.getUsername());
                     }
                 }
             }
@@ -665,7 +666,7 @@ public class ProjectWizard extends WizardDialog {
             int projectid = ProjectController.getInstance().addProject(projectName, patientFields);
 
             //set custom vcf fields
-            ProjectQueryUtil.setCustomVariantFields(projectid, variantFields, true);
+            ProjectQueryUtil.setCustomVariantFields(projectid, variantFields, true, LoginController.getUsername());
 
             //add references and annotations
             for(CheckListItem cli : checkListItems){
@@ -678,7 +679,7 @@ public class ProjectWizard extends WizardDialog {
                             s += i + ",";
                         }
                         s = s.substring(0, s.length()-1);
-                        ProjectQueryUtil.setAnnotations(projectid, cli.getReference().getId(), s, false);
+                        ProjectQueryUtil.setAnnotations(projectid, cli.getReference().getId(), s, false, LoginController.getUsername());
                     }
 
                     int[] annIds = new int[annotationIds.size()];
