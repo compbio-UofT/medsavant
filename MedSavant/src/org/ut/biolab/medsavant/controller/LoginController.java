@@ -39,25 +39,33 @@ public class LoginController {
     private static boolean isAdmin; 
     private static boolean loggedIn = false;
     private static ArrayList<LoginListener> loginListeners = new ArrayList<LoginListener>();
+    private final static Object eventLock = new Object();
 
+    private synchronized static void setLoggedIn(final boolean loggedIn) {  
+        Thread t = new Thread(){
+            @Override
+            public void run(){      
+                synchronized(eventLock){
+                    LoginController.loggedIn = loggedIn;
 
-    private synchronized static void setLoggedIn(boolean loggedIn) {       
-        LoginController.loggedIn = loggedIn;
+                    if (loggedIn) {
+                        ServerLogQueryUtil.addLog(LoginController.username, LogType.INFO, "Logged in");
+                        fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_IN));
+                    } else {
+                        ServerLogQueryUtil.addLog(LoginController.username, LogType.INFO, "Logged out");
+                        fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_OUT));
+                    }
 
-        if (loggedIn) {
-            ServerLogQueryUtil.addLog(LoginController.username, LogType.INFO, "Logged in");
-            fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_IN));
-        } else {
-            ServerLogQueryUtil.addLog(LoginController.username, LogType.INFO, "Logged out");
-            fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_OUT));
-        }
-        
-        if (!loggedIn) {
-            ConnectionController.disconnectAll();
-            if (!SettingsController.getInstance().getRememberPassword()) {
-                password = "";
+                    if (!loggedIn) {
+                        ConnectionController.disconnectAll();
+                        if (!SettingsController.getInstance().getRememberPassword()) {
+                            password = "";
+                        }
+                    }
+                }
             }
-        }
+        };
+        t.start();
     }
 
     public static String getPassword() {
@@ -137,7 +145,7 @@ public class LoginController {
     private static void fireLoginEvent(LoginEvent evt) {
         for (int i = loginListeners.size()-1; i >= 0; i--){
             loginListeners.get(i).loginEvent(evt);
-        }
+        } 
     }
 
     public static void logout() {
