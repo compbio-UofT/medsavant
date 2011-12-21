@@ -44,7 +44,7 @@ public class ConnectionController {
     private static String pw;
 
 
-    public static void disconnectAll() {
+    public static synchronized void disconnectAll() {
         if (lastConnection != null) {
             try {
                 lastConnection.close();
@@ -55,7 +55,7 @@ public class ConnectionController {
         }
     }
 
-    public static Connection connectPooled() throws SQLException {
+    public static synchronized Connection connectPooled() throws SQLException {
 
         if (dbHost == null) {
             throw new SQLException("DB host not set");
@@ -108,7 +108,7 @@ public class ConnectionController {
         return connectOnce(dbhost,port,dbname,user,pw);
     }
 
-    private static Connection connectOnce(String dbhost, int port, String dbname, String username, String password) throws SQLException {
+    private static synchronized Connection connectOnce(String dbhost, int port, String dbname, String username, String password) throws SQLException {
         try {
             Class.forName(dbDriver).newInstance();
         } catch (Exception ex) {
