@@ -79,7 +79,9 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
             } catch (SQLException ex) {
                 Logger.getLogger(CohortPanelGenerator.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } 
+        } else {
+            panel.finish();
+        }
         return panel;
     }
 
