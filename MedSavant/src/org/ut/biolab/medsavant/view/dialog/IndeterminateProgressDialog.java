@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.dialog;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -20,6 +21,10 @@ public class IndeterminateProgressDialog extends JDialog {
     private final JLabel messageLabel;
     
     public IndeterminateProgressDialog(String title, String message, boolean modal){
+        this(title, message, modal, null);
+    }
+    
+    public IndeterminateProgressDialog(String title, String message, boolean modal, Component parent){
         
         this.setModal(modal);
         this.setTitle(title);
@@ -43,7 +48,7 @@ public class IndeterminateProgressDialog extends JDialog {
         this.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         this.setMinimumSize(new Dimension(200,50));
         this.pack();
-        this.setLocationRelativeTo(null);
+        this.setLocationRelativeTo(parent);
         //this.setVisible(true);
     }
     

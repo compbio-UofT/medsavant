@@ -247,14 +247,24 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 
-        try {
-            Setup.createDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword(), VersionSettings.getVersionString());
-            DialogUtils.displayMessage("Database \"" + this.field_database.getText() + "\" created successfuly");
-            doClose(RET_OK);
-        } catch (Exception x) {
-            x.printStackTrace();
-            DialogUtils.displayException("Sorry", "Database could not be created:\n" + x.getMessage() + "\nPlease check the settings and try again.", x);
-        }
+        final IndeterminateProgressDialog progress = new IndeterminateProgressDialog("Creating Database", "Creating database " + field_database.getText() + ". Please wait...", true, this);
+        Thread t = new Thread(){
+            @Override
+            public void run(){
+                try {
+                    Setup.createDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword(), VersionSettings.getVersionString());
+                    progress.setVisible(false);
+                    DialogUtils.displayMessage("Database \"" + field_database.getText() + "\" created successfuly");
+                    doClose(RET_OK);
+                } catch (Exception x) {
+                    progress.setVisible(false);
+                    x.printStackTrace();
+                    DialogUtils.displayException("Sorry", "Database could not be created:\n" + x.getMessage() + "\nPlease check the settings and try again.", x);
+                }
+            }           
+        };
+        t.start();
+        progress.setVisible(true);
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
