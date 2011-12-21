@@ -327,7 +327,8 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             }
             value = Math.min(value, 100);
             progress.setValue(value);
-            progress.setString(value + "% done ");            
+            progress.setString(value + "% done ");    
+            stp.setExportButtonEnabled(value == 100);
         }
 
         private void stopThreads() {

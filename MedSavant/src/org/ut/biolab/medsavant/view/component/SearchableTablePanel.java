@@ -25,23 +25,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import com.jidesoft.grid.*;
 import java.awt.event.MouseAdapter;
-import java.io.File;
-import java.io.FileOutputStream;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.ut.biolab.medsavant.util.ExportUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.MainFrame;
@@ -86,6 +77,7 @@ public class SearchableTablePanel extends JPanel {
     private DataRetriever retriever;
     private int totalNumRows;
     private GetDataSwingWorker worker;
+    private JButton exportButton;
     
     public enum TableSelectionType {DISABLED, CELL, ROW}
 
@@ -285,7 +277,7 @@ public class SearchableTablePanel extends JPanel {
         });
         fieldPanel.add(chooseColumnButton);
         
-        JButton exportButton = new JButton("Export Page");
+        exportButton = new JButton("Export Page");
         exportButton.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e) {
                 try {
@@ -521,6 +513,10 @@ public class SearchableTablePanel extends JPanel {
     
     public void forceRefreshData(){
         updateView(true);
+    }
+    
+    public void setExportButtonEnabled(boolean enable){
+        exportButton.setEnabled(enable);
     }
     
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
