@@ -62,7 +62,7 @@ public class ExportUtils {
         for(int i = 0; i < table.getRowCount(); i++){
             org.apache.poi.ss.usermodel.Row row = sheet.createRow(i+1);
             for(int j = 0; j < table.getColumnCount(); j++){
-                row.createCell(j).setCellValue(table.getValueAt(i, j).toString());
+                row.createCell(j).setCellValue(getString(table.getValueAt(i, j)));
             }
         }
         
@@ -89,7 +89,7 @@ public class ExportUtils {
         for(int i = 0; i < table.getRowCount(); i++){
             String[] row = new String[table.getColumnCount()];
             for(int j = 0; j < table.getColumnCount(); j++){
-                row[j] = table.getValueAt(i, j).toString();
+                row[j] = getString(table.getValueAt(i, j));
             }
             out.writeNext(row);
         }
@@ -100,4 +100,11 @@ public class ExportUtils {
 
     }
     
+    private static String getString(Object o){
+        if(o == null){
+            return "";
+        } else {
+            return o.toString();
+        }
+    }
 }

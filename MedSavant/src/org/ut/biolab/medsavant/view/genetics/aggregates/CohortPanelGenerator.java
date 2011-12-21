@@ -16,7 +16,10 @@ import com.jidesoft.grid.TreeTable;
 import com.jidesoft.grid.TreeTableModel;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
@@ -27,6 +30,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
@@ -41,8 +47,10 @@ import org.ut.biolab.medsavant.db.model.SimplePatient;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.util.ExportUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
@@ -98,6 +106,8 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         private ResortWorker resortWorker;
         private JScrollPane container;
         private boolean resortPending = true;
+        private JPanel progressPanel;
+        private JButton exportButton;
         private JProgressBar progress;
         private int numWorking = 0;
         private int numCompleted = 0;
@@ -108,6 +118,27 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
             
             progress = new JProgressBar();
             progress.setStringPainted(true);
+            
+            exportButton = new JButton("Export Page");
+            exportButton.setEnabled(false);
+            exportButton.addMouseListener(new MouseAdapter() {
+                public void mouseReleased(MouseEvent e) {
+                    try {
+                        ExportUtils.exportTable(table);
+                    } catch (Exception ex) {
+                        DialogUtils.displayException("MedSavant", "<HTML>A problem occurred while exporting.<BR>Make sure the output file is not being used. </HTML>", ex);
+                        ex.printStackTrace();
+                    }
+                }
+            });
+            
+            progressPanel = new JPanel();
+            progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.X_AXIS));
+            progressPanel.add(Box.createHorizontalStrut(10));
+            progressPanel.add(progress);
+            progressPanel.add(Box.createHorizontalStrut(10));
+            progressPanel.add(exportButton);           
+            progressPanel.add(Box.createRigidArea(new Dimension(10,30)));
             
             showWaitCard();
             
@@ -162,7 +193,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
 
         private void showShowCard(){
             removeAll();     
-            add(progress, BorderLayout.NORTH);
+            add(progressPanel, BorderLayout.NORTH);
             add(container, BorderLayout.CENTER);
             updateUI();
         }
@@ -236,12 +267,15 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
             if(numWorking == 0){
                 numCompleted = 0;
                 progress.setValue(100);
+                exportButton.setEnabled(true);
             } else if (numWorking <= numCompleted){
                 numWorking = 0;
                 numCompleted = 0;
                 progress.setValue(100);
+                exportButton.setEnabled(true);
             } else {
                 progress.setValue((int)((double)numCompleted / (double)numWorking * 100.0));
+                exportButton.setEnabled(false);
             }
         }
     }
@@ -272,6 +306,8 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
                 case 0:
                     return cohort.getName();
                 case 1:
+                    return "";
+                case 2:
                     if(value == -1){
                         return "???";
                     } else {
@@ -368,8 +404,10 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         public Object getValueAt(int columnIndex) {
             switch (columnIndex) {
                 case 0:
-                    return patient.getHospitalId();
+                    return null;
                 case 1:
+                    return patient.getHospitalId();
+                case 2:
                     if(value == -1){
                         return "???";
                     } else {
@@ -456,8 +494,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
             cellStyle.setForeground(Color.BLACK);
             if (rowIndex % 2 == 0) {
                 cellStyle.setBackground(BACKGROUND1);
-            }
-            else {
+            } else {
                 cellStyle.setBackground(BACKGROUND2);
             }
             return cellStyle;
@@ -483,9 +520,6 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
             try {
                 Integer i1 = Integer.parseInt((String)o1);
                 Integer i2 = Integer.parseInt((String)o2);
-                if(i1 == 114165 || i2 == 114165){
-                    int a = 0;
-                }
                 return i1.compareTo(i2);
             } catch (NumberFormatException e){
                 if(((String)o1).startsWith("?")){
@@ -508,7 +542,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         }
 
         public int getColumnCount() {
-            return 2;
+            return 3;
         }
 
         @Override
@@ -534,6 +568,8 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
                     return String.class;
                 case 1:
                     return String.class;
+                case 2:
+                    return String.class;
             }
             return Object.class;
         }
@@ -542,8 +578,10 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
         public String getColumnName(int column) {
             switch (column) {
                 case 0:
-                    return "Name";
+                    return "Cohort Name";
                 case 1:
+                    return "Patient Id";
+                case 2:
                     return "Count";
             }
             return null;
@@ -553,6 +591,8 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
 
         static {
             BOLD.setFontStyle(Font.BOLD);
+            BOLD.setBackground(new Color(50,53,59));
+            BOLD.setForeground(Color.white);
         }
 
         public CellStyle getCellStyleAt(int rowIndex, int columnIndex) {
