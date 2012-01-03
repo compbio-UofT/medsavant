@@ -9,6 +9,7 @@ public class MedSavantServerRegistry {
     public static final String Registry_FileTransferAdapter = "FileTransferAdapter";
 
     public static final String Registry_SessionAdapter = "SessionAdapter";
+    public static final String Registry_CustomTablesAdapter = "CustomTablesAdapter";
 
    public static final String Registry_AnnotationLogQueryUtilAdapter = "AnnotationLogQueryUtilAdapter";
 public static final String Registry_AnnotationQueryUtilAdapter = "AnnotationQueryUtilAdapter";
