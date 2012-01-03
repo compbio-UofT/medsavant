@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
@@ -215,8 +217,8 @@ public class ServerLogPage extends SubSectionView {
             }
             public int getTotalNum() {
                 try {
-                    return MedSavantClient.LogQueryUtilAdapter.getClientLogSize();
-                } catch (SQLException ex) {
+                    return MedSavantClient.LogQueryUtilAdapter.getClientLogSize(LoginController.sessionId);
+                } catch (Exception ex) {
                     return 0;
                 }
             }
@@ -237,7 +239,7 @@ public class ServerLogPage extends SubSectionView {
             public int getTotalNum() {
                 try {
                     return MedSavantClient.LogQueryUtilAdapter.getServerLogSize(LoginController.sessionId);
-                } catch (SQLException ex) {
+                } catch (Exception ex) {
                     return 0;
                 }
             }
@@ -258,7 +260,7 @@ public class ServerLogPage extends SubSectionView {
             public int getTotalNum() {
                 try {
                     return MedSavantClient.LogQueryUtilAdapter.getAnnotationLogSize(LoginController.sessionId);
-                } catch (SQLException ex) {
+                } catch (Exception ex) {
                     return 0;
                 }
             }
@@ -323,6 +325,8 @@ public class ServerLogPage extends SubSectionView {
                         try {
                             MedSavantClient.AnnotationLogQueryUtilAdapter.setAnnotationLogStatus(LoginController.sessionId, updateId, Status.PENDING, DBUtil.getCurrentTimestamp());
                         } catch (SQLException ex) {
+                            Logger.getLogger(ServerLogPage.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (RemoteException ex) {
                             Logger.getLogger(ServerLogPage.class.getName()).log(Level.SEVERE, null, ex);
                         }
                         refreshCurrentCard();

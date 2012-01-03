@@ -8,6 +8,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.Filter;
@@ -143,6 +145,8 @@ public class BooleanFilterView extends FilterView{
                                 Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (SQLException ex) {
                                 MiscUtils.checkSQLException(ex);
+                                Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (RemoteException ex) {
                                 Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }

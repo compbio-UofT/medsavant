@@ -8,6 +8,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
@@ -50,19 +52,19 @@ public class StringListFilterView extends FilterView {
     
     /* Convenience Functions */
     
-    public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException, RemoteException {
         return new StringListFilterView(new JPanel(), tablename, columnname, queryId, alias, Table.PATIENT);
     }
     
-    public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException, RemoteException {
         return new StringListFilterView(new JPanel(), tablename, columnname, queryId, alias, Table.VARIANT);
     }
     
-    public StringListFilterView(String tablename, String columnname, int queryId, String alias, Table whichTable) throws SQLException {
+    public StringListFilterView(String tablename, String columnname, int queryId, String alias, Table whichTable) throws SQLException, RemoteException {
         this(new JPanel(), tablename, columnname, queryId, alias, whichTable);
     }
     
-    public StringListFilterView(FilterState state, int queryId) throws SQLException {
+    public StringListFilterView(FilterState state, int queryId) throws SQLException, RemoteException {
         this(new JPanel(), FilterUtils.getTableName(Table.valueOf(state.getValues().get("table"))), state.getId(), queryId, state.getName(), Table.valueOf(state.getValues().get("table")));
         String values = state.getValues().get("values");
         if(values != null){
@@ -88,7 +90,7 @@ public class StringListFilterView extends FilterView {
         al.actionPerformed(new ActionEvent(this, 0, null));
     }   
     
-    private StringListFilterView(JComponent container, String tablename, final String columnname, int queryId, final String alias, final Table whichTable) throws SQLException{
+    private StringListFilterView(JComponent container, String tablename, final String columnname, int queryId, final String alias, final Table whichTable) throws SQLException, RemoteException {
         super(alias, container, queryId);
         
         this.columnname = columnname;
@@ -184,6 +186,8 @@ public class StringListFilterView extends FilterView {
                                 Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (SQLException ex) {
                                 MiscUtils.checkSQLException(ex);
+                                Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (RemoteException ex) {
                                 Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }

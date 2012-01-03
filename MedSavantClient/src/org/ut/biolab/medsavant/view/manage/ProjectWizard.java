@@ -22,6 +22,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -313,6 +314,8 @@ public class ProjectWizard extends WizardDialog {
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (RemoteException ex) {
+                Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AA.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AA + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AA), true, VariantFormat.ALIAS_OF_AA, ""});
@@ -434,6 +437,8 @@ public class ProjectWizard extends WizardDialog {
             annotations = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotations(LoginController.sessionId);
         } catch(SQLException ex) {
             Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(RemoteException ex) {
+            Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         p.removeAll();
@@ -485,8 +490,9 @@ public class ProjectWizard extends WizardDialog {
                             ((CompletionWizardPage)instance.getPageByTitle(PAGENAME_COMPLETE)).addText(
                                     "Project " + projectName + " has been " + (modify ? "modified." : "created."));
                             instance.setCurrentPage(PAGENAME_COMPLETE);
-                        } catch (SQLException ex) {
-                            MiscUtils.checkSQLException(ex);
+                        } catch (Exception ex) {
+                            if(ex instanceof SQLException)
+                                MiscUtils.checkSQLException((SQLException)ex);
                             DialogUtils.displayException("Error", "There was an error while trying to create your project. ", ex);
                             Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
                             instance.setVisible(false);
@@ -523,7 +529,7 @@ public class ProjectWizard extends WizardDialog {
             } else {
                 return true;
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
             DialogUtils.displayException("Error", "Error trying to create project", ex);
         }
@@ -600,7 +606,7 @@ public class ProjectWizard extends WizardDialog {
         return true;
     }
 
-    private void createProject() throws SQLException {
+    private void createProject() throws SQLException, RemoteException {
         if(modify){
 
             //change project name

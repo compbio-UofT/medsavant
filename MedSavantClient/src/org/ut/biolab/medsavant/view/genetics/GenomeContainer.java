@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.ut.biolab.medsavant.util.MedSavantWorker;
 
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
@@ -169,7 +171,7 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         }
         
         @Override
-        protected Object doInBackground() throws InterruptedException, SQLException {  
+        protected Object doInBackground() throws InterruptedException, SQLException, RemoteException {  
             /*final int totalNum = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
                                     ProjectController.getInstance().getCurrentProjectId(), 
                                     ReferenceController.getInstance().getCurrentReferenceId(), 
@@ -236,7 +238,7 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
             } catch (SQLException ex){
                 MiscUtils.checkSQLException(ex);
                 throw ex;
-            }
+            } 
         }
         
         /*@Override

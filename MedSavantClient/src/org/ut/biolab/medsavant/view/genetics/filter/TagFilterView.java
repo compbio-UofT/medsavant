@@ -12,6 +12,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
@@ -205,6 +207,8 @@ public class TagFilterView extends FilterView {
                             } catch (SQLException ex) {
                                 MiscUtils.checkSQLException(ex);
                                 return new Condition[0];
+                            } catch (RemoteException ex) {
+                                return new Condition[0];
                             }
 
                         }
@@ -236,6 +240,8 @@ public class TagFilterView extends FilterView {
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
             content.add(new JLabel("Problem getting tag information"));
+        } catch (RemoteException ex) {
+            content.add(new JLabel("Problem getting tag information"));
         }
 
         p.add(content, BorderLayout.NORTH);
@@ -256,6 +262,8 @@ public class TagFilterView extends FilterView {
                 }
             } catch (SQLException ex) {
                 MiscUtils.checkSQLException(ex);
+                Logger.getLogger(TagFilterView.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (RemoteException ex) {
                 Logger.getLogger(TagFilterView.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

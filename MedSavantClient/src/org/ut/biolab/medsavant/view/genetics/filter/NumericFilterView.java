@@ -12,6 +12,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
@@ -51,19 +53,19 @@ public class NumericFilterView extends FilterView{
     
     /* Convenience Functions */
     
-    public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException, RemoteException {
         return new NumericFilterView(new JPanel(), tablename, columnname, queryId, alias, isDecimal, Table.VARIANT);
     }
     
-    public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException {
+    public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException, RemoteException {
         return new NumericFilterView(new JPanel(), tablename, columnname, queryId, alias, isDecimal, Table.PATIENT);
     }
     
-    public NumericFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal, Table whichTable) throws SQLException{
+    public NumericFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal, Table whichTable) throws SQLException, RemoteException{
         this(new JPanel(), tablename, columnname, queryId, alias, isDecimal, whichTable);
     }
     
-    public NumericFilterView(FilterState state, int queryId) throws SQLException {
+    public NumericFilterView(FilterState state, int queryId) throws SQLException, RemoteException {
         this(new JPanel(), FilterUtils.getTableName(Table.valueOf(state.getValues().get("table"))), state.getId(), queryId, state.getName(), Boolean.valueOf(state.getValues().get("isDecimal")), Table.valueOf(state.getValues().get("table")));
         String minString = state.getValues().get("min");
         String maxString = state.getValues().get("max");
@@ -101,7 +103,7 @@ public class NumericFilterView extends FilterView{
         applyButton.doClick();
     }
     
-    private NumericFilterView(JComponent container, String tablename, final String columnname, int queryId, final String alias, final boolean isDecimal, final Table whichTable) throws SQLException{
+    private NumericFilterView(JComponent container, String tablename, final String columnname, int queryId, final String alias, final boolean isDecimal, final Table whichTable) throws SQLException, RemoteException {
         super(alias, container, queryId);
         
         this.columnname = columnname;
@@ -274,6 +276,8 @@ public class NumericFilterView extends FilterView{
                                 Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (SQLException ex) {
                                 MiscUtils.checkSQLException(ex);
+                                Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (RemoteException ex) {
                                 Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }

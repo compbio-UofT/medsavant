@@ -21,11 +21,13 @@ import javax.swing.JPanel;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
@@ -83,7 +85,9 @@ class CohortFilterView extends FilterView{
                     ProjectController.getInstance().getCurrentProjectId());
         } catch (SQLException ex) {
             Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } catch (RemoteException ex) {
+            Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
+        } 
         return new ArrayList<Cohort>();
     }
 

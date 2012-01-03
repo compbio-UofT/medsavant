@@ -4,7 +4,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.mysql.jdbc.exceptions.MySQLSyntaxErrorException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -12,6 +11,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +27,7 @@ import javax.swing.table.TableCellRenderer;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -136,6 +137,8 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
                             FilterController.getQueryFilterConditions()));
                 } catch (SQLException ex) {              
                     MiscUtils.checkSQLException(ex);
+                    Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (RemoteException ex) {              
                     Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 dialog.close();  

@@ -13,6 +13,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
@@ -21,6 +22,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.model.ProjectDetails;
@@ -83,6 +85,8 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                         }
                     } catch (SQLException ex) {
                         MiscUtils.checkSQLException(ex);
+                        Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (RemoteException ex) {
                         Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
                     }
         }

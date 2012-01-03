@@ -5,9 +5,9 @@
 package org.ut.biolab.medsavant.view.genetics;
 
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.awt.BorderLayout;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,9 +19,6 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.model.structure.CustomTables;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
@@ -57,8 +54,11 @@ public class GeneticsFilterPage extends SubSectionView {
             Condition[][] conditions = FilterController.getQueryFilterConditions();
 
             SelectQuery q = new SelectQuery();
-            //q.addFromTable(table.getTable());
-            MedSavantClient.VariantQueryUtilAdapter.addConditionsToQuery(q, conditions);
+            try {
+                MedSavantClient.VariantQueryUtilAdapter.addConditionsToQuery(q, conditions);
+            } catch (RemoteException ex) {
+                Logger.getLogger(GeneticsFilterPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
             String s = q.toString();
             Logger.getLogger(GeneticsFilterPage.class.getName()).log(Level.WARNING, s);

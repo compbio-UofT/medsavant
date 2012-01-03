@@ -8,13 +8,17 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.listener.ProjectListener;
@@ -131,15 +135,18 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         referenceDropDown.setMinimumSize(new Dimension(200, 23));
         referenceDropDown.setPreferredSize(new Dimension(200, 23));
         referenceDropDown.setMaximumSize(new Dimension(200, 23));
-
-        refreshReferenceDropDown();
+        try {
+            refreshReferenceDropDown();
+        } catch (RemoteException ex) {
+            Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         ProjectController.getInstance().addProjectListener(this);
 
         return referenceDropDown;
     }
 
-    private void refreshReferenceDropDown() {
+    private void refreshReferenceDropDown() throws RemoteException {
         try {
             for (ActionListener l : referenceDropDown.getActionListeners()) {
                 referenceDropDown.removeActionListener(l);
@@ -181,18 +188,34 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     }
 
     public void projectAdded(String projectName) {
-        refreshReferenceDropDown();
+        try {
+            refreshReferenceDropDown();
+        } catch (RemoteException ex) {
+            Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void projectRemoved(String projectName) {
-        refreshReferenceDropDown();
+        try {
+            refreshReferenceDropDown();
+        } catch (RemoteException ex) {
+            Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void projectChanged(String projectName) {
-        refreshReferenceDropDown();
+        try {
+            refreshReferenceDropDown();
+        } catch (RemoteException ex) {
+            Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void projectTableRemoved(int projid, int refid) {
-        refreshReferenceDropDown();
+        try {
+            refreshReferenceDropDown();
+        } catch (RemoteException ex) {
+            Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
