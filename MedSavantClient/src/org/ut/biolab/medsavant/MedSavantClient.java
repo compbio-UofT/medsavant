@@ -1,11 +1,17 @@
 
-import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+package org.ut.biolab.medsavant;
+
 import java.rmi.*;
 import java.rmi.registry.*;
+import java.awt.Insets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
+import com.jidesoft.plaf.LookAndFeelFactory;
+import org.ut.biolab.medsavant.controller.LoginController;
+
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.ChromosomeQueryUtilAdapter;
@@ -21,44 +27,42 @@ import org.ut.biolab.medsavant.db.util.query.api.SettingsQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.UserQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
 import org.ut.biolab.medsavant.server.api.MedSavantServerRegistry;
-import org.ut.biolab.medsavant.server.api.RemoteFileServer;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
+import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.log.ClientLogger;
+import org.ut.biolab.medsavant.view.MainFrame;
+
 
 public class MedSavantClient {
 
-    private static AnnotationLogQueryUtilAdapter AnnotationLogQueryUtilAdapter;
-    private static AnnotationQueryUtilAdapter AnnotationQueryUtilAdapter;
-    private static ChromosomeQueryUtilAdapter ChromosomeQueryUtilAdapter;
-    private static CohortQueryUtilAdapter CohortQueryUtilAdapter;
-    private static LogQueryUtilAdapter LogQueryUtilAdapter;
-    private static PatientQueryUtilAdapter PatientQueryUtilAdapter;
-    private static ProjectQueryUtilAdapter ProjectQueryUtilAdapter;
-    private static VariantQueryUtilAdapter VariantQueryUtilAdapter;
-    private static UserQueryUtilAdapter UserQueryUtilAdapter;
-    private static SettingsQueryUtilAdapter SettingsQueryUtilAdapter;
-    private static ServerLogQueryUtilAdapter ServerLogQueryUtilAdapter;
-    private static RegionQueryUtilAdapter RegionQueryUtilAdapter;
-    private static ReferenceQueryUtilAdapter ReferenceQueryUtilAdapter;
-    private static QueryUtilAdapter QueryUtilAdapter;
-    private static SessionAdapter SessionAdapter;
-    private static RemoteFileServer RemoteFileServer;
-
+    public static AnnotationLogQueryUtilAdapter AnnotationLogQueryUtilAdapter;
+    public static AnnotationQueryUtilAdapter AnnotationQueryUtilAdapter;
+    public static ChromosomeQueryUtilAdapter ChromosomeQueryUtilAdapter;
+    public static CohortQueryUtilAdapter CohortQueryUtilAdapter;
+    public static LogQueryUtilAdapter LogQueryUtilAdapter;
+    public static PatientQueryUtilAdapter PatientQueryUtilAdapter;
+    public static ProjectQueryUtilAdapter ProjectQueryUtilAdapter;
+    public static VariantQueryUtilAdapter VariantQueryUtilAdapter;
+    public static UserQueryUtilAdapter UserQueryUtilAdapter;
+    public static SettingsQueryUtilAdapter SettingsQueryUtilAdapter;
+    public static ServerLogQueryUtilAdapter ServerLogQueryUtilAdapter;
+    public static RegionQueryUtilAdapter RegionQueryUtilAdapter;
+    public static ReferenceQueryUtilAdapter ReferenceQueryUtilAdapter;
+    public static QueryUtilAdapter QueryUtilAdapter;
+    //public static SessionAdapter SessionAdapter;
+    
+    //public static String sessionId;
+    
+    private static MainFrame frame;
+    
     static public void main(String args[]) {
 
-        /*
         System.setProperty("java.security.policy", "client.policy");
         if (System.getSecurityManager() == null) {
-        System.setSecurityManager(new RMISecurityManager());
+            System.setSecurityManager(new RMISecurityManager());
         }
-         *
-         */
-
-
-        Registry registry;
-        String serverAddress = "localhost";
-        String serverPort = "3232";
-
-        try {
+        
+        /*try {
             // get the “registry”
             registry = LocateRegistry.getRegistry(
                     serverAddress,
@@ -70,20 +74,54 @@ public class MedSavantClient {
 
             // call the remote method
 
-            String sessionId = SessionAdapter.registerNewSession("root", "", "tgp");
+            sessionId = SessionAdapter.registerNewSession("root", "", "tgp");
 
             System.out.println("server>" + sessionId);
         } catch (RemoteException e) {
             e.printStackTrace();
         } catch (NotBoundException e) {
             e.printStackTrace();
+        }*/
+        
+        try {    
+            initializeRegistry();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (NotBoundException e) {
+            e.printStackTrace();
         }
+        verifyJIDE();
+        setLAF();
+        SettingsController.getInstance();
+        frame = MainFrame.getInstance();
+        frame.setExtendedState(MainFrame.MAXIMIZED_BOTH);
+        frame.setVisible(true);
+        ClientLogger.log(Main.class, "MedSavant booted");
+        
+    }
+    
+    public static void initializeRegistry() throws RemoteException, NotBoundException {
+        
+        Registry registry;
+        String serverAddress = "localhost";
+        String serverPort = "3232";
+        
+        // get the “registry”
+        registry = LocateRegistry.getRegistry(
+                serverAddress,
+                (new Integer(serverPort)).intValue());
+
+        // look up the remote object
+        setAdaptersFromRegistry(registry);
+
+        // call the remote method
+        //sessionId = SessionAdapter.registerNewSession("root", "", "tgp");
+
+        //System.out.println("server>" + sessionId);
     }
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
-
-        RemoteFileServer = (RemoteFileServer) (registry.lookup(MedSavantServerRegistry.Registry_FileTransferAdapter));
-        SessionAdapter = (SessionAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SessionAdapter));
+        LoginController.SessionAdapter = (SessionAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SessionAdapter));
         AnnotationLogQueryUtilAdapter = (AnnotationLogQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationLogQueryUtilAdapter));
         AnnotationQueryUtilAdapter = (AnnotationQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationQueryUtilAdapter));
         ChromosomeQueryUtilAdapter = (ChromosomeQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_ChromosomeQueryUtilAdapter));
@@ -98,39 +136,26 @@ public class MedSavantClient {
         SettingsQueryUtilAdapter = (SettingsQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SettingsQueryUtilAdapter));
         UserQueryUtilAdapter = (UserQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_UserQueryUtilAdapter));
         VariantQueryUtilAdapter = (VariantQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_VariantQueryUtilAdapter));
-
-
+    }
+    
+    private static void setLAF() {
         try {
-            // grab the file name from the commandline
-            String fileName = "/Users/mfiume/Desktop/data.xml";
-            // get a handle to the remote service to which we want to send the file
-            System.out.println("Sending file " + fileName);
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0)); 
+            LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
 
-            // setup the remote input stream.  note, the client here is actually
-            // acting as an RMI server (very confusing, i know).  this code sets up an
-            // RMI server in the client, which the RemoteFileServer will then
-            // interact with to get the file data.
-            SimpleRemoteInputStream istream = new SimpleRemoteInputStream(
-                    new FileInputStream(fileName));
-
-            try {
-                try {
-                    // call the remote method on the server.  the server will actually
-                    // interact with the RMI "server" we started above to retrieve the
-                    // file data
-                    RemoteFileServer.sendFile(istream.export());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } finally {
-                // always make a best attempt to shutdown RemoteInputStream
-                istream.close();
-            }
-
-            System.out.println("Finished sending file " + fileName);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
 
+    private static void verifyJIDE() {
+        com.jidesoft.utils.Lm.verifyLicense("Marc Fiume", "Savant Genome Browser", "1BimsQGmP.vjmoMbfkPdyh0gs3bl3932");
     }
 }

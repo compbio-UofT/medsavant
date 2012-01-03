@@ -1,0 +1,293 @@
+package org.ut.biolab.medsavant.controller;
+
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.format.AnnotationFormat;
+import org.ut.biolab.medsavant.db.format.CustomField;
+import org.ut.biolab.medsavant.db.format.VariantFormat;
+import org.ut.biolab.medsavant.db.model.structure.CustomTables;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.listener.ProjectListener;
+import org.ut.biolab.medsavant.listener.ReferenceListener;
+import org.ut.biolab.medsavant.model.event.LoginEvent;
+import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
+
+/**
+ *
+ * @author mfiume
+ */
+public class ProjectController implements ReferenceListener, LoginListener {
+    
+    private String currentProjectName;
+    private int currentProjectId;
+
+    //private String currentPatientTableName;
+    //private String currentVariantTableName;
+    private AnnotationFormat[] currentAnnotationFormats;
+    private List<CustomField> currentPatientFormat;
+    
+    private DbTable currentTable;
+    private TableSchema currentTableSchema;
+    
+    private DbTable currentPatientTable;
+    private TableSchema currentPatientTableSchema;
+    
+    private static ProjectController instance;
+    
+    
+    private final ArrayList<ProjectListener> projectListeners;
+
+    public void removeProject(final String projectName) {
+        
+        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                "Removing Project", 
+                projectName + " project is being removed. Please wait.", 
+                true);
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    MedSavantClient.ProjectQueryUtilAdapter.removeProject(LoginController.sessionId, projectName);
+                    fireProjectRemovedEvent(projectName);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                dialog.close();  
+            }
+        };
+        thread.start(); 
+        dialog.setVisible(true);
+    }
+
+    public void fireProjectRemovedEvent(String projectName) {
+        ProjectController pc = getInstance();
+        for (ProjectListener l : pc.projectListeners) {
+            l.projectRemoved(projectName);
+        }
+    }
+
+    public int addProject(String projectName, List<CustomField> fields) {
+        int projectid = -1;
+        try {
+            projectid = MedSavantClient.ProjectQueryUtilAdapter.addProject(LoginController.sessionId, projectName, fields);
+            ProjectController.getInstance().fireProjectAddedEvent(projectName);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return projectid;
+    }
+
+    public int getProjectId(String projectName) throws SQLException {
+        return MedSavantClient.ProjectQueryUtilAdapter.getProjectId(LoginController.sessionId, projectName);
+    }
+
+    public void removeVariantTable(int project_id, int ref_id) {
+        try {
+            MedSavantClient.ProjectQueryUtilAdapter.removeReferenceForProject(LoginController.sessionId, project_id,ref_id);
+            fireProjectTableRemovedEvent(project_id,ref_id);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public String getProjectName(int projectid) throws SQLException {
+        return MedSavantClient.ProjectQueryUtilAdapter.getProjectName(LoginController.sessionId, projectid);
+    }
+
+    public boolean setProject(String projectName) {
+        try {
+            if (MedSavantClient.ProjectQueryUtilAdapter.containsProject(LoginController.sessionId, projectName)) {
+                
+                if(MedSavantClient.ProjectQueryUtilAdapter.containsProject(LoginController.sessionId, this.currentProjectName) &&
+                        FilterController.hasFiltersApplied()){
+                    if(!DialogUtils.confirmChangeReference(true)){
+                        return false;
+                    }
+                }
+                                
+                this.currentProjectId = this.getProjectId(projectName);
+                this.currentProjectName = projectName;      
+                this.setCurrentPatientTable();
+                this.fireProjectChangedEvent(projectName);              
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+        return true;
+    }
+
+    public int getCurrentProjectId() {
+        return this.currentProjectId;
+    }
+    
+    public String getCurrentProjectName() {
+        return this.currentProjectName;
+    }
+
+    public int getNumVariantsInTable(int projectid, int refid) throws SQLException {
+        return MedSavantClient.ProjectQueryUtilAdapter.getNumberOfRecordsInVariantTable(LoginController.sessionId, projectid,refid);
+    }
+
+    private ProjectController() {
+        projectListeners = new ArrayList<ProjectListener>();
+        
+        ReferenceController.getInstance().addReferenceListener(this);
+        LoginController.addLoginListener(this);
+    }
+    
+    public static ProjectController getInstance() {
+        if (instance == null) {
+            instance = new ProjectController();
+        }
+        return instance;
+    }
+    
+    public List<String> getProjectNames() throws SQLException {
+        return MedSavantClient.ProjectQueryUtilAdapter.getProjectNames(LoginController.sessionId);
+    }
+    
+    public void fireProjectAddedEvent(String projectName) {
+        ProjectController pc = getInstance();
+        for (ProjectListener l : pc.projectListeners) {
+            l.projectAdded(projectName);
+        }
+    }
+    
+    public void fireProjectChangedEvent(String projectName) {
+        ProjectController pc = getInstance();
+        for (ProjectListener l : pc.projectListeners) {
+            l.projectChanged(projectName);
+        }
+    }
+    
+    public void fireProjectTableRemovedEvent(int projid, int refid) {
+        ProjectController pc = getInstance();
+        for (ProjectListener l : pc.projectListeners) {
+            l.projectTableRemoved(projid, refid);
+        }
+    }
+    
+    
+    
+    public void addProjectListener(ProjectListener l) {
+        this.projectListeners.add(l);
+    }
+    
+    public String getCurrentTableName(){
+        try {
+            return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
+    public DbTable getCurrentVariantTable(){
+        return currentTable;
+    }
+    
+    public TableSchema getCurrentVariantTableSchema(){
+        return currentTableSchema;
+    }
+    
+    private void setCurrentVariantTable(){
+        try {
+            this.currentTable = DBUtil.importTable(getCurrentTableName());
+            this.currentTableSchema =  CustomTables.getCustomTableSchema(getCurrentTableName());          
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public String getCurrentPatientTableName(){
+        try {
+            return MedSavantClient.PatientQueryUtilAdapter.getPatientTablename(LoginController.sessionId, currentProjectId);
+        } catch (SQLException ex) {
+            MiscUtils.checkSQLException(ex);
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
+    public DbTable getCurrentPatientTable(){
+        return currentPatientTable;
+    }
+    
+    public TableSchema getCurrentPatientTableSchema(){
+        return currentPatientTableSchema;
+    }
+    
+    private void setCurrentPatientTable(){
+        try {
+            this.currentPatientTable = DBUtil.importTable(getCurrentPatientTableName());
+            this.currentPatientTableSchema =  CustomTables.getCustomTableSchema(getCurrentPatientTableName());          
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public AnnotationFormat[] getCurrentAnnotationFormats(){
+        if(currentAnnotationFormats == null){
+            try {
+                int[] annotationIds = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationIds(LoginController.sessionId, this.currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
+                AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+2];
+                af[0] = VariantFormat.getDefaultAnnotationFormat();
+                af[1] = VariantFormat.getCustomFieldAnnotationFormat(currentProjectId);
+                for(int i = 0; i < annotationIds.length; i++){
+                    af[i+2] = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationFormat(LoginController.sessionId, annotationIds[i]);
+                }
+                currentAnnotationFormats = af;
+            } catch (Exception ex) {
+                currentAnnotationFormats = new AnnotationFormat[0];
+                ex.printStackTrace();
+                //Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return currentAnnotationFormats;
+    }
+    
+    public List<CustomField> getCurrentPatientFormat(){
+        if(currentPatientFormat == null){
+            try {
+                currentPatientFormat = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, currentProjectId); 
+            } catch (SQLException ex) {
+                MiscUtils.checkSQLException(ex);
+                Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return currentPatientFormat;
+    }
+    
+    public void setCurrentAnnotationFormats(AnnotationFormat[] formats){
+        this.currentAnnotationFormats = formats;
+    }
+
+    public void referenceChanged(String referenceName) {
+        setCurrentVariantTable();
+        setCurrentAnnotationFormats(null);
+    }
+
+    public void referenceAdded(String name) {
+    }
+
+    public void referenceRemoved(String name) {
+    }
+
+    public void loginEvent(LoginEvent evt) {
+        if(!evt.isLoggedIn()){
+            CustomTables.clearMap();
+        }
+    }
+  
+}
