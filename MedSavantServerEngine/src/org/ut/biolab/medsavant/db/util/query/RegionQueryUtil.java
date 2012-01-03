@@ -211,6 +211,20 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         }
         return result;
     }
+    
+    public boolean listNameExists(String sid, String name) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.RegionsetTableSchema;
+        
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addAllColumns();
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(RegionSetTableSchema.COLUMNNAME_OF_NAME), name));
+        
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        return rs.next();
+    }
+
 
 
 }

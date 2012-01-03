@@ -5,6 +5,7 @@
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import com.healthmarketscience.sqlbuilder.Condition;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,7 @@ public class FilterUtils {
         return filterPanels;
     }
 
-    public static void createAndApplyNumericFilterView(String column, String alias, Table whichTable, double low, double high) throws SQLException{
+    public static void createAndApplyNumericFilterView(String column, String alias, Table whichTable, double low, double high) throws SQLException, RemoteException{
 
         FilterPanel fp = startFilterBy(column);
 
@@ -59,7 +60,7 @@ public class FilterUtils {
         fp.refreshSubPanels();
     }
 
-    public static void createAndApplyStringListFilterView(String column, String alias, Table whichTable, List<String> values) throws SQLException {
+    public static void createAndApplyStringListFilterView(String column, String alias, Table whichTable, List<String> values) throws SQLException, RemoteException {
 
         FilterPanel fp = startFilterBy(column);
 
@@ -77,7 +78,7 @@ public class FilterUtils {
         removeFiltersById(getFilterPanel(), id);
     }
 
-    public static void loadFilterView(FilterState state, FilterPanelSub fps) throws SQLException{
+    public static void loadFilterView(FilterState state, FilterPanelSub fps) throws SQLException, RemoteException{
         switch(state.getType()){
             case NUMERIC:
                 fps.addNewSubItem(new NumericFilterView(state, fps.getId()), state.getId());

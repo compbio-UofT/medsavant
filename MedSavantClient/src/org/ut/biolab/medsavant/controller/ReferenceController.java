@@ -136,7 +136,7 @@ public class ReferenceController {
                 
                 this.fireReferenceChangedEvent(refName);
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
             return false;

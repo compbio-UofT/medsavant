@@ -10,10 +10,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.Date;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 
 /**
  *
@@ -159,7 +156,4 @@ public class DBUtil {
         }
     }
 
-    public static Timestamp getCurrentTimestamp(){
-        return new Timestamp((new Date()).getTime());
-    }
 }

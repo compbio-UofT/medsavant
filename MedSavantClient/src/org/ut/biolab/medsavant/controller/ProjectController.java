@@ -1,13 +1,14 @@
 package org.ut.biolab.medsavant.controller;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.util.shared.DBUtil;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.VariantFormat;
@@ -60,6 +61,8 @@ public class ProjectController implements ReferenceListener, LoginListener {
                     fireProjectRemovedEvent(projectName);
                 } catch (SQLException e) {
                     e.printStackTrace();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
                 dialog.close();  
             }
@@ -86,7 +89,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
         return projectid;
     }
 
-    public int getProjectId(String projectName) throws SQLException {
+    public int getProjectId(String projectName) throws SQLException, RemoteException {
         return MedSavantClient.ProjectQueryUtilAdapter.getProjectId(LoginController.sessionId, projectName);
     }
 
@@ -96,10 +99,12 @@ public class ProjectController implements ReferenceListener, LoginListener {
             fireProjectTableRemovedEvent(project_id,ref_id);
         } catch (SQLException ex) {
             ex.printStackTrace();
+        } catch (RemoteException ex) {
+            ex.printStackTrace();
         }
     }
 
-    public String getProjectName(int projectid) throws SQLException {
+    public String getProjectName(int projectid) throws SQLException, RemoteException {
         return MedSavantClient.ProjectQueryUtilAdapter.getProjectName(LoginController.sessionId, projectid);
     }
 
@@ -119,11 +124,11 @@ public class ProjectController implements ReferenceListener, LoginListener {
                 this.setCurrentPatientTable();
                 this.fireProjectChangedEvent(projectName);              
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
             return false;
-        }
+        } 
         return true;
     }
 
@@ -135,7 +140,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
         return this.currentProjectName;
     }
 
-    public int getNumVariantsInTable(int projectid, int refid) throws SQLException {
+    public int getNumVariantsInTable(int projectid, int refid) throws SQLException, RemoteException {
         return MedSavantClient.ProjectQueryUtilAdapter.getNumberOfRecordsInVariantTable(LoginController.sessionId, projectid,refid);
     }
 
@@ -153,7 +158,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
         return instance;
     }
     
-    public List<String> getProjectNames() throws SQLException {
+    public List<String> getProjectNames() throws SQLException, RemoteException {
         return MedSavantClient.ProjectQueryUtilAdapter.getProjectNames(LoginController.sessionId);
     }
     
@@ -189,6 +194,8 @@ public class ProjectController implements ReferenceListener, LoginListener {
             return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -207,6 +214,8 @@ public class ProjectController implements ReferenceListener, LoginListener {
             this.currentTableSchema =  CustomTables.getCustomTableSchema(getCurrentTableName());          
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -215,6 +224,8 @@ public class ProjectController implements ReferenceListener, LoginListener {
             return MedSavantClient.PatientQueryUtilAdapter.getPatientTablename(LoginController.sessionId, currentProjectId);
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
@@ -233,6 +244,8 @@ public class ProjectController implements ReferenceListener, LoginListener {
             this.currentPatientTable = DBUtil.importTable(getCurrentPatientTableName());
             this.currentPatientTableSchema =  CustomTables.getCustomTableSchema(getCurrentPatientTableName());          
         } catch (SQLException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -263,6 +276,8 @@ public class ProjectController implements ReferenceListener, LoginListener {
                 currentPatientFormat = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, currentProjectId); 
             } catch (SQLException ex) {
                 MiscUtils.checkSQLException(ex);
+                Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (RemoteException ex) {
                 Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

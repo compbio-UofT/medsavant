@@ -38,6 +38,7 @@ import javax.swing.*;
 
 import com.mysql.jdbc.CommunicationsException;
 import net.sf.samtools.SAMRecord;
+import org.ut.biolab.medsavant.db.model.UserLevel;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -532,4 +533,20 @@ public class MiscUtils {
         }
         return result;
     }
+
+    public static String userLevelToString(UserLevel level) {
+        switch(level) {
+            case ADMIN:
+                return "Administrator";
+            case USER:
+                return "User";
+            case GUEST:
+                return "Guest";
+            case NONE:
+                return "None";
+            default:
+                return "Unknown";
+        }
+    }
+    
 }

@@ -36,7 +36,7 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTabl
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
-import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.util.shared.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter;
 
 /**

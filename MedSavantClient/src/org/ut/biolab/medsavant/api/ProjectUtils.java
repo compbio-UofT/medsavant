@@ -19,9 +19,11 @@ package org.ut.biolab.medsavant.api;
 import java.sql.SQLException;
 
 import com.healthmarketscience.sqlbuilder.Condition;
+import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.model.structure.CustomTables;
@@ -53,7 +55,7 @@ public class ProjectUtils {
         return ReferenceController.getInstance().getCurrentReferenceId();
     }
     
-    public static TableSchema getCustomVariantTableSchema(int projectID, int refID) throws SQLException {
+    public static TableSchema getCustomVariantTableSchema(int projectID, int refID) throws SQLException, RemoteException {
         return CustomTables.getCustomTableSchema(MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, projectID, refID));
     }
     
