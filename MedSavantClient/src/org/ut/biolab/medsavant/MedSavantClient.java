@@ -64,10 +64,13 @@ public class MedSavantClient {
 
     static public void main(String args[]) {
 
+        /*
         System.setProperty("java.security.policy", "client.policy");
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new RMISecurityManager());
         }
+         * 
+         */
 
         /*try {
             // get the “registry”
@@ -114,9 +117,7 @@ public class MedSavantClient {
         String serverPort = "3232";
 
         // get the “registry”
-        registry = LocateRegistry.getRegistry(
-                serverAddress,
-                (new Integer(serverPort)).intValue());
+        registry = LocateRegistry.getRegistry(serverAddress,(new Integer(serverPort)).intValue());
 
         // look up the remote object
         setAdaptersFromRegistry(registry);
@@ -129,9 +130,6 @@ public class MedSavantClient {
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
 
-        CustomTablesAdapter = (CustomTablesAdapter) (registry.lookup(MedSavantServerRegistry.Registry_CustomTablesAdapter));
-
-        LoginController.SessionAdapter = (SessionAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SessionAdapter));
         AnnotationLogQueryUtilAdapter = (AnnotationLogQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationLogQueryUtilAdapter));
         AnnotationQueryUtilAdapter = (AnnotationQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationQueryUtilAdapter));
         ChromosomeQueryUtilAdapter = (ChromosomeQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_ChromosomeQueryUtilAdapter));
@@ -148,6 +146,11 @@ public class MedSavantClient {
         VariantQueryUtilAdapter = (VariantQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_VariantQueryUtilAdapter));
         DBUtilAdapter = (DBUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_DBUtilAdapter));
         SetupAdapter = (SetupAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SetupAdapter));
+
+        CustomTablesAdapter = (CustomTablesAdapter) (registry.lookup(MedSavantServerRegistry.Registry_CustomTablesAdapter));
+
+        LoginController.SessionAdapter = (SessionAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SessionAdapter));
+
     }
 
     private static void setLAF() {

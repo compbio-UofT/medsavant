@@ -38,17 +38,17 @@ public class LoginController {
 
     private static String username;
     private static String password;
-    private static boolean isAdmin; 
+    private static boolean isAdmin;
     private static boolean loggedIn = false;
     private static ArrayList<LoginListener> loginListeners = new ArrayList<LoginListener>();
     private final static Object eventLock = new Object();
     public static String sessionId;
     public static SessionAdapter SessionAdapter;
 
-    private synchronized static void setLoggedIn(final boolean loggedIn) {  
+    private synchronized static void setLoggedIn(final boolean loggedIn) {
         Thread t = new Thread(){
             @Override
-            public void run(){      
+            public void run(){
                 synchronized(eventLock){
                     LoginController.loggedIn = loggedIn;
 
@@ -91,24 +91,24 @@ public class LoginController {
     public static String getUsername() {
         return username;
     }
-    
+
     public static boolean isAdmin() {
         return isAdmin;
     }
 
 
     public static boolean isLoggedIn() { return loggedIn; }
-    
+
     public static synchronized void login(String un, String pw) {
-        
+
         username = un;
         password = pw;
         try {
-            sessionId = SessionAdapter.registerNewSession("root", "", "tgp");            
+            sessionId = SessionAdapter.registerNewSession("root", "", "tgp");
         } catch (RemoteException ex) {
             Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         isAdmin = false;
         try {
             isAdmin = username.equals("root") || MedSavantClient.UserQueryUtilAdapter.isUserAdmin(username);
@@ -116,16 +116,16 @@ public class LoginController {
             // An SQLException is expected here if the user is not an admin, because they
             // will be unable to read the mysql.users table.
         } catch (RemoteException e){
-            
+
         }
-        
+
         SettingsController.getInstance().setUsername(un);
         if (SettingsController.getInstance().getRememberPassword()) {
             SettingsController.getInstance().setPassword(pw);
         }
-        
+
         //test connection
-        try {        
+        try {
             SessionAdapter.testConnection(sessionId);
         } catch (Exception ex) {
             setLoginException(ex);
@@ -137,23 +137,23 @@ public class LoginController {
             String databaseVersion = VersionSettings.getDatabaseVersion();
             if(!VersionSettings.isCompatible(VersionSettings.getVersionString(), databaseVersion, false)){
                 JOptionPane.showMessageDialog(
-                        null, 
-                        "<html>Your client version (" + VersionSettings.getVersionString() + ") does not match that of the database (" + databaseVersion + ").<br>Visit " + VersionSettings.URL + " to get the correct version.</html>" , 
-                        "Version Out-of-Date", 
+                        null,
+                        "<html>Your client version (" + VersionSettings.getVersionString() + ") does not match that of the database (" + databaseVersion + ").<br>Visit " + VersionSettings.URL + " to get the correct version.</html>" ,
+                        "Version Out-of-Date",
                         JOptionPane.WARNING_MESSAGE);
                 fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
                 return;
             }
         } catch (Exception ex){
             JOptionPane.showMessageDialog(
-                    null, 
-                    "<html>We could not determine compatibility between MedSavant and your database. <br>Please ensure that your versions are compatible before continuing.</html>" , 
-                    "Error Comparing Versions", 
+                    null,
+                    "<html>We could not determine compatibility between MedSavant and your database. <br>Please ensure that your versions are compatible before continuing.</html>" ,
+                    "Error Comparing Versions",
                     JOptionPane.WARNING_MESSAGE);
             ex.printStackTrace();
         }
-        
-        setLoggedIn(true);     
+
+        setLoggedIn(true);
     }
 
     public static void addLoginListener(LoginListener l) {
@@ -167,7 +167,7 @@ public class LoginController {
     private static void fireLoginEvent(LoginEvent evt) {
         for (int i = loginListeners.size()-1; i >= 0; i--){
             loginListeners.get(i).loginEvent(evt);
-        } 
+        }
     }
 
     public static void logout() {
