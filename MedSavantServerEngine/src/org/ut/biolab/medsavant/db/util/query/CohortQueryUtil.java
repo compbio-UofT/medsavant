@@ -29,6 +29,7 @@ import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 
 import java.rmi.RemoteException;
+import org.ut.biolab.medsavant.db.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.CohortTableSchema;
@@ -37,7 +38,6 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchem
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.PatientTablemapTableSchema;
 import org.ut.biolab.medsavant.db.model.SimplePatient;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.query.api.CohortQueryUtilAdapter;

@@ -31,12 +31,11 @@ import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
 
 import java.rmi.RemoteException;
+import org.ut.biolab.medsavant.db.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
-import org.ut.biolab.medsavant.db.util.shared.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter;
 
 /**

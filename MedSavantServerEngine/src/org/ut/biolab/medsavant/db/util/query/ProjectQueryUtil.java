@@ -19,6 +19,7 @@ import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
 import java.rmi.RemoteException;
+import org.ut.biolab.medsavant.db.BinaryConditionMS;
 import org.xml.sax.SAXException;
 
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
@@ -36,7 +37,6 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantTablemapTableSche
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter.Action;
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter.Status;

@@ -31,6 +31,7 @@ import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
 import java.rmi.RemoteException;
+import org.ut.biolab.medsavant.db.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetMembershipTableSchema;
@@ -40,7 +41,6 @@ import org.ut.biolab.medsavant.db.model.GenomicRegion;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.query.api.RegionQueryUtilAdapter;
 
@@ -211,16 +211,16 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         }
         return result;
     }
-    
+
     public boolean listNameExists(String sid, String name) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.RegionsetTableSchema;
-        
+
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(RegionSetTableSchema.COLUMNNAME_OF_NAME), name));
-        
+
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
         return rs.next();
     }

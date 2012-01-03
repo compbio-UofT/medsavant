@@ -9,10 +9,10 @@ import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.ut.biolab.medsavant.db.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.SettingsTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.query.api.SettingsQueryUtilAdapter;
 
