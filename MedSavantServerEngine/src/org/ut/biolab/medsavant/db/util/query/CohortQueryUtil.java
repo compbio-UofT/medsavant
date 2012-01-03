@@ -144,7 +144,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         return result;
     }*/
 
-    public List<String> getDNAIdsInCohort(String sid,int cohortId) throws SQLException {
+    public List<String> getDNAIdsInCohort(String sid,int cohortId) throws SQLException, RemoteException {
         List<String> list = getIndividualFieldFromCohort(sid,cohortId, DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS);
         List<String> result = new ArrayList<String>();
         for(String s : list){
@@ -159,7 +159,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         return result;
     }
 
-    public List<String> getIndividualFieldFromCohort(String sid,int cohortId, String columnname) throws SQLException {
+    public List<String> getIndividualFieldFromCohort(String sid,int cohortId, String columnname) throws SQLException, RemoteException {
         Connection c = ConnectionController.connectPooled(sid);
         TableSchema patientMapTable = MedSavantDatabase.PatienttablemapTableSchema;
         TableSchema cohortTable = MedSavantDatabase.CohortTableSchema;

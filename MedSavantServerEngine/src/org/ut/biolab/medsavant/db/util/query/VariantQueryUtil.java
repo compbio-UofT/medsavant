@@ -15,9 +15,7 @@
  */
 package org.ut.biolab.medsavant.db.util.query;
 
-import com.healthmarketscience.common.util.AppendableExt;
 import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -35,8 +33,6 @@ import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.dbspec.Column;
-import com.healthmarketscience.sqlbuilder.dbspec.Function;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.rmi.RemoteException;
@@ -121,7 +117,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return result;
     }
 
-    public double[] getExtremeValuesForColumn(String sid,String tablename, String columnname) throws SQLException {
+    public double[] getExtremeValuesForColumn(String sid,String tablename, String columnname) throws SQLException, RemoteException {
 
         TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
 
@@ -135,7 +131,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return new double[]{rs.getDouble(1), rs.getDouble(2)};
     }
 
-    public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname) throws SQLException {
+    public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException {
 
         TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
 

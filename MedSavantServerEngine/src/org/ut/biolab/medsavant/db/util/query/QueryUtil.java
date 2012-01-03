@@ -16,12 +16,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.model.BEDRecord;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
@@ -190,7 +187,7 @@ public class QueryUtil extends java.rmi.server.UnicastRemoteObject implements Qu
         return ComboCondition.and(results);
     }
 
-    public int getNumRecordsInTable(String sid,String name) throws SQLException {
+    public int getNumRecordsInTable(String sid,String name) throws SQLException, RemoteException {
 
         if (name == null) { return -1; }
 
