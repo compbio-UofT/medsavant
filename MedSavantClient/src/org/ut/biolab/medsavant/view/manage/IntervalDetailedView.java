@@ -28,12 +28,12 @@ import javax.swing.JScrollPane;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.GenomicRegion;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
 import org.ut.biolab.medsavant.db.model.RegionSet;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
@@ -71,7 +71,7 @@ public class IntervalDetailedView extends DetailedView {
     @Override
     public void setRightClick(MouseEvent e) {
         JPopupMenu popup = createPopup(regionSet);
-        popup.show(e.getComponent(), e.getX(), e.getY()); 
+        popup.show(e.getComponent(), e.getX(), e.getY());
     }
 
     /*
@@ -205,10 +205,10 @@ public class IntervalDetailedView extends DetailedView {
         sw = new RegionDetailsSW(regionList,limitNumberOfRegionsShown);
         sw.execute();
     }
-    
+
     private JPopupMenu createPopup(final RegionSet set){
         JPopupMenu popupMenu = new JPopupMenu();
-        
+
         if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
             popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
         } else {
@@ -218,7 +218,7 @@ public class IntervalDetailedView extends DetailedView {
             filter1Item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
-                    
+
                     try {
                         List<GenomicRegion> regions = MedSavantClient.RegionQueryUtilAdapter.getRegionsInRegionSet(LoginController.sessionId, set.getId());
                         Map<String, List<Range>> rangeMap = GenomicRegion.mergeGenomicRegions(regions);
@@ -230,7 +230,7 @@ public class IntervalDetailedView extends DetailedView {
 
                             //add chrom condition
                             tmp[0] = BinaryConditionMS.equalTo(
-                                    ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), 
+                                    ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM),
                                     chrom);
 
                             //create range conditions
@@ -238,8 +238,8 @@ public class IntervalDetailedView extends DetailedView {
                             Condition[] rangeConditions = new Condition[ranges.size()];
                             for(int j = 0; j < ranges.size(); j++){
                                 rangeConditions[j] = new RangeCondition(
-                                        ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), 
-                                        (long)ranges.get(j).getMin(), 
+                                        ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION),
+                                        (long)ranges.get(j).getMin(),
                                         (long)ranges.get(j).getMax());
                             }
 
@@ -250,27 +250,27 @@ public class IntervalDetailedView extends DetailedView {
 
                             i++;
                         }
-                        
+
                         removeExistingFilters();
                         filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                                "Region Lists - Filter by List", 
-                                regions.size() + " Region(s)", 
+                                "Region Lists - Filter by List",
+                                regions.size() + " Region(s)",
                                 ComboCondition.or(results));
-       
+
                     } catch (SQLException ex) {
                         Logger.getLogger(IntervalDetailedView.class.getName()).log(Level.SEVERE, null, ex);
                     } catch (RemoteException ex) {
                         Logger.getLogger(IntervalDetailedView.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
+
                 }
             });
-            popupMenu.add(filter1Item);          
+            popupMenu.add(filter1Item);
         }
 
         return popupMenu;
     }
-    
+
     private void removeExistingFilters(){
         if(filterPanels != null){
             for(FilterPanelSubItem panel : filterPanels){

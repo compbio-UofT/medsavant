@@ -17,29 +17,29 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 
 /**
  *
  * @author AndrewBrook
  */
 public abstract class RangeFilter extends QueryFilter {
-    
+
     private RangeSet ranges;
-    
+
     public RangeFilter(RangeSet ranges) {
         super();
         this.ranges = ranges;
     }
-    
+
     public RangeFilter() {
         super();
     }
-    
+
     public RangeSet getRangeSet(){
         return ranges;
     }
-    
+
     public Condition[] getConditions(){
         Condition[] conditions = new Condition[ranges.getSize()];
         TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
@@ -59,17 +59,17 @@ public abstract class RangeFilter extends QueryFilter {
                 } catch (RemoteException ex) {
                     Logger.getLogger(RangeFilter.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
+
             }
-        }  
+        }
         return conditions;
     }
-    
+
     public void merge(RangeSet newRanges){
         if(this.ranges == null){
             this.ranges = newRanges;
         } else {
-            this.ranges.merge(newRanges);            
+            this.ranges.merge(newRanges);
         }
     }
 

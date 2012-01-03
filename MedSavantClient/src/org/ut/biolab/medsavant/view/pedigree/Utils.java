@@ -21,7 +21,7 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
@@ -31,9 +31,9 @@ import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
  * @author Andrew
  */
 public class Utils {
-    
+
     private static List<FilterPanelSubItem> filterPanels;
-    
+
     public static JPopupMenu createPopup(final String familyId){
         JPopupMenu popupMenu = new JPopupMenu();
 
@@ -96,9 +96,9 @@ public class Utils {
                 List<String> dnaIds = null;
                 try {
                     dnaIds = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsFromField(
-                            LoginController.sessionId, 
-                            ProjectController.getInstance().getCurrentProjectId(), 
-                            DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID, 
+                            LoginController.sessionId,
+                            ProjectController.getInstance().getCurrentProjectId(),
+                            DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID,
                             values);
                 } catch (SQLException ex) {
                     MiscUtils.checkSQLException(ex);

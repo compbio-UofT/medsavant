@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
@@ -68,17 +69,17 @@ public class LoggedInView extends JPanel implements ProjectListener {
         viewController = ViewController.getInstance();
         this.add(viewController,BorderLayout.CENTER);
     }
-    
+
     private void addSection(SectionView view) {
         viewController.addSection(view);
     }
 
     private void initTabs() {
-        
+
         viewController.clearMenu();
-        
+
         projectDropDown = new JComboBox();
-            
+
         projectDropDown.setMinimumSize(new Dimension(210,23));
         projectDropDown.setPreferredSize(new Dimension(210,23));
         projectDropDown.setMaximumSize(new Dimension(210,23));
@@ -99,8 +100,8 @@ public class LoggedInView extends JPanel implements ProjectListener {
             addSection(new ManageSection());
         }
     }
-    
-    
+
+
     private void refreshProjectDropDown() {
         try {
             projectDropDown.removeAllItems();
@@ -152,8 +153,10 @@ public class LoggedInView extends JPanel implements ProjectListener {
                     }
                 });
                 ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
-            }               
+            }
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
@@ -167,7 +170,7 @@ public class LoggedInView extends JPanel implements ProjectListener {
         p.setBackground(Color.lightGray);
         return p;
     }
-    
+
     public void projectAdded(String projectName) {
         refreshProjectDropDown();
     }

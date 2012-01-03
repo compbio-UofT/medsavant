@@ -33,12 +33,12 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
@@ -49,22 +49,22 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Andrew
  */
 public class NumericFilterView extends FilterView{
-   
-    
+
+
     /* Convenience Functions */
-    
+
     public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException, RemoteException {
         return new NumericFilterView(new JPanel(), tablename, columnname, queryId, alias, isDecimal, Table.VARIANT);
     }
-    
+
     public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException, RemoteException {
         return new NumericFilterView(new JPanel(), tablename, columnname, queryId, alias, isDecimal, Table.PATIENT);
     }
-    
+
     public NumericFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal, Table whichTable) throws SQLException, RemoteException{
         this(new JPanel(), tablename, columnname, queryId, alias, isDecimal, whichTable);
     }
-    
+
     public NumericFilterView(FilterState state, int queryId) throws SQLException, RemoteException {
         this(new JPanel(), FilterUtils.getTableName(Table.valueOf(state.getValues().get("table"))), state.getId(), queryId, state.getName(), Boolean.valueOf(state.getValues().get("isDecimal")), Table.valueOf(state.getValues().get("table")));
         String minString = state.getValues().get("min");
@@ -74,9 +74,9 @@ public class NumericFilterView extends FilterView{
         }
     }
 
-    
+
     /* NumericFilterView */
-    
+
     private JTextField frombox;
     private JTextField tobox;
     private DecimalRangeSlider rs;
@@ -86,12 +86,12 @@ public class NumericFilterView extends FilterView{
     private Table whichTable;
     private boolean isDecimal;
     private Double[] appliedValues;
-            
+
     public void applyFilter(int low, int high) {
         applyFilter((double)low, (double)high);
     }
-    
-    /*     
+
+    /*
      * Allows filter to be applied without interaction.
      * Assumes values already checked for consistency.
      */
@@ -102,15 +102,15 @@ public class NumericFilterView extends FilterView{
         rs.setHigh(high);
         applyButton.doClick();
     }
-    
+
     private NumericFilterView(JComponent container, String tablename, final String columnname, int queryId, final String alias, final boolean isDecimal, final Table whichTable) throws SQLException, RemoteException {
         super(alias, container, queryId);
-        
+
         this.columnname = columnname;
         this.alias = alias;
         this.whichTable = whichTable;
         this.isDecimal = isDecimal;
-        
+
         Range extremeValues = null;
 
         if (columnname.equals("position")) {
@@ -130,7 +130,7 @@ public class NumericFilterView extends FilterView{
 
         final int min = (int) Math.floor(extremeValues.getMin());
         final int max = (int) Math.ceil(extremeValues.getMax());
-        
+
         int precision = 0;
         if(isDecimal && max-min<=1){
             precision = 2;
@@ -139,7 +139,7 @@ public class NumericFilterView extends FilterView{
         }
         //final DecimalRangeSlider rs = new DecimalRangeSlider(precision);
         rs = new DecimalRangeSlider(precision);
-        
+
         rs.setMinimum(min);
         rs.setMaximum(max);
 
@@ -191,18 +191,18 @@ public class NumericFilterView extends FilterView{
                 if (key == KeyEvent.VK_ENTER) {
                     try {
                         Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
-                        acceptableRange.bound(min, max, true);                     
+                        acceptableRange.bound(min, max, true);
                         frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
                         tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
                         rs.setLow(acceptableRange.getMin());
-                        rs.setHigh(acceptableRange.getMax());           
+                        rs.setHigh(acceptableRange.getMax());
                         applyButton.setEnabled(true);
                     } catch (Exception e2) {
                         e2.printStackTrace();
                         frombox.requestFocus();
                     }
                 }
-            }                
+            }
         });
 
         tobox.addKeyListener(new KeyListener() {
@@ -213,22 +213,22 @@ public class NumericFilterView extends FilterView{
                 if (key == KeyEvent.VK_ENTER) {
                     try {
                         Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
-                        acceptableRange.bound(min, max, false);                     
+                        acceptableRange.bound(min, max, false);
                         frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
                         tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
                         rs.setLow(acceptableRange.getMin());
-                        rs.setHigh(acceptableRange.getMax());      
+                        rs.setHigh(acceptableRange.getMax());
                         applyButton.setEnabled(true);
                     } catch (Exception e2) {
                         e2.printStackTrace();
                         frombox.requestFocus();
                     }
-                }   
-            }                   
+                }
+            }
         });
 
         //
-                
+
         ActionListener al = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -236,7 +236,7 @@ public class NumericFilterView extends FilterView{
                 applyButton.setEnabled(false);
 
                 final Range acceptableRange = new Range(getNumber(frombox.getText().replaceAll(",", "")), getNumber(tobox.getText().replaceAll(",", "")));
-                acceptableRange.bound(min, max, true);                     
+                acceptableRange.bound(min, max, true);
                 frombox.setText(ViewUtil.numToString(acceptableRange.getMin()));
                 tobox.setText(ViewUtil.numToString(acceptableRange.getMax()));
                 rs.setLow(acceptableRange.getMin());
@@ -260,13 +260,13 @@ public class NumericFilterView extends FilterView{
                         } else if (whichTable == Table.PATIENT){
                             try {
                                 List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsWithValuesInRange(
-                                        LoginController.sessionId, 
-                                        ProjectController.getInstance().getCurrentProjectId(), 
-                                        columnname, 
+                                        LoginController.sessionId,
+                                        ProjectController.getInstance().getCurrentProjectId(),
+                                        columnname,
                                         acceptableRange);
 
                                 Condition[] results = new Condition[individuals.size()];
-                                int i = 0; 
+                                int i = 0;
                                 for(String ind : individuals){
                                     results[i++] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
                                 }
@@ -325,7 +325,7 @@ public class NumericFilterView extends FilterView{
 
         container.add(bottomContainer);
     }
-    
+
     public static double getNumber(String s) {
         try {
             return Double.parseDouble(s);
@@ -335,7 +335,7 @@ public class NumericFilterView extends FilterView{
     }
 
     @Override
-    public FilterState saveState() {        
+    public FilterState saveState() {
         Map<String, String> map = new HashMap<String, String>();
         map.put("table", whichTable.toString());
         map.put("isDecimal", Boolean.toString(isDecimal));

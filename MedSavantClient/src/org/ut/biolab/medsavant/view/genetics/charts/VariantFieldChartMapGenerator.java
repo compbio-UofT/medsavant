@@ -31,13 +31,13 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 
@@ -49,7 +49,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
     private final CustomField field;
     private final Table whichTable;
-        
+
     public static VariantFieldChartMapGenerator createVariantChart(CustomField field) {
         return new VariantFieldChartMapGenerator(field, Table.VARIANT);
     }
@@ -57,58 +57,58 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
     public static VariantFieldChartMapGenerator createPatientChart(CustomField field) {
         return new VariantFieldChartMapGenerator(field, Table.PATIENT);
     }
-    
+
     private VariantFieldChartMapGenerator(CustomField field, Table whichTable) {
         this.field = field;
         this.whichTable = whichTable;
     }
-    
+
     private List<Range> generateBins(Range r, boolean isLogScaleX){
         List<Range> bins = new ArrayList<Range>();
-        
+
         //log scale
         if(isLogScaleX){
             bins.add(new Range(0,1));
             for(int i = 1; i < r.getMax(); i *= 10){
                 bins.add(new Range(i, i*10));
-            }        
-            
+            }
+
         //percent fields
         } else if ((field.getColumnType() == ColumnType.DECIMAL || field.getColumnType() == ColumnType.FLOAT) && r.getMax() - r.getMin() <= 1 && r.getMax() <= 1) {
-            
+
             double step = 0.05;
             int numSteps = 20;
             for(int i = 0; i < numSteps; i++){
                 bins.add(new Range(step * i, step * (i+1)));
             }
-            
+
         //boolean fields
         } else if ((field.getColumnType() == ColumnType.INTEGER && Integer.parseInt(field.getColumnLength()) == 1) || field.getColumnType() == ColumnType.BOOLEAN){
-            
+
             bins.add(new Range(0,1));
-            bins.add(new Range(1,2)); 
-            
+            bins.add(new Range(1,2));
+
         //other fields
         } else {
-            
+
             int min = (int)(r.getMin() - Math.abs(r.getMin() % (int)Math.pow(10, getNumDigits((int)(r.getMax() - r.getMin()))-1)));
             int step1 = (int)Math.ceil((r.getMax() - min) / 25.0);
             int step2 = (int)Math.pow(10, getNumDigits(step1));
             int step = step2;
             while (step * 0.5 > step1) step *= 0.5;
             step = Math.max(step, 1);
-            
+
             int numSteps = (int)(((int)(r.getMax() - min) / step) + 1);
-            
+
             for(int i = 0; i < numSteps; i++){
                 bins.add(new Range(min + i * step, min + (i + 1) * step));
             }
         }
-              
+
         return bins;
     }
-    
-    private int getNumDigits(int x){    
+
+    private int getNumDigits(int x){
         x = Math.abs(x);
         int digits = 1;
         while (Math.pow(10, digits) < x){
@@ -116,10 +116,10 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         }
         return digits;
     }
-    
+
     public ChartFrequencyMap generateChartMap(boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
-                     
+
         if (isNumeric() && !field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
 
             String tablename = null;
@@ -129,35 +129,35 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                 tablename = ProjectController.getInstance().getCurrentPatientTableName();
             }
             Range r = new Range(MedSavantClient.VariantQueryUtilAdapter.getExtremeValuesForColumn(
-                    LoginController.sessionId, 
-                    tablename, 
+                    LoginController.sessionId,
+                    tablename,
                     field.getColumnName()));
-            
+
             List<Range> bins = generateBins(r, isLogScaleX);
-            
+
             for(Range binrange : bins){
                 if(Thread.currentThread().isInterrupted()){
                     return null;
                 }
-                if (whichTable == Table.VARIANT) {    
+                if (whichTable == Table.VARIANT) {
                     chartMap.addEntry(
-                            binrange.toString(), 
+                            binrange.toString(),
                             MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForColumnInRange(
-                                LoginController.sessionId, 
-                                ProjectController.getInstance().getCurrentProjectId(), 
-                                ReferenceController.getInstance().getCurrentReferenceId(), 
-                                FilterController.getQueryFilterConditions(), 
-                                field.getColumnName(), 
+                                LoginController.sessionId,
+                                ProjectController.getInstance().getCurrentProjectId(),
+                                ReferenceController.getInstance().getCurrentReferenceId(),
+                                FilterController.getQueryFilterConditions(),
+                                field.getColumnName(),
                                 binrange.getMin(),
-                                binrange.getMax()) 
+                                binrange.getMax())
                             );
                 } else if (whichTable == Table.PATIENT) {
 
                     //get dna ids
                     List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsWithValuesInRange(
-                            LoginController.sessionId, 
-                            ProjectController.getInstance().getCurrentProjectId(), 
-                            field.getColumnName(), 
+                            LoginController.sessionId,
+                            ProjectController.getInstance().getCurrentProjectId(),
+                            field.getColumnName(),
                             binrange);
 
                     //create new dna id filter
@@ -185,9 +185,9 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                     int numVariants = 0;
                     if (individuals.size() > 0) {
                         numVariants = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                                LoginController.sessionId, 
-                                ProjectController.getInstance().getCurrentProjectId(), 
-                                ReferenceController.getInstance().getCurrentReferenceId(), 
+                                LoginController.sessionId,
+                                ProjectController.getInstance().getCurrentProjectId(),
+                                ReferenceController.getInstance().getCurrentReferenceId(),
                                 conditions);
                     }
 
@@ -202,22 +202,22 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
             }
             if (whichTable == Table.VARIANT) {
                 chartMap.addAll(MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForColumn(
-                        LoginController.sessionId, 
-                        ProjectController.getInstance().getCurrentProjectId(), 
-                        ReferenceController.getInstance().getCurrentReferenceId(), 
-                        FilterController.getQueryFilterConditions(), 
+                        LoginController.sessionId,
+                        ProjectController.getInstance().getCurrentProjectId(),
+                        ReferenceController.getInstance().getCurrentReferenceId(),
+                        FilterController.getQueryFilterConditions(),
                         field.getColumnName()));
             } else if (whichTable == Table.PATIENT) {
                 Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
-                        LoginController.sessionId, 
-                        ProjectController.getInstance().getCurrentProjectId(), 
+                        LoginController.sessionId,
+                        ProjectController.getInstance().getCurrentProjectId(),
                         field.getColumnName());
                 Condition[][] filterConditions = FilterController.getQueryFilterConditions();
-                
+
                 if(field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
                     map = modifyGenderMap(map);
                 }
-                
+
                 for (Object key : map.keySet()) {
 
                     if(Thread.currentThread().isInterrupted()){
@@ -249,9 +249,9 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                     int numVariants = 0;
                     if (individuals.size() > 0) {
                         numVariants = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                                LoginController.sessionId, 
-                                ProjectController.getInstance().getCurrentProjectId(), 
-                                ReferenceController.getInstance().getCurrentReferenceId(), 
+                                LoginController.sessionId,
+                                ProjectController.getInstance().getCurrentProjectId(),
+                                ReferenceController.getInstance().getCurrentReferenceId(),
                                 conditions);
                     }
 
@@ -288,7 +288,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
     public String getFilterId() {
         return field.getColumnName();
     }
-    
+
     private Map<Object, List<String>> modifyGenderMap(Map<Object, List<String>> original){
         Map<Object, List<String>> result = new HashMap<Object, List<String>>();
         for (Object key : original.keySet()) {

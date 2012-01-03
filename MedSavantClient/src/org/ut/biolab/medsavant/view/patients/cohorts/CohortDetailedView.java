@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.model.SimplePatient;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
@@ -73,8 +73,8 @@ public class CohortDetailedView extends DetailedView {
         @Override
         protected Object doInBackground() throws Exception {
             List<SimplePatient> patientList = MedSavantClient.CohortQueryUtilAdapter.getIndividualsInCohort(
-                    LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentProjectId(), 
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentProjectId(),
                     cohort.getId());
             return patientList;
         }

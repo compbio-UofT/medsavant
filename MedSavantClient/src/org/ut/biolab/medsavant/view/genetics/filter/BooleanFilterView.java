@@ -31,8 +31,8 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.util.MiscUtils;
@@ -49,11 +49,11 @@ public class BooleanFilterView extends FilterView{
     public static FilterView createVariantFilterView(String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
         return new BooleanFilterView(new JPanel(), columnname, queryId, alias, Table.VARIANT);
     }
-    
+
     public static FilterView createPatientFilterView(String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
         return new BooleanFilterView(new JPanel(), columnname, queryId, alias, Table.PATIENT);
     }
-    
+
     public BooleanFilterView(FilterState state, int queryId) throws SQLException {
         this(new JPanel(), state.getId(), queryId, state.getName(), Table.valueOf(state.getValues().get("table")));
         String values = state.getValues().get("values");
@@ -63,29 +63,29 @@ public class BooleanFilterView extends FilterView{
             applyFilter(l);
         }
     }
-    
+
     private ActionListener al;
     private List<JCheckBox> boxes;
     private String columnname;
     private String alias;
     private Table whichTable;
     private List<String> appliedValues;
-    
+
     public void applyFilter(List<String> list){
         for(JCheckBox box : boxes){
             box.setSelected((box.getText().equals("True") && list.contains("1")) || (box.getText().equals("False") && list.contains("0")));
         }
         al.actionPerformed(new ActionEvent(this, 0, null));
     }
-        
+
     private BooleanFilterView(final JPanel container, final String columnname, int queryId, final String alias, final Table whichTable) throws SQLException {
-        
+
         super(alias, container, queryId);
-        
+
         this.columnname = columnname;
         this.alias = alias;
         this.whichTable = whichTable;
-        
+
         List<String> uniq = new ArrayList<String>();
         uniq.add("True");
         uniq.add("False");
@@ -100,7 +100,7 @@ public class BooleanFilterView extends FilterView{
         boxes = new ArrayList<JCheckBox>();
 
         al = new ActionListener() {
-            
+
             public void actionPerformed(ActionEvent e) {
 
                 applyButton.setEnabled(false);
@@ -129,13 +129,13 @@ public class BooleanFilterView extends FilterView{
                         } else if (whichTable == Table.PATIENT){
                             try {
                                 List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForStringList(
-                                        LoginController.sessionId, 
-                                        ProjectController.getInstance().getCurrentPatientTableSchema(), 
-                                        acceptableValues, 
+                                        LoginController.sessionId,
+                                        ProjectController.getInstance().getCurrentPatientTableSchema(),
+                                        acceptableValues,
                                         columnname);
 
                                 Condition[] results = new Condition[individuals.size()];
-                                int i = 0; 
+                                int i = 0;
                                 for(String ind : individuals){
                                     results[i++] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
                                 }
@@ -161,7 +161,7 @@ public class BooleanFilterView extends FilterView{
                     @Override
                     public String getId() {
                         return columnname;
-                    }                     
+                    }
                 };
                 FilterController.addFilter(f, getQueryId());
 
@@ -169,9 +169,9 @@ public class BooleanFilterView extends FilterView{
                 //apply.setEnabled(false);
             }
         };
-        
+
         applyButton.addActionListener(al);
-        
+
         for (String s : uniq) {
             JCheckBox b = new JCheckBox(s);
             b.setSelected(true);
@@ -198,13 +198,13 @@ public class BooleanFilterView extends FilterView{
         p.add(Box.createRigidArea(new Dimension(5,5)));
         p.add(Box.createHorizontalGlue());
         container.add(p);
-        
+
         JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
         selectAll.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 for (JCheckBox c : boxes) {
-                    c.setSelected(true);                    
+                    c.setSelected(true);
                 }
                 applyButton.setEnabled(true);
             }
@@ -245,7 +245,7 @@ public class BooleanFilterView extends FilterView{
                     values += ";;;";
                 }
             }
-            map.put("values", values);         
+            map.put("values", values);
         }
         return new FilterState(FilterType.BOOLEAN, alias, columnname, map);
     }

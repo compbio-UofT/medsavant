@@ -42,10 +42,8 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.util.ImportVariants;
 import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.db.util.shared.ExtensionsFileFilter;
-import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -131,7 +129,7 @@ public class ImportVariantsWizard extends WizardDialog {
                     fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
                 } else {
                     fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
-                }              
+                }
             }
         };
 
@@ -396,12 +394,14 @@ public class ImportVariantsWizard extends WizardDialog {
                     @Override
                     public void run() {
                         instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-                        
+
                         try {
-                            int uploadId = ImportVariants.performImport(variantFiles, DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()), projectId, referenceId, progressLabel, LoginController.getUsername());
-                            ImportVariants.addTagsToUpload(uploadId, tagsToStringArray(variantTags));
-                        } catch (Exception ex) {
+                            //TODO: push this code to the server
                             
+                            //int uploadId = ImportVariants.performImport(variantFiles, DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()), projectId, referenceId, progressLabel, LoginController.getUsername());
+                            //ImportVariants.addTagsToUpload(uploadId, tagsToStringArray(variantTags));
+                        } catch (Exception ex) {
+
                             //cancellation
                             if(ex instanceof InterruptedException){
                                 progressBar.setIndeterminate(false);
@@ -412,29 +412,29 @@ public class ImportVariantsWizard extends WizardDialog {
                                 cancelButton.setText("Cancel");
                                 cancelButton.setEnabled(true);
                                 cancelButton.setVisible(false);
-                                
+
                             //failure
                             } else {
                                 if(ex instanceof SQLException){
                                     MiscUtils.checkSQLException((SQLException)ex);
-                                }                   
+                                }
                                 progressBar.setIndeterminate(false);
                                 progressBar.setValue(0);
                                 progressLabel.setForeground(Color.red);
                                 progressLabel.setText(ex.getMessage());
                                 startButton.setVisible(false);
                                 cancelButton.setVisible(false);
-                            }                        
+                            }
                             Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex);
-                        }    
-                        
+                        }
+
                         //success
                         progressBar.setIndeterminate(false);
                         cancelButton.setEnabled(false);
                         progressBar.setValue(100);
                         progressLabel.setText("Upload complete.");
                         page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                        
+
                         instance.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     }
 
@@ -473,7 +473,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
         return page;
     }
-    
-    
+
+
 
 }

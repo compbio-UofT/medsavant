@@ -33,9 +33,9 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.util.MiscUtils;
@@ -49,21 +49,21 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Andrew
  */
 public class StringListFilterView extends FilterView {
-    
+
     /* Convenience Functions */
-    
+
     public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException, RemoteException {
         return new StringListFilterView(new JPanel(), tablename, columnname, queryId, alias, Table.PATIENT);
     }
-    
+
     public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException, RemoteException {
         return new StringListFilterView(new JPanel(), tablename, columnname, queryId, alias, Table.VARIANT);
     }
-    
+
     public StringListFilterView(String tablename, String columnname, int queryId, String alias, Table whichTable) throws SQLException, RemoteException {
         this(new JPanel(), tablename, columnname, queryId, alias, whichTable);
     }
-    
+
     public StringListFilterView(FilterState state, int queryId) throws SQLException, RemoteException {
         this(new JPanel(), FilterUtils.getTableName(Table.valueOf(state.getValues().get("table"))), state.getId(), queryId, state.getName(), Table.valueOf(state.getValues().get("table")));
         String values = state.getValues().get("values");
@@ -73,30 +73,30 @@ public class StringListFilterView extends FilterView {
             applyFilter(l);
         }
     }
-       
+
     /* StringListFilterView */
-    
+
     private List<JCheckBox> boxes;
     private ActionListener al;
     private String columnname;
     private String alias;
     private Table whichTable;
     private List<String> appliedValues;
-    
+
     public void applyFilter(List<String> list){
         for(JCheckBox box : boxes){
             box.setSelected(list.contains(box.getText()));
         }
         al.actionPerformed(new ActionEvent(this, 0, null));
-    }   
-    
+    }
+
     private StringListFilterView(JComponent container, String tablename, final String columnname, int queryId, final String alias, final Table whichTable) throws SQLException, RemoteException {
         super(alias, container, queryId);
-        
+
         this.columnname = columnname;
         this.alias = alias;
         this.whichTable = whichTable;
-        
+
         final List<String> uniq;
 
         if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_AC)) {
@@ -141,11 +141,11 @@ public class StringListFilterView extends FilterView {
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
         boxes = new ArrayList<JCheckBox>();
-        
+
         al = new ActionListener(){
 
             public void actionPerformed(ActionEvent e) {
-                
+
                 applyButton.setEnabled(false);
 
                 final List<String> acceptableValues = new ArrayList<String>();
@@ -163,7 +163,7 @@ public class StringListFilterView extends FilterView {
                 Filter f = new QueryFilter() {
 
                     @Override
-                    public Condition[] getConditions() {                       
+                    public Condition[] getConditions() {
                         if(whichTable == Table.VARIANT){
                             Condition[] results = new Condition[acceptableValues.size()];
                             int i = 0;
@@ -176,7 +176,7 @@ public class StringListFilterView extends FilterView {
                                 List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForStringList(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableSchema(), acceptableValues, columnname);
 
                                 Condition[] results = new Condition[individuals.size()];
-                                int i = 0; 
+                                int i = 0;
                                 for(String ind : individuals){
                                     results[i++] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
                                 }
@@ -191,7 +191,7 @@ public class StringListFilterView extends FilterView {
                                 Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
-                        return new Condition[0];   
+                        return new Condition[0];
                     }
 
                     @Override
@@ -210,9 +210,9 @@ public class StringListFilterView extends FilterView {
                 //TODO: why does this not work? Freezes GUI
                 //apply.setEnabled(false);
             }
-        };      
+        };
         applyButton.addActionListener(al);
-        
+
         for (String s : uniq) {
             JCheckBox b = new JCheckBox(s);
             b.setSelected(true);
@@ -233,20 +233,20 @@ public class StringListFilterView extends FilterView {
             container.add(b);
             boxes.add(b);
         }
-        
+
         //force left alignment
         JPanel p = new JPanel();
         p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
         p.add(Box.createRigidArea(new Dimension(5,5)));
         p.add(Box.createHorizontalGlue());
         container.add(p);
-              
+
         JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
         selectAll.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 for (JCheckBox c : boxes) {
-                    c.setSelected(true);                   
+                    c.setSelected(true);
                 }
                 applyButton.setEnabled(true);
             }
@@ -269,12 +269,12 @@ public class StringListFilterView extends FilterView {
         bottomContainer.add(Box.createHorizontalGlue());
 
         bottomContainer.add(applyButton);
-        
+
         bottomContainer.add(Box.createRigidArea(new Dimension(5,30)));
 
         bottomContainer.setAlignmentX(0F);
-        container.add(bottomContainer); 
-        
+        container.add(bottomContainer);
+
     }
 
     @Override
@@ -289,7 +289,7 @@ public class StringListFilterView extends FilterView {
                     values += ";;;";
                 }
             }
-            map.put("values", values);         
+            map.put("values", values);
         }
         return new FilterState(FilterType.STRING, alias, columnname, map);
     }

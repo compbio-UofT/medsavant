@@ -29,9 +29,9 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
@@ -51,18 +51,18 @@ class CohortFilterView extends FilterView{
     static FilterView getCohortFilterView(int queryId) {
         return new CohortFilterView(queryId, new JPanel());
     }
-    
+
     public CohortFilterView(FilterState state, int queryId) throws SQLException {
         this(queryId, new JPanel());
         if(state.getValues().get("value") != null){
             applyFilter(Integer.parseInt(state.getValues().get("value")));
         }
     }
-    
+
     private Integer appliedId;
     private ActionListener al;
     private JComboBox b;
-    
+
     public void applyFilter(int cohortId){
         for(int i = 0; i < b.getItemCount(); i++){
             if(b.getItemAt(i) instanceof Cohort && ((Cohort)b.getItemAt(i)).getId() == cohortId){
@@ -70,24 +70,24 @@ class CohortFilterView extends FilterView{
                 al.actionPerformed(new ActionEvent(this, 0, null));
                 return;
             }
-        }     
+        }
     }
-    
+
     private CohortFilterView(int queryId, JPanel container){
         super(FILTER_NAME, container, queryId);
         createContentPanel(container);
     }
-    
+
     private List<Cohort> getDefaultValues() {
         try {
             return MedSavantClient.CohortQueryUtilAdapter.getCohorts(
-                    LoginController.sessionId, 
+                    LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectId());
         } catch (SQLException ex) {
             Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
             Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
-        } 
+        }
         return new ArrayList<Cohort>();
     }
 
@@ -130,12 +130,12 @@ class CohortFilterView extends FilterView{
                         try {
 
                             List<String> dnaIds = MedSavantClient.CohortQueryUtilAdapter.getDNAIdsInCohort(
-                                    LoginController.sessionId, 
+                                    LoginController.sessionId,
                                     cohort.getId());
 
                             Condition[] results = new Condition[dnaIds.size()];
                             int i = 0;
-                            for (String dnaId : dnaIds) {   
+                            for (String dnaId : dnaIds) {
                                 results[i] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaId);
                                 i++;
                             }
@@ -147,8 +147,8 @@ class CohortFilterView extends FilterView{
 
                         } catch (SQLException ex) {
                             MiscUtils.checkSQLException(ex);
-                        } catch (Exception ex) {                           
-                            ex.printStackTrace();                           
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
                         }
                         return null;
                     }

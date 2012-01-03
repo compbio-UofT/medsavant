@@ -22,7 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -33,7 +33,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class FilterPanelFactory {
 
-    
+
     public static FilterView getCategoricalFilterView(final String name, List<String> options, final DbColumn column) {
         HashMap<String,String> map = new HashMap<String,String>();
         for(String s : options) {
@@ -41,7 +41,7 @@ public class FilterPanelFactory {
         }
         return getCategoricalFilterView(name,options,map,column);
     }
-    
+
     public static FilterView getCategoricalFilterView(final String name, List<String> options, Map<String,String> optionsToDbValueMap, final DbColumn column) {
 
 
@@ -89,8 +89,8 @@ public class FilterPanelFactory {
                         public String getName() {
                             return name;
                         }
-                        
-                        
+
+
                         @Override
                         public String getId() {
                             return name;//TODO
