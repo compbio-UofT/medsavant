@@ -299,7 +299,11 @@ public class ProjectController implements ReferenceListener, LoginListener {
 
     public void loginEvent(LoginEvent evt) {
         if(!evt.isLoggedIn()){
-            MedSavantClient.CustomTablesAdapter.clearMap(LoginController.sessionId);
+            try {
+                MedSavantClient.CustomTablesAdapter.clearMap(LoginController.sessionId);
+            } catch (RemoteException ex) {
+                Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
   

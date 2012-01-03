@@ -28,7 +28,7 @@ import javax.swing.JScrollPane;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.GenomicRegion;
 import org.ut.biolab.medsavant.db.model.Range;

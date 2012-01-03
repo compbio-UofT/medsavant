@@ -63,7 +63,7 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
             throw e;
         }
     }
-
+    
     static public void main(String args[]) {
         try {
             MedSavantServerEngine s = new MedSavantServerEngine();
@@ -96,5 +96,6 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
         registry.rebind(MedSavantServerRegistry.Registry_VariantQueryUtilAdapter, VariantQueryUtil.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_DBUtilAdapter, DBUtil.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_SetupAdapter, Setup.getInstance());
+        registry.rebind(MedSavantServerRegistry.Registry_CustomTablesAdapter, CustomTables.getInstance());
     }
 }

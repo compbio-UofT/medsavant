@@ -68,9 +68,7 @@ public class MedSavantClient {
         System.setProperty("java.security.policy", "client.policy");
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new RMISecurityManager());
-        }
-         * 
-         */
+        }*/
 
         /*try {
             // get the “registry”
@@ -128,8 +126,10 @@ public class MedSavantClient {
         //System.out.println("server>" + sessionId);
     }
 
-    private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
+    private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {  
 
+        LoginController.SessionAdapter = (SessionAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SessionAdapter));
+        
         AnnotationLogQueryUtilAdapter = (AnnotationLogQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationLogQueryUtilAdapter));
         AnnotationQueryUtilAdapter = (AnnotationQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationQueryUtilAdapter));
         ChromosomeQueryUtilAdapter = (ChromosomeQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_ChromosomeQueryUtilAdapter));
@@ -146,11 +146,7 @@ public class MedSavantClient {
         VariantQueryUtilAdapter = (VariantQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_VariantQueryUtilAdapter));
         DBUtilAdapter = (DBUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_DBUtilAdapter));
         SetupAdapter = (SetupAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SetupAdapter));
-
         CustomTablesAdapter = (CustomTablesAdapter) (registry.lookup(MedSavantServerRegistry.Registry_CustomTablesAdapter));
-
-        LoginController.SessionAdapter = (SessionAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SessionAdapter));
-
     }
 
     private static void setLAF() {
