@@ -11,7 +11,6 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.VariantFormat;
-import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
@@ -210,7 +209,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
     private void setCurrentVariantTable(){
         try {
             this.currentTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentTableName());
-            this.currentTableSchema =  CustomTables.getCustomTableSchema(getCurrentTableName());          
+            this.currentTableSchema =  MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, getCurrentTableName());          
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
@@ -241,7 +240,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
     private void setCurrentPatientTable(){
         try {
             this.currentPatientTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentPatientTableName());
-            this.currentPatientTableSchema =  CustomTables.getCustomTableSchema(getCurrentPatientTableName());          
+            this.currentPatientTableSchema =  MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, getCurrentPatientTableName());          
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
@@ -255,7 +254,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
                 int[] annotationIds = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationIds(LoginController.sessionId, this.currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
                 AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+2];
                 af[0] = VariantFormat.getDefaultAnnotationFormat();
-                af[1] = VariantFormat.getCustomFieldAnnotationFormat(currentProjectId);
+                af[1] = VariantFormat.getCustomFieldAnnotationFormat(MedSavantClient.ProjectQueryUtilAdapter.getCustomVariantFields(LoginController.sessionId, currentProjectId)); 
                 for(int i = 0; i < annotationIds.length; i++){
                     af[i+2] = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationFormat(LoginController.sessionId, annotationIds[i]);
                 }
@@ -300,7 +299,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
 
     public void loginEvent(LoginEvent evt) {
         if(!evt.isLoggedIn()){
-            CustomTables.clearMap();
+            MedSavantClient.CustomTablesAdapter.clearMap(LoginController.sessionId);
         }
     }
   

@@ -29,6 +29,7 @@ import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
 import org.ut.biolab.medsavant.server.api.MedSavantServerRegistry;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
 import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.db.util.query.api.CustomTablesAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.DBUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.SetupAdapter;
 import org.ut.biolab.medsavant.log.ClientLogger;
@@ -53,6 +54,7 @@ public class MedSavantClient {
     public static QueryUtilAdapter QueryUtilAdapter;
     public static DBUtilAdapter DBUtilAdapter;
     public static SetupAdapter SetupAdapter;
+    public static CustomTablesAdapter CustomTablesAdapter;
     //public static SessionAdapter SessionAdapter;
 
     //public static String sessionId;

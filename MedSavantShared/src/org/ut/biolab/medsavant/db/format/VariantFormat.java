@@ -68,4 +68,10 @@ public class VariantFormat {
 
         return new AnnotationFormat("default", "default", 0, "", true, true, AnnotationType.POSITION, fields);
     }
+    
+    public static AnnotationFormat getCustomFieldAnnotationFormat(List<CustomField> customFields) {
+
+        return new AnnotationFormat(
+                ANNOTATION_FORMAT_CUSTOM_VCF, ANNOTATION_FORMAT_CUSTOM_VCF, 0, "", true, true, AnnotationType.POSITION, customFields);
+    }    
 }

@@ -33,7 +33,6 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
@@ -194,7 +193,7 @@ public class TagFilterView extends FilterView {
 
                                 Condition[] uploadIDConditions = new Condition[uploadIDs.size()];
 
-                                TableSchema table = CustomTables.getCustomTableSchema(MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(
+                                TableSchema table = MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(
                                          LoginController.sessionId, 
                                          ProjectController.getInstance().getCurrentProjectId(),
                                          ReferenceController.getInstance().getCurrentReferenceId()));
