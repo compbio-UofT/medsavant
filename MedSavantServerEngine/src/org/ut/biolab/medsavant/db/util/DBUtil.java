@@ -3,6 +3,7 @@ package org.ut.biolab.medsavant.db.util;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.rmi.RemoteException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.sql.Connection;
@@ -11,12 +12,24 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.util.query.api.DBUtilAdapter;
 
 /**
  *
  * @author mfiume
  */
-public class DBUtil {
+public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUtilAdapter {
+    
+    private static DBUtil instance;
+
+    public static DBUtil getInstance() throws RemoteException {
+        if (instance == null) {
+            instance = new DBUtil();
+        }
+        return instance;
+    }
+
+    public DBUtil() throws RemoteException {}
 
     /*public static enum FieldType {VARCHAR, FLOAT, INT, BOOLEAN, DECIMAL, DATE, TIMESTAMP}
 
@@ -64,7 +77,7 @@ public class DBUtil {
         }
     }
 
-    public static DbTable importTable(String sessionId, String tablename) throws SQLException {
+    public DbTable importTable(String sessionId, String tablename) throws SQLException, RemoteException {
 
         Connection c;
         try {
@@ -92,7 +105,8 @@ public class DBUtil {
         return table;
     }
 
-    public static TableSchema importTableSchema(String sessionId, String tablename) throws SQLException {
+    @Override
+    public TableSchema importTableSchema(String sessionId, String tablename) throws SQLException, RemoteException {
 
         Connection c = ConnectionController.connectPooled(sessionId);
 
@@ -118,8 +132,8 @@ public class DBUtil {
         return t.getFieldIndexInDB(columnname) - 1;
     }
 
-    public static int getIndexOfField(String sessionId, String tablename, String columnname) throws SQLException {
-        return getIndexOfField(importTableSchema(sessionId,tablename), columnname);
+    public static int getIndexOfField(String sessionId, String tablename, String columnname) throws SQLException, RemoteException {
+        return getIndexOfField(instance.importTableSchema(sessionId,tablename), columnname);
     }
 
     public static void dropTable(String sessionId,String tablename) throws SQLException {

@@ -24,4 +24,5 @@ public static final String Registry_ServerLogQueryUtilAdapter = "ServerLogQueryU
 public static final String Registry_SettingsQueryUtilAdapter = "SettingsQueryUtilAdapter";
 public static final String Registry_UserQueryUtilAdapter = "UserQueryUtilAdapter";
 public static final String Registry_VariantQueryUtilAdapter = "VariantQueryUtilAdapter";
+public static final String Registry_DBUtilAdapter = "DBUtilAdapter";
 }

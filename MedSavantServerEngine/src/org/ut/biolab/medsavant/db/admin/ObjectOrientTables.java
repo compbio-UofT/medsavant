@@ -3,11 +3,9 @@ package org.ut.biolab.medsavant.db.admin;
 import java.io.IOException;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.Console;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
@@ -17,7 +15,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
-import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.server.SessionController;
 
@@ -88,7 +85,7 @@ public class ObjectOrientTables {
         List<String> classNames = new ArrayList<String>();
 
         while (rs.next()) {
-            DbTable t = DBUtil.importTable(sessionId, rs.getString(1));
+            DbTable t = DBUtil.getInstance().importTable(sessionId, rs.getString(1));
 
             String tableName = t.getTableNameSQL();
 

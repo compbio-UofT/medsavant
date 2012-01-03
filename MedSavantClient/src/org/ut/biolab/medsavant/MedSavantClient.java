@@ -29,6 +29,7 @@ import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
 import org.ut.biolab.medsavant.server.api.MedSavantServerRegistry;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
 import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.db.util.query.api.DBUtilAdapter;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.view.MainFrame;
 
@@ -49,6 +50,7 @@ public class MedSavantClient {
     public static RegionQueryUtilAdapter RegionQueryUtilAdapter;
     public static ReferenceQueryUtilAdapter ReferenceQueryUtilAdapter;
     public static QueryUtilAdapter QueryUtilAdapter;
+    public static DBUtilAdapter DBUtilAdapter;
     //public static SessionAdapter SessionAdapter;
     
     //public static String sessionId;
@@ -136,6 +138,7 @@ public class MedSavantClient {
         SettingsQueryUtilAdapter = (SettingsQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SettingsQueryUtilAdapter));
         UserQueryUtilAdapter = (UserQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_UserQueryUtilAdapter));
         VariantQueryUtilAdapter = (VariantQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_VariantQueryUtilAdapter));
+        DBUtilAdapter = (DBUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_DBUtilAdapter));
     }
     
     private static void setLAF() {

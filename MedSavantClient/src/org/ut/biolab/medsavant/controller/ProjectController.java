@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.util.shared.DBUtil;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.VariantFormat;
@@ -210,7 +209,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
     
     private void setCurrentVariantTable(){
         try {
-            this.currentTable = DBUtil.importTable(getCurrentTableName());
+            this.currentTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentTableName());
             this.currentTableSchema =  CustomTables.getCustomTableSchema(getCurrentTableName());          
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
@@ -241,7 +240,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
     
     private void setCurrentPatientTable(){
         try {
-            this.currentPatientTable = DBUtil.importTable(getCurrentPatientTableName());
+            this.currentPatientTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentPatientTableName());
             this.currentPatientTableSchema =  CustomTables.getCustomTableSchema(getCurrentPatientTableName());          
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
