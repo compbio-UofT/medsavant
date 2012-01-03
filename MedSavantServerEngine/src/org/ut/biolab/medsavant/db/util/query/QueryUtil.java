@@ -191,7 +191,7 @@ public class QueryUtil extends java.rmi.server.UnicastRemoteObject implements Qu
 
         if (name == null) { return -1; }
 
-        TableSchema table = CustomTables.getCustomTableSchema(sid,name);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,name);
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());

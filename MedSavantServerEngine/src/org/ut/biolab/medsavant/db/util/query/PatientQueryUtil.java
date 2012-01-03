@@ -77,7 +77,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         String tablename = getPatientTablename(sid,projectId);
 
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addColumns(
@@ -109,7 +109,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     public List<Object[]> getPatients(String sid,int projectId) throws SQLException, RemoteException {
         String tablename = getPatientTablename(sid,projectId);
 
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
@@ -135,7 +135,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         String tablename = getPatientTablename(sid,projectId);
 
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
@@ -294,7 +294,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     public void removePatient(String sid,int projectId, int[] patientIds) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         Connection c = ConnectionController.connectPooled(sid);
         c.setAutoCommit(false);
@@ -314,7 +314,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     public void addPatient(String sid,int projectId, List<CustomField> cols, List<String> values) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         InsertQuery query = new InsertQuery(table.getTable());
         for(int i = 0; i < Math.min(cols.size(), values.size()); i++){
@@ -328,7 +328,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         String tablename = getPatientTablename(sid,projectId);
 
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         DbColumn currentDNAId = table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS);
         DbColumn testColumn = table.getDBColumn(columnName);
@@ -362,7 +362,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         String tablename = getPatientTablename(sid,projectId);
 
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         DbColumn currentDNAId = table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS);
         DbColumn testColumn = table.getDBColumn(columnName);
@@ -456,7 +456,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         List<CustomField> currentFields = getCustomPatientFields(sid,projectId);
 
         String tablename = getPatientTablename(sid,projectId);
-        //TableSchema patientTable = CustomTables.getCustomTableSchema(tablename);
+        //TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(tablename);
         TableSchema patientFormatTable = MedSavantDatabase.PatientformatTableSchema;
 
         Connection c = ConnectionController.connectPooled(sid);
@@ -505,7 +505,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         c.commit();
         c.setAutoCommit(true);
 
-        TableSchema patientTable = CustomTables.getCustomTableSchema(sid,tablename, true);
+        TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(sid,tablename, true);
         List<DbColumn> columns = patientTable.getColumns();
         List<DbColumn> defaultColumns = MedSavantDatabase.DefaultpatientTableSchema.getColumns();
         c.setAutoCommit(false);
@@ -537,7 +537,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     public List<Object> getValuesFromField(String sid,int projectId, String columnNameA, String columnNameB, List<Object> values) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addColumns(table.getDBColumn(columnNameB));
@@ -575,7 +575,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     public List<String> getValuesFromDNAIds(String sid,int projectId, String columnNameB, List<String> ids) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addColumns(table.getDBColumn(columnNameB));
@@ -600,7 +600,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     public List<Object[]> getFamily(String sid,int projectId, String family_id) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
@@ -648,7 +648,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public String getFamilyIdOfPatient(String sid,int projectId, int pid) throws SQLException, RemoteException {
         String tablename = getPatientTablename(sid,projectId);
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         SelectQuery q1 = new SelectQuery();
         q1.addFromTable(table.getTable());
@@ -668,7 +668,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     public List<String> getFamilyIds(String sid,int projectId) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         SelectQuery q1 = new SelectQuery();
         q1.addFromTable(table.getTable());
@@ -693,7 +693,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     public Map<String,String> getDNAIdsForFamily(String sid,int projectId, String familyId) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         SelectQuery q1 = new SelectQuery();
         q1.addFromTable(table.getTable());
@@ -723,7 +723,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     public void clearPatients(String sid,int projectId) throws SQLException, RemoteException{
 
         String tablename = getPatientTablename(sid,projectId);
-        TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         DeleteQuery query = new DeleteQuery(table.getTable());
 

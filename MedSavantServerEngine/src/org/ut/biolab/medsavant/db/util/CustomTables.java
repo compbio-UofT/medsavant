@@ -9,33 +9,59 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.util.query.api.CustomTablesAdapter;
 
 /**
  *
  * @author Andrew
  */
-public class CustomTables {
+public class CustomTables extends java.rmi.server.UnicastRemoteObject implements CustomTablesAdapter {
 
-    private static Map<String, TableSchema> map = new HashMap<String, TableSchema>();
+    private static CustomTables instance;
 
-    public static TableSchema getCustomTableSchema(String sessionId, String tablename) throws SQLException, RemoteException {
+    private Map<String, Map> sessionIdToMapMap = new HashMap<String,Map>();
+
+    public static CustomTables getInstance() throws RemoteException {
+        if (instance == null) {
+            instance = new CustomTables();
+        }
+        return instance;
+    }
+
+    private CustomTables() throws RemoteException {}
+
+    public TableSchema getCustomTableSchema(String sessionId, String tablename) throws SQLException, RemoteException {
         return getCustomTableSchema(sessionId, tablename, false);
     }
-    
-    public static TableSchema getCustomTableSchema(String sessionId, String tablename, boolean update) throws SQLException, RemoteException {
+
+    public TableSchema getCustomTableSchema(String sessionId, String tablename, boolean update) throws SQLException, RemoteException {
+
+        if (!sessionIdToMapMap.containsKey(sessionId)) {
+            Map<String, TableSchema> tableNameToSchemaMap = new HashMap<String, TableSchema>();
+            sessionIdToMapMap.put(sessionId, tableNameToSchemaMap);
+        }
+
+        Map<String, TableSchema> tableNameToSchemaMap = sessionIdToMapMap.get(sessionId);
 
         TableSchema table;
-        if(!update && (table = map.get(tablename)) != null){
+        if(!update && (table = tableNameToSchemaMap.get(tablename)) != null){
             return table;
         }
 
         table = DBUtil.getInstance().importTableSchema(sessionId, tablename);
-        map.put(tablename, table);
+        tableNameToSchemaMap.put(tablename, table);
+
+        sessionIdToMapMap.put(sessionId, tableNameToSchemaMap);
+
         return table;
     }
 
-    public static void clearMap(){
-        map.clear();
+    public void clearMap(String sessionId){
+
+        Map m = sessionIdToMapMap.get(sessionId);
+        if (m != null) {
+            m.clear();
+        }
     }
 
 }

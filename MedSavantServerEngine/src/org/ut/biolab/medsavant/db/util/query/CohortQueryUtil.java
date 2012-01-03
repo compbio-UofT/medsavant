@@ -81,7 +81,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
 
         String tablename = PatientQueryUtil.getInstance().getPatientTablename(sid,projectId);
         TableSchema cohortTable = MedSavantDatabase.CohortmembershipTableSchema;
-        TableSchema patientTable = CustomTables.getCustomTableSchema(sid,tablename);
+        TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         SelectQuery query = new SelectQuery();
         query.addFromTable(cohortTable.getTable());
@@ -178,7 +178,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         String patientTablename = rs.getString(1);
 
         //get field lists
-        TableSchema patientTable = CustomTables.getCustomTableSchema(sid,patientTablename);
+        TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(sid,patientTablename);
         SelectQuery query2 = new SelectQuery();
         query2.addFromTable(cohortMembershipTable.getTable());
         query2.addFromTable(patientTable.getTable());
