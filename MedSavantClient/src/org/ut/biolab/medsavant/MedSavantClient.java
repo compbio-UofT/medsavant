@@ -38,6 +38,7 @@ import org.ut.biolab.medsavant.view.MainFrame;
 
 public class MedSavantClient {
 
+    public static CustomTablesAdapter CustomTablesAdapter;
     public static AnnotationLogQueryUtilAdapter AnnotationLogQueryUtilAdapter;
     public static AnnotationQueryUtilAdapter AnnotationQueryUtilAdapter;
     public static ChromosomeQueryUtilAdapter ChromosomeQueryUtilAdapter;
@@ -54,12 +55,12 @@ public class MedSavantClient {
     public static QueryUtilAdapter QueryUtilAdapter;
     public static DBUtilAdapter DBUtilAdapter;
     public static SetupAdapter SetupAdapter;
-    public static CustomTablesAdapter CustomTablesAdapter;
     //public static SessionAdapter SessionAdapter;
 
     //public static String sessionId;
 
     private static MainFrame frame;
+
 
     static public void main(String args[]) {
 
