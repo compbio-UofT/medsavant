@@ -10,6 +10,7 @@ import java.rmi.RemoteException;
 public interface SessionAdapter extends Remote {
 
     String registerNewSession(String uname, String pw, String dbname) throws RemoteException;
-    void unregisterSession(String sessionId);
+    void unregisterSession(String sessionId) throws RemoteException;
+    boolean testConnection(String sessionId) throws RemoteException;
     
 }
