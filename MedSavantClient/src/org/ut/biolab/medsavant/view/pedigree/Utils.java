@@ -9,6 +9,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.Map;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
@@ -57,7 +59,7 @@ public class Utils {
                     }
                 } catch (SQLException ex) {
                     MiscUtils.checkSQLException(ex);
-                }
+                } catch (RemoteException ex) {}
 
                 DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
                 Condition[] conditions = new Condition[dnaIds.size()];
@@ -100,7 +102,7 @@ public class Utils {
                             values);
                 } catch (SQLException ex) {
                     MiscUtils.checkSQLException(ex);
-                }
+                } catch (RemoteException ex) {}
 
                 DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
                 Condition[] conditions = new Condition[dnaIds.size()];

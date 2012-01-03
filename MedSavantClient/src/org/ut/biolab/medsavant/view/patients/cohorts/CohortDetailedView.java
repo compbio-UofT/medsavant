@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.Cohort;
@@ -244,6 +246,8 @@ public class CohortDetailedView extends DetailedView {
                         MedSavantClient.CohortQueryUtilAdapter.removePatientsFromCohort(LoginController.sessionId, patientIds, cohort.getId());
                     } catch (SQLException ex) {
                         Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (RemoteException ex) {
+                        Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
                     sw = new CohortDetailsSW(cohort);
@@ -279,6 +283,8 @@ public class CohortDetailedView extends DetailedView {
                             }
                         } catch (SQLException ex) {
                             MiscUtils.checkSQLException(ex);
+                            Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (RemoteException ex) {
                             Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }

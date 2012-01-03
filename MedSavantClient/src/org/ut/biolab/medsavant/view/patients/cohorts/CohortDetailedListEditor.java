@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.dialog.CohortWizard;
@@ -67,7 +68,7 @@ public class CohortDetailedListEditor extends DetailedListEditor {
                         int id = ((Cohort) v[0]).getId();
                         try {
                             MedSavantClient.CohortQueryUtilAdapter.removeCohort(LoginController.sessionId, id);
-                        } catch (SQLException ex) {
+                        } catch (Exception ex) {
                             numCouldntRemove++;
                             DialogUtils.displayErrorMessage("Couldn't remove " + ((Cohort) v[0]).getName(), ex);
                         }

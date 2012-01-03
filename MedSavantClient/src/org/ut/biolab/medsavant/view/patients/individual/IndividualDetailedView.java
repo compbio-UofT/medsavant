@@ -18,6 +18,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D.Float;
 import java.io.File;
 import java.io.FileWriter;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.format.PatientFormat;
 import org.ut.biolab.medsavant.db.model.Cohort;
@@ -317,6 +319,8 @@ public class IndividualDetailedView extends DetailedView {
             MiscUtils.checkSQLException(ex);
             ex.printStackTrace();
             ClientLogger.log(IndividualDetailedView.class,ex.getLocalizedMessage(),Level.SEVERE);
+        } catch (RemoteException ex) {
+            ClientLogger.log(IndividualDetailedView.class,ex.getLocalizedMessage(),Level.SEVERE);
         }
 
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
@@ -437,6 +441,8 @@ public class IndividualDetailedView extends DetailedView {
                         }
                         MedSavantClient.CohortQueryUtilAdapter.addPatientsToCohort(LoginController.sessionId, patientIds, selected.getId());
                     } catch (SQLException ex) {
+                        Logger.getLogger(IndividualDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (RemoteException ex) {
                         Logger.getLogger(IndividualDetailedView.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     parent.refresh();
