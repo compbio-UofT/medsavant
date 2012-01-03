@@ -10,6 +10,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import org.ut.biolab.medsavant.db.admin.Setup;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.FileServer;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
@@ -77,6 +78,7 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
         registry.rebind(MedSavantServerRegistry.Registry_FileTransferAdapter, FileServer.getInstance());
 
         registry.rebind(MedSavantServerRegistry.Registry_SessionAdapter, SessionController.getInstance());
+        registry.rebind(MedSavantServerRegistry.Registry_CustomTablesAdapter, CustomTables.getInstance());
 
         registry.rebind(MedSavantServerRegistry.Registry_AnnotationLogQueryUtilAdapter, AnnotationLogQueryUtil.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_AnnotationQueryUtilAdapter, AnnotationQueryUtil.getInstance());
