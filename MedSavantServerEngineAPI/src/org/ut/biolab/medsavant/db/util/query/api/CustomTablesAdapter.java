@@ -19,7 +19,7 @@ public interface CustomTablesAdapter extends Remote {
 
     public TableSchema getCustomTableSchema(String sessionId, String tablename, boolean update) throws SQLException, RemoteException;
 
-    public void clearMap(String sessionId);
+    public void clearMap(String sessionId) throws RemoteException;
 
 
 }
