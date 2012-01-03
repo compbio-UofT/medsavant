@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.controller;
 
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +61,8 @@ public class UserController {
                     fireUserRemovedEvent(name);
                 } catch (SQLException x) {
                     LOG.log(Level.SEVERE, null, x);
+                } catch (RemoteException x) {
+                    LOG.log(Level.SEVERE, null, x);
                 }
                 dialog.close();  
             }
@@ -82,6 +85,8 @@ public class UserController {
             return true;
         } catch (SQLException x) {
             LOG.log(Level.SEVERE, null, x);
+        } catch (RemoteException x) {
+            LOG.log(Level.SEVERE, null, x);
         }
         return false;
     }
@@ -92,7 +97,7 @@ public class UserController {
         public void userChanged(String name);
     }
     
-    public List<String> getUserNames() throws SQLException {
+    public List<String> getUserNames() throws SQLException, RemoteException {
         return MedSavantClient.UserQueryUtilAdapter.getUserNames(LoginController.sessionId);
     }
     

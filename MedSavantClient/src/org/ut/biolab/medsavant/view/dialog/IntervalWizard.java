@@ -29,6 +29,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.importfile.BedFormat;
@@ -239,7 +240,7 @@ public class IntervalWizard extends WizardDialog {
                 JOptionPane.showMessageDialog(this, "List name already in use. ", "Error", JOptionPane.ERROR_MESSAGE);
             }
             return valid;
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(IntervalWizard.class.getName()).log(Level.SEVERE, null, ex);
             DialogUtils.displayException("Error", "Error trying to create interval list", ex);
             return false;

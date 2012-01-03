@@ -10,6 +10,7 @@
  */
 package org.ut.biolab.medsavant.view.dialog;
 
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -215,6 +216,8 @@ public class AddAnnotationDialog extends javax.swing.JDialog {
                 this.dispose();
             }
         } catch (SQLException ex) {
+            ex.printStackTrace();
+        } catch (RemoteException ex) {
             ex.printStackTrace();
         }
 

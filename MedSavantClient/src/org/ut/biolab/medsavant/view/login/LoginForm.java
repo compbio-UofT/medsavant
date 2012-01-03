@@ -24,7 +24,6 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.dialog.AddDatabaseDialog;
@@ -453,10 +452,10 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         SettingsController.getInstance().setValue(SettingsController.KEY_DB_NAME,this.field_database.getText());
         SettingsController.getInstance().setValue(SettingsController.KEY_DB_PORT,this.field_port.getText());
         SettingsController.getInstance().setValue(SettingsController.KEY_DB_HOST,this.field_hostname.getText());
-        
-        ConnectionController.setDBName(SettingsController.getInstance().getValue(SettingsController.KEY_DB_NAME));
-        ConnectionController.setPort(Integer.parseInt(SettingsController.getInstance().getValue(SettingsController.KEY_DB_PORT)));
-        ConnectionController.setHost(SettingsController.getInstance().getValue(SettingsController.KEY_DB_HOST));
+            
+        //ConnectionController.setDBName(SettingsController.getInstance().getValue(SettingsController.KEY_DB_NAME));
+        //ConnectionController.setPort(Integer.parseInt(SettingsController.getInstance().getValue(SettingsController.KEY_DB_PORT)));
+        //ConnectionController.setHost(SettingsController.getInstance().getValue(SettingsController.KEY_DB_HOST));
         
         this.label_status.setText("signing in...");
         this.label_status.setFont(new Font("Tahoma", Font.PLAIN, 14));

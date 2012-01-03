@@ -8,13 +8,16 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import java.rmi.RemoteException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 
 /**
  *
@@ -48,10 +51,15 @@ public abstract class RangeFilter extends QueryFilter {
             String chrName = (String)o;
             List<Range> rangesInChr = ranges.getRanges(chrName);
             for(Range r : rangesInChr){
-                Condition posCondition = MedSavantClient.QueryUtilAdapter.getRangeCondition(posCol, r);
-                Condition chrCondition = BinaryConditionMS.equalTo(chrCol, chrName);
-                conditions[pos] = ComboCondition.and(posCondition, chrCondition);
-                pos++;
+                try {
+                    Condition posCondition = MedSavantClient.QueryUtilAdapter.getRangeCondition(posCol, r);
+                    Condition chrCondition = BinaryConditionMS.equalTo(chrCol, chrName);
+                    conditions[pos] = ComboCondition.and(posCondition, chrCondition);
+                    pos++;
+                } catch (RemoteException ex) {
+                    Logger.getLogger(RangeFilter.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
             }
         }  
         return conditions;

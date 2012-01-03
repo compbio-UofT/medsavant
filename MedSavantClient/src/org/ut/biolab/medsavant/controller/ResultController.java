@@ -5,6 +5,7 @@
 
 package org.ut.biolab.medsavant.controller;
 
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
@@ -84,6 +85,8 @@ public class ResultController implements FiltersChangedListener {
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
             Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            ex.printStackTrace();
         }
     }
     
@@ -100,6 +103,9 @@ public class ResultController implements FiltersChangedListener {
             return totalNumVariantsRemaining;
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
+            ex.printStackTrace();
+            return 0;
+        } catch (RemoteException ex) {
             ex.printStackTrace();
             return 0;
         }

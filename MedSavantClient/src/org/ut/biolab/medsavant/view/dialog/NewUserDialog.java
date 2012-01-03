@@ -200,7 +200,7 @@ public class NewUserDialog extends javax.swing.JDialog {
                     JOptionPane.showMessageDialog(this, "Problem adding user.");
                 }
             }
-        } catch (SQLException x) {
+        } catch (Exception x) {
             LOG.log(Level.SEVERE, "Error adding user.", x);
             DialogUtils.displayErrorMessage("Problem adding user.", x);
         }

@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.controller;
 
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,8 @@ public class ReferenceController {
             fireReferenceAddedEvent(name);
         } catch (SQLException ex) {
             ex.printStackTrace();
+        } catch (RemoteException ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -65,7 +68,7 @@ public class ReferenceController {
                 try {
                     MedSavantClient.ReferenceQueryUtilAdapter.removeReference(LoginController.sessionId, MedSavantClient.ReferenceQueryUtilAdapter.getReferenceId(LoginController.sessionId, refName));
                     fireReferenceRemovedEvent(refName);
-                } catch (SQLException ex) {
+                } catch (Exception ex) {
                     JOptionPane.showMessageDialog(MainFrame.getInstance(), "Cannot remove this reference because projects\nor annotations still refer to it.", "", JOptionPane.ERROR_MESSAGE);
                 }
                 dialog.close();  
@@ -88,7 +91,7 @@ public class ReferenceController {
         return instance;
     }
 
-    public List<String> getReferenceNames() throws SQLException {
+    public List<String> getReferenceNames() throws SQLException, RemoteException {
         return MedSavantClient.ReferenceQueryUtilAdapter.getReferenceNames(LoginController.sessionId);
     }
 
@@ -148,7 +151,7 @@ public class ReferenceController {
         }
     }
 
-    public int getReferenceId(String refName) throws SQLException {
+    public int getReferenceId(String refName) throws SQLException, RemoteException {
         return MedSavantClient.ReferenceQueryUtilAdapter.getReferenceId(LoginController.sessionId, refName);
     }
 
@@ -168,7 +171,7 @@ public class ReferenceController {
         }
     }
     
-    public List<Chromosome> getChromosomes() throws SQLException {
+    public List<Chromosome> getChromosomes() throws SQLException, RemoteException {
         return MedSavantClient.ReferenceQueryUtilAdapter.getChromosomes(LoginController.sessionId, currentReferenceId);
     }
     

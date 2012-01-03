@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.controller;
 
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ public class ExternalAnnotationController {
         return instance;
     }
     
-    public List<Annotation> getExternalAnnotations() throws SQLException {
+    public List<Annotation> getExternalAnnotations() throws SQLException, RemoteException {
         return MedSavantClient.AnnotationQueryUtilAdapter.getAnnotations(LoginController.sessionId);
     }
     

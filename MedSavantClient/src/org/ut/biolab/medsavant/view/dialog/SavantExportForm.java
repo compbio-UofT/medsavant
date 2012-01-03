@@ -16,6 +16,7 @@ import java.awt.Dimension;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
@@ -85,6 +87,8 @@ public class SavantExportForm extends javax.swing.JDialog {
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
             Logger.getLogger(SavantExportForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            Logger.getLogger(SavantExportForm.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         this.pack();
@@ -127,6 +131,8 @@ public class SavantExportForm extends javax.swing.JDialog {
         } catch (SQLException ex){
             MiscUtils.checkSQLException(ex);
             ex.printStackTrace();
+        } catch (RemoteException ex) {
+            ex.printStackTrace();
         }
         
         
@@ -136,6 +142,8 @@ public class SavantExportForm extends javax.swing.JDialog {
             bamFiles = MedSavantClient.PatientQueryUtilAdapter.getValuesFromDNAIds(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, selectedIds);
         } catch (SQLException ex){
             MiscUtils.checkSQLException(ex);
+            ex.printStackTrace();
+        } catch (RemoteException ex) {
             ex.printStackTrace();
         }
         

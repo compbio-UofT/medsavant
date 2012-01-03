@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,10 +80,10 @@ public class AddPatientsForm extends javax.swing.JDialog {
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        
-        
+
         
         table.setModel(model);    
         
@@ -113,7 +114,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         this.tipLabel.setText(s);   
     }
     
-    private void addPatient() throws SQLException{
+    private void addPatient() throws SQLException, RemoteException {
 
         List<String> values = new ArrayList<String>();
         List<CustomField> cols = new ArrayList<CustomField>();
@@ -140,7 +141,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         }
     }
     
-    private void generateTemplate() throws SQLException{
+    private void generateTemplate() throws SQLException, RemoteException {
         
         File file = DialogUtils.chooseFileForSave("Export Patients", "template.csv", ExtensionFileFilter.createFilters(new String[]{"csv"}), null);
         if(file == null) return;
@@ -189,7 +190,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         return val.toString();
     }
     
-    private void importFile() throws SQLException{
+    private void importFile() throws SQLException, RemoteException {
         
         //Warn that data will be replaced
         if(JOptionPane.NO_OPTION == JOptionPane.showConfirmDialog(
@@ -434,6 +435,8 @@ public class AddPatientsForm extends javax.swing.JDialog {
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -443,6 +446,8 @@ public class AddPatientsForm extends javax.swing.JDialog {
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -451,6 +456,8 @@ public class AddPatientsForm extends javax.swing.JDialog {
             importFile();
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
+            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButton3ActionPerformed

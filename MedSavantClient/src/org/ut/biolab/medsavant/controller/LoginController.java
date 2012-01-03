@@ -53,15 +53,27 @@ public class LoginController {
                     LoginController.loggedIn = loggedIn;
 
                     if (loggedIn) {
-                        MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, "Logged in");
+                        try {
+                            MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, "Logged in");
+                        } catch (RemoteException ex) {
+                            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                         fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_IN));
                     } else {
-                        MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, "Logged out");
+                        try {
+                            MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, "Logged out");
+                        } catch (RemoteException ex) {
+                            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                         fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_OUT));
                     }
 
                     if (!loggedIn) {
-                        SessionAdapter.unregisterSession(LoginController.sessionId);
+                        try {
+                            SessionAdapter.unregisterSession(LoginController.sessionId);
+                        } catch (RemoteException ex) {
+                            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                         if (!SettingsController.getInstance().getRememberPassword()) {
                             password = "";
                         }
@@ -103,6 +115,8 @@ public class LoginController {
         } catch (SQLException ignored) {
             // An SQLException is expected here if the user is not an admin, because they
             // will be unable to read the mysql.users table.
+        } catch (RemoteException e){
+            
         }
         
         SettingsController.getInstance().setUsername(un);
@@ -111,8 +125,8 @@ public class LoginController {
         }
         
         //test connection
-        try {         
-            ConnectionController.connectPooled();  
+        try {        
+            SessionAdapter.testConnection(sessionId);
         } catch (Exception ex) {
             setLoginException(ex);
             return;

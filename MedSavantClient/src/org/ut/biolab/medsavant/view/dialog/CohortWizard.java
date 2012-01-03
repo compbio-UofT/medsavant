@@ -16,6 +16,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,6 +24,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 
 /**
@@ -104,6 +106,8 @@ public class CohortWizard extends WizardDialog {
         try {
             MedSavantClient.CohortQueryUtilAdapter.addCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), cohortName);
         } catch (SQLException ex) {
+            Logger.getLogger(CohortWizard.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
             Logger.getLogger(CohortWizard.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.setVisible(false);

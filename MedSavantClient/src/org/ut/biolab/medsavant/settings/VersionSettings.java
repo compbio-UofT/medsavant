@@ -18,6 +18,7 @@ package org.ut.biolab.medsavant.settings;
 import java.net.URL;
 import java.sql.SQLException;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.db.settings.Settings;
 import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import org.ut.biolab.medsavant.db.util.shared.NetworkUtils;
@@ -63,7 +65,7 @@ public class VersionSettings {
         return VERSION + " " + BUILD;
     }
 
-    public static String getDatabaseVersion() throws SQLException{
+    public static String getDatabaseVersion() throws SQLException, RemoteException {
         return MedSavantClient.SettingsQueryUtilAdapter.getSetting(LoginController.sessionId, Settings.KEY_CLIENT_VERSION);
     }
 
