@@ -16,6 +16,7 @@
 package org.ut.biolab.medsavant.db.settings;
 
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
 import java.io.IOException;
@@ -62,7 +63,7 @@ public class VersionSettings {
         return VERSION + " " + BUILD;
     }
 
-    public static String getDatabaseVersion(String sessionId) throws SQLException{
+    public static String getDatabaseVersion(String sessionId) throws SQLException, RemoteException{
         return SettingsQueryUtil.getInstance().getSetting(sessionId, Settings.KEY_CLIENT_VERSION);
     }
 

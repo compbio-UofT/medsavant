@@ -25,6 +25,7 @@ import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
+import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ProjectTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ReferenceTableSchema;
@@ -39,16 +40,19 @@ import org.ut.biolab.medsavant.db.util.query.api.LogQueryUtilAdapter;
  *
  * @author mfiume
  */
-public class LogQueryUtil implements LogQueryUtilAdapter {
+public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements LogQueryUtilAdapter {
 
     private static LogQueryUtil instance;
 
-    public static LogQueryUtil getInstance() {
+    public static LogQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new LogQueryUtil();
         }
         return instance;
     }
+
+    public LogQueryUtil() throws RemoteException {}
+
 
     public ResultSet getClientLog(String sid,int start, int limit) throws SQLException {
 

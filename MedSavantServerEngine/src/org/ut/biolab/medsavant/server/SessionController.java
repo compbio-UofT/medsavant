@@ -9,18 +9,20 @@ import org.ut.biolab.medsavant.server.api.SessionAdapter;
  *
  * @author mfiume
  */
-public class SessionController implements SessionAdapter, Serializable {
+public class SessionController extends java.rmi.server.UnicastRemoteObject implements SessionAdapter {
 
     int lastSessionId = 0;
 
     private static SessionController instance;
 
-    public static SessionController getInstance() {
+    public static SessionController getInstance() throws RemoteException {
         if (instance == null) {
             instance = new SessionController();
         }
         return instance;
     }
+
+    public SessionController() throws RemoteException {}
 
     @Override
     public String registerNewSession(String uname, String pw, String dbname) {

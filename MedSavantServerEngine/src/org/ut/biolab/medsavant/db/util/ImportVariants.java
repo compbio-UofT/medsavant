@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import javax.swing.JLabel;
@@ -141,7 +142,7 @@ public class ImportVariants {
         return updateId;
     }
 
-    public static void addTagsToUpload(String sid, int uploadID, String[][] variantTags) throws SQLException {
+    public static void addTagsToUpload(String sid, int uploadID, String[][] variantTags) throws SQLException, RemoteException {
         try {
             VariantQueryUtil.getInstance().addTagsToUpload(sid,uploadID,variantTags);
         } catch (SQLException e) {

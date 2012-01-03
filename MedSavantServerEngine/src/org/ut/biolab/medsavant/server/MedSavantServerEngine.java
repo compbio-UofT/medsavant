@@ -9,6 +9,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.FileServer;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ChromosomeQueryUtil;
@@ -70,6 +71,8 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
     }
 
     private void bindAdapters(Registry registry) throws RemoteException {
+
+        registry.rebind(MedSavantServerRegistry.Registry_FileTransferAdapter, FileServer.getInstance());
 
         registry.rebind(MedSavantServerRegistry.Registry_SessionAdapter, SessionController.getInstance());
 

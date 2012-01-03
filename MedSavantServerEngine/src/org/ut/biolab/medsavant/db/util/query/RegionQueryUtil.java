@@ -30,6 +30,7 @@ import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
+import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetMembershipTableSchema;
@@ -47,16 +48,19 @@ import org.ut.biolab.medsavant.db.util.query.api.RegionQueryUtilAdapter;
  *
  * @author Andrew
  */
-public class RegionQueryUtil implements RegionQueryUtilAdapter {
+public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject implements RegionQueryUtilAdapter {
 
     private static RegionQueryUtil instance;
 
-    public static RegionQueryUtil getInstance() {
+    public static RegionQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new RegionQueryUtil();
         }
         return instance;
     }
+
+    public RegionQueryUtil() throws RemoteException {}
+
 
     public void addRegionList(String sid,String geneListName, int genomeId, Iterator<String[]> i) throws NonFatalDatabaseException, SQLException {
 

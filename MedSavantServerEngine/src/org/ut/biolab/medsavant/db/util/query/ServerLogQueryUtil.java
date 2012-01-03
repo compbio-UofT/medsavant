@@ -25,6 +25,7 @@ import com.healthmarketscience.sqlbuilder.InsertQuery;
 
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import java.rmi.RemoteException;
 import java.sql.Date;
 import java.sql.ResultSet;
 import org.ut.biolab.medsavant.db.log.DBLogger;
@@ -37,16 +38,19 @@ import org.ut.biolab.medsavant.db.util.query.api.ServerLogQueryUtilAdapter;
 /**
  * @author mfiume
  */
-public class ServerLogQueryUtil implements ServerLogQueryUtilAdapter {
+public class ServerLogQueryUtil extends java.rmi.server.UnicastRemoteObject implements ServerLogQueryUtilAdapter {
 
    private static ServerLogQueryUtil instance;
 
-    public static ServerLogQueryUtil getInstance() {
+    public static ServerLogQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new ServerLogQueryUtil();
         }
         return instance;
     }
+
+    public ServerLogQueryUtil() throws RemoteException {}
+
 
     public final String SERVER_UNAME = "server";
 

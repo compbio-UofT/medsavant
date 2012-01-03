@@ -10,6 +10,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -32,16 +33,19 @@ import org.ut.biolab.medsavant.db.util.query.api.QueryUtilAdapter;
  *
  * @author Andrew
  */
-public class QueryUtil implements QueryUtilAdapter {
+public class QueryUtil extends java.rmi.server.UnicastRemoteObject implements QueryUtilAdapter {
 
     private static QueryUtil instance;
 
-    public static QueryUtil getInstance() {
+    public static QueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new QueryUtil();
         }
         return instance;
     }
+
+    public QueryUtil() throws RemoteException {}
+
 
     public List<String> getDistinctValuesForColumn(String sid,TableSchema t, DbColumn col) throws SQLException {
         return getDistinctValuesForColumn(sid,t, col, -1);

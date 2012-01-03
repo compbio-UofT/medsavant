@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.db.admin;
 
+import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -281,13 +282,13 @@ public class Setup {
      * @param password a character array, supposedly for security's sake
      * @throws SQLException
      */
-    private static void addRootUser(String sid, Connection c, char[] password) throws SQLException {
+    private static void addRootUser(String sid, Connection c, char[] password) throws SQLException, RemoteException {
         if (!UserQueryUtil.getInstance().userExists("root")) {
             UserQueryUtil.getInstance().addUser(sid, "root", password, UserLevel.ADMIN);
         }
     }
 
-    public static void createDatabase(String sid, String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException {
+    public static void createDatabase(String sid, String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException, RemoteException {
 
         String sessionId = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
 
@@ -308,7 +309,7 @@ public class Setup {
         }
     }
 
-    private static void addDbSettings(String sid, String versionString) throws SQLException {
+    private static void addDbSettings(String sid, String versionString) throws SQLException, RemoteException {
         SettingsQueryUtil.getInstance().addSetting(sid, Settings.KEY_CLIENT_VERSION, versionString);
     }
 
@@ -331,7 +332,7 @@ public class Setup {
         c.createStatement().execute("CREATE DATABASE " + dbname);
     }
 
-    private static void addDefaultReferenceGenomes(String sessionId) throws SQLException {
+    private static void addDefaultReferenceGenomes(String sessionId) throws SQLException, RemoteException {
         ReferenceQueryUtil.getInstance().addReference(sessionId,"hg17", Chromosome.getHg17Chromosomes());
         ReferenceQueryUtil.getInstance().addReference(sessionId,"hg18", Chromosome.getHg18Chromosomes(), "http://savantbrowser.com/data/hg18/hg18.fa.savant");
         ReferenceQueryUtil.getInstance().addReference(sessionId,"hg19", Chromosome.getHg19Chromosomes(), "http://savantbrowser.com/data/hg19/hg19.fa.savant");

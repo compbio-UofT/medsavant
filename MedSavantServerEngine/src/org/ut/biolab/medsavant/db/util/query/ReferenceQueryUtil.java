@@ -33,6 +33,7 @@ import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
+import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.AnnotationTableSchema;
@@ -49,16 +50,19 @@ import org.ut.biolab.medsavant.db.util.query.api.ReferenceQueryUtilAdapter;
  *
  * @author mfiume
  */
-public class ReferenceQueryUtil implements ReferenceQueryUtilAdapter {
+public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject implements ReferenceQueryUtilAdapter {
 
     private static ReferenceQueryUtil instance;
 
-    public static ReferenceQueryUtil getInstance() {
+    public static ReferenceQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new ReferenceQueryUtil();
         }
         return instance;
     }
+
+    public ReferenceQueryUtil() throws RemoteException {}
+
 
     public List<Reference> getReferences(String sid) throws SQLException {
 

@@ -6,6 +6,7 @@ package org.ut.biolab.medsavant.db.util.query;
 
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
@@ -19,16 +20,19 @@ import org.ut.biolab.medsavant.db.util.query.api.SettingsQueryUtilAdapter;
  *
  * @author Andrew
  */
-public class SettingsQueryUtil implements SettingsQueryUtilAdapter {
+public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject implements SettingsQueryUtilAdapter {
 
     private static SettingsQueryUtil instance;
 
-    public static SettingsQueryUtil getInstance() {
+    public static SettingsQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new SettingsQueryUtil();
         }
         return instance;
     }
+
+    public SettingsQueryUtil() throws RemoteException {}
+
 
     public void addSetting(String sid, String key, String value) throws SQLException {
 

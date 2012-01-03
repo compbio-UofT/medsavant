@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.db.util.query;
 
+import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -29,16 +30,19 @@ import org.ut.biolab.medsavant.db.util.query.api.UserQueryUtilAdapter;
  *
  * @author mfiume
  */
-public class UserQueryUtil implements UserQueryUtilAdapter {
+public class UserQueryUtil extends java.rmi.server.UnicastRemoteObject implements UserQueryUtilAdapter {
 
     private static UserQueryUtil instance;
 
-    public static UserQueryUtil getInstance() {
+    public static UserQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new UserQueryUtil();
         }
         return instance;
     }
+
+    public UserQueryUtil() throws RemoteException {}
+
 
     public List<String> getUserNames(String sid) throws SQLException {
 

@@ -39,6 +39,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.Function;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -60,27 +61,31 @@ import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
  *
  * @author Andrew
  */
-public class VariantQueryUtil implements VariantQueryUtilAdapter {
+public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implements VariantQueryUtilAdapter {
 
     private static VariantQueryUtil instance;
 
-    public static VariantQueryUtil getInstance() {
+    public static VariantQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new VariantQueryUtil();
         }
         return instance;
     }
 
-    public TableSchema getCustomTableSchema(String sessionId, int projectId, int referenceId) throws SQLException {
+    public VariantQueryUtil() throws RemoteException {}
+
+
+    @Override
+    public TableSchema getCustomTableSchema(String sessionId, int projectId, int referenceId) throws SQLException, RemoteException {
         return CustomTables.getCustomTableSchema(sessionId,ProjectQueryUtil.getInstance().getVariantTablename(sessionId,projectId, referenceId));
     }
 
 
-    public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, int start, int limit) throws SQLException {
+    public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, int start, int limit) throws SQLException, RemoteException {
         return getVariants(sessionId,projectId, referenceId, new Condition[1][], start, limit);
     }
 
-    public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException {
+    public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException {
 
         TableSchema table = CustomTables.getCustomTableSchema(sessionId,ProjectQueryUtil.getInstance().getVariantTablename(sessionId,projectId, referenceId));
         SelectQuery query = new SelectQuery();
@@ -155,11 +160,11 @@ public class VariantQueryUtil implements VariantQueryUtilAdapter {
         return result;
     }
 
-    public int getNumFilteredVariants(String sid, int projectId, int referenceId) throws SQLException {
+    public int getNumFilteredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException {
         return getNumFilteredVariants(sid,projectId, referenceId, new Condition[0][]);
     }
 
-    public int getNumFilteredVariants(String sid,int projectId, int referenceId, Condition[][] conditions) throws SQLException {
+    public int getNumFilteredVariants(String sid,int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException {
 
         String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId);
 
@@ -180,7 +185,7 @@ public class VariantQueryUtil implements VariantQueryUtilAdapter {
         return rs.getInt(1);
     }
 
-    public int getNumVariantsForDnaIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException {
+    public int getNumVariantsForDnaIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException {
         String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId);
 
         if (name == null) {
@@ -210,7 +215,7 @@ public class VariantQueryUtil implements VariantQueryUtilAdapter {
         return rs.getInt(1);
     }
 
-    public int getFilteredFrequencyValuesForColumnInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String columnname, double min, double max) throws SQLException {
+    public int getFilteredFrequencyValuesForColumnInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String columnname, double min, double max) throws SQLException, RemoteException {
 
         TableSchema table = CustomTables.getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId));
 
@@ -227,7 +232,7 @@ public class VariantQueryUtil implements VariantQueryUtilAdapter {
         return rs.getInt(1);
     }
 
-    public Map<String, Integer> getFilteredFrequencyValuesForColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException {
+    public Map<String, Integer> getFilteredFrequencyValuesForColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException {
 
         TableSchema tableSchema = CustomTables.getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId));
         DbTable table = tableSchema.getTable();
@@ -260,7 +265,7 @@ public class VariantQueryUtil implements VariantQueryUtilAdapter {
         return map;
     }
 
-    public int getNumVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException {
+    public int getNumVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException, RemoteException {
 
         TableSchema table = CustomTables.getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId));
 
@@ -278,7 +283,7 @@ public class VariantQueryUtil implements VariantQueryUtilAdapter {
         return rs.getInt(1);
     }
 
-    public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, int binsize) throws SQLException {
+    public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, int binsize) throws SQLException, RemoteException {
 
         TableSchema table = CustomTables.getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId));
 
@@ -356,7 +361,7 @@ public class VariantQueryUtil implements VariantQueryUtilAdapter {
          */
     }
 
-    public int[] getNumVariantsForBins(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int binsize, int numbins) throws SQLException, NonFatalDatabaseException {
+    public int[] getNumVariantsForBins(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int binsize, int numbins) throws SQLException, NonFatalDatabaseException, RemoteException {
 
         TableSchema table = CustomTables.getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId));
 
@@ -427,7 +432,7 @@ public class VariantQueryUtil implements VariantQueryUtilAdapter {
                 + "LINES TERMINATED BY '\\r\\n';");
     }
 
-    public int getNumPatientsWithVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int start, int end) throws SQLException {
+    public int getNumPatientsWithVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int start, int end) throws SQLException, RemoteException {
 
         TableSchema table = getCustomTableSchema(sid,projectId, referenceId);
         SelectQuery q = new SelectQuery();
@@ -461,7 +466,7 @@ public class VariantQueryUtil implements VariantQueryUtilAdapter {
         query.addCondition(ComboCondition.or(c));
     }
 
-    public Map<String, List<String>> getSavantBookmarkPositionsForDNAIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds, int limit) throws SQLException {
+    public Map<String, List<String>> getSavantBookmarkPositionsForDNAIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds, int limit) throws SQLException, RemoteException {
 
         Map<String, List<String>> results = new HashMap<String, List<String>>();
 
@@ -489,7 +494,7 @@ public class VariantQueryUtil implements VariantQueryUtilAdapter {
         return results;
     }
 
-    public Map<String, Integer> getNumVariantsInFamily(String sid, int projectId, int referenceId, String familyId, Condition[][] conditions) throws SQLException {
+    public Map<String, Integer> getNumVariantsInFamily(String sid, int projectId, int referenceId, String familyId, Condition[][] conditions) throws SQLException, RemoteException {
 
         String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId);
 
@@ -572,11 +577,14 @@ public class VariantQueryUtil implements VariantQueryUtilAdapter {
             //drop staging table
             DBUtil.dropTable(sid,tableName);
 
+        } catch (RemoteException ex) {
+            Logger.getLogger(VariantQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             Logger.getLogger(VariantQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
+    @Override
     public void addTagsToUpload(String sid, int uploadID, String[][] variantTags) throws SQLException {
 
         Connection conn = ConnectionController.connectPooled(sid);

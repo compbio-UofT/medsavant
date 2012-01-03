@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
@@ -16,6 +18,7 @@ import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
+import java.rmi.RemoteException;
 import org.xml.sax.SAXException;
 
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
@@ -43,16 +46,19 @@ import org.ut.biolab.medsavant.db.util.query.api.ProjectQueryUtilAdapter;
  *
  * @author mfiume
  */
-public class ProjectQueryUtil implements ProjectQueryUtilAdapter {
+public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implements ProjectQueryUtilAdapter {
 
     private static ProjectQueryUtil instance;
 
-    public static ProjectQueryUtil getInstance() {
+    public static ProjectQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new ProjectQueryUtil();
         }
         return instance;
     }
+
+    public ProjectQueryUtil() throws RemoteException {}
+
 
     public List<String> getProjectNames(String sid) throws SQLException {
 
@@ -230,8 +236,13 @@ public class ProjectQueryUtil implements ProjectQueryUtilAdapter {
     }
 
     public int getNumberOfRecordsInVariantTable(String sid,int projectid, int refid) throws SQLException {
-        String variantTableName = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectid,refid);
-        return DBUtil.getNumRecordsInTable(sid,variantTableName);
+        try {
+            String variantTableName = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectid,refid);
+            return DBUtil.getNumRecordsInTable(sid,variantTableName);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ProjectQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
+            return -1;
+        }
     }
 
     public String getVariantTablename(String sid,int projectid, int refid) throws SQLException {
@@ -274,7 +285,7 @@ public class ProjectQueryUtil implements ProjectQueryUtilAdapter {
         return projectid;
     }
 
-    public void removeProject(String sid,String projectName) throws SQLException {
+    public void removeProject(String sid,String projectName) throws SQLException, RemoteException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         SelectQuery query = new SelectQuery();
@@ -290,7 +301,7 @@ public class ProjectQueryUtil implements ProjectQueryUtilAdapter {
     }
 
 
-    public void removeProject(String sid,int projectid) throws SQLException {
+    public void removeProject(String sid,int projectid) throws SQLException, RemoteException {
 
 
         Connection c = ConnectionController.connectPooled(sid);
@@ -364,7 +375,10 @@ public class ProjectQueryUtil implements ProjectQueryUtilAdapter {
         (ConnectionController.connectPooled(sid)).createStatement().execute(query.toString());
 
         if(logEntry){
-            AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid,projectid, refid, Action.UPDATE_TABLE, Status.PENDING, user);
+            try {
+                AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid,projectid, refid, Action.UPDATE_TABLE, Status.PENDING, user);
+            } catch (RemoteException ex) {
+            }
         }
     }
 
@@ -432,9 +446,13 @@ public class ProjectQueryUtil implements ProjectQueryUtilAdapter {
         c.setAutoCommit(true);
 
         if(!firstSet){
-            List<Integer> referenceIds = ReferenceQueryUtil.getInstance().getReferenceIdsForProject(sid,projectId);
-            for(Integer id : referenceIds){
-                AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid,projectId, id, Action.UPDATE_TABLE, Status.PENDING, user);
+            try {
+                List<Integer> referenceIds = ReferenceQueryUtil.getInstance().getReferenceIdsForProject(sid,projectId);
+                for(Integer id : referenceIds){
+                    AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid,projectId, id, Action.UPDATE_TABLE, Status.PENDING, user);
+                }
+            } catch (RemoteException ex) {
+                Logger.getLogger(ProjectQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 

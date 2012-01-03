@@ -28,6 +28,7 @@ import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 
+import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.CohortTableSchema;
@@ -45,16 +46,19 @@ import org.ut.biolab.medsavant.db.util.query.api.CohortQueryUtilAdapter;
  *
  * @author Andrew
  */
-public class CohortQueryUtil implements CohortQueryUtilAdapter {
+public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject implements CohortQueryUtilAdapter {
 
     private static CohortQueryUtil instance;
 
-    public static CohortQueryUtil getInstance() {
+    public static CohortQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new CohortQueryUtil();
         }
         return instance;
     }
+
+    public CohortQueryUtil() throws RemoteException {}
+
 
     /*public List<Integer> getIndividualsInCohort(int cohortId) throws SQLException {
 
@@ -73,7 +77,7 @@ public class CohortQueryUtil implements CohortQueryUtilAdapter {
         return result;
     }*/
 
-    public List<SimplePatient> getIndividualsInCohort(String sid,int projectId, int cohortId) throws SQLException {
+    public List<SimplePatient> getIndividualsInCohort(String sid,int projectId, int cohortId) throws SQLException, RemoteException {
 
         String tablename = PatientQueryUtil.getInstance().getPatientTablename(sid,projectId);
         TableSchema cohortTable = MedSavantDatabase.CohortmembershipTableSchema;
@@ -320,7 +324,7 @@ public class CohortQueryUtil implements CohortQueryUtilAdapter {
         }
     }
 
-    public int getNumVariantsInCohort(String sid,int projectId, int referenceId, int cohortId, Condition[][] conditions) throws SQLException, InterruptedException {
+    public int getNumVariantsInCohort(String sid,int projectId, int referenceId, int cohortId, Condition[][] conditions) throws SQLException, InterruptedException, RemoteException {
         List<String> dnaIds = getDNAIdsInCohort(sid,cohortId);
         return VariantQueryUtil.getInstance().getNumVariantsForDnaIds(sid,projectId, referenceId, conditions, dnaIds);
     }

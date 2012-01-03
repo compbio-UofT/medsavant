@@ -25,6 +25,7 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
+import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ChromosomeTableSchema;
@@ -37,16 +38,18 @@ import org.ut.biolab.medsavant.db.util.query.api.ChromosomeQueryUtilAdapter;
  *
  * @author Andrew
  */
-public class ChromosomeQueryUtil implements ChromosomeQueryUtilAdapter {
+public class ChromosomeQueryUtil extends java.rmi.server.UnicastRemoteObject implements ChromosomeQueryUtilAdapter {
 
     private static ChromosomeQueryUtil instance;
 
-    public static ChromosomeQueryUtil getInstance() {
+    public static ChromosomeQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new ChromosomeQueryUtil();
         }
         return instance;
     }
+
+    public ChromosomeQueryUtil() throws RemoteException {}
 
     public List<Chromosome> getContigs(String sid,int refid) throws SQLException{
 

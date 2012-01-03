@@ -37,6 +37,7 @@ import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 
@@ -58,16 +59,19 @@ import org.ut.biolab.medsavant.db.util.query.api.PatientQueryUtilAdapter;
  *
  * @author Andrew
  */
-public class PatientQueryUtil implements PatientQueryUtilAdapter {
+public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implements PatientQueryUtilAdapter {
 
     private static PatientQueryUtil instance;
 
-    public static PatientQueryUtil getInstance() {
+    public static PatientQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new PatientQueryUtil();
         }
         return instance;
     }
+
+    public PatientQueryUtil() throws RemoteException {}
+
 
     public List<Object[]> getBasicPatientInfo(String sid,int projectId, int limit) throws SQLException, NonFatalDatabaseException {
 
@@ -287,7 +291,7 @@ public class PatientQueryUtil implements PatientQueryUtilAdapter {
 
     }
 
-    public void removePatient(String sid,int projectId, int[] patientIds) throws SQLException {
+    public void removePatient(String sid,int projectId, int[] patientIds) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
         TableSchema table = CustomTables.getCustomTableSchema(sid,tablename);

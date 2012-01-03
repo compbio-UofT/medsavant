@@ -30,6 +30,7 @@ import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import java.rmi.RemoteException;
 import org.xml.sax.SAXException;
 
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
@@ -51,16 +52,18 @@ import org.ut.biolab.medsavant.db.util.query.api.AnnotationQueryUtilAdapter;
  *
  * @author mfiume
  */
-public class AnnotationQueryUtil implements AnnotationQueryUtilAdapter {
+public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject implements AnnotationQueryUtilAdapter {
 
     private static AnnotationQueryUtil instance;
 
-    public static AnnotationQueryUtil getInstance() {
+    public static AnnotationQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new AnnotationQueryUtil();
         }
         return instance;
     }
+
+    public AnnotationQueryUtil() throws RemoteException {}
 
     public List<Annotation> getAnnotations(String sid) throws SQLException {
 

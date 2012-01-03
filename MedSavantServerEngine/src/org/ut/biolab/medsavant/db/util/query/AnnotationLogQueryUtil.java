@@ -30,6 +30,7 @@ import com.healthmarketscience.sqlbuilder.OrderObject;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
 
+import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
@@ -42,16 +43,18 @@ import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter;
  *
  * @author Andrew
  */
-public class AnnotationLogQueryUtil implements AnnotationLogQueryUtilAdapter {
+public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject implements AnnotationLogQueryUtilAdapter  {
 
     private static AnnotationLogQueryUtil instance;
 
-    public static AnnotationLogQueryUtil getInstance() {
+    public static AnnotationLogQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new AnnotationLogQueryUtil();
         }
         return instance;
     }
+
+    public AnnotationLogQueryUtil() throws RemoteException {}
 
     private static int actionToInt(Action action){
         switch(action){
