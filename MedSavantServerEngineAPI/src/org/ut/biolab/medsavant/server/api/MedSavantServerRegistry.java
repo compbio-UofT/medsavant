@@ -6,6 +6,8 @@ package org.ut.biolab.medsavant.server.api;
  */
 public class MedSavantServerRegistry {
 
+    public static final String Registry_FileTransferAdapter = "FileTransferAdapter";
+
     public static final String Registry_SessionAdapter = "SessionAdapter";
 
    public static final String Registry_AnnotationLogQueryUtilAdapter = "AnnotationLogQueryUtilAdapter";

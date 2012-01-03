@@ -1,6 +1,7 @@
 package org.ut.biolab.medsavant.db.util.query.api;
 
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
 import org.ut.biolab.medsavant.db.model.Chromosome;
@@ -11,5 +12,5 @@ import org.ut.biolab.medsavant.db.model.Chromosome;
  */
 public interface ChromosomeQueryUtilAdapter extends Remote {
 
-    public List<Chromosome> getContigs(String sid,int refid) throws SQLException;
+    public List<Chromosome> getContigs(String sid,int refid) throws SQLException, RemoteException;;
 }
