@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.db.util;
+package org.ut.biolab.medsavant.db.util.shared;
 
 import java.awt.Color;
 import java.awt.EventQueue;

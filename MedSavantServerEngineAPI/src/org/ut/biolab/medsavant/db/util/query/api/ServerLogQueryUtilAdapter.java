@@ -3,7 +3,7 @@ package org.ut.biolab.medsavant.db.util.query.api;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.Date;
+import java.sql.Date;
 
 /**
  *

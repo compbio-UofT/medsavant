@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.db.util;
+package org.ut.biolab.medsavant.db.util.shared;
 
+import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

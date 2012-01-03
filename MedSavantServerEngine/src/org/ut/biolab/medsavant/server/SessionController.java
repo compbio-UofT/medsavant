@@ -38,4 +38,9 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
         }
     }
 
+    @Override
+    public void unregisterSession(String sessionId) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

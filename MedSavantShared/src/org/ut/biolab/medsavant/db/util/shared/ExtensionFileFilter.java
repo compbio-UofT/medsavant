@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.db.util;
+package org.ut.biolab.medsavant.db.util.shared;
 
 import java.io.File;
 import javax.swing.filechooser.FileFilter;
