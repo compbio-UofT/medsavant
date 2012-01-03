@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import org.ut.biolab.medsavant.db.admin.Setup;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.FileServer;
@@ -92,5 +93,6 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
         registry.rebind(MedSavantServerRegistry.Registry_UserQueryUtilAdapter, UserQueryUtil.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_VariantQueryUtilAdapter, VariantQueryUtil.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_DBUtilAdapter, DBUtil.getInstance());
+        registry.rebind(MedSavantServerRegistry.Registry_SetupAdapter, Setup.getInstance());
     }
 }

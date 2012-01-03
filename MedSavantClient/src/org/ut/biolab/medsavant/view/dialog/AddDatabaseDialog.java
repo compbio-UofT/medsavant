@@ -23,6 +23,8 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 
 import org.ut.biolab.medsavant.db.admin.Setup;
 import org.ut.biolab.medsavant.settings.VersionSettings;
@@ -252,7 +254,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
             @Override
             public void run(){
                 try {
-                    Setup.createDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword(), VersionSettings.getVersionString());
+                    MedSavantClient.SetupAdapter.createDatabase(LoginController.sessionId, field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword(), VersionSettings.getVersionString());
                     progress.setVisible(false);
                     DialogUtils.displayMessage("Database \"" + field_database.getText() + "\" created successfuly");
                     doClose(RET_OK);

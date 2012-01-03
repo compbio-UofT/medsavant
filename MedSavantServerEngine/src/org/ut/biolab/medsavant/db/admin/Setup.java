@@ -35,14 +35,26 @@ import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.api.SetupAdapter;
 import org.ut.biolab.medsavant.server.SessionController;
 
 /**
  *
  * @author mfiume
  */
-public class Setup {
+public class Setup extends java.rmi.server.UnicastRemoteObject implements SetupAdapter {
     private static final Logger LOG = Logger.getLogger(Setup.class.getName());
+    
+    private static Setup instance;
+
+    public static Setup getInstance() throws RemoteException {
+        if (instance == null) {
+            instance = new Setup();
+        }
+        return instance;
+    }
+
+    public Setup() throws RemoteException {}
 
     private static void dropTables(String sessionId) throws SQLException {
 
@@ -288,7 +300,7 @@ public class Setup {
         }
     }
 
-    public static void createDatabase(String sid, String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException, RemoteException {
+    public void createDatabase(String sid, String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException, RemoteException {
 
         String sessionId = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
 

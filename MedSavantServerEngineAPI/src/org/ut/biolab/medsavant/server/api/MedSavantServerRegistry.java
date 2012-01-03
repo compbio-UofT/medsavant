@@ -25,4 +25,5 @@ public static final String Registry_SettingsQueryUtilAdapter = "SettingsQueryUti
 public static final String Registry_UserQueryUtilAdapter = "UserQueryUtilAdapter";
 public static final String Registry_VariantQueryUtilAdapter = "VariantQueryUtilAdapter";
 public static final String Registry_DBUtilAdapter = "DBUtilAdapter";
+public static final String Registry_SetupAdapter = "SetupAdapter";
 }
