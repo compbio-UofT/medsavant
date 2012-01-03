@@ -132,7 +132,7 @@ public class DialogUtils {
             }
         });
     }
-    
+
        /**
      * Display a Savant message dialog with the given message and the title "Savant".
      *
@@ -183,12 +183,12 @@ public class DialogUtils {
         }
         return null;
     }
-    
+
 
      /**
      * Open-file dialog variant which lets user select multiple files on Windows and
      * Linux.
-     * 
+     *
      * @param parent the parent frame (typically the Savant main frame)
      * @param title title for the dialog
      * @param filter controls which files to display (null for no filtering)
@@ -196,9 +196,9 @@ public class DialogUtils {
      * @return an array of selected files; an empty array if nothing is selected
      */
     public static File[] chooseFilesForOpen(String title, FileFilter filter, File initialDir) {
-        
-        
-        // unfortunately, we need function over aesthetics... 
+
+
+        // unfortunately, we need function over aesthetics...
         /*
         if (MiscUtils.MAC) {
             // Mac AWT FileDialog doesn't support multiple selection.
@@ -207,7 +207,7 @@ public class DialogUtils {
                 return files;
             }
         } else {
-         * 
+         *
          */
             JFileChooser fd = new JFileChooser();
             fd.setDialogTitle(title);
@@ -235,7 +235,7 @@ public class DialogUtils {
      * @return a File, or null if cancelled
      */
     public static File chooseFileForSave(String title, String defaultName) {
-        
+
         FileDialog fd = getFileDialog(title, FileDialog.SAVE);
         fd.setFile(defaultName);
         fd.setAlwaysOnTop(true);
@@ -243,7 +243,7 @@ public class DialogUtils {
         fd.setVisible(true);
         String selectedFile = fd.getFile();
 
-        if (selectedFile != null) {          
+        if (selectedFile != null) {
             return new File(fd.getDirectory(), selectedFile);
         }
 
@@ -261,14 +261,14 @@ public class DialogUtils {
      * @return a File, or null if cancelled
      */
     public static File chooseFileForSave(String title, String defaultName, ExtensionFileFilter[] filters, File initialDir) {
-        
-        // unfortunately, we need function over aesthetics... 
+
+        // unfortunately, we need function over aesthetics...
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(title);
         chooser.setSelectedFile(new File(initialDir, defaultName));
         if(initialDir != null){
             chooser.setSelectedFile(initialDir);
-        }           
+        }
         chooser.setDialogType(JFileChooser.SAVE_DIALOG);
         if (filters != null) {
             for(ExtensionFileFilter filter : filters){
@@ -287,9 +287,9 @@ public class DialogUtils {
             if(chooser.getFileFilter() != null && chooser.getFileFilter() instanceof ExtensionFileFilter){
                 selectedFile = ((ExtensionFileFilter)chooser.getFileFilter()).forceExtension(f);
             }
-            return new File(selectedFile);              
+            return new File(selectedFile);
         }
-        return null;        
+        return null;
     }
 
     /**
@@ -316,21 +316,21 @@ public class DialogUtils {
             return filter.accept(new File(dir, name));
         }
     }
-    
+
         public static boolean confirmChangeReference(boolean isChangingProject){
         int result = JOptionPane.showConfirmDialog(
-                null, 
-                "<HTML>Changing the " + (isChangingProject ? "project" : "reference") + " will remove current filters.<BR>Are you sure you want to do this?</HTML>", 
-                "Confirm", 
-                JOptionPane.YES_NO_OPTION, 
+                null,
+                "<HTML>Changing the " + (isChangingProject ? "project" : "reference") + " will remove current filters.<BR>Are you sure you want to do this?</HTML>",
+                "Confirm",
+                JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
         return result == JOptionPane.YES_OPTION;
     }
-        
+
     public static void displayErrorMessage(String msg, Exception ex) {
         JOptionPane.showMessageDialog(null, msg, "Database Error", JOptionPane.ERROR_MESSAGE);
     }
-    
+
     /**
      * For purposes of parenting dialogs, here's frontmost window.  Generally, it's the
      * MedSavant main window, but in some cases it could be a dialog.
@@ -338,7 +338,7 @@ public class DialogUtils {
     public static Window getMainWindow() {
         return KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
     }
-    
+
     /**
      * In a remarkable piece of bad design, Java provides separate FileDialog constructors
      * depending on whether the parent is a Frame or a Dialog.

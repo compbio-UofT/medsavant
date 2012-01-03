@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.api;
 
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import com.healthmarketscience.sqlbuilder.Condition;
@@ -26,7 +27,6 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.model.structure.CustomTables;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 /**
  * API for project-related functionality exposed to plugins.  Expect this to be refactored at
  * some point.
- * 
+ *
  * TODO: Give this class a better name.
  *
  * @author tarkvara
@@ -54,11 +54,11 @@ public class ProjectUtils {
     public static int getCurrentReferenceID() {
         return ReferenceController.getInstance().getCurrentReferenceId();
     }
-    
+
     public static TableSchema getCustomVariantTableSchema(int projectID, int refID) throws SQLException, RemoteException {
-        return CustomTables.getCustomTableSchema(MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, projectID, refID));
+        return MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId,MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, projectID, refID));
     }
-    
+
     public static void addFilterConditions(final Condition[] conditions, final String filterName, final String filterID, int queryID) {
         FilterController.addFilter(new QueryFilter() {
             @Override
@@ -77,15 +77,15 @@ public class ProjectUtils {
             }
         }, queryID);
     }
-    
+
     public static void removeFilter(String filterID, int queryID) {
         FilterController.removeFilter(filterID, queryID);
     }
-    
+
     public static void addFilterListener(FiltersChangedListener l) {
         FilterController.addFilterListener(l);
     }
-    
+
     public static void removeFilterListener(FiltersChangedListener l) {
         FilterController.removeFilterListener(l);
     }

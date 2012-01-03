@@ -54,18 +54,18 @@ public class MedSavantClient {
     public static DBUtilAdapter DBUtilAdapter;
     public static SetupAdapter SetupAdapter;
     //public static SessionAdapter SessionAdapter;
-    
+
     //public static String sessionId;
-    
+
     private static MainFrame frame;
-    
+
     static public void main(String args[]) {
 
         System.setProperty("java.security.policy", "client.policy");
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new RMISecurityManager());
         }
-        
+
         /*try {
             // get the “registry”
             registry = LocateRegistry.getRegistry(
@@ -86,8 +86,8 @@ public class MedSavantClient {
         } catch (NotBoundException e) {
             e.printStackTrace();
         }*/
-        
-        try {    
+
+        try {
             initializeRegistry();
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -101,15 +101,15 @@ public class MedSavantClient {
         frame.setExtendedState(MainFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
         ClientLogger.log(Main.class, "MedSavant booted");
-        
+
     }
-    
+
     public static void initializeRegistry() throws RemoteException, NotBoundException {
-        
+
         Registry registry;
         String serverAddress = "localhost";
         String serverPort = "3232";
-        
+
         // get the “registry”
         registry = LocateRegistry.getRegistry(
                 serverAddress,
@@ -125,6 +125,9 @@ public class MedSavantClient {
     }
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
+
+        CustomTablesAdapter = (CustomTablesAdapter) (registry.lookup(MedSavantServerRegistry.Registry_CustomTablesAdapter));
+
         LoginController.SessionAdapter = (SessionAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SessionAdapter));
         AnnotationLogQueryUtilAdapter = (AnnotationLogQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationLogQueryUtilAdapter));
         AnnotationQueryUtilAdapter = (AnnotationQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationQueryUtilAdapter));
@@ -143,11 +146,11 @@ public class MedSavantClient {
         DBUtilAdapter = (DBUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_DBUtilAdapter));
         SetupAdapter = (SetupAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SetupAdapter));
     }
-    
+
     private static void setLAF() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0)); 
+            UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
             LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
 
         } catch (ClassNotFoundException ex) {
