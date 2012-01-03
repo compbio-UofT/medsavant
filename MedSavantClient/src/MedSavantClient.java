@@ -1,7 +1,11 @@
 
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.rmi.*;
 import java.rmi.registry.*;
-import java.net.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.ChromosomeQueryUtilAdapter;
@@ -17,6 +21,7 @@ import org.ut.biolab.medsavant.db.util.query.api.SettingsQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.UserQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
 import org.ut.biolab.medsavant.server.api.MedSavantServerRegistry;
+import org.ut.biolab.medsavant.server.api.RemoteFileServer;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
 
 public class MedSavantClient {
@@ -36,13 +41,17 @@ public class MedSavantClient {
     private static ReferenceQueryUtilAdapter ReferenceQueryUtilAdapter;
     private static QueryUtilAdapter QueryUtilAdapter;
     private static SessionAdapter SessionAdapter;
+    private static RemoteFileServer RemoteFileServer;
 
     static public void main(String args[]) {
 
+        /*
         System.setProperty("java.security.policy", "client.policy");
         if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new RMISecurityManager());
+        System.setSecurityManager(new RMISecurityManager());
         }
+         *
+         */
 
 
         Registry registry;
@@ -72,6 +81,8 @@ public class MedSavantClient {
     }
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
+
+        RemoteFileServer = (RemoteFileServer) (registry.lookup(MedSavantServerRegistry.Registry_FileTransferAdapter));
         SessionAdapter = (SessionAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SessionAdapter));
         AnnotationLogQueryUtilAdapter = (AnnotationLogQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationLogQueryUtilAdapter));
         AnnotationQueryUtilAdapter = (AnnotationQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationQueryUtilAdapter));
@@ -87,5 +98,39 @@ public class MedSavantClient {
         SettingsQueryUtilAdapter = (SettingsQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SettingsQueryUtilAdapter));
         UserQueryUtilAdapter = (UserQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_UserQueryUtilAdapter));
         VariantQueryUtilAdapter = (VariantQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_VariantQueryUtilAdapter));
+
+
+        try {
+            // grab the file name from the commandline
+            String fileName = "/Users/mfiume/Desktop/data.xml";
+            // get a handle to the remote service to which we want to send the file
+            System.out.println("Sending file " + fileName);
+
+            // setup the remote input stream.  note, the client here is actually
+            // acting as an RMI server (very confusing, i know).  this code sets up an
+            // RMI server in the client, which the RemoteFileServer will then
+            // interact with to get the file data.
+            SimpleRemoteInputStream istream = new SimpleRemoteInputStream(
+                    new FileInputStream(fileName));
+
+            try {
+                try {
+                    // call the remote method on the server.  the server will actually
+                    // interact with the RMI "server" we started above to retrieve the
+                    // file data
+                    RemoteFileServer.sendFile(istream.export());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } finally {
+                // always make a best attempt to shutdown RemoteInputStream
+                istream.close();
+            }
+
+            System.out.println("Finished sending file " + fileName);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 }
