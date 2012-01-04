@@ -33,6 +33,7 @@ import java.util.HashSet;
 
 import com.healthmarketscience.common.util.AppendableExt;
 import com.healthmarketscience.sqlbuilder.dbspec.Table;
+import java.io.Serializable;
 
 
 
@@ -45,7 +46,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.Table;
  * @author James Ahlborn
  */
 public abstract class Query<ThisType extends Query<ThisType>>
-  extends SqlObject implements Verifiable<ThisType>
+  extends SqlObject implements Verifiable<ThisType>, Serializable
 {
   protected Query() {}
 

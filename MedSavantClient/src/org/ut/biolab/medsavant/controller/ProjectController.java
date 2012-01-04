@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.controller;
 
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.io.InvalidClassException;
 import java.rmi.RemoteException;
@@ -236,18 +237,15 @@ public class ProjectController implements ReferenceListener, LoginListener {
     
     private void setCurrentPatientTable(){
         try {
+            
+            DbColumn dbc = new DbColumn(null, "A", "B", 1);
             //this.currentPatientTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentPatientTableName());
             this.currentPatientTableSchema =  MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, getCurrentPatientTableName());          
-        //} catch (SQLException ex) {
-        //    Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
-        //} catch (RemoteException ex) {
-        //    Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (Exception ex) {
-            System.out.println("----------------------");
-            ex.printStackTrace();
-            System.out.println(ex.getMessage());
-            System.out.println("______________________");
-        }
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        } 
     }
     
     public AnnotationFormat[] getCurrentAnnotationFormats(){

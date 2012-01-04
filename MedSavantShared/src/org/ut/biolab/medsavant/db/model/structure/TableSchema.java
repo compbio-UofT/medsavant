@@ -16,11 +16,11 @@
 
 package org.ut.biolab.medsavant.db.model.structure;
 
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.io.Serializable;
 
