@@ -45,7 +45,7 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
 
     @Override
     public boolean testConnection(String sessionId) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return ConnectionController.connectPooled(sessionId) != null;
     }
 
 }

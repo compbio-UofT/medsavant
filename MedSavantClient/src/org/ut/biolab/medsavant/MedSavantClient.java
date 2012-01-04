@@ -57,6 +57,8 @@ public class MedSavantClient {
     public static SetupAdapter SetupAdapter;
     //public static SessionAdapter SessionAdapter;
 
+    public static boolean initialized = false;
+    
     //public static String sessionId;
 
     private static MainFrame frame;
@@ -91,13 +93,13 @@ public class MedSavantClient {
             e.printStackTrace();
         }*/
 
-        try {
+        /*try {
             initializeRegistry();
         } catch (RemoteException e) {
             e.printStackTrace();
         } catch (NotBoundException e) {
             e.printStackTrace();
-        }
+        }*/
         verifyJIDE();
         setLAF();
         SettingsController.getInstance();
@@ -108,11 +110,13 @@ public class MedSavantClient {
 
     }
 
-    public static void initializeRegistry() throws RemoteException, NotBoundException {
+    public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException {
+        
+        if(initialized) return;
 
         Registry registry;
-        String serverAddress = "localhost";
-        String serverPort = "3232";
+        //String serverAddress = "localhost";
+        //String serverPort = "3232";
 
         // get the “registry”
         registry = LocateRegistry.getRegistry(serverAddress,(new Integer(serverPort)).intValue());

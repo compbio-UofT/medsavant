@@ -77,8 +77,8 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         this.button_create_db.setVisible(false);
         
         this.field_database.setText(SettingsController.getInstance().getValue(SettingsController.KEY_DB_NAME));
-        this.field_port.setText(SettingsController.getInstance().getValue(SettingsController.KEY_DB_PORT));
-         this.field_hostname.setText(SettingsController.getInstance().getValue(SettingsController.KEY_DB_HOST));
+        this.field_port.setText(SettingsController.getInstance().getValue(SettingsController.KEY_SERVER_PORT));
+        this.field_hostname.setText(SettingsController.getInstance().getValue(SettingsController.KEY_SERVER_ADDRESS));
         
         
         this.setOpaque(false);
@@ -178,9 +178,9 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         panel_details.setOpaque(false);
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel3.setText("hostname");
+        jLabel3.setText("server address");
 
-        field_hostname.setFont(new java.awt.Font("Arial", 1, 18));
+        field_hostname.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         field_hostname.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_hostname.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -189,9 +189,9 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         });
 
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel4.setText("port");
+        jLabel4.setText("server port");
 
-        field_port.setFont(new java.awt.Font("Arial", 1, 18));
+        field_port.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         field_port.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         field_port.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -279,9 +279,6 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             .addComponent(field_username, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
             .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
             .addComponent(field_password, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-            .addGroup(panel_titleLayout.createSequentialGroup()
-                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
-                .addContainerGap())
             .addComponent(field_database, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
             .addComponent(panel_details, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panel_titleLayout.createSequentialGroup()
@@ -289,6 +286,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 174, Short.MAX_VALUE)
                 .addComponent(button_login))
             .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
+            .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
         );
         panel_titleLayout.setVerticalGroup(
             panel_titleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -450,8 +448,8 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         catch (Exception e) { this.field_port.requestFocus(); return; }
         
         SettingsController.getInstance().setValue(SettingsController.KEY_DB_NAME,this.field_database.getText());
-        SettingsController.getInstance().setValue(SettingsController.KEY_DB_PORT,this.field_port.getText());
-        SettingsController.getInstance().setValue(SettingsController.KEY_DB_HOST,this.field_hostname.getText());
+        //SettingsController.getInstance().setValue(SettingsController.KEY_DB_PORT,this.field_port.getText());
+        //SettingsController.getInstance().setValue(SettingsController.KEY_DB_HOST,this.field_hostname.getText());
             
         //ConnectionController.setDBName(SettingsController.getInstance().getValue(SettingsController.KEY_DB_NAME));
         //ConnectionController.setPort(Integer.parseInt(SettingsController.getInstance().getValue(SettingsController.KEY_DB_PORT)));
@@ -464,7 +462,12 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                LoginController.login(field_username.getText(),field_password.getText());
+                LoginController.login(
+                        field_username.getText(),
+                        field_password.getText(), 
+                        field_database.getText(),
+                        field_hostname.getText(),
+                        field_port.getText());
             }
         });
         //new Thread(new RunLogin(this,this.field_username.getText(),this.field_password.getText())).start();

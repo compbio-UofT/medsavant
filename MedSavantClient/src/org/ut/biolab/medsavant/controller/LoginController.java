@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.controller;
 
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -99,16 +100,25 @@ public class LoginController {
 
     public static boolean isLoggedIn() { return loggedIn; }
 
-    public static synchronized void login(String un, String pw) {
+    public static synchronized void login(String un, String pw, String dbname, String serverAddress, String serverPort) {
+        
+        //init registry
+        try {           
+            MedSavantClient.initializeRegistry(serverAddress, serverPort);
+        } catch (Exception ex) {
+            setLoginException(ex);
+        }
 
+        //register session
         username = un;
         password = pw;
         try {
-            sessionId = SessionAdapter.registerNewSession("root", "", "tgp");
+            sessionId = SessionAdapter.registerNewSession(un, pw, dbname);
         } catch (RemoteException ex) {
-            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+            setLoginException(ex);
         }
 
+        //determine privileges
         isAdmin = false;
         try {
             isAdmin = username.equals("root") || MedSavantClient.UserQueryUtilAdapter.isUserAdmin(username);

@@ -54,7 +54,7 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
 
             //TODO: get these from the user
             ConnectionController.setHost("localhost");
-            ConnectionController.setPort(5029);
+            ConnectionController.setPort(5030);
 
             bindAdapters(registry);
 

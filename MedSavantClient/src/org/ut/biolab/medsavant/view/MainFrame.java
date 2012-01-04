@@ -133,7 +133,12 @@ public class MainFrame extends JFrame implements LoginListener {
         });
 
         if (SettingsController.getInstance().getAutoLogin()) {
-            LoginController.login(SettingsController.getInstance().getUsername(), SettingsController.getInstance().getPassword());
+            LoginController.login(
+                    SettingsController.getInstance().getUsername(), 
+                    SettingsController.getInstance().getPassword(), 
+                    SettingsController.getInstance().getDBName(), 
+                    SettingsController.getInstance().getServerAddress(), 
+                    SettingsController.getInstance().getServerPort());
         } else {
             switchToLoginView();
         }
