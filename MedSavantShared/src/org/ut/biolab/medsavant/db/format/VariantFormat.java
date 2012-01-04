@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.db.format;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
@@ -14,7 +15,7 @@ import org.ut.biolab.medsavant.db.format.CustomField.Category;
  *
  * @author Andrew
  */
-public class VariantFormat {
+public class VariantFormat implements Serializable {
 
     public static String ANNOTATION_FORMAT_DEFAULT = "default";
     public static String ANNOTATION_FORMAT_CUSTOM_VCF = "custom vcf";

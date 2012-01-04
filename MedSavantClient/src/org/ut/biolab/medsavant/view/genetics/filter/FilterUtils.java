@@ -154,7 +154,7 @@ public class FilterUtils {
 
     public static String getTableName(Table whichTable){
         if(whichTable == Table.VARIANT){
-            return ProjectController.getInstance().getCurrentTableName();
+            return ProjectController.getInstance().getCurrentVariantTableName();
         } else {
             return ProjectController.getInstance().getCurrentPatientTableName();
         }

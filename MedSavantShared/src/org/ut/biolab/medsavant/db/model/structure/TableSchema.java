@@ -22,6 +22,7 @@ import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.io.Serializable;
 
 import org.ut.biolab.medsavant.db.api.TableSchemaAdapter;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
@@ -30,7 +31,7 @@ import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
  *
  * @author mfiume
  */
-public class TableSchema implements TableSchemaAdapter {
+public class TableSchema implements TableSchemaAdapter, Serializable {
 
     public static ColumnType convertStringToColumnType(String typeNameSQL) {
         typeNameSQL = typeNameSQL.toLowerCase();

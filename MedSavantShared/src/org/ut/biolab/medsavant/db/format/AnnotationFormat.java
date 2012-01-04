@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.db.format;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
  *
  * @author Andrew
  */
-public class AnnotationFormat {
+public class AnnotationFormat implements Serializable {
     
     public static enum AnnotationType {POSITION, INTERVAL};
     

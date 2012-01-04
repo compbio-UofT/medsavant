@@ -1,6 +1,7 @@
 package org.ut.biolab.medsavant.controller;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import java.io.InvalidClassException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -29,15 +30,11 @@ public class ProjectController implements ReferenceListener, LoginListener {
     private String currentProjectName;
     private int currentProjectId;
 
-    //private String currentPatientTableName;
-    //private String currentVariantTableName;
     private AnnotationFormat[] currentAnnotationFormats;
     private List<CustomField> currentPatientFormat;
     
-    private DbTable currentTable;
-    private TableSchema currentTableSchema;
+    private TableSchema currentVariantTableSchema;
     
-    private DbTable currentPatientTable;
     private TableSchema currentPatientTableSchema;
     
     private static ProjectController instance;
@@ -187,7 +184,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
         this.projectListeners.add(l);
     }
     
-    public String getCurrentTableName(){
+    public String getCurrentVariantTableName(){
         try {
             return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
         } catch (SQLException ex) {
@@ -199,17 +196,17 @@ public class ProjectController implements ReferenceListener, LoginListener {
     }
     
     public DbTable getCurrentVariantTable(){
-        return currentTable;
+        return currentVariantTableSchema.getTable();
     }
     
     public TableSchema getCurrentVariantTableSchema(){
-        return currentTableSchema;
+        return currentVariantTableSchema;
     }
     
     private void setCurrentVariantTable(){
         try {
-            this.currentTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentTableName());
-            this.currentTableSchema =  MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, getCurrentTableName());          
+            //this.currentTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentTableName());
+            this.currentVariantTableSchema =  MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, getCurrentVariantTableName());          
         } catch (SQLException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
@@ -230,7 +227,7 @@ public class ProjectController implements ReferenceListener, LoginListener {
     }
     
     public DbTable getCurrentPatientTable(){
-        return currentPatientTable;
+        return currentPatientTableSchema.getTable();
     }
     
     public TableSchema getCurrentPatientTableSchema(){
@@ -239,12 +236,17 @@ public class ProjectController implements ReferenceListener, LoginListener {
     
     private void setCurrentPatientTable(){
         try {
-            this.currentPatientTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentPatientTableName());
+            //this.currentPatientTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentPatientTableName());
             this.currentPatientTableSchema =  MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, getCurrentPatientTableName());          
-        } catch (SQLException ex) {
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (RemoteException ex) {
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        //} catch (SQLException ex) {
+        //    Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        //} catch (RemoteException ex) {
+        //    Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            System.out.println("----------------------");
+            ex.printStackTrace();
+            System.out.println(ex.getMessage());
+            System.out.println("______________________");
         }
     }
     

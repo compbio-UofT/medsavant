@@ -6,12 +6,13 @@ package org.ut.biolab.medsavant.db.model;
 
 import com.healthmarketscience.sqlbuilder.CustomCondition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import java.io.Serializable;
 
 /**
  *
  * @author Andrew
  */
-public class RangeCondition extends CustomCondition {
+public class RangeCondition extends CustomCondition implements Serializable {
     
     public RangeCondition(DbColumn column, double min, double max){
         super(getString(column, min, max));

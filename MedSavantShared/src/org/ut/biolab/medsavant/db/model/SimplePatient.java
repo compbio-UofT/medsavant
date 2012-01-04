@@ -4,13 +4,14 @@
  */
 package org.ut.biolab.medsavant.db.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  *
  * @author Andrew
  */
-public class SimplePatient {
+public class SimplePatient implements Serializable {
     
     private int id;
     private String hid;

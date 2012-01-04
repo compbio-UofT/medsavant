@@ -124,7 +124,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
             String tablename = null;
             if (whichTable == Table.VARIANT) {
-                tablename = ProjectController.getInstance().getCurrentTableName();
+                tablename = ProjectController.getInstance().getCurrentVariantTableName();
             } else if (whichTable == Table.PATIENT) {
                 tablename = ProjectController.getInstance().getCurrentPatientTableName();
             }

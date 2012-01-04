@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.db.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
  *
  * @author Andrew
  */
-public class ProjectDetails {
+public class ProjectDetails implements Serializable {
     
     private int referenceId;
     private String referenceName;

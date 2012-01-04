@@ -361,15 +361,15 @@ public class FilterPanelSub extends CollapsiblePanel {
                             try {
                                 switch(field.getColumnType()){
                                     case INTEGER:
-                                        return NumericFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias(), false);
+                                        return NumericFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentVariantTableName(), field.getColumnName(), id, field.getAlias(), false);
                                     case FLOAT:
                                     case DECIMAL:
-                                        return NumericFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias(), true);
+                                        return NumericFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentVariantTableName(), field.getColumnName(), id, field.getAlias(), true);
                                     case BOOLEAN:
                                         return BooleanFilterView.createVariantFilterView(field.getColumnName(), id, field.getAlias());
                                     case VARCHAR:
                                     default:
-                                        return StringListFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentTableName(), field.getColumnName(), id, field.getAlias());
+                                        return StringListFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentVariantTableName(), field.getColumnName(), id, field.getAlias());
                                 }
                             } catch (SQLException e) {
                                 MiscUtils.checkSQLException(e);

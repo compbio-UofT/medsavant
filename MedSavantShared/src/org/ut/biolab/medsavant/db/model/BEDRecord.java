@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.db.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,7 @@ import java.util.List;
  *
  * @author mfiume
  */
-public class BEDRecord implements Comparable<BEDRecord> {
+public class BEDRecord implements Comparable<BEDRecord>, Serializable {
     
     String name;
     String chrom;

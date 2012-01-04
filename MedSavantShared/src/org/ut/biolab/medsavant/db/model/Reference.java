@@ -4,11 +4,13 @@
  */
 package org.ut.biolab.medsavant.db.model;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Andrew
  */
-public class Reference {
+public class Reference implements Serializable {
     
     private int id;
     private String name;

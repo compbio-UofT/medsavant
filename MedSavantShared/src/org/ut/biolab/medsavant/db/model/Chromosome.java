@@ -5,6 +5,7 @@
 
 package org.ut.biolab.medsavant.db.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author mfiume
  */
-public class Chromosome {
+public class Chromosome implements Serializable {
     private final long centromerepos;
     private final String name;
     private final String shortname;

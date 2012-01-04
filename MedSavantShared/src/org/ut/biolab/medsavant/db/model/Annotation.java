@@ -1,13 +1,14 @@
 package org.ut.biolab.medsavant.db.model;
 
 import java.io.IOException;
+import java.io.Serializable;
 import org.broad.tabix.TabixReader;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat.AnnotationType;
 
 /**
  * @author mfiume
  */
-public class Annotation {
+public class Annotation implements Serializable {
 
     final private int id;
     final private String program;

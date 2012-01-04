@@ -77,7 +77,7 @@ public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUti
         }
     }
 
-    public DbTable importTable(String sessionId, String tablename) throws SQLException, RemoteException {
+    public DbTable importTable(String sessionId, String tablename) throws SQLException {
 
         Connection c;
         try {

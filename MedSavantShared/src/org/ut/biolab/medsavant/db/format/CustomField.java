@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.db.format;
 
+import java.io.Serializable;
 import java.sql.Date;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
@@ -12,7 +13,7 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
  *
  * @author Andrew
  */
-public class CustomField {
+public class CustomField implements Serializable {
 
     private String columnName;
     private String columnType;

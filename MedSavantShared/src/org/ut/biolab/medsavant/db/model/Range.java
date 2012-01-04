@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.db.model;
 
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
  *
  * @author mfiume
  */
-public class Range implements Comparable<Range> {
+public class Range implements Comparable<Range>, Serializable {
     
     private double min;
     private double max;

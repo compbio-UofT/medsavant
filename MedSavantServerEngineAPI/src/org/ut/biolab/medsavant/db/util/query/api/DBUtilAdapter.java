@@ -17,6 +17,6 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 public interface DBUtilAdapter extends Remote {
     
     public TableSchema importTableSchema(String sessionId, String tablename) throws SQLException, RemoteException;
-    public DbTable importTable(String sessionId, String tablename) throws SQLException, RemoteException;
+    //public DbTable importTable(String sessionId, String tablename) throws SQLException, RemoteException;
     
 }

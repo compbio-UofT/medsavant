@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.db.format;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
@@ -9,7 +10,7 @@ import org.ut.biolab.medsavant.db.format.CustomField.Category;
  *
  * @author mfiume
  */
-public class PatientFormat {
+public class PatientFormat implements Serializable {
     
     public static String ALIAS_OF_PATIENT_ID = "Patient ID";
     public static String ALIAS_OF_FAMILY_ID = "Family ID";
