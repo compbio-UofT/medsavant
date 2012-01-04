@@ -13,10 +13,11 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import javax.swing.JLabel;
+import org.ut.biolab.medsavant.db.model.AnnotationLog.Action;
+import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter.Action;
 import org.ut.biolab.medsavant.vcf.VCFHeader;
 import org.ut.biolab.medsavant.vcf.VCFParser;
 
@@ -138,7 +139,7 @@ public class ImportVariants {
 
         //set log as pending
         checkInterrupt(updateId, tableName);
-        AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, updateId, AnnotationLogQueryUtil.Status.PENDING);
+        AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, updateId, Status.PENDING);
         return updateId;
     }
 

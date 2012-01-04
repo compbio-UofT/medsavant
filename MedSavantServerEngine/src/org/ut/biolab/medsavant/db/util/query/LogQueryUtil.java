@@ -26,12 +26,17 @@ import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
 import java.rmi.RemoteException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ProjectTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ReferenceTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ServerLogTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
+import org.ut.biolab.medsavant.db.model.AnnotationLog;
+import org.ut.biolab.medsavant.db.model.GeneralLog;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.query.api.LogQueryUtilAdapter;
@@ -54,7 +59,7 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
     public LogQueryUtil() throws RemoteException {}
 
 
-    public ResultSet getClientLog(String sid,int start, int limit) throws SQLException {
+    public List<GeneralLog> getClientLog(String sid,int start, int limit) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         SelectQuery query = new SelectQuery();
@@ -63,10 +68,20 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
         query.addCondition(BinaryCondition.notEqualTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
         query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
 
-        return ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
+        
+        List<GeneralLog> result = new ArrayList<GeneralLog>();
+        while(rs.next()) {
+            result.add(new GeneralLog(
+                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_USER)),
+                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_EVENT)),
+                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION)),
+                    rs.getTimestamp(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP))));
+        }
+        return result;
     }
 
-    public ResultSet getServerLog(String sid,int start, int limit) throws SQLException {
+    public List<GeneralLog> getServerLog(String sid,int start, int limit) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         SelectQuery query = new SelectQuery();
@@ -75,10 +90,19 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
         query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
 
-        return ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
+    
+        List<GeneralLog> result = new ArrayList<GeneralLog>();
+        while(rs.next()) {
+            result.add(new GeneralLog(
+                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_EVENT)),
+                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION)),
+                    rs.getTimestamp(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP))));
+        }
+        return result;
     }
 
-    public ResultSet getAnnotationLog(String sid,int start, int limit) throws SQLException {
+    public List<AnnotationLog> getAnnotationLog(String sid,int start, int limit) throws SQLException {
 
         TableSchema projectTable = MedSavantDatabase.ProjectTableSchema;
         TableSchema referenceTable = MedSavantDatabase.ReferenceTableSchema;
@@ -109,7 +133,27 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
                         updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                         referenceTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
 
-        return ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
+    
+        List<AnnotationLog> result = new ArrayList<AnnotationLog>();
+        while (rs.next()) {
+            
+            Timestamp t = null;
+            try {
+                t = rs.getTimestamp(5);
+            } catch (Exception e) {}           
+            
+            result.add(new AnnotationLog(
+                    rs.getString(1), 
+                    rs.getString(2), 
+                    AnnotationLog.intToAction(rs.getInt(3)), 
+                    AnnotationLog.intToStatus(rs.getInt(4)), 
+                    t, 
+                    rs.getString(6), 
+                    rs.getInt(7)));
+        }
+        return result;        
+        
     }
 
     public int getAnnotationLogSize(String sid) throws SQLException {

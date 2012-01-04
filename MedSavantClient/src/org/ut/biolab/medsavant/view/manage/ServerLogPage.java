@@ -40,9 +40,11 @@ import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ServerLogTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
+import org.ut.biolab.medsavant.db.model.AnnotationLog;
+import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
+import org.ut.biolab.medsavant.db.model.GeneralLog;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.shared.DBUtil;
-import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter.Status;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -311,19 +313,19 @@ public class ServerLogPage extends SubSectionView {
         waitPanel.setIndeterminate();
         waitPanel.setStatus("");
         showWaitPanel();
+        
+        
         try {
-            ResultSet rs = MedSavantClient.LogQueryUtilAdapter.getAnnotationLog(LoginController.sessionId, start, limit);
+            List<AnnotationLog> logs = MedSavantClient.LogQueryUtilAdapter.getAnnotationLog(LoginController.sessionId, start, limit);
             v = new ArrayList<Object[]>();
-            while (rs.next()) {
-
-                Status status = MedSavantClient.AnnotationLogQueryUtilAdapter.intToStatus(rs.getInt(4));
-
-                final int updateId = rs.getInt(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID);
+            for(final AnnotationLog log : logs){
+                
+                
                 JButton button = new JButton("Retry");
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent ae) {
                         try {
-                            MedSavantClient.AnnotationLogQueryUtilAdapter.setAnnotationLogStatus(LoginController.sessionId, updateId, Status.PENDING, DBUtil.getCurrentTimestamp());
+                            MedSavantClient.AnnotationLogQueryUtilAdapter.setAnnotationLogStatus(LoginController.sessionId, log.getUploadId(), Status.PENDING, DBUtil.getCurrentTimestamp());
                         } catch (SQLException ex) {
                             Logger.getLogger(ServerLogPage.class.getName()).log(Level.SEVERE, null, ex);
                         } catch (RemoteException ex) {
@@ -332,34 +334,31 @@ public class ServerLogPage extends SubSectionView {
                         refreshCurrentCard();
                     }
                 });
-
-                Object[] r = new Object[7];
-                r[0] = rs.getString(1);
-                r[1] = rs.getString(2);
-                r[2] = MedSavantClient.AnnotationLogQueryUtilAdapter.intToAction(rs.getInt(3));
-                r[3] = status;
-
-                try {
-                    r[4] = rs.getTimestamp(5);
-                } catch (Exception e) {
-                }
                 
-                r[5] = rs.getString(6);
-
-                if (status != Status.ERROR) {
+                Object[] r = new Object[7];
+                r[0] = log.getProjectName();
+                r[1] = log.getReferenceName();
+                r[2] = log.getAction();
+                r[3] = log.getStatus();
+                r[4] = log.getTimestamp();
+                r[5] = log.getUser();
+                
+                if (log.getStatus() != Status.ERROR) {
                     r[6] = new JPanel();
                 } else {
                     r[6] = button;
                 }
 
-                v.add(r);
+                v.add(r);    
             }
-        } catch (Exception e){
+      
+        } catch (Exception e) {
             waitPanel.setComplete();
             waitPanel.setStatus("Problem getting log");
             showWaitPanel();
             Logger.getLogger(ServerLogPage.class.getName()).log(Level.SEVERE, null, e);
         }
+        
         hideWaitPanel();
         return v;
     }
@@ -371,14 +370,13 @@ public class ServerLogPage extends SubSectionView {
         waitPanel.setStatus("");
         showWaitPanel();
         try {
-            ResultSet rs = MedSavantClient.LogQueryUtilAdapter.getServerLog(LoginController.sessionId, start, limit);
+            List<GeneralLog> logs = MedSavantClient.LogQueryUtilAdapter.getServerLog(LoginController.sessionId, start, limit);
             v = new ArrayList<Object[]>();
-            while (rs.next()) {
-                TableSchema table = MedSavantDatabase.ServerlogTableSchema;
+            for(GeneralLog log : logs) {
                 v.add(new Object[] {
-                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_EVENT)),
-                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION)),
-                    rs.getTimestamp(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP))
+                    log.getEvent(),
+                    log.getDescription(),
+                    log.getTimestamp()
                 });
             }
         } catch (Exception e){
@@ -398,15 +396,14 @@ public class ServerLogPage extends SubSectionView {
         waitPanel.setStatus("");
         showWaitPanel();
         try {
-            ResultSet rs = MedSavantClient.LogQueryUtilAdapter.getClientLog(LoginController.sessionId, start, limit);
+            List<GeneralLog> logs = MedSavantClient.LogQueryUtilAdapter.getClientLog(LoginController.sessionId, start, limit);
             v = new ArrayList<Object[]>();
-            while (rs.next()) {
-                TableSchema table = MedSavantDatabase.ServerlogTableSchema;
+            for(GeneralLog log : logs) {
                 v.add(new Object[] {
-                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_USER)),
-                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_EVENT)),
-                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION)),
-                    rs.getTimestamp(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP))
+                    log.getUser(),
+                    log.getEvent(),
+                    log.getDescription(),
+                    log.getTimestamp()
                 });
             }
             if (Thread.currentThread().isInterrupted()) {

@@ -34,6 +34,9 @@ import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
+import org.ut.biolab.medsavant.db.model.AnnotationLog;
+import org.ut.biolab.medsavant.db.model.AnnotationLog.Action;
+import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter;
@@ -56,62 +59,6 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
 
     public AnnotationLogQueryUtil() throws RemoteException {}
 
-    private static int actionToInt(Action action){
-        switch(action){
-            case UPDATE_TABLE:
-                return 0;
-            case ADD_VARIANTS:
-                return 1;
-            default:
-                return -1;
-        }
-    }
-
-    public Action intToAction(int action){
-        switch(action){
-            case 0:
-                return Action.UPDATE_TABLE;
-            case 1:
-                return Action.ADD_VARIANTS;
-            default:
-                return null;
-        }
-    }
-
-    private static int statusToInt(Status status){
-        switch(status){
-            case PREPROCESS:
-                return 0;
-            case PENDING:
-                return 1;
-            case INPROGRESS:
-                return 2;
-            case ERROR:
-                return 3;
-            case COMPLETE:
-                return 4;
-            default:
-                return -1;
-        }
-    }
-
-    public Status intToStatus(int status){
-        switch(status){
-            case 0:
-                return Status.PREPROCESS;
-            case 1:
-                return Status.PENDING;
-            case 2:
-                return Status.INPROGRESS;
-            case 3:
-                return Status.ERROR;
-            case 4:
-                return Status.COMPLETE;
-            default:
-                return null;
-        }
-    }
-
     public int addAnnotationLogEntry(String sid,int projectId, int referenceId, Action action, String user) throws SQLException{
         return addAnnotationLogEntry(sid,projectId,referenceId,action,Status.PREPROCESS, user);
     }
@@ -126,8 +73,8 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
         InsertQuery query = new InsertQuery(table.getTable());
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId);
-        query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION), actionToInt(action));
-        query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), statusToInt(status));
+        query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION), AnnotationLog.actionToInt(action));
+        query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(status));
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_USER), user);
 
@@ -154,7 +101,7 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), statusToInt(Status.PENDING)));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(Status.PENDING)));
         query.addOrdering(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION), OrderObject.Dir.ASCENDING);
 
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
@@ -166,7 +113,7 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
 
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
-        query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), statusToInt(status));
+        query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(status));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
 
         ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
@@ -176,7 +123,7 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
 
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
-        query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), statusToInt(status));
+        query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(status));
         query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
 
@@ -191,8 +138,8 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
         query.addColumns(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION), actionToInt(Action.UPDATE_TABLE)));
-        query.addCondition(BinaryCondition.lessThan(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), statusToInt(Status.PENDING), true));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_ACTION), AnnotationLog.actionToInt(Action.UPDATE_TABLE)));
+        query.addCondition(BinaryCondition.lessThan(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(Status.PENDING), true));
 
         String q = query.toString();
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
@@ -210,7 +157,7 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
         Status maxStatus = Status.COMPLETE;
         while(rs.next()){
-            Status current = intToStatus(rs.getInt(1));
+            Status current = AnnotationLog.intToStatus(rs.getInt(1));
             switch(current){
                 case ERROR:
                     maxStatus = current;

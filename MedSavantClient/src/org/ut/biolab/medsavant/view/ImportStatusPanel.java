@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter.Status;
+import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.images.IconFactory;

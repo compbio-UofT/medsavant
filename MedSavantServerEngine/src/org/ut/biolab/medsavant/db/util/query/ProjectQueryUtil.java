@@ -36,10 +36,10 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantFormatTableSchema
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantTablemapTableSchema;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
+import org.ut.biolab.medsavant.db.model.AnnotationLog.Action;
+import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.DBSettings;
-import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter.Action;
-import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter.Status;
 import org.ut.biolab.medsavant.db.util.query.api.ProjectQueryUtilAdapter;
 
 /**

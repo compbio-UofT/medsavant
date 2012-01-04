@@ -2,8 +2,10 @@ package org.ut.biolab.medsavant.db.util.query.api;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import org.ut.biolab.medsavant.db.model.AnnotationLog;
+import org.ut.biolab.medsavant.db.model.GeneralLog;
 
 /**
  *
@@ -11,9 +13,9 @@ import java.sql.SQLException;
  */
 public interface LogQueryUtilAdapter extends Remote {
 
-    public ResultSet getClientLog(String sid,int start, int limit) throws SQLException, RemoteException;
-    public ResultSet getServerLog(String sid,int start, int limit) throws SQLException, RemoteException;
-    public ResultSet getAnnotationLog(String sid,int start, int limit) throws SQLException, RemoteException;
+    public List<GeneralLog> getClientLog(String sid,int start, int limit) throws SQLException, RemoteException;
+    public List<GeneralLog> getServerLog(String sid,int start, int limit) throws SQLException, RemoteException;
+    public List<AnnotationLog> getAnnotationLog(String sid,int start, int limit) throws SQLException, RemoteException;
     public int getAnnotationLogSize(String sid) throws SQLException, RemoteException;
     public int getServerLogSize(String sid) throws SQLException, RemoteException;
     public int getClientLogSize(String sid) throws SQLException, RemoteException;
