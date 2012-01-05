@@ -53,4 +53,8 @@ class SessionConnection {
     String getDBName() {
         return this.dbName;
     }
+
+    String getUser() {
+        return this.user;
+    }
 }

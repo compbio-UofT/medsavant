@@ -150,4 +150,9 @@ public class ConnectionController {
         return sc.getDBName();
     }
 
+    public static String getUserForSession(String sid) {
+        SessionConnection sc = sessionConnectionMap.get(sid);
+        return sc.getUser();
+    }
+
 }

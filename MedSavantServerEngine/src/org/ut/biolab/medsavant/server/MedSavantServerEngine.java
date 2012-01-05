@@ -8,7 +8,7 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import org.ut.biolab.medsavant.db.admin.Setup;
+import org.ut.biolab.medsavant.db.admin.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
@@ -27,6 +27,7 @@ import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
+import org.ut.biolab.medsavant.db.variants.upload.UploadVariants;
 import org.ut.biolab.medsavant.server.api.MedSavantServerRegistry;
 
 /**
@@ -63,7 +64,7 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
             throw e;
         }
     }
-    
+
     static public void main(String args[]) {
         try {
             MedSavantServerEngine s = new MedSavantServerEngine();
@@ -75,6 +76,7 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
 
     private void bindAdapters(Registry registry) throws RemoteException {
 
+        registry.rebind(MedSavantServerRegistry.Registry_UploadVariantsAdapter, UploadVariants.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_FileTransferAdapter, FileServer.getInstance());
 
         registry.rebind(MedSavantServerRegistry.Registry_SessionAdapter, SessionController.getInstance());
@@ -95,7 +97,7 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
         registry.rebind(MedSavantServerRegistry.Registry_UserQueryUtilAdapter, UserQueryUtil.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_VariantQueryUtilAdapter, VariantQueryUtil.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_DBUtilAdapter, DBUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_SetupAdapter, Setup.getInstance());
+        registry.rebind(MedSavantServerRegistry.Registry_SetupAdapter, SetupMedSavantDatabase.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_CustomTablesAdapter, CustomTables.getInstance());
     }
 }

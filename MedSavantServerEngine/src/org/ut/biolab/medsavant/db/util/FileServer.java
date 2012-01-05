@@ -38,7 +38,7 @@ import java.rmi.server.UnicastRemoteObject;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import java.rmi.RemoteException;
-import org.ut.biolab.medsavant.server.api.RemoteFileServer;
+import org.ut.biolab.medsavant.server.RemoteFileServer;
 
 /**
  * Simple example server which can be the target of a streamed file.
@@ -57,12 +57,14 @@ public class FileServer extends java.rmi.server.UnicastRemoteObject implements R
 
     public FileServer() throws RemoteException {}
 
-    public void sendFile(RemoteInputStream ristream) throws IOException {
+    public File sendFile(RemoteInputStream ristream) throws IOException {
         InputStream istream = RemoteInputStreamClient.wrap(ristream);
         FileOutputStream ostream = null;
+        File tempFile;
+
         try {
 
-            File tempFile = File.createTempFile("sentFile_", ".dat");
+            tempFile = File.createTempFile("sentFile_", ".dat");
             ostream = new FileOutputStream(tempFile);
             System.out.println("Writing file " + tempFile);
 
@@ -87,5 +89,7 @@ public class FileServer extends java.rmi.server.UnicastRemoteObject implements R
                 }
             }
         }
+
+        return tempFile;
     }
 }

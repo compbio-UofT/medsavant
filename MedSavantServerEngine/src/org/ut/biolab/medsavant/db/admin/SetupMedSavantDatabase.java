@@ -42,19 +42,19 @@ import org.ut.biolab.medsavant.server.SessionController;
  *
  * @author mfiume
  */
-public class Setup extends java.rmi.server.UnicastRemoteObject implements SetupAdapter {
-    private static final Logger LOG = Logger.getLogger(Setup.class.getName());
-    
-    private static Setup instance;
+public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject implements SetupAdapter {
+    private static final Logger LOG = Logger.getLogger(SetupMedSavantDatabase.class.getName());
 
-    public static Setup getInstance() throws RemoteException {
+    private static SetupMedSavantDatabase instance;
+
+    public static SetupMedSavantDatabase getInstance() throws RemoteException {
         if (instance == null) {
-            instance = new Setup();
+            instance = new SetupMedSavantDatabase();
         }
         return instance;
     }
 
-    public Setup() throws RemoteException {}
+    public SetupMedSavantDatabase() throws RemoteException {}
 
     private static void dropTables(String sessionId) throws SQLException {
 

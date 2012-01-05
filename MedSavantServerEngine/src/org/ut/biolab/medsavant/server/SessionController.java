@@ -48,4 +48,8 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
         return ConnectionController.connectPooled(sessionId) != null;
     }
 
+    public String getUserForSession(String sid) {
+        return ConnectionController.getUserForSession(sid);
+    }
+
 }
