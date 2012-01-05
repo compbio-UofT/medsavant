@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 
 import org.ut.biolab.medsavant.controller.UserController;
 import org.ut.biolab.medsavant.db.model.UserLevel;
@@ -191,7 +192,7 @@ public class NewUserDialog extends javax.swing.JDialog {
         try {
             String username = usernameField.getText();
 
-            if (MedSavantClient.UserQueryUtilAdapter.userExists(username)) {
+            if (MedSavantClient.UserQueryUtilAdapter.userExists(LoginController.sessionId, username)) {
                 JOptionPane.showMessageDialog(this, "User already exists.");
             } else {
                 if (UserController.getInstance().addUser(username, passwordField.getPassword(), UserLevel.valueOf(privilegeGroup.getSelection().getActionCommand()))) {

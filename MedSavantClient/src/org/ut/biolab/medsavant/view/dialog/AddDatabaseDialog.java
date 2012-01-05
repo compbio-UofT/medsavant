@@ -25,6 +25,7 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.server.api.SessionAdapter;
 
 import org.ut.biolab.medsavant.settings.VersionSettings;
 import org.ut.biolab.medsavant.view.MainFrame;
@@ -251,9 +252,10 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         final IndeterminateProgressDialog progress = new IndeterminateProgressDialog("Creating Database", "Creating database " + field_database.getText() + ". Please wait...", true, this);
         Thread t = new Thread(){
             @Override
-            public void run(){
-                try {
-                    MedSavantClient.SetupAdapter.createDatabase(LoginController.sessionId, field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword(), VersionSettings.getVersionString());
+            public void run(){               
+                try {                
+                    MedSavantClient.initializeRegistry(field_hostname.getText(), field_port.getText());                    
+                    MedSavantClient.SetupAdapter.createDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword(), VersionSettings.getVersionString());
                     progress.setVisible(false);
                     DialogUtils.displayMessage("Database \"" + field_database.getText() + "\" created successfuly");
                     doClose(RET_OK);

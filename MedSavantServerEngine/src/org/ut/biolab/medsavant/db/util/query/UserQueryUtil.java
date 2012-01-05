@@ -56,8 +56,8 @@ public class UserQueryUtil extends java.rmi.server.UnicastRemoteObject implement
         return results;
     }
 
-    public boolean userExists(String userName) throws SQLException {
-        ResultSet rs = ConnectionController.executeQuery("SELECT user FROM mysql.user WHERE user=?;", userName);
+    public boolean userExists(String sid, String userName) throws SQLException {
+        ResultSet rs = ConnectionController.executeQuery(sid, "SELECT user FROM mysql.user WHERE user=?;", userName);
         return rs.next();
     }
 
@@ -65,7 +65,7 @@ public class UserQueryUtil extends java.rmi.server.UnicastRemoteObject implement
         ConnectionController.connectPooled(sid).setAutoCommit(false);
 
         try {
-            ConnectionController.executeUpdate("CREATE USER ?@'localhost' IDENTIFIED BY ?;", name, new String(pass));
+            ConnectionController.executeUpdate(sid, "CREATE USER ?@'localhost' IDENTIFIED BY ?;", name, new String(pass));
             grantPrivileges(sid,name, level);
             ConnectionController.connectPooled(sid).commit();
         } catch (SQLException sqlx) {
@@ -88,24 +88,24 @@ public class UserQueryUtil extends java.rmi.server.UnicastRemoteObject implement
     public void grantPrivileges(String sid, String name, UserLevel level) throws SQLException {
         switch (level) {
             case ADMIN:
-                ConnectionController.executeUpdate(String.format("GRANT ALL ON %s.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
-                ConnectionController.executeUpdate(String.format("GRANT GRANT OPTION ON *.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
-                ConnectionController.executeUpdate(String.format("GRANT CREATE USER ON *.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
-                ConnectionController.executeUpdate("GRANT SELECT ON mysql.user TO ?@'localhost';", name);
+                ConnectionController.executeUpdate(sid, String.format("GRANT ALL ON %s.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
+                ConnectionController.executeUpdate(sid, String.format("GRANT GRANT OPTION ON *.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
+                ConnectionController.executeUpdate(sid, String.format("GRANT CREATE USER ON *.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
+                ConnectionController.executeUpdate(sid, "GRANT SELECT ON mysql.user TO ?@'localhost';", name);
                 break;
             case USER:
-                ConnectionController.executeUpdate(String.format("GRANT SELECT, CREATE TEMPORARY TABLES ON %s.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
+                ConnectionController.executeUpdate(sid, String.format("GRANT SELECT, CREATE TEMPORARY TABLES ON %s.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
                 break;
             case GUEST:
-                ConnectionController.executeUpdate(String.format("GRANT SELECT ON %s.* TO ?@'localhost'", ConnectionController.getDBName(sid)), name);
+                ConnectionController.executeUpdate(sid, String.format("GRANT SELECT ON %s.* TO ?@'localhost'", ConnectionController.getDBName(sid)), name);
                 break;
         }
     }
 
-    public boolean isUserAdmin(String name) throws SQLException {
-        if (userExists(name)) {
+    public boolean isUserAdmin(String sid, String name) throws SQLException {
+        if (userExists(sid, name)) {
             // If the user can create other users, they're assumed to be admin.
-            ResultSet rs = ConnectionController.executeQuery("SELECT Create_user_priv FROM mysql.user WHERE user=?;", name);
+            ResultSet rs = ConnectionController.executeQuery(sid, "SELECT Create_user_priv FROM mysql.user WHERE user=?;", name);
             rs.next();
             return rs.getString(1).equals("Y");
         } else {
@@ -113,17 +113,17 @@ public class UserQueryUtil extends java.rmi.server.UnicastRemoteObject implement
         }
     }
 
-    public UserLevel getUserLevel(String name) throws SQLException {
-        if (userExists(name)) {
+    public UserLevel getUserLevel(String sid, String name) throws SQLException {
+        if (userExists(sid, name)) {
             // If the user can create other users, they're assumed to be admin.
 
-            ResultSet rs = ConnectionController.executeQuery("SELECT Create_user_priv FROM mysql.user WHERE user=?;", name);
+            ResultSet rs = ConnectionController.executeQuery(sid, "SELECT Create_user_priv FROM mysql.user WHERE user=?;", name);
             if (rs.next()) {
                 if (rs.getString(1).equals("Y")) {
                     return UserLevel.ADMIN;
                 }
             }
-            rs = ConnectionController.executeQuery("SELECT Create_tmp_table_priv FROM mysql.db WHERE user=?", name);
+            rs = ConnectionController.executeQuery(sid, "SELECT Create_tmp_table_priv FROM mysql.db WHERE user=?", name);
             if (rs.next()) {
                 if (rs.getString(1).equals("Y")) {
                     return UserLevel.USER;
@@ -134,7 +134,7 @@ public class UserQueryUtil extends java.rmi.server.UnicastRemoteObject implement
         return UserLevel.NONE;
     }
 
-    public void removeUser(String name) throws SQLException {
-        ConnectionController.executeUpdate("DROP USER ?@'localhost';", name);
+    public void removeUser(String sid, String name) throws SQLException {
+        ConnectionController.executeUpdate(sid, "DROP USER ?@'localhost';", name);
     }
 }

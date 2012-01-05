@@ -295,12 +295,12 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
      * @throws SQLException
      */
     private static void addRootUser(String sid, Connection c, char[] password) throws SQLException, RemoteException {
-        if (!UserQueryUtil.getInstance().userExists("root")) {
+        if (!UserQueryUtil.getInstance().userExists(sid, "root")) {
             UserQueryUtil.getInstance().addUser(sid, "root", password, UserLevel.ADMIN);
         }
     }
 
-    public void createDatabase(String sid, String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException, RemoteException {
+    public void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException, RemoteException {
 
         String sessionId = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
 
@@ -312,12 +312,12 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
 
         dropTables(sessionId);
         createTables(sessionId);
-        addRootUser(sid,c, rootPassword);
-        addDefaultReferenceGenomes(sid);
-        addDbSettings(sid,versionString);
+        addRootUser(sessionId,c, rootPassword);
+        addDefaultReferenceGenomes(sessionId);
+        addDbSettings(sessionId,versionString);
 
-        for (String user: UserQueryUtil.getInstance().getUserNames(sid)) {
-            UserQueryUtil.getInstance().grantPrivileges(sid,user, UserQueryUtil.getInstance().getUserLevel(user));
+        for (String user: UserQueryUtil.getInstance().getUserNames(sessionId)) {
+            UserQueryUtil.getInstance().grantPrivileges(sessionId,user, UserQueryUtil.getInstance().getUserLevel(sessionId, user));
         }
     }
 

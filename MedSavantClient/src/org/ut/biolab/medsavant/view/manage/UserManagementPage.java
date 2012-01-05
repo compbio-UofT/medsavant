@@ -19,6 +19,7 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.controller.UserController;
 import org.ut.biolab.medsavant.controller.UserController.UserListener;
@@ -187,7 +188,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
             @Override
             protected Object doInBackground() throws Exception {
                 try {
-                    return MedSavantClient.UserQueryUtilAdapter.getUserLevel(userName);
+                    return MedSavantClient.UserQueryUtilAdapter.getUserLevel(LoginController.sessionId, userName);
                 } catch (SQLException ex) {
                     return null;
                 }

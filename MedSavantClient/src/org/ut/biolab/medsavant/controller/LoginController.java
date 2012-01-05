@@ -121,7 +121,7 @@ public class LoginController {
         //determine privileges
         isAdmin = false;
         try {
-            isAdmin = username.equals("root") || MedSavantClient.UserQueryUtilAdapter.isUserAdmin(username);
+            isAdmin = username.equals("root") || MedSavantClient.UserQueryUtilAdapter.isUserAdmin(sessionId, username);
         } catch (SQLException ignored) {
             // An SQLException is expected here if the user is not an admin, because they
             // will be unable to read the mysql.users table.

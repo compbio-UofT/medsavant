@@ -154,5 +154,9 @@ public class ConnectionController {
         SessionConnection sc = sessionConnectionMap.get(sid);
         return sc.getUser();
     }
+    
+    public static void removeSession(String sid) {
+        sessionConnectionMap.remove(sid);
+    }
 
 }

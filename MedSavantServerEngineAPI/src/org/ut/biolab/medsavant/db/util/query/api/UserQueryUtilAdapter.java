@@ -13,11 +13,11 @@ import org.ut.biolab.medsavant.db.model.UserLevel;
 public interface UserQueryUtilAdapter extends Remote {
 
     public List<String> getUserNames(String sid) throws SQLException, RemoteException;
-    public boolean userExists(String userName) throws SQLException, RemoteException;
+    public boolean userExists(String sid, String userName) throws SQLException, RemoteException;
     public void addUser(String sid, String name, char[] pass, UserLevel level) throws SQLException, RemoteException;
     public void grantPrivileges(String sid, String name, UserLevel level) throws SQLException, RemoteException;
-    public boolean isUserAdmin(String name) throws SQLException, RemoteException;
-    public UserLevel getUserLevel(String name) throws SQLException, RemoteException;
-    public void removeUser(String name) throws SQLException, RemoteException;
+    public boolean isUserAdmin(String sid, String name) throws SQLException, RemoteException;
+    public UserLevel getUserLevel(String sid, String name) throws SQLException, RemoteException;
+    public void removeUser(String sid, String name) throws SQLException, RemoteException;
 
 }

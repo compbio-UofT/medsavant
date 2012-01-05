@@ -57,7 +57,7 @@ public class UserController {
             @Override
             public void run() {
                 try {
-                    MedSavantClient.UserQueryUtilAdapter.removeUser(name);
+                    MedSavantClient.UserQueryUtilAdapter.removeUser(LoginController.sessionId, name);
                     fireUserRemovedEvent(name);
                 } catch (SQLException x) {
                     LOG.log(Level.SEVERE, null, x);

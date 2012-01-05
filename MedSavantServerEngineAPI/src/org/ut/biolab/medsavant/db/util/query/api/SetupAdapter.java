@@ -14,6 +14,6 @@ import java.sql.SQLException;
  */
 public interface SetupAdapter extends Remote {
  
-    public void createDatabase(String sid, String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException, RemoteException;
+    public void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException, RemoteException;
     
 }
