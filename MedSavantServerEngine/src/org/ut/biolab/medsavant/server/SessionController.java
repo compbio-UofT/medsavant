@@ -42,8 +42,6 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
     @Override
     public void unregisterSession(String sessionId) throws RemoteException {
         ConnectionController.removeSession(sessionId);
-        CustomTables.getInstance().clearMap(sessionId);
-        
     }
 
     @Override

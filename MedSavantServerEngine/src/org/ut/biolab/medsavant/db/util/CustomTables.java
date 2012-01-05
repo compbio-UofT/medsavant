@@ -18,9 +18,10 @@ import org.ut.biolab.medsavant.db.util.query.api.CustomTablesAdapter;
 public class CustomTables extends java.rmi.server.UnicastRemoteObject implements CustomTablesAdapter {
 
     private static CustomTables instance;
-
-    private Map<String, Map> sessionIdToMapMap = new HashMap<String,Map>();
-
+    private static final int MAX_TABLES = 30;
+    
+    private Map<String, Map<String, TableSchema>> dbnameToTableMap = new HashMap<String, Map<String, TableSchema>>();
+    
     public static CustomTables getInstance() throws RemoteException {
         if (instance == null) {
             instance = new CustomTables();
@@ -30,38 +31,43 @@ public class CustomTables extends java.rmi.server.UnicastRemoteObject implements
 
     private CustomTables() throws RemoteException {}
 
-    public TableSchema getCustomTableSchema(String sessionId, String tablename) throws SQLException, RemoteException {
-        return getCustomTableSchema(sessionId, tablename, false);
+    public TableSchema getCustomTableSchema(String sid, String tablename) throws SQLException, RemoteException {
+        return getCustomTableSchema(sid, tablename, false);
     }
 
-    public TableSchema getCustomTableSchema(String sessionId, String tablename, boolean update) throws SQLException, RemoteException {
-
-        if (!sessionIdToMapMap.containsKey(sessionId)) {
-            Map<String, TableSchema> tableNameToSchemaMap = new HashMap<String, TableSchema>();
-            sessionIdToMapMap.put(sessionId, tableNameToSchemaMap);
+    public TableSchema getCustomTableSchema(String sid, String tablename, boolean update) throws SQLException, RemoteException {
+        
+        String dbName = ConnectionController.getDBName(sid);
+        if (!dbnameToTableMap.containsKey(dbName)) {
+            dbnameToTableMap.put(dbName, new HashMap<String, TableSchema>());
         }
-
-        Map<String, TableSchema> tableNameToSchemaMap = sessionIdToMapMap.get(sessionId);
-
-        TableSchema table;
-        if(!update && (table = tableNameToSchemaMap.get(tablename)) != null){
-            return table;
+        if(!dbnameToTableMap.get(dbName).containsKey(tablename) || update) {
+            if(!dbnameToTableMap.get(dbName).containsKey(tablename) && isOverLimit()){
+                clearMap();
+            }
+            dbnameToTableMap.get(dbName).put(tablename, DBUtil.getInstance().importTableSchema(sid, tablename));
         }
-
-        table = DBUtil.getInstance().importTableSchema(sessionId, tablename);
-        tableNameToSchemaMap.put(tablename, table);
-
-        sessionIdToMapMap.put(sessionId, tableNameToSchemaMap);
-
-        return table;
+        
+        return dbnameToTableMap.get(dbName).get(tablename);  
+    }
+    
+    private boolean isOverLimit() {
+        
+        //number of dbs
+        if(dbnameToTableMap.size() >= MAX_TABLES) return true;
+        
+        //number of tables
+        int size = 0;
+        for(String dbName : dbnameToTableMap.keySet()){
+            size += dbnameToTableMap.get(dbName).size();
+        }
+        if(size >= MAX_TABLES) return true;
+               
+        return false;
     }
 
-    public void clearMap(String sessionId) {
-
-        Map m = sessionIdToMapMap.get(sessionId);
-        if (m != null) {
-            m.clear();
-        }
+    private void clearMap() {
+        dbnameToTableMap.clear();
     }
 
 }
