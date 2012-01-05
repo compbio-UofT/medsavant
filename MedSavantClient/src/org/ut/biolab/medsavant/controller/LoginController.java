@@ -162,7 +162,14 @@ public class LoginController {
                     JOptionPane.WARNING_MESSAGE);
             ex.printStackTrace();
         }
-
+        
+        //register for callback
+        try {
+            SessionAdapter.registerCallback(sessionId, CallbackController.getInstance());
+        } catch (RemoteException ex) {
+            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         setLoggedIn(true);
     }
 

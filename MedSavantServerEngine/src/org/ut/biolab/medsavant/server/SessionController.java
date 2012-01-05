@@ -1,6 +1,9 @@
 package org.ut.biolab.medsavant.server;
 
 import java.rmi.RemoteException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.ut.biolab.medsavant.client.api.ClientCallbackAdapter;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
 
@@ -49,6 +52,11 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
 
     public String getUserForSession(String sid) {
         return ConnectionController.getUserForSession(sid);
+    }
+
+    @Override
+    public void registerCallback(String sessionId, final ClientCallbackAdapter cca) throws RemoteException {
+        ConnectionController.addCallback(sessionId, cca);
     }
 
 }
