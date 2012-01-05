@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
-import org.ut.biolab.medsavant.db.variants.upload.UploadVariants;
+import org.ut.biolab.medsavant.db.variants.update.UploadVariants;
 import org.ut.biolab.medsavant.server.api.MedSavantServerRegistry;
 
 /**
@@ -55,10 +55,9 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
 
             //TODO: get these from the user
             ConnectionController.setHost("localhost");
-            ConnectionController.setPort(5030);
+            ConnectionController.setPort(5029);
 
             bindAdapters(registry);
-
 
         } catch (RemoteException e) {
             throw e;
