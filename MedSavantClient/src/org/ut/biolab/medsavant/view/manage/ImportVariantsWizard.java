@@ -64,7 +64,7 @@ public class ImportVariantsWizard extends WizardDialog {
     private List<VariantTag> variantTags;
     private File[] variantFiles;
 
-    private Thread uploadThread = null;
+    private Thread thread = null;
 
     public ImportVariantsWizard() {
         setupWizard();
@@ -82,6 +82,7 @@ public class ImportVariantsWizard extends WizardDialog {
         model.append(getChooseFilesPage());
         model.append(getAddTagsPage());
         model.append(getQueuePage());
+        model.append(getSetLivePage());
         model.append(getCompletePage());
         setPageList(model);
 
@@ -311,57 +312,25 @@ public class ImportVariantsWizard extends WizardDialog {
         ta.append(tag2.toString() + "\n");
     }
 
-    private enum ServerState {
-
-        NOT_CONNECTED, SERVER_CONNECTED, SERVER_IDLE, SERVER_NEVER_CONNECTED
-    };
-
     private AbstractWizardPage getCompletePage() {
 
-        Date lastCheckIn;
-        ServerState state = ServerState.SERVER_NEVER_CONNECTED;
+        //setup page
+        final DefaultWizardPage page = new DefaultWizardPage("Complete") {
 
-        try {
-            lastCheckIn = MedSavantClient.ServerLogQueryUtilAdapter.getDateOfLastServerLog(LoginController.sessionId);
-
-            if (lastCheckIn == null) {
-                state = ServerState.SERVER_NEVER_CONNECTED;
-            } else {
-
-                long elapsed = System.currentTimeMillis() - lastCheckIn.getTime();
-
-                if (elapsed > 1000 * 60 * 30) { // 30 minutes
-                    state = ServerState.SERVER_IDLE;
-                } else {
-                    state = ServerState.SERVER_CONNECTED;
-                }
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
             }
-        } catch (SQLException ex) {
-        } catch (RemoteException ex) {
-        }
+        };
 
-        CompletionWizardPage page = new CompletionWizardPage("Complete");
-        page.fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
-        page.addText("You have finished queueing your variants for import.");
+        page.addText("You have finished importing variants.");
 
-        if (state == ServerState.SERVER_CONNECTED) {
-            page.addText("They are in the process of being annotated "
-                    + "and will be\nmade available shortly.");
-        } else {
-            JLabel l = new JLabel("WARNING:");
-            l.setForeground(Color.red);
-            l.setFont(new Font(l.getFont().getFamily(),Font.BOLD,l.getFont().getSize()));
-            page.addComponent(l);
-            page.addText("The MedSavant Server Utility is not running.\n"
-                    + "Please contact your administrator to start this process.\n"
-                    + "In the meantime, these variants will remain queued.");
-        }
         return page;
     }
 
     private AbstractWizardPage getQueuePage() {
         //setup page
-        final DefaultWizardPage page = new DefaultWizardPage("Upload files") {
+        final DefaultWizardPage page = new DefaultWizardPage("Upload & Annotate files") {
 
             @Override
             public void setupWizardButtons() {
@@ -373,14 +342,14 @@ public class ImportVariantsWizard extends WizardDialog {
 
         page.addText("You are now ready to upload variants.");
 
-        final JLabel progressLabel = new JLabel("Ready to upload variant files.");
+        final JLabel progressLabel = new JLabel("Ready to upload and annotate variant files.");
         final JProgressBar progressBar = new JProgressBar();
 
         page.addComponent(progressLabel);
         page.addComponent(progressBar);
 
         final JButton cancelButton = new JButton("Cancel");
-        final JButton startButton = new JButton("Start Upload");
+        final JButton startButton = new JButton("Start Upload & Annotation");
 
         final JDialog instance = this;
 
@@ -392,7 +361,7 @@ public class ImportVariantsWizard extends WizardDialog {
                 startButton.setEnabled(false);
 
 
-                uploadThread = new Thread() {
+                thread = new Thread() {
 
                     @Override
                     public void run() {
@@ -402,11 +371,16 @@ public class ImportVariantsWizard extends WizardDialog {
                             int i = 0;
                             RemoteInputStream[] streams = new RemoteInputStream[variantFiles.length];
                             for (File file : variantFiles) {
-                                streams[i] = new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath()));
+                                streams[i] = (new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath()))).export();
                                 i++;
                             }
 
-                            MedSavantClient.UploadVariantsAdapter.uploadVariants(LoginController.sessionId, streams, projectId, referenceId);
+
+                            progressLabel.setText("Uploading variant files...");
+                            int updateID = MedSavantClient.UploadVariantsAdapter.uploadVariants(LoginController.sessionId, streams, projectId, referenceId);
+
+                            progressLabel.setText("Annotating variants...");
+                            MedSavantClient.UploadVariantsAdapter.annotateVariants(LoginController.sessionId,projectId, referenceId, updateID);
 
                         } catch (Exception ex) {
 
@@ -462,7 +436,7 @@ public class ImportVariantsWizard extends WizardDialog {
                 };
                 cancelButton.setVisible(true);
                 startButton.setVisible(false);
-                uploadThread.start();
+                thread.start();
             }
         });
 
@@ -471,7 +445,7 @@ public class ImportVariantsWizard extends WizardDialog {
             public void actionPerformed(ActionEvent e) {
                 cancelButton.setText("Cancelling...");
                 cancelButton.setEnabled(false);
-                uploadThread.interrupt();
+                thread.interrupt();
             }
         });
 
@@ -482,6 +456,103 @@ public class ImportVariantsWizard extends WizardDialog {
         return page;
     }
 
+
+    private AbstractWizardPage getSetLivePage() {
+
+        //setup page
+        final DefaultWizardPage page = new DefaultWizardPage("Publish variants") {
+
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
+                fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+            }
+        };
+
+        page.addText("New variants have been uploaded and annotated, but\n"
+                + "are not yet available to users. To make them available,\n"
+                + "you must Publish Variants.");
+
+        JLabel l = new JLabel("WARNING:");
+            l.setForeground(Color.red);
+            l.setFont(new Font(l.getFont().getFamily(),Font.BOLD,l.getFont().getSize()));
+            page.addComponent(l);
+            page.addText("All users currently logged into the system will be\n"
+                    + "logged out upon publishing variants.");
+
+        final JLabel progressLabel = new JLabel("Ready to publish variants.");
+        final JProgressBar progressBar = new JProgressBar();
+
+        page.addComponent(progressLabel);
+        page.addComponent(progressBar);
+
+        final JButton cancelButton = new JButton("Cancel");
+        final JButton startButton = new JButton("Publish Variants");
+
+        final JDialog instance = this;
+
+        startButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent ae) {
+                page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
+                progressBar.setIndeterminate(true);
+                startButton.setEnabled(false);
+
+
+                thread = new Thread() {
+
+                    @Override
+                    public void run() {
+                        instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+                        // do stuff
+
+                        //success
+                        progressBar.setIndeterminate(false);
+                        cancelButton.setEnabled(false);
+                        progressBar.setValue(100);
+                        progressLabel.setText("Variants published.");
+                        page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+
+                        instance.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                    }
+
+                    private String[][] tagsToStringArray(List<VariantTag> variantTags) {
+
+                        String[][] result = new String[variantTags.size()][2];
+
+                        int row = 0;
+                        for (VariantTag t : variantTags) {
+                            result[row][0] = t.key;
+                            result[row][1] = t.value;
+                            row++;
+                        }
+
+                        return result;
+                    }
+                };
+                cancelButton.setVisible(true);
+                startButton.setVisible(false);
+                thread.start();
+            }
+        });
+
+        cancelButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                cancelButton.setText("Cancelling...");
+                cancelButton.setEnabled(false);
+                thread.interrupt();
+            }
+        });
+
+        page.addComponent(ViewUtil.alignRight(startButton));
+        cancelButton.setVisible(false);
+        page.addComponent(ViewUtil.alignRight(cancelButton));
+
+        return page;
+    }
 
 
 }
