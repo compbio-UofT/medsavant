@@ -20,11 +20,11 @@ public class AggregatePage extends SubSectionView {
 
     private JPanel panel;
     private AggregatesStatsPanel asp;
-    
+
     public AggregatePage(SectionView parent) { super(parent); }
-    
+
     public String getName() {
-        return "  Aggregate";
+        return "Aggregate";
     }
 
     public JPanel getView(boolean update) {
@@ -38,14 +38,14 @@ public class AggregatePage extends SubSectionView {
     }
 
     private void setPanel() throws NonFatalDatabaseException{
-        
+
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        
+
         asp = new AggregatesStatsPanel(getName());
         panel.add(asp, BorderLayout.CENTER);
     }
-    
+
     public Component[] getBanner() {
 //        Component[] cs = new Component[1];
 //        JButton addButton = new JButton("Add Region Statistics");
@@ -58,8 +58,8 @@ public class AggregatePage extends SubSectionView {
 //        cs[0] = addButton;
 //        return cs;
         return null;
-    }  
-    
+    }
+
     @Override
     public void viewDidLoad() {
         if(asp != null)
@@ -74,6 +74,6 @@ public class AggregatePage extends SubSectionView {
         //if (asp != null)
         //    asp.stopAggregation();
     }
-    
+
 
 }

@@ -23,6 +23,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
 import org.ut.biolab.medsavant.view.manage.ImportVariantsWizard;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -49,16 +50,20 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
     @Override
     public SubSectionView[] getSubSections() {
-        SubSectionView[] pages = new SubSectionView[4];
-        pages[0] = new GeneticsFilterPage(this);
-        pages[1] = new GeneticsTablePage(this);
-        pages[2] = new GeneticsChartPage(this);
-        pages[3] = new AggregatePage(this);
+        SubSectionView[] pages = new SubSectionView[3];
+
+        pages[0] = new GeneticsTablePage(this);
+        pages[1] = new GeneticsChartPage(this);
+        pages[2] = new AggregatePage(this);
         return pages;
     }
 
     @Override
     public JPanel[] getPersistentPanels() {
+        panels = new JPanel[2];
+        panels[0] = new GeneticsFilterPage(this).getView(true);
+        panels[1] = new FilterProgressPanel();
+
         return panels;
     }
 
@@ -154,7 +159,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
             referenceDropDown.removeAllItems();
 
             List<String> references = MedSavantClient.ReferenceQueryUtilAdapter.getReferencesForProject(
-                    LoginController.sessionId, 
+                    LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectId());
 
             for (String refname : references) {

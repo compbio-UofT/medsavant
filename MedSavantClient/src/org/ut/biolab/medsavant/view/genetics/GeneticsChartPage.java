@@ -22,11 +22,11 @@ public class GeneticsChartPage extends SubSectionView {
     private JPanel panel;
     //private ChartContainer cc;
     private ChartView cc;
-    
+
     public GeneticsChartPage(SectionView parent) { super(parent); }
 
     public String getName() {
-        return "  Chart";
+        return "Chart";
     }
 
     public JPanel getView(boolean update) {
@@ -45,14 +45,14 @@ public class GeneticsChartPage extends SubSectionView {
 
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        
+
         //PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true,400);
         //panel.add(detailView, BorderLayout.WEST);
 
         cc = new ChartView(getName());
         panel.add(cc, BorderLayout.CENTER);
     }
-    
+
     public Component[] getBanner() {
         /*
         Component[] cs = new Component[1];
@@ -66,11 +66,11 @@ public class GeneticsChartPage extends SubSectionView {
         });
         cs[0] = addButton;
         return cs;
-         * 
+         *
          */
         return null;
     }
-    
+
     @Override
     public void viewDidLoad() {
     }
@@ -79,5 +79,5 @@ public class GeneticsChartPage extends SubSectionView {
     public void viewDidUnload() {
         ThreadController.getInstance().cancelWorkers(getName());
     }
-    
+
 }

@@ -148,7 +148,7 @@ public class FilterPanel extends javax.swing.JPanel {
                 }
             }
         });
-        JLabel l = new JLabel("Filter out variants that don't pass any of these filter sets:");
+        JLabel l = new JLabel("Filter out variants by:");
 
         JPanel topContainer = new JPanel();
         topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.X_AXIS));

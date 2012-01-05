@@ -33,16 +33,16 @@ public class GeneticsTablePage extends SubSectionView {
     private JPanel panel;
     private TablePanel tablePanel;
     private GenomeContainer gp;
-    
+
     private static GeneticsTablePage instance;
 
-    public GeneticsTablePage(SectionView parent) { 
-        super(parent);       
+    public GeneticsTablePage(SectionView parent) {
+        super(parent);
         instance = this;
     }
 
     public String getName() {
-        return "  Table";
+        return "Table";
     }
 
     public JPanel getView(boolean update) {
@@ -59,7 +59,7 @@ public class GeneticsTablePage extends SubSectionView {
     private void setPanel() {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        
+
         gp = new GenomeContainer(getName());
 
         List<Chromosome> chrs = new ArrayList<Chromosome>();
@@ -74,7 +74,7 @@ public class GeneticsTablePage extends SubSectionView {
         gp.setGenome(g);
         PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, true,225);
         panel.add(genomeView, BorderLayout.NORTH);
-        
+
         tablePanel = new TablePanel(getName());
         panel.add(tablePanel, BorderLayout.CENTER);
     }
@@ -82,7 +82,7 @@ public class GeneticsTablePage extends SubSectionView {
     public Component[] getBanner() {
         return null;
     }
-        
+
     @Override
     public void viewDidLoad() {
     }
@@ -94,11 +94,11 @@ public class GeneticsTablePage extends SubSectionView {
             this.setUpdateRequired(true);
         }
     }
-    
+
     public static GeneticsTablePage getInstance(){
         return instance;
     }
-    
+
     public void updateContents(){
         tablePanel.setUpdateRequired(true);
         gp.setUpdateRequired(true);

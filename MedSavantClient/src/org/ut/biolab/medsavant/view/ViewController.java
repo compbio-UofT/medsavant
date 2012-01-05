@@ -79,7 +79,7 @@ public class ViewController extends JPanel {
         // create the right panel
         sectionPanel = new PersistencePanel();
         sectionPanel.setPreferredSize(new Dimension(350, 999));
-        peekRight = new PeekingPanel("", BorderLayout.WEST, sectionPanel, true);
+        peekRight = new PeekingPanel("", BorderLayout.WEST, sectionPanel, true,450);
         h1.add(peekRight, BorderLayout.EAST);
 
         // add it all to the view
@@ -89,15 +89,15 @@ public class ViewController extends JPanel {
         this.add(peekLeft, BorderLayout.WEST);
 
         peekRight.setVisible(false);
-        
-        
+
+
         /*
         JPanel starter = new JPanel();
         ViewUtil.applyVerticalBoxLayout(starter);
         starter.add(new ImagePanel(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOGO).getImage(),128,128), BorderLayout.NORTH);
         starter.add(new JLabel("Choose a menu item from the left"));
         contentContainer.add(starter, BorderLayout.NORTH);
-         * 
+         *
          */
     }
 
@@ -107,7 +107,7 @@ public class ViewController extends JPanel {
         }
         return instance;
     }
-    
+
     public static void reset() {
         instance = null;
     }
@@ -206,8 +206,8 @@ public class ViewController extends JPanel {
             this.setMinimumSize(new Dimension(9999,30));
             this.setPreferredSize(new Dimension(9999,30));
             this.setMaximumSize(new Dimension(9999,30));
-            
-            
+
+
             this.setBorder(ViewUtil.getLargeSideBorder());
             title = ViewUtil.getHeaderLabel(DEFAULT_TITLE);
             this.add(title);
@@ -217,11 +217,11 @@ public class ViewController extends JPanel {
             Border compoundBorderRight = BorderFactory.createCompoundBorder(
                     new MatteBorder(0, 1, 0, 1, new Color(160, 160, 160)),
                     ViewUtil.getMediumSideBorder());
-            
+
             sectionMenuPanel.setBackground(new Color(232, 232, 232));
             sectionMenuPanel.setBorder(compoundBorderRight);
 
-            subSectionMenuPanel.setBackground(new Color(232, 232, 232));       
+            subSectionMenuPanel.setBackground(new Color(232, 232, 232));
             subSectionMenuPanel.setBorder(compoundBorderRight);
 
             sectionMenuPanel.setLayout(new BoxLayout(sectionMenuPanel, BoxLayout.X_AXIS));
@@ -244,7 +244,7 @@ public class ViewController extends JPanel {
         public void paintComponent(Graphics g) {
             PaintUtil.paintDarkMenu(g, this);
         }
-        
+
         private void setTitle(String sectionName, String subsectionName) {
             title.setText(sectionName.toUpperCase() + " › " + subsectionName.trim());
         }
@@ -268,7 +268,7 @@ public class ViewController extends JPanel {
                         empty = false;
                     }
                 }
-                subSectionMenuPanel.setVisible(!empty);                     
+                subSectionMenuPanel.setVisible(!empty);
 
                 subSectionMenuPanel.add(Box.createVerticalGlue());
 
@@ -284,11 +284,11 @@ public class ViewController extends JPanel {
 
             }
             sectionMenuPanel.setVisible(!empty);
-            
+
             sectionMenuPanel.add(Box.createVerticalGlue());
         }
     }
-    
+
     public SectionView getCurrentSectionView(){
         return currentSection;
     }
