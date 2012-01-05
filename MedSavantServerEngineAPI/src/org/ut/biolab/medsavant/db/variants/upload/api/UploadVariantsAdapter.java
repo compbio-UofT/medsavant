@@ -14,5 +14,7 @@ public interface UploadVariantsAdapter extends Remote
 
   public int uploadVariants(String sid, RemoteInputStream[] fileStreams, int projectId, int referenceId) throws RemoteException, IOException, Exception;
 
+  public void annotateVariants(String sid, int projectID, int referenceID, int updateID) throws RemoteException;
+
 }
 
