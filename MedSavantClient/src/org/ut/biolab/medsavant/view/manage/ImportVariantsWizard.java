@@ -4,6 +4,8 @@
  */
 package org.ut.biolab.medsavant.view.manage;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.dialog.PageList;
@@ -21,6 +23,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -396,10 +399,15 @@ public class ImportVariantsWizard extends WizardDialog {
                         instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
                         try {
-                            //TODO: push this code to the server
-                            
-                            //int uploadId = ImportVariants.performImport(variantFiles, DirectorySettings.generateDateStampDirectory(DirectorySettings.getTmpDirectory()), projectId, referenceId, progressLabel, LoginController.getUsername());
-                            //ImportVariants.addTagsToUpload(uploadId, tagsToStringArray(variantTags));
+                            int i = 0;
+                            RemoteInputStream[] streams = new RemoteInputStream[variantFiles.length];
+                            for (File file : variantFiles) {
+                                streams[i] = new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath()));
+                                i++;
+                            }
+
+                            MedSavantClient.UploadVariantsAdapter.uploadVariants(LoginController.sessionId, streams, projectId, referenceId);
+
                         } catch (Exception ex) {
 
                             //cancellation

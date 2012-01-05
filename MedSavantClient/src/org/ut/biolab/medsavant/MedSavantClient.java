@@ -32,6 +32,7 @@ import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.db.util.query.api.CustomTablesAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.DBUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.SetupAdapter;
+import org.ut.biolab.medsavant.db.variants.upload.api.UploadVariantsAdapter;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.view.MainFrame;
 
@@ -55,10 +56,12 @@ public class MedSavantClient {
     public static QueryUtilAdapter QueryUtilAdapter;
     public static DBUtilAdapter DBUtilAdapter;
     public static SetupAdapter SetupAdapter;
+    public static UploadVariantsAdapter UploadVariantsAdapter;
+
     //public static SessionAdapter SessionAdapter;
 
     public static boolean initialized = false;
-    
+
     //public static String sessionId;
 
     private static MainFrame frame;
@@ -111,7 +114,7 @@ public class MedSavantClient {
     }
 
     public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException {
-        
+
         if(initialized) return;
 
         Registry registry;
@@ -130,10 +133,12 @@ public class MedSavantClient {
         //System.out.println("server>" + sessionId);
     }
 
-    private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {  
+    private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
+
+        UploadVariantsAdapter = (UploadVariantsAdapter) (registry.lookup(MedSavantServerRegistry.Registry_UploadVariantsAdapter));
 
         LoginController.SessionAdapter = (SessionAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SessionAdapter));
-        
+
         AnnotationLogQueryUtilAdapter = (AnnotationLogQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationLogQueryUtilAdapter));
         AnnotationQueryUtilAdapter = (AnnotationQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationQueryUtilAdapter));
         ChromosomeQueryUtilAdapter = (ChromosomeQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_ChromosomeQueryUtilAdapter));
