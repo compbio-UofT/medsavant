@@ -30,6 +30,7 @@ public class ResultController implements FiltersChangedListener {
     
     private int projectId;
     private int referenceId;
+    private String dbName;
 
     private static ResultController instance;
     private int totalNumVariantsRemaining;
@@ -56,7 +57,8 @@ public class ResultController implements FiltersChangedListener {
     public List<Object[]> getFilteredVariantRecords(int start, int limit) {
         if (filterSetId != FilterController.getCurrentFilterSetID() || this.limit < limit || this.start != start ||
                 ProjectController.getInstance().getCurrentProjectId() != projectId ||
-                ReferenceController.getInstance().getCurrentReferenceId() != referenceId){
+                ReferenceController.getInstance().getCurrentReferenceId() != referenceId || 
+                !SettingsController.getInstance().getDBName().equals(dbName)){
             try {
                 updateFilteredVariantDBResults(start, limit);
                 this.limit = limit;
@@ -66,6 +68,7 @@ public class ResultController implements FiltersChangedListener {
             }
             projectId = ProjectController.getInstance().getCurrentProjectId();
             referenceId = ReferenceController.getInstance().getCurrentReferenceId();
+            dbName = SettingsController.getInstance().getDBName();
         }      
         return filteredVariants;
     }
@@ -92,7 +95,10 @@ public class ResultController implements FiltersChangedListener {
     
     public int getNumFilteredVariants() {
         try {
-            if (updateTotalNumVariantsRemainingIsRequired) {
+            if (updateTotalNumVariantsRemainingIsRequired ||
+                    ProjectController.getInstance().getCurrentProjectId() != projectId ||
+                    ReferenceController.getInstance().getCurrentReferenceId() != referenceId || 
+                    !SettingsController.getInstance().getDBName().equals(dbName)) {
                 totalNumVariantsRemaining =  MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
                         LoginController.sessionId, 
                         ProjectController.getInstance().getCurrentProjectId(), 
