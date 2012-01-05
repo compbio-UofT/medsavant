@@ -5,6 +5,7 @@
 package org.ut.biolab.medsavant.view.login;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import javax.swing.JPanel;
 
 /**
@@ -12,11 +13,12 @@ import javax.swing.JPanel;
  * @author mfiume
  */
 public class LoginView extends JPanel {
-    
+
     private LoginForm loginForm;
 
     public LoginView() {
         initView();
+        this.setBackground(new Color(217,222,229));
     }
 
     private void initView() {

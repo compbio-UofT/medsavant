@@ -22,8 +22,8 @@
           <Color blue="e5" green="de" red="d9" type="rgb"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="20" left="20" right="20" top="20"/>
+          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+            <TitledBorder/>
           </Border>
         </Property>
         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -42,23 +42,35 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="label_versioninformation" alignment="0" pref="360" max="32767" attributes="1"/>
-              <Component id="jLabel1" alignment="1" pref="360" max="32767" attributes="0"/>
-              <Component id="spiralPanel" alignment="0" pref="360" max="32767" attributes="1"/>
-              <Component id="field_username" alignment="0" pref="360" max="32767" attributes="1"/>
-              <Component id="jLabel2" alignment="1" pref="360" max="32767" attributes="0"/>
-              <Component id="field_password" alignment="0" pref="360" max="32767" attributes="1"/>
-              <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace pref="104" max="32767" attributes="0"/>
-                  <Component id="jToggleButton1" min="-2" max="-2" attributes="0"/>
+              <Component id="label_versioninformation" alignment="0" pref="520" max="32767" attributes="1"/>
+              <Component id="spiralPanel" alignment="0" pref="520" max="32767" attributes="1"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="jLabel1" min="-2" pref="257" max="-2" attributes="1"/>
+                      <Component id="field_username" min="-2" pref="253" max="-2" attributes="1"/>
+                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="button_login" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="jLabel2" pref="253" max="32767" attributes="0"/>
+                      <Component id="field_password" pref="253" max="32767" attributes="1"/>
+                  </Group>
               </Group>
-              <Component id="panel_details" alignment="0" max="32767" attributes="0"/>
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="label_status" pref="350" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="label_status" pref="510" max="32767" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace pref="254" max="32767" attributes="0"/>
+                          <Component id="jToggleButton1" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="button_login" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
               </Group>
+              <Component id="panel_details" alignment="1" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -68,14 +80,16 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="label_versioninformation" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="field_username" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="field_password" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="field_username" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="field_password" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="button_login" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jToggleButton1" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -123,7 +137,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="360" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="520" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -144,14 +158,20 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
           <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Lucida Grande" size="13" style="1"/>
+            </Property>
             <Property name="horizontalAlignment" type="int" value="0"/>
-            <Property name="text" type="java.lang.String" value="username"/>
+            <Property name="text" type="java.lang.String" value="USERNAME"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel2">
           <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Lucida Grande" size="13" style="1"/>
+            </Property>
             <Property name="horizontalAlignment" type="int" value="0"/>
-            <Property name="text" type="java.lang.String" value="password"/>
+            <Property name="text" type="java.lang.String" value="PASSWORD"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JToggleButton" name="jToggleButton1">
@@ -169,7 +189,7 @@
             </Property>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                <TitledBorder/>
+                <TitledBorder justification="2" title="Connection Settings"/>
               </Border>
             </Property>
             <Property name="name" type="java.lang.String" value="Connection Settings" noResource="true"/>
@@ -179,23 +199,23 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel5" alignment="1" pref="348" max="32767" attributes="0"/>
+                  <Component id="jLabel5" alignment="1" pref="508" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabel3" pref="308" max="32767" attributes="0"/>
+                      <Component id="jLabel3" pref="468" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="field_hostname" pref="308" max="32767" attributes="0"/>
+                              <Component id="field_hostname" pref="468" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="field_port" alignment="0" pref="308" max="32767" attributes="0"/>
-                                  <Component id="jLabel4" alignment="1" pref="308" max="32767" attributes="0"/>
+                                  <Component id="field_port" alignment="0" pref="468" max="32767" attributes="0"/>
+                                  <Component id="jLabel4" alignment="1" pref="468" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
@@ -205,7 +225,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="button_create_db" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="field_database" alignment="1" pref="308" max="32767" attributes="0"/>
+                          <Component id="field_database" alignment="1" pref="468" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -235,7 +255,7 @@
             <Component class="javax.swing.JLabel" name="jLabel3">
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="server address"/>
+                <Property name="text" type="java.lang.String" value="SERVER ADDRESS"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="field_hostname">
@@ -252,7 +272,7 @@
             <Component class="javax.swing.JLabel" name="jLabel4">
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="server port"/>
+                <Property name="text" type="java.lang.String" value="SERVER PORT"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="field_port">
@@ -288,7 +308,7 @@
             <Component class="javax.swing.JLabel" name="jLabel5">
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="0"/>
-                <Property name="text" type="java.lang.String" value="database"/>
+                <Property name="text" type="java.lang.String" value="DATABASE NAME"/>
               </Properties>
             </Component>
           </SubComponents>
