@@ -2,7 +2,6 @@ package org.ut.biolab.medsavant.controller;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
-import java.io.InvalidClassException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -16,8 +15,6 @@ import org.ut.biolab.medsavant.db.format.VariantFormat;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
-import org.ut.biolab.medsavant.model.event.LoginEvent;
-import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -26,7 +23,7 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  *
  * @author mfiume
  */
-public class ProjectController implements ReferenceListener, LoginListener {
+public class ProjectController implements ReferenceListener {
     
     private String currentProjectName;
     private int currentProjectId;
@@ -144,7 +141,6 @@ public class ProjectController implements ReferenceListener, LoginListener {
         projectListeners = new ArrayList<ProjectListener>();
         
         ReferenceController.getInstance().addReferenceListener(this);
-        LoginController.addLoginListener(this);
     }
     
     public static ProjectController getInstance() {
@@ -297,14 +293,4 @@ public class ProjectController implements ReferenceListener, LoginListener {
     public void referenceRemoved(String name) {
     }
 
-    public void loginEvent(LoginEvent evt) {
-        if(!evt.isLoggedIn()){
-            try {
-                MedSavantClient.CustomTablesAdapter.clearMap(LoginController.sessionId);
-            } catch (RemoteException ex) {
-                Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
-  
 }

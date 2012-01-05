@@ -3,6 +3,7 @@ package org.ut.biolab.medsavant.server;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
 
 /**
@@ -39,8 +40,10 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
     }
 
     @Override
-    public void unregisterSession(String sessionId) {
+    public void unregisterSession(String sessionId) throws RemoteException {
         ConnectionController.removeSession(sessionId);
+        CustomTables.getInstance().clearMap(sessionId);
+        
     }
 
     @Override

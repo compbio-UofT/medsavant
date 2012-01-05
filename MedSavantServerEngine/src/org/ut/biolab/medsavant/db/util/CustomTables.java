@@ -56,7 +56,7 @@ public class CustomTables extends java.rmi.server.UnicastRemoteObject implements
         return table;
     }
 
-    public void clearMap(String sessionId) throws RemoteException {
+    public void clearMap(String sessionId) {
 
         Map m = sessionIdToMapMap.get(sessionId);
         if (m != null) {
