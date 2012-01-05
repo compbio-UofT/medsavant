@@ -50,7 +50,7 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
 
     private static AnnotationLogQueryUtil instance;
 
-    public static AnnotationLogQueryUtil getInstance() throws RemoteException {
+    public static synchronized AnnotationLogQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new AnnotationLogQueryUtil();
         }

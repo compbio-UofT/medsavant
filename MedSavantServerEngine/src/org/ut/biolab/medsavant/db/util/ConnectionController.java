@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  */
 public class ConnectionController {
 
-    private static Map<String, PreparedStatement> statementCache = new HashMap<String, PreparedStatement>();
+    private static final Map<String, PreparedStatement> statementCache = new HashMap<String, PreparedStatement>();
     private static final Logger LOG = Logger.getLogger(ConnectionController.class.getName());
     private static String dbHost;
     private static int dbPort = -1;
@@ -72,20 +72,24 @@ public class ConnectionController {
      * or to prepare a new statement if the given one is not found in the cache.
      */
     private static PreparedStatement getPreparedStatement(String sessionId, String query) throws SQLException {
-        if (statementCache.containsKey(query)) {
-            return statementCache.get(query);
+        synchronized(statementCache) {
+            if (statementCache.containsKey(query)) {
+                return statementCache.get(query);
+            }
+            PreparedStatement result = connectPooled(sessionId).prepareStatement(query);
+            statementCache.put(query, result);       
+            return result;
         }
-        PreparedStatement result = connectPooled(sessionId).prepareStatement(query);
-        statementCache.put(query, result);
-        return result;
     }
 
     public static Connection connectPooled(String sessionId) {
-        if (sessionConnectionMap.containsKey(sessionId)) {
-            try {
-                return sessionConnectionMap.get(sessionId).connectPooled();
-            } catch (Exception e) {
-                return null;
+        synchronized(sessionConnectionMap) {
+            if (sessionConnectionMap.containsKey(sessionId)) {
+                try {
+                    return sessionConnectionMap.get(sessionId).connectPooled();
+                } catch (Exception e) {
+                    return null;
+                }
             }
         }
         return null;
@@ -126,7 +130,9 @@ public class ConnectionController {
 
     public static boolean registerCredentials(String sessionId, String uname, String pw, String dbname) {
         SessionConnection sc = new SessionConnection(uname, pw, dbname);
-        sessionConnectionMap.put(sessionId, sc);
+        synchronized(sessionConnectionMap) {
+            sessionConnectionMap.put(sessionId, sc);
+        }
         try {
             Connection c = sc.connectPooled();
             if (c != null && !c.isClosed()) {
@@ -141,22 +147,30 @@ public class ConnectionController {
     }
 
     public static void switchDatabases(String sessionId, String dbname) {
-        SessionConnection sc = sessionConnectionMap.get(sessionId);
-        sc.setDBName(dbname);
+        synchronized(sessionConnectionMap) {
+            SessionConnection sc = sessionConnectionMap.get(sessionId);
+            sc.setDBName(dbname);
+        }      
     }
 
     public static String getDBName(String sid) {
-        SessionConnection sc = sessionConnectionMap.get(sid);
-        return sc.getDBName();
+        synchronized(sessionConnectionMap) {
+            SessionConnection sc = sessionConnectionMap.get(sid);
+            return sc.getDBName();
+        }
     }
 
     public static String getUserForSession(String sid) {
-        SessionConnection sc = sessionConnectionMap.get(sid);
-        return sc.getUser();
+        synchronized(sessionConnectionMap) {
+            SessionConnection sc = sessionConnectionMap.get(sid);
+            return sc.getUser();
+        }
     }
     
     public static void removeSession(String sid) {
-        sessionConnectionMap.remove(sid);
+        synchronized(sessionConnectionMap) {
+            sessionConnectionMap.remove(sid);
+        }
     }
 
 }

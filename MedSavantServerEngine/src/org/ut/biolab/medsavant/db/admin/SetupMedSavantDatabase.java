@@ -47,7 +47,7 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
 
     private static SetupMedSavantDatabase instance;
 
-    public static SetupMedSavantDatabase getInstance() throws RemoteException {
+    public static synchronized SetupMedSavantDatabase getInstance() throws RemoteException {
         if (instance == null) {
             instance = new SetupMedSavantDatabase();
         }

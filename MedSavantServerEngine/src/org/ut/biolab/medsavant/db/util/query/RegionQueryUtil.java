@@ -52,7 +52,7 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
 
     private static RegionQueryUtil instance;
 
-    public static RegionQueryUtil getInstance() throws RemoteException {
+    public static synchronized RegionQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new RegionQueryUtil();
         }

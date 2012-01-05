@@ -1,9 +1,7 @@
 package org.ut.biolab.medsavant.server;
 
-import java.io.Serializable;
 import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
-import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
 
 /**
@@ -16,7 +14,7 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
 
     private static SessionController instance;
 
-    public static SessionController getInstance() throws RemoteException {
+    public static synchronized SessionController getInstance() throws RemoteException {
         if (instance == null) {
             instance = new SessionController();
         }
@@ -26,7 +24,7 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
     public SessionController() throws RemoteException {}
 
     @Override
-    public String registerNewSession(String uname, String pw, String dbname) {
+    public synchronized String registerNewSession(String uname, String pw, String dbname) {
 
         String sessionId = ++lastSessionId + "";
 

@@ -42,7 +42,7 @@ public class ServerLogQueryUtil extends java.rmi.server.UnicastRemoteObject impl
 
    private static ServerLogQueryUtil instance;
 
-    public static ServerLogQueryUtil getInstance() throws RemoteException {
+    public static synchronized ServerLogQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new ServerLogQueryUtil();
         }

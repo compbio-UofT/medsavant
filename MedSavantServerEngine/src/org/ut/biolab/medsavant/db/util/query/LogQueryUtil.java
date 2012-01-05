@@ -49,7 +49,7 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
 
     private static LogQueryUtil instance;
 
-    public static LogQueryUtil getInstance() throws RemoteException {
+    public static synchronized LogQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new LogQueryUtil();
         }

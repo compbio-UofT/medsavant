@@ -61,7 +61,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     private static VariantQueryUtil instance;
 
-    public static VariantQueryUtil getInstance() throws RemoteException {
+    public static synchronized VariantQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new VariantQueryUtil();
         }

@@ -50,7 +50,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     private static ProjectQueryUtil instance;
 
-    public static ProjectQueryUtil getInstance() throws RemoteException {
+    public static synchronized ProjectQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new ProjectQueryUtil();
         }

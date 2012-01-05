@@ -34,7 +34,7 @@ public class QueryUtil extends java.rmi.server.UnicastRemoteObject implements Qu
 
     private static QueryUtil instance;
 
-    public static QueryUtil getInstance() throws RemoteException {
+    public static synchronized QueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new QueryUtil();
         }

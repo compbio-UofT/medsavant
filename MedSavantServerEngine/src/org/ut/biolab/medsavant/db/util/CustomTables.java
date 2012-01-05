@@ -22,7 +22,7 @@ public class CustomTables extends java.rmi.server.UnicastRemoteObject implements
     
     private Map<String, Map<String, TableSchema>> dbnameToTableMap = new HashMap<String, Map<String, TableSchema>>();
     
-    public static CustomTables getInstance() throws RemoteException {
+    public static synchronized CustomTables getInstance() throws RemoteException {
         if (instance == null) {
             instance = new CustomTables();
         }
@@ -35,7 +35,7 @@ public class CustomTables extends java.rmi.server.UnicastRemoteObject implements
         return getCustomTableSchema(sid, tablename, false);
     }
 
-    public TableSchema getCustomTableSchema(String sid, String tablename, boolean update) throws SQLException, RemoteException {
+    public synchronized TableSchema getCustomTableSchema(String sid, String tablename, boolean update) throws SQLException, RemoteException {
         
         String dbName = ConnectionController.getDBName(sid);
         if (!dbnameToTableMap.containsKey(dbName)) {

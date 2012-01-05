@@ -30,10 +30,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.rmi.Remote;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
@@ -48,7 +44,7 @@ import org.ut.biolab.medsavant.server.RemoteFileServer;
 public class FileServer extends java.rmi.server.UnicastRemoteObject implements RemoteFileServer {
     private static FileServer instance;
 
-    public static FileServer getInstance() throws RemoteException {
+    public static synchronized FileServer getInstance() throws RemoteException {
         if (instance == null) {
             instance = new FileServer();
         }

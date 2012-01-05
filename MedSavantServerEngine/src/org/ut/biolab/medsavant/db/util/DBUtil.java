@@ -22,7 +22,7 @@ public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUti
     
     private static DBUtil instance;
 
-    public static DBUtil getInstance() throws RemoteException {
+    public static synchronized DBUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new DBUtil();
         }

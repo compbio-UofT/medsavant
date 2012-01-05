@@ -24,7 +24,7 @@ public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject imple
 
     private static SettingsQueryUtil instance;
 
-    public static SettingsQueryUtil getInstance() throws RemoteException {
+    public static synchronized SettingsQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new SettingsQueryUtil();
         }

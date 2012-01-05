@@ -31,7 +31,7 @@ public class UploadVariants extends java.rmi.server.UnicastRemoteObject implemen
 
     private static UploadVariants instance;
 
-    public static UploadVariants getInstance() throws RemoteException {
+    public static synchronized UploadVariants getInstance() throws RemoteException {
 
         if (instance == null) {
             instance = new UploadVariants();

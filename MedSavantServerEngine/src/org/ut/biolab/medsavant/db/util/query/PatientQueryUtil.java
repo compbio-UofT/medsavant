@@ -63,7 +63,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     private static PatientQueryUtil instance;
 
-    public static PatientQueryUtil getInstance() throws RemoteException {
+    public static synchronized PatientQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new PatientQueryUtil();
         }

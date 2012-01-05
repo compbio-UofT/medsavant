@@ -54,7 +54,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
 
     private static ReferenceQueryUtil instance;
 
-    public static ReferenceQueryUtil getInstance() throws RemoteException {
+    public static synchronized ReferenceQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new ReferenceQueryUtil();
         }

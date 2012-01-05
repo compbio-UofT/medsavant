@@ -50,7 +50,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
 
     private static CohortQueryUtil instance;
 
-    public static CohortQueryUtil getInstance() throws RemoteException {
+    public static synchronized CohortQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new CohortQueryUtil();
         }

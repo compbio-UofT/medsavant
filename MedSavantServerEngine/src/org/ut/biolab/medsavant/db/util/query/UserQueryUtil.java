@@ -34,7 +34,7 @@ public class UserQueryUtil extends java.rmi.server.UnicastRemoteObject implement
 
     private static UserQueryUtil instance;
 
-    public static UserQueryUtil getInstance() throws RemoteException {
+    public static synchronized UserQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new UserQueryUtil();
         }

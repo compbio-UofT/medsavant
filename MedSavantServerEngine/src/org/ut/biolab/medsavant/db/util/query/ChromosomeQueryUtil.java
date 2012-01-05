@@ -42,7 +42,7 @@ public class ChromosomeQueryUtil extends java.rmi.server.UnicastRemoteObject imp
 
     private static ChromosomeQueryUtil instance;
 
-    public static ChromosomeQueryUtil getInstance() throws RemoteException {
+    public static synchronized ChromosomeQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new ChromosomeQueryUtil();
         }
