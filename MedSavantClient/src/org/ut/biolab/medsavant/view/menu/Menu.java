@@ -253,6 +253,7 @@ public class Menu extends JPanel implements MenuItemSelected {
                 if (evt.getType() == LoginEvent.EventType.LOGGED_OUT) {
                     contentContainer.removeAll();
                     ViewController.getInstance().changeSubSectionTo(null);
+                    currentView = null;
                 }
             }
         });

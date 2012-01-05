@@ -45,6 +45,7 @@ import org.ut.biolab.medsavant.plugin.PluginManagerDialog;
 import org.ut.biolab.medsavant.view.login.LoginView;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
  *
@@ -53,6 +54,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class MainFrame extends JFrame implements LoginListener {
     private static final String LOGIN_CARD_NAME = "login";
     private static final String SESSION_VIEW_CARD_NAME = "main";
+    private static final String WAIT_CARD_NAME = "wait";
 
     private static MainFrame instance;
 
@@ -151,6 +153,9 @@ public class MainFrame extends JFrame implements LoginListener {
         if (loginView != null) {
             view.remove(loginView);
         }
+               
+        view.add(new WaitPanel("Loading Projects"), WAIT_CARD_NAME);
+        switchToView(WAIT_CARD_NAME);
         
         sessionView = new LoggedInView();
         view.add(sessionView, SESSION_VIEW_CARD_NAME);
