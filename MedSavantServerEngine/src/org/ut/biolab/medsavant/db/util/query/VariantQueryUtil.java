@@ -45,8 +45,10 @@ import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VarianttagTableSchema;
 import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
@@ -692,4 +694,50 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         return results;
     }
+    
+    public List<SimpleVariantFile> getUploadedFiles(String sid, int projectId, int referenceId) throws SQLException, RemoteException {
+        
+        TableSchema tagTable = MedSavantDatabase.VarianttagTableSchema;
+        TableSchema pendingTable = MedSavantDatabase.VariantpendingupdateTableSchema;
+        
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(tagTable.getTable());
+        q.addFromTable(pendingTable.getTable());
+        q.addColumns(
+                tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID),
+                tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGVALUE));
+        q.addCondition(BinaryCondition.equalTo(tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGKEY), "Upload Date"));
+        q.addCondition(BinaryCondition.equalTo(tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID), pendingTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID)));
+        q.addCondition(BinaryCondition.equalTo(pendingTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
+        q.addCondition(BinaryCondition.equalTo(pendingTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
+        
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        
+        List<SimpleVariantFile> result = new ArrayList<SimpleVariantFile>();
+        while(rs.next()){
+            result.add(new SimpleVariantFile(rs.getInt(1), rs.getString(2)));
+        }
+        return result;        
+    }
+    
+    public List<String[]> getTagsForUpload(String sid, int uploadId) throws SQLException, RemoteException {
+        
+        TableSchema tagTable = MedSavantDatabase.VarianttagTableSchema;
+        
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(tagTable.getTable());
+        q.addColumns(
+                tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGKEY), 
+                tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGVALUE));
+        q.addCondition(BinaryCondition.equalTo(tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId));
+        
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        
+        List<String[]> result = new ArrayList<String[]>();
+        while(rs.next()){
+            result.add(new String[]{rs.getString(1), rs.getString(2)});
+        }
+        return result;        
+    }
+    
 }

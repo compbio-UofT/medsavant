@@ -25,6 +25,7 @@ import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
 import org.ut.biolab.medsavant.view.manage.ImportVariantsWizard;
+import org.ut.biolab.medsavant.view.manage.VariantFilesPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
@@ -50,11 +51,12 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
     @Override
     public SubSectionView[] getSubSections() {
-        SubSectionView[] pages = new SubSectionView[3];
+        SubSectionView[] pages = new SubSectionView[4];
 
         pages[0] = new GeneticsTablePage(this);
         pages[1] = new GeneticsChartPage(this);
         pages[2] = new AggregatePage(this);
+        pages[3] = new VariantFilesPage(this);
         return pages;
     }
 
@@ -67,7 +69,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         return panels;
     }
 
-    public JButton createVcfButton() {
+    /*public JButton createVcfButton() {
         JButton button = new JButton("Import Variants");
 
         button.addActionListener(new ActionListener() {
@@ -80,7 +82,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         });
 
         return button;
-    }
+    }*/
 
     private JButton addShowInSavantButton() {
         JButton button = new JButton("Show in Savant");
@@ -115,7 +117,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
             result[1] = referenceDropDown;
         }
         result[2] = addShowInSavantButton();
-        result[3] = createVcfButton();
+        //result[3] = createVcfButton();
         //result[0] = addSaveResultSetButton();
 
         isInitialized = true;

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 
 /**
@@ -44,4 +45,6 @@ public interface VariantQueryUtilAdapter extends Remote {
     public List<String> getDistinctTagNames(String sid) throws SQLException, RemoteException;
     public List<String> getValuesForTagName(String sid, String tagName) throws SQLException, RemoteException;
     public List<Integer> getUploadIDsMatchingVariantTags(String sid, String[][] variantTags) throws SQLException, RemoteException;
+    public List<SimpleVariantFile> getUploadedFiles(String sid, int projectId, int referenceId) throws SQLException, RemoteException;
+    public List<String[]> getTagsForUpload(String sid, int uploadId) throws SQLException, RemoteException;
 }

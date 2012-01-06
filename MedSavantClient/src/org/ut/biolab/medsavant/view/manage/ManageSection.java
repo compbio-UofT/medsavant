@@ -4,11 +4,9 @@
  */
 
 package org.ut.biolab.medsavant.view.manage;
-import org.ut.biolab.medsavant.view.genetics.*;
 
 import java.awt.Component;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
