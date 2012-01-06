@@ -2,7 +2,10 @@ package org.ut.biolab.medsavant.db.model;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
+import javax.xml.parsers.ParserConfigurationException;
 import org.broad.tabix.TabixReader;
+import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat.AnnotationType;
 
 /**
@@ -28,13 +31,6 @@ public class Annotation implements Serializable {
         this.dataPath = dataPath;
         this.type = type;
     }
-
-    /*
-    public AnnotationFormat getAnnotationFormat() throws SQLException, IOException, ParserConfigurationException, SAXException {
-        return AnnotationQueryUtil.getAnnotationFormat(id);
-    }
-     *
-     */
 
     public int getId() {
         return id;
