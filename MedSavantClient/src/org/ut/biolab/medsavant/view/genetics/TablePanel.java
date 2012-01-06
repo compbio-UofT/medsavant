@@ -36,6 +36,7 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchem
 import org.ut.biolab.medsavant.db.format.VariantFormat;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
@@ -138,8 +139,9 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                         }
                     }
                 };
-                tablePanel = new SearchableTablePanel(pageName, fieldNames, fieldClasses, hiddenColumns, 1000, retriever);
-                tablePanel.getTable().addMouseListener(new MouseAdapter() {
+                
+                SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames, fieldClasses, hiddenColumns, 1000, retriever);
+                stp.getTable().addMouseListener(new MouseAdapter() {
                     public void mouseClicked(MouseEvent e) {
 
                         //check for right click
@@ -160,7 +162,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                     }
                 });
 
-                return null;
+                return stp;
             }
 
             @Override
@@ -169,12 +171,13 @@ class TablePanel extends JPanel implements FiltersChangedListener {
             }
 
             @Override
-            protected void showSuccess(Object result) {
-                instance.add(tablePanel, CARD_SHOW);
-                showShowCard();
+            protected void showSuccess(Object result) {               
                 FilterController.addFilterListener(instance);
+                tablePanel = (SearchableTablePanel)result;
+                instance.add(tablePanel, CARD_SHOW);   
+                showShowCard();
                 updateIfRequired();
-                init = true;
+                init = true;               
             }
 
         };
@@ -233,7 +236,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                         "Chromosome: " + chrom + ", Position: " + position,
                         ComboCondition.and(conditions));
 
-                GeneticsTablePage.getInstance().updateContents();
+                //GeneticsTablePage.getInstance().updateContents();
             }
         });
         menu.add(filter1Item);
@@ -257,7 +260,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                         "Chromosome: " + chrom + ", Position: " + position + ", Alt: " + alt,
                         ComboCondition.and(conditions));
 
-                GeneticsTablePage.getInstance().updateContents();
+                //GeneticsTablePage.getInstance().updateContents();
             }
         });
         menu.add(filter2Item);

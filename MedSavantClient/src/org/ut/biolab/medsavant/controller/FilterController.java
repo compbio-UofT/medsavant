@@ -34,6 +34,7 @@ import org.ut.biolab.medsavant.model.RangeFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.view.ViewController;
 
 
 /**
@@ -170,6 +171,9 @@ public class FilterController {
                 LOG.log(Level.SEVERE, null, e);
             }
         }
+        
+        //current view should be refreshed if it relies on filters
+        ViewController.getInstance().refreshView();
     }
 
     public static Filter getFilter(String title, int queryId) {

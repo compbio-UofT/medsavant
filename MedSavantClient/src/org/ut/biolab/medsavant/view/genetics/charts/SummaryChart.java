@@ -466,7 +466,7 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
                     }
                 }
 
-                updateDataAndDrawChart();
+                //updateDataAndDrawChart();
             }
         });
         menu.add(filter1Item);
