@@ -34,6 +34,8 @@ public class AggregatePage extends SubSectionView {
             } catch (NonFatalDatabaseException ex) {
             }
         }
+        if(asp != null)
+            asp.update();
         return panel;
     }
 
@@ -62,8 +64,8 @@ public class AggregatePage extends SubSectionView {
 
     @Override
     public void viewDidLoad() {
-        if(asp != null)
-            asp.update();
+        //if(asp != null)
+        //    asp.update();
         //if (asp != null)
         //    asp.resumeAggregation();
     }

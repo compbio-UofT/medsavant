@@ -62,6 +62,8 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
     private CohortPanel panel;
     private final String pageName;
     private boolean updateRequired = false;
+    private boolean init = false;
+    
     
     public CohortPanelGenerator(String pageName){
         this.pageName = pageName;
@@ -86,7 +88,9 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
     }
 
     public void run() {
-        if(updateRequired) {
+        if(!init){
+            return;
+        } else if(updateRequired) {
             panel.update();
             updateRequired = false;
         } else {
@@ -181,6 +185,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
                 public void done() {
                     startResortWorker();     
                     showShowCard();
+                    init = true;
                 }
             };
             initWorker.execute();
