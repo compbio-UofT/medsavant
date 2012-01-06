@@ -32,7 +32,7 @@ import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.db.util.query.api.CustomTablesAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.DBUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.SetupAdapter;
-import org.ut.biolab.medsavant.db.variants.upload.api.UploadVariantsAdapter;
+import org.ut.biolab.medsavant.db.variants.upload.api.VariantManagerAdapter;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.view.MainFrame;
 
@@ -56,7 +56,7 @@ public class MedSavantClient {
     public static QueryUtilAdapter QueryUtilAdapter;
     public static DBUtilAdapter DBUtilAdapter;
     public static SetupAdapter SetupAdapter;
-    public static UploadVariantsAdapter UploadVariantsAdapter;
+    public static VariantManagerAdapter VariantManagerAdapter;
 
     //public static SessionAdapter SessionAdapter;
 
@@ -122,6 +122,9 @@ public class MedSavantClient {
         //String serverPort = "3232";
 
         // get the “registry”
+
+        System.out.println("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort);
+
         registry = LocateRegistry.getRegistry(serverAddress,(new Integer(serverPort)).intValue());
 
         // look up the remote object
@@ -135,7 +138,7 @@ public class MedSavantClient {
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
 
-        UploadVariantsAdapter = (UploadVariantsAdapter) (registry.lookup(MedSavantServerRegistry.Registry_UploadVariantsAdapter));
+        VariantManagerAdapter = (VariantManagerAdapter) (registry.lookup(MedSavantServerRegistry.Registry_UploadVariantsAdapter));
 
         LoginController.SessionAdapter = (SessionAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SessionAdapter));
 

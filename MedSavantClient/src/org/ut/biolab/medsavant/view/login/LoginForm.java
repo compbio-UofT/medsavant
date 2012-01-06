@@ -499,7 +499,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
                     this.label_status.setText("login incorrect");
                 } else if (ex0.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_DB_CONNECTION_FAILURE
                         ) {
-                    this.label_status.setText("error accessing database");
+                    this.label_status.setText("problem contacting server");
                 } else if (ex0.getExceptionType() == NonFatalDatabaseException.ExceptionType.TYPE_UNKNOWN) {
                     this.label_status.setText("login failure");
                 }
@@ -510,7 +510,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             }
         } else {
             ex.printStackTrace();
-            this.label_status.setText("error accessing database");
+            this.label_status.setText("problem contacting server");
             this.label_status.setFont(new Font("Tahoma", Font.PLAIN, 14));
             this.label_status.setForeground(Color.red);
             this.field_username.requestFocus();
