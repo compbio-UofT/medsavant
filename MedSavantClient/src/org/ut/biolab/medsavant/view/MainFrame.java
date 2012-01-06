@@ -33,12 +33,12 @@ import com.apple.eawt.Application;
 import com.apple.eawt.PreferencesHandler;
 import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
-import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
+import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.plugin.PluginManagerDialog;
@@ -150,19 +150,21 @@ public class MainFrame extends JFrame implements LoginListener {
 
     public void switchToSessionView() {
         if (!LoginController.isLoggedIn() || (currentCard != null && currentCard.equals(SESSION_VIEW_CARD_NAME))) { return; }
-        if (loginView != null) {
-            view.remove(loginView);
-        }
                
         view.add(new WaitPanel("Loading Projects"), WAIT_CARD_NAME);
         switchToView(WAIT_CARD_NAME);
         
-        sessionView = new LoggedInView();
-        view.add(sessionView, SESSION_VIEW_CARD_NAME);
-        logOutItem.setEnabled(true);
+        MiscUtils.invokeLaterIfNecessary(new Runnable() {
+            @Override
+            public void run() {
+                sessionView = new LoggedInView();
+                view.add(sessionView, SESSION_VIEW_CARD_NAME);
+                logOutItem.setEnabled(true);
 
-        BottomBar.getInstance().updateLoginStatus();
-        switchToView(SESSION_VIEW_CARD_NAME);
+                BottomBar.getInstance().updateLoginStatus();
+                switchToView(SESSION_VIEW_CARD_NAME);
+            }
+        });       
     }
 
     public final void switchToLoginView() {
