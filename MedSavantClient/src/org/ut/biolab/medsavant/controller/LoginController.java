@@ -63,7 +63,7 @@ public class LoginController {
                     } else {
                         try {
                             MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, "Logged out");
-                        } catch (RemoteException ex) {
+                        } catch (Exception ex) {
                             Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
                         }
                         fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_OUT));
@@ -101,9 +101,9 @@ public class LoginController {
     public static boolean isLoggedIn() { return loggedIn; }
 
     public static synchronized void login(String un, String pw, String dbname, String serverAddress, String serverPort) {
-        
+
         //init registry
-        try {           
+        try {
             MedSavantClient.initializeRegistry(serverAddress, serverPort);
         } catch (Exception ex) {
             setLoginException(ex);
@@ -162,14 +162,14 @@ public class LoginController {
                     JOptionPane.WARNING_MESSAGE);
             ex.printStackTrace();
         }
-        
+
         //register for callback
         try {
             SessionAdapter.registerCallback(sessionId, CallbackController.getInstance());
         } catch (RemoteException ex) {
             Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         setLoggedIn(true);
     }
 
