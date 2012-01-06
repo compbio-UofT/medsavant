@@ -1,6 +1,7 @@
 package org.ut.biolab.medsavant.server.log;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -8,6 +9,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ut.biolab.medsavant.db.util.ServerDirectorySettings;
 import org.ut.biolab.medsavant.server.mail.Mail;
 
 /**
@@ -16,7 +18,7 @@ import org.ut.biolab.medsavant.server.mail.Mail;
  */
 public class ServerLogger {
 
-    private static String logPath = "server.log";
+    private static String logPath = (new File(ServerDirectorySettings.getTmpDirectory(),"server.log")).getAbsolutePath();
     private static String emailaddress;
     private static BufferedWriter writer;
     private static Logger logger;

@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.server.log.ServerLogger;
  *
  * @author mfiume
  */
-public class Annotate {
+public class VariantAnnotator {
 
     private static final int POS_ANNOT_INDEX_OF_CHR = 0;
     private static final int POS_ANNOT_INDEX_OF_POS = 1;
@@ -90,7 +90,7 @@ public class Annotate {
 
                 // happens when there are no more annotations for this chrom
                 if (nextannot == null) {
-                    ServerLogger.log(Annotate.class,"No more annotations for this chromosome");
+                    ServerLogger.log(VariantAnnotator.class,"No more annotations for this chromosome");
                     annotationHitEnd = true;
                     break;
                 }
@@ -139,7 +139,7 @@ public class Annotate {
 
                         // happens when there are no more annotations for this chrom
                         if (nextannot == null) {
-                            ServerLogger.log(Annotate.class,"Annotation hit end; skipping chrom");
+                            ServerLogger.log(VariantAnnotator.class,"Annotation hit end; skipping chrom");
                             annotationHitEnd1 = true;
                             break;
                         }
@@ -230,7 +230,7 @@ public class Annotate {
     private int[] annotationIds;
     //private ChromosomalPosition currentPosition;
 
-    public Annotate(String tdfFilename, String outputFilename, int[] annotIds) {
+    public VariantAnnotator(String tdfFilename, String outputFilename, int[] annotIds) {
         this.tdfFilename = tdfFilename;
         this.outputFilename = outputFilename;
         this.annotationIds = annotIds;
@@ -239,7 +239,7 @@ public class Annotate {
 
     public void annotate(String sid) throws Exception {
 
-        ServerLogger.logByEmail(Annotate.class,"Annotation started", "Annotation of " + this.tdfFilename + " was started. " + annotationIds.length + " annotation(s) will be performed.\n\nYou will be notified again upon completion.");
+        ServerLogger.logByEmail(VariantAnnotator.class,"Annotation started", "Annotation of " + this.tdfFilename + " was started. " + annotationIds.length + " annotation(s) will be performed.\n\nYou will be notified again upon completion.");
 
         // if no annotations to perform, copy input to output
         if (annotationIds.length == 0) {
@@ -286,7 +286,7 @@ public class Annotate {
         }
          */
 
-        ServerLogger.logByEmail(Annotate.class,"Annotation complete", "Annotation of " + this.tdfFilename + " completed. " + annotationIds.length + " annotations were performed.");
+        ServerLogger.logByEmail(VariantAnnotator.class,"Annotation complete", "Annotation of " + this.tdfFilename + " completed. " + annotationIds.length + " annotations were performed.");
     }
 
     /*
@@ -308,7 +308,7 @@ public class Annotate {
         String currentChr = currentPos.chrom;
         String nextLineChr = currentPos.chrom;
 
-        ServerLogger.log(Annotate.class,"Flushing remaining variants in " + currentPos.chrom);
+        ServerLogger.log(VariantAnnotator.class,"Flushing remaining variants in " + currentPos.chrom);
 
         String[] recordLine = null;
 
@@ -343,7 +343,7 @@ public class Annotate {
 
         //log("Last variant: { chr=" + lastLine[VARIANT_INDEX_OF_CHR] + " pos=" + lastLine[VARIANT_INDEX_OF_POS] + "}");
 
-        ServerLogger.log(Annotate.class,"Next variant: " + new VariantRecord(recordLine));
+        ServerLogger.log(VariantAnnotator.class,"Next variant: " + new VariantRecord(recordLine));
 
         return new VariantRecord(recordLine);
     }
@@ -372,14 +372,14 @@ public class Annotate {
     private int totalNumWarnings;
 
     private void annotate(String sid, File inFile, Annotation annot, File outFile) throws Exception {
-        ServerLogger.log(Annotate.class,"Record file: " + inFile.getAbsolutePath());
-        ServerLogger.log(Annotate.class,"Annotation file: " + annot.getDataPath());
-        ServerLogger.log(Annotate.class,"Output file: " + outFile.getAbsolutePath());
+        ServerLogger.log(VariantAnnotator.class,"Record file: " + inFile.getAbsolutePath());
+        ServerLogger.log(VariantAnnotator.class,"Annotation file: " + annot.getDataPath());
+        ServerLogger.log(VariantAnnotator.class,"Output file: " + outFile.getAbsolutePath());
 
         int numFieldsInInputFile = getNumFieldsInTDF(inFile);
         if(numFieldsInInputFile == 0){
             outFile.createNewFile();
-            ServerLogger.log(Annotate.class,"Done annotating file. Nothing to annotate.");
+            ServerLogger.log(VariantAnnotator.class,"Done annotating file. Nothing to annotate.");
             return;
         }
         int numFieldsInOutputFile = numFieldsInInputFile + AnnotationQueryUtil.getInstance().getAnnotationFormat(sid, annot.getId()).getNumNonDefaultFields();
@@ -403,8 +403,8 @@ public class Annotate {
 
         while (true) {
             try {
-                ServerLogger.log(Annotate.class,"Annotating variants in " + nextPosition.chrom);
-                ServerLogger.log(Annotate.class,"First variant for chrom: " + nextPosition.toString());
+                ServerLogger.log(VariantAnnotator.class,"Annotating variants in " + nextPosition.chrom);
+                ServerLogger.log(VariantAnnotator.class,"First variant for chrom: " + nextPosition.toString());
                 numMatchesForChromosome = 0;
                 numLinesWrittenForChromosome = 0;
 
@@ -412,8 +412,8 @@ public class Annotate {
 
                 totalLinesWritten += numLinesWrittenForChromosome;
 
-                ServerLogger.log(Annotate.class,"DONE THIS CHR:" + numMatchesForChromosome + " matches found, " + numLinesWrittenForChromosome + " written for chr");
-                ServerLogger.log(Annotate.class,"IN TOTAL: " + (totalNumLinesRead-1) + " read, " + totalLinesWritten + " written, " + totalNumWarnings + " warnings in total");
+                ServerLogger.log(VariantAnnotator.class,"DONE THIS CHR:" + numMatchesForChromosome + " matches found, " + numLinesWrittenForChromosome + " written for chr");
+                ServerLogger.log(VariantAnnotator.class,"IN TOTAL: " + (totalNumLinesRead-1) + " read, " + totalLinesWritten + " written, " + totalNumWarnings + " warnings in total");
 
                 if (totalLinesWritten + 1 + totalNumWarnings != totalNumLinesRead) {
                     throw new Exception("error: missed some lines");
@@ -435,7 +435,7 @@ public class Annotate {
         recordReader.close();
         writer.close();
 
-        ServerLogger.log(Annotate.class,"Done annotating file, " + totalNumLinesRead + " read " + totalLinesWritten + " written with " + totalNumWarnings + " warnings");
+        ServerLogger.log(VariantAnnotator.class,"Done annotating file, " + totalNumLinesRead + " read " + totalLinesWritten + " written with " + totalNumWarnings + " warnings");
     }
 
     /**

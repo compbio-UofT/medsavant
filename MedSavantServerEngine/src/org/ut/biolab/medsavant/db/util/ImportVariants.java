@@ -40,7 +40,7 @@ public class ImportVariants {
         }
 
         //create the staging table
-        String tableName = DBSettings.createVariantStagingTableName(projectId, referenceId, updateId);
+        String tableName = DBSettings.getVariantStagingTableName(projectId, referenceId, updateId);
         try {
             tableName = ProjectQueryUtil.getInstance().createVariantTable(sid,projectId, referenceId, updateId, null, true);
         } catch (SQLException ex) {

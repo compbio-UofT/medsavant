@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * @author mfiume
  */
-class SessionConnection {
+public class SessionConnection {
 
     private Connection lastConnection;
     private String dbName;
@@ -50,11 +50,11 @@ class SessionConnection {
         this.dbName = dbname;
     }
 
-    String getDBName() {
+    public String getDBName() {
         return this.dbName;
     }
 
-    String getUser() {
+    public String getUser() {
         return this.user;
     }
 }

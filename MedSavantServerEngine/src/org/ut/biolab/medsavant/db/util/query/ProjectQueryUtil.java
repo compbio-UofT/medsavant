@@ -57,8 +57,8 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return instance;
     }
 
-    public ProjectQueryUtil() throws RemoteException {}
-
+    public ProjectQueryUtil() throws RemoteException {
+    }
 
     public List<String> getProjectNames(String sid) throws SQLException {
 
@@ -78,7 +78,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return results;
     }
 
-    public boolean containsProject(String sid,String projectName) throws SQLException {
+    public boolean containsProject(String sid, String projectName) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         SelectQuery query = new SelectQuery();
@@ -91,7 +91,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return rs.next();
     }
 
-    public int getProjectId(String sid,String projectName) throws SQLException {
+    public int getProjectId(String sid, String projectName) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         SelectQuery query = new SelectQuery();
@@ -108,7 +108,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
     }
 
-    public void removeReferenceForProject(String sid,int project_id, int ref_id) throws SQLException {
+    public void removeReferenceForProject(String sid, int project_id, int ref_id) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query1 = new SelectQuery();
@@ -122,7 +122,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         while (rs.next()) {
             String tableName = rs.getString(1);
-            DBUtil.dropTable(sid,tableName);
+            DBUtil.dropTable(sid, tableName);
         }
 
         DeleteQuery query2 = new DeleteQuery(table.getTable());
@@ -131,7 +131,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), ref_id)));
     }
 
-    public String getProjectName(String sid,int projectid) throws SQLException {
+    public String getProjectName(String sid, int projectid) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         SelectQuery query = new SelectQuery();
@@ -148,18 +148,21 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
     }
 
-    public String createVariantTable(String sid,int projectid, int referenceid, int updateid) throws SQLException {
-        return createVariantTable(sid,projectid, referenceid, updateid, null, false);
+    public String createVariantTable(String sid, int projectid, int referenceid, int updateid) throws SQLException {
+        return createVariantTable(sid, projectid, referenceid, updateid, null, false);
     }
 
-    public String createVariantTable(String sid,int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging) throws SQLException {
 
-        String variantTableInfoName = isStaging ? DBSettings.createVariantStagingTableName(projectid, referenceid, updateid) : DBSettings.createVariantTableName(projectid, referenceid, updateid);
+    public String createVariantTable(String sid, int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging) throws SQLException {
+
+        String variantTableName = isStaging ?
+                DBSettings.getVariantStagingTableName(projectid, referenceid, updateid)
+                : DBSettings.getVariantTableName(projectid, referenceid, updateid);
 
         Connection c = (ConnectionController.connectPooled(sid));
 
         String query =
-                "CREATE TABLE `" + variantTableInfoName + "` ("
+                "CREATE TABLE `" + variantTableName + "` ("
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID + "` int(11) NOT NULL,"
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID + "` int(11) NOT NULL,"
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID + "` int(11) NOT NULL,"
@@ -174,78 +177,51 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,";
 
         //add custom vcf fields
-        if(!isStaging){
-            List<CustomField> customFields = getCustomVariantFields(sid,projectid);
-            for(CustomField f : customFields){
+        if (!isStaging) {
+            List<CustomField> customFields = getCustomVariantFields(sid, projectid);
+            for (CustomField f : customFields) {
                 query += f.generateSchema(true);
             }
         }
 
         //add each annotation
-        if(annotationIds != null){
-            for(int annotationId : annotationIds){
-                query += getAnnotationSchema(sid,annotationId);
+        if (annotationIds != null) {
+            for (int annotationId : annotationIds) {
+                query += getAnnotationSchema(sid, annotationId);
             }
         }
 
-        query = query.substring(0, query.length()-1); //remove last comma
+        query = query.substring(0, query.length() - 1); //remove last comma
         query += ") ENGINE=BRIGHTHOUSE;";
 
         c.createStatement().execute(query);
 
-        if(!isStaging){
-            TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
-
-            //remove existing entries
-            DeleteQuery d = new DeleteQuery(table.getTable());
-            d.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
-            d.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceid));
-            c.createStatement().execute(d.toString());
-
-            //create new entry
-            InsertQuery query1 = new InsertQuery(table.getTable());
-            query1.addColumn(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid);
-            query1.addColumn(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceid);
-            query1.addColumn(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), variantTableInfoName);
-            c.createStatement().execute(query1.toString());
-
-            //set annotation ids
-            /*String s = "";
-            if(annotationIds != null && annotationIds.length > 0){
-                for(Integer i : annotationIds){
-                    s += i + ",";
-                }
-                s = s.substring(0, s.length()-1);
-            }
-            setAnnotations(projectid, referenceid, s);   */
-        }
-
-        return variantTableInfoName;
+        return variantTableName;
     }
 
-    private static String getAnnotationSchema(String sid,int annotationId){
+    private static String getAnnotationSchema(String sid, int annotationId) {
 
         AnnotationFormat format = null;
         try {
-            format = AnnotationQueryUtil.getInstance().getAnnotationFormat(sid,annotationId);
-        } catch (Exception e){
+            format = AnnotationQueryUtil.getInstance().getAnnotationFormat(sid, annotationId);
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         return format.generateSchema();
     }
 
-    public int getNumberOfRecordsInVariantTable(String sid,int projectid, int refid) throws SQLException {
+    public int getNumberOfRecordsInVariantTable(String sid, int projectid, int refid) throws SQLException {
         try {
-            String variantTableName = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectid,refid);
-            return DBUtil.getNumRecordsInTable(sid,variantTableName);
+            String variantTableName = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectid, refid);
+            return DBUtil.getNumRecordsInTable(sid, variantTableName);
         } catch (RemoteException ex) {
             Logger.getLogger(ProjectQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
             return -1;
         }
     }
 
-    public String getVariantTablename(String sid,int projectid, int refid) throws SQLException {
+    public String getVariantTablename(String sid, int projectid, int refid) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
@@ -264,8 +240,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
     }
 
-
-    public int addProject(String sid,String name, List<CustomField> fields) throws SQLException, ParserConfigurationException, SAXException, IOException {
+    public int addProject(String sid, String name, List<CustomField> fields) throws SQLException, ParserConfigurationException, SAXException, IOException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         InsertQuery query = new InsertQuery(table.getTable());
@@ -280,12 +255,12 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         int projectid = res.getInt(1);
 
-        PatientQueryUtil.getInstance().createPatientTable(sid,projectid, fields);
+        PatientQueryUtil.getInstance().createPatientTable(sid, projectid, fields);
 
         return projectid;
     }
 
-    public void removeProject(String sid,String projectName) throws SQLException, RemoteException {
+    public void removeProject(String sid, String projectName) throws SQLException, RemoteException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         SelectQuery query = new SelectQuery();
@@ -296,12 +271,11 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
 
         if (rs.next()) {
-            removeProject(sid,rs.getInt(1));
+            removeProject(sid, rs.getInt(1));
         }
     }
 
-
-    public void removeProject(String sid,int projectid) throws SQLException, RemoteException {
+    public void removeProject(String sid, int projectid) throws SQLException, RemoteException {
 
 
         Connection c = ConnectionController.connectPooled(sid);
@@ -346,7 +320,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         ResultSet rs2 = c.createStatement().executeQuery(q5.toString());
 
-        while(rs2.next()) {
+        while (rs2.next()) {
             String variantTableName = rs2.getString(1);
             c.createStatement().execute("DROP TABLE IF EXISTS " + variantTableName);
         }
@@ -357,14 +331,14 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         c.createStatement().execute(q6.toString());
 
         //remove cohort entries
-        List<Integer> cohortIds = CohortQueryUtil.getInstance().getCohortIds(sid,projectid);
-        for(Integer cohortId : cohortIds){
-            CohortQueryUtil.getInstance().removeCohort(sid,cohortId);
+        List<Integer> cohortIds = CohortQueryUtil.getInstance().getCohortIds(sid, projectid);
+        for (Integer cohortId : cohortIds) {
+            CohortQueryUtil.getInstance().removeCohort(sid, cohortId);
         }
 
     }
 
-    public void setAnnotations(String sid,int projectid, int refid, String annotation_ids, boolean logEntry, String user) throws SQLException {
+    public void setAnnotations(String sid, int projectid, int refid, String annotation_ids, boolean logEntry, String user) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
@@ -374,15 +348,15 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         (ConnectionController.connectPooled(sid)).createStatement().execute(query.toString());
 
-        if(logEntry){
+        if (logEntry) {
             try {
-                AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid,projectid, refid, Action.UPDATE_TABLE, Status.PENDING, user);
+                AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid, projectid, refid, Action.UPDATE_TABLE, Status.PENDING, user);
             } catch (RemoteException ex) {
             }
         }
     }
 
-    public List<ProjectDetails> getProjectDetails(String sid,int projectId) throws SQLException {
+    public List<ProjectDetails> getProjectDetails(String sid, int projectId) throws SQLException {
 
         TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
@@ -399,7 +373,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
 
         List<ProjectDetails> result = new ArrayList<ProjectDetails>();
-        while(rs.next()){
+        while (rs.next()) {
             result.add(new ProjectDetails(
                     rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                     rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
@@ -409,7 +383,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return result;
     }
 
-    public void renameProject(String sid,int projectId, String newName) throws SQLException {
+    public void renameProject(String sid, int projectId, String newName) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
@@ -419,7 +393,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
     }
 
-    public void setCustomVariantFields(String sid,int projectId, List<CustomField> fields, boolean firstSet, String user) throws SQLException {
+    public void setCustomVariantFields(String sid, int projectId, List<CustomField> fields, boolean firstSet, String user) throws SQLException {
 
         Connection c = ConnectionController.connectPooled(sid);
         TableSchema table = MedSavantDatabase.VariantformatTableSchema;
@@ -430,7 +404,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         c.createStatement().executeUpdate(clearQuery.toString());
 
         c.setAutoCommit(false);
-        for(int i = 0; i < fields.size(); i++){
+        for (int i = 0; i < fields.size(); i++) {
             CustomField f = fields.get(i);
             InsertQuery insertQuery = new InsertQuery(table.getTable());
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
@@ -445,11 +419,11 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         c.commit();
         c.setAutoCommit(true);
 
-        if(!firstSet){
+        if (!firstSet) {
             try {
-                List<Integer> referenceIds = ReferenceQueryUtil.getInstance().getReferenceIdsForProject(sid,projectId);
-                for(Integer id : referenceIds){
-                    AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid,projectId, id, Action.UPDATE_TABLE, Status.PENDING, user);
+                List<Integer> referenceIds = ReferenceQueryUtil.getInstance().getReferenceIdsForProject(sid, projectId);
+                for (Integer id : referenceIds) {
+                    AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid, projectId, id, Action.UPDATE_TABLE, Status.PENDING, user);
                 }
             } catch (RemoteException ex) {
                 Logger.getLogger(ProjectQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
@@ -459,7 +433,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     }
 
     //Get the most up-to-date custom fields, as specified in variant_format table
-    public List<CustomField> getCustomVariantFields(String sid,int projectId) throws SQLException {
+    public List<CustomField> getCustomVariantFields(String sid, int projectId) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VariantformatTableSchema;
         SelectQuery query = new SelectQuery();
@@ -471,7 +445,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
 
         List<CustomField> result = new ArrayList<CustomField>();
-        while(rs.next()){
+        while (rs.next()) {
             result.add(new CustomField(
                     rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME).toLowerCase(),
                     rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE),
@@ -482,5 +456,4 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         return result;
     }
-
 }

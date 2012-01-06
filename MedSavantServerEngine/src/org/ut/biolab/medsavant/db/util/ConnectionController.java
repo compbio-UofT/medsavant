@@ -20,6 +20,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -79,7 +80,7 @@ public class ConnectionController {
                 return statementCache.get(query);
             }
             PreparedStatement result = connectPooled(sessionId).prepareStatement(query);
-            statementCache.put(query, result);       
+            statementCache.put(query, result);
             return result;
         }
     }
@@ -152,7 +153,7 @@ public class ConnectionController {
         synchronized(sessionConnectionMap) {
             SessionConnection sc = sessionConnectionMap.get(sessionId);
             sc.setDBName(dbname);
-        }      
+        }
     }
 
     public static String getDBName(String sid) {
@@ -168,7 +169,7 @@ public class ConnectionController {
             return sc.getUser();
         }
     }
-    
+
     public static void removeSession(String sid) {
         synchronized(sessionConnectionMap) {
             sessionConnectionMap.remove(sid);
@@ -187,4 +188,16 @@ public class ConnectionController {
         return sessionCallbackMap.get(sid);
     }
 
+    public static String getDatabaseForSession(String sid) {
+        synchronized(sessionConnectionMap) {
+            SessionConnection sc = sessionConnectionMap.get(sid);
+            return sc.getDBName();
+        }
+    }
+
+    public static Collection<String> getSessionIDs() {
+        synchronized(sessionConnectionMap) {
+            return sessionConnectionMap.keySet();
+        }
+    }
 }

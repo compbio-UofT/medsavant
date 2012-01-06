@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
-import org.ut.biolab.medsavant.db.variants.update.UploadVariants;
+import org.ut.biolab.medsavant.db.variants.update.VariantManager;
 import org.ut.biolab.medsavant.server.api.MedSavantServerRegistry;
 
 /**
@@ -45,17 +45,30 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
             // get the address of this host.
             thisAddress = (InetAddress.getLocalHost()).toString();
         } catch (Exception e) {
-            throw new RemoteException("can't get inet address.");
+            throw new RemoteException("Can't get inet address.");
         }
         thisPort = 3232;  // this port(registry’s port)
-        System.out.println("this address=" + thisAddress + ",port=" + thisPort);
+
+        System.out.println("== MedSavant Server Engine ==");
+
+        System.out.println(
+                "SERVER ADDRESS: " + thisAddress + "\n"
+                + "SERVER PORT: " + thisPort);
         try {
             // create the registry and bind the name and object.
             registry = LocateRegistry.createRegistry(thisPort);
 
             //TODO: get these from the user
-            ConnectionController.setHost("localhost");
-            ConnectionController.setPort(5029);
+
+            String host = "localhost";
+            int port = 5029;
+
+            ConnectionController.setHost(host);
+            ConnectionController.setPort(port);
+
+            System.out.println(
+                "DATABASE ADDRESS: " + host + "\n"
+                + "DATABASE PORT: " + port);
 
             bindAdapters(registry);
 
@@ -75,7 +88,10 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
 
     private void bindAdapters(Registry registry) throws RemoteException {
 
-        registry.rebind(MedSavantServerRegistry.Registry_UploadVariantsAdapter, UploadVariants.getInstance());
+        System.out.print("Initializing server registry...");
+        System.out.flush();
+
+        registry.rebind(MedSavantServerRegistry.Registry_UploadVariantsAdapter, VariantManager.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_FileTransferAdapter, FileServer.getInstance());
 
         registry.rebind(MedSavantServerRegistry.Registry_SessionAdapter, SessionController.getInstance());
@@ -98,5 +114,7 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
         registry.rebind(MedSavantServerRegistry.Registry_DBUtilAdapter, DBUtil.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_SetupAdapter, SetupMedSavantDatabase.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_CustomTablesAdapter, CustomTables.getInstance());
+
+        System.out.println("OK");
     }
 }
