@@ -14,11 +14,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
 import javax.swing.table.TableCellRenderer;
@@ -235,14 +233,9 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             table.setBorder(null);
             table.setGridColor(new Color(235,235,235));
             table.setRowHeight(21);
-            
-            JScrollPane container = new JScrollPane(table); //necessary to show headers...
-            container.getViewport().setBackground(Color.white);
-            container.setBorder(BorderFactory.createEmptyBorder());
-            container.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            container.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-            
-            details.add(container, BorderLayout.CENTER);
+
+            details.add(table.getTableHeader(), BorderLayout.NORTH);
+            details.add(table, BorderLayout.CENTER);
    
             details.updateUI();
             
