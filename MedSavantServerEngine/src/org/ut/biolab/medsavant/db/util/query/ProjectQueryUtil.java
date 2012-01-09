@@ -129,6 +129,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query2.addCondition(ComboCondition.and(
                 BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), project_id),
                 BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), ref_id)));
+        ConnectionController.connectPooled(sid).createStatement().execute(query2.toString());
     }
 
     public String getProjectName(String sid, int projectid) throws SQLException {
