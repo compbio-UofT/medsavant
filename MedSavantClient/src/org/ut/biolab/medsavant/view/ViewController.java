@@ -159,6 +159,14 @@ public class ViewController extends JPanel {
     public void addComponent(Component c) {
         menu.addComponent(c);
     }
+    
+    public void setPeekRightShown(boolean show){
+        peekRight.setExpanded(show);
+    }
+    
+    public boolean isPeekRightShown(){
+        return peekRight.isExpanded();
+    }
 
     private static class SidePanel extends JPanel {
 

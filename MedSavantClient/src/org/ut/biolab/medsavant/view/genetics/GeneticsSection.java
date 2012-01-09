@@ -65,7 +65,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         panels = new JPanel[2];
         panels[0] = new GeneticsFilterPage(this).getView(true);
         panels[1] = new FilterProgressPanel();
-
+        
         return panels;
     }
 
@@ -109,7 +109,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     @Override
     public Component[] getBanner() {
 
-        Component[] result = new Component[4];
+        Component[] result = new Component[3];
         result[0] = new JLabel("Reference:");
         if (referenceDropDown == null) {
             result[1] = getReferenceDropDown();

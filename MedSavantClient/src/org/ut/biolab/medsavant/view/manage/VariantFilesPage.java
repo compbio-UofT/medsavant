@@ -22,6 +22,7 @@ import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
+import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
@@ -40,6 +41,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
     private SplitScreenView panel;
     private boolean isLoaded = false;
     private boolean updateRequired = false;
+    private boolean showPeekOnUnload = false;
     
     public VariantFilesPage(SectionView parent){
         super(parent);
@@ -62,11 +64,14 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
     @Override
     public void viewDidLoad() {
         isLoaded = true;
+        showPeekOnUnload = ViewController.getInstance().isPeekRightShown();
+        ViewController.getInstance().setPeekRightShown(false);
     }
 
     @Override
     public void viewDidUnload() {
         isLoaded = false;
+        ViewController.getInstance().setPeekRightShown(showPeekOnUnload);
         ThreadController.getInstance().cancelWorkers(getName());
     }
     
