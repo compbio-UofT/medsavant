@@ -195,6 +195,17 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query += ") ENGINE=BRIGHTHOUSE;";
 
         c.createStatement().execute(query);
+        
+        //create new entry in variant table map
+        if(!isStaging){
+            TableSchema variantTableMap = MedSavantDatabase.VarianttablemapTableSchema;
+            InsertQuery query1 = new InsertQuery(variantTableMap.getTable());
+            query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid);
+            query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceid);
+            query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), variantTableName);
+            c.createStatement().execute(query1.toString());
+        }
+
 
         return variantTableName;
     }

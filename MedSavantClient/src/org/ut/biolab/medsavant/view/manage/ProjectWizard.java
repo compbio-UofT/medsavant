@@ -686,7 +686,9 @@ public class ProjectWizard extends WizardDialog {
                     }
 
                     int[] annIds = new int[annotationIds.size()];
-                    for(int i = 0; i < annotationIds.size(); i++) { annIds[i] = annotationIds.get(i); }
+                    for(int i = 0; i < annotationIds.size(); i++) { 
+                        annIds[i] = annotationIds.get(i); 
+                    }
                     MedSavantClient.ProjectQueryUtilAdapter.createVariantTable(LoginController.sessionId, projectid, cli.getReference().getId(), 0, (annotationIds.isEmpty() ? null : annIds), false);
 
                     //MedSavantClient.ProjectQueryUtilAdapter.createVariantTable(projectid, cli.getReference().getId(), 0);
