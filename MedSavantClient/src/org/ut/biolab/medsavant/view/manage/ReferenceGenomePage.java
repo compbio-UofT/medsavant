@@ -5,6 +5,8 @@
 package org.ut.biolab.medsavant.view.manage;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -12,21 +14,23 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.SwingWorker;
+import javax.swing.table.TableCellRenderer;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.model.Reference;
-import org.ut.biolab.medsavant.db.util.shared.Util;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
-import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
 import org.ut.biolab.medsavant.view.dialog.NewReferenceDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
@@ -161,21 +165,12 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
         private Reference ref;
         private DetailsSW sw;
         private CollapsiblePanel infoPanel;
-        
-        private List<String> columnNames;
-        private List<Class> columnClasses;
+
+        private Object[] columnNames;
 
         public ReferenceDetailedView() {
-
-            columnNames = new ArrayList<String>();
-            columnNames.add("Contig Name");
-            columnNames.add("Contig Length");
-            columnNames.add("Centromere Position");
             
-            columnClasses = new ArrayList<Class>();
-            columnClasses.add(String.class);
-            columnClasses.add(Long.class);
-            columnClasses.add(Long.class);            
+            columnNames = new Object[]{"Contig Name", "Contig Length", "Centromere Position"};          
         
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());
@@ -219,16 +214,33 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             //nothing yet
         }
 
-        public synchronized void setReferenceInfoTable(List<Object[]> list) {
+        public synchronized void setReferenceInfoTable(Object[][] data) {
             
             details.removeAll();
-                      
-            List<Integer> columnVisibility = new ArrayList<Integer>();           
-            ListViewTablePanel table = new ListViewTablePanel(Util.listToVector(list), columnNames, columnClasses, columnVisibility);
-            table.setFontSize(11);
-            table.getTable().setRowHeight(21);
+
+            JTable table = new JTable(data, columnNames) {
+                @Override
+                public Component prepareRenderer(TableCellRenderer renderer, int Index_row, int Index_col) {
+                    Component comp = super.prepareRenderer(renderer, Index_row, Index_col);
+                    if (Index_row % 2 == 0) {
+                        comp.setBackground(ViewUtil.evenRowColor);
+                    } else {
+                        comp.setBackground(ViewUtil.oddRowColor);
+                    }
+                    return comp;
+                }
+            };
+            table.setBorder(null);
+            table.setShowHorizontalLines(false);
+            table.setShowVerticalLines(false);
             
-            details.add(table, BorderLayout.CENTER);
+            JScrollPane container = new JScrollPane(table); //necessary to show headers...
+            container.getViewport().setBackground(Color.white);
+            container.setBorder(BorderFactory.createEmptyBorder());
+            container.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            container.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+            
+            details.add(container, BorderLayout.CENTER);
    
             details.updateUI();
             
@@ -253,10 +265,14 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             
             @Override
             protected void done() {
-                List<Object[]> list = new ArrayList<Object[]>();
+                //List<Object[]> list = new ArrayList<Object[]>();
+                Object[][] list = null;
                 try {
-                    for(Chromosome c : (List<Chromosome>)get()){
-                        list.add(new Object[]{c.getName(), c.getLength(), c.getCentromerepos()});
+                    List<Chromosome> result = (List<Chromosome>) get();
+                    list = new Object[result.size()][];
+                    for(int i = 0; i < result.size(); i++){
+                        Chromosome c = result.get(i);
+                        list[i] = new Object[]{c.getName(), c.getLength(), c.getCentromerepos()};
                     }     
                 } catch (InterruptedException ex) {
                     Logger.getLogger(ReferenceGenomePage.class.getName()).log(Level.SEVERE, null, ex);
