@@ -222,17 +222,19 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
                 @Override
                 public Component prepareRenderer(TableCellRenderer renderer, int Index_row, int Index_col) {
                     Component comp = super.prepareRenderer(renderer, Index_row, Index_col);
-                    if (Index_row % 2 == 0) {
-                        comp.setBackground(ViewUtil.evenRowColor);
-                    } else {
-                        comp.setBackground(ViewUtil.oddRowColor);
+                    if (!isCellSelected(Index_row, Index_col)) {
+                        if (Index_row % 2 == 0) {
+                            comp.setBackground(ViewUtil.evenRowColor);
+                        } else {
+                            comp.setBackground(ViewUtil.oddRowColor);
+                        }
                     }
                     return comp;
                 }
             };
             table.setBorder(null);
-            table.setShowHorizontalLines(false);
-            table.setShowVerticalLines(false);
+            table.setGridColor(new Color(235,235,235));
+            table.setRowHeight(21);
             
             JScrollPane container = new JScrollPane(table); //necessary to show headers...
             container.getViewport().setBackground(Color.white);
