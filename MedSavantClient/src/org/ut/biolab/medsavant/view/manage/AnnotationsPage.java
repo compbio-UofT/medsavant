@@ -6,26 +6,24 @@ package org.ut.biolab.medsavant.view.manage;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
-import javax.swing.JButton;
+import javax.swing.Box;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.ExternalAnnotationController;
 import org.ut.biolab.medsavant.controller.ThreadController;
+import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
-import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -107,22 +105,6 @@ public class AnnotationsPage extends SubSectionView {
         return result;
     }
 
-    private JButton getAddExternalAnnotationButton() {
-        JButton button = new JButton("Add Annotation");
-        button.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(MainFrame.getInstance(),
-                        "Annotations can only be added using the \n"
-                        + "MedSavant Database Utility.",
-                        "",JOptionPane.INFORMATION_MESSAGE);
-                //NewReferenceDialog npd = new ADialog(MainFrame.getInstance(), true);
-                //npd.setVisible(true);
-            }
-        });
-        return button;
-    }
-
     private static class ExternalAnnotationListModel implements DetailedListModel {
 
         private ArrayList<String> cnames;
@@ -136,10 +118,7 @@ public class AnnotationsPage extends SubSectionView {
             List<Annotation> annotations = ExternalAnnotationController.getInstance().getExternalAnnotations();
             List<Object[]> annotationVector = new ArrayList<Object[]>();
             for (Annotation p : annotations) {
-                Object[] v = new Object[] {
-                p.getProgram(),
-                p.getVersion(),
-                p.getReferenceName() };
+                Object[] v = new Object[] {p};
                 annotationVector.add(v);
             }
             return annotationVector;
@@ -149,8 +128,6 @@ public class AnnotationsPage extends SubSectionView {
             if (cnames == null) {
                 cnames = new ArrayList<String>();
                 cnames.add("Program");
-                cnames.add("Version");
-                cnames.add("Reference");
             }
             return cnames;
         }
@@ -159,8 +136,6 @@ public class AnnotationsPage extends SubSectionView {
             if (cclasses == null) {
                 cclasses = new ArrayList<Class>();
                 cclasses.add(String.class);
-                cclasses.add(String.class);
-                cclasses.add(String.class);
             }
             return cclasses;
         }
@@ -168,8 +143,6 @@ public class AnnotationsPage extends SubSectionView {
         public List<Integer> getHiddenColumns() {
             if (chidden == null) {
                 chidden = new ArrayList<Integer>();
-                chidden.add(1);
-                chidden.add(2);
             }
             return chidden;
         }
@@ -189,45 +162,59 @@ public class AnnotationsPage extends SubSectionView {
 
         private final JPanel details;
         private final JPanel content;
+        private CollapsiblePanel infoPanel;
 
         public ExternalAnnotationDetailedView() {
 
-            content = this.getContentPanel();
+            /*content = this.getContentPanel();
 
             details = ViewUtil.getClearPanel();
             //this.addBottomComponent(deleteButton());
 
             content.setLayout(new BorderLayout());
 
+            content.add(details, BorderLayout.CENTER);*/
+            
+            JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
+            viewContainer.setLayout(new BorderLayout());
+
+            JPanel infoContainer = ViewUtil.getClearPanel();
+            ViewUtil.applyVerticalBoxLayout(infoContainer);
+
+            viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer), BorderLayout.CENTER);
+
+            infoPanel = new CollapsiblePanel("Annotation Information");
+            infoContainer.add(infoPanel);
+            infoContainer.add(Box.createVerticalGlue());
+
+            content = infoPanel.getContentPane();
+
+            details = ViewUtil.getClearPanel();
+
+            content.setLayout(new BorderLayout());
+
             content.add(details, BorderLayout.CENTER);
-        }
-
-        public JButton deleteButton() {
-            JButton b = new JButton("Delete Annotation");
-            b.setOpaque(false);
-            b.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent ae) {
-                    JOptionPane.showMessageDialog(MainFrame.getInstance(),
-                        "Annotations can only be deleted using the \n"
-                        + "MedSavant Database Utility.",
-                        "",JOptionPane.INFORMATION_MESSAGE);
-                }
-            });
-
-            return b;
         }
 
         @Override
         public void setSelectedItem(Object[] item) {
+            
+            Annotation annotation = (Annotation) item[0];
 
-            String title = (String) item[0] + " (v" + item[1] + ")";
+            String title = annotation.toString();
             setTitle(title);
 
             details.removeAll();
-            details.setLayout(new BorderLayout());
-
             details.updateUI();
+
+            List<String[]> infoList = new ArrayList<String[]>();
+            
+            infoList.add(new String[]{"Program", annotation.getProgram()});
+            infoList.add(new String[]{"Version", annotation.getVersion()});
+            infoList.add(new String[]{"Reference Genome", annotation.getReferenceName()});
+            infoList.add(new String[]{"Type", AnnotationFormat.annotationTypToString(annotation.getAnnotationType())});
+            
+            setDetailsList(infoList);
         }
 
         @Override
@@ -245,6 +232,25 @@ public class AnnotationsPage extends SubSectionView {
         public void setRightClick(MouseEvent e) {
             //nothing yet
         }
+        
+        private synchronized void setDetailsList(List<String[]> info) {
+            
+            details.removeAll();
+            
+            ViewUtil.setBoxYLayout(details);
+            
+            String[][] values = new String[info.size()][2];
+            for(int i = 0; i < info.size(); i++){
+                values[i][0] = info.get(i)[0];
+                values[i][1] = info.get(i)[1];
+            }
+            
+            details.add(ViewUtil.getKeyValuePairList(values));
+            
+            details.updateUI();
+            
+        }
+
     }
 
 }

@@ -2,10 +2,7 @@ package org.ut.biolab.medsavant.db.model;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.SQLException;
-import javax.xml.parsers.ParserConfigurationException;
 import org.broad.tabix.TabixReader;
-import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat.AnnotationType;
 
 /**
@@ -59,6 +56,10 @@ public class Annotation implements Serializable {
     public boolean isInterval() {
         return type == AnnotationType.INTERVAL;
     }
+    
+    public AnnotationType getAnnotationType(){
+        return type;
+    }
 
     public TabixReader getReader() throws IOException {
         if (reader == null) {
@@ -67,9 +68,14 @@ public class Annotation implements Serializable {
         return reader;
     }
 
-    @Override
+    /*@Override
     public String toString() {
         return "Annotation{" + "version=" + version + ", reference=" + referenceName + ", dataPath=" + dataPath + ", type=" + type + '}';
+    }*/
+    
+    @Override
+    public String toString() {
+        return getProgram() + " (v" + getVersion() + ")";
     }
 
 }

@@ -38,6 +38,17 @@ public class AnnotationFormat implements Serializable {
         }
     }
     
+    public static String annotationTypToString(AnnotationType type) {
+        switch(type) {
+            case POSITION:
+                return "Position";
+            case INTERVAL:
+                return "Interval";
+            default:
+                return "";
+        }
+    }
+    
     public static int annotationTypeToInt(String type){
         return annotationTypeToInt(AnnotationType.valueOf(type.toUpperCase()));
     }
