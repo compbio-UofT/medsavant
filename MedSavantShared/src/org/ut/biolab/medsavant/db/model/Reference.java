@@ -28,4 +28,8 @@ public class Reference implements Serializable {
         return name;
     }
     
+    public String toString(){
+        return name;
+    }
+    
 }

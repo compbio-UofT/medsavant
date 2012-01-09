@@ -159,12 +159,12 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
         private final JPanel content;
         private SimpleVariantFile file;
         private DetailsSW sw;
-        private List<String> fieldNames;
+        //private List<String> fieldNames;
         private CollapsiblePanel infoPanel;
 
         public VariantFilesDetailedView() {
             
-            fieldNames = new ArrayList<String>();
+            //fieldNames = new ArrayList<String>();
             //fieldNames.add("User Level");
         
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
@@ -284,7 +284,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
 
         @Override
         public boolean doesImplementDeleting() {
-            return true;
+            return false;
         }
 
         @Override

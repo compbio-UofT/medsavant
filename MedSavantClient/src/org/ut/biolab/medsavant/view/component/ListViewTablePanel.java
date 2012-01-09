@@ -37,6 +37,7 @@ public class ListViewTablePanel extends JPanel {
     private ColumnChooser columnChooser;
     private List<Integer> hiddenColumns;
     private final JPanel fieldPanel;
+    private int fontSize = 14;
 
     public SortableTable getTable() {
         return table;
@@ -125,7 +126,7 @@ public class ListViewTablePanel extends JPanel {
                 }
                 comp.setForeground(ViewUtil.detailForeground);
                 
-                comp.setFont(new Font((comp.getFont().getFamily()),Font.PLAIN,14));
+                comp.setFont(new Font((comp.getFont().getFamily()),Font.PLAIN,fontSize));
                 
                 return comp;
             }
@@ -145,7 +146,6 @@ public class ListViewTablePanel extends JPanel {
         table.setFocusable(allowSelection);
         table.setCellSelectionEnabled(allowSelection);
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        //table.setFont(new Font("Times New Roman", Font.PLAIN, 14));
 
         table.setAutoResizeMode(SortableTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         
@@ -212,8 +212,11 @@ public class ListViewTablePanel extends JPanel {
     public void forceRefreshData(){
         //override this in parent
     }
-
     
+    public void setFontSize(int newSize){
+        this.fontSize = newSize;
+    }
+   
     
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
 

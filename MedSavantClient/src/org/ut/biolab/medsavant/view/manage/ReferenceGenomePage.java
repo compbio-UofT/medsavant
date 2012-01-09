@@ -5,20 +5,28 @@
 package org.ut.biolab.medsavant.view.manage;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
-import javax.swing.JButton;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.Box;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingWorker;
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
+import org.ut.biolab.medsavant.db.model.Chromosome;
+import org.ut.biolab.medsavant.db.model.Reference;
+import org.ut.biolab.medsavant.db.util.shared.Util;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
+import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
 import org.ut.biolab.medsavant.view.dialog.NewReferenceDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
@@ -31,138 +39,91 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
- * @author mfiume
+ * @author Andrew
  */
 public class ReferenceGenomePage extends SubSectionView implements ReferenceListener {
-
-    private static class ReferenceDetailedListEditer extends DetailedListEditor {
-
-        @Override
-        public boolean doesImplementAdding() {
-            return true;
-        }
-
-        @Override
-        public boolean doesImplementDeleting() {
-            return true;
-        }
-
-        @Override
-        public void addItems() {
-            NewReferenceDialog npd = new NewReferenceDialog(MainFrame.getInstance(), true);
-            npd.setVisible(true);
-        }
-
-        @Override
-        public void editItems(Object[] items) {
-        }
-
-        @Override
-        public void deleteItems(List<Object[]> items) {
-
-            int nameIndex = 0;
-           int keyIndex = 0;
-
-            int result;
-
-
-            if (items.size() == 1) {
-                String name = (String) items.get(0)[nameIndex];
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
-                             "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
-                             "Confirm", JOptionPane.YES_NO_OPTION);
-            } else {
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
-                             "Are you sure you want to remove these " + items.size() + " references?\nThis cannot be undone.",
-                             "Confirm", JOptionPane.YES_NO_OPTION);
-            }
-
-            if (result == JOptionPane.YES_OPTION) {
-                int numCouldntRemove = 0;
-                for (Object[] v : items) {
-                    String refName = (String) v[keyIndex];
-                    ReferenceController.getInstance().removeReference(refName);
-                }
-
-                if (items.size() != numCouldntRemove) {
-                    DialogUtils.displayMessage("Successfully removed " + (items.size()-numCouldntRemove) + " reference(s)");
-                }
-            }
-        }
+    
+    private SplitScreenView panel;
+    private boolean updateRequired = false;
+    
+    public ReferenceGenomePage(SectionView parent){
+        super(parent);
+        ReferenceController.getInstance().addReferenceListener(this);
     }
 
+    @Override
+    public String getName() {
+        return "Reference Genomes";
+    }
+
+    @Override
+    public JPanel getView(boolean update) {
+        if (panel == null || updateRequired) {
+            setPanel();
+        } 
+        return panel;
+    }
+
+    @Override
+    public void viewDidLoad() {}
+
+    @Override
+    public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
+    }
+    
+    public void setPanel() {
+        panel = new SplitScreenView(
+                new ReferenceListModel(),
+                new ReferenceDetailedView(),
+                new ReferenceDetailedListEditor());
+    }
+
+    @Override
     public void referenceAdded(String name) {
         if (panel != null) {
             panel.refresh();
         }
     }
 
+    @Override
     public void referenceRemoved(String name) {
         if (panel != null) {
             panel.refresh();
         }
     }
 
-    public void referenceChanged(String name) {
+    @Override
+    public void referenceChanged(String prnameojectName) {
         if (panel != null) {
             panel.refresh();
         }
     }
-    private SplitScreenView panel;
-
-    public ReferenceGenomePage(SectionView parent) {
-        super(parent);
-        ReferenceController.getInstance().addReferenceListener(this);
+    
+    public void update(){
+        panel.refresh();
     }
 
-    public String getName() {
-        return "Reference Genomes";
-    }
+    
+    /*
+     * REFERENCE GENOMES LIST MODEL
+     */
+    private static class ReferenceListModel implements DetailedListModel {
 
-    public JPanel getView(boolean update) {
-        panel = new SplitScreenView(
-                new ReferenceGenomeListModel(),
-                new ReferenceDetailedView(),
-                new ReferenceDetailedListEditer());
-        return panel;
-    }
+        private List<String> cnames;
+        private List<Class> cclasses;
+        private List<Integer> chidden;
 
-    @Override
-    public Component[] getBanner() {
-        Component[] result = new Component[0];
-        //result[0] = getAddPatientsButton();
-        return result;
-    }
-
-    private JButton getAddReferenceButton() {
-        JButton button = new JButton("New Reference");
-        button.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                NewReferenceDialog npd = new NewReferenceDialog(MainFrame.getInstance(), true);
-                npd.setVisible(true);
-            }
-        });
-        return button;
-    }
-
-    private static class ReferenceGenomeListModel implements DetailedListModel {
-
-        private ArrayList<String> cnames;
-        private ArrayList<Class> cclasses;
-        private ArrayList<Integer> chidden;
-
-        public ReferenceGenomeListModel() {
-        }
+        public ReferenceListModel() {}
 
         public List<Object[]> getList(int limit) throws Exception {
-            List<String> refs = ReferenceController.getInstance().getReferenceNames();
+            List<Reference> refs = MedSavantClient.ReferenceQueryUtilAdapter.getReferences(LoginController.sessionId);
             List<Object[]> refVector = new ArrayList<Object[]>();
-            for (String p : refs) {
-                Object[] v = new Object[] {p};
+            for (int i = 0; i < refs.size(); i++) {
+                Object[] v = new Object[] {refs.get(i)};
                 refVector.add(v);
             }
-            return refVector;
+            return refVector;          
         }
 
         public List<String> getColumnNames() {
@@ -189,23 +150,49 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
         }
     }
 
-    private class ReferenceDetailedView extends DetailedView {
+
+    /*
+     * REFERENCE GENOMES DETAILED VIEW
+     */
+    private static class ReferenceDetailedView extends DetailedView {
 
         private final JPanel details;
         private final JPanel content;
-        private String refName;
+        private Reference ref;
+        private DetailsSW sw;
+        private CollapsiblePanel infoPanel;
+        
+        private List<String> columnNames;
+        private List<Class> columnClasses;
 
         public ReferenceDetailedView() {
 
-            content = this.getContentPanel();
+            columnNames = new ArrayList<String>();
+            columnNames.add("Contig Name");
+            columnNames.add("Contig Length");
+            columnNames.add("Centromere Position");
+            
+            columnClasses = new ArrayList<Class>();
+            columnClasses.add(String.class);
+            columnClasses.add(Long.class);
+            columnClasses.add(Long.class);            
+        
+            JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
+            viewContainer.setLayout(new BorderLayout());
+
+            JPanel infoContainer = ViewUtil.getClearPanel();
+            ViewUtil.applyVerticalBoxLayout(infoContainer);
+
+            viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer), BorderLayout.CENTER);
+
+            infoPanel = new CollapsiblePanel("Reference Information");
+            infoContainer.add(infoPanel);
+            infoContainer.add(Box.createVerticalGlue());
+
+            content = infoPanel.getContentPane();
 
             details = ViewUtil.getClearPanel();
-
-            //menu.add(setDefaultCaseButton());
-            //menu.add(setDefaultControlButton());
-            //this.addBottomComponent(deleteButton());
-            //menu.add(deleteCohortButton());
-
+            details.setLayout(new BorderLayout());
 
             content.setLayout(new BorderLayout());
 
@@ -214,56 +201,139 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
         @Override
         public void setSelectedItem(Object[] item) {
-            refName = (String) item[0];
-            setTitle(refName);
+            ref = (Reference) item[0];
+            setTitle(ref.toString());
 
             details.removeAll();
-            details.setLayout(new BorderLayout());
-
             details.updateUI();
-        }
 
-        public final JButton deleteButton() {
-            JButton b = new JButton("Delete Reference");
-            b.setOpaque(false);
-            b.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent ae) {
-
-                    int result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
-                            "Are you sure you want to delete " + refName + "?\nThis cannot be undone.",
-                            "Confirm", JOptionPane.YES_NO_OPTION);
-                    if (result == JOptionPane.YES_OPTION) {
-                        ReferenceController.getInstance().removeReference(refName);
-                    }
-                }
-            });
-            return b;
-        }
-
-        @Override
-        public void setMultipleSelections(List<Object[]> selectedRows) {
-            if (selectedRows.isEmpty()) {
-                setTitle("");
-            } else {
-            setTitle("Multiple references (" + selectedRows.size() + ")");
+            if (sw != null) {
+                sw.cancel(true);
             }
-            details.removeAll();
-            details.updateUI();
+            sw = new DetailsSW(ref);
+            sw.execute();
         }
 
         @Override
         public void setRightClick(MouseEvent e) {
             //nothing yet
         }
-    }
 
-    @Override
-    public void viewDidLoad() {
-    }
+        public synchronized void setReferenceInfoTable(List<Object[]> list) {
+            
+            details.removeAll();
+                      
+            List<Integer> columnVisibility = new ArrayList<Integer>();           
+            ListViewTablePanel table = new ListViewTablePanel(Util.listToVector(list), columnNames, columnClasses, columnVisibility);
+            table.setFontSize(11);
+            table.getTable().setRowHeight(21);
+            
+            details.add(table, BorderLayout.CENTER);
+   
+            details.updateUI();
+            
+        }
+        
+        private class DetailsSW extends SwingWorker {
 
-    @Override
-    public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
+            private Reference ref;
+            
+            public DetailsSW(Reference ref) {
+                this.ref = ref;
+            }
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                try {
+                    return MedSavantClient.ChromosomeQueryUtilAdapter.getContigs(LoginController.sessionId, ref.getId());
+                } catch (SQLException ex) {
+                    return null;
+                }
+            }
+            
+            @Override
+            protected void done() {
+                List<Object[]> list = new ArrayList<Object[]>();
+                try {
+                    for(Chromosome c : (List<Chromosome>)get()){
+                        list.add(new Object[]{c.getName(), c.getLength(), c.getCentromerepos()});
+                    }     
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ReferenceGenomePage.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ExecutionException ex) {
+                    Logger.getLogger(ReferenceGenomePage.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                setReferenceInfoTable(list);
+            }
+        }
+
+        @Override
+        public void setMultipleSelections(List<Object[]> items) {
+            if (items.isEmpty()) {
+                setTitle("");
+            } else {
+                setTitle("Multiple users (" + items.size() + ")");
+            }
+            details.removeAll();
+            details.updateUI();
+        }
     }
+    
+    
+    
+    /*
+     * REFERENCE GENOMES DETAILED LIST EDITOR
+     */
+    private static class ReferenceDetailedListEditor extends DetailedListEditor {
+
+        @Override
+        public boolean doesImplementAdding() {
+            return true;
+        }
+
+        @Override
+        public boolean doesImplementDeleting() {
+            return true;
+        }
+
+        @Override
+        public void addItems() {
+            NewReferenceDialog npd = new NewReferenceDialog(MainFrame.getInstance(), true);
+            npd.setVisible(true);
+        }
+
+        @Override
+        public void editItems(Object[] results) {
+        }
+
+        @Override
+        public void deleteItems(List<Object[]> items) {
+
+            int result;
+
+            if (items.size() == 1) {
+                String name = ((Reference) items.get(0)[0]).getName();
+                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                             "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
+                             "Confirm", JOptionPane.YES_NO_OPTION);
+            } else {
+                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                             "Are you sure you want to remove these " + items.size() + " references?\nThis cannot be undone.",
+                             "Confirm", JOptionPane.YES_NO_OPTION);
+            }
+
+            if (result == JOptionPane.YES_OPTION) {
+                int numCouldntRemove = 0;
+                for (Object[] v : items) {
+                    String refName = ((Reference)v[0]).getName();
+                    ReferenceController.getInstance().removeReference(refName);
+                }
+
+                if (items.size() != numCouldntRemove) {
+                    DialogUtils.displayMessage("Successfully removed " + (items.size()-numCouldntRemove) + " reference(s)");
+                }
+            }
+        }
+    }
+    
 }
