@@ -53,8 +53,9 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
         }
         thisPort = 3232;  // this port(registry’s port)
 
-        System.out.println("== MedSavant Server Engine ==");
+        System.out.println("== MedSavant Server Engine ==\n");
 
+        System.out.println("> Server Information:");
         System.out.println(
                 "SERVER ADDRESS: " + thisAddress + "\n"
                 + "SERVER PORT: " + thisPort);
@@ -66,6 +67,9 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
 
             ConnectionController.setHost(host);
             ConnectionController.setPort(port);
+
+            System.out.println();
+            System.out.println("> Database Information:");
 
             System.out.println(
                     "DATABASE ADDRESS: " + host + "\n"
@@ -84,7 +88,7 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
                 ConnectionController.connectOnce(host,port,"",rootuser,new String(pass));
             } catch (SQLException ex) {
                 System.out.println("FAILED");
-                
+
                 throw ex;
             }
             System.out.println("OK");

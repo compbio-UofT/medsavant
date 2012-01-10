@@ -9,6 +9,7 @@ import org.ut.biolab.medsavant.client.api.ClientCallbackAdapter;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.SessionConnection;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
+import org.ut.biolab.medsavant.server.mail.CryptoUtils;
 
 /**
  *
@@ -32,7 +33,10 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
     @Override
     public synchronized String registerNewSession(String uname, String pw, String dbname) {
 
-        String sessionId = ++lastSessionId + "";
+        int newSessionIdNumber = ++lastSessionId;
+        String sessionId = CryptoUtils.encrypt(newSessionIdNumber + "");
+
+        //String sessionId = ++lastSessionId + "";
 
         boolean success = ConnectionController.registerCredentials(sessionId, uname, pw, dbname);
 
