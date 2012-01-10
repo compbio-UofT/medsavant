@@ -4,10 +4,14 @@
  */
 package org.ut.biolab.medsavant.server;
 
+import gnu.getopt.Getopt;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.admin.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
@@ -40,7 +44,7 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
     String thisAddress;
     Registry registry;    // rmi registry for lookup the remote objects.
 
-    public MedSavantServerEngine() throws RemoteException {
+    public MedSavantServerEngine(String host, int port, String rootuser) throws RemoteException, SQLException {
         try {
             // get the address of this host.
             thisAddress = (InetAddress.getLocalHost()).toString();
@@ -60,17 +64,34 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
 
             //TODO: get these from the user
 
-            String host = "localhost";
-            int port = 5029;
-
             ConnectionController.setHost(host);
             ConnectionController.setPort(port);
 
             System.out.println(
-                "DATABASE ADDRESS: " + host + "\n"
-                + "DATABASE PORT: " + port);
+                    "DATABASE ADDRESS: " + host + "\n"
+                    + "DATABASE PORT: " + port);
+
+            System.out.println("DATABASE USER: " + rootuser);
+            System.out.print("PASSWORD FOR " + rootuser + ": ");
+            System.out.flush();
+
+            char[] pass = System.console().readPassword();
+
+            System.out.println();
+
+            System.out.print("Connecting to database ... ");
+            try {
+                ConnectionController.connectOnce(host,port,"",rootuser,new String(pass));
+            } catch (SQLException ex) {
+                System.out.println("FAILED");
+                
+                throw ex;
+            }
+            System.out.println("OK");
 
             bindAdapters(registry);
+
+            System.out.println("\nServer initialized, waiting for incoming connections...");
 
         } catch (RemoteException e) {
             throw e;
@@ -79,7 +100,36 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
 
     static public void main(String args[]) {
         try {
-            MedSavantServerEngine s = new MedSavantServerEngine();
+
+            Getopt g = new Getopt("MedSavantServerEngine", args, "h:p:u:");
+            //
+            int c;
+            String arg;
+
+
+            String user = "root";
+            String host = "localhost";
+            int port = 5029;
+
+            while ((c = g.getopt()) != -1) {
+                switch (c) {
+                    case 'h':
+                        host = g.getOptarg();
+                        break;
+                    case 'p':
+                        port = Integer.parseInt(g.getOptarg());
+                        break;
+                    case 'u':
+                        user = g.getOptarg();
+                        break;
+                    case '?':
+                        break; // getopt() already printed an error
+                    default:
+                        System.out.print("getopt() returned " + c + "\n");
+                }
+            }
+
+            MedSavantServerEngine s = new MedSavantServerEngine(host,port,user);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -88,7 +138,7 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
 
     private void bindAdapters(Registry registry) throws RemoteException {
 
-        System.out.print("Initializing server registry...");
+        System.out.print("Initializing server registry ... ");
         System.out.flush();
 
         registry.rebind(MedSavantServerRegistry.Registry_UploadVariantsAdapter, VariantManager.getInstance());

@@ -1,6 +1,8 @@
 package org.ut.biolab.medsavant.server;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.client.api.ClientCallbackAdapter;
@@ -15,7 +17,6 @@ import org.ut.biolab.medsavant.server.api.SessionAdapter;
 public class SessionController extends java.rmi.server.UnicastRemoteObject implements SessionAdapter {
 
     int lastSessionId = 0;
-
     private static SessionController instance;
 
     public static synchronized SessionController getInstance() throws RemoteException {
@@ -25,14 +26,15 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
         return instance;
     }
 
-    public SessionController() throws RemoteException {}
+    public SessionController() throws RemoteException {
+    }
 
     @Override
     public synchronized String registerNewSession(String uname, String pw, String dbname) {
 
         String sessionId = ++lastSessionId + "";
 
-        boolean success = ConnectionController.registerCredentials(sessionId,uname,pw,dbname);
+        boolean success = ConnectionController.registerCredentials(sessionId, uname, pw, dbname);
 
         if (success) {
             System.out.println("Registered session: " + sessionId);
@@ -73,25 +75,32 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
 
         System.out.println("Terminating sessions for database " + dbname);
 
+        List<String> sessionIDsToTerminate = new ArrayList<String>();
+
         for (String sid : ConnectionController.getSessionIDs()) {
             try {
                 if (SessionController.getInstance().getDatabaseForSession(sid).equals(dbname)) {
-
                     System.out.println("Terminating session " + sid);
 
+                    sessionIDsToTerminate.add(sid);
                     // terminate session for this client
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
 
-                    ClientCallbackAdapter ca = ConnectionController.getCallback(sid);
+        for (String sid : sessionIDsToTerminate) {
+            try {
+                ClientCallbackAdapter ca = ConnectionController.getCallback(sid);
 
-                    if (ca != null) {
-                        ca.sessionTerminated(message);
-                        SessionController.getInstance().unregisterSession(sid);
-                    }
+                if (ca != null) {
+                    ca.sessionTerminated(message);
+                    SessionController.getInstance().unregisterSession(sid);
                 }
             } catch (Exception ex) {
                 Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
-
 }

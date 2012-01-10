@@ -58,7 +58,7 @@ public class ConnectionController {
         return dbPort;
     }
 
-    static Connection connectOnce(String dbhost, int port, String dbname, String username, String password) throws SQLException {
+    public static Connection connectOnce(String dbhost, int port, String dbname, String username, String password) throws SQLException {
         try {
             Class.forName(dbDriver).newInstance();
         } catch (Exception ex) {
@@ -175,15 +175,15 @@ public class ConnectionController {
             sessionConnectionMap.remove(sid);
         }
     }
-    
+
     public static void addCallback(String sid, ClientCallbackAdapter c){
         sessionCallbackMap.put(sid, c);
     }
-    
+
     public static void removeCallback(String sid){
         sessionCallbackMap.remove(sid);
     }
-    
+
     public static ClientCallbackAdapter getCallback(String sid) {
         return sessionCallbackMap.get(sid);
     }
