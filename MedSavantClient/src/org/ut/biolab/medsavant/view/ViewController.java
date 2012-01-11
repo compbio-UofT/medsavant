@@ -79,7 +79,7 @@ public class ViewController extends JPanel {
         // create the right panel
         sectionPanel = new PersistencePanel();
         sectionPanel.setPreferredSize(new Dimension(350, 999));
-        peekRight = new PeekingPanel("", BorderLayout.WEST, sectionPanel, true,450);
+        peekRight = new PeekingPanel("", BorderLayout.WEST, sectionPanel, true,400);
         h1.add(peekRight, BorderLayout.EAST);
 
         // add it all to the view
@@ -159,11 +159,11 @@ public class ViewController extends JPanel {
     public void addComponent(Component c) {
         menu.addComponent(c);
     }
-    
+
     public void setPeekRightShown(boolean show){
         peekRight.setExpanded(show);
     }
-    
+
     public boolean isPeekRightShown(){
         return peekRight.isExpanded();
     }

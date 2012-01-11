@@ -29,14 +29,17 @@ public class CallbackController extends java.rmi.server.UnicastRemoteObject impl
     @Override
     public void sessionTerminated(String message) throws RemoteException {
 
-        String fullmessage = "";
+        String fullmessage = "Your session was ended by the server.\n\n";
 
         if (message != null) {
             fullmessage += message;
         }
 
-        DialogUtils.displayMessage("Session terminated", fullmessage);
+        fullmessage += "\n\nMedSavant will now exit.";
+
+        DialogUtils.displayMessage("Session ended", fullmessage);
         LoginController.logout();
+        System.exit(0);
     }
 
 }

@@ -170,6 +170,24 @@ public class ViewUtil {
         return p;
     }
 
+    public static JPanel getQuaternaryBannerPanel() {
+        JPanel p = new JPanel() {
+
+            @Override
+            public void paintComponent(Graphics g) {
+                GradientPaint p = new GradientPaint(0,0,Color.lightGray,0,30,Color.white);
+                ((Graphics2D)g).setPaint(p);
+                g.fillRect(0, 0, this.getWidth(), this.getHeight());
+            }
+        };
+
+        p.setBorder(ViewUtil.getSmallBorder());
+
+        p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
+
+        return p;
+    }
+
 
     public static JPanel getSeparatorBannerPanel() {
         JPanel p = new JPanel();
@@ -396,6 +414,8 @@ public class ViewUtil {
         p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
     }
 
+
+
     private static class DetailListCellRenderer extends JLabel implements ListCellRenderer {
 
           public DetailListCellRenderer() {
@@ -611,7 +631,7 @@ public class ViewUtil {
 
     /*
      * Use this to create an icon button. JLabel is used instead of JButton
-     * for proper display on Windows. MouseListeners can be added as usual. 
+     * for proper display on Windows. MouseListeners can be added as usual.
      */
     public static JLabel createIconButton(ImageIcon i) {
         JLabel b = new JLabel();

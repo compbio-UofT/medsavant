@@ -78,7 +78,7 @@ public class GeneticsFilterPage extends SubSectionView {
     }
 
     public String getName() {
-        return "Filter";
+        return "Filters";
     }
 
     public JPanel getView(boolean update) {
