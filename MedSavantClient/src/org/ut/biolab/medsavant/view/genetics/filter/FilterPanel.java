@@ -21,6 +21,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -72,7 +73,10 @@ public class FilterPanel extends javax.swing.JPanel {
     public FilterPanel() {
         initComponents();
 
-        container.setBorder(BorderFactory.createLineBorder(container.getBackground(), 10));
+        container.setBorder(ViewUtil.getMediumBorder());
+        container.setBackground(ViewUtil.getMenuColor());
+        //container.setOpaque(false);
+        //container.setBorder(BorderFactory.createLineBorder(container.getBackground(), 10));
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
         createNewSubPanel();
@@ -151,6 +155,7 @@ public class FilterPanel extends javax.swing.JPanel {
         JLabel l = new JLabel("Filter variants by:");
 
         JPanel topContainer = new JPanel();
+        topContainer.setOpaque(false);
         topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.X_AXIS));
         topContainer.add(l);
         topContainer.add(Box.createHorizontalGlue());
@@ -290,6 +295,7 @@ public class FilterPanel extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         container = new javax.swing.JPanel();
 
+        jScrollPane1.setBorder(null);
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         jPanel1.setBackground(new java.awt.Color(255, 204, 204));
@@ -299,11 +305,11 @@ public class FilterPanel extends javax.swing.JPanel {
         container.setLayout(containerLayout);
         containerLayout.setHorizontalGroup(
             containerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 657, Short.MAX_VALUE)
+            .addGap(0, 661, Short.MAX_VALUE)
         );
         containerLayout.setVerticalGroup(
             containerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 509, Short.MAX_VALUE)
+            .addGap(0, 513, Short.MAX_VALUE)
         );
 
         jPanel1.add(container);

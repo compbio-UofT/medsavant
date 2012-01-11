@@ -33,27 +33,28 @@ import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  * @author AndrewBrook
  */
 public class FilterProgressPanel extends JPanel implements FiltersChangedListener {
 
-    private int maxRecords = 0;    
+    private int maxRecords = 0;
     private JTable table;
     private ProgressTableModel model;
     private Mode mode = Mode.GLOBAL;
     private enum Mode {GLOBAL, RELATIVE};
-    
+
     private Color TOTAL_COLOR = new Color(225,244,254);
     private Color REMAINING_COLOR = new Color(72,181,249);
     private Color PREVIOUS_COLOR = new Color(179,255,217);
     private Color NEW_COLOR = new Color(0,153,77);
-    
-    public FilterProgressPanel(){      
+
+    public FilterProgressPanel(){
         this.setName("History");
         this.setLayout(new BorderLayout());
-               
+        this.setOpaque(false);
         table = new JTable(){
             @Override
             public TableCellRenderer getCellRenderer(int row, int column) {
@@ -64,13 +65,14 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
             }
         };
         model = new ProgressTableModel();
-        table.setModel(model);  
-        
-        JPanel modePanel = new JPanel();
+        table.setModel(model);
+
+        JPanel modePanel = ViewUtil.getClearPanel();
+
         ButtonGroup group = new ButtonGroup();
         JRadioButton globalButton = new JRadioButton("Global");
         globalButton.setSelected(true);
-        JRadioButton relativeButton = new JRadioButton("Relative");       
+        JRadioButton relativeButton = new JRadioButton("Relative");
         globalButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -88,16 +90,16 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
         modePanel.add(globalButton);
         modePanel.add(relativeButton);
         this.add(modePanel, BorderLayout.NORTH);
-        
+
         final JScrollPane scrollPane = new JScrollPane();
         scrollPane.getViewport().add(table);
         this.add(scrollPane, BorderLayout.CENTER);
-        
+
         try {
             maxRecords = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                LoginController.sessionId, 
-                ProjectController.getInstance().getCurrentProjectId(), 
-                ReferenceController.getInstance().getCurrentReferenceId(), 
+                LoginController.sessionId,
+                ProjectController.getInstance().getCurrentProjectId(),
+                ReferenceController.getInstance().getCurrentReferenceId(),
                 FilterController.getQueryFilterConditions());
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
@@ -107,86 +109,86 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
         if (maxRecords != -1) {
             model.addRow("Total", "", maxRecords);
         }
-        
+
         FilterController.addFilterListener(this);
-        
+
     }
-    
+
     private synchronized void changeMode(Mode mode){
         if(this.mode == mode) return;
         this.mode = mode;
         model.setMode(mode);
         table.getColumnModel().getColumn(3).setHeaderValue(model.getColumnName(3));
         table.getTableHeader().resizeAndRepaint();
-        table.repaint();    
+        table.repaint();
     }
-    
+
     public void filtersChanged() {
         final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                "Applying Filter", 
-                "Filter is being applied. Please wait.", 
+                "Applying Filter",
+                "Filter is being applied. Please wait.",
                 true);
         Thread thread = new Thread() {
             @Override
             public void run() {
                 try {
                     addFilterSet(MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                            LoginController.sessionId, 
-                            ProjectController.getInstance().getCurrentProjectId(), 
-                            ReferenceController.getInstance().getCurrentReferenceId(), 
+                            LoginController.sessionId,
+                            ProjectController.getInstance().getCurrentProjectId(),
+                            ReferenceController.getInstance().getCurrentReferenceId(),
                             FilterController.getQueryFilterConditions()));
-                } catch (SQLException ex) {              
+                } catch (SQLException ex) {
                     MiscUtils.checkSQLException(ex);
                     Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (RemoteException ex) {              
+                } catch (RemoteException ex) {
                     Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                dialog.close();  
+                dialog.close();
             }
         };
-        thread.start(); 
-        dialog.setVisible(true);     
+        thread.start();
+        dialog.setVisible(true);
     }
-    
+
     private void addFilterSet(int numRecords){
         Filter filter = FilterController.getLastFilter();
         String action = FilterController.getLastActionString();
-        model.addRow(filter.getName(), action, numRecords); 
+        model.addRow(filter.getName(), action, numRecords);
         table.updateUI();
         this.repaint();
     }
-    
+
     private class ProgressTableModel extends AbstractTableModel {
-        
+
         private Mode mode = Mode.GLOBAL;
-        
+
         private String[] globalColumnNames = {"Filter Name", "Action", "Records", "% of Total"};
         private String[] relativeColumnNames = {"Filter Name", "Action", "Records", "Change"};
         private Class[] columnClasses = {String.class, String.class, Integer.class, JPanel.class};
-        
+
         List<String> names = new ArrayList<String>();
         List<String> actions = new ArrayList<String>();
         List<Integer> records = new ArrayList<Integer>();
         //List<String> parameters = new ArrayList<String>();
-        
+
         public void addRow(String name, String action, int numRecords){
             names.add(name);
             actions.add(action);
             records.add(numRecords);
             //parameters.add(param);
         }
-        
+
         public void setMode(Mode mode){
-            this.mode = mode;            
+            this.mode = mode;
         }
-        
+
         @Override
         public String getColumnName(int column) {
             if(mode == Mode.GLOBAL){
                 return globalColumnNames[column];
             } else {
                 return relativeColumnNames[column];
-            }         
+            }
         }
 
         public int getRowCount() {
@@ -198,9 +200,9 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
                 return globalColumnNames.length;
             } else {
                 return relativeColumnNames.length;
-            }  
+            }
         }
-        
+
         @Override
         public Class getColumnClass(int column) {
             return columnClasses[column];
@@ -224,7 +226,7 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
                                 Dimension dim = getSize();
                                 g.setColor(REMAINING_COLOR);
                                 g.fillRect(0,0,(int)(dim.width * ((double)records.get(rowIndex) / (double)records.get(0))), dim.height);
-                            }                    
+                            }
                         };
                         p.setBackground(TOTAL_COLOR);
                     } else {
@@ -246,24 +248,24 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
                                     g.fillRect(0, 0, dim.width, dim.height);
                                     g.setColor(NEW_COLOR);
                                     g.fillRect(0, 0, (int)(dim.width * ratio), dim.height);
-                                }                                
-                            }                    
+                                }
+                            }
                         };
-                    }                   
+                    }
                     return p;
                 default:
                     return null;
             }
-        }  
+        }
     }
-    
+
     private class JPanelRenderer implements TableCellRenderer {
 
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) { 
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             return (Component)value;
         }
 
     }
-    
+
 }
