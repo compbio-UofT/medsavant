@@ -22,9 +22,13 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.listener.ProjectListener;
+import org.ut.biolab.medsavant.plugin.PluginController;
+import org.ut.biolab.medsavant.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
 import org.ut.biolab.medsavant.view.manage.ImportVariantsWizard;
+import org.ut.biolab.medsavant.view.manage.PluginPage;
 import org.ut.biolab.medsavant.view.manage.VariantFilesPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -52,15 +56,25 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
     @Override
     public SubSectionView[] getSubSections() {
-        SubSectionView[] pages = new SubSectionView[2];
+        SubSectionView[] pages = new SubSectionView[3];
 
-        SubSectionViewCollection variantCollection = new SubSectionViewCollection(this,"Browse");
-        variantCollection.addSubSectionView(new GeneticsTablePage(this));
-        variantCollection.addSubSectionView(new GeneticsChartPage(this));
-        variantCollection.addSubSectionView(new AggregatePage(this));
+        SubSectionViewCollection variantCollectionBrowse = new SubSectionViewCollection(this,"Browse");
+        variantCollectionBrowse.addSubSectionView(new GeneticsTablePage(this));
+        variantCollectionBrowse.addSubSectionView(new GeneticsChartPage(this));
+        variantCollectionBrowse.addSubSectionView(new AggregatePage(this));
+
+        SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this,"Plugins");
+
+        PluginController pc = PluginController.getInstance();
+        pc.loadPlugins(DirectorySettings.getPluginsDirectory());
+        List<PluginDescriptor> knownPlugins = pc.getDescriptorsOfType(PluginDescriptor.Type.SECTION);
+        for (int i = 0; i < knownPlugins.size(); i++) {
+            variantCollectionPlugins.addSubSectionView(new PluginPage(this, knownPlugins.get(i)));
+        }
 
         pages[0] = new VariantFilesPage(this);
-        pages[1] = variantCollection;
+        pages[1] = variantCollectionBrowse;
+        pages[2] = variantCollectionPlugins;
 
         return pages;
     }

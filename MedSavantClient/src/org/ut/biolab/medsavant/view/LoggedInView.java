@@ -93,7 +93,7 @@ public class LoggedInView extends JPanel implements ProjectListener {
 
         viewController.addComponent(getSeparator());
 
-        addSection(new PluginsSection());
+        //addSection(new PluginsSection());
         addSection(new OtherSection());
 
         if (LoginController.isAdmin()) {
