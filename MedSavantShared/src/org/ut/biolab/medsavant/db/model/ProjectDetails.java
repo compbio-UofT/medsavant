@@ -14,20 +14,24 @@ import java.util.List;
  */
 public class ProjectDetails implements Serializable {
     
+    private int projectId;
+    private int updateId;
     private int referenceId;
+    private String projectName;
     private String referenceName;
     private String annotationIds;
+    private boolean published;
     
-    public ProjectDetails(int referenceId, String referenceName, String annotationIds){
+    public ProjectDetails(int projectId, int referenceId, int updateId, boolean published, String projectName, String referenceName, String annotationIds){
         this.referenceId = referenceId;
         this.referenceName = referenceName;
         this.annotationIds = annotationIds;
+        this.projectId = projectId;
+        this.updateId = updateId;
+        this.published = published;
+        this.projectName = projectName;
     }
 
-    /*public String getAnnotationIds() {
-        return annotationIds;
-    }*/
-    
     public List<Integer> getAnnotationIds(){
         List<Integer> ids = new ArrayList<Integer>();
         if(annotationIds != null){
@@ -38,13 +42,29 @@ public class ProjectDetails implements Serializable {
         }
         return ids;
     }
+    
+    public int getProjectId() {
+        return projectId;
+    }
 
     public int getReferenceId() {
         return referenceId;
     }
+    
+    public int getUpdateId() {
+        return updateId;
+    }
+    
+    public boolean isPublished(){
+        return published;
+    }
 
     public String getReferenceName() {
         return referenceName;
+    }
+    
+    public String getProjectName() {
+        return projectName;
     }
     
     public int getNumAnnotations() {

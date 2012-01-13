@@ -653,6 +653,12 @@ public class ViewUtil {
         b.setIcon(i);
         return b;
     }*/
+    
+    public static JLabel createLabelButton(String text) {
+        JLabel b = new JLabel(text);
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return b;
+    }
 
 
 }

@@ -31,6 +31,7 @@ import org.ut.biolab.medsavant.server.api.SessionAdapter;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.db.util.query.api.CustomTablesAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.DBUtilAdapter;
+import org.ut.biolab.medsavant.db.util.query.api.NotificationQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.SetupAdapter;
 import org.ut.biolab.medsavant.db.variants.upload.api.VariantManagerAdapter;
 import org.ut.biolab.medsavant.log.ClientLogger;
@@ -57,6 +58,7 @@ public class MedSavantClient {
     public static DBUtilAdapter DBUtilAdapter;
     public static SetupAdapter SetupAdapter;
     public static VariantManagerAdapter VariantManagerAdapter;
+    public static NotificationQueryUtilAdapter NotificationQueryUtilAdapter;
 
     //public static SessionAdapter SessionAdapter;
 
@@ -159,6 +161,7 @@ public class MedSavantClient {
         DBUtilAdapter = (DBUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_DBUtilAdapter));
         SetupAdapter = (SetupAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SetupAdapter));
         CustomTablesAdapter = (CustomTablesAdapter) (registry.lookup(MedSavantServerRegistry.Registry_CustomTablesAdapter));
+        NotificationQueryUtilAdapter = (NotificationQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_NotificationQueryUtilAdapter));
     }
 
     private static void setLAF() {

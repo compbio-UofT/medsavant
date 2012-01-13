@@ -27,4 +27,5 @@ public class MedSavantServerRegistry {
     public static final String Registry_VariantQueryUtilAdapter = "VariantQueryUtilAdapter";
     public static final String Registry_DBUtilAdapter = "DBUtilAdapter";
     public static final String Registry_SetupAdapter = "SetupAdapter";
+    public static final String Registry_NotificationQueryUtilAdapter = "NotificationQueryUtilAdapter";
 }

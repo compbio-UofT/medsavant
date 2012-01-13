@@ -46,6 +46,7 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.query.api.ProjectQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.variants.update.VariantManagerUtils;
+import org.ut.biolab.medsavant.server.SessionController;
 
 /**
  *
@@ -403,8 +404,12 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         while (rs.next()) {
             if(!refs.contains(rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID))){ // should be only one per reference (most recent and published)
                 result.add(new ProjectDetails(
+                        rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID),
                         rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID),
+                        rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID),
+                        rs.getBoolean(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED),
                         rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
+                        null,
                         rs.getString(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS)));
                 refs.add(rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID));
             }
@@ -504,9 +509,59 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
         
         c.createStatement().executeUpdate(query.toString());
+    }
+    
+    public List<ProjectDetails> getUnpublishedTables(String sid) throws SQLException {
         
-        //TODO: remove all previous tables!
-        //TODO: this should be done at every step, not just here
+        TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
+        TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
+        TableSchema projectTable = MedSavantDatabase.ProjectTableSchema;
+        
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(variantMapTable.getTable());
+        query.addAliasedColumn(projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), "A");
+        query.addAliasedColumn(refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME), "B");
+        query.addAllTableColumns(variantMapTable.getTable());
+        query.addJoin(
+                SelectQuery.JoinType.LEFT_OUTER,
+                variantMapTable.getTable(),
+                refTable.getTable(),
+                BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
+        query.addJoin(
+                SelectQuery.JoinType.LEFT_OUTER,
+                variantMapTable.getTable(),
+                projectTable.getTable(),
+                BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID)));
+        
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());       
+        
+        Map<Integer, Map<Integer, ProjectDetails>> map = new HashMap<Integer, Map<Integer, ProjectDetails>>();
+        
+        while(rs.next()){
+            int projectId = rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID);
+            int referenceId = rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID);
+            int updateId = rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID);
+            boolean published = rs.getBoolean(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED);
+            
+            if(!map.containsKey(projectId)){
+                map.put(projectId, new HashMap<Integer, ProjectDetails>());
+            }
+            
+            if(!map.get(projectId).containsKey(referenceId) || map.get(projectId).get(referenceId).getUpdateId() < updateId){
+                map.get(projectId).put(referenceId, new ProjectDetails(projectId, referenceId, updateId, published, rs.getString("A"), rs.getString("B"), null));
+            } 
+        }
+        
+        List<ProjectDetails> tables = new ArrayList<ProjectDetails>();
+        for(Integer project : map.keySet()){
+            for(ProjectDetails details : map.get(project).values()){
+                if(!details.isPublished()){
+                    tables.add(details);
+                }
+            }
+        }
+        
+        return tables;
     }
     
     public boolean existsUnpublishedChanges(String sid, int projectId) throws SQLException, RemoteException {
