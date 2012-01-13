@@ -179,9 +179,11 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
                 "CREATE TABLE `" + MedSavantDatabase.VarianttablemapTableSchema.getTablename() + "` ("
                 + "`project_id` int(11) unsigned NOT NULL,"
                 + "`reference_id` int(11) unsigned NOT NULL,"
+                + "`update_id` int(11) unsigned NOT NULL,"
+                + "`published` boolean NOT NULL,"
                 + "`variant_tablename` varchar(100) COLLATE latin1_bin NOT NULL,"
                 + "`annotation_ids` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                + "UNIQUE KEY `unique` (`project_id`,`reference_id`,`variant_tablename`)"
+                + "UNIQUE KEY `unique` (`project_id`,`reference_id`,`update_id`)"
                 + ") ENGINE=MyISAM;");
 
         c.createStatement().execute(
@@ -233,13 +235,15 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
         c.createStatement().execute(
                 "CREATE TABLE  `" + MedSavantDatabase.VariantformatTableSchema.getTablename() + "` ("
                 + "`project_id` int(11) unsigned NOT NULL,"
+                + "`reference_id` int(11) unsigned NOT NULL,"
+                + "`update_id` int(11) unsigned NOT NULL,"
                 + "`position` int(11) unsigned NOT NULL,"
                 + "`column_name` varchar(200) COLLATE latin1_bin NOT NULL,"
                 + "`column_type` varchar(45) COLLATE latin1_bin NOT NULL,"
                 + "`filterable` tinyint(1) NOT NULL,"
                 + "`alias` varchar(200) COLLATE latin1_bin NOT NULL,"
                 + "`description` varchar(500) COLLATE latin1_bin NOT NULL,"
-                + "PRIMARY KEY (`project_id`,`position`)"
+                + "PRIMARY KEY (`project_id`,`reference_id`,`update_id`,`position`)"
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
         c.createStatement().execute(
@@ -324,6 +328,7 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
 
     private static void addDbSettings(String sid, String versionString) throws SQLException, RemoteException {
         SettingsQueryUtil.getInstance().addSetting(sid, Settings.KEY_CLIENT_VERSION, versionString);
+        SettingsQueryUtil.getInstance().addSetting(sid, Settings.KEY_DB_LOCK, Boolean.toString(false));
     }
 
     private static List<String> getValuesFromField(Connection c,String tablename, String fieldname) throws SQLException {

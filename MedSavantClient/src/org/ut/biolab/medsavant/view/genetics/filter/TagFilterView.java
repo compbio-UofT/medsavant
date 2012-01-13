@@ -196,7 +196,8 @@ public class TagFilterView extends FilterView {
                                 TableSchema table = MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(
                                          LoginController.sessionId, 
                                          ProjectController.getInstance().getCurrentProjectId(),
-                                         ReferenceController.getInstance().getCurrentReferenceId()));
+                                         ReferenceController.getInstance().getCurrentReferenceId(),
+                                         true));
 
                                 for (int i = 0; i < uploadIDs.size(); i++) {
                                     uploadIDConditions[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadIDs.get(i));

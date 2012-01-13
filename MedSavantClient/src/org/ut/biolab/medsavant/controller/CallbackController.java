@@ -7,6 +7,7 @@ package org.ut.biolab.medsavant.controller;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.client.api.ClientCallbackAdapter;
+import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -27,19 +28,28 @@ public class CallbackController extends java.rmi.server.UnicastRemoteObject impl
     public CallbackController() throws RemoteException {}
 
     @Override
-    public void sessionTerminated(String message) throws RemoteException {
+    public void sessionTerminated(final String message) throws RemoteException {
 
-        String fullmessage = "Your session was ended by the server.\n\n";
+        //do in new thread to prevent server from blocking. 
+        MiscUtils.invokeLaterIfNecessary(new Runnable() {
 
-        if (message != null) {
-            fullmessage += message;
-        }
+            @Override
+            public void run() {
+                
+                String fullmessage = "Your session was ended by the server.\n\n";
 
-        fullmessage += "\n\nMedSavant will now exit.";
+                if (message != null) {
+                    fullmessage += message;
+                }
 
-        DialogUtils.displayMessage("Session ended", fullmessage);
-        LoginController.logout();
-        System.exit(0);
+                fullmessage += "\n\nMedSavant will now exit.";
+                
+                DialogUtils.displayMessage("Session ended", fullmessage);
+                LoginController.logout();
+                
+                System.exit(0);
+            }
+        });          
     }
 
 }

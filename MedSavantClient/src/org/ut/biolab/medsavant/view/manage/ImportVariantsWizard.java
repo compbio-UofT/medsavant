@@ -22,6 +22,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.rmi.RemoteException;
@@ -68,10 +70,37 @@ public class ImportVariantsWizard extends WizardDialog {
     private Thread publishThread = null;
 
     public ImportVariantsWizard() {
+        
+        this.projectId = ProjectController.getInstance().getCurrentProjectId();
+        this.referenceId = ReferenceController.getInstance().getCurrentReferenceId();
+        
+        //check for existing unpublished changes to this project + reference
+        try {           
+            if(MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, projectId, referenceId)){
+                DialogUtils.displayMessage("Cannot perform import", "There are unpublished changes to this table. Please publish and then try again.");
+                return;
+            }
+        } catch (Exception ex) {
+            DialogUtils.displayErrorMessage("Error checking for changes. ", ex);
+            return;
+        }
+        
+        //get lock
+        try {            
+            if(!MedSavantClient.SettingsQueryUtilAdapter.getDbLock(LoginController.sessionId)){
+                DialogUtils.displayMessage("Cannot perform import", "Another user is making changes to the database. You must wait until this user has finished. ");
+                return;
+            }
+        } catch (Exception ex) {
+            DialogUtils.displayErrorMessage("Error getting database lock", ex);
+            return;
+        }
+
+        catchClosing();
         setupWizard();
     }
 
-    private void setupWizard() {
+    private void setupWizard() {   
         setTitle("Import Variants Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
@@ -92,6 +121,18 @@ public class ImportVariantsWizard extends WizardDialog {
         setLocationRelativeTo(null);
         setVisible(true);
     }
+    
+    private void catchClosing(){
+        this.addWindowListener(new WindowAdapter() {       
+            public void windowClosed(WindowEvent e){
+                try {
+                    MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
+                } catch (Exception ex) {
+                    Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+    }
 
     private AbstractWizardPage getWelcomePage() {
 
@@ -105,9 +146,7 @@ public class ImportVariantsWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
             }
         };
-
-        this.projectId = ProjectController.getInstance().getCurrentProjectId();
-        this.referenceId = ReferenceController.getInstance().getCurrentReferenceId();
+       
         String projectName = ProjectController.getInstance().getCurrentProjectName();
         String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
 
@@ -398,7 +437,7 @@ public class ImportVariantsWizard extends WizardDialog {
                             instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
                             // do stuff
                             MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
-
+                            
                             //success
                             publishProgressBar.setIndeterminate(false);
                             publishCancelButton.setVisible(false);
@@ -468,11 +507,10 @@ public class ImportVariantsWizard extends WizardDialog {
                                         i++;
                                     }
 
+                                    //upload variants
                                     progressLabel.setText("Uploading variant files...");
                                     updateID = MedSavantClient.VariantManagerAdapter.uploadVariants(LoginController.sessionId, streams, projectId, referenceId);
-
-                                    progressLabel.setText("Annotating variants...");
-                                    MedSavantClient.VariantManagerAdapter.annotateVariants(LoginController.sessionId, projectId, referenceId, updateID);
+                                    MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
 
                                     //success
                                     progressBar.setIndeterminate(false);
@@ -490,7 +528,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
                                         publishProgressLabel.setText("Publishing variants...");
 
-                                        // do stuff
+                                        // publish
                                         MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
 
                                         //success
@@ -503,9 +541,17 @@ public class ImportVariantsWizard extends WizardDialog {
 
                                     } else {
                                         publishStartButton.setVisible(true);
+                                        page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
                                     }
 
                                 } catch (Exception ex) {
+                                    
+                                    //release lock always
+                                    try {
+                                        MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
+                                    } catch (Exception ex1) {
+                                        Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex1);
+                                    }
 
                                     //cancellation
                                     if (ex instanceof InterruptedException) {

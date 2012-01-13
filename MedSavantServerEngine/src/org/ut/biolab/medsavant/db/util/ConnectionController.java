@@ -57,7 +57,7 @@ public class ConnectionController {
     static int getPort() {
         return dbPort;
     }
-
+    
     public static Connection connectOnce(String dbhost, int port, String dbname, String username, String password) throws SQLException {
         try {
             Class.forName(dbDriver).newInstance();

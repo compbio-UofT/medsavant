@@ -56,7 +56,7 @@ public class ProjectUtils {
     }
 
     public static TableSchema getCustomVariantTableSchema(int projectID, int refID) throws SQLException, RemoteException {
-        return MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId,MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, projectID, refID));
+        return MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId,MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, projectID, refID, true));
     }
 
     public static void addFilterConditions(final Condition[] conditions, final String filterName, final String filterID, int queryID) {

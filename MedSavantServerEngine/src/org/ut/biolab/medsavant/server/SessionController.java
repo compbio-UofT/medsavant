@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 import org.ut.biolab.medsavant.client.api.ClientCallbackAdapter;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.SessionConnection;
+import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
+import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
 import org.ut.biolab.medsavant.server.mail.CryptoUtils;
 
@@ -75,7 +77,7 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
         terminateSessionsForDatabase(dbname, null);
     }
 
-    public void terminateSessionsForDatabase(String dbname, String message) {
+    public void terminateSessionsForDatabase(String dbname, final String message) {
 
         System.out.println("Terminating sessions for database " + dbname);
 
@@ -105,6 +107,6 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
             } catch (Exception ex) {
                 Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
+        }    
     }
 }

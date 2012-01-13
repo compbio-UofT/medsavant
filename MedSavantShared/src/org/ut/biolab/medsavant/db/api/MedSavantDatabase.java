@@ -820,13 +820,23 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_REFERENCE_ID = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_REFERENCE_ID = 11;
         public static final String COLUMNNAME_OF_REFERENCE_ID = "reference_id";
+        // variant_tablemap.update_id
+        public static final int INDEX_OF_UPDATE_ID = 2;
+        public static final ColumnType TYPE_OF_UPDATE_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_UPDATE_ID = 11;
+        public static final String COLUMNNAME_OF_UPDATE_ID = "update_id";
+        // variant_tablemap.published
+        public static final int INDEX_OF_PUBLISHED = 3;
+        public static final ColumnType TYPE_OF_PUBLISHED = TableSchema.ColumnType.BOOLEAN;
+        public static final int LENGTH_OF_PUBLISHED = 1;
+        public static final String COLUMNNAME_OF_PUBLISHED = "published";
         // variant_tablemap.variant_tablename
-        public static final int INDEX_OF_VARIANT_TABLENAME = 2;
+        public static final int INDEX_OF_VARIANT_TABLENAME = 4;
         public static final ColumnType TYPE_OF_VARIANT_TABLENAME = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_VARIANT_TABLENAME = 100;
         public static final String COLUMNNAME_OF_VARIANT_TABLENAME = "variant_tablename";
         // variant_tablemap.annotation_ids
-        public static final int INDEX_OF_ANNOTATION_IDS = 3;
+        public static final int INDEX_OF_ANNOTATION_IDS = 5;
         public static final ColumnType TYPE_OF_ANNOTATION_IDS = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_ANNOTATION_IDS = 500;
         public static final String COLUMNNAME_OF_ANNOTATION_IDS = "annotation_ids";
@@ -834,6 +844,8 @@ public class MedSavantDatabase {
         private void addColumns() {
             addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
             addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_UPDATE_ID, COLUMNNAME_OF_UPDATE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PUBLISHED, COLUMNNAME_OF_PUBLISHED, TableSchema.ColumnType.BOOLEAN, 1);
             addColumn(COLUMNNAME_OF_VARIANT_TABLENAME, COLUMNNAME_OF_VARIANT_TABLENAME, TableSchema.ColumnType.VARCHAR, 100);
             addColumn(COLUMNNAME_OF_ANNOTATION_IDS, COLUMNNAME_OF_ANNOTATION_IDS, TableSchema.ColumnType.VARCHAR, 500);
         }
@@ -852,39 +864,51 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_PROJECT_ID = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_PROJECT_ID = 11;
         public static final String COLUMNNAME_OF_PROJECT_ID = "project_id";
+        // patient_format.reference_id
+        public static final int INDEX_OF_REFERENCE_ID = 1;
+        public static final ColumnType TYPE_OF_REFERENCE_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_REFERENCE_ID = 11;
+        public static final String COLUMNNAME_OF_REFERENCE_ID = "reference_id";
+        // patient_format.update_id
+        public static final int INDEX_OF_UPDATE_ID = 2;
+        public static final ColumnType TYPE_OF_UPDATE_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_UPDATE_ID = 11;
+        public static final String COLUMNNAME_OF_UPDATE_ID = "update_id";
         // patient_format.position
-        public static final int INDEX_OF_POSITION = 1;
+        public static final int INDEX_OF_POSITION = 3;
         public static final ColumnType TYPE_OF_POSITION = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_POSITION = 11;
         public static final String COLUMNNAME_OF_POSITION = "position";
         // patient_format.column_name
-        public static final int INDEX_OF_COLUMN_NAME = 2;
+        public static final int INDEX_OF_COLUMN_NAME = 4;
         public static final ColumnType TYPE_OF_COLUMN_NAME = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_COLUMN_NAME = 200;
         public static final String COLUMNNAME_OF_COLUMN_NAME = "column_name";
         // patient_format.column_type
-        public static final int INDEX_OF_COLUMN_TYPE = 3;
+        public static final int INDEX_OF_COLUMN_TYPE = 5;
         public static final ColumnType TYPE_OF_COLUMN_TYPE = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_COLUMN_TYPE = 45;
         public static final String COLUMNNAME_OF_COLUMN_TYPE = "column_type";
         // patient_format.filterable
-        public static final int INDEX_OF_FILTERABLE = 4;
+        public static final int INDEX_OF_FILTERABLE = 6;
         public static final ColumnType TYPE_OF_FILTERABLE = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_FILTERABLE = 1;
         public static final String COLUMNNAME_OF_FILTERABLE = "filterable";
         // patient_format.alias
-        public static final int INDEX_OF_ALIAS = 5;
+        public static final int INDEX_OF_ALIAS = 7;
         public static final ColumnType TYPE_OF_ALIAS = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_ALIAS = 200;
         public static final String COLUMNNAME_OF_ALIAS = "alias";
         // patient_format.description
-        public static final int INDEX_OF_DESCRIPTION = 6;
+        public static final int INDEX_OF_DESCRIPTION = 8;
         public static final ColumnType TYPE_OF_DESCRIPTION = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_DESCRIPTION = 500;
         public static final String COLUMNNAME_OF_DESCRIPTION = "description";
 
         private void addColumns() {
             addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_UPDATE_ID, COLUMNNAME_OF_UPDATE_ID, TableSchema.ColumnType.INTEGER, 11);
             addColumn(COLUMNNAME_OF_POSITION, COLUMNNAME_OF_POSITION, TableSchema.ColumnType.INTEGER, 11);
             addColumn(COLUMNNAME_OF_COLUMN_NAME, COLUMNNAME_OF_COLUMN_NAME, TableSchema.ColumnType.VARCHAR, 200);
             addColumn(COLUMNNAME_OF_COLUMN_TYPE, COLUMNNAME_OF_COLUMN_TYPE, TableSchema.ColumnType.VARCHAR, 45);

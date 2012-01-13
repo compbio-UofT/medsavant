@@ -4,15 +4,21 @@
  */
 package org.ut.biolab.medsavant.db.util.query;
 
+import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.UpdateQuery;
 import java.rmi.RemoteException;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.SettingsTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.settings.Settings;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.query.api.SettingsQueryUtilAdapter;
 
@@ -23,6 +29,7 @@ import org.ut.biolab.medsavant.db.util.query.api.SettingsQueryUtilAdapter;
 public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject implements SettingsQueryUtilAdapter {
 
     private static SettingsQueryUtil instance;
+    private static boolean lockReleased = false;
 
     public static synchronized SettingsQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
@@ -59,5 +66,53 @@ public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject imple
             return null;
         }
     }
+    
+    public void updateSetting(String sid, String key, String value) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.SettingsTableSchema;
+        UpdateQuery query = new UpdateQuery(table.getTable());
+        query.addSetClause(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_VALUE), value);
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key));
+        
+        ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
+    }
+    
+    private void updateSetting(Connection c, String key, String value) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.SettingsTableSchema;
+        UpdateQuery query = new UpdateQuery(table.getTable());
+        query.addSetClause(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_VALUE), value);
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key));
+        
+        c.createStatement().executeUpdate(query.toString());
+    }
 
+    public synchronized boolean getDbLock(String sid) throws SQLException {
+        
+        System.out.print(sid + " getting lock");
+        
+        String value = getSetting(sid, Settings.KEY_DB_LOCK);
+        if(Boolean.parseBoolean(value) && !lockReleased){
+            System.out.println(" - FAILED");
+            return false;
+        }
+        updateSetting(sid, Settings.KEY_DB_LOCK, Boolean.toString(true));
+        System.out.println(" - SUCCESS");
+        lockReleased = false;
+        return true;
+    }
+    
+    public synchronized void releaseDbLock(Connection c) { 
+        System.out.println("Server releasing lock");
+        try {
+            updateSetting(c, Settings.KEY_DB_LOCK, Boolean.toString(false));
+        } catch (SQLException ex) {
+            lockReleased = true;
+            Logger.getLogger(SettingsQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void releaseDbLock(String sid) { 
+        releaseDbLock(ConnectionController.connectPooled(sid));
+    }
 }

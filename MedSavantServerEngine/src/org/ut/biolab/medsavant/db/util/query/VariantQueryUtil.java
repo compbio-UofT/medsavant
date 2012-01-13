@@ -75,7 +75,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     @Override
     public TableSchema getCustomTableSchema(String sessionId, int projectId, int referenceId) throws SQLException, RemoteException {
-        return CustomTables.getInstance().getCustomTableSchema(sessionId,ProjectQueryUtil.getInstance().getVariantTablename(sessionId,projectId, referenceId));
+        return CustomTables.getInstance().getCustomTableSchema(sessionId,ProjectQueryUtil.getInstance().getVariantTablename(sessionId,projectId, referenceId, true));
     }
 
 
@@ -85,7 +85,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException {
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId,ProjectQueryUtil.getInstance().getVariantTablename(sessionId,projectId, referenceId));
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId,ProjectQueryUtil.getInstance().getVariantTablename(sessionId,projectId, referenceId, true));
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
@@ -164,7 +164,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public int getNumFilteredVariants(String sid,int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException {
 
-        String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId);
+        String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
 
         if (name == null) {
             return -1;
@@ -184,7 +184,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     }
 
     public int getNumVariantsForDnaIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException {
-        String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId);
+        String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
 
         if (name == null) {
             return -1;
@@ -215,7 +215,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public int getFilteredFrequencyValuesForColumnInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String columnname, double min, double max) throws SQLException, RemoteException {
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId));
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
@@ -232,7 +232,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public Map<String, Integer> getFilteredFrequencyValuesForColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException {
 
-        TableSchema tableSchema = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId));
+        TableSchema tableSchema = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
         DbTable table = tableSchema.getTable();
         DbColumn col = tableSchema.getDBColumnByAlias(columnAlias);
 
@@ -265,7 +265,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public int getNumVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException, RemoteException {
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId));
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
@@ -283,7 +283,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, int binsize) throws SQLException, RemoteException {
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId));
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
 
         SelectQuery queryBase = new SelectQuery();
         queryBase.addFromTable(table.getTable());
@@ -361,7 +361,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public int[] getNumVariantsForBins(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int binsize, int numbins) throws SQLException, NonFatalDatabaseException, RemoteException {
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId));
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
 
         SelectQuery queryBase = new SelectQuery();
         queryBase.addFromTable(table.getTable());
@@ -494,7 +494,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public Map<String, Integer> getNumVariantsInFamily(String sid, int projectId, int referenceId, String familyId, Condition[][] conditions) throws SQLException, RemoteException {
 
-        String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId);
+        String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
 
         if (name == null) {
             return null;

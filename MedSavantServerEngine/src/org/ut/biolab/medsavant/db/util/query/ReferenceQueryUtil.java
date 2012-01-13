@@ -222,12 +222,15 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
                         refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                         variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
         query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+        query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
 
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
 
         List<String> references = new ArrayList<String>();
         while (rs.next()) {
-            references.add(rs.getString(1));
+            if(!references.contains(rs.getString(1))){
+                references.add(rs.getString(1));
+            }
         }
 
         return references;
@@ -241,6 +244,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         query.addFromTable(table.getTable());
         query.addColumns(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
 
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
 

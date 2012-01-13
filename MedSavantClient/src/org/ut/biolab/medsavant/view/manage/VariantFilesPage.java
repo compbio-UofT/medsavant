@@ -263,7 +263,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
             if (items.isEmpty()) {
                 setTitle("");
             } else {
-                setTitle("Multiple users (" + items.size() + ")");
+                setTitle("Multiple uploads (" + items.size() + ")");
             }
             details.removeAll();
             details.updateUI();

@@ -131,6 +131,9 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
         return result;
     }
 
+    /*
+     * Get the annotation ids associated with the latest published table. 
+     */
     public int[] getAnnotationIds(String sid,int projectId, int referenceId) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
@@ -139,7 +142,9 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
         query.addColumns(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS));
         query.addCondition(ComboCondition.and(
                 BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId),
-                BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId)));
+                BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId),
+                BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true)));
+        query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
 
 
         String a = query.toString();
