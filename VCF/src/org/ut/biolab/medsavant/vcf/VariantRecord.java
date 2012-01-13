@@ -200,9 +200,8 @@ public class VariantRecord implements Serializable {
                 name = element.substring(0, equals);
                 value = element.substring(equals+1);
             }
-            
             for(int i = 0; i < infoKeys.length; i++){
-                if(name.equals(infoKeys[i])){
+                if(name.toLowerCase().equals(infoKeys[i].toLowerCase())){
                     values[i] = parse(infoClasses[i], value);
                 }
             }

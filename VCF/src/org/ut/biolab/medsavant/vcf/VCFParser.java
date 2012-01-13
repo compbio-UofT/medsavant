@@ -67,7 +67,7 @@ public class VCFParser {
         int numRecords = 0;
 
 
-        BufferedWriter out = new BufferedWriter(new FileWriter(outfile, false));
+        BufferedWriter out = new BufferedWriter(new FileWriter(outfile, true));
 
         int variantId = 0;
         int numLinesWritten = 0;
