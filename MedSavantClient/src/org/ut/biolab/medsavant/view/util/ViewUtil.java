@@ -98,6 +98,14 @@ public class ViewUtil {
         return new EmptyBorder(10,10,10,10);
     }
 
+    public static Border getTopHeavyBorder() {
+        return new EmptyBorder(30,10,30,10);
+    }
+
+    public static Border getMediumTopHeavyBorder() {
+        return new EmptyBorder(10,0,10,0);
+    }
+
 
     public static Border getHugeBorder() {
         return new EmptyBorder(25,25,25,25);
@@ -234,6 +242,10 @@ public class ViewUtil {
 
     public static Border getTinyLineBorder() {
         return new LineBorder(Color.lightGray,1);
+    }
+
+    public static Border getTinyBottomLineBorder() {
+        return BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray);
     }
 
     public static Border getSideLineBorder() {
@@ -413,6 +425,10 @@ public class ViewUtil {
     public static void applyHorizontalBoxLayout(JPanel p) {
         p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
     }
+
+
+
+
 
 
 

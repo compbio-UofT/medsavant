@@ -75,9 +75,9 @@ public class IconFactory {
             case REMOVE_ON_TOOLBAR:
                 return getIcon(iconroot + "mac_remove.png");
             case ADD:
-                return getIcon(iconroot + "add.png");
+                return getIcon(iconroot + "add_f.png");
             case REMOVE:
-                return getIcon(iconroot + "remove.png");
+                return getIcon(iconroot + "rem_f.png");
             case EDIT:
                 return getIcon(iconroot + "mac_edit.png");
             case FILTER:

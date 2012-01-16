@@ -81,9 +81,8 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
     @Override
     public JPanel[] getPersistentPanels() {
-        panels = new JPanel[2];
+        panels = new JPanel[1];
         panels[0] = new GeneticsFilterPage(this).getView(true);
-        panels[1] = new FilterProgressPanel();
 
         return panels;
     }

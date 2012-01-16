@@ -94,9 +94,10 @@ public class FilterPanelSub extends CollapsiblePanel {
         this.addTitleComponent(removeLabel);
 
         contentPanel = this.getContentPane();
-        contentPanel.setBackground(Color.darkGray);
+        contentPanel.setOpaque(false);
+        //contentPanel.setBackground(ViewUtil.getMenuColor());
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        contentPanel.setBorder(BorderFactory.createLineBorder(contentPanel.getBackground(), 6));
+        contentPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());
         this.add(contentPanel);
 
         refreshSubItems();
@@ -248,10 +249,10 @@ public class FilterPanelSub extends CollapsiblePanel {
             }
         });
 
-        JPanel tmp1 = ViewUtil.getSecondaryBannerPanel();//ViewUtil.getClearPanel();
-        //ViewUtil.applyHorizontalBoxLayout(tmp1);
-        tmp1.setBorder(BorderFactory.createCompoundBorder(
-               ViewUtil.getTinyLineBorder(),ViewUtil.getMediumBorder()));
+        JPanel tmp1 = ViewUtil.getClearPanel();//ViewUtil.getSecondaryBannerPanel();//ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(tmp1);
+        //tmp1.setBorder(BorderFactory.createCompoundBorder(
+               //ViewUtil.getTinyLineBorder(),ViewUtil.getMediumBorder()));
         tmp1.add(addLabel);
         tmp1.add(Box.createRigidArea(new Dimension(5,20)));
         tmp1.add(new JLabel("Add filter"));
@@ -398,12 +399,12 @@ public class FilterPanelSub extends CollapsiblePanel {
 
                     public FilterView getFilterView() {
                         try {
-                            
+
                             //special cases:
                             if(field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
                                 return StringListFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias());
-                            }                            
-                            
+                            }
+
                             switch(field.getColumnType()){
                                 case INTEGER:
                                     return NumericFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias(), false);
@@ -419,7 +420,7 @@ public class FilterPanelSub extends CollapsiblePanel {
                         } catch (SQLException e) {
                             MiscUtils.checkSQLException(e);
                         } catch (Exception e) {
-                            e.printStackTrace();                          
+                            e.printStackTrace();
                         }
                         return null;
                     }

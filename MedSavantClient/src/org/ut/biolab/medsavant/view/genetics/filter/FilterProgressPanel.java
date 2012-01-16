@@ -32,6 +32,7 @@ import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.view.component.ProgressPanel;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -112,6 +113,7 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
 
         FilterController.addFilterListener(this);
 
+
     }
 
     private synchronized void changeMode(Mode mode){
@@ -128,15 +130,18 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
                 "Applying Filter",
                 "Filter is being applied. Please wait.",
                 true);
+
         Thread thread = new Thread() {
             @Override
             public void run() {
                 try {
-                    addFilterSet(MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
+                     int numLeft = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
                             LoginController.sessionId,
                             ProjectController.getInstance().getCurrentProjectId(),
                             ReferenceController.getInstance().getCurrentReferenceId(),
-                            FilterController.getQueryFilterConditions()));
+                            FilterController.getQueryFilterConditions());
+                    addFilterSet(numLeft);
+
                 } catch (SQLException ex) {
                     MiscUtils.checkSQLException(ex);
                     Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -146,6 +151,7 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
                 dialog.close();
             }
         };
+
         thread.start();
         dialog.setVisible(true);
     }
