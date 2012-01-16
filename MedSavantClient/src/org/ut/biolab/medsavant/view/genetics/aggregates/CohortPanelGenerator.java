@@ -57,7 +57,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author Andrew
  */
-public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersChangedListener {
+public class CohortPanelGenerator implements AggregatePanelGenerator {
     
     private CohortPanel panel;
     private final String pageName;
@@ -67,7 +67,6 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
     
     public CohortPanelGenerator(String pageName){
         this.pageName = pageName;
-        FilterController.addFilterListener(this);
     }
     
     public String getName() {
@@ -97,8 +96,9 @@ public class CohortPanelGenerator implements AggregatePanelGenerator, FiltersCha
             panel.finish();
         }
     }
-
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+    
+    @Override
+    public void setUpdateRequired(boolean required) {
         updateRequired = true;
     }
     

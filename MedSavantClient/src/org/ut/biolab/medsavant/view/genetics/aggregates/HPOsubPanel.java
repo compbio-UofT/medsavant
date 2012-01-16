@@ -60,6 +60,11 @@ public class HPOsubPanel extends OntologySubPanel{
             return jTree;
         }
     }
+
+    @Override
+    public void setUpdateRequired(boolean required) {
+        //
+    }
     
     
 }

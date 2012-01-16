@@ -79,6 +79,11 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             panel.update();
     }
 
+    @Override
+    public void setUpdateRequired(boolean required) {
+        //
+    }
+
     public class GeneListPanel extends JPanel implements FiltersChangedListener {
 
         private final JPanel banner;

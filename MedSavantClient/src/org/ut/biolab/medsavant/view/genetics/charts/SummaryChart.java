@@ -79,7 +79,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-public class SummaryChart extends JPanel implements FiltersChangedListener {
+public class SummaryChart extends JPanel {
 
     public static enum ChartAxis {X, Y};
 
@@ -99,7 +99,6 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
     public SummaryChart(final String pageName) {
         this.pageName = pageName;
         setLayout(new BorderLayout());
-        FilterController.addFilterListener(this);
     }
 
     public void setIsLogScale(boolean isLogScale, ChartAxis axis){
@@ -164,6 +163,12 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
                 updateRequired = false;
                 updateDataAndDrawChart();
             }
+        }
+    }
+    
+    public void setUpdateRequired(boolean required){
+        synchronized(updateLock){
+            updateRequired = required;
         }
     }
 
@@ -292,13 +297,7 @@ public class SummaryChart extends JPanel implements FiltersChangedListener {
     void setIsSortedKaryotypically(boolean b) {
         this.isSortedKaryotypically = b;
     }
-
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        synchronized (updateLock){
-            updateRequired = true;
-        }
-    }
-
+    
     public class ChartMapWorker extends MedSavantWorker<ChartFrequencyMap> {
 
         @SuppressWarnings("LeakingThisInConstructor")

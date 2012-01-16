@@ -18,9 +18,12 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.db.model.Chromosome;
+import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 
@@ -28,16 +31,18 @@ import org.ut.biolab.medsavant.view.util.PeekingPanel;
  *
  * @author mfiume
  */
-public class GeneticsTablePage extends SubSectionView {
+public class GeneticsTablePage extends SubSectionView implements FiltersChangedListener {
 
     private JPanel panel;
     private TablePanel tablePanel;
     private GenomeContainer gp;
+    private boolean isLoaded = false;
 
     private static GeneticsTablePage instance;
 
     public GeneticsTablePage(SectionView parent) {
         super(parent);
+        FilterController.addFilterListener(this);
         instance = this;
     }
 
@@ -47,12 +52,12 @@ public class GeneticsTablePage extends SubSectionView {
 
     public JPanel getView(boolean update) {
         if (panel == null || update) {
-            if(tablePanel != null) FilterController.removeFilterListener(tablePanel);
-            if(gp != null) FilterController.removeFilterListener(gp);
+            //if(tablePanel != null) FilterController.removeFilterListener(tablePanel);
+            //if(gp != null) FilterController.removeFilterListener(gp);
             setPanel();
         }
-        tablePanel.updateIfRequired();
-        gp.updateIfRequired();
+        //tablePanel.updateIfRequired();
+        //gp.updateIfRequired();
         return panel;
     }
 
@@ -85,6 +90,7 @@ public class GeneticsTablePage extends SubSectionView {
 
     @Override
     public void viewDidLoad() {
+        isLoaded = true;
     }
 
     @Override
@@ -93,6 +99,7 @@ public class GeneticsTablePage extends SubSectionView {
         if(!tablePanel.isInit()){
             this.setUpdateRequired(true);
         }
+        isLoaded = false;
     }
 
     public static GeneticsTablePage getInstance(){
@@ -100,10 +107,18 @@ public class GeneticsTablePage extends SubSectionView {
     }
 
     public void updateContents(){
+        if(tablePanel == null || gp == null) return;
         tablePanel.setUpdateRequired(true);
         gp.setUpdateRequired(true);
-        tablePanel.updateIfRequired();
-        gp.updateIfRequired();
+        if(isLoaded){           
+            tablePanel.updateIfRequired();
+            gp.updateIfRequired();
+        }
+    }
+
+    @Override
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        updateContents();
     }
 
 }

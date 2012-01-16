@@ -4,12 +4,16 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
+import java.sql.SQLException;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.view.genetics.charts.ChartView;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
@@ -17,13 +21,17 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  *
  * @author mfiume
  */
-public class GeneticsChartPage extends SubSectionView {
+public class GeneticsChartPage extends SubSectionView implements FiltersChangedListener {
 
     private JPanel panel;
     //private ChartContainer cc;
     private ChartView cc;
+    private boolean isLoaded = false;
 
-    public GeneticsChartPage(SectionView parent) { super(parent); }
+    public GeneticsChartPage(SectionView parent) { 
+        super(parent); 
+        FilterController.addFilterListener(this);
+    }
 
     public String getName() {
         return "Chart";
@@ -31,7 +39,6 @@ public class GeneticsChartPage extends SubSectionView {
 
     public JPanel getView(boolean update) {
         if (panel == null || update) {
-            if(cc != null) cc.cleanUp();
             try {
                 setPanel();
             } catch (NonFatalDatabaseException ex) {
@@ -73,11 +80,23 @@ public class GeneticsChartPage extends SubSectionView {
 
     @Override
     public void viewDidLoad() {
+        isLoaded = true;
     }
 
     @Override
     public void viewDidUnload() {
+        isLoaded = false;
         ThreadController.getInstance().cancelWorkers(getName());
+    }
+
+    @Override
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        if(cc != null){
+            cc.setUpdateRequired(true);
+            if(isLoaded){
+                cc.updateIfRequired();
+            }
+        }
     }
 
 }

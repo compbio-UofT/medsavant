@@ -95,7 +95,9 @@ public class ResultController implements FiltersChangedListener {
     
     public int getNumFilteredVariants() {
         try {
-            if (updateTotalNumVariantsRemainingIsRequired ||
+            System.out.println(updateTotalNumVariantsRemainingIsRequired);
+            if (filterSetId != FilterController.getCurrentFilterSetID() ||
+                    updateTotalNumVariantsRemainingIsRequired ||
                     ProjectController.getInstance().getCurrentProjectId() != projectId ||
                     ReferenceController.getInstance().getCurrentReferenceId() != referenceId || 
                     !SettingsController.getInstance().getDBName().equals(dbName)) {

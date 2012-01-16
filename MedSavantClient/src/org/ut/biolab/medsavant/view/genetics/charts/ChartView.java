@@ -252,7 +252,10 @@ public class ChartView extends JPanel {
         }
     }
     
-    public void cleanUp(){
-        FilterController.removeFilterListener(sc);
+    public void setUpdateRequired(boolean required){
+        if(sc != null){
+            sc.setUpdateRequired(required);
+        }
     }
+    
 }

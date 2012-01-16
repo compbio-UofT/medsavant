@@ -46,7 +46,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-class TablePanel extends JPanel implements FiltersChangedListener {
+class TablePanel extends JPanel {
 
     private SearchableTablePanel tablePanel;
     private static final String CARD_WAIT = "wait";
@@ -125,6 +125,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
                         showWaitCard();
                         int result = 0;
                         try {
+                            System.out.println("getting total num");
                             result = ResultController.getInstance().getNumFilteredVariants();
                         } catch (NonFatalDatabaseException ex) {
                             Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -172,7 +173,6 @@ class TablePanel extends JPanel implements FiltersChangedListener {
 
             @Override
             protected void showSuccess(Object result) {               
-                FilterController.addFilterListener(instance);
                 tablePanel = (SearchableTablePanel)result;
                 instance.add(tablePanel, CARD_SHOW);   
                 showShowCard();
@@ -193,12 +193,6 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         cl.show(this, CARD_SHOW);
     }
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        synchronized (updateLock){
-            updateRequired = true;
-        }
-    }
-
     public boolean isInit(){
         return init;
     }
@@ -211,6 +205,7 @@ class TablePanel extends JPanel implements FiltersChangedListener {
         if(tablePanel == null) return;
         synchronized (updateLock){
             if(updateRequired){
+                System.out.println("refresh");
                 tablePanel.forceRefreshData();
             }
         }

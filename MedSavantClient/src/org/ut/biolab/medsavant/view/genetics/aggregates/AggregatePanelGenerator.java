@@ -18,5 +18,5 @@ public interface AggregatePanelGenerator {
     
     public void run();
     
-    //public void setUpdate(boolean updatePanelUponFilterChanges);
+    public void setUpdateRequired(boolean required);
 }

@@ -54,4 +54,9 @@ public class GOsubPanel extends OntologySubPanel{
         }
     }
 
+    @Override
+    public void setUpdateRequired(boolean required) {
+        //
+    }
+
 }

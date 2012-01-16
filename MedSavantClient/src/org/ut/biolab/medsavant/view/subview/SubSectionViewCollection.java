@@ -55,7 +55,7 @@ public class SubSectionViewCollection extends SubSectionView {
         menuPanel.remove(glue);
 
         // init the view
-        v.getView(true);
+        //v.getView(true);
 
         final String title = v.getName();
         JRadioButton button = new JRadioButton(v.getName()) {

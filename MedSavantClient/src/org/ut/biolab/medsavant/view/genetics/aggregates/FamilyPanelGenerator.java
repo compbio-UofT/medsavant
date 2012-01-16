@@ -85,21 +85,13 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
         return panel;
     }
 
-    public void setUpdate(boolean update) {
-
-        if (panel == null) {
-            return;
-        }
-
-        if (update) {
-        } else {
-            panel.stopThreads();
-
-        }
-    }
-
     public void run() {
         panel.run();
+    }
+
+    @Override
+    public void setUpdateRequired(boolean required) {
+        //
     }
 
     public class FamilyPanel extends JPanel implements FiltersChangedListener {

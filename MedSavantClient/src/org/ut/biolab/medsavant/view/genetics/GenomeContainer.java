@@ -50,7 +50,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-public class GenomeContainer extends JPanel implements FiltersChangedListener  {
+public class GenomeContainer extends JPanel {
     private static final Logger LOG = Logger.getLogger(GenomeContainer.class.getName());
         
     private Genome genome;
@@ -80,8 +80,9 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
                
         this.add(new WaitPanel("Generating Genome View", Color.WHITE), CARD_WAIT);
 
-        FilterController.addFilterListener(this);
         init = true;
+        
+        updateIfRequired();
     }
 
     @Override
@@ -95,7 +96,6 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
     public void setGenome(Genome g) {
         this.genome = g;
         setChromosomeViews();
-        this.filtersChanged();
     }
 
     private void setChromosomeViews() {
@@ -131,12 +131,6 @@ public class GenomeContainer extends JPanel implements FiltersChangedListener  {
         GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker(pageName);
         gnv.execute();
     }*/
-    
-    public void filtersChanged() {        
-        synchronized (updateLock){
-            updateRequired = true;
-        }
-    }
     
     void setUpdateRequired(boolean b) {
         updateRequired = b;

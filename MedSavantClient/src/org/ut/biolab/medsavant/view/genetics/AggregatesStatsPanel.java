@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Nirvana Nursimulu
  */
-public class AggregatesStatsPanel extends JPanel implements FiltersChangedListener{
+public class AggregatesStatsPanel extends JPanel {
     
     private JPanel toolBarPanel;
     private String currentRegionStat;
@@ -114,13 +114,11 @@ public class AggregatesStatsPanel extends JPanel implements FiltersChangedListen
     private void setCurrentRegionStats(String regionStatsName) {
         currentRegionStat = regionStatsName;
     }
-
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        //stopAll(panelMap.firstKey());
-        //((AggregatePanelGenerator)panelMap.firstEntry()).setUpdate(true);
-    }
     
     public void update(){
+        for(String key : panelMap.keySet()){
+            panelMap.get(key).setUpdateRequired(true);
+        }
         if(panelMap != null && currentRegionStat != null)
             panelMap.get(currentRegionStat).run();
     }

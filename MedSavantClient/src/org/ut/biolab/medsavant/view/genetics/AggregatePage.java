@@ -6,9 +6,13 @@ package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.sql.SQLException;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ThreadController;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
@@ -16,12 +20,15 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  *
  * @author mfiume
  */
-public class AggregatePage extends SubSectionView {
+public class AggregatePage extends SubSectionView implements FiltersChangedListener {
 
     private JPanel panel;
     private AggregatesStatsPanel asp;
 
-    public AggregatePage(SectionView parent) { super(parent); }
+    public AggregatePage(SectionView parent) { 
+        super(parent);
+        FilterController.addFilterListener(this);
+    }
 
     public String getName() {
         return "Aggregate";
@@ -75,6 +82,11 @@ public class AggregatePage extends SubSectionView {
         ThreadController.getInstance().cancelWorkers(getName());
         //if (asp != null)
         //    asp.stopAggregation();
+    }
+
+    @Override
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        asp.update();
     }
 
 

@@ -53,6 +53,11 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
             panel.update();
     }
 
+    @Override
+    public void setUpdateRequired(boolean required) {
+        //
+    }
+
     public class OntologyPanel extends JPanel {
 
         private final JPanel banner;
