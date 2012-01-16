@@ -22,6 +22,7 @@ import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ChromosomeQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.LogQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.NotificationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.QueryUtil;
@@ -168,6 +169,7 @@ public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
         registry.rebind(MedSavantServerRegistry.Registry_DBUtilAdapter, DBUtil.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_SetupAdapter, SetupMedSavantDatabase.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_CustomTablesAdapter, CustomTables.getInstance());
+        registry.rebind(MedSavantServerRegistry.Registry_NotificationQueryUtilAdapter, NotificationQueryUtil.getInstance());
 
         System.out.println("OK");
     }
