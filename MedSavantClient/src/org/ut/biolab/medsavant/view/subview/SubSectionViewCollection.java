@@ -143,10 +143,11 @@ public class SubSectionViewCollection extends SubSectionView {
     int blah = 0;
 
     void setPage(String pageName) {
-        SubSectionView view = this.subsectionMap.get(pageName);
+        SubSectionView view = this.subsectionMap.get(pageName);      
         contentPanel.removeAll();
 
         contentPanel.add(view.getView(true),BorderLayout.CENTER);
+        view.viewDidLoad();
         contentPanel.updateUI();
     }
 
