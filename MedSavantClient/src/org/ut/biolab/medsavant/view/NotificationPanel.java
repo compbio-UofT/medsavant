@@ -18,7 +18,6 @@ import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -41,7 +40,6 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class NotificationPanel extends JPanel implements LoginListener {
     
     private static int INTERVAL = 1000 * 60; //one minute
-    //private JPanel imagePanel;
     private JPanel numPanel;
     private JLabel numLabel;
     private JLabel label;
@@ -127,7 +125,7 @@ public class NotificationPanel extends JPanel implements LoginListener {
                     header.add(prevButton);
                 }                    
                 header.add(Box.createHorizontalGlue());
-                if(start+5<=list.size()){
+                if(start+5<list.size()){
                     JLabel nextButton = ViewUtil.createLabelButton("  Next Page  ");
                     nextButton.addMouseListener(new MouseAdapter() {
                         @Override
@@ -209,7 +207,6 @@ public class NotificationPanel extends JPanel implements LoginListener {
         }
     }
     
-   
 }
 
 class NotificationIcon extends JPanel {
