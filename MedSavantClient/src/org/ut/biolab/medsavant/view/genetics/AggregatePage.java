@@ -86,7 +86,9 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
 
     @Override
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        asp.update();
+        if(asp != null){
+            asp.update();   
+        }
     }
 
 

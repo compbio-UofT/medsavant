@@ -51,7 +51,9 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     }
 
     public JPanel getView(boolean update) {
+        
         if (panel == null || update) {
+            ThreadController.getInstance().cancelWorkers(getName());
             //if(tablePanel != null) FilterController.removeFilterListener(tablePanel);
             //if(gp != null) FilterController.removeFilterListener(gp);
             setPanel();
@@ -118,6 +120,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
 
     @Override
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        ThreadController.getInstance().cancelWorkers(getName());
         updateContents();
     }
 
