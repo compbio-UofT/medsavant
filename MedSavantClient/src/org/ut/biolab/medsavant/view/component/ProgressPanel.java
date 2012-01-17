@@ -219,10 +219,15 @@ public class ProgressPanel extends JPanel implements ComponentListener {
         double width = 0;
         double height = height_bar;
 
-        if (this.animating) {
-            width = this.animatingValue * width_bar / this.maxValue;
-        } else {
-            width = this.currentValue * width_bar / this.maxValue;
+        try {
+            if (this.animating) {
+                width = this.animatingValue * width_bar / this.maxValue;
+            } else {
+                width = this.currentValue * width_bar / this.maxValue;
+            }
+        } catch (ArithmeticException ex){
+            //divide by 0
+            width = 0;
         }
 
         Rectangle.Double r2 = new Rectangle.Double(startx, starty, width, height);
