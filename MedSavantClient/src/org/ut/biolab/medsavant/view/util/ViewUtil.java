@@ -244,7 +244,11 @@ public class ViewUtil {
         return new LineBorder(Color.lightGray,1);
     }
 
-    public static Border getTinyBottomLineBorder() {
+    public static Border getTopLineBorder() {
+        return BorderFactory.createMatteBorder(1,0,0,0,Color.lightGray);
+    }
+
+    public static Border getBottomLineBorder() {
         return BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray);
     }
 
@@ -425,6 +429,14 @@ public class ViewUtil {
     public static void applyHorizontalBoxLayout(JPanel p) {
         p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
     }
+
+    public static Border getLeftLineBorder() {
+        return BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 1, 0, 0, Color.lightGray),
+                BorderFactory.createEmptyBorder(0, 5, 0, 0)
+                );
+    }
+
 
 
 
@@ -669,7 +681,7 @@ public class ViewUtil {
         b.setIcon(i);
         return b;
     }*/
-    
+
     public static JLabel createLabelButton(String text) {
         JLabel b = new JLabel(text);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));

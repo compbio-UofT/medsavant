@@ -41,7 +41,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class FilterPanelSub extends CollapsiblePanel {
+public class FilterPanelSub extends JPanel {
 
     private int id;
     private JPanel contentPanel;
@@ -53,16 +53,19 @@ public class FilterPanelSub extends CollapsiblePanel {
     private static Color BUTTON_OVER_COLOUR = Color.gray;
 
     public FilterPanelSub(final FilterPanel parent, int id) {
-        super("",true);
+        //super("",true);
         init(parent,id);
     }
 
     public FilterPanelSub(boolean isCollapsible, final FilterPanel parent, int id) {
-        super("",isCollapsible);
+        //super("",isCollapsible);
         init(parent,id);
     }
 
     public final void init(final FilterPanel parent, int id){
+
+        this.setOpaque(false);
+        //this.setPreferredSize(new Dimension(200,10));
 
         this.id = id;
         this.parent = parent;
@@ -70,34 +73,20 @@ public class FilterPanelSub extends CollapsiblePanel {
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        final JLabel removeLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
-        removeLabel.setBackground(Color.RED);
-        removeLabel.setToolTipText("Remove sub query and all contained filters");
-        removeLabel.addMouseListener(new MouseListener() {
 
-            public void mouseClicked(MouseEvent e) {}
-            public void mousePressed(MouseEvent e) {}
 
-            public void mouseReleased(MouseEvent e) {
-                removeThis();
-            }
+        //this.addTitleComponent(removeLabel);
 
-            public void mouseEntered(MouseEvent e) {
-                removeLabel.setBackground(BUTTON_OVER_COLOUR);
-            }
 
-            public void mouseExited(MouseEvent e) {
-                removeLabel.setBackground(BAR_COLOUR);
-            }
-        });
-
-        this.addTitleComponent(removeLabel);
-
-        contentPanel = this.getContentPane();
+        contentPanel = ViewUtil.getClearPanel();//this.getContentPane();
+        //contentPanel.setMaximumSize(new Dimension(200,9999));
         contentPanel.setOpaque(false);
         //contentPanel.setBackground(ViewUtil.getMenuColor());
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        contentPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());
+        contentPanel.setBorder(BorderFactory.createCompoundBorder(
+                ViewUtil.getMediumTopHeavyBorder(),
+                ViewUtil.getLeftLineBorder()));
+
         this.add(contentPanel);
 
         refreshSubItems();
@@ -164,6 +153,7 @@ public class FilterPanelSub extends CollapsiblePanel {
                             for(Object key : menuMap.keySet()){
                                 for(Component comp : menuMap.get(key)){
                                     comp.setVisible(false);
+
                                 }
                             }
                             for(Component comp : menuMap.get(header)){
@@ -249,18 +239,47 @@ public class FilterPanelSub extends CollapsiblePanel {
             }
         });
 
+        final JLabel removeLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE));
+        removeLabel.setBackground(Color.RED);
+        removeLabel.setToolTipText("Remove all filters in set");
+        removeLabel.addMouseListener(new MouseListener() {
+
+            public void mouseClicked(MouseEvent e) {}
+            public void mousePressed(MouseEvent e) {}
+
+            public void mouseReleased(MouseEvent e) {
+                removeThis();
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                removeLabel.setBackground(BUTTON_OVER_COLOUR);
+            }
+
+            public void mouseExited(MouseEvent e) {
+                removeLabel.setBackground(BAR_COLOUR);
+            }
+        });
+
         JPanel tmp1 = ViewUtil.getClearPanel();//ViewUtil.getSecondaryBannerPanel();//ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(tmp1);
         //tmp1.setBorder(BorderFactory.createCompoundBorder(
                //ViewUtil.getTinyLineBorder(),ViewUtil.getMediumBorder()));
+
         tmp1.add(addLabel);
         tmp1.add(Box.createRigidArea(new Dimension(5,20)));
         tmp1.add(new JLabel("Add filter"));
+        //tmp1.add(Box.createRigidArea(new Dimension(15,20)));
         tmp1.add(Box.createHorizontalGlue());
+        tmp1.add(new JLabel("Remove filter set"));
+        tmp1.add(Box.createRigidArea(new Dimension(5,20)));
+        tmp1.add(removeLabel);
+
         contentPanel.add(tmp1);
 
         //update panel title
-        this.setTitle("Filter Set  (" + subItems.size() + " filter" + (subItems.size() == 1 ? "" : "s") + ")");
+        //this.setTitle("Filter Set  (" + subItems.size() + " filter" + (subItems.size() == 1 ? "" : "s") + ")");
+
+        //this.setTitle("Filter Set  (" + subItems.size() + " filter" + (subItems.size() == 1 ? "" : "s") + ")");
 
         this.updateUI();
     }

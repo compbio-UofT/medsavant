@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterHistoryPanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.manage.ImportVariantsWizard;
 import org.ut.biolab.medsavant.view.manage.PluginPage;

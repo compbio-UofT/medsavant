@@ -27,8 +27,8 @@ public class ProgressPanel extends JPanel implements ComponentListener {
     private boolean animating = false;
     private int speed = 300;
     private int maxValue = 100;
-    private int currentValue;
-    private int lastValue;
+    private long currentValue;
+    private long lastValue;
     private double animatingValue;
     private boolean drawLastIndicator = false;
     private boolean drawShadow = true;
@@ -131,7 +131,7 @@ public class ProgressPanel extends JPanel implements ComponentListener {
         draw(g);
     }
 
-    private int getCurrentValue() {
+    private long getCurrentValue() {
         return this.currentValue;
     }
 

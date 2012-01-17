@@ -29,7 +29,8 @@ public class IconFactory {
     }
 
     public enum StandardIcon {
-
+        TRASH,
+        DELETE,
         ADD_ON_TOOLBAR,
         REMOVE_ON_TOOLBAR,
         ADD,
@@ -45,6 +46,7 @@ public class IconFactory {
         TAB_LEFT,
         TAB_RIGHT,
         LOGO,
+        SAVE,
         FIRST,
         LAST,
         NEXT,
@@ -58,6 +60,12 @@ public class IconFactory {
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case TRASH:
+                return getIcon(iconroot + "trash.png");
+            case DELETE:
+                return getIcon(iconroot + "delete.png");
+            case SAVE:
+                return getIcon(iconroot + "save2.png");
             case GREEN:
                 return getIcon(iconroot + "green.png");
             case ORANGE:

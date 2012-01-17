@@ -2,6 +2,9 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -9,8 +12,10 @@ import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -21,6 +26,7 @@ import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.ProgressPanel;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -28,16 +34,17 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class HistoryPanel extends JPanel implements FiltersChangedListener {
+public class FilterEffectivenessPanel extends JPanel implements FiltersChangedListener {
 
     Color bg = new Color(129, 139, 154);
     private final ProgressPanel pp;
     private final JLabel labelVariantsRemaining;
     private final JLabel labelVariantsTotal;
+    private final FilterHistoryPanel historyPanel;
 
-    public HistoryPanel() {
+    public FilterEffectivenessPanel() {
         this.setBackground(bg);
-        this.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(1),ViewUtil.getBigBorder()));
+        this.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getTopLineBorder(),ViewUtil.getBigBorder()));
         this.setLayout(new BorderLayout());
 
         labelVariantsRemaining = new JLabel("");
@@ -46,7 +53,7 @@ public class HistoryPanel extends JPanel implements FiltersChangedListener {
         JPanel infoPanel = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(infoPanel);
         infoPanel.add(labelVariantsRemaining);
-        infoPanel.add(Box.createHorizontalStrut(5));
+        infoPanel.add(Box.createHorizontalGlue());
         infoPanel.add(labelVariantsTotal);
         infoPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());
 
@@ -56,10 +63,46 @@ public class HistoryPanel extends JPanel implements FiltersChangedListener {
         //pp.setBorder(ViewUtil.getBigBorder());
         this.add(pp, BorderLayout.CENTER);
 
+        historyPanel = new FilterHistoryPanel();
+
+        /*
+        final JFrame historyFrame = new JFrame("Filter History");
+        historyFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        historyFrame.add(historyPanel);
+        historyFrame.pack();
+        historyFrame.setPreferredSize(new Dimension(500,500));
+         *
+         */
+
+
         //PeekingPanel detailView = new PeekingPanel("History", BorderLayout.NORTH, new FilterProgressPanel(), true,400);
         //this.add(detailView, BorderLayout.SOUTH);
         JPanel bottomPanel = ViewUtil.getClearPanel();
-        bottomPanel.add(new JButton("Show History"));
+        bottomPanel.setLayout(new BorderLayout());
+        JToggleButton b = new JToggleButton("History");
+
+        b.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+
+                historyPanel.setVisible(!historyPanel.isVisible());
+                /*
+                if (!historyFrame.isVisible()) {
+                historyFrame.setVisible(true);
+                }
+                 *
+                 */
+            }
+
+        });
+
+        JPanel hisPanel = ViewUtil.alignRight(b);
+        hisPanel.setBorder(ViewUtil.getMediumBorder());
+        bottomPanel.add(hisPanel,BorderLayout.NORTH);
+
+        bottomPanel.add(historyPanel,BorderLayout.CENTER);
+        historyPanel.setVisible(false);
 
         this.add(bottomPanel,BorderLayout.SOUTH);
 
@@ -70,28 +113,37 @@ public class HistoryPanel extends JPanel implements FiltersChangedListener {
 
     @Override
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+
+        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                "Applying Filter",
+                "Filter is being applied. Please wait.",
+                true);
+
         Thread thread = new Thread() {
 
             @Override
             public void run() {
                 try {
-                    setNumLeft(MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
+                    int numLeft = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
                             LoginController.sessionId,
                             ProjectController.getInstance().getCurrentProjectId(),
                             ReferenceController.getInstance().getCurrentReferenceId(),
-                            FilterController.getQueryFilterConditions()));
-
+                            FilterController.getQueryFilterConditions());
+                    dialog.close();
+                    setNumLeft(numLeft);
 
                 } catch (SQLException ex) {
                     MiscUtils.checkSQLException(ex);
-                    Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (RemoteException ex) {
-                    Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         };
 
         thread.start();
+        dialog.setVisible(true);
+
     }
 
     private void setNumLeft(int num) {
@@ -112,7 +164,7 @@ public class HistoryPanel extends JPanel implements FiltersChangedListener {
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
         } catch (Exception ex) {
-            Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         if (maxRecords != -1) {

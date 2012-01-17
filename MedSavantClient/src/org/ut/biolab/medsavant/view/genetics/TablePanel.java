@@ -125,7 +125,6 @@ class TablePanel extends JPanel {
                         showWaitCard();
                         int result = 0;
                         try {
-                            System.out.println("getting total num");
                             result = ResultController.getInstance().getNumFilteredVariants();
                         } catch (NonFatalDatabaseException ex) {
                             Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -140,7 +139,7 @@ class TablePanel extends JPanel {
                         }
                     }
                 };
-                
+
                 SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames, fieldClasses, hiddenColumns, 1000, retriever);
                 stp.getTable().addMouseListener(new MouseAdapter() {
                     public void mouseClicked(MouseEvent e) {
@@ -172,12 +171,12 @@ class TablePanel extends JPanel {
             }
 
             @Override
-            protected void showSuccess(Object result) {               
+            protected void showSuccess(Object result) {
                 tablePanel = (SearchableTablePanel)result;
-                instance.add(tablePanel, CARD_SHOW);   
+                instance.add(tablePanel, CARD_SHOW);
                 showShowCard();
                 updateIfRequired();
-                init = true;               
+                init = true;
             }
 
         };
@@ -205,7 +204,6 @@ class TablePanel extends JPanel {
         if(tablePanel == null) return;
         synchronized (updateLock){
             if(updateRequired){
-                System.out.println("refresh");
                 tablePanel.forceRefreshData();
             }
         }

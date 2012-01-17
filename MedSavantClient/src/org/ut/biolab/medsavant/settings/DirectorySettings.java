@@ -33,6 +33,7 @@ public class DirectorySettings {
     private static final String CACHE_DIR_KEY = "CacheDir";
     private static final String TMP_DIR_KEY = "TmpDir";
     private static final String PLUGINS_DIR_KEY = "PluginsDir";
+    private static final String FILTERS_DIR_KEY = "FiltersDir";
 
     private static File medSavantDir;
     private static SettingsController settings = SettingsController.getInstance();
@@ -81,6 +82,10 @@ public class DirectorySettings {
 
     public static File getCacheDirectory() {
         return getDirectory(CACHE_DIR_KEY, "cache");
+    }
+
+    public static File getFiltersDirectory() {
+        return getDirectory(FILTERS_DIR_KEY, "filters");
     }
 
     public static File generateDateStampDirectory(File parent) {

@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 /**
  * @author AndrewBrook
  */
-public class FilterProgressPanel extends JPanel implements FiltersChangedListener {
+public class FilterHistoryPanel extends JPanel implements FiltersChangedListener {
 
     private int maxRecords = 0;
     private JTable table;
@@ -52,7 +52,9 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
     private Color PREVIOUS_COLOR = new Color(179,255,217);
     private Color NEW_COLOR = new Color(0,153,77);
 
-    public FilterProgressPanel(){
+    public FilterHistoryPanel(){
+
+        this.setPreferredSize(new Dimension(200,150));
         this.setName("History");
         this.setLayout(new BorderLayout());
         this.setOpaque(false);
@@ -105,7 +107,7 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
         } catch (Exception ex) {
-            Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
         if (maxRecords != -1) {
             model.addRow("Total", "", maxRecords);
@@ -144,9 +146,9 @@ public class FilterProgressPanel extends JPanel implements FiltersChangedListene
 
                 } catch (SQLException ex) {
                     MiscUtils.checkSQLException(ex);
-                    Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (RemoteException ex) {
-                    Logger.getLogger(FilterProgressPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 dialog.close();
             }

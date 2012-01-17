@@ -24,6 +24,8 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
@@ -41,15 +43,18 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.util.shared.ExtensionFileFilter;
 import org.ut.biolab.medsavant.db.util.shared.ExtensionsFileFilter;
+import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.ProgressPanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
@@ -67,41 +72,25 @@ import org.xml.sax.SAXException;
  */
 public class FilterPanel extends javax.swing.JPanel {
 
+    private javax.swing.JPanel container;
     //private List<FilterPanelSub> subs = new ArrayList<FilterPanelSub>();
     private List<FilterPanelSub> subs2 = new ArrayList<FilterPanelSub>();
     private int subNum = 1;
-    private final JPanel filterContainer;
+    private JPanel filterContainer;
+    private JComboBox filterList;
+    private ActionListener comboBoxListener;
+    private boolean addingItems = false;
 
     /** Creates new form FilterPanel */
     public FilterPanel() {
         initComponents();
-
-
-        //container.setBorder(ViewUtil.getMediumBorder());
-        container.setBackground(ViewUtil.getMenuColor());
-        //container.setOpaque(false);
-        //container.setBorder(BorderFactory.createLineBorder(container.getBackground(), 10));
-
-        filterContainer = ViewUtil.getClearPanel();
-        filterContainer.setBorder(ViewUtil.getMediumBorder());
-        filterContainer.setLayout(new BoxLayout(filterContainer, BoxLayout.Y_AXIS));
-
-        container.setLayout(new BorderLayout());
-        container.add(filterContainer, BorderLayout.CENTER);
-
-        //container.add(new ProgressPanel());
-
-        HistoryPanel hp = new HistoryPanel();
-        container.add(hp,BorderLayout.SOUTH);
-
-
         createNewSubPanel();
     }
 
     private JPanel createNewOrButton() {
 
         final JLabel addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
-        addLabel.setToolTipText("Add filter set");
+        addLabel.setToolTipText("Add exlusive set of filters");
         addLabel.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -111,10 +100,13 @@ public class FilterPanel extends javax.swing.JPanel {
         });
 
 
-        JPanel tmp1 = ViewUtil.getSecondaryBannerPanel();//ViewUtil.getClearPanel();
-        tmp1.setBorder(BorderFactory.createCompoundBorder(
+        JPanel tmp1 = ViewUtil.getClearPanel();//ViewUtil.getSecondaryBannerPanel();//ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(tmp1);
+        /*tmp1.setBorder(BorderFactory.createCompoundBorder(
                 ViewUtil.getTinyLineBorder(),
                 ViewUtil.getMediumBorder()));
+         *
+         */
         tmp1.add(addLabel);
         tmp1.setMaximumSize(new Dimension(9999, 40));
         tmp1.add(Box.createHorizontalStrut(5));
@@ -144,52 +136,6 @@ public class FilterPanel extends javax.swing.JPanel {
     public void refreshSubPanels() {
         filterContainer.removeAll();
 
-        JButton saveButton = new JButton("Save Filters");
-        saveButton.addMouseListener(new MouseAdapter() {
-
-            public void mouseReleased(MouseEvent e) {
-                try {
-                    saveFilters();
-                } catch (IOException ex) {
-                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-
-        JButton loadButton = new JButton("Load Filters");
-        loadButton.addMouseListener(new MouseAdapter() {
-
-            public void mouseReleased(MouseEvent e) {
-                try {
-                    loadFilters();
-                } catch (ParserConfigurationException ex) {
-                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SAXException ex) {
-                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-        JLabel l = new JLabel("Filter variants by:");
-
-        JPanel topContainer = new JPanel();
-        topContainer.setOpaque(false);
-        topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.X_AXIS));
-        topContainer.add(l);
-        topContainer.add(Box.createHorizontalGlue());
-        topContainer.add(saveButton);
-        topContainer.add(loadButton);
-        filterContainer.add(topContainer);
-
-
-        //PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterProgressPanel(), true,400);
-
-        //allContainer.add(detailView, BorderLayout.WEST);
-
-        //container.add(new FilterProgressPanel());
-
-        filterContainer.add(Box.createVerticalStrut(5));
         //check for removed items
         for (int i = subs2.size() - 1; i >= 0; i--) {
             if (subs2.get(i).isRemoved()) {
@@ -202,11 +148,26 @@ public class FilterPanel extends javax.swing.JPanel {
             filterContainer.add(subs2.get(i));
             filterContainer.add(Box.createVerticalStrut(5));
         }
-        //filterContainer.add(createNewOrButton());
+
+        filterContainer.add(createNewOrButton());
         filterContainer.add(Box.createVerticalGlue());
 
-
         this.updateUI();
+    }
+
+    private void checkFilterListChanged() {
+        if (!addingItems) {
+            int index = filterList.getSelectedIndex();
+
+            if (index != 0) {
+                try {
+                    loadFiltersFromFile(new File(DirectorySettings.getFiltersDirectory(), (String) filterList.getItemAt(index)));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    DialogUtils.displayError("Problem loading filters");
+                }
+            }
+        }
     }
 
     public List<FilterPanelSub> getFilterPanelSubs() {
@@ -219,12 +180,45 @@ public class FilterPanel extends javax.swing.JPanel {
         refreshSubPanels();
     }
 
+    private void removeCurrentSavedFilterFile() {
+        int index = this.filterList.getSelectedIndex();
+        if (index != 0) {
+            File f = new File(DirectorySettings.getFiltersDirectory(),(String) this.filterList.getSelectedItem());
+            if (f.exists()) {
+                f.delete();
+                this.updateFilterList();
+            }
+        }
+    }
+
     private void saveFilters() throws IOException {
 
-        //choose save file
-        File file = DialogUtils.chooseFileForSave("Save Filters", "saved_filters.xml", ExtensionFileFilter.createFilters(new String[]{"xml"}), null);
+        String name = DialogUtils.displayInputMessage("Save filters", "Enter a name for these filters", "filters");
+        File file = new File(DirectorySettings.getFiltersDirectory(), name + ".xml");
+
         if (file == null) {
             return;
+        }
+        if (name == null || name.isEmpty()) {
+            return;
+        }
+
+        while (file.exists()) {
+
+            int response;
+            while (true) {
+                response = DialogUtils.askYesNoCancel("Filters exist", "Filters with that name already exist. Overwrite?");
+                if (response == DialogUtils.CANCEL) {
+                    return;
+                }
+                if (response == DialogUtils.NO) {
+                    saveFilters();
+                    return;
+                }
+
+                file.delete();
+                break;
+            }
         }
 
         //write
@@ -243,17 +237,17 @@ public class FilterPanel extends javax.swing.JPanel {
 
         out.close();
 
+        updateFilterList();
+
     }
 
-    private void loadFilters() throws ParserConfigurationException, SAXException, IOException {
+    private void loadFiltersFromFile(File file) throws ParserConfigurationException, SAXException, IOException {
 
         //warn of overwrite
         if (FilterController.hasFiltersApplied() && DialogUtils.askYesNo("Confirm Load", "<html>Loading filters clears all existing filters. <br>Are you sure you want to continue?</html>") == JOptionPane.NO_OPTION) {
             return;
         }
 
-        //choose open file
-        File file = DialogUtils.chooseFileForOpen("Load Filters", new ExtensionsFileFilter("xml"), null);
         if (file == null) {
             return;
         }
@@ -315,55 +309,93 @@ public class FilterPanel extends javax.swing.JPanel {
 
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jPanel1 = new javax.swing.JPanel();
-        container = new javax.swing.JPanel();
+        container = this;
+        container.setLayout(new BorderLayout());
+        container.setBackground(ViewUtil.getMenuColor());
 
-        jScrollPane1.setBorder(null);
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.setMaximumSize(new java.awt.Dimension(400, 32767));
+        filterContainer = ViewUtil.getClearPanel();
+        filterContainer.setBorder(ViewUtil.getMediumBorder());
+        filterContainer.setLayout(new BoxLayout(filterContainer, BoxLayout.Y_AXIS));
 
-        jPanel1.setBackground(new java.awt.Color(255, 204, 204));
-        jPanel1.setLayout(new java.awt.GridLayout(1, 3));
+        JScrollPane scroll = new JScrollPane(filterContainer);
+        scroll.setBorder(null);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        javax.swing.GroupLayout containerLayout = new javax.swing.GroupLayout(container);
-        container.setLayout(containerLayout);
-        containerLayout.setHorizontalGroup(
-            containerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 661, Short.MAX_VALUE)
-        );
-        containerLayout.setVerticalGroup(
-            containerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 513, Short.MAX_VALUE)
-        );
+        container.add(scroll, BorderLayout.CENTER);
 
-        jPanel1.add(container);
+        //container.add(new ProgressPanel());
 
-        jScrollPane1.setViewportView(jPanel1);
+        FilterEffectivenessPanel hp = new FilterEffectivenessPanel();
+        container.add(hp, BorderLayout.SOUTH);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 661, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
-        );
-    }// </editor-fold>//GEN-END:initComponents
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel container;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    // End of variables declaration//GEN-END:variables
+
+        JButton saveButton = new JButton();
+        saveButton.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SAVE));
+        saveButton.setToolTipText("Save filter set");
+        saveButton.putClientProperty( "JButton.buttonType", "segmentedRoundRect" );
+        saveButton.putClientProperty( "JButton.segmentPosition", "only" );
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    saveFilters();
+                } catch (IOException ex) {
+                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+
+        JButton  deleteButton = new JButton();
+        deleteButton.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.TRASH));
+        deleteButton.setToolTipText("Remove this set from list");
+        deleteButton.putClientProperty( "JButton.buttonType", "segmentedRoundRect" );
+        deleteButton.putClientProperty( "JButton.segmentPosition", "only" );
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                    removeCurrentSavedFilterFile();
+            }
+        });
+
+
+        filterList = new JComboBox();
+        filterList.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                checkFilterListChanged();
+            }
+        });
+        updateFilterList();
+
+        //JLabel l = new JLabel("Filter variants by:");
+
+        JPanel topContainer = new JPanel();
+        //topContainer.setOpaque(false);
+        topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.X_AXIS));
+        //topContainer.add(l);
+
+
+        //topContainer.add(Box.createHorizontalGlue());
+
+        topContainer.add(filterList);
+        topContainer.add(Box.createHorizontalGlue());
+        topContainer.add(saveButton);
+        topContainer.add(deleteButton);
+
+        container.add(topContainer, BorderLayout.NORTH);
+    }
+
+    private void updateFilterList() {
+        File filterDir = DirectorySettings.getFiltersDirectory();
+
+        addingItems = true;
+        filterList.removeAllItems();
+        this.filterList.addItem("Saved Filters");
+        for (String fn : filterDir.list()) {
+            this.filterList.addItem(fn);
+        }
+        addingItems = false;
+    }
 }
