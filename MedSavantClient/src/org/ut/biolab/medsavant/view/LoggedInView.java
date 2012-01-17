@@ -91,7 +91,7 @@ public class LoggedInView extends JPanel implements ProjectListener {
         addSection(new PatientsSection());
         addSection(new GeneticsSection());
 
-        viewController.addComponent(getSeparator());
+        //viewController.addComponent(getSeparator());
 
         //addSection(new PluginsSection());
         addSection(new OtherSection());

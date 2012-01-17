@@ -5,8 +5,10 @@
 
 package org.ut.biolab.medsavant.view.patients;
 
+import javax.swing.Icon;
 import org.ut.biolab.medsavant.view.patients.individual.IndividualsPage;
 import javax.swing.JPanel;
+import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.patients.cohorts.CohortsPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -27,6 +29,11 @@ public class PatientsSection extends SectionView {
     @Override
     public String getName() {
         return "Patients";
+    }
+    
+    @Override
+    public Icon getIcon() {
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART);
     }
 
     @Override

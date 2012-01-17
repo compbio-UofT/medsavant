@@ -26,10 +26,8 @@ import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 
 import org.ut.biolab.medsavant.log.ClientLogger;
-import org.ut.biolab.medsavant.view.images.IconFactory;
-import org.ut.biolab.medsavant.view.images.ImagePanel;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
-import org.ut.biolab.medsavant.view.menu.Menu;
+import org.ut.biolab.medsavant.view.menu.TopMenu;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
@@ -41,10 +39,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class ViewController extends JPanel {
 
-    //private Banner banner;
     private SectionHeader sectionHeader;
-    private SidePanel leftPanel;
-    private Menu menu;
+    private TopMenu menu;
     private JPanel contentContainer;
     private PersistencePanel sectionPanel;
     private PeekingPanel peekRight;
@@ -64,17 +60,12 @@ public class ViewController extends JPanel {
         // create the section header
         sectionHeader = new SectionHeader();
         h1.add(sectionHeader, BorderLayout.NORTH);
-
+        
         // create the content container
         contentContainer = new JPanel();
         contentContainer.setBackground(Color.white);
         contentContainer.setLayout(new BorderLayout());
         h1.add(contentContainer, BorderLayout.CENTER);
-
-        // create the left menu
-        leftPanel = new SidePanel();
-        menu = new Menu(contentContainer);
-        leftPanel.setContent(menu);
 
         // create the right panel
         sectionPanel = new PersistencePanel();
@@ -85,10 +76,10 @@ public class ViewController extends JPanel {
         // add it all to the view
         add(h1, BorderLayout.CENTER);
 
-        PeekingPanel peekLeft = new PeekingPanel("Menu", BorderLayout.EAST, leftPanel, true, 210);
-        this.add(peekLeft, BorderLayout.WEST);
-
         peekRight.setVisible(false);
+        
+        menu = new TopMenu(contentContainer);
+        add(menu, BorderLayout.NORTH);
 
 
         /*

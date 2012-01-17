@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -27,6 +28,7 @@ import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterProgressPanel;
+import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.manage.ImportVariantsWizard;
 import org.ut.biolab.medsavant.view.manage.PluginPage;
 import org.ut.biolab.medsavant.view.manage.VariantFilesPage;
@@ -52,6 +54,11 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     @Override
     public String getName() {
         return "Genetic Variants";
+    }
+    
+    @Override
+    public Icon getIcon() {
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART);
     }
 
     @Override

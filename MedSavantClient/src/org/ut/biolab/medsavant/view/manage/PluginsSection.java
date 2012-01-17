@@ -18,11 +18,13 @@ package org.ut.biolab.medsavant.view.manage;
 
 import java.awt.Component;
 import java.util.List;
+import javax.swing.Icon;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
+import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
@@ -41,6 +43,11 @@ public class PluginsSection extends SectionView {
     @Override
     public String getName() {
         return "Plugins";
+    }
+    
+    @Override
+    public Icon getIcon() {
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART);
     }
 
     @Override

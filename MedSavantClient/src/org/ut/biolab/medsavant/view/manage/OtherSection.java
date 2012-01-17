@@ -7,8 +7,10 @@ package org.ut.biolab.medsavant.view.manage;
 import org.ut.biolab.medsavant.view.genetics.*;
 
 import java.awt.Component;
+import javax.swing.Icon;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 
@@ -26,6 +28,11 @@ public class OtherSection extends SectionView {
     @Override
     public String getName() {
         return "Other";
+    }
+      
+    @Override
+    public Icon getIcon() {
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART);
     }
 
     @Override
