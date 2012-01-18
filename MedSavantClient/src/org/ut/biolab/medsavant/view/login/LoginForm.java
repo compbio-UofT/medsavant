@@ -55,6 +55,8 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         LoginController.addLoginListener(this);
 
         initComponents();
+        panel_title.setBackground(new Color(209, 214, 220));
+        button_login.setOpaque(false);
 
 
         field_username.setText(LoginController.getUsername());
