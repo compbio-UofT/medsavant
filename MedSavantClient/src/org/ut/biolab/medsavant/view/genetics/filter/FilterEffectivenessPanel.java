@@ -171,6 +171,8 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
             pp.setMaxValue(maxRecords);
             pp.setToValue(maxRecords);
             labelVariantsTotal.setText("TOTAL: " + ViewUtil.numToString(maxRecords));
+
+            setNumLeft(maxRecords);
         }
     }
 }

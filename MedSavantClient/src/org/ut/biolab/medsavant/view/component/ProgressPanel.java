@@ -72,6 +72,10 @@ public class ProgressPanel extends JPanel implements ComponentListener {
 
             public void run() {
 
+                if (ap == null || ap.getWidth() == 0) {
+                    return;
+                }
+
                 ap.animating = true;
 
                 ap.animatingValue = ap.currentValue;

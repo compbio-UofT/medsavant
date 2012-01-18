@@ -21,7 +21,7 @@ public class ManageSection extends SectionView {
 
     public ManageSection() {
     }
-    
+
     @Override
     public String getName() {
         return "Administration";
@@ -29,13 +29,13 @@ public class ManageSection extends SectionView {
 
     @Override
     public Icon getIcon() {
-        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART);
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_ADMIN);
     }
 
     @Override
     public SubSectionView[] getSubSections() {
         SubSectionView[] pages;
-        
+
             pages = new SubSectionView[5];
             pages[0] = new UserManagementPage(this);
             pages[1] = new ProjectManagementPage(this);

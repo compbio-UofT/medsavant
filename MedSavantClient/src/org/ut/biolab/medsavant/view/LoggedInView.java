@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
@@ -87,6 +88,7 @@ public class LoggedInView extends JPanel implements ProjectListener {
         refreshProjectDropDown();
 
         viewController.addComponent(projectDropDown);
+        viewController.addComponent(Box.createHorizontalGlue());
 
         addSection(new PatientsSection());
         addSection(new GeneticsSection());
@@ -99,6 +101,12 @@ public class LoggedInView extends JPanel implements ProjectListener {
         if (LoginController.isAdmin()) {
             addSection(new ManageSection());
         }
+
+        viewController.addComponent(Box.createHorizontalGlue());
+        viewController.addComponent(Box.createHorizontalStrut(
+                (int) projectDropDown.getPreferredSize().getWidth()
+                ));
+
     }
 
 

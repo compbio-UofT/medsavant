@@ -25,15 +25,15 @@ public class PatientsSection extends SectionView {
         pages[0] = new IndividualsPage(this);
         pages[1] = new CohortsPage(this);
     }
-    
+
     @Override
     public String getName() {
         return "Patients";
     }
-    
+
     @Override
     public Icon getIcon() {
-        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART);
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_PATIENTS);
     }
 
     @Override
@@ -45,5 +45,5 @@ public class PatientsSection extends SectionView {
     public JPanel[] getPersistentPanels() {
         return null;
     }
-    
+
 }

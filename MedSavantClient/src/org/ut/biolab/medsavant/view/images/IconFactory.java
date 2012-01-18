@@ -29,6 +29,10 @@ public class IconFactory {
     }
 
     public enum StandardIcon {
+        SECTION_ADMIN,
+        SECTION_OTHER,
+        SECTION_VARIANTS,
+        SECTION_PATIENTS,
         TRASH,
         DELETE,
         ADD_ON_TOOLBAR,
@@ -60,6 +64,14 @@ public class IconFactory {
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case SECTION_ADMIN:
+                return getIcon(iconroot + "section_admin.png");
+            case SECTION_OTHER:
+                return getIcon(iconroot + "section_other3.png");
+            case SECTION_PATIENTS:
+                return getIcon(iconroot + "section_patients.png");
+            case SECTION_VARIANTS:
+                return getIcon(iconroot + "section_variants2.png");
             case TRASH:
                 return getIcon(iconroot + "trash.png");
             case DELETE:

@@ -16,11 +16,14 @@
 
 package org.ut.biolab.medsavant.view.genetics;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,6 +31,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -43,6 +47,7 @@ import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -52,7 +57,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class GenomeContainer extends JPanel {
     private static final Logger LOG = Logger.getLogger(GenomeContainer.class.getName());
-        
+
     private Genome genome;
     private final JPanel chrContainer;
     private ArrayList<ChromosomePanel> chrViews;
@@ -62,26 +67,45 @@ public class GenomeContainer extends JPanel {
     /*private static final int MINBINSIZE = 1000000;
     private static final int BINMULTIPLIER = 10;*/
     private final String pageName;
-    
+
     private final Object updateLock = new Object();
     private boolean updateRequired = true;
     private boolean init = false;
-    
+
     public GenomeContainer(String pageName) {
         this.pageName = pageName;
-        
+
         cl = new CardLayout();
         this.setLayout(cl);
-     
+
+        JPanel chrPlusButtonContainer = ViewUtil.getClearPanel();
+        chrPlusButtonContainer.setLayout(new BorderLayout());
+
         chrContainer = ViewUtil.getClearPanel();
         chrContainer.setBorder(ViewUtil.getBigBorder());
         chrContainer.setLayout(new BoxLayout(chrContainer,BoxLayout.X_AXIS));
-        this.add(chrContainer, CARD_SHOW);
-               
+
+        chrPlusButtonContainer.add(chrContainer,BorderLayout.CENTER);
+
+        /*
+        JButton savantButton = new JButton("Export to Savant Genome Browser");
+        savantButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                new SavantExportForm();
+            }
+        });
+
+        chrPlusButtonContainer.add(ViewUtil.alignRight(ViewUtil.alignLeft(savantButton)),BorderLayout.SOUTH);
+         * 
+         */
+
+        this.add(chrPlusButtonContainer, CARD_SHOW);
+
         this.add(new WaitPanel("Generating Genome View", Color.WHITE), CARD_WAIT);
 
         init = true;
-        
+
         updateIfRequired();
     }
 
@@ -116,32 +140,32 @@ public class GenomeContainer extends JPanel {
         chrContainer.add(Box.createHorizontalGlue());
 
     }
-    
+
     private synchronized void showWaitCard() {
         cl.show(this, CARD_WAIT);
-              
+
     }
 
     private synchronized void showShowCard() {
         cl.show(this, CARD_SHOW);
     }
 
-    /*public void filtersChanged() { 
+    /*public void filtersChanged() {
         showWaitCard();
         GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker(pageName);
         gnv.execute();
     }*/
-    
+
     void setUpdateRequired(boolean b) {
         updateRequired = b;
     }
-    
+
     public void updateIfRequired(){
         if(!init) return;
         boolean shouldUpdate = false;
         synchronized (updateLock){
             if(updateRequired){
-                updateRequired = false;     
+                updateRequired = false;
                 shouldUpdate = true;
             }
         }
@@ -151,33 +175,33 @@ public class GenomeContainer extends JPanel {
             gnv.execute();
         }
     }
-    
+
     private class GetNumVariantsSwingWorker extends MedSavantWorker implements FiltersChangedListener {
 
         private int maxRegion = 0;
         private int regionsDone = 0;
         private int activeThreads = 0;
         private final Object workerLock = new Object();
-        
+
         public GetNumVariantsSwingWorker(String pageName) {
             super(pageName);
             FilterController.addActiveFilterListener(this);
         }
-        
+
         @Override
-        protected Object doInBackground() throws InterruptedException, SQLException, RemoteException {  
+        protected Object doInBackground() throws InterruptedException, SQLException, RemoteException {
             /*final int totalNum = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                                    ProjectController.getInstance().getCurrentProjectId(), 
-                                    ReferenceController.getInstance().getCurrentReferenceId(), 
-                                    FilterController.getQueryFilterConditions()); */          
-            
+                                    ProjectController.getInstance().getCurrentProjectId(),
+                                    ReferenceController.getInstance().getCurrentReferenceId(),
+                                    FilterController.getQueryFilterConditions()); */
+
             //final int binsize = (int)Math.min(249250621, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
 
             try {
-            
+
                 long start = System.currentTimeMillis();
                 final Map<String,Map<Range,Integer>> map = MedSavantClient.VariantQueryUtilAdapter.getChromosomeHeatMap(
-                        LoginController.sessionId, 
+                        LoginController.sessionId,
                         ProjectController.getInstance().getCurrentProjectId(),
                             ReferenceController.getInstance().getCurrentReferenceId(),
                             FilterController.getQueryFilterConditions(),
@@ -214,11 +238,11 @@ public class GenomeContainer extends JPanel {
                                 regionsDone++;
                                 activeThreads--;
                                 workerLock.notifyAll();
-                            }          
+                            }
                         }
                     };
                     thread.start();
-                } 
+                }
 
                 //wait until all threads completed
                 synchronized(workerLock){
@@ -228,13 +252,13 @@ public class GenomeContainer extends JPanel {
                     }
                 }
 
-                return true;  
+                return true;
             } catch (SQLException ex){
                 MiscUtils.checkSQLException(ex);
                 throw ex;
-            } 
+            }
         }
-        
+
         /*@Override
         protected void done() {
             try {
@@ -244,8 +268,8 @@ public class GenomeContainer extends JPanel {
                 // TODO: #90
                 LOG.log(Level.SEVERE, null, x);
             }
-        } */     
-        
+        } */
+
         public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
             if(!this.isDone()){
                 this.cancel(true);

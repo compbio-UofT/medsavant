@@ -7,6 +7,7 @@ package org.ut.biolab.medsavant.view.menu;
 import com.jidesoft.swing.JideSplitButton;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,23 +26,25 @@ import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.view.util.PaintUtil;
 
 /**
  *
  * @author Andrew
  */
 public class TopMenu extends JToolBar {
-    
+
     private SubSectionView currentView;
     private final JPanel contentContainer;
     private List<SubSectionView> subSectionViews = new ArrayList<SubSectionView>();
-    
+
     public TopMenu(JPanel panel){
         super();
+
         this.setFloatable(false);
-        
+
         contentContainer = panel;
-        
+
         ReferenceController.getInstance().addReferenceListener(new ReferenceListener() {
             public void referenceChanged(String referenceName) {
                 updateSections();
@@ -53,8 +56,8 @@ public class TopMenu extends JToolBar {
         ProjectController.getInstance().addProjectListener(new ProjectListener() {
             public void projectAdded(String projectName) {}
             public void projectRemoved(String projectName) {}
-            public void projectChanged(String projectName) {      
-                if(!GeneticsSection.isInitialized){ 
+            public void projectChanged(String projectName) {
+                if(!GeneticsSection.isInitialized){
                     //once this section is initialized, referencecombobox fires
                     //referencechanged event on every project change
                     updateSections();
@@ -62,7 +65,7 @@ public class TopMenu extends JToolBar {
             }
             public void projectTableRemoved(int projid, int refid) {}
         });
-        
+
         LoginController.addLoginListener(new LoginListener() {
             public void loginEvent(LoginEvent evt) {
                 if (evt.getType() == LoginEvent.EventType.LOGGED_OUT) {
@@ -73,13 +76,13 @@ public class TopMenu extends JToolBar {
             }
         });
     }
-    
+
     public void addSection(SectionView section) {
         JideSplitButton button = new JideSplitButton(section.getName(), section.getIcon());
         button.setAlwaysDropdown(true);
         button.setButtonSelected(false);
-        add(button);      
-        
+        add(button);
+
         for (final SubSectionView v : section.getSubSections()) {
             subSectionViews.add(v);
             button.add(new AbstractAction(v.getName()) {
@@ -89,21 +92,21 @@ public class TopMenu extends JToolBar {
             });
         }
     }
-    
+
     public void addComponent(Component c) {
         add(c);
-        add(Box.createHorizontalStrut(30));
+        add(Box.createHorizontalStrut(5));
     }
-    
+
     public void updateSections(){
         for(int i = 0; i < subSectionViews.size(); i++) {
             subSectionViews.get(i).setUpdateRequired(true);
         }
         if (currentView != null) {
             setContentTo(currentView, true);
-        }    
+        }
     }
-    
+
     private void setContentTo(SubSectionView v, boolean update) {
         currentView = v;
         contentContainer.removeAll();
@@ -112,7 +115,7 @@ public class TopMenu extends JToolBar {
         contentContainer.updateUI();
         ViewController.getInstance().changeSubSectionTo(v);
     }
-    
+
     public void refreshSelection() {
         if(currentView != null){
             setContentTo(currentView, false);

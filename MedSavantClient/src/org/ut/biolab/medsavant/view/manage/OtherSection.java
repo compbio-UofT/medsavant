@@ -29,10 +29,10 @@ public class OtherSection extends SectionView {
     public String getName() {
         return "Other";
     }
-      
+
     @Override
     public Icon getIcon() {
-        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART);
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_OTHER);
     }
 
     @Override

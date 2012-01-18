@@ -22,12 +22,12 @@ public class SettingsSection extends SectionView {
 
     public SettingsSection() {
     }
-    
+
     @Override
     public String getName() {
         return "Settings";
     }
-    
+
     @Override
     public Icon getIcon() {
         return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART);

@@ -84,8 +84,9 @@ public class FilterPanelSub extends JPanel {
         //contentPanel.setBackground(ViewUtil.getMenuColor());
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBorder(BorderFactory.createCompoundBorder(
+                ViewUtil.getMediumBorder(),BorderFactory.createCompoundBorder(
                 ViewUtil.getMediumTopHeavyBorder(),
-                ViewUtil.getLeftLineBorder()));
+                ViewUtil.getLeftLineBorder())));
 
         this.add(contentPanel);
 

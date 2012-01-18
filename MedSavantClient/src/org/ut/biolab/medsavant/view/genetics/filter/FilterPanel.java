@@ -110,6 +110,7 @@ public class FilterPanel extends javax.swing.JPanel {
         tmp1.add(addLabel);
         tmp1.setMaximumSize(new Dimension(9999, 40));
         tmp1.add(Box.createHorizontalStrut(5));
+
         JLabel addLabelText = new JLabel("Add filter set");
         tmp1.add(addLabelText);
         tmp1.add(Box.createHorizontalGlue());
@@ -149,7 +150,7 @@ public class FilterPanel extends javax.swing.JPanel {
             filterContainer.add(Box.createVerticalStrut(5));
         }
 
-        filterContainer.add(createNewOrButton());
+        //filterContainer.add(createNewOrButton());
         filterContainer.add(Box.createVerticalGlue());
 
         this.updateUI();
@@ -315,8 +316,18 @@ public class FilterPanel extends javax.swing.JPanel {
         container.setLayout(new BorderLayout());
         container.setBackground(ViewUtil.getMenuColor());
 
+        JPanel filterAndToolbarContainer = ViewUtil.getClearPanel();
+        filterAndToolbarContainer.setLayout(new BorderLayout());
+        filterAndToolbarContainer.setBorder(ViewUtil.getMediumBorder());
+
+
         filterContainer = ViewUtil.getClearPanel();
-        filterContainer.setBorder(ViewUtil.getMediumBorder());
+
+        container.add(filterAndToolbarContainer,BorderLayout.CENTER);
+        filterAndToolbarContainer.add(filterContainer, BorderLayout.CENTER);
+        filterAndToolbarContainer.add(createNewOrButton(),BorderLayout.SOUTH);
+
+
         filterContainer.setLayout(new BoxLayout(filterContainer, BoxLayout.Y_AXIS));
 
         JScrollPane scroll = new JScrollPane(filterContainer);

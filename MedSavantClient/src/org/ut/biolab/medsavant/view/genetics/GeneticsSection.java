@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -55,10 +56,10 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     public String getName() {
         return "Genetic Variants";
     }
-    
+
     @Override
     public Icon getIcon() {
-        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART);
+        return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SECTION_VARIANTS);
     }
 
     @Override
@@ -109,16 +110,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         return button;
     }*/
 
-    private JButton addShowInSavantButton() {
-        JButton button = new JButton("Show in Savant");
-        button.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
-                new SavantExportForm();
-            }
-        });
-        return button;
-    }
 
     private JButton addSaveResultSetButton() {
         JButton button = new JButton("Save Variants");
@@ -134,14 +126,16 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     @Override
     public Component[] getBanner() {
 
-        Component[] result = new Component[3];
-        result[0] = new JLabel("Reference:");
+        Component[] result = new Component[2];
+
+        JLabel l = new JLabel("Reference:");
+        l.setForeground(Color.white);
+        result[0] = l;
         if (referenceDropDown == null) {
             result[1] = getReferenceDropDown();
         } else {
             result[1] = referenceDropDown;
         }
-        result[2] = addShowInSavantButton();
         //result[3] = createVcfButton();
         //result[0] = addSaveResultSetButton();
 
