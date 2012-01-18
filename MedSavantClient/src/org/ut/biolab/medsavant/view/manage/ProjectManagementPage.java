@@ -6,6 +6,7 @@ package org.ut.biolab.medsavant.view.manage;
 
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.awt.BorderLayout;
@@ -33,6 +34,7 @@ import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
@@ -153,23 +155,36 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
     public void projectTableRemoved(int projid, int refid) {
     }
 
+ 
     private static class ProjectsDetailedView extends DetailedView implements ProjectListener {
 
-        private final static JPanel details = ViewUtil.getClearPanel();
         private final JPanel content;
         private String projectName;
         private ProjectDetailsSW sw;
+        
+        private static JPanel details;
+        private CollapsiblePanel tableInfoPanel;
+
 
         public ProjectsDetailedView() {
+            
+            JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
+            viewContainer.setLayout(new BorderLayout());
 
-            content = this.getContentPanel();
+            JPanel infoContainer = ViewUtil.getClearPanel();
+            ViewUtil.applyVerticalBoxLayout(infoContainer);
 
-            //this.addBottomComponent(deleteProjectButton());
-            //this.addBottomComponent(modifyProjecButton());
+            viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer), BorderLayout.CENTER);
 
-            content.setLayout(new BorderLayout());
+            tableInfoPanel = new CollapsiblePanel("Variant Tables");
+            infoContainer.add(tableInfoPanel);
+            infoContainer.add(Box.createVerticalGlue());
 
-            content.add(details, BorderLayout.CENTER);
+            content = tableInfoPanel.getContentPane();
+
+            details = ViewUtil.getClearPanel();
+
+            content.add(details);
 
             ProjectController.getInstance().addProjectListener(this);
 
@@ -222,89 +237,10 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                 this.projectName = projectName;
             }
 
-
             @Override
             protected Object doInBackground() throws Exception {
-                final int projectId = ProjectController.getInstance().getProjectId(projectName);
-
-                List<ProjectDetails> projectDetails = MedSavantClient.ProjectQueryUtilAdapter.getProjectDetails(LoginController.sessionId, projectId);
-
-                JPanel p = ViewUtil.getClearPanel();
-                ViewUtil.applyVerticalBoxLayout(p);
-
-                int numTables = 0;
-                p.add(ViewUtil.getLeftAlignedComponent(ViewUtil.getDetailHeaderLabel("Variant Tables:")));
-
-
-                JPanel tablePanel = ViewUtil.getClearPanel();
-                tablePanel.setLayout(new GridBagLayout());
-                GridBagConstraints c = new GridBagConstraints();
-                c.gridx = 0;
-                c.gridy = 0;
-                c.ipadx = 10;
-                c.anchor = GridBagConstraints.WEST;
-                c.fill = GridBagConstraints.NONE;
-                c.weightx = 0;
-                c.weighty = 0;
-
-                JButton removeTable = null;
-
-                //while (rs.next()) {
-                for (ProjectDetails pd : projectDetails) {
-                    numTables++;
-
-                    c.gridx = 0;
-
-                    //defaultTableBox.addItem(rs.getString("name"));
-
-                    //tablePanel.add(ViewUtil.getDetailLabel("  " + ));
-
-                    //final int refId = rs.getInt("reference_id");
-                    //final String refName = rs.getString("name");
-                    final int refId = pd.getReferenceId();
-                    final String refName = pd.getReferenceName();
-                    tablePanel.add(ViewUtil.getDetailLabel(refName), c);
-                    c.gridx++;
-                    //tablePanel.add(Box.createHorizontalGlue());
-
-                    //int numAnnotations = 0;
-                    //final String annotationIds = rs.getString("annotation_ids");
-                    //if (annotationIds != null) {
-                    //    numAnnotations = annotationIds.length() - annotationIds.replaceAll(",", "").length() + 1;
-                    //}
-                    final List<Integer> annotationIds = pd.getAnnotationIds();
-                    int numAnnotations = pd.getNumAnnotations();
-
-                    tablePanel.add(ViewUtil.getDetailLabel(numAnnotations + " annotation(s) applied"), c);
-                    c.gridx++;
-
-                    tablePanel.add(Box.createHorizontalGlue(), c);
-
-                    c.gridy++;
-                }
-
-
-                if (numTables == 0) {
-                    p.add(ViewUtil.alignLeft(ViewUtil.getDetailLabel("No variant tables")));
-                } else {
-
-                    if (numTables == 1 && removeTable != null) {
-                        removeTable.setEnabled(false);
-                    }
-
-                    // TODO: this isn't the best way to force GridBagLayout to top-left
-                    JPanel p0 = ViewUtil.getClearPanel();
-                    p0.setLayout(new BorderLayout());
-                    p0.add(tablePanel, BorderLayout.WEST);
-                    JPanel p1 = ViewUtil.getClearPanel();
-                    p1.setLayout(new BorderLayout());
-                    p1.add(p0, BorderLayout.NORTH);
-                    p.add(p1);
-                }
-
-                p.add(Box.createVerticalGlue());
-
-                return p;
+                int projectId = ProjectController.getInstance().getProjectId(projectName);
+                return MedSavantClient.ProjectQueryUtilAdapter.getProjectDetails(LoginController.sessionId, projectId);
             }
 
             @Override
@@ -315,14 +251,33 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             @Override
             protected void showSuccess(Object result) {
                 try {
-                    JPanel p = (JPanel) get();
-                    updateDetails(p);
-                } catch (java.util.concurrent.CancellationException ex1) {
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    updateDetails(ViewUtil.getMessagePanel("Problem getting project details"));
+                    List<ProjectDetails> list = (List)get();
+                    setDetailsList(list);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ExecutionException ex) {
+                    Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+        }
+        
+        public synchronized void setDetailsList(List<ProjectDetails> projectDetails) {
+            
+            details.removeAll();
+            
+            details.setLayout(new BorderLayout());
+            ViewUtil.setBoxYLayout(details);
+
+            String[][] values = new String[projectDetails.size()][2];
+            for(int i = 0; i < projectDetails.size(); i++){
+                values[i][0] = projectDetails.get(i).getReferenceName();
+                values[i][1] = projectDetails.get(i).getNumAnnotations() + " annotation(s) applied";
+            }
+                        
+            details.add(ViewUtil.getKeyValuePairList(values));
+            
+            details.updateUI();
+            
         }
 
         @Override
@@ -336,40 +291,8 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             details.updateUI();
         }
 
-        public static synchronized void updateDetails(JPanel p) {
-
-            if (details == null) {
-                return;
-            }
-            details.removeAll();
-
-            details.setLayout(new BorderLayout());
-            //.setLayout(new BoxLayout(details,BoxLayout.Y_AXIS));
-        /*
-            details.add(ViewUtil.getKeyValuePairPanel("Patients in cohort", patients.size() + ""), BorderLayout.NORTH);
-            DefaultListModel lm = new DefaultListModel();
-            for (Vector v : patients) {
-            JLabel l = new JLabel(v.get(CohortViewTableSchema.INDEX_HOSPITALID-1).toString()); l.setForeground(Color.white);
-            //details.add(l);
-            lm.addElement((String) v.get(CohortViewTableSchema.INDEX_HOSPITALID-1));
-            }
-            list = (JList) ViewUtil.clear(new JList(lm));
-            list.setBackground(ViewUtil.getDetailsBackgroundColor());
-            list.setForeground(Color.white);
-             *
-             */
-            JScrollPane jsp = ViewUtil.getClearBorderlessJSP(p);
-            details.add(jsp, BorderLayout.CENTER);
-            //list.setOpaque(false);
-
-            details.updateUI();
-
-
-
-
-
-        }
     }
+
 
     private static class ProjectsListModel implements DetailedListModel {
 

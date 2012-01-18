@@ -159,7 +159,6 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
     private static class ReferenceDetailedView extends DetailedView {
 
         private final JPanel details;
-        private final JPanel content;
         private Reference ref;
         private DetailsSW sw;
         private CollapsiblePanel infoPanel;
@@ -182,12 +181,8 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             infoContainer.add(infoPanel);
             infoContainer.add(Box.createVerticalGlue());
 
-            content = infoPanel.getContentPane();
+            details = infoPanel.getContentPane();
 
-            details = ViewUtil.getClearPanel();
-            details.setLayout(new BorderLayout());
-
-            content.add(details);
         }
 
         @Override
@@ -232,9 +227,10 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             table.setGridColor(new Color(235,235,235));
             table.setRowHeight(21);
 
-            details.add(table.getTableHeader(), BorderLayout.NORTH);
-            details.add(table, BorderLayout.CENTER);
-   
+            
+            details.add((table.getTableHeader()));
+            details.add(table); 
+
             details.updateUI();
             
         }

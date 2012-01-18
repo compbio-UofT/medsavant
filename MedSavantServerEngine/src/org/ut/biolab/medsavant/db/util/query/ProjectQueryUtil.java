@@ -408,8 +408,8 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                         rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                         rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID),
                         rs.getBoolean(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED),
-                        rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
                         null,
+                        rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
                         rs.getString(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS)));
                 refs.add(rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID));
             }

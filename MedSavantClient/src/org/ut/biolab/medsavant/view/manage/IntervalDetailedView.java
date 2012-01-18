@@ -70,7 +70,7 @@ public class IntervalDetailedView extends DetailedView {
 
         viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer), BorderLayout.CENTER);
 
-        listPane = new CollapsiblePanel("Region List Details");
+        listPane = new CollapsiblePanel("Regions in List");
         infoContainer.add(listPane);
         infoContainer.add(Box.createVerticalGlue());
 
