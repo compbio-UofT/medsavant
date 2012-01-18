@@ -87,8 +87,6 @@ public class ProgressPanel extends JPanel implements ComponentListener {
 
                     it++;
 
-                    //System.out.println("rending..." + it);
-
                     if (forward) {
                         ap.animatingValue = ap.animatingValue + maxValue/ap.getWidth();
                     } else {
@@ -96,7 +94,6 @@ public class ProgressPanel extends JPanel implements ComponentListener {
                     }
 
                     if ((forward && (ap.animatingValue >= val)) || (!forward && (ap.animatingValue <= val))) {
-                        //System.out.println("break");
                         break;
                     }
 
@@ -161,44 +158,6 @@ public class ProgressPanel extends JPanel implements ComponentListener {
     }
     boolean legendDrawn = false;
 
-    /*
-    private void drawLegend() {
-
-    if (legendDrawn) { return; }
-    legendDrawn = true;
-
-    Graphics2D g2 = (Graphics2D) this.getGraphics();
-
-    if (g2 == null) return;
-
-    //g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-    int startx = padding;
-    int starty = 2*padding + height_bar;
-
-    int width = 10;
-    int height = 10;
-
-    Rectangle.Double r2 = new Rectangle.Double(startx, starty, width, height);
-
-    g2.setColor(innerColor);
-    g2.fill(r2);
-    g2.setColor(Color.darkGray);
-    g2.draw(r2);
-
-    int sw = shadowWidth;
-    for (int i=sw; i >= 0; i-=1) {
-    g2.setColor(new Color(10,10,10,110-(i*110/sw)));
-    //g2.setStroke(new BasicStroke(i));
-    g2.drawLine(startx, starty+i, width+padding, starty+i);
-    }
-
-    g2.drawString(this.getCurrentValue() + "", startx + width + padding, starty + padding);
-
-    g2.dispose();
-    }
-     *
-     */
     private void drawPanel(Graphics g) {
         width_bar = preferredWidth - 2 * padding;
 

@@ -111,18 +111,6 @@ public class ImportDelimitedFile {
 
         previewLines = getLinesFromReader(reader, numLines, fields);
 
-        /*
-        System.out.println("START Preview");
-        for (String[] line : previewLines) {
-            for (String value : line) {
-                System.out.print(value + "\t");
-            }
-            System.out.println();
-        }
-        System.out.println("END Preview");
-         *
-         */
-
         return (List<String[]>[])new List[] { headerLines, previewLines };
     }
 

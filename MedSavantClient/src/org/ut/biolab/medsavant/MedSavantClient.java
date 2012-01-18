@@ -70,41 +70,6 @@ public class MedSavantClient {
 
 
     static public void main(String args[]) {
-
-        /*
-        System.setProperty("java.security.policy", "client.policy");
-        if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new RMISecurityManager());
-        }*/
-
-        /*try {
-            // get the “registry”
-            registry = LocateRegistry.getRegistry(
-                    serverAddress,
-                    (new Integer(serverPort)).intValue());
-
-            // look up the remote object
-
-            setAdaptersFromRegistry(registry);
-
-            // call the remote method
-
-            sessionId = SessionAdapter.registerNewSession("root", "", "tgp");
-
-            System.out.println("server>" + sessionId);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        }*/
-
-        /*try {
-            initializeRegistry();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        }*/
         verifyJIDE();
         setLAF();
         SettingsController.getInstance();
@@ -112,7 +77,6 @@ public class MedSavantClient {
         frame.setExtendedState(MainFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
         ClientLogger.log(Main.class, "MedSavant booted");
-
     }
 
     public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException {
@@ -134,8 +98,6 @@ public class MedSavantClient {
 
         // call the remote method
         //sessionId = SessionAdapter.registerNewSession("root", "", "tgp");
-
-        //System.out.println("server>" + sessionId);
     }
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {

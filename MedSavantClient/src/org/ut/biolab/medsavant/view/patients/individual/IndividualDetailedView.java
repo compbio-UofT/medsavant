@@ -127,10 +127,8 @@ public class IndividualDetailedView extends DetailedView {
                 MiscUtils.checkSQLException(ex);
                 throw ex;
             }
-            
-            File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + pid + ".csv");
 
-            //System.out.println("Writing " + outfile.getAbsolutePath());
+            File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + pid + ".csv");
 
                 CSVWriter w = new CSVWriter(new FileWriter(outfile),',',CSVWriter.NO_QUOTE_CHARACTER);
                 w.writeNext(new String[] {Pedigree.FIELD_HOSPITALID,Pedigree.FIELD_MOM,Pedigree.FIELD_DAD,
@@ -227,7 +225,7 @@ public class IndividualDetailedView extends DetailedView {
                         } else {
                             for(int i : patientIds){
                                 if(i == patientId) return;
-                            }                          
+                            }
                             selectedNodes.remove(patientId);
                             overNodeView.setBorderColor(Color.black);
                         }
@@ -288,7 +286,7 @@ public class IndividualDetailedView extends DetailedView {
             values[i][1] = "";
             if(result[i] != null){
                 values[i][1] = result[i].toString();
-                
+
                 //special case for gender
                 if(values[i][0].equals(PatientFormat.ALIAS_OF_GENDER)){
                     String s;
