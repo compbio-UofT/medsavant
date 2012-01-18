@@ -217,7 +217,7 @@ public class ViewUtil {
             }
         };
 
-        p.setBorder(ViewUtil.getSmallBorder());
+        p.setBorder(ViewUtil.getMediumBorder());
 
         p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
 
@@ -293,8 +293,8 @@ public class ViewUtil {
 
     public static JLabel getTitleLabel(String string) {
         JLabel l = new JLabel(string);
-        l.setFont(new Font(getDefaultFontFamily(),Font.BOLD,18));
-        l.setForeground(new Color(240,240,240));
+        l.setFont(new Font(getDefaultFontFamily(),Font.PLAIN,14));
+        l.setForeground(Color.black);
         return l;
     }
 
@@ -435,6 +435,15 @@ public class ViewUtil {
                 BorderFactory.createMatteBorder(0, 1, 0, 0, Color.lightGray),
                 BorderFactory.createEmptyBorder(0, 5, 0, 0)
                 );
+    }
+
+    public static Component center(JComponent c) {
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(p);
+        p.add(Box.createHorizontalGlue());
+        p.add(c);
+        p.add(Box.createHorizontalGlue());
+        return p;
     }
 
 

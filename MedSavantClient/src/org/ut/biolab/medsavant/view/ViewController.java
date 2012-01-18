@@ -179,14 +179,26 @@ public class ViewController extends JPanel {
         public PersistencePanel() {
             panes = new JTabbedPane();
             this.setLayout(new BorderLayout());
-            this.add(panes, BorderLayout.CENTER);
         }
 
         private void setSectionPersistencePanels(JPanel[] persistentPanels) {
-            panes.removeAll();
-            for (JPanel p : persistentPanels) {
-                panes.addTab(p.getName(), p);
+            this.removeAll();
+            if (persistentPanels.length == 1) {
+                JPanel p = ViewUtil.getSecondaryBannerPanel();
+                p.add(new JLabel(persistentPanels[0].getName()));
+                this.add(
+                        p,
+                        //ViewUtil.center(new JLabel(persistentPanels[0].getName())),
+                        BorderLayout.NORTH);
+                this.add(persistentPanels[0],BorderLayout.CENTER);
+            } else {
+                panes.removeAll();
+                for (JPanel p : persistentPanels) {
+                    panes.addTab(p.getName(), p);
+                }
+                this.add(panes,BorderLayout.CENTER);
             }
+
         }
     }
 
