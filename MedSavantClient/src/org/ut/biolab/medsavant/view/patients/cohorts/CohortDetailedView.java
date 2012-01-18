@@ -141,10 +141,11 @@ public class CohortDetailedView extends DetailedView {
         };
         list.setBorder(null);
         list.setShowGrid(false);
-        //list.setGridColor(new Color(235,235,235));
         list.setRowHeight(21);
 
         details.add(list);
+        
+        membersPane.setDescription(ViewUtil.numToString(patients.size()));
 
         details.updateUI();
     }
