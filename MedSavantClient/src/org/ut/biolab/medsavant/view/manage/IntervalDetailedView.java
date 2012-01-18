@@ -154,7 +154,8 @@ public class IntervalDetailedView extends DetailedView {
         @Override
         protected void showSuccess(List<String> result) {
             try {
-                setTitle(regionSet.getName() + " (" + numRegionsInRegionList + " regions)");
+                //setTitle(regionSet.getName() + " (" + numRegionsInRegionList + " regions)");
+                listPane.setDescription(ViewUtil.numToString(numRegionsInRegionList));
                 setRegionList(get());
 
             } catch (Exception ex) {

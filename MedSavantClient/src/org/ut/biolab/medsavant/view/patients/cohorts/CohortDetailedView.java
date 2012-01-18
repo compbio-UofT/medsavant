@@ -9,7 +9,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
-import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -20,19 +20,20 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.model.SimplePatient;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
@@ -51,11 +52,11 @@ public class CohortDetailedView extends DetailedView {
 
     //private List<Object> fieldValues;
     private CohortDetailsSW sw;
-    private final JPanel content;
+    //private final JPanel content;
     private final JPanel details;
     private final JPanel menu;
     //private String[] cohortNames;
-    private JList list;
+    private JTable list;
     private Cohort cohort;
     private Cohort[] cohorts;
     private final CollapsiblePanel membersPane;
@@ -76,17 +77,13 @@ public class CohortDetailedView extends DetailedView {
         infoContainer.add(membersPane);
         infoContainer.add(Box.createVerticalGlue());
 
-        content = membersPane.getContentPane();
+        details = membersPane.getContentPane();
 
-        details = ViewUtil.getClearPanel();
-        menu = ViewUtil.getClearPanel();// ViewUtil.getButtonPanel();
+        menu = ViewUtil.getClearPanel();
 
         menu.add(removeIndividualsButton());
         menu.setVisible(false);
 
-        content.setLayout(new BorderLayout());
-
-        content.add(details, BorderLayout.CENTER);
         this.addBottomComponent(menu);
     }
 
@@ -122,29 +119,32 @@ public class CohortDetailedView extends DetailedView {
     public synchronized void setPatientList(List<SimplePatient> patients) {
 
         details.removeAll();
-
-        details.setLayout(new BorderLayout());
-        //.setLayout(new BoxLayout(details,BoxLayout.Y_AXIS));
-
-        DefaultListModel lm = new DefaultListModel();
-        /*for (Vector v : patients) {
-        JLabel l = new JLabel(v.get(CohortViewTableSchema.INDEX_HOSPITALID-1).toString()); l.setForeground(Color.white);
-        //details.add(l);
-        lm.addElement((String) v.get(CohortViewTableSchema.INDEX_HOSPITALID-1));
-        }*/
-        for (SimplePatient i : patients) {
-            JLabel l = new JLabel(i.toString());
-            l.setForeground(Color.white);
-            details.add(l);
-            lm.addElement(i);
+        
+        Object[][] data = new Object[patients.size()][1];
+        for(int i = 0; i < patients.size(); i++){
+            data[i][0] = patients.get(i);
         }
-        list = ViewUtil.getDetailList(lm);
+        
+        list = new JTable(data, new String[]{MedSavantDatabase.DefaultpatientTableSchema.getFieldAlias(DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID)}) {
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int Index_row, int Index_col) {
+                Component comp = super.prepareRenderer(renderer, Index_row, Index_col);
+                if (!isCellSelected(Index_row, Index_col)) {
+                    if (Index_row % 2 == 0) {
+                        comp.setBackground(ViewUtil.evenRowColor);
+                    } else {
+                        comp.setBackground(ViewUtil.oddRowColor);
+                    }
+                }
+                return comp;
+            }
+        };
+        list.setBorder(null);
+        list.setShowGrid(false);
+        //list.setGridColor(new Color(235,235,235));
+        list.setRowHeight(21);
 
-        membersPane.setDescription(ViewUtil.numToString(patients.size()));
-
-        JScrollPane jsp = ViewUtil.getClearBorderlessJSP(list);
-        details.add(jsp, BorderLayout.CENTER);
-        //list.setOpaque(false);
+        details.add(list);
 
         details.updateUI();
     }
@@ -230,11 +230,11 @@ public class CohortDetailedView extends DetailedView {
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                Object[] selected = list.getSelectedValues();
-                int[] patientIds = new int[selected.length];
-                for (int i = 0; i < selected.length; i++) {
-                    //patientIds[i] = (Integer) selected[i];
-                    patientIds[i] = ((SimplePatient) selected[i]).getId();
+                
+                int[] rows = list.getSelectedRows();
+                int[] patientIds = new int[rows.length];
+                for (int i = 0; i < rows.length; i++) {
+                    patientIds[i] = ((SimplePatient) list.getModel().getValueAt(rows[i], 0)).getId();
                 }
                 if (patientIds != null && patientIds.length > 0) {
 

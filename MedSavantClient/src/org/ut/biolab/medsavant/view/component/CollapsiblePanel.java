@@ -84,6 +84,7 @@ public class CollapsiblePanel extends JPanel {
         titlePanel.add(titleLabel);
 
         descriptionLabel = new JLabel("");
+        descriptionLabel.setFont(ViewUtil.getMediumTitleFont());
         //titleLabel.setForeground(Color.white);
 
         // place for buttons on the right
