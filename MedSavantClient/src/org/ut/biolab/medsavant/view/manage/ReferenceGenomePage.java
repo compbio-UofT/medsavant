@@ -187,9 +187,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             details = ViewUtil.getClearPanel();
             details.setLayout(new BorderLayout());
 
-            content.setLayout(new BorderLayout());
-
-            content.add(details, BorderLayout.CENTER);
+            content.add(details);
         }
 
         @Override

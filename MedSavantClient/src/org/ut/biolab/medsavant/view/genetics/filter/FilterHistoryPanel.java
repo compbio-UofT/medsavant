@@ -75,7 +75,9 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
         ButtonGroup group = new ButtonGroup();
         JRadioButton globalButton = new JRadioButton("Global");
         globalButton.setSelected(true);
+        globalButton.setOpaque(false);
         JRadioButton relativeButton = new JRadioButton("Relative");
+        relativeButton.setOpaque(false);
         globalButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {

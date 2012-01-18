@@ -183,9 +183,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
 
             details = ViewUtil.getClearPanel();
 
-            content.setLayout(new BorderLayout());
-
-            content.add(details, BorderLayout.CENTER);
+            content.add(details);
         }
 
         @Override

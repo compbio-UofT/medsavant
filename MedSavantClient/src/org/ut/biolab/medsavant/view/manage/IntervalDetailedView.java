@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -35,6 +36,7 @@ import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
 import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedView;
@@ -54,6 +56,40 @@ public class IntervalDetailedView extends DetailedView {
     private int numRegionsInRegionList;
     private RegionSet regionSet;
     private static List<FilterPanelSubItem> filterPanels;
+    
+    private final CollapsiblePanel listPane;
+    
+    
+    public IntervalDetailedView() {
+
+        JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
+        viewContainer.setLayout(new BorderLayout());
+
+        JPanel infoContainer = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(infoContainer);
+
+        viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer), BorderLayout.CENTER);
+
+        listPane = new CollapsiblePanel("Region List Details");
+        infoContainer.add(listPane);
+        infoContainer.add(Box.createVerticalGlue());
+
+        content = listPane.getContentPane();
+
+        details = ViewUtil.getClearPanel();
+        
+        content.setLayout(new BorderLayout());
+
+        content.add(details, BorderLayout.CENTER);
+        
+        /*content = this.getContentPanel();
+
+        details = ViewUtil.getClearPanel();
+
+        content.setLayout(new BorderLayout());
+
+        content.add(details,BorderLayout.CENTER);*/
+    }
 
     @Override
     public void setMultipleSelections(List<Object[]> selectedRows) {
@@ -120,6 +156,7 @@ public class IntervalDetailedView extends DetailedView {
         @Override
         protected void showSuccess(List<String> result) {
             try {
+                setTitle(regionSet.getName() + " (" + numRegionsInRegionList + " regions)");
                 setRegionList(get());
 
             } catch (Exception ex) {
@@ -139,7 +176,7 @@ public class IntervalDetailedView extends DetailedView {
         JPanel h1 = ViewUtil.getClearPanel();
         h1.setLayout(new BoxLayout(h1,BoxLayout.Y_AXIS));
 
-        h1.add(ViewUtil.getKeyValuePairPanel("Regions in set", ViewUtil.numToString(numRegionsInRegionList)));
+        //h1.add(ViewUtil.getKeyValuePairPanel("Regions in set", ViewUtil.numToString(numRegionsInRegionList)));
 
         if (numRegionsInRegionList != regions.size()) {
             JLabel l = new JLabel("Showing first " + regions.size());
@@ -162,31 +199,6 @@ public class IntervalDetailedView extends DetailedView {
         //list.setOpaque(false);
 
         details.updateUI();
-    }
-
-    public IntervalDetailedView() {
-        //fieldNames = MedSavantDatabase.getInstance().getSubjectTableSchema().getFieldAliases();
-
-        content = this.getContentPanel();
-
-        details = ViewUtil.getClearPanel();
-
-        /*
-        JButton deleteButton = new JButton("Delete region list");
-        deleteButton.setOpaque(false);
-        deleteButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                removeSelectedRegionLists();
-            }
-        });
-
-        this.addBottomComponent(deleteButton);
-         *
-         */
-
-        content.setLayout(new BorderLayout());
-
-        content.add(details,BorderLayout.CENTER);
     }
 
     @Override

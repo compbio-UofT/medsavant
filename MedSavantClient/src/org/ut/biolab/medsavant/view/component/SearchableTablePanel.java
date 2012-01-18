@@ -160,7 +160,7 @@ public class SearchableTablePanel extends JPanel {
         pageLabel2.setText(" of " + getTotalNumPages());
         int start = getTotalNumPages() == 0 ? 0 : (getPageNumber() - 1) * getRowsPerPage() + 1;
         int end = getTotalNumPages() == 0 ? 0 : Math.min(start + getRowsPerPage() - 1, getTotalRowCount());
-        amountLabel.setText("Showing " + start + " - " + end + " of " + getTotalRowCount() + " records");
+        amountLabel.setText("  Showing " + start + " - " + end + " of " + getTotalRowCount() + " records");
 
         if (first) {
             int[] columns = new int[columnNames.size()];

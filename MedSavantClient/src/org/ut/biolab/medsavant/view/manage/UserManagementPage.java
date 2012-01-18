@@ -134,9 +134,10 @@ public class UserManagementPage extends SubSectionView implements UserListener {
 
             details = ViewUtil.getClearPanel();
 
-            content.setLayout(new BorderLayout());
+            //content.setLayout(new BorderLayout());
 
-            content.add(details, BorderLayout.CENTER);
+            //content.add(details, BorderLayout.CENTER);
+            content.add(details);
         }
 
         @Override

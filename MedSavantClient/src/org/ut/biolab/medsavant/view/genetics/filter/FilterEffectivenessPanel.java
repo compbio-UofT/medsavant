@@ -2,7 +2,6 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
@@ -11,8 +10,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -27,7 +24,6 @@ import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.ProgressPanel;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
-import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -36,7 +32,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class FilterEffectivenessPanel extends JPanel implements FiltersChangedListener {
 
-    Color bg = new Color(129, 139, 154);
+    Color bg = new Color(139, 149, 164);
     private final ProgressPanel pp;
     private final JLabel labelVariantsRemaining;
     private final JLabel labelVariantsTotal;

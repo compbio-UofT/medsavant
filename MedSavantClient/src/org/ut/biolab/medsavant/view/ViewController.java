@@ -224,32 +224,19 @@ public class ViewController extends JPanel {
             this.add(title);
             sectionMenuPanel = ViewUtil.getClearPanel();
             subSectionMenuPanel = ViewUtil.getClearPanel();
-
-            Border compoundBorderRight = BorderFactory.createCompoundBorder(
-                    new MatteBorder(0, 1, 0, 1, new Color(160, 160, 160)),
-                    ViewUtil.getMediumSideBorder());
-
+            
             sectionMenuPanel.setBackground(new Color(232, 232, 232));
-            //sectionMenuPanel.setBorder(compoundBorderRight);
 
             subSectionMenuPanel.setBackground(new Color(232, 232, 232));
-            //subSectionMenuPanel.setBorder(compoundBorderRight);
 
             sectionMenuPanel.setLayout(new BoxLayout(sectionMenuPanel, BoxLayout.X_AXIS));
             subSectionMenuPanel.setLayout(new BoxLayout(subSectionMenuPanel, BoxLayout.X_AXIS));
 
-            this.add(Box.createHorizontalGlue());
-
-            //leftTab = new ImagePanel(IconFactory.StandardIcon.TAB_LEFT);
-            //rightTab = new ImagePanel(IconFactory.StandardIcon.TAB_RIGHT);
-
-            //this.add(leftTab);
+            this.add(Box.createHorizontalGlue());;
 
             this.add(subSectionMenuPanel);
             this.add(Box.createHorizontalGlue());
             this.add(sectionMenuPanel);
-
-            //this.add(rightTab);
 
         }
 

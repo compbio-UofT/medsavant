@@ -166,15 +166,6 @@ public class AnnotationsPage extends SubSectionView {
 
         public ExternalAnnotationDetailedView() {
 
-            /*content = this.getContentPanel();
-
-            details = ViewUtil.getClearPanel();
-            //this.addBottomComponent(deleteButton());
-
-            content.setLayout(new BorderLayout());
-
-            content.add(details, BorderLayout.CENTER);*/
-            
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());
 
@@ -191,9 +182,7 @@ public class AnnotationsPage extends SubSectionView {
 
             details = ViewUtil.getClearPanel();
 
-            content.setLayout(new BorderLayout());
-
-            content.add(details, BorderLayout.CENTER);
+            content.add(details);
         }
 
         @Override

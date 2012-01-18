@@ -182,16 +182,6 @@ public class SubSectionViewCollection extends SubSectionView {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        //menuPanel = new JPanel();//ViewUtil.getQuaternaryBannerPanel();
-        //menuPanel.setBorder(ViewUtil.getSmallBorder());
-        //ViewUtil.applyHorizontalBoxLayout(menuPanel);
-        //menuPanel.add(Box.createHorizontalGlue());
-
-        //glue = Box.createHorizontalGlue();
-        //menuPanel.add(glue);
-
-        //panel.add(menuPanel, BorderLayout.NORTH);
-
         contentPanel = new JPanel();
         //contentPanel.setBackground(Color.red);
         contentPanel.setLayout(new BorderLayout());

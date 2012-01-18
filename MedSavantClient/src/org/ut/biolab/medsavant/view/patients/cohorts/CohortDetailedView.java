@@ -61,6 +61,34 @@ public class CohortDetailedView extends DetailedView {
     private final CollapsiblePanel membersPane;
     private boolean multipleSelected = false;
     private static List<FilterPanelSubItem> filterPanels;
+    
+    public CohortDetailedView() {
+
+        JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
+        viewContainer.setLayout(new BorderLayout());
+
+        JPanel infoContainer = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(infoContainer);
+
+        viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer), BorderLayout.CENTER);
+
+        membersPane = new CollapsiblePanel("Members");
+        infoContainer.add(membersPane);
+        infoContainer.add(Box.createVerticalGlue());
+
+        content = membersPane.getContentPane();
+
+        details = ViewUtil.getClearPanel();
+        menu = ViewUtil.getClearPanel();// ViewUtil.getButtonPanel();
+
+        menu.add(removeIndividualsButton());
+        menu.setVisible(false);
+
+        content.setLayout(new BorderLayout());
+
+        content.add(details, BorderLayout.CENTER);
+        this.addBottomComponent(menu);
+    }
 
     private class CohortDetailsSW extends SwingWorker {
 
@@ -119,34 +147,6 @@ public class CohortDetailedView extends DetailedView {
         //list.setOpaque(false);
 
         details.updateUI();
-    }
-
-    public CohortDetailedView() {
-
-        JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
-        viewContainer.setLayout(new BorderLayout());
-
-        JPanel infoContainer = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(infoContainer);
-
-        viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer), BorderLayout.CENTER);
-
-        membersPane = new CollapsiblePanel("Members");
-        infoContainer.add(membersPane);
-        infoContainer.add(Box.createVerticalGlue());
-
-        content = membersPane.getContentPane();
-
-        details = ViewUtil.getClearPanel();
-        menu = ViewUtil.getClearPanel();// ViewUtil.getButtonPanel();
-
-        menu.add(removeIndividualsButton());
-        menu.setVisible(false);
-
-        content.setLayout(new BorderLayout());
-
-        content.add(details, BorderLayout.CENTER);
-        this.addBottomComponent(menu);
     }
 
     @Override

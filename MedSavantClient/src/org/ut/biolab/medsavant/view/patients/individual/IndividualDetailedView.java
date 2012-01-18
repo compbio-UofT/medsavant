@@ -332,7 +332,7 @@ public class IndividualDetailedView extends DetailedView {
         viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer),BorderLayout.CENTER);
 
         CollapsiblePanel cp = new CollapsiblePanel("Patient Information");
-        cp.setContentPaneVisible(false);
+        //cp.setContentPaneVisible(false);
         infoContainer.add(cp);
 
         infoContainer.add(ViewUtil.getLargeSeparator());

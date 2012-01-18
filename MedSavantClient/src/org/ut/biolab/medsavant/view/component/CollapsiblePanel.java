@@ -50,10 +50,10 @@ public class CollapsiblePanel extends JPanel {
         this(title,true);
     }
 
-    public CollapsiblePanel(String title, boolean isCollapsable) {
+    public CollapsiblePanel(String title, boolean isCollapsable) {       
         ViewUtil.applyVerticalBoxLayout(this);
         ViewUtil.clear(this);
-
+        
         titlePanel = ViewUtil.getSecondaryBannerPanel();//new JPanel();
         ViewUtil.applyHorizontalBoxLayout(titlePanel);
         titlePanel.setBorder(BorderFactory.createCompoundBorder(
@@ -105,7 +105,7 @@ public class CollapsiblePanel extends JPanel {
                     BorderFactory.createMatteBorder(0,1,1,1,Color.lightGray),
                     ViewUtil.getMediumBorder()));
         contentPanel.setBackground(Color.white);
-
+        
         setContentPaneVisible(true);
 
         this.add(titlePanel);
