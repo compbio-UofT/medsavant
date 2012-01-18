@@ -585,8 +585,12 @@ public class ViewUtil {
     }
 
     public static JPanel getKeyValuePairPanelListItem(String key, String val, boolean dark) {
+        return getKeyValuePairPanelListItem(key, val, dark, true);
+    }
+    
+    public static JPanel getKeyValuePairPanelListItem(String key, String val, boolean dark, boolean keyBold) {
         JLabel keyl = new JLabel(key);
-            keyl.setFont(new Font(keyl.getFont().getFamily(),Font.BOLD,keyl.getFont().getSize()));
+            keyl.setFont(new Font(keyl.getFont().getFamily(),(keyBold ? Font.BOLD : Font.PLAIN),keyl.getFont().getSize()));
             keyl.setForeground(detailForeground);
 
             JLabel value = new JLabel(val);
@@ -624,6 +628,16 @@ public class ViewUtil {
         p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
         for (int i = 0; i < keyPairs.length; i++) {
             p.add(getKeyValuePairPanelListItem(keyPairs[i][0],keyPairs[i][1],i%2==0));
+        }
+        return p;
+    }
+    
+    public static JPanel getKeyList(String[] keys) {
+        JPanel p = new JPanel();
+        p.setOpaque(false);
+        p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+        for (int i = 0; i < keys.length; i++) {
+            p.add(getKeyValuePairPanelListItem(keys[i],"",i%2==0, false));
         }
         return p;
     }

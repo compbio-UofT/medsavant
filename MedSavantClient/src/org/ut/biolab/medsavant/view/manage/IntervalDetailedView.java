@@ -78,9 +78,7 @@ public class IntervalDetailedView extends DetailedView {
 
         details = ViewUtil.getClearPanel();
         
-        content.setLayout(new BorderLayout());
-
-        content.add(details, BorderLayout.CENTER);
+        content.add(details);
         
         /*content = this.getContentPanel();
 
@@ -167,36 +165,15 @@ public class IntervalDetailedView extends DetailedView {
     }
 
     public synchronized void setRegionList(List<String> regions) {
-
+        
         details.removeAll();
+            
+        ViewUtil.setBoxYLayout(details);
+        
+        String[] values = new String[regions.size()];
+        values = regions.toArray(values);
 
-        details.setLayout(new BorderLayout());
-        //.setLayout(new BoxLayout(details,BoxLayout.Y_AXIS));
-
-        JPanel h1 = ViewUtil.getClearPanel();
-        h1.setLayout(new BoxLayout(h1,BoxLayout.Y_AXIS));
-
-        //h1.add(ViewUtil.getKeyValuePairPanel("Regions in set", ViewUtil.numToString(numRegionsInRegionList)));
-
-        if (numRegionsInRegionList != regions.size()) {
-            JLabel l = new JLabel("Showing first " + regions.size());
-            l.setForeground(Color.white);
-            h1.add(ViewUtil.getLeftAlignedComponent(l));
-        }
-
-        details.add(h1,BorderLayout.NORTH);
-
-        DefaultListModel lm = new DefaultListModel();
-        for (String region : regions) {
-            //JLabel l = new JLabel(v.get(1).toString());
-            //l.setForeground(Color.white);
-            lm.addElement(region);
-        }
-
-        JList list = ViewUtil.getDetailList(lm);
-        JScrollPane jsp = ViewUtil.getClearBorderlessJSP(list);
-        details.add(jsp, BorderLayout.CENTER);
-        //list.setOpaque(false);
+        details.add(ViewUtil.getKeyList(values));
 
         details.updateUI();
     }

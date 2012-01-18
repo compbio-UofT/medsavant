@@ -265,7 +265,6 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             
             details.removeAll();
             
-            details.setLayout(new BorderLayout());
             ViewUtil.setBoxYLayout(details);
 
             String[][] values = new String[projectDetails.size()][2];
