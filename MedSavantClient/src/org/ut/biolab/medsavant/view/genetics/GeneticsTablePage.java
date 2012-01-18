@@ -51,7 +51,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     }
 
     public JPanel getView(boolean update) {
-        
+
         if (panel == null || update) {
             ThreadController.getInstance().cancelWorkers(getName());
             //if(tablePanel != null) FilterController.removeFilterListener(tablePanel);
@@ -98,7 +98,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     @Override
     public void viewDidUnload() {
         ThreadController.getInstance().cancelWorkers(getName());
-        if(!tablePanel.isInit()){
+        if(tablePanel != null && !tablePanel.isInit()){
             this.setUpdateRequired(true);
         }
         isLoaded = false;
@@ -112,7 +112,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         if(tablePanel == null || gp == null) return;
         tablePanel.setUpdateRequired(true);
         gp.setUpdateRequired(true);
-        if(isLoaded){           
+        if(isLoaded){
             tablePanel.updateIfRequired();
             gp.updateIfRequired();
         }

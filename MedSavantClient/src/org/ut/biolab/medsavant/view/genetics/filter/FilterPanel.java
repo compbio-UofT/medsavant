@@ -323,10 +323,10 @@ public class FilterPanel extends javax.swing.JPanel {
 
         filterContainer = ViewUtil.getClearPanel();
 
-        container.add(filterAndToolbarContainer,BorderLayout.CENTER);
-        filterAndToolbarContainer.add(filterContainer, BorderLayout.CENTER);
-        filterAndToolbarContainer.add(createNewOrButton(),BorderLayout.SOUTH);
-
+        //container.add(filterAndToolbarContainer,BorderLayout.CENTER);
+        //filterAndToolbarContainer.add(filterContainer, BorderLayout.CENTER);
+        //filterAndToolbarContainer.add(createNewOrButton(),BorderLayout.NORTH);
+        //filterAndToolbarContainer.add(createNewOrButton(),BorderLayout.SOUTH);
 
         filterContainer.setLayout(new BoxLayout(filterContainer, BoxLayout.Y_AXIS));
 
@@ -392,8 +392,8 @@ public class FilterPanel extends javax.swing.JPanel {
 
         topContainer.add(filterList);
         topContainer.add(Box.createHorizontalGlue());
-        topContainer.add(saveButton);
-        topContainer.add(deleteButton);
+        //topContainer.add(saveButton);
+        //topContainer.add(deleteButton);
 
         container.add(topContainer, BorderLayout.NORTH);
     }

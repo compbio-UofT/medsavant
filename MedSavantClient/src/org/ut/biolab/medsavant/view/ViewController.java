@@ -43,7 +43,7 @@ public class ViewController extends JPanel {
     private TopMenu menu;
     private JPanel contentContainer;
     private PersistencePanel sectionPanel;
-    private PeekingPanel peekRight;
+    private PeekingPanel peekPersistence;
     private SectionView currentSection;
     private SubSectionView currentSubsection;
 
@@ -70,13 +70,13 @@ public class ViewController extends JPanel {
         // create the right panel
         sectionPanel = new PersistencePanel();
         sectionPanel.setPreferredSize(new Dimension(350, 999));
-        peekRight = new PeekingPanel("", BorderLayout.WEST, sectionPanel, true,400);
-        h1.add(peekRight, BorderLayout.EAST);
+        peekPersistence = new PeekingPanel("", BorderLayout.EAST, sectionPanel, true,400);
+        h1.add(peekPersistence, BorderLayout.WEST);
 
         // add it all to the view
         add(h1, BorderLayout.CENTER);
 
-        peekRight.setVisible(false);
+        peekPersistence.setVisible(false);
 
         menu = new TopMenu(contentContainer);
         add(menu, BorderLayout.NORTH);
@@ -122,10 +122,10 @@ public class ViewController extends JPanel {
         if (parent != currentSection && parent != null) {
             JPanel[] persistentPanels = parent.getPersistentPanels();
             if (persistentPanels != null) {
-                peekRight.setVisible(true);
+                peekPersistence.setVisible(true);
                 sectionPanel.setSectionPersistencePanels(persistentPanels);
             } else {
-                peekRight.setVisible(false);
+                peekPersistence.setVisible(false);
             }
         }
         currentSection = parent;
@@ -152,11 +152,11 @@ public class ViewController extends JPanel {
     }
 
     public void setPeekRightShown(boolean show){
-        peekRight.setExpanded(show);
+        peekPersistence.setExpanded(show);
     }
 
     public boolean isPeekRightShown(){
-        return peekRight.isExpanded();
+        return peekPersistence.isExpanded();
     }
 
     private static class SidePanel extends JPanel {
@@ -224,7 +224,7 @@ public class ViewController extends JPanel {
             this.add(title);
             sectionMenuPanel = ViewUtil.getClearPanel();
             subSectionMenuPanel = ViewUtil.getClearPanel();
-            
+
             sectionMenuPanel.setBackground(new Color(232, 232, 232));
 
             subSectionMenuPanel.setBackground(new Color(232, 232, 232));
@@ -268,7 +268,6 @@ public class ViewController extends JPanel {
                     }
                 }
 
-                System.out.println("Setting subsection visible: " + !empty);
                 subSectionMenuPanel.setVisible(!empty);
 
                 subSectionMenuPanel.add(Box.createVerticalGlue());
@@ -281,7 +280,6 @@ public class ViewController extends JPanel {
                     }
                 }
 
-                System.out.println("Setting section visible: " + !empty);
                 sectionMenuPanel.setVisible(!empty);
             } else {
                 title.setText(DEFAULT_TITLE);

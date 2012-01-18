@@ -141,8 +141,6 @@ public class ProgressPanel extends JPanel implements ComponentListener {
 
     @Override
     public void componentResized(ComponentEvent ce) {
-        //this.drawLegend();
-        System.out.println("Resized > " + System.currentTimeMillis());
         preferredWidth = this.getWidth();
         this.setPreferredSize(new Dimension(preferredWidth, preferredHeight));
         this.draw(this.getGraphics());

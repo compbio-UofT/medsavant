@@ -36,6 +36,8 @@ public class SubSectionViewCollection extends SubSectionView {
     private List<Component> menuComponents = new ArrayList<Component>();
     private final ButtonGroup buttonGroup;
     private JPanel contentPanel;
+    private SubSectionView currentView;
+
 
     public SubSectionViewCollection(SectionView parent, String name) {
         super(parent);
@@ -87,7 +89,6 @@ public class SubSectionViewCollection extends SubSectionView {
                     });
               }
             private boolean over = false;
-            private boolean init = false;
 
             @Override
             public void paintComponent(Graphics g) {
@@ -136,6 +137,11 @@ public class SubSectionViewCollection extends SubSectionView {
         buttonGroup.add(button);
         menuComponents.add(button);
 
+        if (this.subsectionMap.keySet().size() == 1) {
+            button.setSelected(true);
+            firstPageName = v.getName();
+        }
+
         button.addActionListener(new ActionListener() {
 
             @Override
@@ -146,18 +152,20 @@ public class SubSectionViewCollection extends SubSectionView {
         });
 
         menuComponents.add(Box.createHorizontalStrut(5));
+
+
+
         //menuPanel.add(glue);
     }
 
     int blah = 0;
 
     void setPage(String pageName) {
-        SubSectionView view = this.subsectionMap.get(pageName);
+        currentView = this.subsectionMap.get(pageName);
         contentPanel.removeAll();
-
-        contentPanel.add(view.getView(true),BorderLayout.CENTER);
-        view.viewDidLoad();
+        contentPanel.add(currentView.getView(true),BorderLayout.CENTER);
         contentPanel.updateUI();
+        currentView.viewDidLoad();
     }
 
     @Override
@@ -170,17 +178,36 @@ public class SubSectionViewCollection extends SubSectionView {
         return panel;
     }
 
+    private String firstPageName;
+    boolean firstPageShown = false;
     @Override
     public void viewDidLoad() {
+        if (!firstPageShown) {
+            this.setPage(firstPageName);
+            firstPageShown = true;
+        }
     }
 
     @Override
     public void viewDidUnload() {
+        for (SubSectionView v : subsectionMap.values()) {
+            v.viewDidUnload();
+        }
     }
 
     private void initView() {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
+
+        //menuPanel = new JPanel();//ViewUtil.getQuaternaryBannerPanel();
+        //menuPanel.setBorder(ViewUtil.getSmallBorder());
+        //ViewUtil.applyHorizontalBoxLayout(menuPanel);
+        //menuPanel.add(Box.createHorizontalGlue());
+
+        //glue = Box.createHorizontalGlue();
+        //menuPanel.add(glue);
+
+        //panel.add(menuPanel, BorderLayout.NORTH);
 
         contentPanel = new JPanel();
         //contentPanel.setBackground(Color.red);
