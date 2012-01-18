@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -29,6 +30,8 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.controller.ResultController;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MiscUtils;
@@ -100,20 +103,19 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
         scrollPane.getViewport().add(table);
         this.add(scrollPane, BorderLayout.CENTER);
 
-        try {
-            maxRecords = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                LoginController.sessionId,
-                ProjectController.getInstance().getCurrentProjectId(),
-                ReferenceController.getInstance().getCurrentReferenceId(),
-                FilterController.getQueryFilterConditions());
-        } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
-        } catch (Exception ex) {
-            Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        if (maxRecords != -1) {
-            model.addRow("Total", "", maxRecords);
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    maxRecords = ResultController.getInstance().getNumFilteredVariants();
+                } catch (NonFatalDatabaseException ex) {
+                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if (maxRecords != -1) {
+                    model.addRow("Total", "", maxRecords);
+                }
+            }
+        });
 
         FilterController.addFilterListener(this);
 

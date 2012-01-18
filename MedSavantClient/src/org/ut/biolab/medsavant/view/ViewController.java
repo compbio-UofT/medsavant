@@ -128,7 +128,7 @@ public class ViewController extends JPanel {
                 peekPersistence.setVisible(false);
             }
         }
-        currentSection = parent;
+        currentSection = parent;        
     }
 
     void setProject(String projectname) {

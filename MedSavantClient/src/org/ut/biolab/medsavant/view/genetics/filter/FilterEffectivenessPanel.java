@@ -13,11 +13,13 @@ import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -60,7 +62,7 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
         this.add(pp, BorderLayout.CENTER);
 
         historyPanel = new FilterHistoryPanel();
-
+        
         /*
         final JFrame historyFrame = new JFrame("Filter History");
         historyFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -104,7 +106,14 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
 
         FilterController.addFilterListener(this);
 
-        setMaxValues();
+        labelVariantsRemaining.setText("Calculating...");
+        updateUI();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                setMaxValues();
+            }
+        });    
     }
 
     @Override
@@ -148,18 +157,12 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
     }
 
     private void setMaxValues() {
-
+        
         int maxRecords = -1;
 
         try {
-            maxRecords = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                    LoginController.sessionId,
-                    ProjectController.getInstance().getCurrentProjectId(),
-                    ReferenceController.getInstance().getCurrentReferenceId(),
-                    FilterController.getQueryFilterConditions());
-        } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
-        } catch (Exception ex) {
+            maxRecords = ResultController.getInstance().getNumFilteredVariants();
+        } catch (NonFatalDatabaseException ex) {
             Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
 
