@@ -103,7 +103,7 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
         scrollPane.getViewport().add(table);
         this.add(scrollPane, BorderLayout.CENTER);
 
-        SwingUtilities.invokeLater(new Runnable() {
+        Thread t = new Thread(){
             @Override
             public void run() {
                 try {
@@ -115,7 +115,8 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
                     model.addRow("Total", "", maxRecords);
                 }
             }
-        });
+        };
+        t.start();
 
         FilterController.addFilterListener(this);
 

@@ -108,12 +108,13 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
 
         labelVariantsRemaining.setText("Calculating...");
         updateUI();
-        SwingUtilities.invokeLater(new Runnable() {
+        Thread t = new Thread(){
             @Override
             public void run() {
                 setMaxValues();
             }
-        });    
+        };
+        t.start();
     }
 
     @Override
