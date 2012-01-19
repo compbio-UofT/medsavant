@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,17 +12,13 @@ import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
-import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.ProgressPanel;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -32,7 +27,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class FilterEffectivenessPanel extends JPanel implements FiltersChangedListener {
+public class FilterEffectivenessPanel extends JPanel implements FiltersChangedListener, ReferenceListener {
 
     Color bg = new Color(139, 149, 164);
     private final ProgressPanel pp;
@@ -105,9 +100,8 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
         this.add(bottomPanel,BorderLayout.SOUTH);
 
         FilterController.addFilterListener(this);
-
-        labelVariantsRemaining.setText("Calculating...");
-        updateUI();
+        ReferenceController.getInstance().addReferenceListener(this);
+       
         Thread t = new Thread(){
             @Override
             public void run() {
@@ -150,6 +144,9 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
     }
 
     private void setMaxValues() {
+             
+        labelVariantsRemaining.setText("Calculating...");
+        updateUI();
         
         int maxRecords = -1;
 
@@ -166,5 +163,17 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
 
             setNumLeft(maxRecords);
         }
+    }
+
+    @Override
+    public void referenceAdded(String name) {}
+
+    @Override
+    public void referenceRemoved(String name) {}
+
+    @Override
+    public void referenceChanged(String name) {
+        historyPanel.reset();
+        setMaxValues();
     }
 }

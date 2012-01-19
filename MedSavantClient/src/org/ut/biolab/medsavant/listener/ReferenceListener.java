@@ -6,5 +6,5 @@ public interface ReferenceListener {
 
     public void referenceRemoved(String name);
 
-    public void referenceChanged(String prnameojectName);
+    public void referenceChanged(String name);
 }

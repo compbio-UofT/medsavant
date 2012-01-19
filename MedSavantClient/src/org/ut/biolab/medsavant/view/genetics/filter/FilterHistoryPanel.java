@@ -103,6 +103,14 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
         scrollPane.getViewport().add(table);
         this.add(scrollPane, BorderLayout.CENTER);
 
+        reset();
+
+        FilterController.addFilterListener(this);
+
+    }
+
+    public void reset(){
+        model.clear();
         Thread t = new Thread(){
             @Override
             public void run() {
@@ -114,15 +122,12 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
                 if (maxRecords != -1) {
                     model.addRow("Total", "", maxRecords);
                 }
+                table.repaint();
             }
         };
         t.start();
-
-        FilterController.addFilterListener(this);
-
-
     }
-
+    
     private synchronized void changeMode(Mode mode){
         if(this.mode == mode) return;
         this.mode = mode;
@@ -182,6 +187,13 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
             actions.add(action);
             records.add(numRecords);
             //parameters.add(param);
+        }
+        
+
+        public void clear(){
+            names.clear();
+            actions.clear();
+            records.clear();
         }
 
         public void setMode(Mode mode){
