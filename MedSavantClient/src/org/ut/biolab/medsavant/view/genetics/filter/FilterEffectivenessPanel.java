@@ -130,18 +130,10 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
             @Override
             public void run() {
                 try {
-                    int numLeft = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectId(),
-                            ReferenceController.getInstance().getCurrentReferenceId(),
-                            FilterController.getQueryFilterConditions());
+                    int numLeft = ResultController.getInstance().getNumFilteredVariants();
                     dialog.close();
                     setNumLeft(numLeft);
-
-                } catch (SQLException ex) {
-                    MiscUtils.checkSQLException(ex);
-                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (RemoteException ex) {
+                } catch (NonFatalDatabaseException ex) {
                     Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }

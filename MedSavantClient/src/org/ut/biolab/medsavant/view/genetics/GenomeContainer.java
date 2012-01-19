@@ -191,12 +191,6 @@ public class GenomeContainer extends JPanel {
 
         @Override
         protected Object doInBackground() throws InterruptedException, SQLException, RemoteException {
-            /*final int totalNum = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                                    ProjectController.getInstance().getCurrentProjectId(),
-                                    ReferenceController.getInstance().getCurrentReferenceId(),
-                                    FilterController.getQueryFilterConditions()); */
-
-            //final int binsize = (int)Math.min(249250621, Math.max((long)totalNum * BINMULTIPLIER, MINBINSIZE));
 
             try {
 

@@ -31,6 +31,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
@@ -183,12 +184,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
                     //get num variants
                     int numVariants = 0;
-                    if (individuals.size() > 0) {
-                        numVariants = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                                LoginController.sessionId,
-                                ProjectController.getInstance().getCurrentProjectId(),
-                                ReferenceController.getInstance().getCurrentReferenceId(),
-                                conditions);
+                    if (individuals.size() > 0) {                       
+                        numVariants = ResultController.getInstance().getNumFilteredVariants();
                     }
 
                     //add entry
@@ -248,11 +245,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                     //calculate number of variants satisfying conditions
                     int numVariants = 0;
                     if (individuals.size() > 0) {
-                        numVariants = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                                LoginController.sessionId,
-                                ProjectController.getInstance().getCurrentProjectId(),
-                                ReferenceController.getInstance().getCurrentReferenceId(),
-                                conditions);
+                        numVariants = ResultController.getInstance().getNumFilteredVariants();
                     }
 
                     //add entry

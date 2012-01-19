@@ -142,17 +142,10 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
             @Override
             public void run() {
                 try {
-                     int numLeft = MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectId(),
-                            ReferenceController.getInstance().getCurrentReferenceId(),
-                            FilterController.getQueryFilterConditions());
+                    int numLeft = ResultController.getInstance().getNumFilteredVariants();
+                    
                     addFilterSet(numLeft);
-
-                } catch (SQLException ex) {
-                    MiscUtils.checkSQLException(ex);
-                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (RemoteException ex) {
+                } catch (NonFatalDatabaseException ex) {
                     Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 dialog.close();
