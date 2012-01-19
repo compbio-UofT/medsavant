@@ -4,6 +4,8 @@
  */
 package org.ut.biolab.medsavant.view.dialog;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.dialog.PageList;
@@ -17,6 +19,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -32,9 +35,9 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.importfile.BedFormat;
-import org.ut.biolab.medsavant.importfile.FileFormat;
-import org.ut.biolab.medsavant.importfile.ImportDelimitedFile;
+import org.ut.biolab.medsavant.db.importfile.BedFormat;
+import org.ut.biolab.medsavant.db.importfile.FileFormat;
+import org.ut.biolab.medsavant.db.importfile.ImportDelimitedFile;
 import org.ut.biolab.medsavant.importfile.ImportFilePanel;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -248,8 +251,11 @@ public class IntervalWizard extends WizardDialog {
     }
     
     private void createList() throws SQLException, NonFatalDatabaseException, IOException{
-        Iterator<String[]> i = ImportDelimitedFile.getFileIterator(path, delim, numHeaderLines, fileFormat);
-        MedSavantClient.RegionQueryUtilAdapter.addRegionList(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceId(), i);
+        RemoteInputStream stream = (new SimpleRemoteInputStream(new FileInputStream(path))).export();
+        MedSavantClient.RegionQueryUtilAdapter.addRegionList(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceId(), stream, delim, fileFormat, numHeaderLines);
+        
+        //Iterator<String[]> i = ImportDelimitedFile.getFileIterator(path, delim, numHeaderLines, fileFormat);
+        //MedSavantClient.RegionQueryUtilAdapter.addRegionList(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceId(), i);
     }
        
 }

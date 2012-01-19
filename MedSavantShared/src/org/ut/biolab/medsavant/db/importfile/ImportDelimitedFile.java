@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.importfile;
+package org.ut.biolab.medsavant.db.importfile;
 
 import au.com.bytecode.opencsv.CSVReader;
 import java.io.FileNotFoundException;
@@ -95,7 +95,7 @@ public class ImportDelimitedFile {
     }
 
     @SuppressWarnings("unchecked")
-    static List<String[]>[] getPreview(String path, char separator, int numHeaderLines, int numLines, FileFormat ff) throws FileNotFoundException {
+    public static List<String[]>[] getPreview(String path, char separator, int numHeaderLines, int numLines, FileFormat ff) throws FileNotFoundException {
 
         int[] fields;
         if (ff != null) {

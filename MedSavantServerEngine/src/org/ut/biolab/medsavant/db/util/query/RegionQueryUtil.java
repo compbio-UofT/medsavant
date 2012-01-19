@@ -16,6 +16,8 @@
 
 package org.ut.biolab.medsavant.db.util.query;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,19 +31,25 @@ import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import java.io.File;
 
 import java.rmi.RemoteException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetMembershipTableSchema;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.importfile.FileFormat;
+import org.ut.biolab.medsavant.db.importfile.ImportDelimitedFile;
 import org.ut.biolab.medsavant.db.model.BEDRecord;
 import org.ut.biolab.medsavant.db.model.GenomicRegion;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.FileServer;
 import org.ut.biolab.medsavant.db.util.query.api.RegionQueryUtilAdapter;
 
 /**
@@ -62,7 +70,7 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
     public RegionQueryUtil() throws RemoteException {}
 
 
-    public void addRegionList(String sid,String geneListName, int genomeId, Iterator<String[]> i) throws NonFatalDatabaseException, SQLException {
+    public void addRegionList(String sid,String geneListName, int genomeId,  RemoteInputStream fileStream, char delim, FileFormat fileFormat, int numHeaderLines) throws NonFatalDatabaseException, SQLException, RemoteException {
 
         Connection conn = ConnectionController.connectPooled(sid);
         TableSchema regionSetTable = MedSavantDatabase.RegionsetTableSchema;
@@ -80,7 +88,17 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         rs.next();
 
         int regionSetId = rs.getInt(1);
-
+        
+        //prepare
+        Iterator<String[]> i = null;
+        try {
+            File f = FileServer.getInstance().sendFile(fileStream);
+            i = ImportDelimitedFile.getFileIterator(f.getAbsolutePath(), delim, numHeaderLines, fileFormat);
+        } catch (IOException ex) {
+            Logger.getLogger(RegionQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }       
+        
         //add regions
         while (i.hasNext() && !Thread.currentThread().isInterrupted()){
             String[] line = i.next();

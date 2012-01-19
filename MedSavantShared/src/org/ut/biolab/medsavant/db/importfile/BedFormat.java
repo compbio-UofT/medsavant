@@ -2,15 +2,16 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.importfile;
+package org.ut.biolab.medsavant.db.importfile;
 
+import java.io.Serializable;
 import java.util.TreeMap;
 
 /**
  *
  * @author mfiume
  */
-public class BedFormat extends FileFormat {
+public class BedFormat extends FileFormat implements Serializable {
 
     public String getName() {
         return "BED";

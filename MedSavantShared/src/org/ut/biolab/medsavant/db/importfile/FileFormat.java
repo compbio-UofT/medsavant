@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.importfile;
+package org.ut.biolab.medsavant.db.importfile;
 
-import java.util.Collections;
+import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -12,7 +12,7 @@ import java.util.TreeMap;
  *
  * @author mfiume
  */
-public abstract class FileFormat {
+public abstract class FileFormat implements Serializable {
     
     public abstract String getName();
     

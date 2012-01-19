@@ -23,6 +23,8 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.ut.biolab.medsavant.db.importfile.FileFormat;
+import org.ut.biolab.medsavant.db.importfile.ImportDelimitedFile;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel.TableSelectionType;
