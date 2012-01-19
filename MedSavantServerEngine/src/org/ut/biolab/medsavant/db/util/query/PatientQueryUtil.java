@@ -410,7 +410,9 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         List<String> result = new ArrayList<String>();
         while(rs.next()){
-            String[] dnaIds = rs.getString(1).split(",");
+            String current = rs.getString(1);
+            if(current == null) continue;
+            String[] dnaIds = current.split(",");
             for(String id : dnaIds){
                 if(!result.contains(id)){
                     result.add(id);
