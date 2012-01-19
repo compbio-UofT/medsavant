@@ -28,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -52,11 +53,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.util.shared.ExtensionFileFilter;
 import org.ut.biolab.medsavant.db.util.shared.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.ProgressPanel;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSub.FilterPlaceholder;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -76,6 +79,7 @@ public class FilterPanel extends javax.swing.JPanel {
     //private List<FilterPanelSub> subs = new ArrayList<FilterPanelSub>();
     private List<FilterPanelSub> subs2 = new ArrayList<FilterPanelSub>();
     private int subNum = 1;
+    private JPanel filterContainerContent;
     private JPanel filterContainer;
     private JComboBox filterList;
     private ActionListener comboBoxListener;
@@ -126,7 +130,7 @@ public class FilterPanel extends javax.swing.JPanel {
          */
 
         FilterPanelSub cp = new FilterPanelSub(this, subNum++);
-        filterContainer.add(cp);
+        filterContainerContent.add(cp);
         subs2.add(cp);
 
         refreshSubPanels();
@@ -135,7 +139,7 @@ public class FilterPanel extends javax.swing.JPanel {
     }
 
     public void refreshSubPanels() {
-        filterContainer.removeAll();
+        filterContainerContent.removeAll();
 
         //check for removed items
         for (int i = subs2.size() - 1; i >= 0; i--) {
@@ -146,12 +150,12 @@ public class FilterPanel extends javax.swing.JPanel {
 
         //refresh panel
         for (int i = 0; i < subs2.size(); i++) {
-            filterContainer.add(subs2.get(i));
-            filterContainer.add(Box.createVerticalStrut(5));
+            filterContainerContent.add(subs2.get(i));
+            filterContainerContent.add(Box.createVerticalStrut(5));
         }
 
         //filterContainer.add(createNewOrButton());
-        filterContainer.add(Box.createVerticalGlue());
+        filterContainerContent.add(Box.createVerticalGlue());
 
         this.updateUI();
     }
@@ -320,23 +324,51 @@ public class FilterPanel extends javax.swing.JPanel {
         filterAndToolbarContainer.setLayout(new BorderLayout());
         filterAndToolbarContainer.setBorder(ViewUtil.getMediumBorder());
 
-
         filterContainer = ViewUtil.getClearPanel();
-
+        filterContainerContent = ViewUtil.getClearPanel();
+       
         //container.add(filterAndToolbarContainer,BorderLayout.CENTER);
         //filterAndToolbarContainer.add(filterContainer, BorderLayout.CENTER);
         //filterAndToolbarContainer.add(createNewOrButton(),BorderLayout.NORTH);
         //filterAndToolbarContainer.add(createNewOrButton(),BorderLayout.SOUTH);
 
-        filterContainer.setLayout(new BoxLayout(filterContainer, BoxLayout.Y_AXIS));
+        filterContainer.setLayout(new BorderLayout());
+        filterContainerContent.setLayout(new BoxLayout(filterContainerContent, BoxLayout.Y_AXIS));
 
-        JScrollPane scroll = new JScrollPane(filterContainer);
+        JScrollPane scroll = new JScrollPane(filterContainerContent);
         scroll.setBorder(null);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        container.add(scroll, BorderLayout.CENTER);
+        filterContainer.add(scroll, BorderLayout.CENTER);
 
-        //container.add(new ProgressPanel());
+        JPanel addFilterPanel = new JPanel();
+        ViewUtil.applyHorizontalBoxLayout(addFilterPanel);
+        final JLabel addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+        addLabel.setToolTipText("Add new filter set");
+        addLabel.addMouseListener(new MouseListener() {
+
+            public void mouseClicked(MouseEvent e) {}
+            public void mousePressed(MouseEvent e) {}
+
+            public void mouseReleased(MouseEvent e) {
+                createNewSubPanel();
+            }
+
+            public void mouseEntered(MouseEvent e) {}
+            public void mouseExited(MouseEvent e) {}
+        });
+
+        JPanel tmp1 = new JPanel();
+        tmp1.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        ViewUtil.applyHorizontalBoxLayout(tmp1);
+
+        tmp1.add(addLabel);
+        tmp1.add(Box.createRigidArea(new Dimension(5,20)));
+        tmp1.add(new JLabel("Add filter set"));
+        tmp1.add(Box.createHorizontalGlue());
+        filterContainer.add(tmp1, BorderLayout.SOUTH);
+
+        container.add(filterContainer, BorderLayout.CENTER); 
 
         FilterEffectivenessPanel hp = new FilterEffectivenessPanel();
         container.add(hp, BorderLayout.SOUTH);
@@ -385,6 +417,7 @@ public class FilterPanel extends javax.swing.JPanel {
         JPanel topContainer = new JPanel();
         //topContainer.setOpaque(false);
         topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.X_AXIS));
+        topContainer.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         //topContainer.add(l);
 
 
