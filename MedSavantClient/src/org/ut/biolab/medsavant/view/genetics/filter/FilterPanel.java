@@ -178,7 +178,7 @@ public class FilterPanel extends javax.swing.JPanel {
     public void clearAll() {
         this.subs2.clear();
         subNum = 1;
-        refreshSubPanels();
+        createNewSubPanel();
     }
 
     private void removeCurrentSavedFilterFile() {

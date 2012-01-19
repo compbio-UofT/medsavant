@@ -16,9 +16,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.listener.ProjectListener;
+import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
@@ -31,7 +34,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class GeneticsFilterPage extends SubSectionView {
+public class GeneticsFilterPage extends SubSectionView implements ReferenceListener {
 
     private static class FilterSQLPanel extends JPanel implements FiltersChangedListener {
         private final JTextArea content;
@@ -75,6 +78,7 @@ public class GeneticsFilterPage extends SubSectionView {
     public GeneticsFilterPage(SectionView parent) {
         super(parent);
         instance = this;
+        ReferenceController.getInstance().addReferenceListener(this);
     }
 
     public String getName() {
@@ -118,4 +122,19 @@ public class GeneticsFilterPage extends SubSectionView {
     public static GeneticsFilterPage getInstance(){
         return instance;
     }
+
+    @Override
+    public void referenceAdded(String name) {}
+
+    @Override
+    public void referenceRemoved(String name) {}
+
+    @Override
+    public void referenceChanged(String prnameojectName) {
+        if(fp != null){
+            fp.clearAll();
+            fp.refreshSubPanels();
+        }
+    }
+
 }

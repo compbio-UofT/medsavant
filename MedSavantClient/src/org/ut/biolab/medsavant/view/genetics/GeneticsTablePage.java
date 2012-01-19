@@ -93,6 +93,8 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     @Override
     public void viewDidLoad() {
         isLoaded = true;
+        tablePanel.updateIfRequired();
+        gp.updateIfRequired();
     }
 
     @Override
