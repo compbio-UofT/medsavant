@@ -33,6 +33,7 @@ import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import com.jidesoft.grid.*;
 import java.awt.event.MouseAdapter;
+import javax.swing.border.Border;
 import org.ut.biolab.medsavant.util.ExportUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.MainFrame;
@@ -212,11 +213,12 @@ public class SearchableTablePanel extends JPanel {
 
         this.retriever = retriever;
         this.hiddenColumns = hiddenColumns;
+        final Border border = BorderFactory.createEmptyBorder(0, 7, 0, 7);
         table = new SortableTable() {
 
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int Index_row, int Index_col) {
-                Component comp = super.prepareRenderer(renderer, Index_row, Index_col);
+                JComponent comp = (JComponent)super.prepareRenderer(renderer, Index_row, Index_col);
                 //even index, selected or not selected
 
                 if (isCellSelected(Index_row, Index_col)) {
@@ -229,6 +231,7 @@ public class SearchableTablePanel extends JPanel {
                         comp.setBackground(new Color(242, 245, 249));
                     }
                 }
+                comp.setBorder(border);
                 return comp;
             }
         };
