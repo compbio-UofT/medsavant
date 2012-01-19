@@ -96,12 +96,12 @@ class TablePanel extends JPanel {
                         }
 
                         //only show vcf fields (except custom info)
-                        if(!((af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_DEFAULT) &&
+                        if(!(af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_DEFAULT) &&
                                     !(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID) ||
                                     field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID) ||
                                     field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID) ||
-                                    field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO)))
-                                || af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_CUSTOM_VCF))){
+                                    field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO)))){
+                                //|| af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_CUSTOM_VCF))){
                             hiddenColumns.add(fieldNames.size()-1);
                         }
                     }
