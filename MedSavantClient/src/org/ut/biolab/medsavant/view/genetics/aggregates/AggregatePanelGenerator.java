@@ -16,7 +16,7 @@ public interface AggregatePanelGenerator {
     
     public JPanel getPanel();
     
-    public void run();
+    public void run(boolean reset);
     
     public void setUpdateRequired(boolean required);
 }

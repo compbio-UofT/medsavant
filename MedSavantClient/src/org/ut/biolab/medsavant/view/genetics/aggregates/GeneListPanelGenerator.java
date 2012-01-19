@@ -74,7 +74,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         }
     }*/
     
-    public void run(){
+    public void run(boolean reset){
         if(panel != null)
             panel.update();
     }

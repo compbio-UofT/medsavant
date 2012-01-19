@@ -118,7 +118,7 @@ public class TopMenu extends JToolBar {
 
     public void refreshSelection() {
         if(currentView != null){
-            setContentTo(currentView, false);
+            setContentTo(currentView, true);
         }
     }
 

@@ -161,9 +161,12 @@ public class SubSectionViewCollection extends SubSectionView {
     int blah = 0;
 
     void setPage(String pageName) {
+        if(currentView != null){
+            currentView.viewDidUnload();
+        }
         currentView = this.subsectionMap.get(pageName);
         contentPanel.removeAll();
-        contentPanel.add(currentView.getView(true),BorderLayout.CENTER);
+        contentPanel.add(currentView.getView(false),BorderLayout.CENTER);
         contentPanel.updateUI();
         currentView.viewDidLoad();
     }
@@ -186,6 +189,7 @@ public class SubSectionViewCollection extends SubSectionView {
             this.setPage(firstPageName);
             firstPageShown = true;
         }
+        currentView.viewDidLoad();
     }
 
     @Override

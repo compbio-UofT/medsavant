@@ -72,7 +72,7 @@ public class GenomeContainer extends JPanel {
     private boolean updateRequired = true;
     private boolean init = false;
 
-    public GenomeContainer(String pageName) {
+    public GenomeContainer(String pageName, Genome g) {
         this.pageName = pageName;
 
         cl = new CardLayout();
@@ -105,6 +105,7 @@ public class GenomeContainer extends JPanel {
         this.add(new WaitPanel("Generating Genome View", Color.WHITE), CARD_WAIT);
 
         init = true;
+        setGenome(g);
 
         updateIfRequired();
     }

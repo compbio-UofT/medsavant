@@ -86,8 +86,10 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         return panel;
     }
 
-    public void run() {
-        if(!init){
+    public void run(boolean reset) {
+        if(reset){
+            panel.init();
+        } else if (!init){
             return;
         } else if(updateRequired) {
             panel.update();
@@ -118,7 +120,11 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         private int numWorking = 0;
         private int numCompleted = 0;
         
-        public CohortPanel() throws SQLException {
+        public CohortPanel() throws SQLException {                       
+            init();
+        }
+        
+        private void init(){
             
             this.setLayout(new BorderLayout());
             
@@ -144,7 +150,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             progressPanel.add(progress);
             progressPanel.add(Box.createHorizontalStrut(10));
             progressPanel.add(exportButton);           
-            progressPanel.add(Box.createRigidArea(new Dimension(10,30)));
+            progressPanel.add(Box.createRigidArea(new Dimension(10,30)));            
             
             showWaitCard();
             
@@ -189,7 +195,6 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 }
             };
             initWorker.execute();
-
         }
         
         private void showWaitCard(){
@@ -358,8 +363,10 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             value = -1;
             setExpanded(false);
             
-            for(Object o : getChildren()){
-                ((PatientNode)o).reset();
+            if(getChildren() != null){
+                for(Object o : getChildren()){
+                    ((PatientNode)o).reset();
+                }
             }
             run();
         }

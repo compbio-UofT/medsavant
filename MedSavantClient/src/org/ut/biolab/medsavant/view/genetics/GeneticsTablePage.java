@@ -23,6 +23,7 @@ import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.db.model.Chromosome;
+import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
@@ -31,7 +32,7 @@ import org.ut.biolab.medsavant.view.util.PeekingPanel;
  *
  * @author mfiume
  */
-public class GeneticsTablePage extends SubSectionView implements FiltersChangedListener {
+public class GeneticsTablePage extends SubSectionView implements FiltersChangedListener, ReferenceListener {
 
     private JPanel panel;
     private TablePanel tablePanel;
@@ -43,6 +44,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     public GeneticsTablePage(SectionView parent) {
         super(parent);
         FilterController.addFilterListener(this);
+        ReferenceController.getInstance().addReferenceListener(this);
         instance = this;
     }
 
@@ -54,21 +56,18 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
 
         if (panel == null || update) {
             ThreadController.getInstance().cancelWorkers(getName());
-            //if(tablePanel != null) FilterController.removeFilterListener(tablePanel);
-            //if(gp != null) FilterController.removeFilterListener(gp);
             setPanel();
+        } else {
+            tablePanel.updateIfRequired();
+            gp.updateIfRequired();
         }
-        //tablePanel.updateIfRequired();
-        //gp.updateIfRequired();
         return panel;
     }
 
     private void setPanel() {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
-
-        gp = new GenomeContainer(getName());
-
+        
         List<Chromosome> chrs = new ArrayList<Chromosome>();
         try {
             chrs = MedSavantClient.ChromosomeQueryUtilAdapter.getContigs(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceId());
@@ -78,7 +77,8 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
             Logger.getLogger(GeneticsTablePage.class.getName()).log(Level.SEVERE, null, ex);
         }
         Genome g = new Genome(chrs);
-        gp.setGenome(g);
+        gp = new GenomeContainer(getName(), g);        
+  
         PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, true,225);
         panel.add(genomeView, BorderLayout.NORTH);
 
@@ -109,6 +109,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     }
 
     public void updateContents(){
+        ThreadController.getInstance().cancelWorkers(getName());
         if(tablePanel == null || gp == null) return;
         tablePanel.setUpdateRequired(true);
         gp.setUpdateRequired(true);
@@ -119,8 +120,18 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     }
 
     @Override
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        ThreadController.getInstance().cancelWorkers(getName());
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {      
+        updateContents();
+    }
+
+    @Override
+    public void referenceAdded(String name) {}
+
+    @Override
+    public void referenceRemoved(String name) {}
+
+    @Override
+    public void referenceChanged(String name) {
         updateContents();
     }
 

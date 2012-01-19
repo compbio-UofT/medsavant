@@ -48,7 +48,7 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
     //public void setUpdate(boolean update) {
     //}
     
-    public void run(){
+    public void run(boolean reset){
         if(panel != null)
             panel.update();
     }
@@ -117,7 +117,7 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
                 //currentOntology.setUpdate(false);
             
             //o.setUpdate(true);
-            o.run();
+            o.run(false);
             currentOntology = o;
 
             this.content.removeAll();
@@ -137,7 +137,7 @@ public class OntologyPanelGenerator implements AggregatePanelGenerator {
         
         public void update(){
             if(currentOntology != null){
-                currentOntology.run();
+                currentOntology.run(false);
             }
         }
     }

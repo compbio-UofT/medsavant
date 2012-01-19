@@ -115,12 +115,12 @@ public class AggregatesStatsPanel extends JPanel {
         currentRegionStat = regionStatsName;
     }
     
-    public void update(){
+    public void update(boolean reset){
         for(String key : panelMap.keySet()){
             panelMap.get(key).setUpdateRequired(true);
         }
         if(panelMap != null && currentRegionStat != null)
-            panelMap.get(currentRegionStat).run();
+            panelMap.get(currentRegionStat).run(reset);
     }
     
     /**

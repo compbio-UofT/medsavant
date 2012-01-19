@@ -85,7 +85,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
         return panel;
     }
 
-    public void run() {
+    public void run(boolean update) {
         panel.run();
     }
 

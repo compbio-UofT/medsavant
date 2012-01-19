@@ -89,7 +89,7 @@ public abstract class OntologySubPanel extends JPanel implements
         }
     }*/
     
-    public void run(){
+    public void run(boolean reset){
         OntologyStatsWorker.getNewInstance(this, pageName);
     }
     
