@@ -173,6 +173,8 @@ public class ProjectWizard extends WizardDialog {
                     instance.setCurrentPage(PAGENAME_REF);
                 } else if (pagename.equals(PAGENAME_REF) && validateReferences()){
                     instance.setCurrentPage(PAGENAME_CREATE);
+                } else if (pagename.equals(PAGENAME_CREATE)){
+                    instance.setCurrentPage(PAGENAME_COMPLETE);
                 }
             }
         });

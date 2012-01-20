@@ -7,7 +7,6 @@ package org.ut.biolab.medsavant.controller;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import org.ut.biolab.medsavant.client.api.ClientCallbackAdapter;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -31,7 +30,7 @@ public class CallbackController extends java.rmi.server.UnicastRemoteObject impl
     public void sessionTerminated(final String message) throws RemoteException {
 
         //do in new thread to prevent server from blocking. 
-        MiscUtils.invokeLaterIfNecessary(new Runnable() {
+        Thread t = new Thread(){
 
             @Override
             public void run() {
@@ -49,7 +48,8 @@ public class CallbackController extends java.rmi.server.UnicastRemoteObject impl
                 
                 System.exit(0);
             }
-        });          
+        };
+        t.start();
     }
 
 }
