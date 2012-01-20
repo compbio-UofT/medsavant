@@ -509,7 +509,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
                                     //upload variants
                                     progressLabel.setText("Uploading variant files...");
-                                    updateID = MedSavantClient.VariantManagerAdapter.uploadVariants(LoginController.sessionId, streams, projectId, referenceId);
+                                    updateID = MedSavantClient.VariantManagerAdapter.uploadVariants(LoginController.sessionId, streams, projectId, referenceId, tagsToStringArray(variantTags));
                                     MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
 
                                     //success
@@ -584,19 +584,6 @@ public class ImportVariantsWizard extends WizardDialog {
                                 instance.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                             }
 
-                            private String[][] tagsToStringArray(List<VariantTag> variantTags) {
-
-                                String[][] result = new String[variantTags.size()][2];
-
-                                int row = 0;
-                                for (VariantTag t : variantTags) {
-                                    result[row][0] = t.key;
-                                    result[row][1] = t.value;
-                                    row++;
-                                }
-
-                                return result;
-                            }
                         };
                         cancelButton.setVisible(true);
                         startButton.setVisible(false);
@@ -721,20 +708,7 @@ public class ImportVariantsWizard extends WizardDialog {
                             progressLabel.setText("Problem publishing variants.");
                         }
                     }
-
-                    private String[][] tagsToStringArray(List<VariantTag> variantTags) {
-
-                        String[][] result = new String[variantTags.size()][2];
-
-                        int row = 0;
-                        for (VariantTag t : variantTags) {
-                            result[row][0] = t.key;
-                            result[row][1] = t.value;
-                            row++;
-                        }
-
-                        return result;
-                    }
+                  
                 };
                 cancelButton.setVisible(true);
                 startButton.setVisible(false);
@@ -756,5 +730,19 @@ public class ImportVariantsWizard extends WizardDialog {
         page.addComponent(ViewUtil.alignRight(cancelButton));
 
         return page;
+    }
+    
+    private static String[][] tagsToStringArray(List<VariantTag> variantTags) {
+
+        String[][] result = new String[variantTags.size()][2];
+
+        int row = 0;
+        for (VariantTag t : variantTags) {
+            result[row][0] = t.key;
+            result[row][1] = t.value;
+            row++;
+        }
+
+        return result;
     }
 }

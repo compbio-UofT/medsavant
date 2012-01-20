@@ -175,7 +175,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
      * of a new, unpublished, up-to-date variant table. 
      */
     @Override
-    public int uploadVariants(String sid, RemoteInputStream[] fileStreams, int projectId, int referenceId) throws RemoteException, IOException, Exception {
+    public int uploadVariants(String sid, RemoteInputStream[] fileStreams, int projectId, int referenceId, String[][] variantTags) throws RemoteException, IOException, Exception {
         File[] vcfFiles = new File[fileStreams.length];
 
         int i = 0;
@@ -184,13 +184,13 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             i++;
         }
 
-        return uploadVariants(sid, vcfFiles, projectId, referenceId);     
+        return uploadVariants(sid, vcfFiles, projectId, referenceId, variantTags);     
     }
     
     /*
      * Helper that does all the actual work of uploading new vcf files. 
      */
-    private static int uploadVariants(String sid, File[] vcfFiles, int projectId, int referenceId) throws Exception {
+    private static int uploadVariants(String sid, File[] vcfFiles, int projectId, int referenceId, String[][] variantTags) throws Exception {
 
         ServerLogger.log(VariantManager.class, "Beginning new vcf upload");
         
@@ -267,6 +267,10 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             //upload to staging table
             ServerLogger.log(VariantManager.class, "Uploading variants to table: " + tableName);
             VariantQueryUtil.getInstance().uploadFileToVariantTable(sid,new File(outputFilenameMerged), tableName);
+            
+            //add tags to upload
+            ServerLogger.log(VariantManager.class, "Adding upload tags");
+            VariantManagerUtils.addTagsToUpload(sid, updateId, variantTags); 
 
             //cleanup 
             ServerLogger.log(VariantManager.class, "Dropping old table(s)");

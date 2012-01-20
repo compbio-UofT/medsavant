@@ -14,7 +14,7 @@ import org.ut.biolab.medsavant.db.format.CustomField;
 public interface VariantManagerAdapter extends Remote
 {
 
-  public int uploadVariants(String sid, RemoteInputStream[] fileStreams, int projectId, int referenceId) throws RemoteException, IOException, Exception;
+  public int uploadVariants(String sid, RemoteInputStream[] fileStreams, int projectId, int referenceId, String[][] variantTags) throws RemoteException, IOException, Exception;
   //public void annotateVariants(String sid, int projectID, int referenceID, int updateID) throws RemoteException;
   public void publishVariants(String sid, int projectID, int referenceID, int updateID) throws Exception;
   public void publishVariants(String sid, int projectID) throws Exception;
