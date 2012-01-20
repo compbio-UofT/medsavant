@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
@@ -40,13 +39,10 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantFormatTableSchema
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantTablemapTableSchema;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
-import org.ut.biolab.medsavant.db.model.AnnotationLog.Action;
-import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.query.api.ProjectQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.variants.update.VariantManagerUtils;
-import org.ut.biolab.medsavant.server.SessionController;
 
 /**
  *

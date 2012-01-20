@@ -21,30 +21,18 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.rmi.RemoteException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
-import javax.swing.table.TableCellRenderer;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ServerLogTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.db.model.AnnotationLog;
-import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.db.model.GeneralLog;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.shared.DBUtil;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -73,10 +61,10 @@ public class ServerLogPage extends SubSectionView {
     private SearchableTablePanel annotationTable;
     private static final List<String> clientColumnNames = Arrays.asList(new String[]{"User", "Type", "Description", "Time"});
     private static final List<String> serverColumnNames = Arrays.asList(new String[]{"Type", "Description", "Time"});
-    private static final List<String> annotationsColumnNames = Arrays.asList(new String[]{"Project", "Reference", "Action", "Status", "Time", "User", "Restart"});
+    private static final List<String> annotationsColumnNames = Arrays.asList(new String[]{"Project", "Reference", "Action", "Status", "Time", "User"});
     private static final List<Class> clientColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class, String.class});
     private static final List<Class> serverColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class});
-    private static final List<Class> annotationsColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class, String.class, String.class, String.class, JButton.class});
+    private static final List<Class> annotationsColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class, String.class, String.class, String.class});
     private String currentCard;
     private WaitPanel waitPanel;
 
@@ -269,8 +257,8 @@ public class ServerLogPage extends SubSectionView {
             public void retrievalComplete() {}
         };
         annotationTable = new SearchableTablePanel(getName(), annotationsColumnNames, annotationsColumnClasses, new ArrayList<Integer>(), limit, retriever);
-        annotationTable.getTable().getColumn("Restart").setCellRenderer(new JTableButtonRenderer());
-        annotationTable.getTable().addMouseListener(new JTableButtonMouseListener(annotationTable.getTable()));
+        //annotationTable.getTable().getColumn("Restart").setCellRenderer(new JTableButtonRenderer());
+        //annotationTable.getTable().addMouseListener(new JTableButtonMouseListener(annotationTable.getTable()));
         p.add(annotationTable, BorderLayout.CENTER);
         return p;
     }
@@ -320,22 +308,8 @@ public class ServerLogPage extends SubSectionView {
             v = new ArrayList<Object[]>();
             for(final AnnotationLog log : logs){
                 
-                
-                JButton button = new JButton("Retry");
-                button.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent ae) {
-                        try {
-                            MedSavantClient.AnnotationLogQueryUtilAdapter.setAnnotationLogStatus(LoginController.sessionId, log.getUploadId(), Status.PENDING, DBUtil.getCurrentTimestamp());
-                        } catch (SQLException ex) {
-                            Logger.getLogger(ServerLogPage.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (RemoteException ex) {
-                            Logger.getLogger(ServerLogPage.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                        refreshCurrentCard();
-                    }
-                });
-                
-                Object[] r = new Object[7];
+
+                Object[] r = new Object[6];
                 r[0] = log.getProjectName();
                 r[1] = log.getReferenceName();
                 r[2] = log.getAction();
@@ -343,12 +317,6 @@ public class ServerLogPage extends SubSectionView {
                 r[4] = log.getTimestamp();
                 r[5] = log.getUser();
                 
-                if (log.getStatus() != Status.ERROR) {
-                    r[6] = new JPanel();
-                } else {
-                    r[6] = button;
-                }
-
                 v.add(r);    
             }
       
@@ -417,47 +385,5 @@ public class ServerLogPage extends SubSectionView {
         }
         hideWaitPanel();
         return v;
-    }
-
-    public class JTableButtonRenderer implements TableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-
-            if (value instanceof JButton) {
-                JButton button = (JButton) value;
-                if (isSelected) {
-                    button.setForeground(table.getForeground());
-                    button.setBackground(table.getSelectionBackground());
-                } else {
-                    button.setForeground(table.getForeground());
-                    button.setBackground(UIManager.getColor("Button.background"));
-                }
-                return button;
-            }
-            return (Component) value;
-        }
-    }
-
-    public class JTableButtonMouseListener extends MouseAdapter {
-
-        private final JTable table;
-
-        public JTableButtonMouseListener(JTable table) {
-            this.table = table;
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            int column = table.getColumnModel().getColumnIndexAtX(e.getX());
-            int row = e.getY() / table.getRowHeight();
-
-            if (row < table.getRowCount() && row >= 0 && column < table.getColumnCount() && column >= 0) {
-                Object value = table.getValueAt(row, column);
-                if (value instanceof JButton) {
-                    ((JButton) value).doClick();
-                }
-            }
-        }
     }
 }

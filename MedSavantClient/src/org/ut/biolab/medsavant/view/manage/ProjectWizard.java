@@ -57,8 +57,6 @@ import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.PatientFormat;
 import org.ut.biolab.medsavant.db.format.VariantFormat;
 import org.ut.biolab.medsavant.db.model.Annotation;
-import org.ut.biolab.medsavant.db.model.AnnotationLog.Action;
-import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.db.model.ProjectDetails;
 import org.ut.biolab.medsavant.db.model.Reference;
 import org.ut.biolab.medsavant.util.MiscUtils;

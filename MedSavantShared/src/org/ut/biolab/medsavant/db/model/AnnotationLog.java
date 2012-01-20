@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 public class AnnotationLog implements Serializable {
     
     public static enum Action {ADD_VARIANTS, UPDATE_TABLE};
-    public static enum Status {PREPROCESS, PENDING, INPROGRESS, ERROR, COMPLETE};
+    public static enum Status {STARTED, ERROR, PENDING, PUBLISHED};
     
     private String projectName;
     private String referenceName;
@@ -88,16 +88,14 @@ public class AnnotationLog implements Serializable {
 
     public static int statusToInt(Status status){
         switch(status){
-            case PREPROCESS:
+            case STARTED:
                 return 0;
-            case PENDING:
-                return 1;
-            case INPROGRESS:
-                return 2;
             case ERROR:
+                return 1;
+            case PENDING:
+                return 2;
+            case PUBLISHED:
                 return 3;
-            case COMPLETE:
-                return 4;
             default:
                 return -1;
         }
@@ -106,15 +104,13 @@ public class AnnotationLog implements Serializable {
     public static Status intToStatus(int status){
         switch(status){
             case 0:
-                return Status.PREPROCESS;
+                return Status.STARTED;
             case 1:
-                return Status.PENDING;
-            case 2:
-                return Status.INPROGRESS;
-            case 3:
                 return Status.ERROR;
-            case 4:
-                return Status.COMPLETE;
+            case 2:
+                return Status.PENDING;
+            case 3:
+                return Status.PUBLISHED;
             default:
                 return null;
         }
