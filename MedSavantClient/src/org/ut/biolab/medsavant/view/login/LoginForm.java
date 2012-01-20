@@ -78,9 +78,9 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         this.panel_details.setVisible(false);
         this.button_create_db.setVisible(false);
 
-        this.field_database.setText(SettingsController.getInstance().getValue(SettingsController.KEY_DB_NAME));
-        this.field_port.setText(SettingsController.getInstance().getValue(SettingsController.KEY_SERVER_PORT));
-        this.field_hostname.setText(SettingsController.getInstance().getValue(SettingsController.KEY_SERVER_ADDRESS));
+        this.field_database.setText(SettingsController.getInstance().getDBName());
+        this.field_port.setText(SettingsController.getInstance().getServerPort());
+        this.field_hostname.setText(SettingsController.getInstance().getServerAddress());
 
 
         this.setOpaque(false);
@@ -459,13 +459,9 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         try { port = Integer.parseInt(field_port.getText()); }
         catch (Exception e) { this.field_port.requestFocus(); return; }
 
-        SettingsController.getInstance().setValue(SettingsController.KEY_DB_NAME,this.field_database.getText());
-        //SettingsController.getInstance().setValue(SettingsController.KEY_DB_PORT,this.field_port.getText());
-        //SettingsController.getInstance().setValue(SettingsController.KEY_DB_HOST,this.field_hostname.getText());
-
-        //ConnectionController.setDBName(SettingsController.getInstance().getValue(SettingsController.KEY_DB_NAME));
-        //ConnectionController.setPort(Integer.parseInt(SettingsController.getInstance().getValue(SettingsController.KEY_DB_PORT)));
-        //ConnectionController.setHost(SettingsController.getInstance().getValue(SettingsController.KEY_DB_HOST));
+        SettingsController.getInstance().setDBName(this.field_database.getText());
+        SettingsController.getInstance().setServerAddress(this.field_hostname.getText());
+        SettingsController.getInstance().setServerPort(this.field_port.getText());
 
         this.label_status.setText("signing in...");
         this.label_status.setFont(new Font("Tahoma", Font.PLAIN, 14));

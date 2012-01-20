@@ -273,10 +273,6 @@ public class SettingsController {
             return booleanToString(false);
         } else if (key.equals(KEY_DB_DRIVER)) {
             return "com.mysql.jdbc.Driver";
-        //} else if (key.equals(KEY_DB_HOST)) {
-        //    return "localhost";
-        //} else if (key.equals(KEY_DB_PORT)) {
-        //    return "5029";
         } else if (key.equals(KEY_SERVER_ADDRESS)) {
             return "localhost";
         } else if (key.equals(KEY_SERVER_PORT)) {
@@ -327,25 +323,29 @@ public class SettingsController {
     public String getDBDriver() {
         return getValue(SettingsController.KEY_DB_DRIVER);
     }
-
-    //public String getDBHost() {
-    //    return getValue(SettingsController.KEY_DB_HOST);
-    //}
-
-    //public String getDBURL() {
-    //    return "jdbc:mysql://" + getValue(KEY_DB_HOST) + ":" + getValue(KEY_DB_PORT) + "/" + getValue(KEY_DB_NAME);
-    //}
     
     public String getDBName() {
         return getValue(SettingsController.KEY_DB_NAME);
+    }
+    
+    public void setDBName(String name) {
+        setValue(KEY_DB_NAME, name);
     }
     
     public String getServerAddress() {
         return getValue(SettingsController.KEY_SERVER_ADDRESS);
     }
     
+    public void setServerAddress(String address) {
+        setValue(KEY_SERVER_ADDRESS, address);
+    }
+    
     public String getServerPort() {
         return getValue(SettingsController.KEY_SERVER_PORT);
+    }
+    
+    public void setServerPort(String port) {
+        setValue(KEY_SERVER_PORT, port);
     }
     
 }
