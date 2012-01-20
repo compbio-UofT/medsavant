@@ -52,9 +52,7 @@ public class SettingsController {
     public static final String KEY_USERNAME = "user.name";
     public static final String KEY_PASSWORD = "user.password";
     public static final String KEY_DB_DRIVER = "db.driver";
-    //public static final String KEY_DB_HOST = "db.host";
     public static final String KEY_DB_NAME = "db.name";
-    //public static final String KEY_DB_PORT = "db.port";
     public static final String KEY_SERVER_ADDRESS = "server.address";
     public static final String KEY_SERVER_PORT = "server.port";
 

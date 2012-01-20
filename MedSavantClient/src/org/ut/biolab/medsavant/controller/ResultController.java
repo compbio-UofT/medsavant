@@ -37,7 +37,7 @@ public class ResultController implements FiltersChangedListener {
     private boolean updateTotalNumVariantsRemainingIsRequired = true;
     
     public ResultController() throws NonFatalDatabaseException {
-        updateFilteredVariantDBResults(0, DEFAULT_LIMIT);
+        //updateFilteredVariantDBResults(0, DEFAULT_LIMIT);
         FilterController.addFilterListener(this);
     }
 
