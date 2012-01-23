@@ -29,23 +29,29 @@ import java.util.Map;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.UpdateQuery;
+import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.ut.biolab.medsavant.db.model.StarredVariant;
 
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantStarredTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VarianttagTableSchema;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
@@ -738,6 +744,106 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             result.add(new String[]{rs.getString(1), rs.getString(2)});
         }
         return result;        
+    }
+
+    @Override
+    public Set<StarredVariant> getStarredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException {
+        
+        TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
+        
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(table.getTable());
+        q.addColumns(
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID), 
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), 
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), 
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), 
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION),
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
+        
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        
+        Set<StarredVariant> result = new HashSet<StarredVariant>();
+        while(rs.next()){
+            result.add(new StarredVariant(
+                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID), 
+                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), 
+                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), 
+                    rs.getString(VariantStarredTableSchema.COLUMNNAME_OF_USER), 
+                    rs.getString(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION),
+                    rs.getTimestamp(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP)));
+        }
+        return result;
+    }
+
+    @Override
+    public void addStarredVariant(String sid, int projectId, int referenceId, StarredVariant variant) throws SQLException, RemoteException {
+        List<StarredVariant> variants = new ArrayList<StarredVariant>();
+        variants.add(variant);
+    }    
+    
+    @Override
+    public void addStarredVariants(String sid, int projectId, int referenceId, List<StarredVariant> variants) throws SQLException, RemoteException {
+        
+        TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
+        
+        Connection c = ConnectionController.connectPooled(sid);
+        c.setAutoCommit(false);
+        
+        for(StarredVariant variant : variants){
+        
+            InsertQuery q = new InsertQuery(table.getTable());
+            List<DbColumn> columnsList = table.getColumns();
+            Column[] columnsArray = new Column[columnsList.size()];
+            columnsArray = columnsList.toArray(columnsArray);
+            q.addColumns(columnsArray, variant.toArray(projectId, referenceId));
+
+            try {
+                c.createStatement().executeUpdate(q.toString());
+            } catch (MySQLIntegrityConstraintViolationException e){
+                //duplicate entry, update
+                updateStarredVariant(c, projectId, referenceId, variant);
+            }
+        }
+        
+        c.commit();
+        c.setAutoCommit(true);
+    }   
+    
+    private void updateStarredVariant(Connection c, int projectId, int referenceId, StarredVariant variant) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
+        
+        UpdateQuery q = new UpdateQuery(table.getTable());
+        //q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), variant.getUser());
+        q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION), variant.getDescription());
+        q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP), variant.getTimestamp());
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID), variant.getUploadId()));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), variant.getFileId()));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), variant.getVariantId()));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), variant.getUser()));
+        
+        c.createStatement().executeUpdate(q.toString());
+    }
+    
+    @Override
+    public void unstarVariant(String sid, int projectId, int referenceId, int uploadId, int fileId, int variantId, String user) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
+        
+        DeleteQuery q = new DeleteQuery(table.getTable());
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), fileId));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), variantId));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), user));
+        
+        ConnectionController.connectPooled(sid).createStatement().execute(q.toString());
     }
     
 }

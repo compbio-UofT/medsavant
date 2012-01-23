@@ -290,6 +290,19 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
                   + "`tagvalue` varchar(1000) COLLATE latin1_bin NOT NULL DEFAULT ''"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin"
                 );
+        
+        c.createStatement().execute(
+                "CREATE TABLE `" + MedSavantDatabase.VariantStarredTableSchema.getTablename() + "` ("
+                + "`project_id` int(11) unsigned NOT NULL,"
+                + "`reference_id` int(11) unsigned NOT NULL,"
+                + "`upload_id` int(11) NOT NULL,"
+                + "`file_id` int(11) NOT NULL,"
+                + "`variant_id` int(11) NOT NULL,"
+                + "`user` varchar(200) COLLATE latin1_bin NOT NULL,"
+                + "`description` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
+                + "`timestamp` datetime NOT NULL,"
+                + "UNIQUE KEY `unique` (`project_id`,`reference_id`,`upload_id`,`file_id`,`variant_id`,`user`)"
+                + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
 
     }
 

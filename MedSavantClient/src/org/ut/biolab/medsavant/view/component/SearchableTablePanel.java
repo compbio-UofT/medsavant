@@ -79,6 +79,9 @@ public class SearchableTablePanel extends JPanel {
     private int totalNumRows;
     private GetDataSwingWorker worker;
     private JButton exportButton;
+    private List<Integer> selectedRows;
+    private static Color SELECTED_COLOUR = new Color(244, 237, 147);
+    private static Color DARK_COLOUR = new Color(242, 245, 249);
     
     public enum TableSelectionType {DISABLED, CELL, ROW}
 
@@ -223,18 +226,23 @@ public class SearchableTablePanel extends JPanel {
 
                 if (isCellSelected(Index_row, Index_col)) {
                     comp.setBackground(new Color(75, 149, 229));
-
+                } else if (selectedRows != null && selectedRows.contains(getActualRowAt(Index_row))){
+                    comp.setBackground(SELECTED_COLOUR);
+                } else if (Index_row % 2 == 0 && !isCellSelected(Index_row, Index_col)) {
+                    comp.setBackground(Color.white);
                 } else {
-                    if (Index_row % 2 == 0 && !isCellSelected(Index_row, Index_col)) {
-                        comp.setBackground(Color.white);
-                    } else {
-                        comp.setBackground(new Color(242, 245, 249));
-                    }
+                    comp.setBackground(DARK_COLOUR);
                 }
+                
                 comp.setBorder(border);
                 return comp;
             }
+            
+            public String getToolTipText(MouseEvent e){
+                return getToolTip(table.rowAtPoint(e.getPoint()));
+            }
         };
+        table.setToolTipText("ABC");
 
         table.setClearSelectionOnTableDataChanges(true);
         table.setOptimized(true);
@@ -542,6 +550,31 @@ public class SearchableTablePanel extends JPanel {
     
     public int getActualRowAt(int row){
         return TableModelWrapperUtils.getActualRowAt(table.getModel(), row);
+    }
+    
+    public void setSelectedRows(List<Integer> rows){
+        this.selectedRows = rows;
+    }
+    
+    public boolean isRowSelected(int row){
+        if(selectedRows == null) return false;
+        return selectedRows.contains(row);
+    }
+    
+    public void addSelectedRow(Integer row){
+        selectedRows.add(row);
+    }
+    
+    public void removeSelectedRow(Integer row){
+        while(selectedRows.remove(row));
+    }
+    
+    public void addSelectedRows(List<Integer> rows){
+        selectedRows.addAll(rows);
+    }
+    
+    public String getToolTip(int row){
+        return null;
     }
 
 }

@@ -973,6 +973,68 @@ public class MedSavantDatabase {
             addColumn(COLUMNNAME_OF_VALUE, COLUMNNAME_OF_VALUE, TableSchema.ColumnType.VARCHAR, 100);
         }
     }
+    
+    public static class VariantStarredTableSchema extends TableSchema {
+
+        public static final String TABLE_NAME = "variant_starred";
+
+        public VariantStarredTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
+        // variant_starred.project_id
+        public static final int INDEX_OF_PROJECT_ID = 0;
+        public static final ColumnType TYPE_OF_PROJECT_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_PROJECT_ID = 11;
+        public static final String COLUMNNAME_OF_PROJECT_ID = "project_id";
+        // variant_starred.reference_id
+        public static final int INDEX_OF_REFERENCE_ID = 1;
+        public static final ColumnType TYPE_OF_REFERENCE_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_REFERENCE_ID = 11;
+        public static final String COLUMNNAME_OF_REFERENCE_ID = "reference_id";
+        // variant_starred.upload_id
+        public static final int INDEX_OF_UPLOAD_ID = 2;
+        public static final ColumnType TYPE_OF_UPLOAD_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_UPLOAD_ID = 11;
+        public static final String COLUMNNAME_OF_UPLOAD_ID = "upload_id";
+        // variant_starred.file_id
+        public static final int INDEX_OF_FILE_ID = 3;
+        public static final ColumnType TYPE_OF_FILE_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_FILE_ID = 11;
+        public static final String COLUMNNAME_OF_FILE_ID = "file_id";
+        // variant_starred.variant_id
+        public static final int INDEX_OF_VARIANT_ID = 4;
+        public static final ColumnType TYPE_OF_VARIANT_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_VARIANT_ID = 11;
+        public static final String COLUMNNAME_OF_VARIANT_ID = "variant_id";
+        // variant_starred.user
+        public static final int INDEX_OF_USER = 5;
+        public static final ColumnType TYPE_OF_USER = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_USER = 200;
+        public static final String COLUMNNAME_OF_USER = "user";
+        // variant_starred.description
+        public static final int INDEX_OF_DESCRIPTION = 6;
+        public static final ColumnType TYPE_OF_DESCRIPTION = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_DESCRIPTION = 500;
+        public static final String COLUMNNAME_OF_DESCRIPTION = "description";
+        // variant_starred.timestamp
+        public static final int INDEX_OF_TIMESTAMP = 7;
+        public static final ColumnType TYPE_OF_TIMESTAMP = TableSchema.ColumnType.DATE;
+        public static final int LENGTH_OF_TIMESTAMP = -1;
+        public static final String COLUMNNAME_OF_TIMESTAMP = "timestamp";
+
+        private void addColumns() {
+            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_UPLOAD_ID, COLUMNNAME_OF_UPLOAD_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_FILE_ID, COLUMNNAME_OF_FILE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_VARIANT_ID, COLUMNNAME_OF_VARIANT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_USER, COLUMNNAME_OF_USER, TableSchema.ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_TIMESTAMP, COLUMNNAME_OF_TIMESTAMP, TableSchema.ColumnType.DATE, -1);
+        }
+    }
+    
     public static final DbSchema schema = (new DbSpec()).addDefaultSchema();
     //AnnotationTableSchema
     public static final AnnotationTableSchema AnnotationTableSchema = new AnnotationTableSchema(schema);
@@ -1012,4 +1074,6 @@ public class MedSavantDatabase {
     public static final VarianttagTableSchema VarianttagTableSchema = new VarianttagTableSchema(schema);
     //SettingsTableSchema
     public static final SettingsTableSchema SettingsTableSchema = new SettingsTableSchema(schema);
+    //VariantStarredTableSchema
+    public static final VariantStarredTableSchema VariantStarredTableSchema = new VariantStarredTableSchema(schema);
 }

@@ -11,32 +11,41 @@ import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import java.awt.CardLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
-import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantStarredTableSchema;
 import org.ut.biolab.medsavant.db.format.VariantFormat;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.db.model.StarredVariant;
+import org.ut.biolab.medsavant.db.util.shared.DBUtil;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
@@ -57,6 +66,8 @@ class TablePanel extends JPanel {
     private boolean updateRequired = true;
     private final Object updateLock = new Object();
     private String pageName;
+    
+    private Map<Integer, List<StarredVariant>> starMap = new HashMap<Integer, List<StarredVariant>>();
 
     public TablePanel(final String pageName) {
 
@@ -111,14 +122,16 @@ class TablePanel extends JPanel {
                 DataRetriever retriever = new DataRetriever(){
                     public List<Object[]> retrieve(int start, int limit) {
                         showWaitCard();
-                        List<Object[]> result = null;
                         try {
-                            result = ResultController.getInstance().getFilteredVariantRecords(start, limit);
+                            final List<Object[]> result = ResultController.getInstance().getFilteredVariantRecords(start, limit);
+                            checkStarring(result);
+                            showShowCard();                           
+                            return result;
                         } catch (NonFatalDatabaseException ex) {
                             Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                            showShowCard();
+                            return null;
                         }
-                        showShowCard();
-                        return result;
                     }
 
                     public int getTotalNum() {
@@ -140,25 +153,43 @@ class TablePanel extends JPanel {
                     }
                 };
 
-                SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames, fieldClasses, hiddenColumns, 1000, retriever);
+                SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames, fieldClasses, hiddenColumns, 1000, retriever){
+                    @Override
+                    public String getToolTip(int row){                       
+                        if(starMap.get(row) != null){
+                            String s = "<HTML>";
+                            List<StarredVariant> starred = starMap.get(row);
+                            for(int i = 0; i < starred.size(); i++){
+                                StarredVariant current = starred.get(i);
+                                s += "\"" + current.getDescription() + "\"<BR>";
+                                s += "- " + current.getUser() + ", " + current.getTimestamp().toString();
+                                if(i != starred.size()-1){
+                                    s += "<BR>----------<BR>";
+                                }
+                            }
+                            s += "</HTML>";
+                            return s;
+                        }
+                        return null;
+                    }
+                };
                 stp.getTable().addMouseListener(new MouseAdapter() {
-                    public void mouseClicked(MouseEvent e) {
+                    public void mouseReleased(MouseEvent e) {
 
                         //check for right click
                         if(!SwingUtilities.isRightMouseButton(e)) return;
 
-                        SortableTable table = tablePanel.getTable();
-                        int r = table.rowAtPoint(e.getPoint());
-                        if(r < 0 || r >= table.getRowCount()) return;
-                        table.setRowSelectionInterval(r, r);
-                        int row = TableModelWrapperUtils.getActualRowAt(table.getModel(), r);
-
-                        String variantChrom = (String)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_CHROM);
-                        int variantPosition = (Integer)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_POSITION);
-                        String variantAlt = (String)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_ALT);
-
-                        JPopupMenu popup = createPopup(variantChrom, variantPosition, variantAlt);
-                        popup.show(e.getComponent(), e.getX(), e.getY());
+                        SortableTable table = tablePanel.getTable();                       
+                        int numSelected = table.getSelectedRows().length;                      
+                        if(numSelected == 1){
+                            int r = table.rowAtPoint(e.getPoint());
+                            if(r < 0 || r >= table.getRowCount()) return;
+                            JPopupMenu popup = createPopupSingle(table, r);
+                            popup.show(e.getComponent(), e.getX(), e.getY());                                              
+                        } else if(numSelected > 1){
+                            JPopupMenu popup = createPopupMultiple(table);
+                            popup.show(e.getComponent(), e.getX(), e.getY());
+                        }
                     }
                 });
 
@@ -208,10 +239,27 @@ class TablePanel extends JPanel {
             }
         }
     }
+    
+    private JPopupMenu createPopupSingle(SortableTable table, int r){
 
-    private JPopupMenu createPopup(final String chrom, final int position, final String alt){
+        table.setRowSelectionInterval(r, r);
+        int row = TableModelWrapperUtils.getActualRowAt(table.getModel(), r);
+
+        final String chrom = (String)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_CHROM);
+        final int position = (Integer)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_POSITION);
+        final String alt = (String)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_ALT);
+        
+        
         JPopupMenu menu = new JPopupMenu();
-
+        
+        //star/unstar
+        if(isStarredByUser(row)){
+            menu.add(createUnstarVariantItem(row));
+        } else {
+            menu.add(createStarVariantsItem(table));
+        }
+        
+        menu.add(new JSeparator());
 
         //Filter by position
         JMenuItem filter1Item = new JMenuItem("Filter by Position");
@@ -228,13 +276,9 @@ class TablePanel extends JPanel {
                         "Table - Filter by Position",
                         "Chromosome: " + chrom + ", Position: " + position,
                         ComboCondition.and(conditions));
-
-                //GeneticsTablePage.getInstance().updateContents();
             }
         });
         menu.add(filter1Item);
-
-
 
         //Filter by position and alt
         JMenuItem filter2Item = new JMenuItem("Filter by Position and Alt");
@@ -252,13 +296,187 @@ class TablePanel extends JPanel {
                         "Table - Filter by Position",
                         "Chromosome: " + chrom + ", Position: " + position + ", Alt: " + alt,
                         ComboCondition.and(conditions));
-
-                //GeneticsTablePage.getInstance().updateContents();
             }
         });
         menu.add(filter2Item);
 
         return menu;
     }
+    
+    
+    private JPopupMenu createPopupMultiple(SortableTable table){
+        JPopupMenu menu = new JPopupMenu();
 
+        //Star variant(s)
+        menu.add(createStarVariantsItem(table));
+        
+        return menu;
+    }
+    
+    private JMenuItem createStarVariantsItem(final SortableTable table){
+        
+        int[] selected = table.getSelectedRows();
+        int[] actualSelected = new int[selected.length];
+        for(int i = 0; i < selected.length; i++){
+            actualSelected[i] = TableModelWrapperUtils.getActualRowAt(table.getModel(), selected[i]);
+        }
+        final int[] finalSelected = actualSelected;
+        
+        JMenuItem item = new JMenuItem("Star Variant(s)");
+        item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                
+                String description = JOptionPane.showInputDialog("Add a description (500 char limit):");
+                if(description == null) return;
+
+                List<StarredVariant> list = new ArrayList<StarredVariant>();
+                for(int i = 0; i < finalSelected.length; i++){
+                    int row = finalSelected[i];
+                    StarredVariant sv = new StarredVariant(
+                            (Integer)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID),
+                            (Integer)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_FILE_ID),
+                            (Integer)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_VARIANT_ID),
+                            LoginController.getUsername(),
+                            description,
+                            DBUtil.getCurrentTimestamp());
+                    list.add(sv);
+                    if(!starMap.containsKey(row)){
+                        starMap.put(row, new ArrayList<StarredVariant>());
+                    }
+                    removeStarForUser(row);
+                    starMap.get(row).add(sv);
+                }
+                try {
+                    MedSavantClient.VariantQueryUtilAdapter.addStarredVariants(
+                            LoginController.sessionId, 
+                            ProjectController.getInstance().getCurrentProjectId(), 
+                            ReferenceController.getInstance().getCurrentReferenceId(), 
+                            list);
+                } catch (SQLException ex) {
+                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (RemoteException ex) {
+                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                //add to view
+                for(Integer i : finalSelected){
+                    tablePanel.addSelectedRow(i);
+                } 
+                tablePanel.repaint();
+            }
+        });
+        
+        return item;
+    }
+    
+    private JMenuItem createUnstarVariantItem(final int row){
+        
+        JMenuItem item = new JMenuItem("Unstar Variant");
+        item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                StarredVariant sv = null;
+                for(StarredVariant current : starMap.get(row)){
+                    if(current.getUser().equals(LoginController.getUsername())){
+                        sv = current;
+                        break;
+                    }
+                }
+                
+                try {
+                    MedSavantClient.VariantQueryUtilAdapter.unstarVariant(
+                            LoginController.sessionId, 
+                            ProjectController.getInstance().getCurrentProjectId(), 
+                            ReferenceController.getInstance().getCurrentReferenceId(), 
+                            sv.getUploadId(), 
+                            sv.getFileId(), 
+                            sv.getVariantId(),
+                            LoginController.getUsername());
+                } catch (SQLException ex) {
+                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (RemoteException ex) {
+                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                //remove from view
+                List<StarredVariant> list = starMap.get(row);
+                if(list.size() == 1){
+                    tablePanel.removeSelectedRow(row);       
+                    tablePanel.repaint();
+                } else {
+                    removeStarForUser(row);
+                }     
+            }
+        });
+        
+        return item;
+    }
+    
+    private void checkStarring(List<Object[]> variants){
+
+        List<Integer> selected = new ArrayList<Integer>();
+        starMap.clear();
+        
+        try {
+            Set<StarredVariant> starred = MedSavantClient.VariantQueryUtilAdapter.getStarredVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId());
+            
+            for(int i = 0; i < variants.size(); i++){
+                Object[] row = variants.get(i);
+                StarredVariant current = new StarredVariant(
+                        (Integer)row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID],
+                        (Integer)row[DefaultVariantTableSchema.INDEX_OF_FILE_ID],
+                        (Integer)row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID],
+                        null, 
+                        null,
+                        null);
+                if(starred.contains(current)){
+                    
+                    selected.add(i);
+                    if(starMap.get(i) == null){
+                        starMap.put(i, new ArrayList<StarredVariant>());
+                    }
+                    
+                    Object[] arr = starred.toArray();
+                    for(Object a : arr){
+                        StarredVariant sv = (StarredVariant)a;
+                        if(sv.getUploadId() == current.getUploadId() && sv.getFileId() == current.getFileId() && sv.getVariantId() == current.getVariantId()){
+                            starMap.get(i).add(sv);
+                        }
+                    }
+                    
+                }
+            }
+
+        } catch (Exception ex) {
+            Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+        
+        tablePanel.setSelectedRows(selected);
+    }
+    
+    private boolean isStarredByUser(int row){
+        if(!starMap.containsKey(row)) return false;
+        List<StarredVariant> starred = starMap.get(row);
+        for(StarredVariant current : starred){
+            if(current.getUser().equals(LoginController.getUsername())){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private void removeStarForUser(int row){
+        List<StarredVariant> list = starMap.get(row);
+        int index = -1;
+        for(int i = 0; i < list.size(); i++){
+            StarredVariant current = list.get(i);
+            if(current.getUser().equals(LoginController.getUsername())){
+                index = i;
+            }
+        }
+        if(index != -1){
+            list.remove(index);
+        }
+    }
 }

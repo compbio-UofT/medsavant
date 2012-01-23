@@ -10,9 +10,11 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
+import org.ut.biolab.medsavant.db.model.StarredVariant;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 
 /**
@@ -47,4 +49,9 @@ public interface VariantQueryUtilAdapter extends Remote {
     public List<Integer> getUploadIDsMatchingVariantTags(String sid, String[][] variantTags) throws SQLException, RemoteException;
     public List<SimpleVariantFile> getUploadedFiles(String sid, int projectId, int referenceId) throws SQLException, RemoteException;
     public List<String[]> getTagsForUpload(String sid, int uploadId) throws SQLException, RemoteException;
+    public Set<StarredVariant> getStarredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException;
+    public void addStarredVariant(String sid, int projectId, int referenceId, StarredVariant variant) throws SQLException, RemoteException;
+    public void addStarredVariants(String sid, int projectId, int referenceId, List<StarredVariant> variant) throws SQLException, RemoteException;
+    public void unstarVariant(String sid, int projectId, int referenceId, int uploadId, int fileId, int variantId, String user) throws SQLException, RemoteException;
+    
 }
