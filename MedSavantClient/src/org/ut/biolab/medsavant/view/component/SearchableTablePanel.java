@@ -242,7 +242,7 @@ public class SearchableTablePanel extends JPanel {
                 return getToolTip(table.rowAtPoint(e.getPoint()));
             }
         };
-        table.setToolTipText("ABC");
+        table.setToolTipText(""); //necessary to force check for tooltip text
 
         table.setClearSelectionOnTableDataChanges(true);
         table.setOptimized(true);
