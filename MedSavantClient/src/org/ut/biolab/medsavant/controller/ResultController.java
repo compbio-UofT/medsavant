@@ -55,12 +55,10 @@ public class ResultController implements FiltersChangedListener {
     }
 
     public synchronized List<Object[]> getFilteredVariantRecords(int start, int limit) {
-        System.out.print("retrieving...");
         if (filterSetId != FilterController.getCurrentFilterSetID() || this.limit < limit || this.start != start ||
                 ProjectController.getInstance().getCurrentProjectId() != projectId ||
                 ReferenceController.getInstance().getCurrentReferenceId() != referenceId || 
                 !SettingsController.getInstance().getDBName().equals(dbName)){
-            System.out.print("updating...");
             try {
                 updateFilteredVariantDBResults(start, limit);
                 this.limit = limit;
@@ -72,7 +70,6 @@ public class ResultController implements FiltersChangedListener {
             referenceId = ReferenceController.getInstance().getCurrentReferenceId();
             dbName = SettingsController.getInstance().getDBName();
         }   
-        System.out.println("done");
         return filteredVariants;
     }
     
