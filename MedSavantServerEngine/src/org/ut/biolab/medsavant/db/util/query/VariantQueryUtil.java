@@ -56,6 +56,7 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VarianttagTableSchema;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.settings.Settings;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
@@ -777,23 +778,24 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         return result;
     }
-
-    @Override
-    public void addStarredVariant(String sid, int projectId, int referenceId, StarredVariant variant) throws SQLException, RemoteException {
-        List<StarredVariant> variants = new ArrayList<StarredVariant>();
-        variants.add(variant);
-    }    
     
     @Override
-    public void addStarredVariants(String sid, int projectId, int referenceId, List<StarredVariant> variants) throws SQLException, RemoteException {
+    public int addStarredVariants(String sid, int projectId, int referenceId, List<StarredVariant> variants) throws SQLException, RemoteException {
         
         TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
+        
+        int totalNumStarred = getTotalNumStarred(sid, projectId, referenceId);
+        int numStarred = 0;
         
         Connection c = ConnectionController.connectPooled(sid);
         c.setAutoCommit(false);
         
         for(StarredVariant variant : variants){
         
+            if(totalNumStarred == Settings.NUM_STARRED_ALLOWED){
+                return numStarred;
+            }
+            
             InsertQuery q = new InsertQuery(table.getTable());
             List<DbColumn> columnsList = table.getColumns();
             Column[] columnsArray = new Column[columnsList.size()];
@@ -802,14 +804,18 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
             try {
                 c.createStatement().executeUpdate(q.toString());
+                totalNumStarred++;               
             } catch (MySQLIntegrityConstraintViolationException e){
                 //duplicate entry, update
                 updateStarredVariant(c, projectId, referenceId, variant);
             }
+            numStarred++;
         }
         
         c.commit();
         c.setAutoCommit(true);
+        
+        return numStarred;
     }   
     
     private void updateStarredVariant(Connection c, int projectId, int referenceId, StarredVariant variant) throws SQLException {
@@ -844,6 +850,22 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), user));
         
         ConnectionController.connectPooled(sid).createStatement().execute(q.toString());
+    }
+    
+    private int getTotalNumStarred(String sid, int projectId, int referenceId) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
+        
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(table.getTable());
+        q.addCustomColumns(FunctionCall.countAll());
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
+        
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        
+        rs.next();
+        return rs.getInt(1);
     }
     
 }

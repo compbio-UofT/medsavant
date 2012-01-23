@@ -44,6 +44,7 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchem
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantStarredTableSchema;
 import org.ut.biolab.medsavant.db.format.VariantFormat;
 import org.ut.biolab.medsavant.db.model.StarredVariant;
+import org.ut.biolab.medsavant.db.settings.Settings;
 import org.ut.biolab.medsavant.db.util.shared.DBUtil;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
@@ -322,7 +323,7 @@ class TablePanel extends JPanel {
         }
         final int[] finalSelected = actualSelected;
         
-        JMenuItem item = new JMenuItem("Star Variant(s)");
+        JMenuItem item = new JMenuItem("Mark Variant(s) as Important");
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -348,11 +349,18 @@ class TablePanel extends JPanel {
                     starMap.get(row).add(sv);
                 }
                 try {
-                    MedSavantClient.VariantQueryUtilAdapter.addStarredVariants(
+                    int numStarred = MedSavantClient.VariantQueryUtilAdapter.addStarredVariants(
                             LoginController.sessionId, 
                             ProjectController.getInstance().getCurrentProjectId(), 
                             ReferenceController.getInstance().getCurrentReferenceId(), 
                             list);
+                    if(numStarred < list.size()){
+                        JOptionPane.showMessageDialog(
+                                null, 
+                                "<HTML>" + (list.size() - numStarred) + " out of " + list.size() + " variants were not marked. <BR>The total number of marked variants cannot exceed " + Settings.NUM_STARRED_ALLOWED + "</HTML>", 
+                                "Out of Space", 
+                                JOptionPane.ERROR_MESSAGE);
+                    }
                 } catch (SQLException ex) {
                     Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (RemoteException ex) {
@@ -372,7 +380,7 @@ class TablePanel extends JPanel {
     
     private JMenuItem createUnstarVariantItem(final int row){
         
-        JMenuItem item = new JMenuItem("Unstar Variant");
+        JMenuItem item = new JMenuItem("Unmark");
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -419,7 +427,7 @@ class TablePanel extends JPanel {
         
         try {
             Set<StarredVariant> starred = MedSavantClient.VariantQueryUtilAdapter.getStarredVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId());
-            
+                       
             for(int i = 0; i < variants.size(); i++){
                 Object[] row = variants.get(i);
                 StarredVariant current = new StarredVariant(

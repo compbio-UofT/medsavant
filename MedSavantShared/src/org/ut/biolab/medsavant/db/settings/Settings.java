@@ -15,5 +15,7 @@ public class Settings {
     
     /* Lock for database updates */
     public static final String KEY_DB_LOCK = "db lock";
+    
+    public static final int NUM_STARRED_ALLOWED = 1000;
        
 }

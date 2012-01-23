@@ -50,8 +50,7 @@ public interface VariantQueryUtilAdapter extends Remote {
     public List<SimpleVariantFile> getUploadedFiles(String sid, int projectId, int referenceId) throws SQLException, RemoteException;
     public List<String[]> getTagsForUpload(String sid, int uploadId) throws SQLException, RemoteException;
     public Set<StarredVariant> getStarredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException;
-    public void addStarredVariant(String sid, int projectId, int referenceId, StarredVariant variant) throws SQLException, RemoteException;
-    public void addStarredVariants(String sid, int projectId, int referenceId, List<StarredVariant> variant) throws SQLException, RemoteException;
+    public int addStarredVariants(String sid, int projectId, int referenceId, List<StarredVariant> variant) throws SQLException, RemoteException;
     public void unstarVariant(String sid, int projectId, int referenceId, int uploadId, int fileId, int variantId, String user) throws SQLException, RemoteException;
     
 }
