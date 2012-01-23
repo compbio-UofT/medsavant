@@ -246,9 +246,9 @@ class TablePanel extends JPanel {
         table.setRowSelectionInterval(r, r);
         int row = TableModelWrapperUtils.getActualRowAt(table.getModel(), r);
 
-        final String chrom = (String)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_CHROM);
-        final int position = (Integer)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_POSITION);
-        final String alt = (String)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_ALT);
+        final String chrom = (String)table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
+        final int position = (Integer)table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
+        final String alt = (String)table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_ALT);
         
         
         JPopupMenu menu = new JPopupMenu();
@@ -357,7 +357,7 @@ class TablePanel extends JPanel {
                     if(numStarred < list.size()){
                         JOptionPane.showMessageDialog(
                                 null, 
-                                "<HTML>" + (list.size() - numStarred) + " out of " + list.size() + " variants were not marked. <BR>The total number of marked variants cannot exceed " + Settings.NUM_STARRED_ALLOWED + "</HTML>", 
+                                "<HTML>" + (list.size() - numStarred) + " out of " + list.size() + " variants were not marked. <BR>The total number of marked variants cannot exceed " + Settings.NUM_STARRED_ALLOWED + ".</HTML>", 
                                 "Out of Space", 
                                 JOptionPane.ERROR_MESSAGE);
                     }
