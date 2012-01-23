@@ -156,7 +156,7 @@ class TablePanel extends JPanel {
                 SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames, fieldClasses, hiddenColumns, 1000, retriever){
                     @Override
                     public String getToolTip(int row){                       
-                        if(starMap.get(row) != null){
+                        if(starMap.get(row) != null && !starMap.get(row).isEmpty()){
                             String s = "<HTML>";
                             List<StarredVariant> starred = starMap.get(row);
                             for(int i = 0; i < starred.size(); i++){
@@ -404,9 +404,8 @@ class TablePanel extends JPanel {
                 if(list.size() == 1){
                     tablePanel.removeSelectedRow(row);       
                     tablePanel.repaint();
-                } else {
-                    removeStarForUser(row);
-                }     
+                } 
+                removeStarForUser(row);
             }
         });
         
