@@ -39,7 +39,7 @@ public class ProgressPanel extends JPanel implements ComponentListener {
         this.setBackground(Color.pink);
 
         this.setPreferredSize(new Dimension(preferredWidth, preferredHeight));
-        this.currentValue = 50;
+        this.currentValue = 100;
         this.lastValue = currentValue;
         this.repaint();
         this.addComponentListener(this);

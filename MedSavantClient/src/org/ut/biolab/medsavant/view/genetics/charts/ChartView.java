@@ -42,6 +42,7 @@ public class ChartView extends JPanel {
     private JCheckBox bLogX;
     private String pageName;
     private boolean init = false;
+    private JCheckBox bOriginal;
 
     public ChartView(String pageName) {
         this.pageName = pageName;
@@ -53,8 +54,8 @@ public class ChartView extends JPanel {
     private void initGUI() {
         this.setLayout(new BorderLayout());
         initToolBar();
-        initCards();  
-        initBottomBar();       
+        initCards();
+        initBottomBar();
         init = true;
         chartChooser.setSelectedIndex(0);
     }
@@ -83,7 +84,7 @@ public class ChartView extends JPanel {
                     bSort.setEnabled(true);
                     sc.setIsSortedKaryotypically(false);
                 }
-                
+
             }
         });
 
@@ -126,11 +127,11 @@ public class ChartView extends JPanel {
 
     private void addCMG(ChartMapGenerator cmg) {
         mapGenerators.put(cmg.getName(), cmg);
-        chartChooser.addItem(cmg.getName());    
+        chartChooser.addItem(cmg.getName());
     }
 
     private void addCMGs() {
-        
+
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for(AnnotationFormat af : afs){
             for(CustomField field : af.getCustomFields()){
@@ -144,11 +145,11 @@ public class ChartView extends JPanel {
         for(CustomField field : ProjectController.getInstance().getCurrentPatientFormat()){
             ColumnType type = field.getColumnType();
             if(field.isFilterable() &&
-                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))){              
+                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))){
                 addCMG(VariantFieldChartMapGenerator.createPatientChart(field));
             }
         }
-        
+
     }
 
     private void initBottomBar() {
@@ -161,37 +162,45 @@ public class ChartView extends JPanel {
         //bottomToolbar.add(chartChooser);
 
         bPie = new JCheckBox("Pie chart");
+        bOriginal = new JCheckBox("Show original frequencies");
         bSort = new JCheckBox("Sort by frequency");
         bLogY = new JCheckBox("Log scale Y axis");
-        bLogX = new JCheckBox("Log scale X axis");        
+        bLogX = new JCheckBox("Log scale X axis");
 
         bPie.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setIsPie(!sc.isPie());
             }
         });
-        
+
+        bOriginal.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setDoesCompareToOriginal(!sc.doesCompareToOriginal());
+            }
+        });
+
         bSort.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setIsSorted(!sc.isSorted());
             }
         });
-         
+
         bLogY.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setIsLogScale(!sc.isLogScaleY(), ChartAxis.Y);
             }
         });
-        
+
         bLogX.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setIsLogScale(!sc.isLogScaleX(), ChartAxis.X);
             }
         });
-        
+
         bottomToolbar.add(ViewUtil.getMediumSeparator());
 
         bottomToolbar.add(ViewUtil.clear(bPie));
+        bottomToolbar.add(ViewUtil.clear(bOriginal));
         bottomToolbar.add(ViewUtil.clear(bSort));
         bottomToolbar.add(ViewUtil.clear(bLogY));
         bottomToolbar.add(ViewUtil.clear(bLogX));
@@ -207,23 +216,36 @@ public class ChartView extends JPanel {
         if (bPie.isEnabled()) {
             sc.setIsPie(!sc.isPie());
             bPie.setSelected(sc.isPie());
+            if (b) {
+                bOriginal.setEnabled(false);
+            } else {
+                bOriginal.setEnabled(true);
+            }
         }
     }
-    
+
+    public void setDoesCompareToOriginal(boolean b) {
+        if (bOriginal.isEnabled()) {
+            sc.setDoesCompareToOriginal(!sc.doesCompareToOriginal());
+            bOriginal.setSelected(sc.doesCompareToOriginal());
+        }
+    }
+
+
     public void setIsSorted(boolean b) {
         if (bSort.isEnabled()) {
             sc.setIsSorted(!sc.isSorted());
             bSort.setSelected(sc.isSorted());
         }
     }
-    
+
     public void setIsLogScale(boolean b, ChartAxis axis){
         if((axis == ChartAxis.Y && !bLogY.isEnabled()) || (axis == ChartAxis.X && !bLogX.isEnabled())) return;
         sc.setIsLogScale(b, axis);
         bLogY.setSelected(sc.isLogScaleY());
         bLogX.setSelected(sc.isLogScaleX());
     }
-    
+
     /*public void setIsLogScaleY(boolean b) {
         if (bLogY.isEnabled()) {
             sc.setIsLogScaleY(!sc.isLogScaleY());
@@ -234,7 +256,7 @@ public class ChartView extends JPanel {
             }
         }
     }
-    
+
     public void setIsLogScaleX(boolean b) {
         if (bLogX.isEnabled()) {
             sc.setIsLogScaleX(!sc.isLogScaleX());
@@ -245,17 +267,17 @@ public class ChartView extends JPanel {
             }
         }
     }*/
-    
+
     public void updateIfRequired(){
         if(sc != null){
             sc.updateIfRequired();
         }
     }
-    
+
     public void setUpdateRequired(boolean required){
         if(sc != null){
             sc.setUpdateRequired(required);
         }
     }
-    
+
 }

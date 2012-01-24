@@ -4,11 +4,15 @@
  */
 package org.ut.biolab.medsavant.view.genetics.charts;
 
+import com.jidesoft.chart.model.ChartCategory;
+import com.jidesoft.range.CategoryRange;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  *
@@ -16,26 +20,69 @@ import java.util.Map;
  */
 public class ChartFrequencyMap {
 
+    static ChartFrequencyMap subtract(ChartFrequencyMap map1, ChartFrequencyMap map2) {
+        ChartFrequencyMap result = new ChartFrequencyMap();
+        for (FrequencyEntry fe1 : map1.entries) {
+            FrequencyEntry fe2 = map2.getEntry(fe1.getKey());
+            if (fe2 == null) {
+                result.addEntry(fe1.getKey(), fe1.getFrequency());
+            } else {
+                result.addEntry(fe1.getKey(), fe1.getFrequency() - fe2.getFrequency());
+            }
+        }
+        return result;
+    }
+
+    List<ChartCategory> getCategories() {
+
+        List<ChartCategory> map = new ArrayList<ChartCategory>();
+        for (FrequencyEntry fe : getEntries()) {
+            ChartCategory cat = new ChartCategory<String>(fe.getKey());
+            map.add(cat);
+        }
+        return map;
+    }
+
+    long getMax() {
+        long max = Integer.MIN_VALUE;
+        for (FrequencyEntry fe : this.getEntries()) {
+            if (fe.getFrequency() > max) {
+                max = fe.getFrequency();
+            }
+        }
+        return max;
+    }
+
+    FrequencyEntry getEntry(String key) {
+        for (FrequencyEntry fe : entries) {
+            if (fe.getKey().equals(key)) {
+                return fe;
+            }
+        }
+        return null;
+    }
+
     private static class NumericComparator implements Comparator {
 
-         public int compare(Object o1, Object o2){
-             
-             if(o1 instanceof FrequencyEntry && o2 instanceof FrequencyEntry) {
-                 int f1 = ((FrequencyEntry) o1).getFrequency();
-                 int f2 = ((FrequencyEntry) o2).getFrequency();
+        public int compare(Object o1, Object o2) {
 
-                if(f1 > f2)
+            if (o1 instanceof FrequencyEntry && o2 instanceof FrequencyEntry) {
+                long f1 = ((FrequencyEntry) o1).getFrequency();
+                long f2 = ((FrequencyEntry) o2).getFrequency();
+
+                if (f1 > f2) {
                     return 1;
-                else if(f1 < f2)
+                } else if (f1 < f2) {
                     return -1;
-                else
-                    return 0;    
-             } else {
-                 return -1;
-             }
+                } else {
+                    return 0;
+                }
+            } else {
+                return -1;
+            }
         }
     }
-    
+
     private static class ChromosomeComparator implements Comparator {
 
         /**
@@ -44,7 +91,7 @@ public class ChartFrequencyMap {
          * @return
          */
         public int compare(Object o1, Object o2) {
-             
+
             String chr1 = ((FrequencyEntry) o1).getKey();
             String chr2 = ((FrequencyEntry) o2).getKey();
 
@@ -78,8 +125,7 @@ public class ChartFrequencyMap {
                     return -1;
                 }
                 return idx1 - idx2;
-            }
-            catch (Exception numberFormatException) {
+            } catch (Exception numberFormatException) {
                 return 0;
             }
 
@@ -99,55 +145,50 @@ public class ChartFrequencyMap {
             }
             return 0;
         }
-
-
     }
-    
     private List<FrequencyEntry> entries;
 
     public ChartFrequencyMap() {
         this.entries = new ArrayList<FrequencyEntry>();
     }
-    
-    public void addEntry(String key, int value) {
-        this.entries.add(new FrequencyEntry(key,value));
+
+    public void addEntry(String key, long value) {
+        this.entries.add(new FrequencyEntry(key, value));
     }
-    
+
     /*
     public void removeEntry(String key) {
-        FrequencyEntry toremove = null;
-        for (FrequencyEntry fe : this.entries) {
-            if (fe.getKey().equals(key)) {
-                toremove = fe;
-                break;
-            }
-        }
-        this.entries.remove(toremove);
+    FrequencyEntry toremove = null;
+    for (FrequencyEntry fe : this.entries) {
+    if (fe.getKey().equals(key)) {
+    toremove = fe;
+    break;
     }
-     * 
+    }
+    this.entries.remove(toremove);
+    }
+     *
      */
-    
     public List<FrequencyEntry> getEntries() {
         return entries;
     }
-    
+
     public void addAll(Map<String, Integer> map) {
         for (String s : map.keySet()) {
-            addEntry(s,map.get(s));
+            addEntry(s, map.get(s));
         }
     }
-    
+
     public void sort() {
         Collections.sort(entries);
     }
-    
+
     public void sortNumerically() {
         Collections.sort(entries, new NumericComparator());
         Collections.reverse(entries);
     }
-    
+
     public void sortKaryotypically() {
         Collections.sort(entries, new ChromosomeComparator());
-        
     }
 }

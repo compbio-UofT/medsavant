@@ -11,15 +11,15 @@ import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
  * @author mfiume
  */
 public interface ChartMapGenerator {
-    
-    public ChartFrequencyMap generateChartMap(boolean isLogScaleX) throws Exception;
-    
+
+    public ChartFrequencyMap generateChartMap(boolean useFilterConditions, boolean isLogScaleX) throws Exception;
+
     public boolean isNumeric();
 
     public String getName();
-    
+
     public Table getTable();
-    
+
     // usually the column name
     public String getFilterId();
 }

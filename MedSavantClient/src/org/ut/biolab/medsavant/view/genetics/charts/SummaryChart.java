@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.genetics.charts;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
@@ -31,6 +30,7 @@ import javax.swing.JPanel;
 
 import com.jidesoft.chart.Chart;
 import com.jidesoft.chart.ChartType;
+import com.jidesoft.chart.Legend;
 import com.jidesoft.chart.axis.Axis;
 import com.jidesoft.chart.axis.CategoryAxis;
 import com.jidesoft.chart.model.ChartCategory;
@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.ListSelectionModel;
@@ -81,10 +82,22 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class SummaryChart extends JPanel {
 
-    public static enum ChartAxis {X, Y};
+    public boolean doesCompareToOriginal() {
+        return this.showComparedToOriginal;
+    }
 
+    void setDoesCompareToOriginal(boolean b) {
+        this.showComparedToOriginal = b;
+        updateDataAndDrawChart();
+    }
+
+    public static enum ChartAxis {
+
+        X, Y
+    };
     private boolean isLogScaleY = false;
     private boolean isLogScaleX = false;
+    private boolean showComparedToOriginal = false;
     private boolean isPie = false;
     private boolean isSorted = false;
     private static final int DEFAULT_NUM_QUANTITATIVE_CATEGORIES = 15;
@@ -92,7 +105,6 @@ public class SummaryChart extends JPanel {
     private ChartMapGenerator mapGenerator;
     private boolean isSortedKaryotypically;
     private String pageName;
-
     private final Object updateLock = new Object();
     private boolean updateRequired = false;
 
@@ -101,8 +113,8 @@ public class SummaryChart extends JPanel {
         setLayout(new BorderLayout());
     }
 
-    public void setIsLogScale(boolean isLogScale, ChartAxis axis){
-        if(!isLogScale){
+    public void setIsLogScale(boolean isLogScale, ChartAxis axis) {
+        if (!isLogScale) {
             isLogScaleY = false;
             isLogScaleX = false;
         } else {
@@ -113,15 +125,14 @@ public class SummaryChart extends JPanel {
     }
 
     /*public void setIsLogScaleY(boolean isLogscale) {
-        this.isLogScaleY = isLogscale;
-        updateDataAndDrawChart();
+    this.isLogScaleY = isLogscale;
+    updateDataAndDrawChart();
     }
 
     public void setIsLogScaleX(boolean isLogscale) {
-        this.isLogScaleX = isLogscale;
-        updateDataAndDrawChart();
+    this.isLogScaleX = isLogscale;
+    updateDataAndDrawChart();
     }*/
-
     public void setIsSorted(boolean isSorted) {
         this.isSorted = isSorted;
         updateDataAndDrawChart();
@@ -158,16 +169,16 @@ public class SummaryChart extends JPanel {
     }
 
     public void updateIfRequired() {
-        synchronized (updateLock){
-            if(updateRequired){
+        synchronized (updateLock) {
+            if (updateRequired) {
                 updateRequired = false;
                 updateDataAndDrawChart();
             }
         }
     }
-    
-    public void setUpdateRequired(boolean required){
-        synchronized(updateLock){
+
+    public void setUpdateRequired(boolean required) {
+        synchronized (updateLock) {
             updateRequired = required;
         }
     }
@@ -180,8 +191,9 @@ public class SummaryChart extends JPanel {
         //show wait panel
         final JPanel instance = this;
         new Thread() {
+
             @Override
-            public void run(){
+            public void run() {
                 instance.removeAll();
                 instance.add(new WaitPanel("Getting chart data"), BorderLayout.CENTER);
                 instance.updateUI();
@@ -189,11 +201,32 @@ public class SummaryChart extends JPanel {
         }.start();
     }
 
-    private synchronized void drawChart(ChartFrequencyMap chartMap) {
-        DefaultChartModel chartModel = new DefaultChartModel();
+    private synchronized void drawChart(ChartFrequencyMap[] chartMaps) {
+
+        ChartFrequencyMap filteredChartMap = chartMaps[0];
+        ChartFrequencyMap unfilteredChartMap = null;
+
+        DefaultChartModel filteredChartModel = new DefaultChartModel();
+        DefaultChartModel unfilteredChartModel = null;
+
+        if (this.showComparedToOriginal) {
+            unfilteredChartMap = ChartFrequencyMap.subtract(chartMaps[1],filteredChartMap);
+            unfilteredChartModel = new DefaultChartModel();
+        }
 
         final Chart chart = new Chart(new Dimension(200, 200));
-        chart.addModel(chartModel);
+
+
+        JPanel panel = new JPanel();
+        Legend legend = new Legend(chart, 0);
+        panel.add(legend);
+        legend.addChart(chart);
+
+        chart.addModel(filteredChartModel,new ChartStyle(Color.blue).withBars());
+
+        if (this.showComparedToOriginal) {
+            chart.addModel(unfilteredChartModel,new ChartStyle(Color.gray).withBars());
+        }
 
         chart.setRolloverEnabled(true);
         chart.setSelectionEnabled(true);
@@ -203,14 +236,20 @@ public class SummaryChart extends JPanel {
         chart.setBarGap(5);
         chart.setBorder(ViewUtil.getBigBorder());
         chart.setLabellingTraces(true);
-        chart.getSelectionsForModel(chartModel).setSelectionMode(
-                (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) ?
-                ListSelectionModel.SINGLE_SELECTION :
-                ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
+        chart.setAnimateOnShow(false);
+
+        //chart.setBarsGrouped(true);
+
+        chart.getSelectionsForModel(filteredChartModel).setSelectionMode(
+                (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER))
+                ? ListSelectionModel.SINGLE_SELECTION
+                : ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         chart.addMouseListener(new MouseAdapter() {
+
             public void mouseClicked(MouseEvent e) {
-                if(SwingUtilities.isRightMouseButton(e)){
+                if (SwingUtilities.isRightMouseButton(e)) {
                     JPopupMenu popup = createPopup(chart);
                     popup.show(e.getComponent(), e.getX(), e.getY());
                 }
@@ -220,58 +259,46 @@ public class SummaryChart extends JPanel {
         AbstractPieSegmentRenderer rpie = new RaisedPieSegmentRenderer();
         chart.setPieSegmentRenderer(rpie);
 
-
         DefaultBarRenderer rbar = new DefaultBarRenderer();
         chart.setBarRenderer(rbar);
 
         rpie.setSelectionColor(Color.gray);
         rbar.setSelectionColor(Color.gray);
 
-        CategoryRange<String> categories = new CategoryRange<String>();
-        int max = Integer.MIN_VALUE;
-
-        boolean isnumeric = mapGenerator.isNumeric();
-
-        Color c = ViewUtil.getColor(1);
-        int entry = 0;
-
         if (this.isSortedKaryotypically()) {
-            chartMap.sortKaryotypically();
-        } else
+            filteredChartMap.sortKaryotypically();
+            if (this.showComparedToOriginal) { unfilteredChartMap.sortKaryotypically(); }
+        }
+
         if (this.isSorted()) {
-            chartMap.sortNumerically();
+            filteredChartMap.sortNumerically();
+            if (this.showComparedToOriginal) { chartMaps[1].sortNumerically(); }
         }
 
-        for (FrequencyEntry fe : chartMap.getEntries()) {
-
-            if (!isnumeric || isPie) {
-                c = ViewUtil.getColor(entry++, chartMap.getEntries().size());
-            }
-
-            String key = fe.getKey();
-            int value = fe.getFrequency();
-            ChartCategory cat = new ChartCategory<String>(key);
-            categories.add(cat);
-            Highlight h = new Highlight(key);
-            chart.setHighlightStyle(h, new ChartStyle(c));
-            max = Math.max(max, value);
-            ChartPoint p = new ChartPoint(cat, value);
-            ChartPoint logp = new ChartPoint(cat, Math.log10(value));
-
-            p.setHighlight(h);
-            logp.setHighlight(h);
-            if (this.isLogScaleY()) {
-                chartModel.addPoint(logp);
-            } else {
-                chartModel.addPoint(p);
-            }
+        long max = filteredChartMap.getMax();
+        List<ChartCategory> chartCategories;
+        if (this.showComparedToOriginal) {
+            chartCategories = chartMaps[1].getCategories();//unfilteredChartMap.getCategories();
+            max = Math.max(max,unfilteredChartMap.getMax());
+        } else {
+            chartCategories = filteredChartMap.getCategories();
         }
 
-        ChartStyle s = new ChartStyle();
-        s.setBarsVisible(true);
-        s.setLinesVisible(false);
+        CategoryRange<String> range = new CategoryRange<String>();
 
-        CategoryAxis xaxis = new CategoryAxis(categories, "Category");
+        for (ChartCategory category : chartCategories) {
+            range.add(category);
+        }
+
+        System.out.println("Adding filtered chart...");
+        addEntriesToChart(filteredChartModel, filteredChartMap, chartCategories);
+        if (this.showComparedToOriginal) {
+            System.out.println("Adding unfiltered chart...");
+            addEntriesToChart(unfilteredChartModel, unfilteredChartMap, chartCategories);
+        }
+        System.out.println("Done adding charts");
+
+        CategoryAxis xaxis = new CategoryAxis(range, "Category");
         chart.setXAxis(xaxis);
         if (this.isLogScaleY()) {
             chart.setYAxis(new Axis(new NumericRange(0, Math.log10(max) * 1.1), "log(Frequency)"));
@@ -284,9 +311,6 @@ public class SummaryChart extends JPanel {
         // rotate 90 degrees (using radians)
         chart.getXAxis().setTickLabelRotation(1.57079633);
 
-
-        chart.setStyle(chartModel, s);
-
         if (isPie) {
             chart.setChartType(ChartType.PIE);
         }
@@ -294,11 +318,36 @@ public class SummaryChart extends JPanel {
         this.add(chart, BorderLayout.CENTER);
     }
 
+    private void addEntriesToChart(
+            DefaultChartModel chartModel,
+            ChartFrequencyMap chartMap,
+            List<ChartCategory> chartCategories) {
+
+        for (ChartCategory cat : chartCategories) {
+            FrequencyEntry fe = chartMap.getEntry(cat.getName());
+            long value = 0;
+            if (fe != null) {
+                value = fe.getFrequency();
+            }
+
+            ChartPoint p = new ChartPoint(cat, value);
+            ChartPoint logp = new ChartPoint(cat, Math.log10(value));
+
+            System.out.println("key: " + cat.getName() + " value: " + value);
+
+            if (this.isLogScaleY()) {
+                chartModel.addPoint(logp);
+            } else {
+                chartModel.addPoint(p);
+            }
+        }
+    }
+
     void setIsSortedKaryotypically(boolean b) {
         this.isSortedKaryotypically = b;
     }
-    
-    public class ChartMapWorker extends MedSavantWorker<ChartFrequencyMap> {
+
+    public class ChartMapWorker extends MedSavantWorker<ChartFrequencyMap[]> {
 
         @SuppressWarnings("LeakingThisInConstructor")
         ChartMapWorker() {
@@ -310,18 +359,34 @@ public class SummaryChart extends JPanel {
         }
 
         @Override
-        protected ChartFrequencyMap doInBackground() throws Exception {
-            if (mapGenerator == null) { return null; }
-            if(this.isThreadCancelled()) return null;
+        protected ChartFrequencyMap[] doInBackground() throws Exception {
+            if (mapGenerator == null) {
+                return null;
+            }
+            if (this.isThreadCancelled()) {
+                return null;
+            }
             try {
-                return mapGenerator.generateChartMap(isLogScaleX && mapGenerator.isNumeric());
+
+                ChartFrequencyMap[] result;
+
+                if (showComparedToOriginal) {
+                    result = new ChartFrequencyMap[2];
+                    result[1] = mapGenerator.generateChartMap(false, isLogScaleX && mapGenerator.isNumeric());
+                } else {
+                    result = new ChartFrequencyMap[1];
+                }
+
+                result[0] = mapGenerator.generateChartMap(true, isLogScaleX && mapGenerator.isNumeric());
+
+                return result;
             } catch (SQLException ex) {
                 MiscUtils.checkSQLException(ex);
                 throw ex;
             }
         }
 
-        public void showSuccess(ChartFrequencyMap result) {
+        public void showSuccess(ChartFrequencyMap[] result) {
             if (result != null) {
                 drawChart(result);
             }
@@ -366,7 +431,7 @@ public class SummaryChart extends JPanel {
         }
     }
 
-    private JPopupMenu createPopup(final Chart chart){
+    private JPopupMenu createPopup(final Chart chart) {
 
         JPopupMenu menu = new JPopupMenu();
 
@@ -380,20 +445,22 @@ public class SummaryChart extends JPanel {
 
                 List<String> values = new ArrayList<String>();
                 ListSelectionModel selectionModel = chart.getSelectionsForModel(chart.getModel());
-                for(int i = selectionModel.getMinSelectionIndex(); i <= selectionModel.getMaxSelectionIndex(); i++){
-                    if (selectionModel.isSelectedIndex(i)){
-                        values.add(((ChartPoint)chart.getModel().getPoint(i)).getHighlight().name());
+                for (int i = selectionModel.getMinSelectionIndex(); i <= selectionModel.getMaxSelectionIndex(); i++) {
+                    if (selectionModel.isSelectedIndex(i)) {
+                        values.add(((ChartPoint) chart.getModel().getPoint(i)).getHighlight().name());
                     }
                 }
-                if(values.isEmpty()) return;
+                if (values.isEmpty()) {
+                    return;
+                }
 
                 TableSchema variantTable = ProjectController.getInstance().getCurrentVariantTableSchema();
                 TableSchema patientTable = ProjectController.getInstance().getCurrentPatientTableSchema();
-                if(mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+                if (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
 
                     Range r = Range.rangeFromString(values.get(0));
 
-                    if(mapGenerator.getTable() == Table.VARIANT){
+                    if (mapGenerator.getTable() == Table.VARIANT) {
                         RangeCondition condition = new RangeCondition(variantTable.getDBColumn(mapGenerator.getFilterId()), r.getMin(), r.getMax());
                         FilterUtils.createAndApplyGenericFixedFilter(
                                 "Charts - Filter by Selection",
@@ -407,13 +474,13 @@ public class SummaryChart extends JPanel {
                                     mapGenerator.getFilterId(),
                                     r);
                             Condition[] conditions = new Condition[individuals.size()];
-                            for(int i = 0; i < individuals.size(); i++){
+                            for (int i = 0; i < individuals.size(); i++) {
                                 conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), individuals.get(i));
                             }
                             FilterUtils.createAndApplyGenericFixedFilter(
-                                "Charts - Filter by Selection",
-                                mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
-                                ComboCondition.or(conditions));
+                                    "Charts - Filter by Selection",
+                                    mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
+                                    ComboCondition.or(conditions));
                         } catch (SQLException ex) {
                             MiscUtils.checkSQLException(ex);
                         } catch (Exception ex) {
@@ -423,9 +490,9 @@ public class SummaryChart extends JPanel {
 
                 } else {
 
-                    if(mapGenerator.getTable() == Table.VARIANT){
+                    if (mapGenerator.getTable() == Table.VARIANT) {
                         Condition[] conditions = new Condition[values.size()];
-                        for(int i = 0; i < conditions.length; i++){
+                        for (int i = 0; i < conditions.length; i++) {
                             conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(mapGenerator.getFilterId()), values.get(i));
                         }
                         FilterUtils.createAndApplyGenericFixedFilter(
@@ -436,9 +503,9 @@ public class SummaryChart extends JPanel {
                         try {
 
                             //special case for gender
-                            if(mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+                            if (mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
                                 List<String> values1 = new ArrayList<String>();
-                                for(String s : values){
+                                for (String s : values) {
                                     values1.add(Integer.toString(MiscUtils.stringToGender(s)));
                                 }
                                 values = values1;
@@ -450,13 +517,13 @@ public class SummaryChart extends JPanel {
                                     values,
                                     mapGenerator.getFilterId());
                             Condition[] conditions = new Condition[individuals.size()];
-                            for(int i = 0; i < individuals.size(); i++){
+                            for (int i = 0; i < individuals.size(); i++) {
                                 conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), individuals.get(i));
                             }
                             FilterUtils.createAndApplyGenericFixedFilter(
-                                "Charts - Filter by Selection",
-                                mapGenerator.getName() + ": " + values.size() + " selection(s)",
-                                ComboCondition.or(conditions));
+                                    "Charts - Filter by Selection",
+                                    mapGenerator.getName() + ": " + values.size() + " selection(s)",
+                                    ComboCondition.or(conditions));
                         } catch (SQLException ex) {
                             MiscUtils.checkSQLException(ex);
                         } catch (Exception ex) {
