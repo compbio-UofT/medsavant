@@ -226,7 +226,7 @@ public class SearchableTablePanel extends JPanel {
 
                 if (isCellSelected(Index_row, Index_col)) {
                     comp.setBackground(new Color(75, 149, 229));
-                } else if (selectedRows != null && selectedRows.contains(getActualRowAt(Index_row))){
+                } else if (selectedRows != null && selectedRows.contains(TableModelWrapperUtils.getActualRowAt(table.getModel(), Index_row))){
                     comp.setBackground(SELECTED_COLOUR);
                 } else if (Index_row % 2 == 0 && !isCellSelected(Index_row, Index_col)) {
                     comp.setBackground(Color.white);
@@ -239,7 +239,7 @@ public class SearchableTablePanel extends JPanel {
             }
             
             public String getToolTipText(MouseEvent e){
-                return getToolTip(table.rowAtPoint(e.getPoint()));
+                return getToolTip(TableModelWrapperUtils.getActualRowAt(table.getModel(), table.rowAtPoint(e.getPoint())));
             }
         };
         table.setToolTipText(""); //necessary to force check for tooltip text
@@ -573,7 +573,7 @@ public class SearchableTablePanel extends JPanel {
         selectedRows.addAll(rows);
     }
     
-    public String getToolTip(int row){
+    public String getToolTip(int actualRow){
         return null;
     }
 

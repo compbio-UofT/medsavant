@@ -156,10 +156,10 @@ class TablePanel extends JPanel {
 
                 SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames, fieldClasses, hiddenColumns, 1000, retriever){
                     @Override
-                    public String getToolTip(int row){                       
-                        if(starMap.get(row) != null && !starMap.get(row).isEmpty()){
+                    public String getToolTip(int actualRow){                       
+                        if(starMap.get(actualRow) != null && !starMap.get(actualRow).isEmpty()){
                             String s = "<HTML>";
-                            List<StarredVariant> starred = starMap.get(row);
+                            List<StarredVariant> starred = starMap.get(actualRow);
                             for(int i = 0; i < starred.size(); i++){
                                 StarredVariant current = starred.get(i);
                                 s += "\"" + current.getDescription() + "\"<BR>";
@@ -316,12 +316,12 @@ class TablePanel extends JPanel {
     
     private JMenuItem createStarVariantsItem(final SortableTable table){
         
-        int[] selected = table.getSelectedRows();
+        final int[] selected = table.getSelectedRows();
         int[] actualSelected = new int[selected.length];
         for(int i = 0; i < selected.length; i++){
             actualSelected[i] = TableModelWrapperUtils.getActualRowAt(table.getModel(), selected[i]);
         }
-        final int[] finalSelected = actualSelected;
+        final int[] finalActualSelected = actualSelected;
         
         JMenuItem item = new JMenuItem("Mark Variant(s) as Important");
         item.addActionListener(new ActionListener() {
@@ -332,8 +332,9 @@ class TablePanel extends JPanel {
                 if(description == null) return;
 
                 List<StarredVariant> list = new ArrayList<StarredVariant>();
-                for(int i = 0; i < finalSelected.length; i++){
-                    int row = finalSelected[i];
+                for(int i = 0; i < finalActualSelected.length; i++){
+                    int row = selected[i];
+                    int actualRow = finalActualSelected[i];
                     StarredVariant sv = new StarredVariant(
                             (Integer)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID),
                             (Integer)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_FILE_ID),
@@ -342,11 +343,11 @@ class TablePanel extends JPanel {
                             description,
                             DBUtil.getCurrentTimestamp());
                     list.add(sv);
-                    if(!starMap.containsKey(row)){
-                        starMap.put(row, new ArrayList<StarredVariant>());
+                    if(!starMap.containsKey(actualRow)){
+                        starMap.put(actualRow, new ArrayList<StarredVariant>());
                     }
-                    removeStarForUser(row);
-                    starMap.get(row).add(sv);
+                    removeStarForUser(actualRow);
+                    starMap.get(actualRow).add(sv);
                 }
                 try {
                     int numStarred = MedSavantClient.VariantQueryUtilAdapter.addStarredVariants(
@@ -368,7 +369,7 @@ class TablePanel extends JPanel {
                 }
                 
                 //add to view
-                for(Integer i : finalSelected){
+                for(Integer i : finalActualSelected){
                     tablePanel.addSelectedRow(i);
                 } 
                 tablePanel.repaint();
