@@ -101,6 +101,9 @@ public class FilterUtils {
             case TAG:
                 fps.addNewSubItem(new TagFilterView(state, fps.getId()), state.getId());
                 break;
+            case STARRED:
+                fps.addNewSubItem(new StarredFilterView(state, fps.getId()), state.getId());
+                break;
             case PLUGIN:
                 PluginController pc = PluginController.getInstance();
                 for (PluginDescriptor desc: pc.getDescriptors()) {

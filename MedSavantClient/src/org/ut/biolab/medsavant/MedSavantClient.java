@@ -123,7 +123,7 @@ public class MedSavantClient {
             //tooltips
             UIManager.put("ToolTip.background", new ColorUIResource(255,255,255));
             ToolTipManager.sharedInstance().setDismissDelay(8000);
-            ToolTipManager.sharedInstance().setInitialDelay(800);
+            ToolTipManager.sharedInstance().setInitialDelay(500);
 
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);

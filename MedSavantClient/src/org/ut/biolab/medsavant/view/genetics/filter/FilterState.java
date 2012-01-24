@@ -17,7 +17,7 @@ public class FilterState {
     private Map<String, String> values;
     private FilterType type;
     
-    public static enum FilterType {NUMERIC, STRING, BOOLEAN, COHORT, GENELIST, GENERIC, TAG, PLUGIN};
+    public static enum FilterType {NUMERIC, STRING, BOOLEAN, COHORT, GENELIST, GENERIC, TAG, PLUGIN, STARRED};
     
     public FilterState(FilterType type, String name, String id, Map<String, String> values){
         this.name = name;

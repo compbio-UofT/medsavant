@@ -464,6 +464,15 @@ public class FilterPanelSub extends JPanel {
                 public String getFilterName() { return TagFilterView.FILTER_NAME;}
             });
         }
+        
+        //starred variants
+        if(!hasSubItem(StarredFilterView.FILTER_ID)){
+            map.get(Category.VARIANT).add(new FilterPlaceholder() {
+               public FilterView getFilterView() { return StarredFilterView.getStarredFilterView(id);}
+               public String getFilterID() { return StarredFilterView.FILTER_ID;}
+               public String getFilterName() { return StarredFilterView.FILTER_NAME;}
+            });
+        }
 
         return map;
     }
