@@ -46,6 +46,7 @@ import org.ut.biolab.medsavant.db.format.VariantFormat;
 import org.ut.biolab.medsavant.db.model.StarredVariant;
 import org.ut.biolab.medsavant.db.settings.Settings;
 import org.ut.biolab.medsavant.db.util.shared.DBUtil;
+import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
@@ -162,7 +163,7 @@ class TablePanel extends JPanel {
                             List<StarredVariant> starred = starMap.get(actualRow);
                             for(int i = 0; i < starred.size(); i++){
                                 StarredVariant current = starred.get(i);
-                                s += "\"" + current.getDescription() + "\"<BR>";
+                                s += "\"" + MiscUtils.addBreaksToString(current.getDescription(), 100) + "\"<BR>";
                                 s += "- " + current.getUser() + ", " + current.getTimestamp().toString();
                                 if(i != starred.size()-1){
                                     s += "<BR>----------<BR>";

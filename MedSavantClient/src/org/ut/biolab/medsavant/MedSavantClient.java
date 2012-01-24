@@ -62,14 +62,9 @@ public class MedSavantClient {
     public static VariantManagerAdapter VariantManagerAdapter;
     public static NotificationQueryUtilAdapter NotificationQueryUtilAdapter;
 
-    //public static SessionAdapter SessionAdapter;
-
     public static boolean initialized = false;
 
-    //public static String sessionId;
-
     private static MainFrame frame;
-
 
     static public void main(String args[]) {
         verifyJIDE();
@@ -86,20 +81,11 @@ public class MedSavantClient {
         if(initialized) return;
 
         Registry registry;
-        //String serverAddress = "localhost";
-        //String serverPort = "3232";
-
-        // get the “registry”
-
         System.out.println("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort);
-
         registry = LocateRegistry.getRegistry(serverAddress,(new Integer(serverPort)).intValue());
 
         // look up the remote object
         setAdaptersFromRegistry(registry);
-
-        // call the remote method
-        //sessionId = SessionAdapter.registerNewSession("root", "", "tgp");
     }
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {

@@ -549,4 +549,30 @@ public class MiscUtils {
         }
     }
     
+    /*
+     * Break up string with html line breaks for use in dialogs, etc. 
+     */
+    public static String addBreaksToString(String original, int maxCharsPerLine) {
+        
+        String current = original;
+        String result = "";
+        
+        while(current.length() > 0){
+            
+            if(current.length() <= maxCharsPerLine){
+                result += current;
+                break;
+            }
+            
+            int index = current.substring(0, Math.min(current.length(), maxCharsPerLine)).lastIndexOf(" ");
+            if(index == -1) index = Math.min(current.length(), maxCharsPerLine);
+            index = Math.min(index+1, current.length());
+            
+            result += current.substring(0, index) + "<BR>";
+            current = current.substring(index);
+        }
+        
+        return result;
+    }
+    
 }
