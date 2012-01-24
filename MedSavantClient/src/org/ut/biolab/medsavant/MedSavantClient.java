@@ -76,7 +76,7 @@ public class MedSavantClient {
         frame = MainFrame.getInstance();
         frame.setExtendedState(MainFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
-        ClientLogger.log(Main.class, "MedSavant booted");
+        ClientLogger.log(MedSavantClient.class, "MedSavant booted");
     }
 
     public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException {
@@ -133,13 +133,13 @@ public class MedSavantClient {
             LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
 
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);
         } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
