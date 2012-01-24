@@ -64,7 +64,7 @@ public class StarredFilterView extends FilterView {
         p.setLayout(new BorderLayout());
         p.setMaximumSize(new Dimension(1000, 80));
         p.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));        
-        p.add(new JLabel("Filtering on variants that have been marked as important by some user. "));
+        p.add(new JLabel("Filtering on variants that have been marked as important by any user."));
         
         Filter f = new QueryFilter() {
 

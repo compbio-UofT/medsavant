@@ -425,8 +425,8 @@ public class FilterPanel extends javax.swing.JPanel {
 
         topContainer.add(filterList);
         topContainer.add(Box.createHorizontalGlue());
-        //topContainer.add(saveButton);
-        //topContainer.add(deleteButton);
+        topContainer.add(saveButton);
+        topContainer.add(deleteButton);
 
         container.add(topContainer, BorderLayout.NORTH);
     }
