@@ -328,8 +328,12 @@ class TablePanel extends JPanel {
 
             public void actionPerformed(ActionEvent e) {
                 
-                String description = JOptionPane.showInputDialog("Add a description (500 char limit):");
-                if(description == null) return;
+                String description = "";
+                while(true){
+                    description = JOptionPane.showInputDialog("Add a description (500 char limit):", description.substring(0, Math.min(description.length(), 500)));
+                    if(description == null) return;
+                    if(description.length() <= 500) break;
+                }
 
                 List<StarredVariant> list = new ArrayList<StarredVariant>();
                 for(int i = 0; i < finalActualSelected.length; i++){

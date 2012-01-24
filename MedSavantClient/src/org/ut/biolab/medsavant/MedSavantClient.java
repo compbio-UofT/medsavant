@@ -10,6 +10,8 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
+import javax.swing.ToolTipManager;
+import javax.swing.plaf.ColorUIResource;
 import org.ut.biolab.medsavant.controller.LoginController;
 
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter;
@@ -131,6 +133,11 @@ public class MedSavantClient {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
             LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
+            
+            //tooltips
+            UIManager.put("ToolTip.background", new ColorUIResource(255,255,255));
+            ToolTipManager.sharedInstance().setDismissDelay(8000);
+            ToolTipManager.sharedInstance().setInitialDelay(800);
 
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);
