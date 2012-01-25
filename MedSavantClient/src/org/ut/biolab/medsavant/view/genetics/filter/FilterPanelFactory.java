@@ -44,7 +44,6 @@ public class FilterPanelFactory {
 
     public static FilterView getCategoricalFilterView(final String name, List<String> options, Map<String,String> optionsToDbValueMap, final DbColumn column) {
 
-
         long start = System.currentTimeMillis();
 
         JPanel container = new JPanel();

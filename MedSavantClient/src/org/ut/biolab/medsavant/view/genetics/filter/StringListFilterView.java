@@ -5,7 +5,13 @@
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import com.healthmarketscience.sqlbuilder.Condition;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
@@ -26,6 +32,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -90,6 +97,8 @@ public class StringListFilterView extends FilterView {
         al.actionPerformed(new ActionEvent(this, 0, null));
     }
 
+    private int peekingPanelWidth = 370;
+
     private StringListFilterView(JComponent container, String tablename, final String columnname, int queryId, final String alias, final Table whichTable) throws SQLException, RemoteException {
         super(alias, container, queryId);
 
@@ -132,11 +141,14 @@ public class StringListFilterView extends FilterView {
             Collections.sort(uniq,new ChromosomeComparator());
         }
 
-        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        ViewUtil.applyVerticalBoxLayout(container);
+        //container.setLayout(new BorderLayout());
+        //container.setPreferredSize(new Dimension(1,1));
 
         JPanel bottomContainer = new JPanel();
-        bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
-        bottomContainer.setMaximumSize(new Dimension(10000,30));
+        ViewUtil.applyHorizontalBoxLayout(bottomContainer);
+        bottomContainer.setBorder(ViewUtil.getSmallBorder());
+        //bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
 
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
@@ -213,8 +225,41 @@ public class StringListFilterView extends FilterView {
         };
         applyButton.addActionListener(al);
 
+
+        String longestOption = "";
+        int numCharsOfLongestOption = Integer.MIN_VALUE;
+        for (String s : uniq) {
+            if (s.length() > numCharsOfLongestOption) {
+                numCharsOfLongestOption = s.length();
+                longestOption = s;
+            }
+        }
+
+        JCheckBox tmp = new JCheckBox();
+        int maxOptionWidth = tmp.getFontMetrics(tmp.getFont()).stringWidth(longestOption);
+
+        int totalWidth = maxOptionWidth + 40;
+
+        int numCols = (int) Math.ceil(((double)peekingPanelWidth) / totalWidth);
+
+        JPanel optionContainer = ViewUtil.getClearPanel();
+        optionContainer.setBorder(ViewUtil.getSmallBorder());
+
+        //System.out.println(tablename + " = num:" + uniq.size() + " cols:" + numCols + " rows:" + ((int)Math.ceil(((double)uniq.size())/numCols)));
+
+        // 25 is approximately the height of a checkbox plus padding
+        Dimension d = new Dimension(peekingPanelWidth,25*(int)Math.ceil(((double)uniq.size())/numCols));
+        optionContainer.setPreferredSize(d);
+        optionContainer.setMaximumSize(d);
+
+        optionContainer.setBackground(Color.red);
+        optionContainer.setLayout(new GridLayout(0,numCols,0,0));
+
+        int current = 0;
+
         for (String s : uniq) {
             JCheckBox b = new JCheckBox(s);
+            b.setToolTipText(s);
             b.setSelected(true);
             b.addChangeListener(new ChangeListener() {
 
@@ -229,17 +274,20 @@ public class StringListFilterView extends FilterView {
                 }
             });
             b.setAlignmentX(0F);
-            b.setAlignmentY(0f);
-            container.add(b);
+            b.setAlignmentY(0F);
+
+            int row = current / numCols;
+            int col = current % numCols;
+
+            //c.gridx = row;
+            //c.gridy = col;
+
+            optionContainer.add(b);//,c);
             boxes.add(b);
+
+            current++;
         }
 
-        //force left alignment
-        JPanel p = new JPanel();
-        p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
-        p.add(Box.createRigidArea(new Dimension(5,5)));
-        p.add(Box.createHorizontalGlue());
-        container.add(p);
 
         JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
         selectAll.addActionListener(new ActionListener() {
@@ -270,9 +318,11 @@ public class StringListFilterView extends FilterView {
 
         bottomContainer.add(applyButton);
 
-        bottomContainer.add(Box.createRigidArea(new Dimension(5,30)));
+        //bottomContainer.add(Box.createRigidArea(new Dimension(5,30)));
 
-        bottomContainer.setAlignmentX(0F);
+        //bottomContainer.setAlignmentX(0F);
+
+        container.add(optionContainer);
         container.add(bottomContainer);
 
     }

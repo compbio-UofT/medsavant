@@ -422,11 +422,11 @@ public class ViewUtil {
         return p;
     }
 
-    public static void applyVerticalBoxLayout(JPanel p) {
+    public static void applyVerticalBoxLayout(JComponent p) {
         p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
     }
 
-    public static void applyHorizontalBoxLayout(JPanel p) {
+    public static void applyHorizontalBoxLayout(JComponent p) {
         p.setLayout(new BoxLayout(p,BoxLayout.X_AXIS));
     }
 
@@ -587,7 +587,7 @@ public class ViewUtil {
     public static JPanel getKeyValuePairPanelListItem(String key, String val, boolean dark) {
         return getKeyValuePairPanelListItem(key, val, dark, true);
     }
-    
+
     public static JPanel getKeyValuePairPanelListItem(String key, String val, boolean dark, boolean keyBold) {
         JLabel keyl = new JLabel(key);
             keyl.setFont(new Font(keyl.getFont().getFamily(),(keyBold ? Font.BOLD : Font.PLAIN),keyl.getFont().getSize()));
@@ -631,7 +631,7 @@ public class ViewUtil {
         }
         return p;
     }
-    
+
     public static JPanel getKeyList(String[] keys) {
         JPanel p = new JPanel();
         p.setOpaque(false);
