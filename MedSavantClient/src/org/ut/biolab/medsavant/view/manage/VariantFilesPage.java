@@ -4,8 +4,15 @@
  */
 package org.ut.biolab.medsavant.view.manage;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,17 +20,24 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.view.list.DetailedView;
@@ -157,9 +171,10 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
 
         private final JPanel details;
         private final JPanel content;
-        private SimpleVariantFile file;
+        private SimpleVariantFile[] files;
         private DetailsSW sw;
         private CollapsiblePanel infoPanel;
+        private static List<FilterPanelSubItem> filterPanels;
 
         public VariantFilesDetailedView() {
 
@@ -184,8 +199,8 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
 
         @Override
         public void setSelectedItem(Object[] item) {
-            file = (SimpleVariantFile) item[0];
-            setTitle(file.getName());
+            files = new SimpleVariantFile[]{(SimpleVariantFile) item[0]};
+            setTitle(files[0].getName());
 
             details.removeAll();
             details.updateUI();
@@ -193,13 +208,14 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
             if (sw != null) {
                 sw.cancel(true);
             }
-            sw = new DetailsSW(file);
+            sw = new DetailsSW(files[0]);
             sw.execute();
         }
 
         @Override
         public void setRightClick(MouseEvent e) {
-            //nothing yet
+            JPopupMenu popup = createPopup(files);
+            popup.show(e.getComponent(), e.getX(), e.getY());
         }
         
         public synchronized void setFileInfoList(List<String[]> info) {
@@ -257,6 +273,11 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
 
         @Override
         public void setMultipleSelections(List<Object[]> items) {
+            files = new SimpleVariantFile[items.size()];
+            for(int i = 0; i < items.size(); i++){
+                files[i] = (SimpleVariantFile) (items.get(i)[0]);
+            }
+            
             if (items.isEmpty()) {
                 setTitle("");
             } else {
@@ -265,6 +286,50 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
             details.removeAll();
             details.updateUI();
         }
+        
+        private JPopupMenu createPopup(final SimpleVariantFile[] files){
+            JPopupMenu popupMenu = new JPopupMenu();
+
+            if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
+                popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
+            } else {
+
+                //Filter by vcf file
+                JMenuItem filter1Item = new JMenuItem("Filter by Variant File");
+                filter1Item.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+
+                        Condition[] conditions = new Condition[files.length];
+                        DbColumn upload = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID);
+                        DbColumn file = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID);
+                        for(int i = 0; i < files.length; i++){
+                            conditions[i] = ComboCondition.and(
+                                    BinaryCondition.equalTo(upload, files[i].getUploadId()),
+                                    BinaryCondition.equalTo(file, files[i].getFileId()));
+                        }
+
+                        removeExistingFilters();
+                        filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
+                                "Variant Files - Filter by File(s)",
+                                files.length + " Files(s)",
+                                ComboCondition.or(conditions));
+                    }
+                });
+                popupMenu.add(filter1Item);
+            }
+
+            return popupMenu;
+        }
+        
+        private void removeExistingFilters(){
+            if(filterPanels != null){
+                for(FilterPanelSubItem panel : filterPanels){
+                    panel.removeThis();
+                }
+            }
+        }
+        
     }
     
     
