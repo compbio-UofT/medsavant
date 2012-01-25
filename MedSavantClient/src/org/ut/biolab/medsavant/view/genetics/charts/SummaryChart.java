@@ -109,7 +109,7 @@ public class SummaryChart extends JLayeredPane {
     public SummaryChart(final String pageName) {
         this.pageName = pageName;
         setLayout(new GridBagLayout());
-        
+
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 0;
@@ -118,7 +118,7 @@ public class SummaryChart extends JLayeredPane {
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1.0;
         c.weighty = 1.0;
-        
+
         this.add(waitPanel, c, JLayeredPane.MODAL_LAYER);
     }
 
@@ -206,7 +206,7 @@ public class SummaryChart extends JLayeredPane {
                 setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
             }
         }.start();
-        
+
     }
 
     private synchronized void drawChart(ChartFrequencyMap[] chartMaps) {
@@ -230,10 +230,10 @@ public class SummaryChart extends JLayeredPane {
         panel.add(legend);
         legend.addChart(chart);
 
-        chart.addModel(filteredChartModel,new ChartStyle(Color.blue).withBars());
+        chart.addModel(filteredChartModel,new ChartStyle(new Color(72,181,249)).withBars());
 
         if (this.showComparedToOriginal) {
-            chart.addModel(unfilteredChartModel,new ChartStyle(Color.gray).withBars());
+            chart.addModel(unfilteredChartModel,new ChartStyle(new Color(10,10,10,100)).withBars());
         }
 
         chart.setRolloverEnabled(true);
@@ -287,7 +287,7 @@ public class SummaryChart extends JLayeredPane {
         List<ChartCategory> chartCategories;
         if (this.showComparedToOriginal) {
             chartCategories = chartMaps[1].getCategories();//unfilteredChartMap.getCategories();
-            max = Math.max(max,unfilteredChartMap.getMax());
+            max = chartMaps[1].getMax();
         } else {
             chartCategories = filteredChartMap.getCategories();
         }
@@ -345,7 +345,7 @@ public class SummaryChart extends JLayeredPane {
             ChartPoint p = new ChartPoint(cat, value);
             ChartPoint logp = new ChartPoint(cat, Math.log10(value));
 
-            System.out.println("key: " + cat.getName() + " value: " + value);
+            //System.out.println("key: " + cat.getName() + " value: " + value);
 
             if (this.isLogScaleY()) {
                 chartModel.addPoint(logp);
