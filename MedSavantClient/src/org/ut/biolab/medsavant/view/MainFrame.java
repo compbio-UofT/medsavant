@@ -193,7 +193,9 @@ public class MainFrame extends JFrame implements LoginListener {
     public void requestClose() {
         if (!LoginController.isLoggedIn() || DialogUtils.askYesNo("Exit MedSavant?", "Are you sure you want to quit?") == DialogUtils.YES) {
             queuedForExit = true; //sometimes logout aborts this exit, so wait for event
-            LoginController.logout();
+            //LoginController.logout();
+            LoginController.addLog("Logged out");
+            LoginController.unregister();
             System.exit(0);
         }
     }

@@ -44,7 +44,7 @@ public class CallbackController extends java.rmi.server.UnicastRemoteObject impl
                 fullmessage += "\n\nMedSavant will now exit.";
                 
                 DialogUtils.displayMessage("Session ended", fullmessage);
-                LoginController.logout();
+                //LoginController.logout(); // can't logout because session no longer active. just exit!
                 
                 System.exit(0);
             }

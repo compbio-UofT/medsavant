@@ -47,10 +47,14 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
      * Make all variant tables live for a project. All users accessing this db will be logged out. 
      */
     @Override
-    public void publishVariants(String sid, int projectID) throws Exception {        
+    public void publishVariants(String sid, int projectID) throws Exception { 
+        
+        ServerLogger.log(VariantManager.class, "Beginning publish of all tables for project " + projectID);
+        
         Connection c = (ConnectionController.connectPooled(sid));      
         
         //get update ids and references
+        ServerLogger.log(VariantManager.class, "Getting map of update ids");
         List<Integer> refIds = ReferenceQueryUtil.getInstance().getReferenceIdsForProject(sid, projectID);
         Map<Integer, Integer> ref2Update = new HashMap<Integer, Integer>();
         for(Integer refId : refIds){
@@ -58,15 +62,20 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
         }
         
         //update annotation log table
+        ServerLogger.log(VariantManager.class, "Setting log status to published");
         for(Integer refId : ref2Update.keySet()){
             AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, ref2Update.get(refId), Status.PUBLISHED);
         } 
         
         //publish
+        ServerLogger.log(VariantManager.class, "Terminating active sessions");
         SessionController.getInstance().terminateSessionsForDatabase(SessionController.getInstance().getDatabaseForSession(sid), "Administrator (" + SessionController.getInstance().getUserForSession(sid) + ") published new variants");        
+        ServerLogger.log(VariantManager.class, "Publishing tables");
         for(Integer refId : ref2Update.keySet()){
             ProjectQueryUtil.getInstance().publishVariantTable(c, projectID, refId, ref2Update.get(refId));
-        }    
+        }   
+        
+        ServerLogger.log(VariantManager.class, "Publish complete");
     }
     
     
@@ -74,11 +83,16 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
      * Make a variant table live. All users accessing this db will be logged out. 
      */
     @Override
-    public void publishVariants(String sid, int projectID, int referenceID, int updateID) throws Exception {        
+    public void publishVariants(String sid, int projectID, int referenceID, int updateID) throws Exception {    
+        ServerLogger.log(VariantManager.class, "Publishing table. pid:" + projectID + " refid:" + referenceID + " upid:" + updateID);
         Connection c = (ConnectionController.connectPooled(sid));       
+        ServerLogger.log(VariantManager.class, "Setting log status to published");
         AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, updateID, Status.PUBLISHED);
+        ServerLogger.log(VariantManager.class, "Terminating active sessions");
         SessionController.getInstance().terminateSessionsForDatabase(SessionController.getInstance().getDatabaseForSession(sid), "Administrator (" + SessionController.getInstance().getUserForSession(sid) + ") published new variants");        
+        ServerLogger.log(VariantManager.class, "Publishing table");
         ProjectQueryUtil.getInstance().publishVariantTable(c, projectID, referenceID, updateID);  
+        ServerLogger.log(VariantManager.class, "Publish complete");
     }
     
     /*

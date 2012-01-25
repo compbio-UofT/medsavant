@@ -54,27 +54,15 @@ public class LoginController {
                     LoginController.loggedIn = loggedIn;
 
                     if (loggedIn) {
-                        try {
-                            MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, "Logged in");
-                        } catch (RemoteException ex) {
-                            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                        addLog("Logged in");
                         fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_IN));
                     } else {
-                        try {
-                            MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, "Logged out");
-                        } catch (Exception ex) {
-                            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                        addLog("Logged out");
+                        unregister();
                         fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_OUT));
                     }
 
-                    if (!loggedIn) {
-                        try {
-                            SessionAdapter.unregisterSession(LoginController.sessionId);
-                        } catch (RemoteException ex) {
-                            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                    if (!loggedIn) {                       
                         if (!SettingsController.getInstance().getRememberPassword()) {
                             password = "";
                         }
@@ -83,6 +71,14 @@ public class LoginController {
             }
         };
         t.start();
+    }
+    
+    public static void addLog(String message){
+        try {
+            MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, message);
+        } catch (RemoteException ex) {
+            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public static String getPassword() {
@@ -193,5 +189,13 @@ public class LoginController {
 
     private static void setLoginException(Exception ex) {
         fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED,ex));
+    }
+    
+    public static void unregister(){
+        try {
+            SessionAdapter.unregisterSession(LoginController.sessionId);
+        } catch (RemoteException ex) {
+            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
