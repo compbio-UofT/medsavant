@@ -9,12 +9,15 @@ import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import java.awt.CardLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
@@ -25,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -57,27 +61,39 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-class TablePanel extends JPanel {
+class TablePanel extends JLayeredPane {
 
     private SearchableTablePanel tablePanel;
-    private static final String CARD_WAIT = "wait";
-    private static final String CARD_SHOW = "show";
-
-    private CardLayout cl;
+    private WaitPanel waitPanel;
+    
     private boolean init = false;
     private boolean updateRequired = true;
     private final Object updateLock = new Object();
     private String pageName;
+    
+    private GridBagConstraints c;
     
     private Map<Integer, List<StarredVariant>> starMap = new HashMap<Integer, List<StarredVariant>>();
 
     public TablePanel(final String pageName) {
 
         this.pageName = pageName;
-        cl = new CardLayout();
-        this.setLayout(cl);
-        this.add(new WaitPanel("Generating List View"), CARD_WAIT);
-
+        //this.setLayout(new BorderLayout());
+        this.setLayout(new GridBagLayout());
+        
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+        
+        waitPanel = new WaitPanel("Generating List View");
+        
+        this.add(waitPanel, c, JLayeredPane.MODAL_LAYER);
+        
         showWaitCard();
 
         final TablePanel instance = this;
@@ -206,7 +222,8 @@ class TablePanel extends JPanel {
             @Override
             protected void showSuccess(Object result) {
                 tablePanel = (SearchableTablePanel)result;
-                instance.add(tablePanel, CARD_SHOW);
+                instance.remove(tablePanel);
+                instance.add(tablePanel, c, JLayeredPane.DEFAULT_LAYER);
                 showShowCard();
                 updateIfRequired();
                 init = true;
@@ -218,11 +235,13 @@ class TablePanel extends JPanel {
     }
 
     private void showWaitCard() {
-        cl.show(this, CARD_WAIT);
+        waitPanel.setVisible(true);
+        this.setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
+        waitPanel.repaint();
     }
 
     private void showShowCard() {
-        cl.show(this, CARD_SHOW);
+        waitPanel.setVisible(false);
     }
 
     public boolean isInit(){

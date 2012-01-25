@@ -16,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -25,17 +26,17 @@ import javax.swing.JPanel;
  */
 public class PeekingPanel extends JPanel {
     
-    private final JPanel panel;
+    private final JComponent panel;
     private boolean isExpanded;
     private final JLabel title;
     private final String titleString;
     private final JPanel titlePanel;
 
-    public PeekingPanel(String label, String borderLayoutPosition, JPanel panel, boolean isExpanded) {
+    public PeekingPanel(String label, String borderLayoutPosition, JComponent panel, boolean isExpanded) {
         this(label, borderLayoutPosition, panel, isExpanded, 350);
     }
 
-    public PeekingPanel(String label, String borderLayoutPosition, JPanel panel, boolean isExpanded, int size) {
+    public PeekingPanel(String label, String borderLayoutPosition, JComponent panel, boolean isExpanded, int size) {
 
         final boolean isVertical = borderLayoutPosition.equals(BorderLayout.EAST) || borderLayoutPosition.equals(BorderLayout.WEST);
         

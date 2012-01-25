@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -79,7 +80,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         Genome g = new Genome(chrs);
         gp = new GenomeContainer(getName(), g);        
   
-        PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, gp, true,225);
+        PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, (JComponent)gp, true,225);
         panel.add(genomeView, BorderLayout.NORTH);
 
         tablePanel = new TablePanel(getName());

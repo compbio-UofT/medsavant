@@ -13,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -271,7 +272,7 @@ public class SplitScreenView extends JPanel {
 
         listView = new ListView(detailedListModel, detailedView, detailEditer);
 
-        this.add(new PeekingPanel("List", BorderLayout.EAST, listView, true, 320), BorderLayout.WEST);
+        this.add(new PeekingPanel("List", BorderLayout.EAST, (JComponent)listView, true, 320), BorderLayout.WEST);
         this.add(detailedView, BorderLayout.CENTER);
     }
 

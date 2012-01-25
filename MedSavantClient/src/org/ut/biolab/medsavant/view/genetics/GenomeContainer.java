@@ -17,13 +17,12 @@
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -47,7 +46,6 @@ import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.util.MiscUtils;
-import org.ut.biolab.medsavant.view.dialog.SavantExportForm;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -55,15 +53,14 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-public class GenomeContainer extends JPanel {
+public class GenomeContainer extends JLayeredPane {
     private static final Logger LOG = Logger.getLogger(GenomeContainer.class.getName());
 
     private Genome genome;
     private final JPanel chrContainer;
     private ArrayList<ChromosomePanel> chrViews;
-    private static final String CARD_WAIT = "wait";
-    private static final String CARD_SHOW = "show";
-    private CardLayout cl;
+    private WaitPanel waitPanel;
+    private JPanel chrPlusButtonContainer;
     /*private static final int MINBINSIZE = 1000000;
     private static final int BINMULTIPLIER = 10;*/
     private final String pageName;
@@ -71,14 +68,30 @@ public class GenomeContainer extends JPanel {
     private final Object updateLock = new Object();
     private boolean updateRequired = true;
     private boolean init = false;
+    private GridBagConstraints c;
 
     public GenomeContainer(String pageName, Genome g) {
         this.pageName = pageName;
 
-        cl = new CardLayout();
-        this.setLayout(cl);
-
-        JPanel chrPlusButtonContainer = ViewUtil.getClearPanel();
+        this.setLayout(new GridBagLayout());
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+        
+        chrPlusButtonContainer = new JPanel(){
+            @Override
+            public void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                GradientPaint p = new GradientPaint(0,0,Color.darkGray,0, this.getHeight(), Color.black);
+                g2.setPaint(p);
+                g2.fillRect(0, 0, this.getWidth(), this.getHeight());
+            }
+        };
         chrPlusButtonContainer.setLayout(new BorderLayout());
 
         chrContainer = ViewUtil.getClearPanel();
@@ -99,10 +112,9 @@ public class GenomeContainer extends JPanel {
         chrPlusButtonContainer.add(ViewUtil.alignRight(ViewUtil.alignLeft(savantButton)),BorderLayout.SOUTH);
          * 
          */
-
-        this.add(chrPlusButtonContainer, CARD_SHOW);
-
-        this.add(new WaitPanel("Generating Genome View", Color.WHITE), CARD_WAIT);
+        
+        waitPanel = new WaitPanel("Generating Genome View");
+        this.add(waitPanel, c, JLayeredPane.MODAL_LAYER);
 
         init = true;
         setGenome(g);
@@ -110,13 +122,7 @@ public class GenomeContainer extends JPanel {
         updateIfRequired();
     }
 
-    @Override
-    public void paintComponent(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        GradientPaint p = new GradientPaint(0,0,Color.darkGray,0, this.getHeight(), Color.black);
-        g2.setPaint(p);
-        g2.fillRect(0, 0, this.getWidth(), this.getHeight());
-    }
+    
 
     public void setGenome(Genome g) {
         this.genome = g;
@@ -143,12 +149,13 @@ public class GenomeContainer extends JPanel {
     }
 
     private synchronized void showWaitCard() {
-        cl.show(this, CARD_WAIT);
-
+        waitPanel.setVisible(true);
+        this.setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
     }
 
     private synchronized void showShowCard() {
-        cl.show(this, CARD_SHOW);
+        this.add(chrPlusButtonContainer, c, JLayeredPane.DEFAULT_LAYER);
+        waitPanel.setVisible(false);
     }
 
     /*public void filtersChanged() {

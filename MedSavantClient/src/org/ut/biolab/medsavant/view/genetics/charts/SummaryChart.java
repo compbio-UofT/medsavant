@@ -17,7 +17,6 @@ package org.ut.biolab.medsavant.view.genetics.charts;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
@@ -36,7 +35,6 @@ import com.jidesoft.chart.axis.CategoryAxis;
 import com.jidesoft.chart.model.ChartCategory;
 import com.jidesoft.chart.model.ChartPoint;
 import com.jidesoft.chart.model.DefaultChartModel;
-import com.jidesoft.chart.model.Highlight;
 import com.jidesoft.chart.model.InvertibleTransform;
 import com.jidesoft.chart.render.AbstractPieSegmentRenderer;
 import com.jidesoft.chart.render.DefaultBarRenderer;
@@ -44,31 +42,29 @@ import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
+import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.MedSavantClient;
 
-import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
@@ -80,7 +76,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-public class SummaryChart extends JPanel {
+public class SummaryChart extends JLayeredPane {
 
     public boolean doesCompareToOriginal() {
         return this.showComparedToOriginal;
@@ -107,10 +103,23 @@ public class SummaryChart extends JPanel {
     private String pageName;
     private final Object updateLock = new Object();
     private boolean updateRequired = false;
+    private GridBagConstraints c;
+    private WaitPanel waitPanel = new WaitPanel("Getting chart data");
 
     public SummaryChart(final String pageName) {
         this.pageName = pageName;
-        setLayout(new BorderLayout());
+        setLayout(new GridBagLayout());
+        
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+        
+        this.add(waitPanel, c, JLayeredPane.MODAL_LAYER);
     }
 
     public void setIsLogScale(boolean isLogScale, ChartAxis axis) {
@@ -189,16 +198,15 @@ public class SummaryChart extends JPanel {
         new ChartMapWorker().execute();
 
         //show wait panel
-        final JPanel instance = this;
         new Thread() {
 
             @Override
             public void run() {
-                instance.removeAll();
-                instance.add(new WaitPanel("Getting chart data"), BorderLayout.CENTER);
-                instance.updateUI();
+                waitPanel.setVisible(true);
+                setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
             }
         }.start();
+        
     }
 
     private synchronized void drawChart(ChartFrequencyMap[] chartMaps) {
@@ -315,7 +323,11 @@ public class SummaryChart extends JPanel {
             chart.setChartType(ChartType.PIE);
         }
 
-        this.add(chart, BorderLayout.CENTER);
+        for(int i = 1; i < this.getComponentCount(); i++){
+            this.remove(i);
+        }
+        this.add(chart, c, JLayeredPane.DEFAULT_LAYER);
+        waitPanel.setVisible(false);
     }
 
     private void addEntriesToChart(
@@ -395,7 +407,7 @@ public class SummaryChart extends JPanel {
         public void showProgress(double prog) {
             if (prog == 1.0) {
                 mapWorker = null;
-                removeAll();        // Clear away the WaitPanel.
+                //removeAll();        // Clear away the WaitPanel.
             }
         }
     }
