@@ -148,7 +148,7 @@ public class FilterPanelSub extends JPanel {
                     header.add(Box.createHorizontalGlue());
                     header.setCursor(new Cursor(Cursor.HAND_CURSOR));
                     label.setFont(ViewUtil.getMediumTitleFont());
-                    header.setPreferredSize(new Dimension(200,20));
+                    header.setPreferredSize(new Dimension(260,20));
                     header.addMouseListener(new MouseAdapter() {
                         public void mouseReleased(MouseEvent e){
                             for(Object key : menuMap.keySet()){
@@ -181,7 +181,7 @@ public class FilterPanelSub extends JPanel {
                     for(final FilterPlaceholder filter : filters){
 
                         final JPanel item = new JPanel();
-                        item.setPreferredSize(new Dimension(200,20));
+                        item.setPreferredSize(new Dimension(260,20));
                         item.setBackground(Color.white);
                         item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
                         JLabel itemLabel = new JLabel("     " + filter.getFilterName());

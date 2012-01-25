@@ -91,37 +91,6 @@ public class FilterPanel extends javax.swing.JPanel {
         createNewSubPanel();
     }
 
-    private JPanel createNewOrButton() {
-
-        final JLabel addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
-        addLabel.setToolTipText("Add exlusive set of filters");
-        addLabel.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                createNewSubPanel();
-            }
-        });
-
-
-        JPanel tmp1 = ViewUtil.getClearPanel();//ViewUtil.getSecondaryBannerPanel();//ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(tmp1);
-        /*tmp1.setBorder(BorderFactory.createCompoundBorder(
-                ViewUtil.getTinyLineBorder(),
-                ViewUtil.getMediumBorder()));
-         *
-         */
-        tmp1.add(addLabel);
-        tmp1.setMaximumSize(new Dimension(9999, 40));
-        tmp1.add(Box.createHorizontalStrut(5));
-
-        JLabel addLabelText = new JLabel("Add filter set");
-        tmp1.add(addLabelText);
-        tmp1.add(Box.createHorizontalGlue());
-
-        return tmp1;
-    }
-
     public FilterPanelSub createNewSubPanel() {
 
         /*
