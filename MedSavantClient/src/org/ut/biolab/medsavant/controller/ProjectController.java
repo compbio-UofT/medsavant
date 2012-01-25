@@ -115,6 +115,7 @@ public class ProjectController implements ReferenceListener {
                 this.currentProjectId = this.getProjectId(projectName);
                 this.currentProjectName = projectName;      
                 this.setCurrentPatientTable();
+                ResultController.getInstance().setUpdateTotalNumRequired(true);
                 this.fireProjectChangedEvent(projectName);              
             }
         } catch (Exception ex) {

@@ -119,6 +119,10 @@ public class ResultController implements FiltersChangedListener {
     }
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        updateTotalNumVariantsRemainingIsRequired = true;
+        setUpdateTotalNumRequired(true);
+    }
+    
+    public void setUpdateTotalNumRequired(boolean required){
+        updateTotalNumVariantsRemainingIsRequired = required;
     }
 }

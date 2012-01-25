@@ -144,7 +144,7 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
     }
 
     private void setMaxValues() {
-             
+        
         labelVariantsRemaining.setText("Calculating...");
         updateUI();
         
