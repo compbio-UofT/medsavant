@@ -20,12 +20,9 @@ import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterHistoryPanel;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -36,6 +33,70 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class GeneticsFilterPage extends SubSectionView implements ReferenceListener {
 
+    private JPanel view;
+    private static FilterPanel fp;
+
+    public GeneticsFilterPage(SectionView parent) {
+        super(parent);
+        ReferenceController.getInstance().addReferenceListener(this);
+        fp = getFilterPanel();
+    }
+
+    public String getName() {
+        return "Filters";
+    }
+
+    public JPanel getView(boolean update) {
+        if (view == null || update) {
+            view = new JPanel();
+            view.setName(this.getName());
+            view.setLayout(new BorderLayout());
+            view.add(fp,BorderLayout.CENTER);
+
+            //if(history != null) FilterController.removeFilterListener(history);
+            //history = new FilterProgressPanel();
+            //view.add(new PeekingPanel("History", BorderLayout.EAST, history, true), BorderLayout.WEST);
+
+            // uncomment the next line to show the master SQL statement
+            //view.add(new PeekingPanel("SQL", BorderLayout.SOUTH, new FilterSQLPanel(), true), BorderLayout.NORTH);
+        } else {
+            fp.refreshSubPanels();
+        }
+
+        return view;
+    }
+
+    @Override
+    public void viewDidLoad() {
+    }
+
+    @Override
+    public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
+    }
+
+    public static FilterPanel getFilterPanel(){
+        if(fp == null){
+            fp = new FilterPanel();
+        }
+        return fp;
+    }
+
+    @Override
+    public void referenceAdded(String name) {}
+
+    @Override
+    public void referenceRemoved(String name) {}
+
+    @Override
+    public void referenceChanged(String prnameojectName) {
+        if(fp != null){
+            fp.clearAll();
+            fp.refreshSubPanels();
+        }
+    }
+    
+    
     private static class FilterSQLPanel extends JPanel implements FiltersChangedListener {
         private final JTextArea content;
 
@@ -69,72 +130,5 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
         }
     }
 
-    private JPanel view;
-    private FilterPanel fp;
-    //private FilterProgressPanel history;
-
-    private static GeneticsFilterPage instance;
-
-    public GeneticsFilterPage(SectionView parent) {
-        super(parent);
-        instance = this;
-        ReferenceController.getInstance().addReferenceListener(this);
-    }
-
-    public String getName() {
-        return "Filters";
-    }
-
-    public JPanel getView(boolean update) {
-        if (view == null || update) {
-            view = new JPanel();
-            view.setName(this.getName());
-            view.setLayout(new BorderLayout());
-            fp = new FilterPanel();
-            view.add(fp,BorderLayout.CENTER);
-
-            //if(history != null) FilterController.removeFilterListener(history);
-            //history = new FilterProgressPanel();
-            //view.add(new PeekingPanel("History", BorderLayout.EAST, history, true), BorderLayout.WEST);
-
-            // uncomment the next line to show the master SQL statement
-            //view.add(new PeekingPanel("SQL", BorderLayout.SOUTH, new FilterSQLPanel(), true), BorderLayout.NORTH);
-        } else {
-            fp.refreshSubPanels();
-        }
-
-        return view;
-    }
-
-    @Override
-    public void viewDidLoad() {
-    }
-
-    @Override
-    public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
-    }
-
-    public FilterPanel getFilterPanel(){
-        return fp;
-    }
-
-    public static GeneticsFilterPage getInstance(){
-        return instance;
-    }
-
-    @Override
-    public void referenceAdded(String name) {}
-
-    @Override
-    public void referenceRemoved(String name) {}
-
-    @Override
-    public void referenceChanged(String prnameojectName) {
-        if(fp != null){
-            fp.clearAll();
-            fp.refreshSubPanels();
-        }
-    }
 
 }

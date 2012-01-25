@@ -134,13 +134,14 @@ public class FilterUtils {
     }
 
     private static FilterPanel getFilterPanel(){
-        FilterPanel fp = GeneticsFilterPage.getInstance().getFilterPanel();
+        /*FilterPanel fp = GeneticsFilterPage.getInstance().getFilterPanel();
         if(fp == null){
             GeneticsFilterPage.getInstance().getView(true);
             GeneticsFilterPage.getInstance().setUpdateRequired(false);
             fp = GeneticsFilterPage.getInstance().getFilterPanel();
-        }
-
+        }*/
+        FilterPanel fp = GeneticsFilterPage.getFilterPanel();
+        
         //deal with case where no sub panels
         if(fp.getFilterPanelSubs().isEmpty()){
             fp.createNewSubPanel();
