@@ -373,7 +373,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
     private AbstractWizardPage getQueuePage() {
         //setup page
-        final DefaultWizardPage page = new DefaultWizardPage("Upload, Annotate, & Publish variants") {
+        final DefaultWizardPage page = new DefaultWizardPage("Upload, Annotate, & Publish Variants") {
 
             @Override
             public void setupWizardButtons() {
@@ -502,14 +502,16 @@ public class ImportVariantsWizard extends WizardDialog {
                                 try {
                                     int i = 0;
                                     RemoteInputStream[] streams = new RemoteInputStream[variantFiles.length];
+                                    String[] fileNames = new String[variantFiles.length];
                                     for (File file : variantFiles) {
                                         streams[i] = (new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath()))).export();
+                                        fileNames[i] = file.getName();
                                         i++;
                                     }
 
                                     //upload variants
                                     progressLabel.setText("Uploading variant files...");
-                                    updateID = MedSavantClient.VariantManagerAdapter.uploadVariants(LoginController.sessionId, streams, projectId, referenceId, tagsToStringArray(variantTags));
+                                    updateID = MedSavantClient.VariantManagerAdapter.uploadVariants(LoginController.sessionId, streams, fileNames, projectId, referenceId, tagsToStringArray(variantTags));
                                     MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
 
                                     //success

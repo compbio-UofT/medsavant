@@ -15,7 +15,7 @@ import java.sql.Timestamp;
  */
 public class AnnotationLog implements Serializable {
     
-    public static enum Action {ADD_VARIANTS, UPDATE_TABLE};
+    public static enum Action {ADD_VARIANTS, UPDATE_TABLE, REMOVE_VARIANTS};
     public static enum Status {STARTED, ERROR, PENDING, PUBLISHED};
     
     private String projectName;
@@ -70,6 +70,8 @@ public class AnnotationLog implements Serializable {
                 return 0;
             case ADD_VARIANTS:
                 return 1;
+            case REMOVE_VARIANTS:
+                return 2;
             default:
                 return -1;
         }
@@ -81,6 +83,8 @@ public class AnnotationLog implements Serializable {
                 return Action.UPDATE_TABLE;
             case 1:
                 return Action.ADD_VARIANTS;
+            case 2:
+                return Action.REMOVE_VARIANTS;
             default:
                 return null;
         }

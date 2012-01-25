@@ -159,14 +159,10 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
         private final JPanel content;
         private SimpleVariantFile file;
         private DetailsSW sw;
-        //private List<String> fieldNames;
         private CollapsiblePanel infoPanel;
 
         public VariantFilesDetailedView() {
-            
-            //fieldNames = new ArrayList<String>();
-            //fieldNames.add("User Level");
-        
+
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());
 
@@ -189,7 +185,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
         @Override
         public void setSelectedItem(Object[] item) {
             file = (SimpleVariantFile) item[0];
-            setTitle(file.toString());
+            setTitle(file.getName());
 
             details.removeAll();
             details.updateUI();
@@ -235,7 +231,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
             @Override
             protected Object doInBackground() throws Exception {
                 try {
-                    return MedSavantClient.VariantQueryUtilAdapter.getTagsForUpload(LoginController.sessionId, file.getId());
+                    return MedSavantClient.VariantQueryUtilAdapter.getTagsForUpload(LoginController.sessionId, file.getUploadId());
                 } catch (SQLException ex) {
                     return null;
                 }
@@ -246,7 +242,10 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
                 List<String[]> infoList = null;
                 try {
                     infoList = (List<String[]>) get();
-                    infoList.add(0, new String[]{"Upload ID", Integer.toString(file.getId())});
+                    infoList.add(0, new String[]{"File Name", file.getName()});
+                    infoList.add(1, new String[]{"Upload ID", Integer.toString(file.getUploadId())});
+                    infoList.add(2, new String[]{"File ID", Integer.toString(file.getFileId())});
+                    infoList.add(3, new String[]{"User", file.getUser()});
                 } catch (InterruptedException ex) {
                     Logger.getLogger(VariantFilesPage.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (ExecutionException ex) {
@@ -282,7 +281,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
 
         @Override
         public boolean doesImplementDeleting() {
-            return false;
+            return true;
         }
 
         @Override
@@ -296,7 +295,11 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
 
         @Override
         public void deleteItems(List<Object[]> results) {
-            //TODO
+            List<SimpleVariantFile> files = new ArrayList<SimpleVariantFile>();
+            for(Object[] f : results){
+                files.add((SimpleVariantFile)f[0]);
+            }
+            new RemoveVariantsWizard(files);
         }
     }
     

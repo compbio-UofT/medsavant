@@ -52,7 +52,7 @@ public class VariantManagerUtils {
         reader.close();
     }
 
-    public static void variantsToFile(String sid, String tableName, File file, boolean complete) throws SQLException {
+    public static void variantsToFile(String sid, String tableName, File file, String conditions, boolean complete) throws SQLException {
         Connection c = (ConnectionController.connectPooled(sid));
         String query;
         
@@ -62,13 +62,17 @@ public class VariantManagerUtils {
             query = "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`,"
                 + " `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, `custom_info`";
         }
-        
+              
         query +=
                 " INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\""
                 + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"'"
                 + " LINES TERMINATED BY '\\r\\n'"
                 + " FROM " + tableName;
 
+        if(conditions != null && conditions.length()> 1){
+            query += " WHERE " + conditions;
+        }  
+        
         System.err.println(query);
 
         c.createStatement().executeQuery(query);
@@ -226,7 +230,7 @@ public class VariantManagerUtils {
 
         //add files to staging table
         for (int i = 0; i < vcfFiles.length; i++) {
-
+      
             //create temp file
             VariantManagerUtils.checkInterrupt();
             int lastChunkWritten = 0;

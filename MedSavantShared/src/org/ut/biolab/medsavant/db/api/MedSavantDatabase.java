@@ -1035,6 +1035,37 @@ public class MedSavantDatabase {
         }
     }
     
+    public static class VariantFileTableSchema extends TableSchema {
+
+        public static final String TABLE_NAME = "variant_file";
+
+        public VariantFileTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
+        // variant_file.upload_id
+        public static final int INDEX_OF_UPLOAD_ID = 0;
+        public static final ColumnType TYPE_OF_UPLOAD_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_UPLOAD_ID = 11;
+        public static final String COLUMNNAME_OF_UPLOAD_ID = "upload_id";
+        // variant_file.file_id
+        public static final int INDEX_OF_FILE_ID = 1;
+        public static final ColumnType TYPE_OF_FILE_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_FILE_ID = 11;
+        public static final String COLUMNNAME_OF_FILE_ID = "file_id";
+        // variant_file.file_name
+        public static final int INDEX_OF_FILE_NAME = 2;
+        public static final ColumnType TYPE_OF_FILE_NAME = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_FILE_NAME = 500;
+        public static final String COLUMNNAME_OF_FILE_NAME = "file_name";
+        
+        private void addColumns() {
+            addColumn(COLUMNNAME_OF_UPLOAD_ID, COLUMNNAME_OF_UPLOAD_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_FILE_ID, COLUMNNAME_OF_FILE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_FILE_NAME, COLUMNNAME_OF_FILE_NAME, TableSchema.ColumnType.VARCHAR, 500);
+        }
+    }
+    
     public static final DbSchema schema = (new DbSpec()).addDefaultSchema();
     //AnnotationTableSchema
     public static final AnnotationTableSchema AnnotationTableSchema = new AnnotationTableSchema(schema);
@@ -1076,4 +1107,6 @@ public class MedSavantDatabase {
     public static final SettingsTableSchema SettingsTableSchema = new SettingsTableSchema(schema);
     //VariantStarredTableSchema
     public static final VariantStarredTableSchema VariantStarredTableSchema = new VariantStarredTableSchema(schema);
+    //VariantFileTableSchema
+    public static final VariantFileTableSchema VariantFileTableSchema = new VariantFileTableSchema(schema);
 }
