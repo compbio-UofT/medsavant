@@ -735,6 +735,11 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             uploadIds.add(idRs.getInt(1));
             fileIds.add(idRs.getInt(2));
         }
+        
+        if(uploadIds.isEmpty()){
+            return new ArrayList<SimpleVariantFile>();
+        }
+        
         Condition[] idConditions = new Condition[uploadIds.size()];
         for(int i = 0; i < uploadIds.size(); i++){
             idConditions[i] = ComboCondition.and(
