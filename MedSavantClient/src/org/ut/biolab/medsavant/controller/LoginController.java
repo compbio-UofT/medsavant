@@ -74,6 +74,7 @@ public class LoginController {
     }
     
     public static void addLog(String message){
+        if(!loggedIn) return;
         try {
             MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, message);
         } catch (RemoteException ex) {
@@ -192,6 +193,7 @@ public class LoginController {
     }
     
     public static void unregister(){
+        if(!loggedIn) return;
         try {
             SessionAdapter.unregisterSession(LoginController.sessionId);
         } catch (RemoteException ex) {

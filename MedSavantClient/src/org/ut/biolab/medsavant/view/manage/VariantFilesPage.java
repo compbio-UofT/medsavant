@@ -245,7 +245,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
                     infoList.add(0, new String[]{"File Name", file.getName()});
                     infoList.add(1, new String[]{"Upload ID", Integer.toString(file.getUploadId())});
                     infoList.add(2, new String[]{"File ID", Integer.toString(file.getFileId())});
-                    infoList.add(3, new String[]{"User", file.getUser()});
+                    //infoList.add(3, new String[]{"User", file.getUser()});
                 } catch (InterruptedException ex) {
                     Logger.getLogger(VariantFilesPage.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (ExecutionException ex) {

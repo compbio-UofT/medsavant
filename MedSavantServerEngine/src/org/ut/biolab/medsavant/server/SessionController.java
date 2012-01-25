@@ -103,10 +103,10 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
                     try {
                         System.out.print("Terminating session " + sid + "...");
                         ClientCallbackAdapter ca = ConnectionController.getCallback(sid);
-
+                        SessionController.getInstance().unregisterSession(sid);
+                        
                         if (ca != null) {
-                            ca.sessionTerminated(message);
-                            SessionController.getInstance().unregisterSession(sid);
+                            ca.sessionTerminated(message);                            
                         }
                         System.out.println("Complete");
                     } catch (Exception ex) {
