@@ -35,7 +35,9 @@ import com.jidesoft.chart.axis.CategoryAxis;
 import com.jidesoft.chart.model.ChartCategory;
 import com.jidesoft.chart.model.ChartPoint;
 import com.jidesoft.chart.model.DefaultChartModel;
+import com.jidesoft.chart.model.Highlight;
 import com.jidesoft.chart.model.InvertibleTransform;
+import com.jidesoft.chart.model.RealPosition;
 import com.jidesoft.chart.render.AbstractPieSegmentRenderer;
 import com.jidesoft.chart.render.DefaultBarRenderer;
 import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
@@ -218,7 +220,7 @@ public class SummaryChart extends JLayeredPane {
         DefaultChartModel unfilteredChartModel = null;
 
         if (this.showComparedToOriginal) {
-            unfilteredChartMap = ChartFrequencyMap.subtract(chartMaps[1],filteredChartMap);
+            unfilteredChartMap = ChartFrequencyMap.subtract(chartMaps[1], filteredChartMap);
             unfilteredChartModel = new DefaultChartModel();
         }
 
@@ -230,10 +232,16 @@ public class SummaryChart extends JLayeredPane {
         panel.add(legend);
         legend.addChart(chart);
 
-        chart.addModel(filteredChartModel,new ChartStyle(new Color(72,181,249)).withBars());
+        boolean multiColor = !mapGenerator.isNumeric() || isPie;
+
+        //if (multiColor) {
+        //    chart.addModel(filteredChartModel);
+        //} else {
+            chart.addModel(filteredChartModel, new ChartStyle().withBars());
+        //}
 
         if (this.showComparedToOriginal) {
-            chart.addModel(unfilteredChartModel,new ChartStyle(new Color(10,10,10,100)).withBars());
+            chart.addModel(unfilteredChartModel, new ChartStyle(new Color(10, 10, 10, 100)).withBars());
         }
 
         chart.setRolloverEnabled(true);
@@ -275,12 +283,16 @@ public class SummaryChart extends JLayeredPane {
 
         if (this.isSortedKaryotypically()) {
             filteredChartMap.sortKaryotypically();
-            if (this.showComparedToOriginal) { unfilteredChartMap.sortKaryotypically(); }
+            if (this.showComparedToOriginal) {
+                unfilteredChartMap.sortKaryotypically();
+            }
         }
 
         if (this.isSorted()) {
             filteredChartMap.sortNumerically();
-            if (this.showComparedToOriginal) { chartMaps[1].sortNumerically(); }
+            if (this.showComparedToOriginal) {
+                chartMaps[1].sortNumerically();
+            }
         }
 
         long max = filteredChartMap.getMax();
@@ -293,18 +305,27 @@ public class SummaryChart extends JLayeredPane {
         }
 
         CategoryRange<String> range = new CategoryRange<String>();
+        List<Highlight> highlights = new ArrayList<Highlight>();
+
+        Color color = new Color(72, 181, 249);
+        Highlight h;
+        int catNum = 0;
+        int totalCats = filteredChartMap.getEntries().size();
 
         for (ChartCategory category : chartCategories) {
             range.add(category);
+            if (multiColor) {
+                color = ViewUtil.getColor(catNum++, totalCats);
+            }
+            h = new Highlight(category.getName());
+            highlights.add(h);
+            chart.setHighlightStyle(h, new ChartStyle(color));
         }
 
-        System.out.println("Adding filtered chart...");
-        addEntriesToChart(filteredChartModel, filteredChartMap, chartCategories);
+        addEntriesToChart(filteredChartModel, filteredChartMap, chartCategories,highlights);
         if (this.showComparedToOriginal) {
-            System.out.println("Adding unfiltered chart...");
-            addEntriesToChart(unfilteredChartModel, unfilteredChartMap, chartCategories);
+            addEntriesToChart(unfilteredChartModel, unfilteredChartMap, chartCategories,null);
         }
-        System.out.println("Done adding charts");
 
         CategoryAxis xaxis = new CategoryAxis(range, "Category");
         chart.setXAxis(xaxis);
@@ -323,7 +344,7 @@ public class SummaryChart extends JLayeredPane {
             chart.setChartType(ChartType.PIE);
         }
 
-        for(int i = 1; i < this.getComponentCount(); i++){
+        for (int i = 1; i < this.getComponentCount(); i++) {
             this.remove(i);
         }
         this.add(chart, c, JLayeredPane.DEFAULT_LAYER);
@@ -333,9 +354,14 @@ public class SummaryChart extends JLayeredPane {
     private void addEntriesToChart(
             DefaultChartModel chartModel,
             ChartFrequencyMap chartMap,
-            List<ChartCategory> chartCategories) {
+            List<ChartCategory> chartCategories,
+            List<Highlight> highlights) {
 
+        boolean addHighlights = highlights != null;
+
+        int index = 0;
         for (ChartCategory cat : chartCategories) {
+
             FrequencyEntry fe = chartMap.getEntry(cat.getName());
             long value = 0;
             if (fe != null) {
@@ -345,6 +371,11 @@ public class SummaryChart extends JLayeredPane {
             ChartPoint p = new ChartPoint(cat, value);
             ChartPoint logp = new ChartPoint(cat, Math.log10(value));
 
+            if (addHighlights) {
+                p.setHighlight(highlights.get(index));
+                logp.setHighlight(highlights.get(index));
+            }
+
             //System.out.println("key: " + cat.getName() + " value: " + value);
 
             if (this.isLogScaleY()) {
@@ -352,6 +383,8 @@ public class SummaryChart extends JLayeredPane {
             } else {
                 chartModel.addPoint(p);
             }
+
+            index++;
         }
     }
 

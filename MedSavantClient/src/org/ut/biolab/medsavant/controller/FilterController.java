@@ -46,14 +46,14 @@ public class FilterController {
     private static final ProjectListener projectListener;
     private static final ReferenceListener referenceListener;
     private static final LoginListener logoutListener;
-    
+
     private static int filterSetID = 0;
-    
+
     private static Map<Integer, Map<Integer, Map<String, Filter>>> filterMapHistory = new TreeMap<Integer, Map<Integer, Map<String, Filter>>>();
-    private static Map<Integer, Map<String, Filter>> filterMap = new TreeMap<Integer, Map<String, Filter>>();   
+    private static Map<Integer, Map<String, Filter>> filterMap = new TreeMap<Integer, Map<String, Filter>>();
     private static List<FiltersChangedListener> listeners = new ArrayList<FiltersChangedListener>();
     private static List<FiltersChangedListener> activeListeners = new ArrayList<FiltersChangedListener>();
-    
+
     private static Filter lastFilter;
     private static FilterAction lastAction;
 
@@ -65,7 +65,7 @@ public class FilterController {
                 removeAllFilters();
             }
             public void projectTableRemoved(int projid, int refid) {}
-        };           
+        };
         ProjectController.getInstance().addProjectListener(projectListener);
 
         referenceListener = new ReferenceListener() {
@@ -73,10 +73,10 @@ public class FilterController {
             public void referenceRemoved(String name) {}
             public void referenceChanged(String prnameojectName) {
                 removeAllFilters();
-            }              
+            }
         };
         ReferenceController.getInstance().addReferenceListener(referenceListener);
-        
+
 
         logoutListener = new LoginListener() {
             public void loginEvent(LoginEvent evt) {
@@ -84,13 +84,13 @@ public class FilterController {
                     removeAllFilters();
                 }
             }
-            
+
         };
         LoginController.addLoginListener(logoutListener);
     }
-    
+
     public static void init(){};
-    
+
     public static enum FilterAction {ADDED, REMOVED, MODIFIED};
 
     public static void addFilter(Filter filter, int queryId) {
@@ -99,7 +99,7 @@ public class FilterController {
             filterMap.put(queryId, new TreeMap<String, Filter>());
         }
         Filter prev = filterMap.get(queryId).put(filter.getId(), filter);
-        
+
         if(prev == null) {
             setLastFilter(filter, FilterAction.ADDED);
         } else {
@@ -111,48 +111,52 @@ public class FilterController {
     public static void removeFilter(String filterId, int queryId) {
 
         if(filterMap.get(queryId) == null) return; //filter was never actually added
-        
+
         Filter removed = filterMap.get(queryId).remove(filterId);
         if(filterMap.get(queryId).isEmpty()) {
             filterMap.remove(queryId);
         }
-        
+
         if(removed == null) return; //something went wrong, but ignore it
         setLastFilter(removed, FilterAction.REMOVED);
         fireFiltersChangedEvent();
     }
-    
+
     public static void removeAllFilters() {
         filterMap.clear();
         filterMapHistory.clear();
     }
 
+    public static void addFilterListener(FiltersChangedListener l, boolean first) {
+        listeners.add(0, l);
+    }
+
     public static void addFilterListener(FiltersChangedListener l) {
         listeners.add(l);
     }
-    
+
     public static void removeFilterListener(FiltersChangedListener l) {
         listeners.remove(l);
     }
-    
+
     public static void addActiveFilterListener(FiltersChangedListener l) {
         activeListeners.add(l);
     }
-    
+
     public static int getCurrentFilterSetID() {
         return filterSetID;
     }
-    
+
     //public static Map<String,Filter> getFilterSet(int filterSetID) {
     public static Map<Integer, Map<String, Filter>> getFilterSet(int filterSetID) {
         return filterMapHistory.get(filterSetID);
     }
 
     public static void fireFiltersChangedEvent() {
-        
+
         filterSetID++;
         filterMapHistory.put(filterSetID,filterMap);
-        
+
         //cancel any running workers from last filter
         for (FiltersChangedListener l : activeListeners) {
             try {
@@ -162,7 +166,7 @@ public class FilterController {
             }
         }
         activeListeners.clear();
-        
+
         //start new filter change
         for (FiltersChangedListener l : listeners) {
             try {
@@ -171,7 +175,7 @@ public class FilterController {
                 LOG.log(Level.SEVERE, null, e);
             }
         }
-        
+
         //current view should be refreshed if it relies on filters
         ViewController.getInstance().refreshView();
     }
@@ -187,7 +191,7 @@ public class FilterController {
             if (f instanceof PostProcessFilter) {
                 ppfs.add((PostProcessFilter) f);
             }
-        }  
+        }
         return ppfs;
     }*/
 
@@ -217,7 +221,7 @@ public class FilterController {
         }
         return qfs;
     }
-    
+
     public static List<List<QueryFilter>> getQueryFilters() {
         List<List<QueryFilter>> qfs = new ArrayList<List<QueryFilter>>();
         for(Object key : filterMap.keySet().toArray()) {
@@ -225,7 +229,7 @@ public class FilterController {
         }
         return qfs;
     }
-    
+
     /*public static List<Condition> getQueryFilterConditions(int queryId) {
         List<Condition> conditions = new ArrayList<Condition>();
         for(QueryFilter f : FilterController.getQueryFilters(queryId)) {
@@ -233,7 +237,7 @@ public class FilterController {
         }
         return conditions;
     }*/
-    
+
     public static Condition[] getQueryFilterConditions(int queryId) {
         List<QueryFilter> filters = getQueryFilters(queryId);
         Condition[] conditions = new Condition[filters.size()];
@@ -242,7 +246,7 @@ public class FilterController {
         }
         return conditions;
     }
-    
+
     /*public static List<List<Condition>> getQueryFilterConditions() {
         List<List<Condition>> conditions = new ArrayList<List<Condition>>();
         for(Object key : filterMap.keySet().toArray()) {
@@ -250,7 +254,7 @@ public class FilterController {
         }
         return conditions;
     }*/
-    
+
     public static Condition[][] getQueryFilterConditions() {
         Object[] keys = filterMap.keySet().toArray();
         Condition[][] conditions = new Condition[keys.length][];
@@ -259,20 +263,20 @@ public class FilterController {
         }
         return conditions;
     }
-    
+
     private static void setLastFilter(Filter filter, FilterAction action) {
         lastFilter = filter;
         lastAction = action;
     }
-    
+
     public static Filter getLastFilter() {
         return lastFilter;
     }
-    
+
     public static FilterAction getLastAction() {
         return lastAction;
     }
-    
+
     public static String getLastActionString() {
         switch(lastAction) {
             case ADDED:
@@ -285,7 +289,7 @@ public class FilterController {
                 return "";
         }
     }
-    
+
     public static boolean hasFiltersApplied() {
         for(Integer key : filterMap.keySet()) {
             Map<String, Filter> current = filterMap.get(key);
@@ -299,5 +303,5 @@ public class FilterController {
     public static boolean isFilterActive(int queryId, String filterId) {
         return filterMap.containsKey(queryId) && filterMap.get(queryId).containsKey(filterId);
     }
-    
+
 }

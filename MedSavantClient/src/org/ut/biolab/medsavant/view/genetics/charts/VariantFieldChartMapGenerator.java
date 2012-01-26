@@ -31,6 +31,7 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ResultController;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
@@ -38,6 +39,7 @@ import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 
@@ -45,7 +47,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
  *
  * @author mfiume
  */
-public class VariantFieldChartMapGenerator implements ChartMapGenerator {
+public class VariantFieldChartMapGenerator implements ChartMapGenerator, FiltersChangedListener {
 
     private final CustomField field;
     private final Table whichTable;
@@ -59,6 +61,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
     }
 
     private VariantFieldChartMapGenerator(CustomField field, Table whichTable) {
+        FilterController.addFilterListener(this,true);
         this.field = field;
         this.whichTable = whichTable;
     }
@@ -119,7 +122,27 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         return digits;
     }
 
+    Map<String,ChartFrequencyMap> unfilteredMapCache = new HashMap<String,ChartFrequencyMap>();
+    Map<String,ChartFrequencyMap> filteredMapCache = new HashMap<String,ChartFrequencyMap>();
+
     public ChartFrequencyMap generateCategoricalChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
+
+
+        String cacheKey = ProjectController.getInstance().getCurrentProjectId()
+                + "_" + ReferenceController.getInstance().getCurrentReferenceId()
+                + "_" + field.getColumnName();
+
+        boolean noConditions = false;
+
+        if (!useFilteredCounts) {
+            if (unfilteredMapCache.containsKey(cacheKey)) {
+                return unfilteredMapCache.get(cacheKey);
+            }
+        } else {
+            if (filteredMapCache.containsKey(cacheKey)) {
+                return filteredMapCache.get(cacheKey);
+            }
+        }
 
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
         if (Thread.currentThread().isInterrupted()) {
@@ -131,6 +154,9 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
             if (useFilteredCounts) {
                 conditions = FilterController.getQueryFilterConditions();
+
+                noConditions = true;
+
             } else {
                 conditions = new Condition[][]{};
             }
@@ -203,6 +229,15 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         } else {
             chartMap.sort();
         }
+
+        if (!useFilteredCounts) {
+            unfilteredMapCache.put(cacheKey,chartMap);
+        }
+
+        if (useFilteredCounts || noConditions) {
+            filteredMapCache.put(cacheKey,chartMap);
+        }
+
         return chartMap;
     }
 
@@ -355,5 +390,12 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
             }
         }
         return result;
+    }
+
+    @Override
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        if (!filteredMapCache.isEmpty()) {
+            filteredMapCache.clear();
+        }
     }
 }
