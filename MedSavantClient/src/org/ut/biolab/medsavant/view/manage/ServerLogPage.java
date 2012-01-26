@@ -93,11 +93,11 @@ public class ServerLogPage extends SubSectionView {
         ButtonGroup bg = new ButtonGroup();
 
         JRadioButton b1 = new JRadioButton("Client");
-        JRadioButton b2 = new JRadioButton("Server");
+        //JRadioButton b2 = new JRadioButton("Server");
         JRadioButton b3 = new JRadioButton("Annotations");
 
         bg.add(b1);
-        bg.add(b2);
+        //bg.add(b2);
         bg.add(b3);
 
         listPanel = new JPanel();
@@ -105,7 +105,7 @@ public class ServerLogPage extends SubSectionView {
 
         listPanel.add(getWaitPanel(), CARDNAME_WAIT);
         listPanel.add(getClientCard(), CARDNAME_CLIENT);
-        listPanel.add(getServerCard(), CARDNAME_SERVER);
+        //listPanel.add(getServerCard(), CARDNAME_SERVER);
         listPanel.add(getAnnotationCard(), CARDNAME_ANNOTATION);
 
         panel.add(menuPanel, BorderLayout.NORTH);
@@ -118,12 +118,12 @@ public class ServerLogPage extends SubSectionView {
 
             }
         });
-        b2.addActionListener(new ActionListener() {
+        /*b2.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
                 changeToCard(CARDNAME_SERVER);
             }
-        });
+        });*/
         b3.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
@@ -146,7 +146,7 @@ public class ServerLogPage extends SubSectionView {
         menuPanel.add(Box.createHorizontalGlue());
         menuPanel.add(b3);
         menuPanel.add(b1);
-        menuPanel.add(b2);
+        //menuPanel.add(b2);
         menuPanel.add(refreshButton);
         menuPanel.add(Box.createHorizontalGlue());
 
@@ -219,7 +219,7 @@ public class ServerLogPage extends SubSectionView {
         return p;
     }
 
-    private JPanel getServerCard() {
+    /*private JPanel getServerCard() {
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
         DataRetriever retriever = new DataRetriever(){
@@ -238,7 +238,7 @@ public class ServerLogPage extends SubSectionView {
         serverTable = new SearchableTablePanel(getName(), serverColumnNames, serverColumnClasses, new ArrayList<Integer>(), limit, retriever);
         p.add(serverTable, BorderLayout.CENTER);
         return p;
-    }
+    }*/
 
     private JPanel getAnnotationCard() {
         JPanel p = new JPanel();
@@ -331,7 +331,7 @@ public class ServerLogPage extends SubSectionView {
         return v;
     }
 
-    private List<Object[]> retrieveServerData(int start, int limit){
+    /*private List<Object[]> retrieveServerData(int start, int limit){
         if(!currentCard.equals(CARDNAME_SERVER)) return new ArrayList<Object[]>();
         List<Object[]> v = null;
         waitPanel.setIndeterminate();
@@ -355,7 +355,7 @@ public class ServerLogPage extends SubSectionView {
         }
         hideWaitPanel();
         return v;
-    }
+    }*/
 
     private List<Object[]> retrieveClientData(int start, int limit){
         if(!currentCard.equals(CARDNAME_CLIENT)) return new ArrayList<Object[]>();
