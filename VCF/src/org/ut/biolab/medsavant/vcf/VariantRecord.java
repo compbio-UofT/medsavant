@@ -43,11 +43,11 @@ public class VariantRecord implements Serializable {
     private int pipelineID;
     private String dnaID;
     private String chrom;
-    private long position;
+    private Long position;
     private String dbSNPID;
     private String ref;
     private String alt;
-    private float qual;
+    private Float qual;
     private String filter;
     private String customInfo;    
     private Object[] customFields;
@@ -121,15 +121,17 @@ public class VariantRecord implements Serializable {
 
     private static Object parse(Class c, String value) {
 
-        if (value.equals(nullString)) {
-            //return null;
-            return "";
-        }
-
         if (c == String.class) {
+            if(value.equals(nullString)) return "";
             return value;
         }
+        
+        if(value.equals(nullString)){
+            return null;
+        }
+        
         if (c == Long.class) {
+            
             try {
                 return Long.parseLong(value);
             } catch (Exception e) {

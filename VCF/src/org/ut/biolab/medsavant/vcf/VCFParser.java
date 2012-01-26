@@ -156,16 +156,6 @@ public class VCFParser {
     private static List<VariantRecord> parseRecord(String[] line, VCFHeader h) {
         int numMandatoryFields = VCFHeader.getNumMandatoryFields();
 
-
-        /**
-         * IGNORE LARGE DELETIONS
-         */
-        if (line[4].equals("<DEL>")) {
-            System.err.println("WARNING: Ignoring large deletion at " + line[0] + ":" + line[1]);
-            return new ArrayList<VariantRecord>();
-        }
-
-
         List<String> infos = new ArrayList<String>();
         List<String> ids;
 
