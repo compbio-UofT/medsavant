@@ -32,6 +32,9 @@ public class VariantFormat implements Serializable {
     public static String ALIAS_OF_ALT = "Alternate";
     public static String ALIAS_OF_QUAL = "Quality";
     public static String ALIAS_OF_FILTER = "Filter";
+    public static String ALIAS_OF_VARIANT_TYPE = "Variant Type";
+    public static String ALIAS_OF_ZYGOSITY = "Zygosity";
+    public static String ALIAS_OF_GT = "Genotype";
     public static String ALIAS_OF_CUSTOM_INFO = "Custom Info";
 
     //recommended fields (from vcf)
@@ -65,6 +68,9 @@ public class VariantFormat implements Serializable {
         fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_ALT, "VARCHAR(30)", true, ALIAS_OF_ALT, ""));
         fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_QUAL, "FLOAT(10,0)", true, ALIAS_OF_QUAL, ""));
         fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_FILTER, "VARCHAR(500)", false, ALIAS_OF_FILTER, ""));
+        fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_TYPE, "VARCHAR(10)", true, ALIAS_OF_VARIANT_TYPE, ""));
+        fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_ZYGOSITY, "VARCHAR(20)", true, ALIAS_OF_ZYGOSITY, ""));
+        fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_GT, "VARCHAR(10)", false, ALIAS_OF_GT, ""));
         fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO, "VARCHAR(500)", false, ALIAS_OF_CUSTOM_INFO, ""));
 
         return new AnnotationFormat("default", "default", 0, "", true, true, AnnotationType.POSITION, fields);

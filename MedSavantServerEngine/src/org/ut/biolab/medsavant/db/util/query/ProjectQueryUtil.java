@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
@@ -178,6 +179,9 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_ALT + "` varchar(30) COLLATE latin1_bin DEFAULT NULL,"
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_QUAL + "` float(10,0) DEFAULT NULL,"
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_FILTER + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
+                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_TYPE + "` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
+                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_ZYGOSITY + "` varchar(20) COLLATE latin1_bin DEFAULT NULL,"
+                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_GT + "` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,";
 
         //add custom vcf fields
@@ -577,9 +581,9 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     }
     
     /*
-     * Remove any variant tables with updateId < updateMax
+     * Remove any variant tables with updateMin <= updateId <= updateMax
      */
-    public void removeTablesBeforeUpdateId(String sid, int projectId, int referenceId, int updateMax) throws SQLException {
+    public void removeTables(String sid, int projectId, int referenceId, int updateMax, int updateMin) throws SQLException {
         
         //find update ids
         TableSchema mapTable = MedSavantDatabase.VarianttablemapTableSchema;
@@ -590,8 +594,10 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME));
         query.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         query.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
-        query.addCondition(BinaryCondition.lessThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMax, false));
-        
+        query.addCondition(ComboCondition.and(
+                BinaryCondition.lessThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMax, true), 
+                BinaryCondition.greaterThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMin, true)));
+
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
                
         while(rs.next()){

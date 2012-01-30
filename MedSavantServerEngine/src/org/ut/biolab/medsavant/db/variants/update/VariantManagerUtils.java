@@ -60,7 +60,7 @@ public class VariantManagerUtils {
             query = "SELECT *";
         } else {
             query = "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`,"
-                + " `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, `custom_info`";
+                + " `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, `variant_type`, `zygosity`, `custom_info`";
         }
               
         query +=

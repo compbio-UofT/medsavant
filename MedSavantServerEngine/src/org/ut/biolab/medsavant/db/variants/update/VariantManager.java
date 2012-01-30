@@ -95,6 +95,17 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
         ServerLogger.log(VariantManager.class, "Publish complete");
     }
     
+    
+    /*
+     * Remove an unpublished variant table. 
+     */
+    @Override
+    public void cancelPublish(String sid, int projectID, int referenceID, int updateID) throws Exception {
+        ServerLogger.log(VariantManager.class, "Cancelling publish. pid:" + projectID + " refid:" + referenceID + " upid:" + updateID);
+        ProjectQueryUtil.getInstance().removeTables(sid, projectID, referenceID, updateID, updateID);
+        ServerLogger.log(VariantManager.class, "Cancel complete");
+    }   
+    
     /*
      * Perform updates to custom vcf fields and other annotations. Will result 
      * in the creation of a new, unpublished, up-to-date variant table. 
@@ -168,7 +179,10 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
 
             //cleanup 
             ServerLogger.log(VariantManager.class, "Dropping old table(s)");
-            ProjectQueryUtil.getInstance().removeTablesBeforeUpdateId(sid, projectId, referenceId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, true));
+            int newestId = ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, true);
+            int minId = -1;
+            int maxId = newestId-1;
+            ProjectQueryUtil.getInstance().removeTables(sid, projectId, referenceId, minId, maxId);
 
             //TODO: remove files
 
@@ -295,7 +309,10 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
 
             //cleanup 
             ServerLogger.log(VariantManager.class, "Dropping old table(s)");
-            ProjectQueryUtil.getInstance().removeTablesBeforeUpdateId(sid, projectId, referenceId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, true));
+            int newestId = ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, true);
+            int minId = -1;
+            int maxId = newestId-1;
+            ProjectQueryUtil.getInstance().removeTables(sid, projectId, referenceId, minId, maxId);
 
             //TODO: remove files
 
@@ -359,7 +376,10 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             
             //cleanup 
             ServerLogger.log(VariantManager.class, "Dropping old table(s)");
-            ProjectQueryUtil.getInstance().removeTablesBeforeUpdateId(sid, projectId, referenceId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, true));
+            int newestId = ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, true);
+            int minId = -1;
+            int maxId = newestId-1;
+            ProjectQueryUtil.getInstance().removeTables(sid, projectId, referenceId, minId, maxId);
             
             //TODO: remove files
 
@@ -375,5 +395,5 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             throw e;
         }
     }
-    
+
 }

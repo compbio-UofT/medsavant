@@ -18,6 +18,7 @@ public interface VariantManagerAdapter extends Remote
   public int uploadVariants(String sid, RemoteInputStream[] fileStreams, String[] fileNames, int projectId, int referenceId, String[][] variantTags) throws RemoteException, IOException, Exception;
   public void publishVariants(String sid, int projectID, int referenceID, int updateID) throws Exception;
   public void publishVariants(String sid, int projectID) throws Exception;
+  public void cancelPublish(String sid, int projectID, int referenceID, int updateID) throws Exception;
   public int updateTable(String sid, int projectId, int referenceId, int[] annotationIds, List<CustomField> variantFields) throws Exception;
   public int removeVariants(String sid, int projectId, int referenceId, List<SimpleVariantFile> files) throws Exception;
   

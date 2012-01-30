@@ -243,7 +243,7 @@ class NotificationIcon extends JPanel {
         switch(n.getType()){
             case PUBLISH:
                 
-                JLabel publishButton = new JLabel("Click to publish now");
+                JLabel publishButton = new JLabel("Click to publish or remove");
                 publishButton.setFont(publishButton.getFont().deriveFont(Font.BOLD));
                 this.add(publishButton, BorderLayout.SOUTH);
                 this.addMouseListener(new MouseAdapter(){
@@ -252,16 +252,41 @@ class NotificationIcon extends JPanel {
                         
                         p.setVisible(false);
                         
-                        if(DialogUtils.askYesNo("Confirm", "<HTML>Publishing this table will log all users out of MedSavant.<BR>Are you sure you want to proceed?</HTML>") == JOptionPane.NO_OPTION){
+                        //get db lock
+                        try {            
+                            if(!MedSavantClient.SettingsQueryUtilAdapter.getDbLock(LoginController.sessionId)){
+                                DialogUtils.displayMessage("Cannot make changes", "Another user is making changes to the database. You must wait until this user has finished. ");
+                                return;
+                            }
+                        } catch (Exception ex) {
+                            DialogUtils.displayErrorMessage("Error getting database lock", ex);
                             return;
                         }
                         
+                        Object[] options = new Object[]{"Publish", "Delete (Undo Changes)", "Cancel"};
+                        int option = JOptionPane.showOptionDialog(null, "<HTML>Publishing this table will log all users out of MedSavant.<BR>Are you sure you want to proceed?</HTML>", "Confirm", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[2]);
+                        
                         ProjectDetails event = (ProjectDetails)n.getData();
-                        try {
-                            MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, event.getProjectId(), event.getReferenceId(), event.getUpdateId());
-                        } catch (Exception ex) {
-                            Logger.getLogger(NotificationIcon.class.getName()).log(Level.SEVERE, null, ex);
+                        if (option == JOptionPane.NO_OPTION){
+                            try {
+                                MedSavantClient.VariantManagerAdapter.cancelPublish(LoginController.sessionId, event.getProjectId(), event.getReferenceId(), event.getUpdateId());
+                            } catch (Exception ex) {
+                                Logger.getLogger(NotificationIcon.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        } else if (option == JOptionPane.YES_OPTION){                          
+                            try {
+                                MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, event.getProjectId(), event.getReferenceId(), event.getUpdateId());
+                            } catch (Exception ex) {
+                                Logger.getLogger(NotificationIcon.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
+                        
+                        //release lock
+                        try {
+                            MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
+                        } catch (Exception ex) {
+                            Logger.getLogger(NotificationPanel.class.getName()).log(Level.SEVERE, null, ex);
+                        } 
                     }
                 });                
         }

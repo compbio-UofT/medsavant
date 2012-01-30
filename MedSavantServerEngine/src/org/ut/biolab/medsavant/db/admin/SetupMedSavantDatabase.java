@@ -273,6 +273,9 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
                 + "`alt` varchar(30) COLLATE latin1_bin DEFAULT NULL,"
                 + "`qual` float(10,0) DEFAULT NULL,"
                 + "`filter` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
+                + "`variant_type` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
+                + "`zygosity` varchar(20) COLLATE latin1_bin DEFAULT NULL,"
+                + "`gt` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
                 + "`custom_info` varchar(500) COLLATE latin1_bin DEFAULT NULL"
                 + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 

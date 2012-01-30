@@ -376,88 +376,103 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_FILTER = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_FILTER = 500;
         public static final String COLUMNNAME_OF_FILTER = "filter";
+        // default_variant.variant_type
+        public static final int INDEX_OF_VARIANT_TYPE = 11;
+        public static final ColumnType TYPE_OF_VARIANT_TYPE = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_VARIANT_TYPE = 10;
+        public static final String COLUMNNAME_OF_VARIANT_TYPE = "variant_type";
+        // default_variant.zygosity
+        public static final int INDEX_OF_ZYGOSITY = 12;
+        public static final ColumnType TYPE_OF_ZYGOSITY = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_ZYGOSITY = 20;
+        public static final String COLUMNNAME_OF_ZYGOSITY = "zygosity";
+        // default_variant.gt
+        public static final int INDEX_OF_GT = 13;
+        public static final ColumnType TYPE_OF_GT = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_GT = 10;
+        public static final String COLUMNNAME_OF_GT = "gt";
         // default_variant.aa
-        public static final int INDEX_OF_AA = 11;
+        public static final int INDEX_OF_AA = 14;
         public static final ColumnType TYPE_OF_AA = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_AA = 500;
         public static final String COLUMNNAME_OF_AA = "aa";
         // default_variant.ac
-        public static final int INDEX_OF_AC = 12;
+        public static final int INDEX_OF_AC = 15;
         public static final ColumnType TYPE_OF_AC = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_AC = 500;
         public static final String COLUMNNAME_OF_AC = "ac";
         // default_variant.af
-        public static final int INDEX_OF_AF = 13;
+        public static final int INDEX_OF_AF = 16;
         public static final ColumnType TYPE_OF_AF = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_AF = 500;
         public static final String COLUMNNAME_OF_AF = "af";
         // default_variant.an
-        public static final int INDEX_OF_AN = 14;
+        public static final int INDEX_OF_AN = 17;
         public static final ColumnType TYPE_OF_AN = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_AN = 11;
         public static final String COLUMNNAME_OF_AN = "an";
         // default_variant.bq
-        public static final int INDEX_OF_BQ = 15;
+        public static final int INDEX_OF_BQ = 18;
         public static final ColumnType TYPE_OF_BQ = TableSchema.ColumnType.FLOAT;
         public static final int LENGTH_OF_BQ = -1;
         public static final String COLUMNNAME_OF_BQ = "bq";
         // default_variant.cigar
-        public static final int INDEX_OF_CIGAR = 16;
+        public static final int INDEX_OF_CIGAR = 19;
         public static final ColumnType TYPE_OF_CIGAR = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_CIGAR = 500;
         public static final String COLUMNNAME_OF_CIGAR = "cigar";
         // default_variant.db
-        public static final int INDEX_OF_DB = 17;
+        public static final int INDEX_OF_DB = 20;
         public static final ColumnType TYPE_OF_DB = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_DB = 1;
         public static final String COLUMNNAME_OF_DB = "db";
         // default_variant.dp
-        public static final int INDEX_OF_DP = 18;
+        public static final int INDEX_OF_DP = 21;
         public static final ColumnType TYPE_OF_DP = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_DP = 11;
         public static final String COLUMNNAME_OF_DP = "dp";
         // default_variant.end
-        public static final int INDEX_OF_END = 19;
+        public static final int INDEX_OF_END = 22;
         public static final ColumnType TYPE_OF_END = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_END = 500;
         public static final String COLUMNNAME_OF_END = "end";
         // default_variant.h2
-        public static final int INDEX_OF_H2 = 20;
+        public static final int INDEX_OF_H2 = 23;
         public static final ColumnType TYPE_OF_H2 = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_H2 = 1;
         public static final String COLUMNNAME_OF_H2 = "h2";
         // default_variant.mq
-        public static final int INDEX_OF_MQ = 21;
+        public static final int INDEX_OF_MQ = 24;
         public static final ColumnType TYPE_OF_MQ = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_MQ = 500;
         public static final String COLUMNNAME_OF_MQ = "mq";
         // default_variant.mq0
-        public static final int INDEX_OF_MQ0 = 22;
+        public static final int INDEX_OF_MQ0 = 25;
         public static final ColumnType TYPE_OF_MQ0 = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_MQ0 = 500;
         public static final String COLUMNNAME_OF_MQ0 = "mq0";
         // default_variant.ns
-        public static final int INDEX_OF_NS = 23;
+        public static final int INDEX_OF_NS = 26;
         public static final ColumnType TYPE_OF_NS = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_NS = 11;
         public static final String COLUMNNAME_OF_NS = "ns";
         // default_variant.sb
-        public static final int INDEX_OF_SB = 24;
+        public static final int INDEX_OF_SB = 27;
         public static final ColumnType TYPE_OF_SB = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_SB = 500;
         public static final String COLUMNNAME_OF_SB = "sb";
         // default_variant.somatic
-        public static final int INDEX_OF_SOMATIC = 25;
+        public static final int INDEX_OF_SOMATIC = 28;
         public static final ColumnType TYPE_OF_SOMATIC = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_SOMATIC = 1;
         public static final String COLUMNNAME_OF_SOMATIC = "somatic";
         // default_variant.validated
-        public static final int INDEX_OF_VALIDATED = 26;
+        public static final int INDEX_OF_VALIDATED = 29;
         public static final ColumnType TYPE_OF_VALIDATED = TableSchema.ColumnType.INTEGER;
         public static final int LENGTH_OF_VALIDATED = 1;
         public static final String COLUMNNAME_OF_VALIDATED = "validated";
         // default_variant.custom_info
-        public static final int INDEX_OF_CUSTOM_INFO = 27;
+        public static final int INDEX_OF_CUSTOM_INFO = 30;
         public static final ColumnType TYPE_OF_CUSTOM_INFO = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_CUSTOM_INFO = 500;
         public static final String COLUMNNAME_OF_CUSTOM_INFO = "custom_info";
@@ -474,6 +489,9 @@ public class MedSavantDatabase {
             addColumn(COLUMNNAME_OF_ALT, COLUMNNAME_OF_ALT, TableSchema.ColumnType.VARCHAR, 30);
             addColumn(COLUMNNAME_OF_QUAL, COLUMNNAME_OF_QUAL, TableSchema.ColumnType.FLOAT, 10);
             addColumn(COLUMNNAME_OF_FILTER, COLUMNNAME_OF_FILTER, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_VARIANT_TYPE, COLUMNNAME_OF_VARIANT_TYPE, TableSchema.ColumnType.VARCHAR, 10);
+            addColumn(COLUMNNAME_OF_ZYGOSITY, COLUMNNAME_OF_ZYGOSITY, TableSchema.ColumnType.VARCHAR, 20);
+            addColumn(COLUMNNAME_OF_GT, COLUMNNAME_OF_GT, TableSchema.ColumnType.VARCHAR, 10);
             addColumn(COLUMNNAME_OF_AA, COLUMNNAME_OF_AA, TableSchema.ColumnType.VARCHAR, 500);
             addColumn(COLUMNNAME_OF_AC, COLUMNNAME_OF_AC, TableSchema.ColumnType.VARCHAR, 500);
             addColumn(COLUMNNAME_OF_AF, COLUMNNAME_OF_AF, TableSchema.ColumnType.VARCHAR, 500);
