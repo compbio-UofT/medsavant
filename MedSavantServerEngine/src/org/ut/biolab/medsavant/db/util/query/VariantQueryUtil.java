@@ -42,6 +42,7 @@ import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.db.model.StarredVariant;
@@ -221,33 +222,62 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return rs.getInt(1);
     }
 
-    public int getFilteredFrequencyValuesForColumnInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String columnname, double min, double max) throws SQLException, RemoteException {
+    public Map<Range,Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnname, double min, double binSize) throws SQLException, RemoteException {
 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
-        q.addCondition(BinaryCondition.greaterThan(table.getDBColumn(columnname), min, true));
-        q.addCondition(BinaryCondition.lessThan(table.getDBColumn(columnname), max, false));
         addConditionsToQuery(q, conditions);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
-        rs.next();
+        // SELECT (dp % 10) as m, COUNT(*) FROM z_variant_proj1_ref3_update0a GROUP BY m ORDER BY m ASC;
+        System.out.println(q);
 
-        return rs.getInt(1);
+        String round = "floor("
+                + columnname
+                + " / "
+                + binSize
+                + ") as m";
+        //String modFunction = "(" + columnname + " % " + binSize + ") AS m ";
+
+        String query = q.toString().replace("COUNT(*)", "COUNT(*), " + round);
+        query += " GROUP BY m ORDER BY m ASC";
+
+        System.out.println(query);
+
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query);
+
+        System.out.println("C Done");
+
+        Map<Range, Long> results = new TreeMap<Range, Long>();
+        while (rs.next()) {
+
+            int binNo = rs.getInt(2);
+
+            //Range r = new Range(binNo*binSize, (binNo+1)*binSize);
+
+            Range r = new Range(min + binNo*binSize, min + (binNo+1)*binSize);
+
+            long count = rs.getLong(1);
+
+            results.put(r, count);
+        }
+        System.out.append("Returning C");
+
+        return results;
     }
 
-    public Map<String, Integer> getFilteredFrequencyValuesForColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException {
+    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException {
 
         TableSchema tableSchema = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
         DbTable table = tableSchema.getTable();
         DbColumn col = tableSchema.getDBColumnByAlias(columnAlias);
 
-        return getFilteredFrequencyValuesForColumn(sid,table, conditions, col);
+        return getFilteredFrequencyValuesForCategoricalColumn(sid,table, conditions, col);
     }
 
-    public Map<String, Integer> getFilteredFrequencyValuesForColumn(String sid, DbTable table, Condition[][] conditions, DbColumn column) throws SQLException {
+    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, DbTable table, Condition[][] conditions, DbColumn column) throws SQLException {
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table);
@@ -255,6 +285,8 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
         q.addGroupings(column);
+
+        System.out.println(q);
 
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
 
@@ -283,7 +315,11 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCondition(BinaryCondition.lessThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), end, false));
         addConditionsToQuery(q, conditions);
 
+        System.out.println(q);
+
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+
+        System.out.println("A Done");
 
         rs.next();
         return rs.getInt(1);
@@ -616,14 +652,14 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         conn.setAutoCommit(true);
     }
-    
+
     public void removeTags(String sid, int uploadId) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VarianttagTableSchema;
-        
+
         DeleteQuery q = new DeleteQuery(table.getTable());
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId));
-        
+
         ConnectionController.connectPooled(sid).createStatement().execute(q.toString());
     }
 
@@ -712,41 +748,41 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         return results;
     }
-    
+
     public List<SimpleVariantFile> getUploadedFiles(String sid, int projectId, int referenceId) throws SQLException, RemoteException {
-        
+
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, ProjectQueryUtil.getInstance().getVariantTablename(sid, projectId, referenceId, true));
         TableSchema tagTable = MedSavantDatabase.VarianttagTableSchema;
         TableSchema pendingTable = MedSavantDatabase.VariantpendingupdateTableSchema;
-        TableSchema fileTable = MedSavantDatabase.VariantFileTableSchema;       
-        
+        TableSchema fileTable = MedSavantDatabase.VariantFileTableSchema;
+
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.setIsDistinct(true);
         query.addColumns(
                 table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID),
                 table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID));
-        
+
         ResultSet idRs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
-        
+
         List<Integer> uploadIds = new ArrayList<Integer>();
         List<Integer> fileIds = new ArrayList<Integer>();
         while(idRs.next()){
             uploadIds.add(idRs.getInt(1));
             fileIds.add(idRs.getInt(2));
         }
-        
+
         if(uploadIds.isEmpty()){
             return new ArrayList<SimpleVariantFile>();
         }
-        
+
         Condition[] idConditions = new Condition[uploadIds.size()];
         for(int i = 0; i < uploadIds.size(); i++){
             idConditions[i] = ComboCondition.and(
                     BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadIds.get(i)),
                     BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileIds.get(i)));
         }
-        
+
         SelectQuery q = new SelectQuery();
         q.addFromTable(tagTable.getTable());
         q.addFromTable(pendingTable.getTable());
@@ -763,90 +799,90 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCondition(BinaryCondition.equalTo(pendingTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
         q.addCondition(BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), pendingTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID)));
         q.addCondition(ComboCondition.or(idConditions));
-        
+
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
-        
+
         List<SimpleVariantFile> result = new ArrayList<SimpleVariantFile>();
         while(rs.next()){
             result.add(new SimpleVariantFile(
-                    rs.getInt(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), 
-                    rs.getInt(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), 
-                    rs.getString(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME), 
+                    rs.getInt(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID),
+                    rs.getInt(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID),
+                    rs.getString(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME),
                     rs.getString(VarianttagTableSchema.COLUMNNAME_OF_TAGVALUE),
                     rs.getString(VariantPendingUpdateTableSchema.COLUMNNAME_OF_USER)));
         }
-        return result;        
+        return result;
     }
-    
+
     public List<String[]> getTagsForUpload(String sid, int uploadId) throws SQLException, RemoteException {
-        
+
         TableSchema tagTable = MedSavantDatabase.VarianttagTableSchema;
-        
+
         SelectQuery q = new SelectQuery();
         q.addFromTable(tagTable.getTable());
         q.addColumns(
-                tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGKEY), 
+                tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGKEY),
                 tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGVALUE));
         q.addCondition(BinaryCondition.equalTo(tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId));
-        
+
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
-        
+
         List<String[]> result = new ArrayList<String[]>();
         while(rs.next()){
             result.add(new String[]{rs.getString(1), rs.getString(2)});
         }
-        return result;        
+        return result;
     }
 
     @Override
     public Set<StarredVariant> getStarredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException {
-        
+
         TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
-        
+
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addColumns(
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID), 
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), 
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), 
-                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), 
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID),
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID),
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID),
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER),
                 table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION),
                 table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
-        
+
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
-        
+
         Set<StarredVariant> result = new HashSet<StarredVariant>();
         while(rs.next()){
             result.add(new StarredVariant(
-                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID), 
-                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), 
-                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), 
-                    rs.getString(VariantStarredTableSchema.COLUMNNAME_OF_USER), 
+                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID),
+                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID),
+                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID),
+                    rs.getString(VariantStarredTableSchema.COLUMNNAME_OF_USER),
                     rs.getString(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION),
                     rs.getTimestamp(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP)));
         }
         return result;
     }
-    
+
     @Override
     public int addStarredVariants(String sid, int projectId, int referenceId, List<StarredVariant> variants) throws SQLException, RemoteException {
-        
+
         TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
-        
+
         int totalNumStarred = getTotalNumStarred(sid, projectId, referenceId);
         int numStarred = 0;
-        
+
         Connection c = ConnectionController.connectPooled(sid);
         c.setAutoCommit(false);
-        
+
         for(StarredVariant variant : variants){
-        
+
             if(totalNumStarred == Settings.NUM_STARRED_ALLOWED){
                 return numStarred;
             }
-            
+
             InsertQuery q = new InsertQuery(table.getTable());
             List<DbColumn> columnsList = table.getColumns();
             Column[] columnsArray = new Column[columnsList.size()];
@@ -855,24 +891,24 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
             try {
                 c.createStatement().executeUpdate(q.toString());
-                totalNumStarred++;               
+                totalNumStarred++;
             } catch (MySQLIntegrityConstraintViolationException e){
                 //duplicate entry, update
                 updateStarredVariant(c, projectId, referenceId, variant);
             }
             numStarred++;
         }
-        
+
         c.commit();
         c.setAutoCommit(true);
-        
+
         return numStarred;
-    }   
-    
+    }
+
     private void updateStarredVariant(Connection c, int projectId, int referenceId, StarredVariant variant) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
-        
+
         UpdateQuery q = new UpdateQuery(table.getTable());
         //q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), variant.getUser());
         q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION), variant.getDescription());
@@ -883,15 +919,15 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), variant.getFileId()));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), variant.getVariantId()));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), variant.getUser()));
-        
+
         c.createStatement().executeUpdate(q.toString());
     }
-    
+
     @Override
     public void unstarVariant(String sid, int projectId, int referenceId, int uploadId, int fileId, int variantId, String user) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
-        
+
         DeleteQuery q = new DeleteQuery(table.getTable());
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
@@ -899,49 +935,49 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), fileId));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), variantId));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), user));
-        
+
         ConnectionController.connectPooled(sid).createStatement().execute(q.toString());
     }
-    
+
     private int getTotalNumStarred(String sid, int projectId, int referenceId) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
-        
+
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
-        
+
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
-        
+
         rs.next();
         return rs.getInt(1);
     }
-    
+
     public void addEntryToFileTable(String sid, int uploadId, int fileId, String fileName) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VariantFileTableSchema;
-        
+
         InsertQuery q = new InsertQuery(table.getTable());
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId);
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileId);
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME), fileName);
-        
+
         ConnectionController.connectPooled(sid).createStatement().executeUpdate(q.toString());
     }
-    
+
     public void removeEntryFromFileTable(String sid, int uploadId, int fileId) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VariantFileTableSchema;
-        
+
         DeleteQuery q = new DeleteQuery(table.getTable());
         q.addCondition(ComboCondition.and(new Condition[]{
             BinaryCondition.equalTo(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId),
             BinaryCondition.equalTo(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileId)
         }));
-        
+
         ConnectionController.connectPooled(sid).createStatement().execute(q.toString());
     }
-    
+
 }
