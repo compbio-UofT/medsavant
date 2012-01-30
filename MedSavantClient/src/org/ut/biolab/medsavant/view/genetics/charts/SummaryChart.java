@@ -415,6 +415,7 @@ public class SummaryChart extends JLayeredPane {
 
                 ChartFrequencyMap[] result;
 
+                System.out.println("Generating chart map");
                 if (showComparedToOriginal) {
                     result = new ChartFrequencyMap[2];
                     result[1] = mapGenerator.generateChartMap(false, isLogScaleX && mapGenerator.isNumeric());
@@ -424,6 +425,8 @@ public class SummaryChart extends JLayeredPane {
 
                 result[0] = mapGenerator.generateChartMap(true, isLogScaleX && mapGenerator.isNumeric());
 
+                System.out.println("Done generating chart map");
+
                 return result;
             } catch (SQLException ex) {
                 MiscUtils.checkSQLException(ex);
@@ -432,9 +435,11 @@ public class SummaryChart extends JLayeredPane {
         }
 
         public void showSuccess(ChartFrequencyMap[] result) {
+            System.out.println("Drawing chart");
             if (result != null) {
                 drawChart(result);
             }
+            System.out.println("Done drawing chart");
         }
 
         public void showProgress(double prog) {

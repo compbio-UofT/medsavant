@@ -526,6 +526,10 @@ public class ViewUtil {
         return NumberFormat.getInstance().format(num);
     }
 
+    public static String numToString(int num) {
+        return NumberFormat.getInstance().format(num);
+    }
+
     public static JToggleButton getMenuToggleButton(String title) { //, int num) {
 
         JToggleButton button = new JToggleButton(title);

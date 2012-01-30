@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -66,30 +67,21 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         this.whichTable = whichTable;
     }
 
-    private List<Range> generateBins(Range r, boolean isLogScaleX) {
-        List<Range> bins = new ArrayList<Range>();
+    private double generateBins(Range r, boolean isLogScaleX) {
 
         //log scale
         if (isLogScaleX) {
-            bins.add(new Range(0, 1));
-            for (int i = 1; i < r.getMax(); i *= 10) {
-                bins.add(new Range(i, i * 10));
-            }
+            return 10;
 
             //percent fields
         } else if ((field.getColumnType() == ColumnType.DECIMAL || field.getColumnType() == ColumnType.FLOAT) && r.getMax() - r.getMin() <= 1 && r.getMax() <= 1) {
 
-            double step = 0.05;
-            int numSteps = 20;
-            for (int i = 0; i < numSteps; i++) {
-                bins.add(new Range(step * i, step * (i + 1)));
-            }
+            return 0.05;
 
             //boolean fields
         } else if ((field.getColumnType() == ColumnType.INTEGER && Integer.parseInt(field.getColumnLength()) == 1) || field.getColumnType() == ColumnType.BOOLEAN) {
 
-            bins.add(new Range(0, 1));
-            bins.add(new Range(1, 2));
+            return 1;
 
             //other fields
         } else {
@@ -103,14 +95,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             }
             step = Math.max(step, 1);
 
-            int numSteps = (int) (((int) (r.getMax() - min) / step) + 1);
-
-            for (int i = 0; i < numSteps; i++) {
-                bins.add(new Range(min + i * step, min + (i + 1) * step));
-            }
+            return step;
         }
-
-        return bins;
     }
 
     private int getNumDigits(int x) {
@@ -128,21 +114,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
     public ChartFrequencyMap generateCategoricalChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
 
 
-        String cacheKey = ProjectController.getInstance().getCurrentProjectId()
-                + "_" + ReferenceController.getInstance().getCurrentReferenceId()
-                + "_" + field.getColumnName();
 
-        boolean noConditions = false;
-
-        if (!useFilteredCounts) {
-            if (unfilteredMapCache.containsKey(cacheKey)) {
-                return unfilteredMapCache.get(cacheKey);
-            }
-        } else {
-            if (filteredMapCache.containsKey(cacheKey)) {
-                return filteredMapCache.get(cacheKey);
-            }
-        }
 
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
         if (Thread.currentThread().isInterrupted()) {
@@ -155,13 +127,11 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             if (useFilteredCounts) {
                 conditions = FilterController.getQueryFilterConditions();
 
-                noConditions = true;
-
             } else {
                 conditions = new Condition[][]{};
             }
 
-            chartMap.addAll(MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForColumn(
+            chartMap.addAll(MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForCategoricalColumn(
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectId(),
                     ReferenceController.getInstance().getCurrentReferenceId(),
@@ -230,21 +200,71 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             chartMap.sort();
         }
 
-        if (!useFilteredCounts) {
-            unfilteredMapCache.put(cacheKey,chartMap);
-        }
 
-        if (useFilteredCounts || noConditions) {
-            filteredMapCache.put(cacheKey,chartMap);
-        }
 
         return chartMap;
     }
 
-    public ChartFrequencyMap generateNumericChartMap(boolean useFilteredCounts, List<Range> bins, boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
+    private String checkInt(double d) {
+        if (Math.round(d) == d) {
+            return ViewUtil.numToString((int)d);
+        } else {
+            return ViewUtil.numToString(d);
+        }
+    }
+
+    public ChartFrequencyMap generateNumericChartMap(boolean useFilteredCounts, double min, double binSize, boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
 
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
 
+        if (whichTable == Table.VARIANT) {
+                Map<Range,Long> resultMap;
+                if (useFilteredCounts) {
+                    // filter conditions
+                    System.out.println("//// IN 1");
+                    resultMap = MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForNumericColumn(
+                            LoginController.sessionId,
+                            ProjectController.getInstance().getCurrentProjectId(),
+                            ReferenceController.getInstance().getCurrentReferenceId(),
+                            FilterController.getQueryFilterConditions(),
+                            field.getColumnName(),
+                            min,
+                            binSize);
+
+                    System.out.println("//// OUT 1");
+
+                } else {
+                    System.out.println("//// IN 2");
+                    // no conditions
+                    resultMap = MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForNumericColumn(
+                            LoginController.sessionId,
+                            ProjectController.getInstance().getCurrentProjectId(),
+                            ReferenceController.getInstance().getCurrentReferenceId(),
+                            new Condition[][]{},
+                            field.getColumnName(),
+                            min,
+                            binSize);
+                    System.out.println("//// OUT 2");
+                }
+
+                System.out.println("Populating map");
+                for (Range key : resultMap.keySet()) {
+                    chartMap.addEntry(
+                        checkInt(key.getMin()) + " - " + checkInt(key.getMax()),
+                        resultMap.get(key));
+                }
+                System.out.println("Done populating map");
+
+
+        } else {
+        }
+        return chartMap;
+
+
+
+
+        ////////////////////////
+        /*
         for (Range binrange : bins) {
             if (Thread.currentThread().isInterrupted()) {
                 return null;
@@ -325,6 +345,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             }
         }
         return chartMap;
+         *
+         */
     }
 
     public ChartFrequencyMap generateChartMap(boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
@@ -332,6 +354,25 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
     }
 
     public ChartFrequencyMap generateChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
+
+        String cacheKey = ProjectController.getInstance().getCurrentProjectId()
+                + "_" + ReferenceController.getInstance().getCurrentReferenceId()
+                + "_" + field.getColumnName();
+
+        boolean noConditions = !useFilteredCounts || (FilterController.getQueryFilterConditions().length == 0);
+
+        if (!useFilteredCounts) {
+            if (unfilteredMapCache.containsKey(cacheKey)) {
+                return unfilteredMapCache.get(cacheKey);
+            }
+        } else {
+            if (filteredMapCache.containsKey(cacheKey)) {
+                return filteredMapCache.get(cacheKey);
+            }
+        }
+
+        ChartFrequencyMap chartMap;
+
 
         if (isNumeric() && !field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
 
@@ -346,15 +387,22 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                     tablename,
                     field.getColumnName()));
 
-            List<Range> bins = generateBins(r, isLogScaleX);
-            return generateNumericChartMap(useFilteredCounts, bins, isLogScaleX);
-
+            double binSize = generateBins(r, isLogScaleX);
+            chartMap = generateNumericChartMap(useFilteredCounts, 0 /*r.getMin()*/, binSize, isLogScaleX);
 
         } else {
-
-            return generateCategoricalChartMap(useFilteredCounts, isLogScaleX);
-
+            chartMap = generateCategoricalChartMap(useFilteredCounts, isLogScaleX);
         }
+
+        if (!useFilteredCounts) {
+            unfilteredMapCache.put(cacheKey,chartMap);
+        }
+
+        if (useFilteredCounts || noConditions) {
+            filteredMapCache.put(cacheKey,chartMap);
+        }
+
+        return chartMap;
     }
 
     public boolean isNumeric() {
