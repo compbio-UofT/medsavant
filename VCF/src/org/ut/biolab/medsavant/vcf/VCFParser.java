@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
 
 /**
  *
@@ -182,13 +183,57 @@ public class VCFParser {
             System.err.println("WARNING: error parsing line " + line + ". Skipping");
             return new ArrayList<VariantRecord>();
         }
+        
+        int indexGT = getIndexGT(line);
         for (int i = 0; i < ids.size(); i++) {
             String id = ids.get(i);
             VariantRecord r2 = new VariantRecord(r);
             r2.setDnaID(id);
+            
+            //add gt and zygosity;
+            if(indexGT != -1){
+                r2.setGenotype(line[numMandatoryFields+i+1].split(":")[indexGT]);
+                r2.setZygosity(calculateZygosity(r2.getGenotype()));
+            }
+            
+            
             records.add(r2);
         }
 
         return records;
+    }    
+        
+    private static int getIndexGT(String[] line){
+        if(line.length < VCFHeader.getNumMandatoryFields()+1) return -1;
+        String[] list = line[VCFHeader.getNumMandatoryFields()].trim().split(":");
+        for(int i = 0; i < list.length; i++){
+            if(list[i].equals("GT")){
+                return i;
+            }
+        }
+        return -1;
     }
+    
+    private static Zygosity calculateZygosity(String gt){
+        String[] split = gt.split("/|\\\\|\\|"); // splits on / or \ or |
+        if(split.length < 2 || split[0] == null || split[1] == null || split[0].length() == 0 || split[1].length() == 0) return null;
+        
+        try {
+            int a = Integer.parseInt(split[0]);
+            int b = Integer.parseInt(split[1]);
+            if(a == 0 && b == 0){
+                return Zygosity.HomoRef;
+            } else if (a == b){
+                return Zygosity.HomoAlt;
+            } else if (a == 0 || b == 0){
+                return Zygosity.Hetero;
+            } else {
+                return Zygosity.HeteroTriallelic;
+            }
+        } catch (NumberFormatException e){
+            return null;
+        }
+    }
+
+    
 }

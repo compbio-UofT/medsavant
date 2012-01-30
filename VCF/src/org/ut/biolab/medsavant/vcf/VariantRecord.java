@@ -11,6 +11,9 @@ import java.io.Serializable;
  * @author mfiume, AndrewBrook
  */
 public class VariantRecord implements Serializable {
+    
+    public static enum VariantType {SNP, Insertion, Deletion, Various, Unknown};
+    public static enum Zygosity {HomoRef, HomoAlt, Hetero, HeteroTriallelic};
 
     private static final int FILE_INDEX_OF_CHROM = 0;
     private static final int FILE_INDEX_OF_POS = FILE_INDEX_OF_CHROM + 1;
@@ -49,6 +52,9 @@ public class VariantRecord implements Serializable {
     private String alt;
     private Float qual;
     private String filter;
+    private VariantType type;
+    private Zygosity zygosity;
+    private String genotype;
     private String customInfo;    
     private Object[] customFields;
      
@@ -60,7 +66,7 @@ public class VariantRecord implements Serializable {
      */
     public VariantRecord() {}
   
-    public VariantRecord(String[] line){//, String[] infoKeys, Class[] infoClasses) {
+    public VariantRecord(String[] line) throws Exception{//, String[] infoKeys, Class[] infoClasses) {
         dnaID =  null;
         chrom =         (String)    parse(CLASS_OF_CHROM, line[FILE_INDEX_OF_CHROM]);
         position =      (Long)      parse(CLASS_OF_POSITION, line[FILE_INDEX_OF_POS]);
@@ -70,6 +76,15 @@ public class VariantRecord implements Serializable {
         qual =          (Float)     parse(CLASS_OF_QUAL, line[FILE_INDEX_OF_QUAL]);
         filter =        (String)    parse(CLASS_OF_FILTER, line[FILE_INDEX_OF_FILTER]);
         customInfo =    (String)    parse(CLASS_OF_CUSTOMINFO, line[FILE_INDEX_OF_INFO]);
+        
+        if((ref == null || ref.length()==0) && (alt == null || alt.length()==0)){
+            throw new Exception();
+        }
+        
+        type = getVariantType(ref, alt);
+        //genotype = getGenotype(ref, alt); // DO THESE TOGETHER?
+        //zygosity = calculateZygosity(); //
+        
         //parseInfo(line[FILE_INDEX_OF_INFO], infoKeys, infoClasses);        
     }
 
@@ -117,6 +132,7 @@ public class VariantRecord implements Serializable {
         this.setFilter(r.getFilter());
         this.setCustomInfo(r.getCustomInfo());    
         this.setCustomFields(r.getCustomFields());
+        this.setType(r.getType());
     }
 
     private static Object parse(Class c, String value) {
@@ -162,8 +178,64 @@ public class VariantRecord implements Serializable {
 
         throw new UnsupportedOperationException("Parser doesn't deal with objects of type " + c);
     }
+      
+    private VariantType getVariantType(String ref, String alt) {
+        if(ref.startsWith("<") || alt.startsWith("<")){
+            if(alt.contains("<DEL>") || ref.contains("<DEL>")){
+                return VariantType.Deletion;
+            } else if (alt.contains("<INS>") || ref.contains("<INS>")){
+                return VariantType.Insertion;
+            } else {
+                return VariantType.Unknown;
+            }
+        }
+        
+        VariantType result = null;
+        for(String s : alt.split(",")){
+            if(ref == null || (s != null && s.length() > ref.length())){
+                result = variantTypeHelper(result, VariantType.Insertion);
+            } else if (s == null || (ref != null && ref.length() > s.length())){
+                result = variantTypeHelper(result, VariantType.Deletion);
+            } else {
+                result = variantTypeHelper(result, VariantType.SNP);
+            }
+        }
+        return result;
+    }
+    
+    private VariantType variantTypeHelper(VariantType currentType, VariantType newType){
+        if(currentType == null || currentType == newType){
+            return newType;
+        } else {
+            return VariantType.Various;
+        }
+    }
+    
+    /*private Zygosity calculateZygosity(){
+        Object[] field = parseInfo(customInfo, new String[]{"GT"}, new Class[]{String.class});
+        if(field[0] == null) return null;
+        String value = (String)field[0];
+        String[] split = value.split("/|\\\\|\\|"); // splits on / or \ or |
+        if(split.length < 2 || split[0] == null || split[1] == null || split[0].length() == 0 || split[1].length() == 0) return null;
+        
+        try {
+            int a = Integer.parseInt(split[0]);
+            int b = Integer.parseInt(split[1]);
+            if(a == 0 && b == 0){
+                return Zygosity.HomoRef;
+            } else if (a == b){
+                return Zygosity.HomoAlt;
+            } else if (a == 0 || b == 0){
+                return Zygosity.Hetero;
+            } else {
+                return Zygosity.HeteroTriallelic;
+            }
+        } catch (NumberFormatException e){
+            return null;
+        }
+    }*/
 
-    private void parseInfoOld(String infoString, String[] infoKeys, Class[] infoClasses){
+    /*private void parseInfoOld(String infoString, String[] infoKeys, Class[] infoClasses){
         
         customFields = new Object[infoKeys.length];
         customInfo = infoString;
@@ -186,7 +258,7 @@ public class VariantRecord implements Serializable {
                 }
             }
         }
-    }
+    }*/
     
     public static Object[] parseInfo(String infoString, String[] infoKeys, Class[] infoClasses){
         Object[] values = new Object[infoKeys.length];
@@ -211,7 +283,7 @@ public class VariantRecord implements Serializable {
         
         return values;
     }
-            
+       
     public int getVariantID(){
         return variantID;
     }
@@ -312,6 +384,30 @@ public class VariantRecord implements Serializable {
         return customFields;
     }
 
+    public VariantType getType() {
+        return type;
+    }
+
+    public void setType(VariantType type) {
+        this.type = type;
+    }
+
+    public Zygosity getZygosity() {
+        return zygosity;
+    }
+
+    public void setZygosity(Zygosity zygosity) {
+        this.zygosity = zygosity;
+    }
+
+    public String getGenotype() {
+        return genotype;
+    }
+
+    public void setGenotype(String genotype) {
+        this.genotype = genotype;
+    }
+
     public void setCustomFields(Object[] customFields) {
         this.customFields = customFields;
     }
@@ -360,6 +456,9 @@ public class VariantRecord implements Serializable {
                 "\"" + getString(this.alt) + "\"" + delim + 
                 "\"" + getString(this.qual) + "\"" + delim + 
                 "\"" + getString(this.filter) + "\"" + delim + 
+                "\"" + getString(this.type) + "\"" + delim + 
+                "\"" + getString(this.zygosity) + "\"" + delim +
+                "\"" + getString(this.genotype) + "\"" + delim +
                 "\"" + getString(this.customInfo) + "\"";// + delim;
         //for(Object o : this.customFields){
         //    s += "\"" + getString(o) + "\"" + delim;
