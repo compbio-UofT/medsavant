@@ -237,30 +237,43 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
         int updateId = AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid, projectId, referenceId, org.ut.biolab.medsavant.db.model.AnnotationLog.Action.ADD_VARIANTS, user);     
 
         try {
+            
+            String currentFilename;
 
             //parse and cat new files
             ServerLogger.log(VariantManager.class, "Parsing vcf files and concatenating");
             File tempFile = VariantManagerUtils.parseVCFs(vcfFiles, baseDir, updateId);
             String tempFilename = tempFile.getAbsolutePath();
-
-            //sort variants
-            ServerLogger.log(VariantManager.class, "Sorting variants");
-            String sortedVariants = tempFilename + "_sorted";
-            VariantManagerUtils.sortFileByPosition(tempFilename, sortedVariants);
-            VariantManagerUtils.logFileSize(sortedVariants);
+            currentFilename = tempFilename;
 
             //add custom fields
             ServerLogger.log(VariantManager.class, "Adding custom vcf fields");
             List<CustomField> customFields = ProjectQueryUtil.getInstance().getCustomVariantFields(sid, projectId, referenceId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, false));
-            String vcfAnnotatedVariants = sortedVariants + "_vcf";
-            VariantManagerUtils.addCustomVcfFields(sortedVariants, vcfAnnotatedVariants, customFields, DefaultVariantTableSchema.INDEX_OF_FILTER + 1); //last of the default fields
-
-            //annotate
-            String annotatedFilename = sortedVariants + "_annotated";
-            ServerLogger.log(VariantManager.class, "File containing annotated variants, sorted by position: " + annotatedFilename);
+            if(!customFields.isEmpty()){
+                String customFieldFilename = currentFilename + "_vcf";
+                VariantManagerUtils.addCustomVcfFields(currentFilename, customFieldFilename, customFields, DefaultVariantTableSchema.INDEX_OF_FILTER + 1); //last of the default fields
+                currentFilename = customFieldFilename;
+            }
+            
+            //get annotation ids
             int[] annotationIds = AnnotationQueryUtil.getInstance().getAnnotationIds(sid,projectId, referenceId);
-            VariantManagerUtils.annotateTDF(sid,vcfAnnotatedVariants, annotatedFilename, annotationIds);
-            VariantManagerUtils.logFileSize(annotatedFilename);
+            
+            if(annotationIds.length > 0){
+                
+                //sort variants
+                ServerLogger.log(VariantManager.class, "Sorting variants");
+                String sortedVariants = currentFilename + "_sorted";
+                VariantManagerUtils.sortFileByPosition(currentFilename, sortedVariants);
+                VariantManagerUtils.logFileSize(sortedVariants);
+                currentFilename = sortedVariants;
+
+                //annotate
+                String annotatedFilename = currentFilename + "_annotated";
+                ServerLogger.log(VariantManager.class, "File containing annotated variants, sorted by position: " + annotatedFilename);
+                VariantManagerUtils.annotateTDF(sid, currentFilename, annotatedFilename, annotationIds);
+                VariantManagerUtils.logFileSize(annotatedFilename);
+                currentFilename = annotatedFilename;
+            }
 
             //dump existing table
             String existingTableName = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectId, referenceId, false);
@@ -271,20 +284,25 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
 
             //cat existing table to new annotations
             ServerLogger.log(VariantManager.class, "Concatenating existing variants with new");
-            VariantManagerUtils.appendToFile(existingVariantsFile.getAbsolutePath(), annotatedFilename);
+            VariantManagerUtils.appendToFile(existingVariantsFile.getAbsolutePath(), currentFilename);
+            currentFilename = existingVariantsFile.getAbsolutePath();
 
-            //split
-            File splitDir = new File(baseDir,"splitDir");
-            splitDir.mkdir();
-            ServerLogger.log(VariantManager.class, "Splitting annotation file into multiple files by file ID");
-            VariantManagerUtils.splitFileOnColumn(splitDir, existingVariantsFile.getAbsolutePath(), 1);
-            String outputFilenameMerged = tempFilename + "_annotated_merged";
-            ServerLogger.log(VariantManager.class, "File containing annotated variants, sorted by file: " + outputFilenameMerged);
+            if(annotationIds.length > 0){
+            
+                //split
+                File splitDir = new File(baseDir,"splitDir");
+                splitDir.mkdir();
+                ServerLogger.log(VariantManager.class, "Splitting annotation file into multiple files by file ID");
+                VariantManagerUtils.splitFileOnColumn(splitDir, currentFilename, 1);            
 
-            //merge
-            ServerLogger.log(VariantManager.class, "Merging files");
-            VariantManagerUtils.concatenateFilesInDir(splitDir, outputFilenameMerged);
-            VariantManagerUtils.logFileSize(outputFilenameMerged);
+                //merge
+                ServerLogger.log(VariantManager.class, "Merging files");
+                String outputFilenameMerged = tempFilename + "_annotated_merged";
+                ServerLogger.log(VariantManager.class, "File containing annotated variants, sorted by file: " + outputFilenameMerged);
+                VariantManagerUtils.concatenateFilesInDir(splitDir, outputFilenameMerged);
+                VariantManagerUtils.logFileSize(outputFilenameMerged);
+                currentFilename = outputFilenameMerged;
+            }
 
             //create the staging table
             ServerLogger.log(VariantManager.class, "Creating new variant table for resulting variants");
@@ -295,7 +313,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
 
             //upload to staging table
             ServerLogger.log(VariantManager.class, "Uploading variants to table: " + tableName);
-            VariantQueryUtil.getInstance().uploadFileToVariantTable(sid,new File(outputFilenameMerged), tableName);
+            VariantQueryUtil.getInstance().uploadFileToVariantTable(sid,new File(currentFilename), tableName);
             
             //add tags to upload
             ServerLogger.log(VariantManager.class, "Adding upload tags");
