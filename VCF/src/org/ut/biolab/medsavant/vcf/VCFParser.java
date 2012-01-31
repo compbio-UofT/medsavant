@@ -180,6 +180,7 @@ public class VCFParser {
         try {
             r = new VariantRecord(line);
         } catch (Exception e) {
+            //e.printStackTrace();
             System.err.println("WARNING: error parsing line " + line + ". Skipping");
             return new ArrayList<VariantRecord>();
         }
@@ -195,8 +196,7 @@ public class VCFParser {
                 r2.setGenotype(line[numMandatoryFields+i+1].split(":")[indexGT]);
                 r2.setZygosity(calculateZygosity(r2.getGenotype()));
             }
-            
-            
+
             records.add(r2);
         }
 
