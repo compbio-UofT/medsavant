@@ -245,8 +245,6 @@ public class StringListFilterView extends FilterView {
         JPanel optionContainer = ViewUtil.getClearPanel();
         optionContainer.setBorder(ViewUtil.getSmallBorder());
 
-        //System.out.println(tablename + " = num:" + uniq.size() + " cols:" + numCols + " rows:" + ((int)Math.ceil(((double)uniq.size())/numCols)));
-
         // 25 is approximately the height of a checkbox plus padding
         Dimension d = new Dimension(peekingPanelWidth,25*(int)Math.ceil(((double)uniq.size())/numCols));
         optionContainer.setPreferredSize(d);

@@ -113,9 +113,6 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
 
     public ChartFrequencyMap generateCategoricalChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
 
-
-
-
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
         if (Thread.currentThread().isInterrupted()) {
             return null;
@@ -200,8 +197,6 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             chartMap.sort();
         }
 
-
-
         return chartMap;
     }
 
@@ -221,7 +216,6 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                 Map<Range,Long> resultMap;
                 if (useFilteredCounts) {
                     // filter conditions
-                    System.out.println("//// IN 1");
                     resultMap = MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForNumericColumn(
                             LoginController.sessionId,
                             ProjectController.getInstance().getCurrentProjectId(),
@@ -230,11 +224,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                             field.getColumnName(),
                             min,
                             binSize);
-
-                    System.out.println("//// OUT 1");
-
                 } else {
-                    System.out.println("//// IN 2");
                     // no conditions
                     resultMap = MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForNumericColumn(
                             LoginController.sessionId,
@@ -244,16 +234,13 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                             field.getColumnName(),
                             min,
                             binSize);
-                    System.out.println("//// OUT 2");
                 }
 
-                System.out.println("Populating map");
                 for (Range key : resultMap.keySet()) {
                     chartMap.addEntry(
                         checkInt(key.getMin()) + " - " + checkInt(key.getMax()),
                         resultMap.get(key));
                 }
-                System.out.println("Done populating map");
 
 
         } else {
@@ -398,7 +385,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             unfilteredMapCache.put(cacheKey,chartMap);
         }
 
-        if (useFilteredCounts || noConditions) {
+        else if (useFilteredCounts || noConditions) {
             filteredMapCache.put(cacheKey,chartMap);
         }
 

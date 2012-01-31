@@ -376,8 +376,6 @@ public class SummaryChart extends JLayeredPane {
                 logp.setHighlight(highlights.get(index));
             }
 
-            //System.out.println("key: " + cat.getName() + " value: " + value);
-
             if (this.isLogScaleY()) {
                 chartModel.addPoint(logp);
             } else {
@@ -415,7 +413,6 @@ public class SummaryChart extends JLayeredPane {
 
                 ChartFrequencyMap[] result;
 
-                System.out.println("Generating chart map");
                 if (showComparedToOriginal) {
                     result = new ChartFrequencyMap[2];
                     result[1] = mapGenerator.generateChartMap(false, isLogScaleX && mapGenerator.isNumeric());
@@ -425,8 +422,6 @@ public class SummaryChart extends JLayeredPane {
 
                 result[0] = mapGenerator.generateChartMap(true, isLogScaleX && mapGenerator.isNumeric());
 
-                System.out.println("Done generating chart map");
-
                 return result;
             } catch (SQLException ex) {
                 MiscUtils.checkSQLException(ex);
@@ -435,11 +430,9 @@ public class SummaryChart extends JLayeredPane {
         }
 
         public void showSuccess(ChartFrequencyMap[] result) {
-            System.out.println("Drawing chart");
             if (result != null) {
                 drawChart(result);
             }
-            System.out.println("Done drawing chart");
         }
 
         public void showProgress(double prog) {
@@ -494,7 +487,8 @@ public class SummaryChart extends JLayeredPane {
                 ThreadController.getInstance().cancelWorkers(pageName);
 
                 List<String> values = new ArrayList<String>();
-                ListSelectionModel selectionModel = chart.getSelectionsForModel(chart.getModel());
+                ListSelectionModel selectionModel = chart.getSelectionsForModel(chart.getModel(0));
+
                 for (int i = selectionModel.getMinSelectionIndex(); i <= selectionModel.getMaxSelectionIndex(); i++) {
                     if (selectionModel.isSelectedIndex(i)) {
                         values.add(((ChartPoint) chart.getModel().getPoint(i)).getHighlight().name());
