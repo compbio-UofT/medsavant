@@ -77,6 +77,12 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
     public void terminateSessionsForDatabase(String dbname) {
         terminateSessionsForDatabase(dbname, null);
     }
+    
+    public void terminateAllSessions(String message) {
+        for(String dbName : ConnectionController.getDbNames()){
+            terminateSessionsForDatabase(dbName, message);
+        }
+    }
 
     public void terminateSessionsForDatabase(String dbname, final String message) {
 

@@ -20,8 +20,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,7 +69,7 @@ public class ConnectionController {
             }
         }
 
-        return DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s?%s", dbhost, port, dbname, props), username, password);
+        return new MSConnection(DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s?%s", dbhost, port, dbname, props), username, password));
     }
 
     /**
@@ -199,5 +201,15 @@ public class ConnectionController {
         synchronized(sessionConnectionMap) {
             return sessionConnectionMap.keySet();
         }
+    }
+    
+    public static List<String> getDbNames() {
+        List<String> result = new ArrayList<String>();
+        for(SessionConnection sc : sessionConnectionMap.values()){
+            if(!result.contains(sc.getDBName())){
+                result.add(sc.getDBName());
+            }
+        }
+        return result;
     }
 }
