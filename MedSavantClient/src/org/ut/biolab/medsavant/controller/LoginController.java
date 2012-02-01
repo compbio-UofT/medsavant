@@ -133,7 +133,10 @@ public class LoginController {
 
         //test connection
         try {
-            SessionAdapter.testConnection(sessionId);
+            if(!SessionAdapter.testConnection(sessionId)){
+                fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
+                return;
+            }
         } catch (Exception ex) {
             setLoginException(ex);
             return;
@@ -151,6 +154,9 @@ public class LoginController {
                 fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
                 return;
             }
+        } catch (SQLException ex){
+            fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
+            return;
         } catch (Exception ex){
             JOptionPane.showMessageDialog(
                     null,
