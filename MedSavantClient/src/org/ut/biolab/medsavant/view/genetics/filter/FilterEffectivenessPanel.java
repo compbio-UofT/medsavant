@@ -151,7 +151,7 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
         int maxRecords = -1;
 
         try {
-            maxRecords = ResultController.getInstance().getNumFilteredVariants();
+            maxRecords = ResultController.getInstance().getNumTotalVariants();
         } catch (NonFatalDatabaseException ex) {
             Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
         }

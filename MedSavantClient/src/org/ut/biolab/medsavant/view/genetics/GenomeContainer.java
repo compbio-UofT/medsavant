@@ -27,9 +27,11 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -39,6 +41,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Chromosome;
@@ -69,6 +72,10 @@ public class GenomeContainer extends JLayeredPane {
     private boolean updateRequired = true;
     private boolean init = false;
     private GridBagConstraints c;
+    
+    private static int NUM_VARIANTS_LIMIT = 50000000;
+    private static String OVER_LIMIT_MESSAGE = "Too many variants";
+    private JPanel overLimitPanel;
 
     public GenomeContainer(String pageName, Genome g) {
         this.pageName = pageName;
@@ -114,7 +121,15 @@ public class GenomeContainer extends JLayeredPane {
          */
         
         waitPanel = new WaitPanel("Generating Genome View");
-        this.add(waitPanel, c, JLayeredPane.MODAL_LAYER);
+        this.add(waitPanel, c, JLayeredPane.PALETTE_LAYER);
+        
+        overLimitPanel = new JPanel();
+        overLimitPanel.setLayout(new BorderLayout());
+        JLabel label = new JLabel(OVER_LIMIT_MESSAGE);
+        label.setFont(ViewUtil.getBigTitleFont());
+        overLimitPanel.add(ViewUtil.getCenterAlignedComponent(label), BorderLayout.CENTER);
+        overLimitPanel.setVisible(false);
+        this.add(overLimitPanel, c, JLayeredPane.MODAL_LAYER);
 
         init = true;
         setGenome(g);
@@ -150,7 +165,7 @@ public class GenomeContainer extends JLayeredPane {
 
     private synchronized void showWaitCard() {
         waitPanel.setVisible(true);
-        this.setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
+        this.setLayer(waitPanel, JLayeredPane.PALETTE_LAYER);
     }
 
     private synchronized void showShowCard() {
@@ -177,10 +192,19 @@ public class GenomeContainer extends JLayeredPane {
                 shouldUpdate = true;
             }
         }
-        if(shouldUpdate){
-            showWaitCard();
-            GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker(pageName);
-            gnv.execute();
+        try {
+            if(shouldUpdate && ResultController.getInstance().getNumTotalVariants() < NUM_VARIANTS_LIMIT){
+                overLimitPanel.setVisible(false);
+                showWaitCard();
+                GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker(pageName);
+                gnv.execute();
+            } else if (shouldUpdate) {
+                showShowCard();
+                this.setLayer(overLimitPanel, JLayeredPane.MODAL_LAYER);
+                overLimitPanel.setVisible(true);
+            }
+        } catch (NonFatalDatabaseException ex) {
+            Logger.getLogger(GenomeContainer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
