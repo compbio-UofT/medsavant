@@ -22,8 +22,8 @@
           <Color blue="e5" green="de" red="d9" type="rgb"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-            <TitledBorder/>
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="6" left="6" right="6" top="6"/>
           </Border>
         </Property>
         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -44,21 +44,10 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Component id="label_versioninformation" alignment="0" pref="388" max="32767" attributes="1"/>
               <Component id="spiralPanel" alignment="0" pref="388" max="32767" attributes="1"/>
-              <Group type="102" alignment="0" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jLabel1" min="-2" pref="257" max="-2" attributes="1"/>
-                      <Component id="field_username" min="-2" pref="253" max="-2" attributes="1"/>
-                  </Group>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jLabel2" pref="125" max="32767" attributes="0"/>
-                      <Component id="field_password" pref="125" max="32767" attributes="1"/>
-                  </Group>
-              </Group>
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="100" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="label_status" alignment="1" pref="378" max="32767" attributes="0"/>
+                      <Component id="label_status" alignment="1" pref="288" max="32767" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
                           <Component id="jToggleButton1" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -67,6 +56,17 @@
                   </Group>
               </Group>
               <Component id="panel_details" alignment="1" max="32767" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                      <Component id="jLabel1" alignment="0" max="32767" attributes="1"/>
+                      <Component id="field_username" alignment="0" pref="189" max="32767" attributes="1"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="jLabel2" pref="189" max="32767" attributes="0"/>
+                      <Component id="field_password" alignment="0" pref="189" max="32767" attributes="1"/>
+                  </Group>
+              </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -172,7 +172,7 @@
         </Component>
         <Component class="javax.swing.JToggleButton" name="jToggleButton1">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Connection Settings"/>
+            <Property name="text" type="java.lang.String" value="Settings"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jToggleButton1ActionPerformed"/>
@@ -198,15 +198,15 @@
                   <Component id="jLabel5" alignment="1" pref="376" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabel3" pref="356" max="32767" attributes="0"/>
+                      <Component id="jLabel3" pref="336" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="field_hostname" alignment="0" pref="356" max="32767" attributes="0"/>
-                          <Component id="field_port" alignment="0" pref="356" max="32767" attributes="0"/>
-                          <Component id="jLabel4" alignment="1" pref="356" max="32767" attributes="0"/>
+                          <Component id="field_hostname" alignment="0" pref="336" max="32767" attributes="0"/>
+                          <Component id="field_port" alignment="0" pref="336" max="32767" attributes="0"/>
+                          <Component id="jLabel4" alignment="1" pref="336" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -214,7 +214,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="button_create_db" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="field_database" alignment="1" pref="356" max="32767" attributes="0"/>
+                          <Component id="field_database" alignment="1" pref="336" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>

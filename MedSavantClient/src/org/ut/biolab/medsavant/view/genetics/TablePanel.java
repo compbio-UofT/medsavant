@@ -65,14 +65,14 @@ class TablePanel extends JLayeredPane {
 
     private SearchableTablePanel tablePanel;
     private WaitPanel waitPanel;
-    
+
     private boolean init = false;
     private boolean updateRequired = true;
     private final Object updateLock = new Object();
     private String pageName;
-    
+
     private GridBagConstraints c;
-    
+
     private Map<Integer, List<StarredVariant>> starMap = new HashMap<Integer, List<StarredVariant>>();
 
     public TablePanel(final String pageName) {
@@ -80,7 +80,7 @@ class TablePanel extends JLayeredPane {
         this.pageName = pageName;
         //this.setLayout(new BorderLayout());
         this.setLayout(new GridBagLayout());
-        
+
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 0;
@@ -89,11 +89,11 @@ class TablePanel extends JLayeredPane {
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1.0;
         c.weighty = 1.0;
-        
+
         waitPanel = new WaitPanel("Generating List View");
-        
+
         this.add(waitPanel, c, JLayeredPane.MODAL_LAYER);
-        
+
         showWaitCard();
 
         final TablePanel instance = this;
@@ -143,7 +143,7 @@ class TablePanel extends JLayeredPane {
                         try {
                             final List<Object[]> result = ResultController.getInstance().getFilteredVariantRecords(start, limit);
                             checkStarring(result);
-                            showShowCard();                           
+                            showShowCard();
                             return result;
                         } catch (NonFatalDatabaseException ex) {
                             Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -173,7 +173,7 @@ class TablePanel extends JLayeredPane {
 
                 SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames, fieldClasses, hiddenColumns, 1000, retriever){
                     @Override
-                    public String getToolTip(int actualRow){                       
+                    public String getToolTip(int actualRow){
                         if(starMap.get(actualRow) != null && !starMap.get(actualRow).isEmpty()){
                             String s = "<HTML>";
                             List<StarredVariant> starred = starMap.get(actualRow);
@@ -197,13 +197,13 @@ class TablePanel extends JLayeredPane {
                         //check for right click
                         if(!SwingUtilities.isRightMouseButton(e)) return;
 
-                        SortableTable table = tablePanel.getTable();                       
-                        int numSelected = table.getSelectedRows().length;                      
+                        SortableTable table = tablePanel.getTable();
+                        int numSelected = table.getSelectedRows().length;
                         if(numSelected == 1){
                             int r = table.rowAtPoint(e.getPoint());
                             if(r < 0 || r >= table.getRowCount()) return;
                             JPopupMenu popup = createPopupSingle(table, r);
-                            popup.show(e.getComponent(), e.getX(), e.getY());                                              
+                            popup.show(e.getComponent(), e.getX(), e.getY());
                         } else if(numSelected > 1){
                             JPopupMenu popup = createPopupMultiple(table);
                             popup.show(e.getComponent(), e.getX(), e.getY());
@@ -260,7 +260,7 @@ class TablePanel extends JLayeredPane {
             }
         }
     }
-    
+
     private JPopupMenu createPopupSingle(SortableTable table, int r){
 
         table.setRowSelectionInterval(r, r);
@@ -269,17 +269,17 @@ class TablePanel extends JLayeredPane {
         final String chrom = (String)table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
         final int position = (Integer)table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
         final String alt = (String)table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_ALT);
-        
-        
+
+
         JPopupMenu menu = new JPopupMenu();
-        
+
         //star/unstar
         if(isStarredByUser(row)){
             menu.add(createUnstarVariantItem(row));
         } else {
             menu.add(createStarVariantsItem(table));
         }
-        
+
         menu.add(new JSeparator());
 
         //Filter by position
@@ -323,31 +323,30 @@ class TablePanel extends JLayeredPane {
 
         return menu;
     }
-    
-    
+
     private JPopupMenu createPopupMultiple(SortableTable table){
         JPopupMenu menu = new JPopupMenu();
 
         //Star variant(s)
         menu.add(createStarVariantsItem(table));
-        
+
         return menu;
     }
-    
+
     private JMenuItem createStarVariantsItem(final SortableTable table){
-        
+
         final int[] selected = table.getSelectedRows();
         int[] actualSelected = new int[selected.length];
         for(int i = 0; i < selected.length; i++){
             actualSelected[i] = TableModelWrapperUtils.getActualRowAt(table.getModel(), selected[i]);
         }
         final int[] finalActualSelected = actualSelected;
-        
+
         JMenuItem item = new JMenuItem("Mark Variant(s) as Important");
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                
+
                 String description = "";
                 while(true){
                     description = JOptionPane.showInputDialog("Add a description (500 char limit):", description.substring(0, Math.min(description.length(), 500)));
@@ -375,15 +374,15 @@ class TablePanel extends JLayeredPane {
                 }
                 try {
                     int numStarred = MedSavantClient.VariantQueryUtilAdapter.addStarredVariants(
-                            LoginController.sessionId, 
-                            ProjectController.getInstance().getCurrentProjectId(), 
-                            ReferenceController.getInstance().getCurrentReferenceId(), 
+                            LoginController.sessionId,
+                            ProjectController.getInstance().getCurrentProjectId(),
+                            ReferenceController.getInstance().getCurrentReferenceId(),
                             list);
                     if(numStarred < list.size()){
                         JOptionPane.showMessageDialog(
-                                null, 
-                                "<HTML>" + (list.size() - numStarred) + " out of " + list.size() + " variants were not marked. <BR>The total number of marked variants cannot exceed " + Settings.NUM_STARRED_ALLOWED + ".</HTML>", 
-                                "Out of Space", 
+                                null,
+                                "<HTML>" + (list.size() - numStarred) + " out of " + list.size() + " variants were not marked. <BR>The total number of marked variants cannot exceed " + Settings.NUM_STARRED_ALLOWED + ".</HTML>",
+                                "Out of Space",
                                 JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (SQLException ex) {
@@ -391,20 +390,20 @@ class TablePanel extends JLayeredPane {
                 } catch (RemoteException ex) {
                     Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
+
                 //add to view
                 for(Integer i : finalActualSelected){
                     tablePanel.addSelectedRow(i);
-                } 
+                }
                 tablePanel.repaint();
             }
         });
-        
+
         return item;
     }
-    
+
     private JMenuItem createUnstarVariantItem(final int row){
-        
+
         JMenuItem item = new JMenuItem("Unmark");
         item.addActionListener(new ActionListener() {
 
@@ -416,14 +415,14 @@ class TablePanel extends JLayeredPane {
                         break;
                     }
                 }
-                
+
                 try {
                     MedSavantClient.VariantQueryUtilAdapter.unstarVariant(
-                            LoginController.sessionId, 
-                            ProjectController.getInstance().getCurrentProjectId(), 
-                            ReferenceController.getInstance().getCurrentReferenceId(), 
-                            sv.getUploadId(), 
-                            sv.getFileId(), 
+                            LoginController.sessionId,
+                            ProjectController.getInstance().getCurrentProjectId(),
+                            ReferenceController.getInstance().getCurrentReferenceId(),
+                            sv.getUploadId(),
+                            sv.getFileId(),
                             sv.getVariantId(),
                             LoginController.getUsername());
                 } catch (SQLException ex) {
@@ -431,44 +430,44 @@ class TablePanel extends JLayeredPane {
                 } catch (RemoteException ex) {
                     Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
+
                 //remove from view
                 List<StarredVariant> list = starMap.get(row);
                 if(list.size() == 1){
-                    tablePanel.removeSelectedRow(row);       
+                    tablePanel.removeSelectedRow(row);
                     tablePanel.repaint();
-                } 
+                }
                 removeStarForUser(row);
             }
         });
-        
+
         return item;
     }
-    
+
     private void checkStarring(List<Object[]> variants){
 
         List<Integer> selected = new ArrayList<Integer>();
         starMap.clear();
-        
+
         try {
             Set<StarredVariant> starred = MedSavantClient.VariantQueryUtilAdapter.getStarredVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId());
-                       
+
             for(int i = 0; i < variants.size(); i++){
                 Object[] row = variants.get(i);
                 StarredVariant current = new StarredVariant(
                         (Integer)row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID],
                         (Integer)row[DefaultVariantTableSchema.INDEX_OF_FILE_ID],
                         (Integer)row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID],
-                        null, 
+                        null,
                         null,
                         null);
                 if(starred.contains(current)){
-                    
+
                     selected.add(i);
                     if(starMap.get(i) == null){
                         starMap.put(i, new ArrayList<StarredVariant>());
                     }
-                    
+
                     Object[] arr = starred.toArray();
                     for(Object a : arr){
                         StarredVariant sv = (StarredVariant)a;
@@ -476,17 +475,17 @@ class TablePanel extends JLayeredPane {
                             starMap.get(i).add(sv);
                         }
                     }
-                    
+
                 }
             }
 
         } catch (Exception ex) {
             Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
-        } 
-        
+        }
+
         tablePanel.setSelectedRows(selected);
     }
-    
+
     private boolean isStarredByUser(int row){
         if(!starMap.containsKey(row)) return false;
         List<StarredVariant> starred = starMap.get(row);
@@ -497,7 +496,7 @@ class TablePanel extends JLayeredPane {
         }
         return false;
     }
-    
+
     private void removeStarForUser(int row){
         List<StarredVariant> list = starMap.get(row);
         int index = -1;

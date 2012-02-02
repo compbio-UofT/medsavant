@@ -346,7 +346,23 @@ public class FilterPanelSub extends JPanel {
             });
         }
 
+         //GO filter
+        if(!hasSubItem(GOFilterView.FILTER_ID)){
+            map.get(Category.GENOME_COORDS).add(new FilterPlaceholder() {
+                public FilterView getFilterView() { return GOFilterView.getGOFilterView(id);}
+                public String getFilterID() { return GOFilterView.FILTER_ID;}
+                public String getFilterName() { return GOFilterView.FILTER_NAME;}
+            });
+        }
 
+        //HPO filter
+        if(!hasSubItem(HPOFilterView.FILTER_ID)){
+            map.get(Category.PATIENT).add(new FilterPlaceholder() {
+                public FilterView getFilterView() { return HPOFilterView.getHPOFilterView(id);}
+                public String getFilterID() { return HPOFilterView.FILTER_ID;}
+                public String getFilterName() { return HPOFilterView.FILTER_NAME;}
+            });
+        }
 
         //gene list filter
         if(!hasSubItem(GeneListFilterView.FILTER_ID)){
@@ -464,7 +480,7 @@ public class FilterPanelSub extends JPanel {
                 public String getFilterName() { return TagFilterView.FILTER_NAME;}
             });
         }
-        
+
         //starred variants
         if(!hasSubItem(StarredFilterView.FILTER_ID)){
             map.get(Category.VARIANT).add(new FilterPlaceholder() {

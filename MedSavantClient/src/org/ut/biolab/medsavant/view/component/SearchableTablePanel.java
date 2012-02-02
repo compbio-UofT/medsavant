@@ -82,27 +82,41 @@ public class SearchableTablePanel extends JPanel {
     private List<Integer> selectedRows;
     private static Color SELECTED_COLOUR = new Color(244, 237, 147);
     private static Color DARK_COLOUR = new Color(242, 245, 249);
-    
+    private final JPanel bottomPanel;
+    private final JButton chooseColumnButton;
+
     public enum TableSelectionType {DISABLED, CELL, ROW}
 
     public SortableTable getTable() {
         return table;
     }
-    
+
     private synchronized void updateView(boolean newData){
         if (worker != null) worker.cancel(true);
         (worker = new GetDataSwingWorker(pageName, newData)).execute();
     }
-    
+
+    public void setBottomBarVisible(boolean b) {
+        this.bottomPanel.setVisible(b);
+    }
+
+    public void setChooseColumnsButtonVisible(boolean b) {
+        this.chooseColumnButton.setVisible(b);
+    }
+
+    public void setExportButtonVisible(boolean b) {
+        this.exportButton.setVisible(b);
+    }
+
     private class GetDataSwingWorker extends MedSavantWorker {
-        
+
         boolean update;
-        
+
         protected GetDataSwingWorker(String pageName, boolean newData){
             super(pageName);
             this.update = newData;
         }
-        
+
         @Override
         protected List<Object[]> doInBackground() {
             try {
@@ -130,9 +144,9 @@ public class SearchableTablePanel extends JPanel {
             retriever.retrievalComplete();
         }
     }
-         
+
     public void applyData(List<Object[]> pageData){
-        
+
         boolean first = false;
         if (model == null) {
             model = new GenericTableModel(pageData, columnNames, columnClasses);
@@ -172,7 +186,7 @@ public class SearchableTablePanel extends JPanel {
                 columns[i] = i;
             }
             filterField.setTableModel(model);
-            filterField.setColumnIndices(columns);           
+            filterField.setColumnIndices(columns);
             filterField.setObjectConverterManagerEnabled(true);
 
             table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
@@ -190,8 +204,8 @@ public class SearchableTablePanel extends JPanel {
         } else {
             model.fireTableDataChanged();
         }
-    }  
-    
+    }
+
 
     private void setTableModel(List<Object[]> data, List<String> columnNames, List<Class> columnClasses) {
         if (data == null) {
@@ -202,7 +216,7 @@ public class SearchableTablePanel extends JPanel {
         this.columnNames = columnNames;
         this.columnClasses = columnClasses;
     }
-    
+
     public SearchableTablePanel(String pageName, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, int defaultRowsRetrieved, DataRetriever retriever) {
         this(pageName, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, TableSelectionType.ROW, defaultRowsRetrieved, retriever);
     }
@@ -233,11 +247,11 @@ public class SearchableTablePanel extends JPanel {
                 } else {
                     comp.setBackground(DARK_COLOUR);
                 }
-                
+
                 comp.setBorder(border);
                 return comp;
             }
-            
+
             public String getToolTipText(MouseEvent e){
                 return getToolTip(TableModelWrapperUtils.getActualRowAt(table.getModel(), table.rowAtPoint(e.getPoint())));
             }
@@ -279,15 +293,15 @@ public class SearchableTablePanel extends JPanel {
         if (allowSearch) {
             fieldPanel.add(filterField);
         }
-        
-        JButton chooseColumnButton = new JButton("Choose Columns");
+
+        chooseColumnButton = new JButton("Choose Columns");
         chooseColumnButton.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e) {
                 columnChooser.showDialog();
             }
         });
         fieldPanel.add(chooseColumnButton);
-        
+
         exportButton = new JButton("Export Page");
         exportButton.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e) {
@@ -301,7 +315,7 @@ public class SearchableTablePanel extends JPanel {
         });
         fieldPanel.add(exportButton);
 
-        JPanel bottomPanel = new JPanel();
+        bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 
         gotoFirst = niceButton();
@@ -338,7 +352,7 @@ public class SearchableTablePanel extends JPanel {
                 goToLastPage();
             }
         });
-        
+
         pageText = new JTextField();
         pageText.setColumns(5);
         pageText.setMaximumSize(new Dimension(50,20));
@@ -354,13 +368,13 @@ public class SearchableTablePanel extends JPanel {
                         setPageNumber(0);
                     }
                 }
-            }                
+            }
         });
 
         amountLabel = new JLabel();
         bottomPanel.add(amountLabel);
 
-        pageLabel1 = new JLabel("Page ");       
+        pageLabel1 = new JLabel("Page ");
         pageLabel2 = new JLabel();
 
         bottomPanel.add(Box.createHorizontalGlue());
@@ -412,11 +426,11 @@ public class SearchableTablePanel extends JPanel {
                 int rowsPerPage = (Integer) cb.getSelectedItem();
                 setNumRowsPerPage(rowsPerPage);
             }
-        });       
+        });
         rowsPerPageDropdown.setPreferredSize(new Dimension(100, 25));
-        rowsPerPageDropdown.setMaximumSize(new Dimension(100, 25));       
-        bottomPanel.add(rowsPerPageDropdown);        
-        
+        rowsPerPageDropdown.setMaximumSize(new Dimension(100, 25));
+        bottomPanel.add(rowsPerPageDropdown);
+
         setTableModel(data, columnNames, columnClasses);
 
         JPanel tablePanel = new JPanel(new BorderLayout(3, 3));
@@ -425,20 +439,20 @@ public class SearchableTablePanel extends JPanel {
         tablePanel.add(jsp);
 
         if (allowSort) {
-            this.add(fieldPanel, BorderLayout.BEFORE_FIRST_LINE);
-        }
-        
-        if (allowPages) {
-            this.add(bottomPanel, BorderLayout.AFTER_LAST_LINE);
+            this.add(fieldPanel, BorderLayout.NORTH);
         }
 
-        this.add(tablePanel);
-        
+        if (allowPages) {
+            this.add(bottomPanel, BorderLayout.SOUTH);
+        }
+
+        this.add(tablePanel,BorderLayout.CENTER);
+
         applyData(new ArrayList<Object[]>());
         //updateView(true);
     }
 
-    private void setNumRowsPerPage(int num) {
+    public void setNumRowsPerPage(int num) {
         this.numRowsPerPage = num;
         this.goToFirstPage();
     }
@@ -482,15 +496,15 @@ public class SearchableTablePanel extends JPanel {
     private int getTotalRowCount() {
         return this.totalNumRows;
     }
-    
+
     private void setTotalRowCount(int num) {
         this.totalNumRows = num;
     }
-  
+
     private int getTotalNumPages() {
         return (int) Math.ceil(((double) getTotalRowCount()) / getRowsPerPage());
     }
-    
+
     public int getRowsPerPage() {
         return this.numRowsPerPage;
     }
@@ -521,15 +535,15 @@ public class SearchableTablePanel extends JPanel {
         }
         return limit;
     }
-    
+
     public void forceRefreshData(){
         updateView(true);
     }
-    
+
     public void setExportButtonEnabled(boolean enable){
         exportButton.setEnabled(enable);
     }
-    
+
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
 
         public void hideColumns(JTable table, List<Integer> indices) {
@@ -537,7 +551,7 @@ public class SearchableTablePanel extends JPanel {
                 hideColumn(table, i);
             }
         }
-        
+
         public void showDialog(){
             TableColumnChooserDialog dialog = super.createTableColumnChooserDialog(MainFrame.getInstance(), "Choose Columns to Display", table);
             dialog.setPreferredSize(new Dimension(300,500));
@@ -545,34 +559,34 @@ public class SearchableTablePanel extends JPanel {
             dialog.setLocationRelativeTo(null);
             dialog.setVisible(true);
         }
-        
-    }   
-    
+
+    }
+
     public int getActualRowAt(int row){
         return TableModelWrapperUtils.getActualRowAt(table.getModel(), row);
     }
-    
+
     public void setSelectedRows(List<Integer> rows){
         this.selectedRows = rows;
     }
-    
+
     public boolean isRowSelected(int row){
         if(selectedRows == null) return false;
         return selectedRows.contains(row);
     }
-    
+
     public void addSelectedRow(Integer row){
         selectedRows.add(row);
     }
-    
+
     public void removeSelectedRow(Integer row){
         while(selectedRows.remove(row));
     }
-    
+
     public void addSelectedRows(List<Integer> rows){
         selectedRows.addAll(rows);
     }
-    
+
     public String getToolTip(int actualRow){
         return null;
     }
