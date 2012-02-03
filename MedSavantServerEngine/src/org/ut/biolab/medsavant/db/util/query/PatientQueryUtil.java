@@ -619,7 +619,6 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID), family_id));
 
         String s = query.toString();
-        System.out.println(s);
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
 
         List<Object[]> result = new ArrayList<Object[]>();
@@ -703,8 +702,6 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q1.addColumns(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS));
         q1.addCondition(BinaryCondition.equalTo(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID), familyId));
 
-        //System.out.println("Getting DNA ids for family: " + familyId);
-        System.out.println(q1);
 
         ResultSet rs1 = ConnectionController.connectPooled(sid).createStatement().executeQuery(q1.toString());
 
