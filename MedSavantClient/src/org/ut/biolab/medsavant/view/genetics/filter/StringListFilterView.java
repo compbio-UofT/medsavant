@@ -31,6 +31,7 @@ import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
@@ -46,6 +47,9 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchem
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.vcf.VariantRecord.VariantType;
+import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ChromosomeComparator;
@@ -99,43 +103,71 @@ public class StringListFilterView extends FilterView {
 
     private int peekingPanelWidth = 370;
 
-    private StringListFilterView(JComponent container, String tablename, final String columnname, int queryId, final String alias, final Table whichTable) throws SQLException, RemoteException {
+    private StringListFilterView(final JComponent container, final String tablename, final String columnname, int queryId, final String alias, final Table whichTable) throws SQLException, RemoteException {
         super(alias, container, queryId);
 
         this.columnname = columnname;
         this.alias = alias;
         this.whichTable = whichTable;
 
-        final List<String> uniq;
-
+        List<String> uniq = new ArrayList<String>();
         if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_AC)) {
-            uniq = new ArrayList<String>();
             uniq.addAll(Arrays.asList(
                     new String[]{
                         "1","2"
                     }));
         } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_AF)) {
-            uniq = new ArrayList<String>();
             uniq.addAll(Arrays.asList(
                     new String[]{
                         "0.50","1.00"
                     }));
         } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)
                 || columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT)) {
-            uniq = new ArrayList<String>();
             uniq.addAll(Arrays.asList(
                     new String[]{
                         "A","C","G","T"
                     }));
+        } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_TYPE)){
+            uniq.addAll(Arrays.asList(
+                    new String[]{
+                       VariantType.SNP.toString(), VariantType.Insertion.toString(), VariantType.Deletion.toString(), VariantType.Various.toString(), VariantType.Unknown.toString()
+                    }));
+        } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ZYGOSITY)){
+            uniq.addAll(Arrays.asList(
+                    new String[]{
+                        Zygosity.HomoRef.toString(), Zygosity.HomoAlt.toString(), Zygosity.Hetero.toString(), Zygosity.HeteroTriallelic.toString()
+                    }));
         } else if (columnname.equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
-            uniq = new ArrayList<String>();
             uniq.addAll(Arrays.asList(
                     new String[]{
                         MiscUtils.GENDER_MALE, MiscUtils.GENDER_FEMALE, MiscUtils.GENDER_UNKNOWN
                     }));
         } else {
-            uniq = MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(LoginController.sessionId, tablename, columnname);
+            final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                    "Generating List", 
+                    "<HTML>Determining distinct values for field. <BR>This may take a few minutes the first time.</HTML>", 
+                    true);
+            Thread t = new Thread(){
+                public void run(){
+                    try {
+                        initHelper(container, MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(LoginController.sessionId, tablename, columnname));
+                        dialog.close();
+                    } catch (SQLException ex) {
+                        Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (RemoteException ex) {
+                        Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            };
+            t.start();
+            dialog.setVisible(true);
+            return; 
+            
         }
+        initHelper(container, uniq);
+    }
+    
+    private void initHelper(JComponent container, List<String> uniq){
 
         if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM)) {
             Collections.sort(uniq,new ChromosomeComparator());

@@ -74,7 +74,7 @@ public class GenomeContainer extends JLayeredPane {
     private GridBagConstraints c;
     
     private static int NUM_VARIANTS_LIMIT = 50000000;
-    private static String OVER_LIMIT_MESSAGE = "Too many variants";
+    private static String OVER_LIMIT_MESSAGE = "Too many variants for genome view";
     private JPanel overLimitPanel;
 
     public GenomeContainer(String pageName, Genome g) {

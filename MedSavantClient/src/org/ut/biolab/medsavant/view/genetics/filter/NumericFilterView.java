@@ -40,6 +40,7 @@ import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
 import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -103,7 +104,7 @@ public class NumericFilterView extends FilterView{
         applyButton.doClick();
     }
 
-    private NumericFilterView(JComponent container, String tablename, final String columnname, int queryId, final String alias, final boolean isDecimal, final Table whichTable) throws SQLException, RemoteException {
+    private NumericFilterView(final JComponent container, final String tablename, final String columnname, int queryId, final String alias, final boolean isDecimal, final Table whichTable) throws SQLException, RemoteException {
         super(alias, container, queryId);
 
         this.columnname = columnname;
@@ -118,8 +119,31 @@ public class NumericFilterView extends FilterView{
         } else if (columnname.equals("sb")) {
             extremeValues = new Range(-100,100);
         } else {
-            extremeValues = new Range(MedSavantClient.VariantQueryUtilAdapter.getExtremeValuesForColumn(LoginController.sessionId, tablename, columnname));
+            final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                    "Generating List", 
+                    "<HTML>Determining extreme values for field. <BR>This may take a few minutes the first time.</HTML>", 
+                    true);
+            Thread t = new Thread(){
+                public void run(){
+                    try {
+                        initHelper(container, new Range(MedSavantClient.VariantQueryUtilAdapter.getExtremeValuesForColumn(LoginController.sessionId, tablename, columnname)));
+                        dialog.close();
+                    } catch (SQLException ex) {
+                        Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (RemoteException ex) {
+                        Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            };
+            t.start();
+            dialog.setVisible(true);
+            return; 
         }
+        
+        initHelper(container, extremeValues);
+    }
+    
+    private void initHelper(JComponent container, Range extremeValues){
 
         if (columnname.equals("dp")) {
             extremeValues = new Range(Math.min(0, extremeValues.getMin()),extremeValues.getMax());

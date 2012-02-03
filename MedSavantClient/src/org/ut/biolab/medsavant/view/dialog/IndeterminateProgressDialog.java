@@ -49,7 +49,6 @@ public class IndeterminateProgressDialog extends JDialog {
         this.setMinimumSize(new Dimension(200,50));
         this.pack();
         this.setLocationRelativeTo(parent);
-        //this.setVisible(true);
     }
     
     public JLabel getMessageLabel(){

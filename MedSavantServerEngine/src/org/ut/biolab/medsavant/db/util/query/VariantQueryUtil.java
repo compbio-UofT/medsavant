@@ -40,6 +40,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
@@ -62,6 +63,7 @@ import org.ut.biolab.medsavant.db.settings.Settings;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.util.DistinctValuesCache;
 import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
 
 /**
@@ -121,6 +123,11 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public double[] getExtremeValuesForColumn(String sid,String tablename, String columnname) throws SQLException, RemoteException {
 
+        if(DistinctValuesCache.isCached(tablename, columnname)){
+            double[] result = DistinctValuesCache.getCachedRange(tablename, columnname);
+            if(result != null) return result;
+        }
+        
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         SelectQuery query = new SelectQuery();
@@ -130,11 +137,23 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
         rs.next();
-        return new double[]{rs.getDouble(1), rs.getDouble(2)};
+        
+        double[] result = new double[]{rs.getDouble(1), rs.getDouble(2)};
+        List<Double> list = new ArrayList<Double>();
+        list.add(result[0]);
+        list.add(result[1]);
+        DistinctValuesCache.cacheResults(tablename, columnname, (List)list);
+        
+        return result;
     }
 
     public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException {
 
+        if(DistinctValuesCache.isCached(tablename, columnname)){
+            List<String> result = DistinctValuesCache.getCachedStringList(tablename, columnname);
+            if(result != null) return result;
+        }
+ 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         SelectQuery query = new SelectQuery();
@@ -155,6 +174,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             }
         }
 
+        DistinctValuesCache.cacheResults(tablename, columnname, (List)result);
         return result;
     }
 
