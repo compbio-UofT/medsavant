@@ -47,12 +47,14 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.PatientFormatTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.PatientTablemapTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabaseExtras;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.format.PatientFormat;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBSettings;
+import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.api.PatientQueryUtilAdapter;
 
 /**
@@ -739,6 +741,28 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             }
         }
         return result;
+    }
+
+    @Override
+    public List<String> getDNAIdsForHPOID(String sid, int projectid, String id) throws SQLException, RemoteException {
+
+        //TODO: make a prepared statement
+        String query = "SELECT dna_ids FROM " + getPatientTablename(sid,projectid)  + " WHERE " + MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO + "='" + id + "';";
+
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query);
+
+        List<String> results = new ArrayList<String>();
+        while (rs.next()) {
+            results.add(rs.getString(1));
+        }
+
+        return results;
+    }
+
+    @Override
+    public boolean hasOptionalField(String sid, int pid, String fieldName) throws SQLException {
+        String tableName = getPatientTablename(sid,pid);
+        return DBUtil.fieldExists(sid, tableName,MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO);
     }
 
 }

@@ -19,7 +19,7 @@ import org.ut.biolab.medsavant.db.util.query.api.DBUtilAdapter;
  * @author mfiume
  */
 public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUtilAdapter {
-    
+
     private static DBUtil instance;
 
     public static synchronized DBUtil getInstance() throws RemoteException {
@@ -27,6 +27,20 @@ public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUti
             instance = new DBUtil();
         }
         return instance;
+    }
+
+    public static boolean fieldExists(String sid, String tableName, String fieldName) throws SQLException {
+        Statement s = ConnectionController.connectPooled(sid).createStatement();
+
+        ResultSet rs = s.executeQuery("SHOW COLUMNS IN " + tableName);
+
+        while(rs.next()) {
+            if (rs.getString(1).equals(fieldName)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public DBUtil() throws RemoteException {}
