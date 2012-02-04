@@ -43,4 +43,6 @@ public interface PatientQueryUtilAdapter extends Remote {
     public Map<String,String> getDNAIdsForFamily(String sid,int projectId, String familyId) throws SQLException, RemoteException;
     public void clearPatients(String sid,int projectId) throws SQLException, RemoteException;
     public List<String> parseDnaIds(String s) throws RemoteException;
+    public List<String> getDNAIdsForHPOID(String sid, int pid, String id) throws SQLException, RemoteException;
+    public boolean hasOptionalField(String sid, int pid, String fieldName) throws SQLException, RemoteException;
 }
