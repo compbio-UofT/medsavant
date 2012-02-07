@@ -25,7 +25,7 @@ public class OntologyRetriever implements DataRetriever {
 
     @Override
     public List<Object[]> retrieve(int start, int limit) {
-        return ontologyTerms.subList(start, Math.min(start + limit, getTotalNum() - 1));
+        return ontologyTerms.subList(start, Math.min(start + limit, getTotalNum()));
     }
 
     //http://bioportal.bioontology.org/ontologies/46602/?p=terms&conceptid=HP%3A0001627

@@ -4,6 +4,9 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -13,9 +16,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
@@ -30,6 +36,15 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.model.Filter;
+import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
@@ -50,21 +65,23 @@ class HPOFilterView extends FilterView {
     static FilterView getHPOFilterView(int queryId) {
         return new HPOFilterView(queryId, new JPanel());
     }
-
     private JButton applyButton;
     private JLabel labelSelected;
-
 
     public HPOFilterView(FilterState state, int queryId) throws SQLException {
         this(queryId, new JPanel());
         if (state.getValues().get("value") != null) {
-            applyFilter(Integer.parseInt(state.getValues().get("value")));
+            applyFilter(state.getValues().get("value"));
         }
     }
     private Integer appliedId;
     private ActionListener al;
 
-    public void applyFilter(int cohortId) {
+    public void applyFilter(String selectedID) {
+
+        applyID(selectedID);
+
+
 
         /*
         for (int i = 0; i < b.getItemCount(); i++) {
@@ -82,13 +99,14 @@ class HPOFilterView extends FilterView {
         super(FILTER_NAME, container, queryId);
         createContentPanel(container);
     }
-
     private String selectedID = "";
     private String lastAppliedID = "";
     private OntologyRetriever retriever;
 
     private void setSelectedID(String id) {
-        if (id == null) { return; }
+        if (id == null) {
+            return;
+        }
         this.selectedID = id;
         if (lastAppliedID.equals(selectedID)) {
             this.applyButton.setEnabled(false);
@@ -102,17 +120,67 @@ class HPOFilterView extends FilterView {
             this.labelSelected.setText(stem + id);
         }
     }
-
     private String stem = "Filter individuals with HPO ID: ";
 
-    private void applyID(String id) {
-        if (id == null) { return; }
+    private void applyID(final String id) {
+        if (id == null) {
+            return;
+        }
         lastAppliedID = id;
         setSelectedID(id);
+
+        final TableSchema variantTable = ProjectController.getInstance().getCurrentVariantTableSchema();
+
+        Filter f = new QueryFilter() {
+
+            @Override
+            public Condition[] getConditions() {
+
+
+                try {
+                    List<String> dnaIds = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForHPOID(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), id);
+
+                    Condition[] conditions = new Condition[dnaIds.size()];
+                    for (int i = 0; i < dnaIds.size(); i++) {
+                        if (dnaIds.get(i) == null || dnaIds.get(i).equals("")) { continue; }
+                        conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIds.get(i));
+                    }
+
+                    if (dnaIds.isEmpty()) {
+                        // always false
+                        return new Condition[] {BinaryCondition.equalTo(1, 0)};
+                    }
+                    Condition[] cs = new Condition[1];
+
+                    cs[0] = ComboCondition.or(conditions);
+
+                    return cs;
+                } catch (SQLException ex) {
+                    Logger.getLogger(HPOFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (RemoteException ex) {
+                    Logger.getLogger(HPOFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                return new Condition[0];
+            }
+
+            @Override
+            public String getName() {
+                return HPOFilterView.FILTER_NAME;
+            }
+
+            @Override
+            public String getId() {
+                return HPOFilterView.FILTER_ID;
+            }
+        };
+        FilterController.addFilter(f, getQueryId());
     }
 
     private String getSelectedID(SearchableTablePanel stp) {
-        if (stp.getTable().getSelectedRow() == -1) { return null; }
+        if (stp.getTable().getSelectedRow() == -1) {
+            return null;
+        }
         String selectedID = (String) retriever.getTerms().get(stp.getActualRowAt(stp.getTable().getSelectedRow()))[0];
         return selectedID;
     }
@@ -161,10 +229,9 @@ class HPOFilterView extends FilterView {
 
                 @Override
                 public void valueChanged(ListSelectionEvent lse) {
-                   setSelectedID(getSelectedID(stp));
-                  // applyButton.setEnabled(true);
+                    setSelectedID(getSelectedID(stp));
+                    // applyButton.setEnabled(true);
                 }
-
             });
 
             JPanel topBar = new JPanel();
@@ -195,7 +262,6 @@ class HPOFilterView extends FilterView {
                 public void actionPerformed(ActionEvent ae) {
                     applyID(getSelectedID(stp));
                 }
-
             });
 
             bottomBar.add(applyButton);
@@ -219,7 +285,6 @@ class HPOFilterView extends FilterView {
         }
         return new FilterState(FilterType.STRING, FILTER_NAME, FILTER_ID, map);
     }
-
 
     public static void main(String[] argv) throws FileNotFoundException, IOException {
         //loadOntology();

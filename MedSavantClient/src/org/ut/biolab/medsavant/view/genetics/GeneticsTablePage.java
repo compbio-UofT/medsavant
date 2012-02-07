@@ -68,7 +68,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     private void setPanel() {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        
+
         List<Chromosome> chrs = new ArrayList<Chromosome>();
         try {
             chrs = MedSavantClient.ChromosomeQueryUtilAdapter.getContigs(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceId());
@@ -78,9 +78,9 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
             Logger.getLogger(GeneticsTablePage.class.getName()).log(Level.SEVERE, null, ex);
         }
         Genome g = new Genome(chrs);
-        gp = new GenomeContainer(getName(), g);        
-  
-        PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, (JComponent)gp, true,225);
+        gp = new GenomeContainer(getName(), g);
+
+        PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, (JComponent)gp, false,225);
         panel.add(genomeView, BorderLayout.NORTH);
 
         tablePanel = new TablePanel(getName());
@@ -123,7 +123,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     }
 
     @Override
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {      
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
         updateContents();
     }
 

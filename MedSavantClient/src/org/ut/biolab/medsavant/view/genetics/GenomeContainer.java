@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
@@ -23,6 +22,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -57,8 +58,8 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class GenomeContainer extends JLayeredPane {
-    private static final Logger LOG = Logger.getLogger(GenomeContainer.class.getName());
 
+    private static final Logger LOG = Logger.getLogger(GenomeContainer.class.getName());
     private Genome genome;
     private final JPanel chrContainer;
     private ArrayList<ChromosomePanel> chrViews;
@@ -67,15 +68,14 @@ public class GenomeContainer extends JLayeredPane {
     /*private static final int MINBINSIZE = 1000000;
     private static final int BINMULTIPLIER = 10;*/
     private final String pageName;
-
     private final Object updateLock = new Object();
     private boolean updateRequired = true;
     private boolean init = false;
     private GridBagConstraints c;
-    
     private static int NUM_VARIANTS_LIMIT = 50000000;
     private static String OVER_LIMIT_MESSAGE = "Too many variants for genome view";
     private JPanel overLimitPanel;
+    private GetNumVariantsSwingWorker gnv;
 
     public GenomeContainer(String pageName, Genome g) {
         this.pageName = pageName;
@@ -89,12 +89,13 @@ public class GenomeContainer extends JLayeredPane {
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1.0;
         c.weighty = 1.0;
-        
-        chrPlusButtonContainer = new JPanel(){
+
+        chrPlusButtonContainer = new JPanel() {
+
             @Override
             public void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
-                GradientPaint p = new GradientPaint(0,0,Color.darkGray,0, this.getHeight(), Color.black);
+                GradientPaint p = new GradientPaint(0, 0, Color.darkGray, 0, this.getHeight(), Color.black);
                 g2.setPaint(p);
                 g2.fillRect(0, 0, this.getWidth(), this.getHeight());
             }
@@ -103,26 +104,26 @@ public class GenomeContainer extends JLayeredPane {
 
         chrContainer = ViewUtil.getClearPanel();
         chrContainer.setBorder(ViewUtil.getBigBorder());
-        chrContainer.setLayout(new BoxLayout(chrContainer,BoxLayout.X_AXIS));
+        chrContainer.setLayout(new BoxLayout(chrContainer, BoxLayout.X_AXIS));
 
-        chrPlusButtonContainer.add(chrContainer,BorderLayout.CENTER);
+        chrPlusButtonContainer.add(chrContainer, BorderLayout.CENTER);
 
         /*
         JButton savantButton = new JButton("Export to Savant Genome Browser");
         savantButton.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
-                new SavantExportForm();
-            }
+        public void actionPerformed(ActionEvent e) {
+        new SavantExportForm();
+        }
         });
 
         chrPlusButtonContainer.add(ViewUtil.alignRight(ViewUtil.alignLeft(savantButton)),BorderLayout.SOUTH);
-         * 
+         *
          */
-        
+
         waitPanel = new WaitPanel("Generating Genome View");
         this.add(waitPanel, c, JLayeredPane.PALETTE_LAYER);
-        
+
         overLimitPanel = new JPanel();
         overLimitPanel.setLayout(new BorderLayout());
         JLabel label = new JLabel(OVER_LIMIT_MESSAGE);
@@ -135,9 +136,30 @@ public class GenomeContainer extends JLayeredPane {
         setGenome(g);
 
         updateIfRequired();
-    }
 
-    
+        this.addComponentListener(new ComponentListener() {
+
+            @Override
+            public void componentResized(ComponentEvent ce) {
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent ce) {
+            }
+
+            @Override
+            public void componentShown(ComponentEvent ce) {
+                updateIfRequired();
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent ce) {
+                if (gnv != null && !gnv.isDone()) {
+                    gnv.cancel(true);
+                }
+            }
+        });
+    }
 
     public void setGenome(Genome g) {
         this.genome = g;
@@ -174,29 +196,31 @@ public class GenomeContainer extends JLayeredPane {
     }
 
     /*public void filtersChanged() {
-        showWaitCard();
-        GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker(pageName);
-        gnv.execute();
+    showWaitCard();
+    GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker(pageName);
+    gnv.execute();
     }*/
-
     void setUpdateRequired(boolean b) {
         updateRequired = b;
     }
 
-    public void updateIfRequired(){
-        if(!init) return;
+    public void updateIfRequired() {
+        if (!init) {
+            return;
+        }
+
         boolean shouldUpdate = false;
-        synchronized (updateLock){
-            if(updateRequired){
+        synchronized (updateLock) {
+            if (updateRequired && this.isVisible() && this.getSize().getWidth() != 0) {
                 updateRequired = false;
                 shouldUpdate = true;
             }
         }
         try {
-            if(shouldUpdate && ResultController.getInstance().getNumTotalVariants() < NUM_VARIANTS_LIMIT){
+            if (shouldUpdate && ResultController.getInstance().getNumTotalVariants() < NUM_VARIANTS_LIMIT) {
                 overLimitPanel.setVisible(false);
                 showWaitCard();
-                GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker(pageName);
+                gnv = new GetNumVariantsSwingWorker(pageName);
                 gnv.execute();
             } else if (shouldUpdate) {
                 showShowCard();
@@ -226,12 +250,12 @@ public class GenomeContainer extends JLayeredPane {
             try {
 
                 long start = System.currentTimeMillis();
-                final Map<String,Map<Range,Integer>> map = MedSavantClient.VariantQueryUtilAdapter.getChromosomeHeatMap(
+                final Map<String, Map<Range, Integer>> map = MedSavantClient.VariantQueryUtilAdapter.getChromosomeHeatMap(
                         LoginController.sessionId,
                         ProjectController.getInstance().getCurrentProjectId(),
-                            ReferenceController.getInstance().getCurrentReferenceId(),
-                            FilterController.getQueryFilterConditions(),
-                            3000000);
+                        ReferenceController.getInstance().getCurrentReferenceId(),
+                        FilterController.getQueryFilterConditions(),
+                        3000000);
                 long time = System.currentTimeMillis() - start;
 
                 int mmax = 0;
@@ -244,23 +268,28 @@ public class GenomeContainer extends JLayeredPane {
 
                 final int max = mmax;
 
-                for (final ChromosomePanel p : chrViews){
-                    if(this.isThreadCancelled()) return null;
+                for (final ChromosomePanel p : chrViews) {
+                    if (this.isThreadCancelled()) {
+                        return null;
+                    }
 
                     //limit of 5 threads at a time
-                    synchronized (workerLock){
-                        while(activeThreads > 5){
-                            if(this.isThreadCancelled()) return null;
+                    synchronized (workerLock) {
+                        while (activeThreads > 5) {
+                            if (this.isThreadCancelled()) {
+                                return null;
+                            }
                             workerLock.wait();
                         }
                         activeThreads++;
                     }
 
                     Thread thread = new Thread() {
+
                         @Override
                         public void run() {
-                            p.updateFrequencyCounts(map.get(p.getChrName()),max);
-                            synchronized(workerLock){
+                            p.updateFrequencyCounts(map.get(p.getChrName()), max);
+                            synchronized (workerLock) {
                                 regionsDone++;
                                 activeThreads--;
                                 workerLock.notifyAll();
@@ -271,15 +300,17 @@ public class GenomeContainer extends JLayeredPane {
                 }
 
                 //wait until all threads completed
-                synchronized(workerLock){
-                    while(regionsDone < chrViews.size()){
-                        if(this.isThreadCancelled()) return null;
+                synchronized (workerLock) {
+                    while (regionsDone < chrViews.size()) {
+                        if (this.isThreadCancelled()) {
+                            return null;
+                        }
                         workerLock.wait();
                     }
                 }
 
                 return true;
-            } catch (SQLException ex){
+            } catch (SQLException ex) {
                 MiscUtils.checkSQLException(ex);
                 throw ex;
             }
@@ -287,17 +318,16 @@ public class GenomeContainer extends JLayeredPane {
 
         /*@Override
         protected void done() {
-            try {
-                get();
-                showShowCard();
-            } catch (Exception x) {
-                // TODO: #90
-                LOG.log(Level.SEVERE, null, x);
-            }
+        try {
+        get();
+        showShowCard();
+        } catch (Exception x) {
+        // TODO: #90
+        LOG.log(Level.SEVERE, null, x);
+        }
         } */
-
         public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-            if(!this.isDone()){
+            if (!this.isDone()) {
                 this.cancel(true);
             }
         }

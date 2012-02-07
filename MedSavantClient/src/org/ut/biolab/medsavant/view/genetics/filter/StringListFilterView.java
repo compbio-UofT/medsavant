@@ -5,13 +5,10 @@
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import com.healthmarketscience.sqlbuilder.Condition;
-import java.awt.BorderLayout;
-import java.awt.Color;
+import com.jidesoft.list.QuickListFilterField;
+import com.jidesoft.swing.SearchableUtils;
+import com.jidesoft.list.FilterableCheckBoxList;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
@@ -24,31 +21,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractButton;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.text.Position;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
+import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord.VariantType;
 import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
+import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
@@ -62,7 +59,6 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class StringListFilterView extends FilterView {
 
     /* Convenience Functions */
-
     public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException, RemoteException {
         return new StringListFilterView(new JPanel(), tablename, columnname, queryId, alias, Table.PATIENT);
     }
@@ -70,6 +66,8 @@ public class StringListFilterView extends FilterView {
     public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException, RemoteException {
         return new StringListFilterView(new JPanel(), tablename, columnname, queryId, alias, Table.VARIANT);
     }
+    private ListRetriever retriever;
+    private FilterableCheckBoxList filterableList;
 
     public StringListFilterView(String tablename, String columnname, int queryId, String alias, Table whichTable) throws SQLException, RemoteException {
         this(new JPanel(), tablename, columnname, queryId, alias, whichTable);
@@ -78,7 +76,7 @@ public class StringListFilterView extends FilterView {
     public StringListFilterView(FilterState state, int queryId) throws SQLException, RemoteException {
         this(new JPanel(), FilterUtils.getTableName(Table.valueOf(state.getValues().get("table"))), state.getId(), queryId, state.getName(), Table.valueOf(state.getValues().get("table")));
         String values = state.getValues().get("values");
-        if(values != null){
+        if (values != null) {
             List<String> l = new ArrayList<String>();
             Collections.addAll(l, values.split(";;;"));
             applyFilter(l);
@@ -86,21 +84,34 @@ public class StringListFilterView extends FilterView {
     }
 
     /* StringListFilterView */
-
-    private List<JCheckBox> boxes;
     private ActionListener al;
     private String columnname;
     private String alias;
     private Table whichTable;
     private List<String> appliedValues;
 
-    public void applyFilter(List<String> list){
-        for(JCheckBox box : boxes){
-            box.setSelected(list.contains(box.getText()));
+    public void applyFilter(List<String> list) {
+
+        ArrayList<Integer> indiciesOfItemsFromListInFilterableList = new ArrayList<Integer>();
+        int[] indices = filterableList.getCheckBoxListSelectedIndices();
+        for (int i : indices) {
+            String option = filterableList.getModel().getElementAt(i).toString();
+            if (list.contains(option)) {
+                indiciesOfItemsFromListInFilterableList.add(i);
+            }
         }
+
+        int[] selectedIndicies = new int[indiciesOfItemsFromListInFilterableList.size()];
+
+
+        for (int i = 0; i < selectedIndicies.length; i++) {
+            selectedIndicies[i] = indiciesOfItemsFromListInFilterableList.get(i);
+        }
+
+        filterableList.setCheckBoxListSelectedIndices(selectedIndicies);
+
         al.actionPerformed(new ActionEvent(this, 0, null));
     }
-
     private int peekingPanelWidth = 370;
 
     private StringListFilterView(final JComponent container, final String tablename, final String columnname, int queryId, final String alias, final Table whichTable) throws SQLException, RemoteException {
@@ -114,41 +125,42 @@ public class StringListFilterView extends FilterView {
         if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_AC)) {
             uniq.addAll(Arrays.asList(
                     new String[]{
-                        "1","2"
+                        "1", "2"
                     }));
         } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_AF)) {
             uniq.addAll(Arrays.asList(
                     new String[]{
-                        "0.50","1.00"
+                        "0.50", "1.00"
                     }));
         } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)
                 || columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT)) {
             uniq.addAll(Arrays.asList(
                     new String[]{
-                        "A","C","G","T"
+                        "A", "C", "G", "T"
                     }));
-        } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_TYPE)){
+        } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_TYPE)) {
             uniq.addAll(Arrays.asList(
                     new String[]{
-                       VariantType.SNP.toString(), VariantType.Insertion.toString(), VariantType.Deletion.toString(), VariantType.Various.toString(), VariantType.Unknown.toString()
+                        VariantType.SNP.toString(), VariantType.Insertion.toString(), VariantType.Deletion.toString(), VariantType.Various.toString(), VariantType.Unknown.toString()
                     }));
-        } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ZYGOSITY)){
+        } else if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ZYGOSITY)) {
             uniq.addAll(Arrays.asList(
                     new String[]{
                         Zygosity.HomoRef.toString(), Zygosity.HomoAlt.toString(), Zygosity.Hetero.toString(), Zygosity.HeteroTriallelic.toString()
                     }));
-        } else if (columnname.equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+        } else if (columnname.equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
             uniq.addAll(Arrays.asList(
                     new String[]{
                         MiscUtils.GENDER_MALE, MiscUtils.GENDER_FEMALE, MiscUtils.GENDER_UNKNOWN
                     }));
         } else {
             final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                    "Generating List", 
-                    "<HTML>Determining distinct values for field. <BR>This may take a few minutes the first time.</HTML>", 
+                    "Generating List",
+                    "<HTML>Determining distinct values for field. <BR>This may take a few minutes the first time.</HTML>",
                     true);
-            Thread t = new Thread(){
-                public void run(){
+            Thread t = new Thread() {
+
+                public void run() {
                     try {
                         initHelper(container, MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(LoginController.sessionId, tablename, columnname));
                         dialog.close();
@@ -161,94 +173,199 @@ public class StringListFilterView extends FilterView {
             };
             t.start();
             dialog.setVisible(true);
-            return; 
-            
+            return;
+
         }
         initHelper(container, uniq);
     }
-    
-    private void initHelper(JComponent container, List<String> uniq){
+
+    public static class ListRetriever implements DataRetriever {
+
+        private List<Object[]> optionsObjects;
+
+        public ListRetriever(List<String> options) {
+            optionsObjects = new ArrayList<Object[]>(options.size());
+
+            //JCheckBox b = new JCheckBox();
+
+            for (String s : options) {
+                optionsObjects.add(new Object[]{new Boolean(false), s});
+            }
+        }
+
+        @Override
+        public List<Object[]> retrieve(int start, int limit) {
+            System.err.println("Retriveing data from " + start + " to " + (start + limit));
+
+            start = Math.max(0, start);
+            int end = Math.min(start + limit, getTotalNum());
+
+            return optionsObjects.subList(start, end);
+        }
+
+        @Override
+        public int getTotalNum() {
+            return optionsObjects.size();
+        }
+
+        @Override
+        public void retrievalComplete() {
+        }
+    }
+
+    private void initHelper(JComponent container, final List<String> uniq) {
 
         if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM)) {
-            Collections.sort(uniq,new ChromosomeComparator());
+            Collections.sort(uniq, new ChromosomeComparator());
         }
 
         ViewUtil.applyVerticalBoxLayout(container);
-        //container.setLayout(new BorderLayout());
-        //container.setPreferredSize(new Dimension(1,1));
 
         JPanel bottomContainer = new JPanel();
         ViewUtil.applyHorizontalBoxLayout(bottomContainer);
         bottomContainer.setBorder(ViewUtil.getSmallBorder());
-        //bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
 
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
-        boxes = new ArrayList<JCheckBox>();
 
-        al = new ActionListener(){
+        JPanel optionContainer = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(optionContainer);
+        optionContainer.setBorder(ViewUtil.getSmallBorder());
+
+
+        final DefaultListModel model = new DefaultListModel();
+        for (String option : uniq) {
+            model.addElement(option);
+        }
+
+        final QuickListFilterField field = new QuickListFilterField(model);
+        field.setHintText("Type here to filter options");
+        optionContainer.add(field);
+
+        field.setPreferredSize(new Dimension(250, 22));
+        field.setMaximumSize(new Dimension(250, 22));
+
+        filterableList = new FilterableCheckBoxList(field.getDisplayListModel()) {
+
+            @Override
+            public int getNextMatch(String prefix, int startIndex, Position.Bias bias) {
+                return -1;
+            }
+
+            @Override
+            public boolean isCheckBoxEnabled(int index) {
+                return true;
+            }
+        };
+        filterableList.getCheckBoxListSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
+        SearchableUtils.installSearchable(filterableList);
+
+        filterableList.getCheckBoxListSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    applyButton.setEnabled(true);
+                }
+            }
+        });
+
+        setAllSelected(true);
+
+
+        al = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
 
                 applyButton.setEnabled(false);
 
                 final List<String> acceptableValues = new ArrayList<String>();
-                for (JCheckBox b : boxes) {
-                    if (b.isSelected()) {
-                        if(columnname.equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
-                            acceptableValues.add(Integer.toString(MiscUtils.stringToGender(b.getText())));
-                        } else {
-                            acceptableValues.add(b.getText());
-                        }
-                    }
+
+                //List<String> options = new ArrayList<String>();
+                int[] indices = filterableList.getCheckBoxListSelectedIndices();
+                for (int i : indices) {
+                    acceptableValues.add(filterableList.getModel().getElementAt(i).toString());
                 }
+
                 appliedValues = acceptableValues;
 
-                Filter f = new QueryFilter() {
+                if (acceptableValues.size() == uniq.size()) {
+                    FilterController.removeFilter(columnname, queryId);
+                    return;
+                }
 
-                    @Override
-                    public Condition[] getConditions() {
-                        if(whichTable == Table.VARIANT){
-                            Condition[] results = new Condition[acceptableValues.size()];
-                            int i = 0;
-                            for (String s : acceptableValues) {
-                                results[i++] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), s);
-                            }
-                            return results;
-                        } else if (whichTable == Table.PATIENT) {
-                            try {
-                                List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForStringList(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableSchema(), acceptableValues, columnname);
+                Filter f;
 
-                                Condition[] results = new Condition[individuals.size()];
+                // no conditions pass, provide false condition
+                if (acceptableValues.isEmpty()) {
+                    f = new QueryFilter() {
+
+                        @Override
+                        public Condition[] getConditions() {
+                            // false condition
+                            return new Condition[] { BinaryConditionMS.equalTo(0,1) };
+                        }
+
+                        @Override
+                        public String getName() {
+                            return alias;
+                        }
+
+                        @Override
+                        public String getId() {
+                            return columnname;
+                        }
+                    };
+
+                // some conditions pass, provide conditions
+                } else {
+
+
+                    f = new QueryFilter() {
+
+                        @Override
+                        public Condition[] getConditions() {
+                            if (whichTable == Table.VARIANT) {
+                                Condition[] results = new Condition[acceptableValues.size()];
                                 int i = 0;
-                                for(String ind : individuals){
-                                    results[i++] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
+                                for (String s : acceptableValues) {
+                                    results[i++] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), s);
                                 }
                                 return results;
+                            } else if (whichTable == Table.PATIENT) {
+                                try {
+                                    List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForStringList(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableSchema(), acceptableValues, columnname);
 
-                            } catch (NonFatalDatabaseException ex) {
-                                Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
-                            } catch (SQLException ex) {
-                                MiscUtils.checkSQLException(ex);
-                                Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
-                            } catch (RemoteException ex) {
-                                Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                                    Condition[] results = new Condition[individuals.size()];
+                                    int i = 0;
+                                    for (String ind : individuals) {
+                                        results[i++] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
+                                    }
+                                    return results;
+
+                                } catch (NonFatalDatabaseException ex) {
+                                    Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (SQLException ex) {
+                                    MiscUtils.checkSQLException(ex);
+                                    Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (RemoteException ex) {
+                                    Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }
+                            return new Condition[0];
                         }
-                        return new Condition[0];
-                    }
 
-                    @Override
-                    public String getName() {
-                        return alias;
-                    }
+                        @Override
+                        public String getName() {
+                            return alias;
+                        }
 
-                    @Override
-                    public String getId() {
-                        return columnname;
-                    }
-
-                };
+                        @Override
+                        public String getId() {
+                            return columnname;
+                        }
+                    };
+                }
                 FilterController.addFilter(f, getQueryId());
 
                 //TODO: why does this not work? Freezes GUI
@@ -257,75 +374,19 @@ public class StringListFilterView extends FilterView {
         };
         applyButton.addActionListener(al);
 
+        JScrollPane jsp = new JScrollPane(filterableList);
 
-        String longestOption = "";
-        int numCharsOfLongestOption = Integer.MIN_VALUE;
-        for (String s : uniq) {
-            if (s.length() > numCharsOfLongestOption) {
-                numCharsOfLongestOption = s.length();
-                longestOption = s;
-            }
-        }
+        optionContainer.add(jsp);
 
-        JCheckBox tmp = new JCheckBox();
-        int maxOptionWidth = tmp.getFontMetrics(tmp.getFont()).stringWidth(longestOption);
-
-        int totalWidth = maxOptionWidth + 40;
-
-        int numCols = (int) Math.ceil(((double)peekingPanelWidth) / totalWidth);
-
-        JPanel optionContainer = ViewUtil.getClearPanel();
-        optionContainer.setBorder(ViewUtil.getSmallBorder());
-
-        // 25 is approximately the height of a checkbox plus padding
-        Dimension d = new Dimension(peekingPanelWidth,25*(int)Math.ceil(((double)uniq.size())/numCols));
-        optionContainer.setPreferredSize(d);
+        Dimension d = new Dimension(360, 200);
         optionContainer.setMaximumSize(d);
-
-        optionContainer.setBackground(Color.red);
-        optionContainer.setLayout(new GridLayout(0,numCols,0,0));
-
-        int current = 0;
-
-        for (String s : uniq) {
-            JCheckBox b = new JCheckBox(s);
-            b.setToolTipText(s);
-            b.setSelected(true);
-            b.addChangeListener(new ChangeListener() {
-
-                public void stateChanged(ChangeEvent e) {
-                    AbstractButton abstractButton =
-                            (AbstractButton) e.getSource();
-                    ButtonModel buttonModel = abstractButton.getModel();
-                    boolean pressed = buttonModel.isPressed();
-                    if (pressed) {
-                        applyButton.setEnabled(true);
-                    }
-                }
-            });
-            b.setAlignmentX(0F);
-            b.setAlignmentY(0F);
-
-            int row = current / numCols;
-            int col = current % numCols;
-
-            //c.gridx = row;
-            //c.gridy = col;
-
-            optionContainer.add(b);//,c);
-            boxes.add(b);
-
-            current++;
-        }
-
+        optionContainer.setPreferredSize(d);
 
         JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
         selectAll.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                for (JCheckBox c : boxes) {
-                    c.setSelected(true);
-                }
+                setAllSelected(true);
                 applyButton.setEnabled(true);
             }
         });
@@ -336,10 +397,8 @@ public class StringListFilterView extends FilterView {
         selectNone.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                for (JCheckBox c : boxes) {
-                    c.setSelected(false);
-                    applyButton.setEnabled(true);
-                }
+                setAllSelected(false);
+                applyButton.setEnabled(true);
             }
         });
         bottomContainer.add(selectNone);
@@ -348,24 +407,34 @@ public class StringListFilterView extends FilterView {
 
         bottomContainer.add(applyButton);
 
-        //bottomContainer.add(Box.createRigidArea(new Dimension(5,30)));
-
-        //bottomContainer.setAlignmentX(0F);
-
         container.add(optionContainer);
         container.add(bottomContainer);
 
+    }
+
+    private void setAllSelected(boolean b) {
+        int[] selected;
+
+        if (b) {
+            selected = new int[filterableList.getModel().getSize()];
+            for (int i = 0; i < selected.length; i++) {
+                selected[i] = i;
+            }
+        } else {
+            selected = new int[0];
+        }
+        filterableList.setCheckBoxListSelectedIndices(selected);
     }
 
     @Override
     public FilterState saveState() {
         Map<String, String> map = new HashMap<String, String>();
         map.put("table", whichTable.toString());
-        if(appliedValues != null && !appliedValues.isEmpty()){
+        if (appliedValues != null && !appliedValues.isEmpty()) {
             String values = "";
-            for(int i = 0; i < appliedValues.size(); i++){
+            for (int i = 0; i < appliedValues.size(); i++) {
                 values += appliedValues.get(i);
-                if(i != appliedValues.size()-1){
+                if (i != appliedValues.size() - 1) {
                     values += ";;;";
                 }
             }
@@ -373,5 +442,4 @@ public class StringListFilterView extends FilterView {
         }
         return new FilterState(FilterType.STRING, alias, columnname, map);
     }
-
 }

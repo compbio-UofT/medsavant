@@ -21,6 +21,7 @@ public class MiscUtils {
     public static String GENDER_FEMALE = "Female";
     public static String GENDER_UNKNOWN = "Undesignated";
 
+    /*
     public static void setFrameVisibility(String frameKey, boolean isVisible, DockingManager m) {
         DockableFrame f = m.getFrame(frameKey);
         if (isVisible) {
@@ -29,6 +30,8 @@ public class MiscUtils {
             m.hideFrame(frameKey);
         }
     }
+     * 
+     */
 
     public static String genderToString(int gender){
         switch(gender){

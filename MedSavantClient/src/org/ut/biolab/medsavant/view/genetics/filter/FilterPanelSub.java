@@ -23,9 +23,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabaseExtras;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
@@ -48,21 +51,20 @@ public class FilterPanelSub extends JPanel {
     private List<FilterPanelSubItem> subItems = new ArrayList<FilterPanelSubItem>();
     private FilterPanel parent;
     private boolean isRemoved = false;
-
     private static Color BAR_COLOUR = Color.black;
     private static Color BUTTON_OVER_COLOUR = Color.gray;
 
     public FilterPanelSub(final FilterPanel parent, int id) {
         //super("",true);
-        init(parent,id);
+        init(parent, id);
     }
 
     public FilterPanelSub(boolean isCollapsible, final FilterPanel parent, int id) {
         //super("",isCollapsible);
-        init(parent,id);
+        init(parent, id);
     }
 
-    public final void init(final FilterPanel parent, int id){
+    public final void init(final FilterPanel parent, int id) {
 
         this.setOpaque(false);
         //this.setPreferredSize(new Dimension(200,10));
@@ -84,7 +86,7 @@ public class FilterPanelSub extends JPanel {
         //contentPanel.setBackground(ViewUtil.getMenuColor());
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBorder(BorderFactory.createCompoundBorder(
-                ViewUtil.getMediumBorder(),BorderFactory.createCompoundBorder(
+                ViewUtil.getMediumBorder(), BorderFactory.createCompoundBorder(
                 ViewUtil.getMediumTopHeavyBorder(),
                 ViewUtil.getLeftLineBorder())));
 
@@ -94,25 +96,24 @@ public class FilterPanelSub extends JPanel {
 
     }
 
-
-    public List<FilterPanelSubItem> getSubItems(){
+    public List<FilterPanelSubItem> getSubItems() {
         return this.subItems;
     }
 
-    public void refreshSubItems(){
+    public void refreshSubItems() {
         contentPanel.removeAll();
 
         //check for removed items
-        for(int i = subItems.size()-1; i >= 0; i--){
-            if(subItems.get(i).isRemoved()){
+        for (int i = subItems.size() - 1; i >= 0; i--) {
+            if (subItems.get(i).isRemoved()) {
                 subItems.remove(i);
             }
         }
 
         //refresh panel
-        for(int i = 0; i < subItems.size(); i++){
+        for (int i = 0; i < subItems.size(); i++) {
             this.contentPanel.add(subItems.get(i));
-            contentPanel.add(Box.createRigidArea(new Dimension(5,5)));
+            contentPanel.add(Box.createRigidArea(new Dimension(5, 5)));
         }
 
         JPanel addFilterPanel = new JPanel();
@@ -121,8 +122,11 @@ public class FilterPanelSub extends JPanel {
         addLabel.setToolTipText("Add new filter");
         addLabel.addMouseListener(new MouseListener() {
 
-            public void mouseClicked(MouseEvent e) {}
-            public void mousePressed(MouseEvent e) {}
+            public void mouseClicked(MouseEvent e) {
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
 
             public void mouseReleased(MouseEvent e) {
 
@@ -138,7 +142,7 @@ public class FilterPanelSub extends JPanel {
 
                 final Map<JPanel, List<Component>> menuMap = new HashMap<JPanel, List<Component>>();
 
-                for(Category c : cats){
+                for (Category c : cats) {
 
                     final JPanel header = new JPanel();
                     header.setBackground(Color.white);
@@ -148,25 +152,28 @@ public class FilterPanelSub extends JPanel {
                     header.add(Box.createHorizontalGlue());
                     header.setCursor(new Cursor(Cursor.HAND_CURSOR));
                     label.setFont(ViewUtil.getMediumTitleFont());
-                    header.setPreferredSize(new Dimension(260,20));
+                    header.setPreferredSize(new Dimension(260, 20));
                     header.addMouseListener(new MouseAdapter() {
-                        public void mouseReleased(MouseEvent e){
-                            for(Object key : menuMap.keySet()){
-                                for(Component comp : menuMap.get(key)){
+
+                        public void mouseReleased(MouseEvent e) {
+                            for (Object key : menuMap.keySet()) {
+                                for (Component comp : menuMap.get(key)) {
                                     comp.setVisible(false);
 
                                 }
                             }
-                            for(Component comp : menuMap.get(header)){
+                            for (Component comp : menuMap.get(header)) {
                                 comp.setVisible(true);
                             }
                             p.validate();
                             p.pack();
                             p.repaint();
                         }
+
                         public void mouseEntered(MouseEvent e) {
                             header.setBackground(new Color(0.9f, 0.9f, 0.9f));
                         }
+
                         public void mouseExited(MouseEvent e) {
                             header.setBackground(Color.white);
                         }
@@ -178,10 +185,10 @@ public class FilterPanelSub extends JPanel {
                     filters = map.get(c).toArray(filters);
                     Arrays.sort(filters, new FilterComparator());
 
-                    for(final FilterPlaceholder filter : filters){
+                    for (final FilterPlaceholder filter : filters) {
 
                         final JPanel item = new JPanel();
-                        item.setPreferredSize(new Dimension(260,20));
+                        item.setPreferredSize(new Dimension(260, 20));
                         item.setBackground(Color.white);
                         item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
                         JLabel itemLabel = new JLabel("     " + filter.getFilterName());
@@ -189,15 +196,18 @@ public class FilterPanelSub extends JPanel {
                         item.add(Box.createHorizontalGlue());
                         item.setCursor(new Cursor(Cursor.HAND_CURSOR));
                         item.addMouseListener(new MouseAdapter() {
+
                             @Override
                             public void mouseReleased(MouseEvent e) {
                                 subItems.add(new FilterPanelSubItem(filter.getFilterView(), FilterPanelSub.this, filter.getFilterID()));
                                 refreshSubItems();
                                 p.setVisible(false);
                             }
+
                             public void mouseEntered(MouseEvent e) {
                                 item.setBackground(new Color(0.9f, 0.9f, 0.9f));
                             }
+
                             public void mouseExited(MouseEvent e) {
                                 item.setBackground(Color.white);
                             }
@@ -207,9 +217,9 @@ public class FilterPanelSub extends JPanel {
                         p.add(item);
                     }
 
-                    if(filters.length == 0){
+                    if (filters.length == 0) {
                         JPanel item = new JPanel();
-                        item.setPreferredSize(new Dimension(150,20));
+                        item.setPreferredSize(new Dimension(150, 20));
                         item.setBackground(Color.white);
                         item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
                         JLabel empty = new JLabel("     (No filters)");
@@ -224,7 +234,7 @@ public class FilterPanelSub extends JPanel {
 
                 JPanel ppp = new JPanel();
                 ppp.setBackground(Color.white);
-                ppp.setPreferredSize(new Dimension(1,1));
+                ppp.setPreferredSize(new Dimension(1, 1));
                 p.add(ppp);
 
                 p.show(addLabel, 0, 20);
@@ -245,8 +255,11 @@ public class FilterPanelSub extends JPanel {
         removeLabel.setToolTipText("Remove all filters in set");
         removeLabel.addMouseListener(new MouseListener() {
 
-            public void mouseClicked(MouseEvent e) {}
-            public void mousePressed(MouseEvent e) {}
+            public void mouseClicked(MouseEvent e) {
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
 
             public void mouseReleased(MouseEvent e) {
                 removeThis();
@@ -264,15 +277,15 @@ public class FilterPanelSub extends JPanel {
         JPanel tmp1 = ViewUtil.getClearPanel();//ViewUtil.getSecondaryBannerPanel();//ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(tmp1);
         //tmp1.setBorder(BorderFactory.createCompoundBorder(
-               //ViewUtil.getTinyLineBorder(),ViewUtil.getMediumBorder()));
+        //ViewUtil.getTinyLineBorder(),ViewUtil.getMediumBorder()));
 
         tmp1.add(addLabel);
-        tmp1.add(Box.createRigidArea(new Dimension(5,20)));
+        tmp1.add(Box.createRigidArea(new Dimension(5, 20)));
         tmp1.add(new JLabel("Add filter"));
         //tmp1.add(Box.createRigidArea(new Dimension(15,20)));
         tmp1.add(Box.createHorizontalGlue());
         tmp1.add(new JLabel("Remove filter set"));
-        tmp1.add(Box.createRigidArea(new Dimension(5,20)));
+        tmp1.add(Box.createRigidArea(new Dimension(5, 20)));
         tmp1.add(removeLabel);
 
         contentPanel.add(tmp1);
@@ -285,49 +298,49 @@ public class FilterPanelSub extends JPanel {
         this.updateUI();
     }
 
-    private void removeThis(){
-        for(int i = subItems.size()-1; i >= 0; i--){
+    private void removeThis() {
+        for (int i = subItems.size() - 1; i >= 0; i--) {
             subItems.get(i).removeThis();
         }
         isRemoved = true;
         parent.refreshSubPanels();
     }
 
-    public boolean isRemoved(){
+    public boolean isRemoved() {
         return isRemoved;
     }
 
-    public FilterPanelSubItem addNewSubItem(FilterView view, String filterId){
+    public FilterPanelSubItem addNewSubItem(FilterView view, String filterId) {
         FilterPanelSubItem result = new FilterPanelSubItem(view, this, filterId);
         subItems.add(result);
         refreshSubItems();
         return result;
     }
 
-    public boolean hasSubItem(String filterId){
-        for(FilterPanelSubItem f : subItems){
-            if(f.getFilterId().equals(filterId)){
+    public boolean hasSubItem(String filterId) {
+        for (FilterPanelSubItem f : subItems) {
+            if (f.getFilterId().equals(filterId)) {
                 return true;
             }
         }
         return false;
     }
 
-    public int getId(){
+    public int getId() {
         return id;
     }
 
-    public void removeFiltersById(String id){
+    public void removeFiltersById(String id) {
         //reversed to avoid concurrent mod exception
-        for(int i = subItems.size()-1; i >= 0; i--){
+        for (int i = subItems.size() - 1; i >= 0; i--) {
             FilterPanelSubItem fpsi = subItems.get(i);
-            if(fpsi.getFilterId().equals(id)){
+            if (fpsi.getFilterId().equals(id)) {
                 fpsi.removeThis();
             }
         }
     }
 
-    private Map<Category, List<FilterPlaceholder>> getRemainingFilters(){
+    private Map<Category, List<FilterPlaceholder>> getRemainingFilters() {
 
         Map<Category, List<FilterPlaceholder>> map = new EnumMap<Category, List<FilterPlaceholder>>(Category.class);
 
@@ -338,65 +351,116 @@ public class FilterPanelSub extends JPanel {
         map.put(Category.PLUGIN, new ArrayList<FilterPlaceholder>());
 
         //cohort filter
-        if(!hasSubItem(CohortFilterView.FILTER_ID)){
+        if (!hasSubItem(CohortFilterView.FILTER_ID)) {
             map.get(Category.PATIENT).add(new FilterPlaceholder() {
-                public FilterView getFilterView() { return CohortFilterView.getCohortFilterView(id);}
-                public String getFilterID() { return CohortFilterView.FILTER_ID;}
-                public String getFilterName() { return CohortFilterView.FILTER_NAME;}
+
+                public FilterView getFilterView() {
+                    return CohortFilterView.getCohortFilterView(id);
+                }
+
+                public String getFilterID() {
+                    return CohortFilterView.FILTER_ID;
+                }
+
+                public String getFilterName() {
+                    return CohortFilterView.FILTER_NAME;
+                }
             });
         }
 
-         //GO filter
-        if(!hasSubItem(GOFilterView.FILTER_ID)){
+        //GO filter
+        if (!hasSubItem(GOFilterView.FILTER_ID)) {
             map.get(Category.GENOME_COORDS).add(new FilterPlaceholder() {
-                public FilterView getFilterView() { return GOFilterView.getGOFilterView(id);}
-                public String getFilterID() { return GOFilterView.FILTER_ID;}
-                public String getFilterName() { return GOFilterView.FILTER_NAME;}
+
+                public FilterView getFilterView() {
+                    return GOFilterView.getGOFilterView(id);
+                }
+
+                public String getFilterID() {
+                    return GOFilterView.FILTER_ID;
+                }
+
+                public String getFilterName() {
+                    return GOFilterView.FILTER_NAME;
+                }
             });
         }
 
         //HPO filter
-        if(!hasSubItem(HPOFilterView.FILTER_ID)){
-            map.get(Category.PATIENT).add(new FilterPlaceholder() {
-                public FilterView getFilterView() { return HPOFilterView.getHPOFilterView(id);}
-                public String getFilterID() { return HPOFilterView.FILTER_ID;}
-                public String getFilterName() { return HPOFilterView.FILTER_NAME;}
-            });
+        try {
+            if (MedSavantClient.PatientQueryUtilAdapter.hasOptionalField(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO)) {
+                if (!hasSubItem(HPOFilterView.FILTER_ID)) {
+                    map.get(Category.PATIENT).add(new FilterPlaceholder() {
+
+                        public FilterView getFilterView() {
+                            return HPOFilterView.getHPOFilterView(id);
+                        }
+
+                        public String getFilterID() {
+                            return HPOFilterView.FILTER_ID;
+                        }
+
+                        public String getFilterName() {
+                            return HPOFilterView.FILTER_NAME;
+                        }
+                    });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         //gene list filter
-        if(!hasSubItem(GeneListFilterView.FILTER_ID)){
+        if (!hasSubItem(GeneListFilterView.FILTER_ID)) {
             map.get(Category.GENOME_COORDS).add(new FilterPlaceholder() {
-                public FilterView getFilterView() { return GeneListFilterView.getFilterView(id);}
-                public String getFilterID() { return GeneListFilterView.FILTER_ID;}
-                public String getFilterName() { return GeneListFilterView.FILTER_NAME;}
+
+                public FilterView getFilterView() {
+                    return GeneListFilterView.getFilterView(id);
+                }
+
+                public String getFilterID() {
+                    return GeneListFilterView.FILTER_ID;
+                }
+
+                public String getFilterName() {
+                    return GeneListFilterView.FILTER_NAME;
+                }
             });
         }
 
         //plugin filters
         PluginController pc = PluginController.getInstance();
-        for (PluginDescriptor desc: pc.getDescriptors()) {
+        for (PluginDescriptor desc : pc.getDescriptors()) {
             final MedSavantPlugin p = pc.getPlugin(desc.getID());
             if (p instanceof MedSavantFilterPlugin && !hasSubItem(p.getDescriptor().getID())) {
                 map.get(Category.PLUGIN).add(new FilterPlaceholder() {
-                    public FilterView getFilterView() { return PluginFilterView.getFilterView((MedSavantFilterPlugin)p, id);}
-                    public String getFilterID() { return p.getDescriptor().getID();}
-                    public String getFilterName() { return p.getTitle();}
+
+                    public FilterView getFilterView() {
+                        return PluginFilterView.getFilterView((MedSavantFilterPlugin) p, id);
+                    }
+
+                    public String getFilterID() {
+                        return p.getDescriptor().getID();
+                    }
+
+                    public String getFilterName() {
+                        return p.getTitle();
+                    }
                 });
             }
         }
 
         //add from variant table
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
-        for(AnnotationFormat af : afs){
-            for(final CustomField field : af.getCustomFields()){
-                if(field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getColumnType())){
+        for (AnnotationFormat af : afs) {
+            for (final CustomField field : af.getCustomFields()) {
+                if (field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getColumnType())) {
 
                     map.get(field.getCategory()).add(new FilterPlaceholder() {
 
                         public FilterView getFilterView() {
                             try {
-                                switch(field.getColumnType()){
+                                switch (field.getColumnType()) {
                                     case INTEGER:
                                         return NumericFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentVariantTableName(), field.getColumnName(), id, field.getAlias(), false);
                                     case FLOAT:
@@ -429,19 +493,19 @@ public class FilterPanelSub extends JPanel {
         }
 
         //add from patient table
-        for(final CustomField field : ProjectController.getInstance().getCurrentPatientFormat()){
-            if(field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getColumnType())){
+        for (final CustomField field : ProjectController.getInstance().getCurrentPatientFormat()) {
+            if (field.isFilterable() && !hasSubItem(field.getColumnName()) && isFilterable(field.getColumnType())) {
                 map.get(field.getCategory()).add(new FilterPlaceholder() {
 
                     public FilterView getFilterView() {
                         try {
 
                             //special cases:
-                            if(field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+                            if (field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
                                 return StringListFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias());
                             }
 
-                            switch(field.getColumnType()){
+                            switch (field.getColumnType()) {
                                 case INTEGER:
                                     return NumericFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias(), false);
                                 case FLOAT:
@@ -473,28 +537,46 @@ public class FilterPanelSub extends JPanel {
         }
 
         //tag filter
-        if(!hasSubItem(TagFilterView.FILTER_ID)){
+        if (!hasSubItem(TagFilterView.FILTER_ID)) {
             map.get(Category.VARIANT).add(new FilterPlaceholder() {
-                public FilterView getFilterView() { return TagFilterView.getTagFilterView(id);}
-                public String getFilterID() { return TagFilterView.FILTER_ID;}
-                public String getFilterName() { return TagFilterView.FILTER_NAME;}
+
+                public FilterView getFilterView() {
+                    return TagFilterView.getTagFilterView(id);
+                }
+
+                public String getFilterID() {
+                    return TagFilterView.FILTER_ID;
+                }
+
+                public String getFilterName() {
+                    return TagFilterView.FILTER_NAME;
+                }
             });
         }
 
         //starred variants
-        if(!hasSubItem(StarredFilterView.FILTER_ID)){
+        if (!hasSubItem(StarredFilterView.FILTER_ID)) {
             map.get(Category.VARIANT).add(new FilterPlaceholder() {
-               public FilterView getFilterView() { return StarredFilterView.getStarredFilterView(id);}
-               public String getFilterID() { return StarredFilterView.FILTER_ID;}
-               public String getFilterName() { return StarredFilterView.FILTER_NAME;}
+
+                public FilterView getFilterView() {
+                    return StarredFilterView.getStarredFilterView(id);
+                }
+
+                public String getFilterID() {
+                    return StarredFilterView.FILTER_ID;
+                }
+
+                public String getFilterName() {
+                    return StarredFilterView.FILTER_NAME;
+                }
             });
         }
 
         return map;
     }
 
-    private boolean isFilterable(ColumnType type){
-        switch(type){
+    private boolean isFilterable(ColumnType type) {
+        switch (type) {
             case INTEGER:
             case FLOAT:
             case DECIMAL:
@@ -510,22 +592,25 @@ public class FilterPanelSub extends JPanel {
      * Use this to prevent creating all filters when generating list
      */
     abstract class FilterPlaceholder {
+
         public abstract FilterView getFilterView();
+
         public abstract String getFilterID();
+
         public abstract String getFilterName();
     }
 
     public class CategoryComparator implements Comparator<Category> {
+
         public int compare(Category o1, Category o2) {
             return o1.toString().compareTo(o2.toString());
         }
     }
 
     class FilterComparator implements Comparator<FilterPlaceholder> {
+
         public int compare(FilterPlaceholder o1, FilterPlaceholder o2) {
             return o1.getFilterName().compareTo(o2.getFilterName());
         }
     }
-
-
 }

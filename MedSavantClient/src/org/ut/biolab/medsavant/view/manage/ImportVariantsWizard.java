@@ -9,11 +9,7 @@ import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.dialog.PageList;
-import com.jidesoft.wizard.AbstractWizardPage;
-import com.jidesoft.wizard.CompletionWizardPage;
-import com.jidesoft.wizard.DefaultWizardPage;
-import com.jidesoft.wizard.WizardDialog;
-import com.jidesoft.wizard.WizardStyle;
+import com.jidesoft.wizard.*;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -70,12 +66,12 @@ public class ImportVariantsWizard extends WizardDialog {
     private Thread publishThread = null;
 
     public ImportVariantsWizard() {
-        
+
         this.projectId = ProjectController.getInstance().getCurrentProjectId();
         this.referenceId = ReferenceController.getInstance().getCurrentReferenceId();
-        
+
         //check for existing unpublished changes to this project + reference
-        try {           
+        try {
             if(MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, projectId, referenceId)){
                 DialogUtils.displayMessage("Cannot perform import", "There are unpublished changes to this table. Please publish and then try again.");
                 return;
@@ -84,9 +80,9 @@ public class ImportVariantsWizard extends WizardDialog {
             DialogUtils.displayErrorMessage("Error checking for changes. ", ex);
             return;
         }
-        
+
         //get lock
-        try {            
+        try {
             if(!MedSavantClient.SettingsQueryUtilAdapter.getDbLock(LoginController.sessionId)){
                 DialogUtils.displayMessage("Cannot perform import", "Another user is making changes to the database. You must wait until this user has finished. ");
                 return;
@@ -100,7 +96,7 @@ public class ImportVariantsWizard extends WizardDialog {
         setupWizard();
     }
 
-    private void setupWizard() {   
+    private void setupWizard() {
         setTitle("Import Variants Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
@@ -121,9 +117,9 @@ public class ImportVariantsWizard extends WizardDialog {
         setLocationRelativeTo(null);
         setVisible(true);
     }
-    
+
     private void catchClosing(){
-        this.addWindowListener(new WindowAdapter() {       
+        this.addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e){
                 try {
                     MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
@@ -146,7 +142,7 @@ public class ImportVariantsWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
             }
         };
-       
+
         String projectName = ProjectController.getInstance().getCurrentProjectName();
         String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
 
@@ -437,7 +433,7 @@ public class ImportVariantsWizard extends WizardDialog {
                             instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
                             // do stuff
                             MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
-                            
+
                             //success
                             publishProgressBar.setIndeterminate(false);
                             publishCancelButton.setVisible(false);
@@ -547,7 +543,7 @@ public class ImportVariantsWizard extends WizardDialog {
                                     }
 
                                 } catch (Exception ex) {
-                                    
+
                                     //release lock always
                                     try {
                                         MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
@@ -710,7 +706,7 @@ public class ImportVariantsWizard extends WizardDialog {
                             progressLabel.setText("Problem publishing variants.");
                         }
                     }
-                  
+
                 };
                 cancelButton.setVisible(true);
                 startButton.setVisible(false);
@@ -733,7 +729,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
         return page;
     }
-    
+
     private static String[][] tagsToStringArray(List<VariantTag> variantTags) {
 
         String[][] result = new String[variantTags.size()][2];

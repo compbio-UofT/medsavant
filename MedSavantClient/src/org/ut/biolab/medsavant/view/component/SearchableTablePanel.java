@@ -34,6 +34,7 @@ import javax.swing.table.TableCellRenderer;
 import com.jidesoft.grid.*;
 import java.awt.event.MouseAdapter;
 import javax.swing.border.Border;
+import javax.swing.table.TableColumn;
 import org.ut.biolab.medsavant.util.ExportUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.MainFrame;
@@ -94,6 +95,13 @@ public class SearchableTablePanel extends JPanel {
     private synchronized void updateView(boolean newData){
         if (worker != null) worker.cancel(true);
         (worker = new GetDataSwingWorker(pageName, newData)).execute();
+    }
+
+    public void setTableHeaderVisible(boolean b) {
+        if (b) { return; }
+        else {
+            table.setTableHeader(null);
+        }
     }
 
     public void setBottomBarVisible(boolean b) {
@@ -189,6 +197,7 @@ public class SearchableTablePanel extends JPanel {
             filterField.setColumnIndices(columns);
             filterField.setObjectConverterManagerEnabled(true);
 
+            //table.setModel(model);
             table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
             columnChooser.hideColumns(table, hiddenColumns);
 
@@ -219,6 +228,26 @@ public class SearchableTablePanel extends JPanel {
 
     public SearchableTablePanel(String pageName, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, int defaultRowsRetrieved, DataRetriever retriever) {
         this(pageName, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, TableSelectionType.ROW, defaultRowsRetrieved, retriever);
+    }
+
+    public class JTableCBRenderer implements TableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
+            if (value instanceof JButton) {
+                JCheckBox button = (JCheckBox) value;
+                if (isSelected) {
+                    button.setForeground(table.getForeground());
+                    button.setBackground(table.getSelectionBackground());
+                } else {
+                    button.setForeground(table.getForeground());
+                    button.setBackground(UIManager.getColor("Button.background"));
+                }
+                return button;
+            }
+            return (Component) value;
+        }
     }
 
     public SearchableTablePanel(String pageName, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
@@ -256,6 +285,19 @@ public class SearchableTablePanel extends JPanel {
                 return getToolTip(TableModelWrapperUtils.getActualRowAt(table.getModel(), table.rowAtPoint(e.getPoint())));
             }
         };
+
+        /*
+        for (int i = 0; i < columnClasses.size(); i++) {
+            Class c = columnClasses.get(i);
+            if (c == JCheckBox.class) {
+                System.out.println("Column " + i + " name " + columnNames.get(i) + " class " + c);
+                table.getColumn(table.getColumnName(i)).setCellRenderer(new JTableCBRenderer());
+            }
+        }
+         *
+         */
+
+
         table.setToolTipText(""); //necessary to force check for tooltip text
 
         table.setClearSelectionOnTableDataChanges(true);
