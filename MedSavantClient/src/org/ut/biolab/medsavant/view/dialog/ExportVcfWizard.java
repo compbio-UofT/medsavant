@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.util;
+package org.ut.biolab.medsavant.view.dialog;
 
 import com.jidesoft.dialog.AbstractDialogPage;
 import com.jidesoft.dialog.ButtonEvent;
@@ -18,7 +18,6 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -26,11 +25,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
-import javax.swing.SwingWorker;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.util.shared.ExtensionFileFilter;
 import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.util.ExportVCF;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -178,7 +177,7 @@ public class ExportVcfWizard extends WizardDialog {
                         @Override
                         public void run(){                        
                             try {
-                                ExportUtils.exportVCF(variantFile);
+                                ExportVCF.exportVCF(variantFile);
                             } catch (Exception ex) {
                                 Logger.getLogger(ExportVcfWizard.class.getName()).log(Level.SEVERE, null, ex);
                             }

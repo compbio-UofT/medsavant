@@ -4,13 +4,11 @@
  */
 package org.ut.biolab.medsavant.util;
 
-import au.com.bytecode.opencsv.CSVWriter;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -23,17 +21,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.JTable;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -45,102 +37,27 @@ import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
-import org.ut.biolab.medsavant.db.util.shared.ExtensionFileFilter;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.view.util.ChromosomeComparator;
-import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
  *
  * @author Andrew
  */
-public class ExportUtils {
+public class ExportVCF {
     
-    //private static int BIN_SIZE = 10000;
-    
-    public static void exportTable(JTable table) throws FileNotFoundException, IOException{
-        File out = DialogUtils.chooseFileForSave("Export Table", "table_export", ExtensionFileFilter.createFilters(new String[]{"xls", "xlsx", "csv"}), null);
-        
-        if(out == null) return;
+    //important locations in intermediate file created pre-merge
+    private static int INTERMEDIATE_INDEX_DNA_ID = 0;
+    private static int INTERMEDIATE_INDEX_GENOTYPE = 1;
+    private static int INTERMEDIATE_INDEX_CHROM = 2;
+    private static int INTERMEDIATE_INDEX_POSITION = 3;
+    private static int INTERMEDIATE_INDEX_DBSNP = 4;
+    private static int INTERMEDIATE_INDEX_REF = 5;
+    private static int INTERMEDIATE_INDEX_ALT = 6;
+    private static int INTERMEDIATE_INDEX_QUAL = 7;
+    private static int INTERMEDIATE_INDEX_FILTER = 8;
+    private static int INTERMEDIATE_INDEX_CUSTOM = 9; //and on
 
-        String extension = MiscUtils.getExtension(out.getAbsolutePath());
-        
-        if(extension.equals("xls") || extension.equals("xlsx")){
-            exportExcel(out, table);
-        } else { // default
-            exportCSV(out, table);
-        }
-        
-    }
-    
-    private static void exportExcel(File file, JTable table) throws FileNotFoundException, IOException{
-        
-        //create workbook
-        Workbook wb;
-        if(file.getAbsolutePath().endsWith(".xlsx")){
-            wb = new XSSFWorkbook();
-        } else {
-            wb = new HSSFWorkbook();            
-        }       
-        Sheet sheet = wb.createSheet();
-        
-        //add headers
-        org.apache.poi.ss.usermodel.Row header= sheet.createRow(0);
-        for(int j = 0; j < table.getColumnCount(); j++){
-            header.createCell(j).setCellValue(table.getColumnName(j));
-        }
-        
-        //add cells
-        for(int i = 0; i < table.getRowCount(); i++){
-            org.apache.poi.ss.usermodel.Row row = sheet.createRow(i+1);
-            for(int j = 0; j < table.getColumnCount(); j++){
-                row.createCell(j).setCellValue(getString(table.getValueAt(i, j)));
-            }
-        }
-        
-        //write output
-        FileOutputStream fileOut = new FileOutputStream(file);
-        wb.write(fileOut);
-        fileOut.close();
-    }
-    
-    private static void exportCSV(File file, JTable table) throws IOException {
-
-        //setup file
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));      
-        CSVWriter out = new CSVWriter(writer, ',', '"');
-
-        //add headers
-        String[] header = new String[table.getColumnCount()];
-        for(int j = 0; j < table.getColumnCount(); j++){
-            header[j] = table.getColumnName(j);
-        }
-        out.writeNext(header);
-        
-        //add cells
-        for(int i = 0; i < table.getRowCount(); i++){
-            String[] row = new String[table.getColumnCount()];
-            for(int j = 0; j < table.getColumnCount(); j++){
-                row[j] = getString(table.getValueAt(i, j));
-            }
-            out.writeNext(row);
-        }
-        
-        //close output
-        out.close();
-        writer.close();
-
-    }
-    
-    private static String getString(Object o){
-        if(o == null){
-            return "";
-        } else {
-            return o.toString();
-        }
-    }   
-    
     public static void exportVCF(File file) throws IOException, NonFatalDatabaseException, SQLException, RemoteException, InterruptedException {        
         
         RemoteInputStream ris = MedSavantClient.VariantManagerAdapter.exportVariants(
@@ -259,9 +176,7 @@ public class ExportUtils {
     }
 
     /*
-     * Assumes rows in inFile are of format:
-     * 0      1         2    3      4    5    6     7       8...
-     * dnaid, genotype, chr, pos, dbsnp, ref, alt, qual, filter, custom...
+     * Assumes rows in inFile are INTERMEDIATE format
      */
     private static void mergeVcf(File inFile, File outFile, Set<String> dnaIdsSet, String[] customColumnNames) throws IOException {
         
@@ -318,7 +233,7 @@ public class ExportUtils {
             }
             
             //write records for previous position
-            if(line == null || !lastPos.equals(record[3]) || !lastChr.equals(record[2])){              
+            if(line == null || !lastPos.equals(record[INTERMEDIATE_INDEX_POSITION]) || !lastChr.equals(record[INTERMEDIATE_INDEX_CHROM])){              
                 
                 for(int i = 0; i < dnaIds.length; i++){   
                     
@@ -342,24 +257,24 @@ public class ExportUtils {
                     
                     //write line
                     String output = "";
-                    for(int col = 2; col < 7; col++){
+                    for(int col = INTERMEDIATE_INDEX_CHROM; col < INTERMEDIATE_INDEX_QUAL; col++){
                         output += row1[col] + "\t";
                     }
-                    for(int col = 7; col < 9; col++){
-                        if(columnMatches[col-7]) output += row1[col];
+                    for(int col = INTERMEDIATE_INDEX_QUAL; col < INTERMEDIATE_INDEX_CUSTOM; col++){
+                        if(columnMatches[col-INTERMEDIATE_INDEX_QUAL]) output += row1[col];
                         else output += ".";    
                         output += "\t";
                     }
-                    for(int col = 9; col < row1.length; col++){
-                        if(columnMatches[col-7] && !row1[col].equals("")){
-                            if(flagColumns[col-9] && row1[col].equals("1")) output += customColumnNames[col-9] + ";";
-                            else if (!flagColumns[col-9]) output += customColumnNames[col-9] + "=" + row1[col] + ";";                          
+                    for(int col = INTERMEDIATE_INDEX_CUSTOM; col < row1.length; col++){
+                        if(columnMatches[col-INTERMEDIATE_INDEX_QUAL] && !row1[col].equals("")){
+                            if(flagColumns[col-INTERMEDIATE_INDEX_CUSTOM] && row1[col].equals("1")) output += customColumnNames[col-INTERMEDIATE_INDEX_CUSTOM] + ";";
+                            else if (!flagColumns[col-INTERMEDIATE_INDEX_CUSTOM]) output += customColumnNames[col-INTERMEDIATE_INDEX_CUSTOM] + "=" + row1[col] + ";";                          
                         }
                     }
                     output += "\t";
                     output += "GT\t"; //format column
                     for(int id = 0; id < dnaIds.length; id++){
-                        if(dnaMatches[id]) output += records[id][1];
+                        if(dnaMatches[id]) output += records[id][INTERMEDIATE_INDEX_GENOTYPE];
                         else output += ".";
                         if(id != dnaIds.length-1) output += "\t";
                     }
@@ -375,11 +290,11 @@ public class ExportUtils {
             }
             
             //parse current record
-            String dnaId = record[0];
+            String dnaId = record[INTERMEDIATE_INDEX_DNA_ID];
             records[idToPosition.get(dnaId)] = record;
             availableIds[idToPosition.get(dnaId)] = true;
-            lastChr = record[2];
-            lastPos = record[3];
+            lastChr = record[INTERMEDIATE_INDEX_CHROM];
+            lastPos = record[INTERMEDIATE_INDEX_POSITION];
 
         }
         
@@ -388,9 +303,11 @@ public class ExportUtils {
         
     }
     
+    
+    
     private static boolean compareRows(String[] row1, String[] row2){
-        if(row1.length != row2.length || row1.length < 4) return false;
-        for(int i = 4; i < 7; i++){ //compare ref, alt, dbsnp_id
+        if(row1.length != row2.length) return false;
+        for(int i = INTERMEDIATE_INDEX_DBSNP; i < INTERMEDIATE_INDEX_QUAL; i++){ //compare ref, alt, dbsnp_id
             if(!row1[i].equals(row2[i])){
                 return false;
             }
@@ -411,9 +328,9 @@ public class ExportUtils {
     }
     
     private static void determineMatches(Boolean[] matches, String[] row1, String[] row2){
-        for(int i = 4; i < row1.length; i++){
+        for(int i = INTERMEDIATE_INDEX_DBSNP; i < row1.length; i++){
             if(!row1[i].equals(row2[i])){
-                matches[i-7] = false;
+                matches[i-INTERMEDIATE_INDEX_QUAL] = false;
             }
         }
     }
@@ -471,5 +388,5 @@ public class ExportUtils {
         
         return header;
     }
-
+    
 }

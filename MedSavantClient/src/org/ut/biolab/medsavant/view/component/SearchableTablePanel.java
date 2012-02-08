@@ -35,7 +35,7 @@ import com.jidesoft.grid.*;
 import java.awt.event.MouseAdapter;
 import javax.swing.border.Border;
 import javax.swing.table.TableColumn;
-import org.ut.biolab.medsavant.util.ExportUtils;
+import org.ut.biolab.medsavant.util.ExportTable;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.MainFrame;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
@@ -348,7 +348,7 @@ public class SearchableTablePanel extends JPanel {
         exportButton.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e) {
                 try {
-                    ExportUtils.exportTable(table);
+                    ExportTable.exportTable(table);
                 } catch (Exception ex) {
                     DialogUtils.displayException("MedSavant", "<HTML>A problem occurred while exporting.<BR>Make sure the output file is not being used. </HTML>", ex);
                     ex.printStackTrace();

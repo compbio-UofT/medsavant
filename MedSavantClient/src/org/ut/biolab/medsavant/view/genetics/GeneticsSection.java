@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.util.ExportVcfWizard;
+import org.ut.biolab.medsavant.view.dialog.ExportVcfWizard;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.manage.PluginPage;
 import org.ut.biolab.medsavant.view.manage.VariantFilesPage;
