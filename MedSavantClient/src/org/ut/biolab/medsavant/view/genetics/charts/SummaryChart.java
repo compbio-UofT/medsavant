@@ -213,6 +213,7 @@ public class SummaryChart extends JLayeredPane {
 
     private synchronized void drawChart(ChartFrequencyMap[] chartMaps) {
 
+
         ChartFrequencyMap filteredChartMap = chartMaps[0];
         ChartFrequencyMap unfilteredChartMap = null;
 
