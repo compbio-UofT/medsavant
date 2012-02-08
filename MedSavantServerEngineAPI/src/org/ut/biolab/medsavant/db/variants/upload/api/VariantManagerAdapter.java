@@ -1,9 +1,11 @@
 package org.ut.biolab.medsavant.db.variants.upload.api;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.sqlbuilder.Condition;
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.List;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
@@ -21,6 +23,7 @@ public interface VariantManagerAdapter extends Remote
   public void cancelPublish(String sid, int projectID, int referenceID, int updateID) throws Exception;
   public int updateTable(String sid, int projectId, int referenceId, int[] annotationIds, List<CustomField> variantFields) throws Exception;
   public int removeVariants(String sid, int projectId, int referenceId, List<SimpleVariantFile> files) throws Exception;
+  public RemoteInputStream exportVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException, IOException, InterruptedException;
   
 }
 

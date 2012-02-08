@@ -27,6 +27,7 @@ import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
+import org.ut.biolab.medsavant.util.ExportVcfWizard;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.manage.PluginPage;
 import org.ut.biolab.medsavant.view.manage.VariantFilesPage;
@@ -108,6 +109,16 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     }*/
 
 
+    private JButton exportVcfButton(){
+        JButton exportButton = new JButton("Export to VCF");
+        exportButton.setOpaque(false);
+        exportButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new ExportVcfWizard();
+            }
+        });
+        return exportButton;
+    }
 
     private JButton addSaveResultSetButton() {
         JButton button = new JButton("Save Variants");
@@ -123,7 +134,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     @Override
     public Component[] getBanner() {
 
-        Component[] result = new Component[2];
+        Component[] result = new Component[3];
 
         JLabel l = new JLabel("Reference:");
         l.setForeground(Color.white);
@@ -133,6 +144,8 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         } else {
             result[1] = referenceDropDown;
         }
+        
+        result[2] = exportVcfButton();
         //result[3] = createVcfButton();
         //result[0] = addSaveResultSetButton();
 

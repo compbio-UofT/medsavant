@@ -1,7 +1,15 @@
 package org.ut.biolab.medsavant.db.variants.update;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.dbspec.Column;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
@@ -9,11 +17,15 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.FileServer;
 import org.ut.biolab.medsavant.db.util.ServerDirectorySettings;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
@@ -413,5 +425,60 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             throw e;
         }
     }
+    
+    public RemoteInputStream exportVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException, IOException, InterruptedException {
+        
+        //generate directory
+        File baseDir = ServerDirectorySettings.generateDateStampDirectory(new File("./"));
+        Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir);
+        p.waitFor();
+        File file = new File(baseDir, "export.tdf");
+        System.out.println(baseDir.getAbsolutePath());
+        
+        //select into
+        System.out.println("starting select into");
+        long start = System.nanoTime();
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId,ProjectQueryUtil.getInstance().getVariantTablename(sessionId,projectId, referenceId, true));
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addAllColumns();
+        VariantQueryUtil.getInstance().addConditionsToQuery(query, conditions);
+        query.addOrderings(new Column[]{table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION)}); 
+        String intoString = 
+                "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\""
+                + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"'"
+                + " LINES TERMINATED BY '\\r\\n' ";
+        String queryString = query.toString().replace("FROM", intoString + "FROM");
+        ConnectionController.connectPooled(sessionId).createStatement().execute(queryString);
+        System.out.println("done: " + (System.nanoTime()-start));
+               
+        
+        /*//zip
+        int BUFFER = 2048;
+        BufferedInputStream origin = null;
+        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream("c:\\zip\\myfigs.zip")));
+        byte data[] = new byte[BUFFER];
+
+        File f = new File(".");
+        String files[] = f.list();
+
+        for (int i=0; i<files.length; i++) {
+            System.out.println("Adding: "+files[i]);
+            FileInputStream fi = new 
+            FileInputStream(files[i]);
+            origin = new BufferedInputStream(fi, BUFFER);
+            ZipEntry entry = new ZipEntry(files[i]);
+            out.putNextEntry(entry);
+            int count;
+            while((count = origin.read(data, 0, BUFFER)) != -1) {
+                out.write(data, 0, count);
+            }
+            origin.close();
+        }
+        out.close();*/
+        
+        return (new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath()))).export();
+    }
+
 
 }

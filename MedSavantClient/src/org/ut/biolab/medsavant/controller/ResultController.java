@@ -5,6 +5,7 @@
 
 package org.ut.biolab.medsavant.controller;
 
+import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
@@ -66,13 +67,13 @@ public class ResultController implements FiltersChangedListener {
         return filteredVariants;
     }
 
-    public synchronized List<Object[]> getFilteredVariantRecords(int start, int limit) {
+    public synchronized List<Object[]> getFilteredVariantRecords(int start, int limit, Column[] order) {
         if (filterSetId != FilterController.getCurrentFilterSetID() || this.limit < limit || this.start != start ||
                 ProjectController.getInstance().getCurrentProjectId() != projectId_records ||
                 ReferenceController.getInstance().getCurrentReferenceId() != referenceId_records || 
                 !SettingsController.getInstance().getDBName().equals(dbName_records)){
             try {
-                updateFilteredVariantDBResults(start, limit);
+                updateFilteredVariantDBResults(start, limit, order);
                 this.limit = limit;
                 this.start = start;
             } catch (NonFatalDatabaseException ex) {
@@ -85,7 +86,7 @@ public class ResultController implements FiltersChangedListener {
         return filteredVariants;
     }
     
-    private synchronized void updateFilteredVariantDBResults(int start, int limit) throws NonFatalDatabaseException {
+    private synchronized void updateFilteredVariantDBResults(int start, int limit, Column[] order) throws NonFatalDatabaseException {
         
         filterSetId = FilterController.getCurrentFilterSetID();
         
@@ -96,7 +97,8 @@ public class ResultController implements FiltersChangedListener {
                     ReferenceController.getInstance().getCurrentReferenceId(), 
                     FilterController.getQueryFilterConditions(),
                     start, 
-                    limit);
+                    limit, 
+                    order);
         } catch (SQLException ex) {
             MiscUtils.checkSQLException(ex);
             Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);

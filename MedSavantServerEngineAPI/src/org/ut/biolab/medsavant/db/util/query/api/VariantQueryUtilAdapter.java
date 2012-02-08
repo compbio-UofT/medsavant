@@ -1,10 +1,13 @@
 package org.ut.biolab.medsavant.db.util.query.api;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.io.File;
+import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -26,6 +29,7 @@ public interface VariantQueryUtilAdapter extends Remote {
     public TableSchema getCustomTableSchema(String sessionId, int projectId, int referenceId) throws SQLException, RemoteException;
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, int start, int limit) throws SQLException, RemoteException;
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException;
+    public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order) throws SQLException, RemoteException;
     public double[] getExtremeValuesForColumn(String sid,String tablename, String columnname) throws SQLException, RemoteException;
     public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException;
     public int getNumFilteredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException;
@@ -51,6 +55,6 @@ public interface VariantQueryUtilAdapter extends Remote {
     public List<String[]> getTagsForUpload(String sid, int uploadId) throws SQLException, RemoteException;
     public Set<StarredVariant> getStarredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException;
     public int addStarredVariants(String sid, int projectId, int referenceId, List<StarredVariant> variant) throws SQLException, RemoteException;
-    public void unstarVariant(String sid, int projectId, int referenceId, int uploadId, int fileId, int variantId, String user) throws SQLException, RemoteException;
+    public void unstarVariant(String sid, int projectId, int referenceId, int uploadId, int fileId, int variantId, String user) throws SQLException, RemoteException;    
 
 }

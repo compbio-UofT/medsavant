@@ -141,7 +141,7 @@ class TablePanel extends JLayeredPane {
                     public List<Object[]> retrieve(int start, int limit) {
                         showWaitCard();
                         try {
-                            final List<Object[]> result = ResultController.getInstance().getFilteredVariantRecords(start, limit);
+                            final List<Object[]> result = ResultController.getInstance().getFilteredVariantRecords(start, limit, null);
                             checkStarring(result);
                             showShowCard();
                             return result;

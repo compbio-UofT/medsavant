@@ -15,7 +15,9 @@
  */
 package org.ut.biolab.medsavant.db.util.query;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -64,6 +66,7 @@ import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.DistinctValuesCache;
+import org.ut.biolab.medsavant.db.util.ServerDirectorySettings;
 import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
 
 /**
@@ -95,16 +98,32 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     }
 
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException {
+        return getVariants(sessionId, projectId, referenceId, conditions, start, limit, null);
+    }
+    
+    public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order) throws SQLException, RemoteException {
 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId,ProjectQueryUtil.getInstance().getVariantTablename(sessionId,projectId, referenceId, true));
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
         addConditionsToQuery(query, conditions);
-
+        if(order != null){
+            query.addOrderings(order);
+        }       
+        
         Connection conn = ConnectionController.connectPooled(sessionId);
-
-        ResultSet rs = conn.createStatement().executeQuery(query.toString() + " LIMIT " + start + ", " + limit);
+       
+        String queryString = query.toString();
+        if(limit != -1){
+            if(start != -1){
+                queryString += " LIMIT " + start + ", " + limit;
+            } else {
+                queryString += " LIMIT " + limit;
+            }
+        }
+        System.out.println(queryString);
+        ResultSet rs = conn.createStatement().executeQuery(queryString);
 
         ResultSetMetaData rsMetaData = rs.getMetaData();
         int numberColumns = rsMetaData.getColumnCount();
@@ -202,7 +221,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         rs.next();
         return rs.getInt(1);
     }
-
+    
     public int getNumVariantsForDnaIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException {
         String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
 
@@ -964,5 +983,5 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         ConnectionController.connectPooled(sid).createStatement().execute(q.toString());
     }
-
+    
 }

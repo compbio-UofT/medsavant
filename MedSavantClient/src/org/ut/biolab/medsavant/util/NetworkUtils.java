@@ -4,6 +4,8 @@
  */
 package org.ut.biolab.medsavant.util;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import org.ut.biolab.medsavant.api.Listener;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -67,6 +69,42 @@ public class NetworkUtils {
                 listener.handleEvent(e);
             }
         });
+    }
+    
+    public static File copyFileFromRemoteStream(RemoteInputStream ris) throws IOException{
+        InputStream istream = RemoteInputStreamClient.wrap(ris);
+        FileOutputStream ostream = null;
+        File tempFile;
+
+        try {
+
+            tempFile = File.createTempFile("sentFile_", ".dat");
+            ostream = new FileOutputStream(tempFile);
+            System.out.println("Writing file " + tempFile);
+
+            byte[] buf = new byte[1024];
+
+            int bytesRead = 0;
+            while ((bytesRead = istream.read(buf)) >= 0) {
+                ostream.write(buf, 0, bytesRead);
+            }
+            ostream.flush();
+
+            System.out.println("Finished writing file " + tempFile);
+
+        } finally {
+            try {
+                if (istream != null) {
+                    istream.close();
+                }
+            } finally {
+                if (ostream != null) {
+                    ostream.close();
+                }
+            }
+        }
+        
+        return tempFile;
     }
     
 }
