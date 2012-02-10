@@ -121,6 +121,8 @@ public class GenomeContainer extends JLayeredPane {
         chrPlusButtonContainer.add(ViewUtil.alignRight(ViewUtil.alignLeft(savantButton)),BorderLayout.SOUTH);
          *
          */
+        
+        this.add(chrPlusButtonContainer, c, JLayeredPane.DEFAULT_LAYER);
 
         waitPanel = new WaitPanel("Generating Genome View");
         this.add(waitPanel, c, JLayeredPane.PALETTE_LAYER);
@@ -188,12 +190,13 @@ public class GenomeContainer extends JLayeredPane {
 
     private synchronized void showWaitCard() {
         waitPanel.setVisible(true);
-        this.setLayer(waitPanel, JLayeredPane.PALETTE_LAYER);
+        this.setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
+        waitPanel.repaint();
     }
 
     private synchronized void showShowCard() {
-        this.add(chrPlusButtonContainer, c, JLayeredPane.DEFAULT_LAYER);
         waitPanel.setVisible(false);
+        chrPlusButtonContainer.repaint();
     }
 
     /*public void filtersChanged() {
@@ -268,48 +271,12 @@ public class GenomeContainer extends JLayeredPane {
                 }
 
                 final int max = mmax;
-
-                for (final ChromosomePanel p : chrViews) {
-                    if (this.isThreadCancelled()) {
-                        return null;
-                    }
-
-                    //limit of 5 threads at a time
-                    synchronized (workerLock) {
-                        while (activeThreads > 5) {
-                            if (this.isThreadCancelled()) {
-                                return null;
-                            }
-                            workerLock.wait();
-                        }
-                        activeThreads++;
-                    }
-
-                    Thread thread = new Thread() {
-
-                        @Override
-                        public void run() {
-                            p.updateFrequencyCounts(map.get(p.getChrName()), max);
-                            synchronized (workerLock) {
-                                regionsDone++;
-                                activeThreads--;
-                                workerLock.notifyAll();
-                            }
-                        }
-                    };
-                    thread.start();
+                
+                for(ChromosomePanel p : chrViews) {                   
+                    p.updateFrequencyCounts(map.get(p.getChrName()), max);                                       
                 }
 
-                //wait until all threads completed
-                synchronized (workerLock) {
-                    while (regionsDone < chrViews.size()) {
-                        if (this.isThreadCancelled()) {
-                            return null;
-                        }
-                        workerLock.wait();
-                    }
-                }
-
+                showShowCard();
                 return true;
             } catch (SQLException ex) {
                 MiscUtils.checkSQLException(ex);
@@ -340,6 +307,7 @@ public class GenomeContainer extends JLayeredPane {
 
         @Override
         protected void showSuccess(Object result) {
+            //TODO: why isn't this always called??
             showShowCard();
         }
     }

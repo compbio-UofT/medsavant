@@ -98,7 +98,7 @@ public class ChromosomeDiagramPanel extends JPanel {
 
     public synchronized void setAnnotations(List<RangeAnnotation> annotations) {
         this.annotations = annotations;
-        repaint();
+        //repaint();
     }
     
     /*public int update(int totalNum){
