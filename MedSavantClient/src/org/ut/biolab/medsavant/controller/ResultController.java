@@ -27,9 +27,9 @@ public class ResultController implements FiltersChangedListener {
     private static final int DEFAULT_LIMIT = 1000;
     private int limit = -1;
     private int start = -1;
-    private int filterSetId = -1;
     
     //last state seen by getFilteredVariantRecords
+    private int filterSetId_records = -1;
     private int projectId_records;
     private int referenceId_records;
     private String dbName_records;
@@ -40,6 +40,7 @@ public class ResultController implements FiltersChangedListener {
     private String dbName_total;
     
     //last state seen by getNumFilteredVariants
+    private int filterSetId_remaining = -1;
     private int projectId_remaining;
     private int referenceId_remaining;
     private String dbName_remaining;
@@ -68,7 +69,7 @@ public class ResultController implements FiltersChangedListener {
     }
 
     public synchronized List<Object[]> getFilteredVariantRecords(int start, int limit, Column[] order) {
-        if (filterSetId != FilterController.getCurrentFilterSetID() || this.limit < limit || this.start != start ||
+        if (filterSetId_records != FilterController.getCurrentFilterSetID() || this.limit < limit || this.start != start ||
                 ProjectController.getInstance().getCurrentProjectId() != projectId_records ||
                 ReferenceController.getInstance().getCurrentReferenceId() != referenceId_records || 
                 !SettingsController.getInstance().getDBName().equals(dbName_records)){
@@ -88,7 +89,7 @@ public class ResultController implements FiltersChangedListener {
     
     private synchronized void updateFilteredVariantDBResults(int start, int limit, Column[] order) throws NonFatalDatabaseException {
         
-        filterSetId = FilterController.getCurrentFilterSetID();
+        filterSetId_records = FilterController.getCurrentFilterSetID();
         
         try {
             filteredVariants = MedSavantClient.VariantQueryUtilAdapter.getVariants(
@@ -109,7 +110,7 @@ public class ResultController implements FiltersChangedListener {
     
     public synchronized int getNumFilteredVariants() {
         try {
-            if (filterSetId != FilterController.getCurrentFilterSetID() ||
+            if (filterSetId_remaining != FilterController.getCurrentFilterSetID() ||
                     updateTotalNumVariantsRemainingIsRequired ||
                     ProjectController.getInstance().getCurrentProjectId() != projectId_remaining ||
                     ReferenceController.getInstance().getCurrentReferenceId() != referenceId_remaining || 
@@ -123,6 +124,7 @@ public class ResultController implements FiltersChangedListener {
                 projectId_remaining = ProjectController.getInstance().getCurrentProjectId();
                 referenceId_remaining = ReferenceController.getInstance().getCurrentReferenceId();
                 dbName_remaining = SettingsController.getInstance().getDBName();
+                filterSetId_remaining = FilterController.getCurrentFilterSetID();
             }
             return totalNumVariantsRemaining;
         } catch (SQLException ex) {
