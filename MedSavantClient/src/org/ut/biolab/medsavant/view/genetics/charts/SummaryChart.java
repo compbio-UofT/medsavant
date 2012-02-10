@@ -423,6 +423,10 @@ public class SummaryChart extends JLayeredPane {
 
                 result[0] = mapGenerator.generateChartMap(true, isLogScaleX && mapGenerator.isNumeric());
 
+                if (result != null) {
+                    drawChart(result);
+                }
+                
                 return result;
             } catch (SQLException ex) {
                 MiscUtils.checkSQLException(ex);
@@ -431,9 +435,10 @@ public class SummaryChart extends JLayeredPane {
         }
 
         public void showSuccess(ChartFrequencyMap[] result) {
-            if (result != null) {
-                drawChart(result);
-            }
+            //TODO: why is this sometimes not called??
+            //if (result != null) {
+             //   drawChart(result);
+            //}
         }
 
         public void showProgress(double prog) {
