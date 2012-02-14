@@ -152,17 +152,23 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
     }
 
-    public String createVariantTable(String sid, int projectid, int referenceid, int updateid) throws SQLException {
+    /*public String createVariantTable(String sid, int projectid, int referenceid, int updateid) throws SQLException {
         return createVariantTable(sid, projectid, referenceid, updateid, null, false);
     }
-
-
+     */
+    
+    
+    
     public String createVariantTable(String sid, int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging) throws SQLException {
+        return createVariantTable(sid, projectid, referenceid, updateid, annotationIds, isStaging, false);
+    }
 
-        /*String variantTableName = isStaging ?
-                DBSettings.getVariantStagingTableName(projectid, referenceid, updateid)
-                : DBSettings.getVariantTableName(projectid, referenceid, updateid);*/
+    public String createVariantTable(String sid, int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging, boolean isSub) throws SQLException {
+
         String variantTableName = DBSettings.getVariantTableName(projectid, referenceid, updateid);
+        if(isSub){
+            variantTableName += "_sub";
+        }
 
         Connection c = (ConnectionController.connectPooled(sid));
 
@@ -185,12 +191,10 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,";
 
         //add custom vcf fields
-        //if (!isStaging) {
-            List<CustomField> customFields = getCustomVariantFields(sid, projectid, referenceid, updateid);
-            for (CustomField f : customFields) {
-                query += f.generateSchema(true);
-            }
-        //}
+        List<CustomField> customFields = getCustomVariantFields(sid, projectid, referenceid, updateid);
+        for (CustomField f : customFields) {
+            query += f.generateSchema(true);
+        }
 
         //add each annotation
         if (annotationIds != null) {
@@ -204,8 +208,8 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         c.createStatement().execute(query);
         
-        //create new entry in variant table map
-        //if(!isStaging){
+        //create new entry in variant table map       
+        if(!isSub){         
             TableSchema variantTableMap = MedSavantDatabase.VarianttablemapTableSchema;
             InsertQuery query1 = new InsertQuery(variantTableMap.getTable());
             query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid);
@@ -214,12 +218,11 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), !isStaging);
             query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), variantTableName);
             c.createStatement().execute(query1.toString());
-        //}
-
+        } 
 
         return variantTableName;
     }
-
+    
     private static String getAnnotationSchema(String sid, int annotationId) {
 
         AnnotationFormat format = null;
@@ -266,6 +269,44 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         } else {
             return null;
         }
+    }
+    
+    public Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) throws SQLException {
+        
+        TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addColumns(
+                table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME),
+                table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME),
+                table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_SUBSET_MULTIPLIER));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
+        if(published){
+            query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
+        }
+        query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
+        
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+
+        if (rs.next()) {
+            return new Object[]{rs.getString(1), rs.getString(2), rs.getFloat(3)};
+        } else {
+            return null;
+        }
+    }
+    
+    public void addSubsetInfoToMap(String sid, int projectId, int referenceId, int updateId, String subTableName, float multiplier) throws SQLException{
+        
+        TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
+        UpdateQuery query = new UpdateQuery(table.getTable());
+        query.addCustomSetClause(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME), subTableName);
+        query.addCustomSetClause(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_SUBSET_MULTIPLIER), multiplier);
+        query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
+        query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
+        query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
+        
+        ConnectionController.connectPooled(sid).createStatement().execute(query.toString());
     }
 
     public int addProject(String sid, String name, List<CustomField> fields) throws SQLException, ParserConfigurationException, SAXException, IOException {

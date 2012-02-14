@@ -5,11 +5,8 @@ import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
@@ -17,8 +14,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
@@ -184,11 +179,21 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             ServerLogger.log(VariantManager.class, "Creating new variant table for resulting variants");
             ProjectQueryUtil.getInstance().setCustomVariantFields(sid, projectId, referenceId, updateId, variantFields);
             String tableName = ProjectQueryUtil.getInstance().createVariantTable(sid, projectId, referenceId, updateId, annotationIds, true);
-
+            String tableNameSub = ProjectQueryUtil.getInstance().createVariantTable(sid, projectId, referenceId, updateId, AnnotationQueryUtil.getInstance().getAnnotationIds(sid,projectId, referenceId), false, true);
+                     
             //upload to staging table
             ServerLogger.log(VariantManager.class, "Uploading variants to table: " + tableName);
             VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, new File(outputFilenameMerged), tableName);
 
+            //upload to sub table
+            File subFile = new File(outputFilenameMerged + "_sub");
+            ServerLogger.log(VariantManager.class, "Generating sub file: " + subFile.getAbsolutePath());
+            VariantManagerUtils.generateSubset(new File(outputFilenameMerged), subFile);
+            ServerLogger.log(VariantManager.class, "Importing to: " + tableNameSub);
+            VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, subFile, tableNameSub);
+            float multiplier = (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableName, new Condition[0][]) / (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableNameSub, new Condition[0][]);
+            ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, multiplier);
+            
             //cleanup 
             ServerLogger.log(VariantManager.class, "Dropping old table(s)");
             int newestId = ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, true);
@@ -243,7 +248,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
         ServerLogger.log(VariantManager.class, "Base directory: " + baseDir.getAbsolutePath());
         Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir);
         p.waitFor();
-
+        
         //add log
         ServerLogger.log(VariantManager.class, "Adding log and generating update id");
         int updateId = AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid, projectId, referenceId, org.ut.biolab.medsavant.db.model.AnnotationLog.Action.ADD_VARIANTS, user);     
@@ -322,10 +327,20 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
                     sid, projectId, referenceId, updateId,
                     ProjectQueryUtil.getInstance().getCustomVariantFields(sid, projectId, referenceId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, false)));
             String tableName = ProjectQueryUtil.getInstance().createVariantTable(sid, projectId, referenceId, updateId, AnnotationQueryUtil.getInstance().getAnnotationIds(sid,projectId, referenceId), true);
+            String tableNameSub = ProjectQueryUtil.getInstance().createVariantTable(sid, projectId, referenceId, updateId, AnnotationQueryUtil.getInstance().getAnnotationIds(sid,projectId, referenceId), false, true);
 
             //upload to staging table
             ServerLogger.log(VariantManager.class, "Uploading variants to table: " + tableName);
             VariantQueryUtil.getInstance().uploadFileToVariantTable(sid,new File(currentFilename), tableName);
+            
+            //upload to sub table
+            File subFile = new File(currentFilename + "_sub");
+            ServerLogger.log(VariantManager.class, "Generating sub file: " + subFile.getAbsolutePath());
+            VariantManagerUtils.generateSubset(new File(currentFilename), subFile);
+            ServerLogger.log(VariantManager.class, "Importing to: " + tableNameSub);
+            VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, subFile, tableNameSub);
+            float multiplier = (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableName, new Condition[0][]) / (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableNameSub, new Condition[0][]);
+            ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, multiplier);
             
             //add tags to upload
             ServerLogger.log(VariantManager.class, "Adding upload tags");
@@ -399,10 +414,20 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
                     sid, projectId, referenceId, updateId,
                     ProjectQueryUtil.getInstance().getCustomVariantFields(sid, projectId, referenceId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, false)));
             String tableName = ProjectQueryUtil.getInstance().createVariantTable(sid, projectId, referenceId, updateId, AnnotationQueryUtil.getInstance().getAnnotationIds(sid,projectId, referenceId), true);
-
+            String tableNameSub = ProjectQueryUtil.getInstance().createVariantTable(sid, projectId, referenceId, updateId, AnnotationQueryUtil.getInstance().getAnnotationIds(sid,projectId, referenceId), false, true);
+            
             //upload to staging table
             ServerLogger.log(VariantManager.class, "Uploading variants to table: " + tableName);
             VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, existingVariantsFile, tableName);
+                   
+            //upload to sub table
+            File subFile = new File(existingVariantsFile.getAbsolutePath() + "_sub");
+            ServerLogger.log(VariantManager.class, "Generating sub file: " + subFile.getAbsolutePath());
+            VariantManagerUtils.generateSubset(existingVariantsFile, subFile);
+            ServerLogger.log(VariantManager.class, "Importing to: " + tableNameSub);
+            VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, subFile, tableNameSub);
+            float multiplier = (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableName, new Condition[0][]) / (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableNameSub, new Condition[0][]);
+            ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, multiplier);
             
             //cleanup 
             ServerLogger.log(VariantManager.class, "Dropping old table(s)");

@@ -35,6 +35,9 @@ import org.ut.biolab.medsavant.vcf.VariantRecord;
 public class VariantManagerUtils {
     
     private static final int outputLinesLimit = 1000000;
+    //private static final int MAX_SUBSET_SIZE = 100000000; //bytes = 100MB
+    private static final int MIN_SUBSET_SIZE = 100000000; //bytes = 100MB
+    private static final int SUBSET_COMPRESSION = 1000; // times
     
     public static void annotateTDF(String sid, String tdfFilename, String outputFilename, int[] annotationIds) throws Exception {
         (new VariantAnnotator(tdfFilename, outputFilename, annotationIds)).annotate(sid);
@@ -273,5 +276,56 @@ public class VariantManagerUtils {
         
         return outfile;
     }
+    
+    public static void generateSubset(File inFile, File outFile) throws IOException, InterruptedException{
+    
+        System.out.println("generate subset");
+        long length = inFile.length();
+        int step;
+        if(length <= MIN_SUBSET_SIZE){
+            step = 1;
+        } else {
+            long targetSize = Math.max(MIN_SUBSET_SIZE, length / 1000);
+            step = (int)Math.ceil((double)length / (double)targetSize);
+        }
+        
+        
+        
+        /*double ratio = (double)MAX_SUBSET_SIZE / length;
+        int step;
+ 
+        if(ratio >= 1){ // file is smaller than max size, copy directly
+            step = 1;
+        } else {
+            step = (int)Math.ceil(1.0 / ratio);
+        }*/
+
+        System.out.println("length: " + length + "  step: " + step);
+        
+        /*String sedCommand = "sed -n '0~" + step + "p' " + inFile.getAbsolutePath() + " > " + outFile.getAbsolutePath();
+        System.out.println(sedCommand);
+
+        Process p = Runtime.getRuntime().exec(sedCommand);
+        p.waitFor();
+         */
+        
+        BufferedReader in = new BufferedReader(new FileReader(inFile));
+        BufferedWriter out = new BufferedWriter(new FileWriter(outFile));
+        
+        int i = 1;
+        String line;
+        while((line = in.readLine()) != null){
+            if(i >= step){
+                out.write(line + "\n");
+                i = 1;
+            } else {
+                i++;
+            }
+        }
+        
+        in.close();
+        out.close();
+    }
+    
     
 }

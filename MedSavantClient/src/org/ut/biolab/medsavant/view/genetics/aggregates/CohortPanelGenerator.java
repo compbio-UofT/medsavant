@@ -42,12 +42,9 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.Cohort;
 import org.ut.biolab.medsavant.db.model.SimplePatient;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.util.ExportUtils;
+import org.ut.biolab.medsavant.util.ExportTable;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -136,7 +133,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             exportButton.addMouseListener(new MouseAdapter() {
                 public void mouseReleased(MouseEvent e) {
                     try {
-                        ExportUtils.exportTable(table);
+                        ExportTable.exportTable(table);
                     } catch (Exception ex) {
                         DialogUtils.displayException("MedSavant", "<HTML>A problem occurred while exporting.<BR>Make sure the output file is not being used. </HTML>", ex);
                         ex.printStackTrace();

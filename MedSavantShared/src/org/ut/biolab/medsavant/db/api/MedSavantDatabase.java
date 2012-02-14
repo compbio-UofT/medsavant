@@ -859,6 +859,16 @@ public class MedSavantDatabase {
         public static final ColumnType TYPE_OF_ANNOTATION_IDS = TableSchema.ColumnType.VARCHAR;
         public static final int LENGTH_OF_ANNOTATION_IDS = 500;
         public static final String COLUMNNAME_OF_ANNOTATION_IDS = "annotation_ids";
+        // variant_tablemap.variant_subset_tablename
+        public static final int INDEX_OF_VARIANT_SUBSET_TABLENAME = 6;
+        public static final ColumnType TYPE_OF_VARIANT_SUBSET_TABLENAME = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_VARIANT_SUBSET_TABLENAME = 100;
+        public static final String COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME = "variant_subset_tablename";
+        // variant_tablemap.subset_multiplier
+        public static final int INDEX_OF_SUBSET_MULTIPLIER = 7;
+        public static final ColumnType TYPE_OF_SUBSET_MULTIPLIER = TableSchema.ColumnType.FLOAT;
+        public static final int LENGTH_OF_SUBSET_MULTIPLIER = -1;
+        public static final String COLUMNNAME_OF_SUBSET_MULTIPLIER = "subset_multiplier";
 
         private void addColumns() {
             addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
@@ -867,6 +877,8 @@ public class MedSavantDatabase {
             addColumn(COLUMNNAME_OF_PUBLISHED, COLUMNNAME_OF_PUBLISHED, TableSchema.ColumnType.BOOLEAN, 1);
             addColumn(COLUMNNAME_OF_VARIANT_TABLENAME, COLUMNNAME_OF_VARIANT_TABLENAME, TableSchema.ColumnType.VARCHAR, 100);
             addColumn(COLUMNNAME_OF_ANNOTATION_IDS, COLUMNNAME_OF_ANNOTATION_IDS, TableSchema.ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME, COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME, TableSchema.ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_SUBSET_MULTIPLIER, COLUMNNAME_OF_SUBSET_MULTIPLIER, TableSchema.ColumnType.FLOAT, -1);
         }
     }
 

@@ -55,5 +55,9 @@ public class ChromosomePanel extends JPanel {
     public String getChrName(){
         return chr.getName();
     }
+    
+    public String getShortChrName(){
+        return chr.getShortname();
+    }
 
 }

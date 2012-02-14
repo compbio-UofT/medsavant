@@ -15,9 +15,7 @@
  */
 package org.ut.biolab.medsavant.db.util.query;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -39,10 +37,8 @@ import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import java.rmi.RemoteException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
@@ -66,7 +62,6 @@ import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.DistinctValuesCache;
-import org.ut.biolab.medsavant.db.util.ServerDirectorySettings;
 import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
 
 /**
@@ -74,6 +69,9 @@ import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
  * @author Andrew
  */
 public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implements VariantQueryUtilAdapter {
+    
+    private static final int COUNT_ESTIMATE_THRESHOLD = 1000;
+    private static final int BIN_TOTAL_THRESHOLD = 10000;
 
     private static VariantQueryUtil instance;
 
@@ -198,63 +196,92 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     }
 
     public int getNumFilteredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException {
-        return getNumFilteredVariants(sid,projectId, referenceId, new Condition[0][]);
+        return getNumFilteredVariants(sid,projectId, referenceId, new Condition[0][], true);
+    }
+    
+    public int getNumFilteredVariants(String sid,int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException {
+        return getNumFilteredVariants(sid,projectId, referenceId, conditions, false);
     }
 
-    public int getNumFilteredVariants(String sid,int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException {
+    public int getNumFilteredVariants(String sid,int projectId, int referenceId, Condition[][] conditions, boolean forceExact) throws SQLException, RemoteException {
 
-        String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
-
-        if (name == null) {
+        //String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
+        Object[] variantTableInfo = ProjectQueryUtil.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
+        String tablename = (String)variantTableInfo[0];
+        String tablenameSub = (String)variantTableInfo[1];
+        float subMultiplier = (Float)variantTableInfo[2];
+        
+        if (tablename == null) {
             return -1;
         }
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,name);
+        
+        //try to get a reasonable approximation
+        if(tablenameSub != null && !forceExact){
+            int estimate = (int)(getNumFilteredVariantsHelper(sid, tablenameSub, conditions) * subMultiplier);
+            if(estimate >= COUNT_ESTIMATE_THRESHOLD){
+                return estimate;
+            }
+        }
+        
+        //approximation not good enough. use actual data
+        return getNumFilteredVariantsHelper(sid, tablename, conditions);
+    }
+    
+    public int getNumFilteredVariantsHelper(String sid, String tablename, Condition[][] conditions) throws SQLException, RemoteException {
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
 
+        System.out.println(q.toString());
+        
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
 
         rs.next();
         return rs.getInt(1);
     }
     
+    /*
+     * Convenience method
+     */
     public int getNumVariantsForDnaIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException {
-        String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
-
-        if (name == null) {
-            return -1;
-        }
-
-        if(dnaIds.isEmpty()){
-            return 0;
-        }
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,name);
-
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(table.getTable());
-        q.addCustomColumns(FunctionCall.countAll());
-        addConditionsToQuery(q, conditions);
-
+        String name = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectId, referenceId, true);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, name);
+        
         Condition[] dnaConditions = new Condition[dnaIds.size()];
         for(int i = 0; i < dnaIds.size(); i++){
             dnaConditions[i] = BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIds.get(i));
         }
-        q.addCondition(ComboCondition.or(dnaConditions));
-
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
-
-        rs.next();
-        return rs.getInt(1);
+        
+        Condition[] c1 = new Condition[conditions.length];
+        for(int i = 0; i < conditions.length; i++){
+            c1[i] = ComboCondition.and(conditions[i]);
+        }
+        
+        Condition[] finalCondition = new Condition[]{ComboCondition.and(ComboCondition.or(dnaConditions), ComboCondition.or(c1))};
+        
+        return getNumFilteredVariants(sid, projectId, referenceId, new Condition[][]{finalCondition});
     }
 
     public Map<Range,Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnname, double min, double binSize) throws SQLException, RemoteException {
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
+        //pick table from approximate or exact
+        TableSchema table;
+        int total = getNumFilteredVariants(sid, projectId, referenceId, conditions);
+        Object[] variantTableInfo = ProjectQueryUtil.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
+        String tablename = (String)variantTableInfo[0];
+        String tablenameSub = (String)variantTableInfo[1];
+        float multiplier = (Float)variantTableInfo[2];        
+        if(total >= BIN_TOTAL_THRESHOLD){
+            table = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
+        } else {
+            table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
+            multiplier = 1;
+        }
+        
+        //TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
@@ -283,7 +310,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
             Range r = new Range(min + binNo*binSize, min + (binNo+1)*binSize);
 
-            long count = rs.getLong(1);
+            long count = (long)(rs.getLong(1) * multiplier);
 
             results.put(r, count);
         }
@@ -291,19 +318,37 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return results;
     }
 
-    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException {
+    /*public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException {
+        
+        //TODO: approximate counts
 
         TableSchema tableSchema = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
         DbTable table = tableSchema.getTable();
         DbColumn col = tableSchema.getDBColumnByAlias(columnAlias);
 
         return getFilteredFrequencyValuesForCategoricalColumn(sid,table, conditions, col);
-    }
+    }*/
 
-    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, DbTable table, Condition[][] conditions, DbColumn column) throws SQLException {
+    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException {
 
+        //pick table from approximate or exact
+        TableSchema table;
+        int total = getNumFilteredVariants(sid, projectId, referenceId, conditions);
+        Object[] variantTableInfo = ProjectQueryUtil.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
+        String tablename = (String)variantTableInfo[0];
+        String tablenameSub = (String)variantTableInfo[1];
+        float multiplier = (Float)variantTableInfo[2];        
+        if(total >= BIN_TOTAL_THRESHOLD){
+            table = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
+        } else {
+            table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
+            multiplier = 1;
+        }
+        
+        DbColumn column = table.getDBColumnByAlias(columnAlias);
+        
         SelectQuery q = new SelectQuery();
-        q.addFromTable(table);
+        q.addFromTable(table.getTable());
         q.addColumns(column);
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
@@ -318,33 +363,53 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             if (key == null) {
                 key = "";
             }
-            map.put(key, rs.getInt(2));
+            map.put(key, (int)(rs.getInt(2) * multiplier));
         }
 
         return map;
     }
 
+    /*
+     * Convenience method
+     */
     public int getNumVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException, RemoteException {
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
-
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(table.getTable());
-        q.addCustomColumns(FunctionCall.countAll());
-        q.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom));
-        q.addCondition(BinaryCondition.greaterThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), start, true));
-        q.addCondition(BinaryCondition.lessThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), end, false));
-        addConditionsToQuery(q, conditions);
-
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
-
-        rs.next();
-        return rs.getInt(1);
+        String name = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectId, referenceId, true);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, name);
+        
+        Condition[] rangeConditions = new Condition[]{
+            BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom),
+            BinaryCondition.greaterThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), start, true),
+            BinaryCondition.lessThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), end, false)
+        };
+        
+        Condition[] c1 = new Condition[conditions.length];
+        for(int i = 0; i < conditions.length; i++){
+            c1[i] = ComboCondition.and(conditions[i]);
+        }
+        
+        Condition[] finalCondition = new Condition[]{ComboCondition.and(ComboCondition.and(rangeConditions), ComboCondition.or(c1))};
+        
+        return getNumFilteredVariants(sid, projectId, referenceId, new Condition[][]{finalCondition});
     }
 
     public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, int binsize) throws SQLException, RemoteException {
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
+        
+        //pick table from approximate or exact
+        TableSchema table;
+        int total = getNumFilteredVariants(sid, projectId, referenceId, conditions);
+        Object[] variantTableInfo = ProjectQueryUtil.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
+        String tablename = (String)variantTableInfo[0];
+        String tablenameSub = (String)variantTableInfo[1];
+        float multiplier = (Float)variantTableInfo[2];        
+        if(total >= BIN_TOTAL_THRESHOLD){
+            table = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
+        } else {
+            table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
+            multiplier = 1;
+        }
+        
+        //TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
 
         SelectQuery queryBase = new SelectQuery();
         queryBase.addFromTable(table.getTable());
@@ -361,9 +426,12 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         String query = queryBase.toString().replace("COUNT(*)", "COUNT(*)," + roundFunction) + "," + roundFunction;
 
+        long start = System.nanoTime();
         Connection conn = ConnectionController.connectPooled(sid);
         ResultSet rs = conn.createStatement().executeQuery(query);
-
+        System.out.println(query);
+        System.out.println("  time:" + (System.nanoTime() - start)/1000000000);
+        
         Map<String, Map<Range, Integer>> results = new HashMap<String, Map<Range, Integer>>();
         while (rs.next()) {
 
@@ -379,7 +447,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             int binNo = rs.getInt(3);
             Range binRange = new Range(binNo * binsize, (binNo + 1) * binsize);
 
-            int count = rs.getInt(2);
+            int count = (int)(rs.getInt(2) * multiplier);
 
             chromMap.put(binRange, count);
             results.put(chrom, chromMap);
@@ -420,8 +488,10 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
          */
     }
 
-    public int[] getNumVariantsForBins(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int binsize, int numbins) throws SQLException, NonFatalDatabaseException, RemoteException {
+    /*public int[] getNumVariantsForBins(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int binsize, int numbins) throws SQLException, NonFatalDatabaseException, RemoteException {
 
+        //TODO: approximate counts
+        
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
 
         SelectQuery queryBase = new SelectQuery();
@@ -429,15 +499,6 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         queryBase.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION));
         queryBase.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom));
         addConditionsToQuery(queryBase, conditions);
-
-        /*String queryBase =
-        "SELECT `" + VariantTable.FIELDNAME_POSITION + "`" +
-        " FROM " + ProjectQueryUtil.getVariantTablename(projectId, referenceId) + " t0" +
-        " WHERE `" + VariantTable.FIELDNAME_CHROM + "`=\"" + chrom + "\"";
-        if(!conditions.isEmpty()) {
-        queryBase += " AND ";
-        }
-        queryBase += conditionsToStringOr(conditions);*/
 
 
         //TODO
@@ -469,7 +530,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             numRows[index] = rs.getInt(2);
         }
         return numRows;
-    }
+    }*/
 
     public void uploadFileToVariantTable(String sid, File file, String tableName) throws SQLException {
 
@@ -487,6 +548,9 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public int getNumPatientsWithVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int start, int end) throws SQLException, RemoteException {
 
+        //TODO: approximate counts??
+        //might not be a good idea... don't want to miss a dna id
+        
         TableSchema table = getCustomTableSchema(sid,projectId, referenceId);
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
@@ -549,6 +613,8 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
     public Map<String, Integer> getNumVariantsInFamily(String sid, int projectId, int referenceId, String familyId, Condition[][] conditions) throws SQLException, RemoteException {
 
+        //TODO: approximate counts
+        
         String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
 
         if (name == null) {
@@ -983,5 +1049,5 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         ConnectionController.connectPooled(sid).createStatement().execute(q.toString());
     }
-    
+       
 }

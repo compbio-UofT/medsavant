@@ -102,13 +102,13 @@ public class ExportVCF {
             
             //default fields
             row += 
-                        cleanField(record[DefaultVariantTableSchema.INDEX_OF_CHROM]) + "\t" + 
-                        cleanField(record[DefaultVariantTableSchema.INDEX_OF_POSITION]) + "\t" +
-                        parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_DBSNP_ID])) + "\t" + 
-                        parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_REF])) + "\t" + 
-                        parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_ALT])) + "\t" + 
-                        parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_QUAL])) + "\t" + 
-                        parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_FILTER])) + "\t";
+                    cleanField(record[DefaultVariantTableSchema.INDEX_OF_CHROM]) + "\t" + 
+                    cleanField(record[DefaultVariantTableSchema.INDEX_OF_POSITION]) + "\t" +
+                    parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_DBSNP_ID])) + "\t" + 
+                    parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_REF])) + "\t" + 
+                    parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_ALT])) + "\t" + 
+                    parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_QUAL])) + "\t" + 
+                    parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_FILTER])) + "\t";
             
             //extra fields
             for(int j = infoMin; j < infoMax; j++){
