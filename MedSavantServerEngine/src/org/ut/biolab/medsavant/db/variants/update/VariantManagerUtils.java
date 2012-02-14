@@ -201,7 +201,6 @@ public class VariantManagerUtils {
         while((line = reader.readLine()) != null){
             String[] split = line.split(",");
             String info = split[customInfoIndex].substring(1, split[customInfoIndex].length()-1); //remove quotes
-
             writer.write(line + "," + VariantRecord.createTabString(VariantRecord.parseInfo(info, infoFields, infoClasses)) + "\n");
         }
         reader.close();

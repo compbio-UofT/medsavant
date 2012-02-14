@@ -153,7 +153,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             //add custom vcf fields
             ServerLogger.log(VariantManager.class, "Adding custom vcf fields");
             String vcfAnnotatedVariants = sortedVariants + "_vcf";
-            VariantManagerUtils.addCustomVcfFields(sortedVariants, vcfAnnotatedVariants, variantFields, DefaultVariantTableSchema.INDEX_OF_FILTER + 1); //last of the default fields
+            VariantManagerUtils.addCustomVcfFields(sortedVariants, vcfAnnotatedVariants, variantFields, DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO); //last of the default fields
 
             //annotate
             String outputFilename = vcfAnnotatedVariants + "_annotated";
@@ -268,7 +268,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             List<CustomField> customFields = ProjectQueryUtil.getInstance().getCustomVariantFields(sid, projectId, referenceId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, false));
             if(!customFields.isEmpty()){
                 String customFieldFilename = currentFilename + "_vcf";
-                VariantManagerUtils.addCustomVcfFields(currentFilename, customFieldFilename, customFields, DefaultVariantTableSchema.INDEX_OF_FILTER + 1); //last of the default fields
+                VariantManagerUtils.addCustomVcfFields(currentFilename, customFieldFilename, customFields, DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO); //last of the default fields
                 currentFilename = customFieldFilename;
             }
             
@@ -305,7 +305,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             currentFilename = existingVariantsFile.getAbsolutePath();
 
             if(annotationIds.length > 0){
-            
+
                 //split
                 File splitDir = new File(baseDir,"splitDir");
                 splitDir.mkdir();
