@@ -77,8 +77,8 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
 
     @Override
     public void viewDidLoad() {
-        //if(asp != null)
-        //    asp.update();
+        if(asp != null)
+            asp.update(false);
         //if (asp != null)
         //    asp.resumeAggregation();
     }
@@ -92,9 +92,9 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
 
     @Override
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        if(asp != null){
+        /*if(asp != null){
             asp.update(false);   
-        }
+        }*/
     }
 
     @Override

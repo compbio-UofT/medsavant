@@ -40,6 +40,7 @@ public class ThreadController {
     }
     
     public synchronized void cancelWorkers(String page){
+        System.out.println("cancel: " + page);
         if(workers.get(page) == null) return;
         for(SwingWorker worker : workers.get(page)){
             worker.cancel(true);

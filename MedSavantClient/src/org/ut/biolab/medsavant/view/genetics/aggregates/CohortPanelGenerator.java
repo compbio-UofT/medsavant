@@ -123,6 +123,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         
         private void init(){
             
+            this.removeAll();
             this.setLayout(new BorderLayout());
             
             progress = new JProgressBar();
@@ -210,8 +211,8 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         public void update(){
             resetProgress();
             addToWorking(nodes.size());
-            for(CohortNode n : nodes){
-                table.collapseAll();
+            table.collapseAll();
+            for(CohortNode n : nodes){               
                 n.reset();
             }
             startResortWorker();
@@ -334,13 +335,24 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 
                 @Override
                 protected Object doInBackground() throws Exception {
-                    if(this.isThreadCancelled()) return -1;
                     try {
-                        return MedSavantClient.CohortQueryUtilAdapter.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), cohort.getId(), FilterController.getQueryFilterConditions());
-                    } catch (SQLException ex) {
-                        MiscUtils.checkSQLException(ex);
-                        return -1;
+                        System.out.println("run: " + cohort.getName());
+                        if(this.isThreadCancelled()){
+                            System.out.println("cancelled: " + cohort.getName());
+                            return -1;
+                        }
+                        try {
+                            return MedSavantClient.CohortQueryUtilAdapter.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), cohort.getId(), FilterController.getQueryFilterConditions());
+                        } catch (SQLException ex) {
+                            System.out.println("exception: " + cohort.getName());
+                            ex.printStackTrace();
+                            MiscUtils.checkSQLException(ex);
+                            return -1;
+                        }
+                    } catch (Exception e){
+                        e.printStackTrace();
                     }
+                    return -1;
                 }
 
                 @Override
@@ -350,6 +362,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                     panel.repaint();
                     panel.incrementCompleted();
                     cleanup();
+                    System.out.println("finished: " + cohort.getName());
                 }
                
             };
