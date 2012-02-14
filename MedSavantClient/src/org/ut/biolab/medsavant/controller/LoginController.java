@@ -114,6 +114,10 @@ public class LoginController {
         } catch (RemoteException ex) {
             setLoginException(ex);
         }
+        if(sessionId == null){
+            fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
+            return;
+        }
 
         //determine privileges
         isAdmin = false;

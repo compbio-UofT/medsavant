@@ -184,7 +184,7 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
                 + "`variant_tablename` varchar(100) COLLATE latin1_bin NOT NULL,"
                 + "`annotation_ids` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
                 + "`variant_subset_tablename` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
-                + "`subset_multiplier` float(10,0) DEFAULT 1.0,"
+                + "`subset_multiplier` float(10,6) DEFAULT 1,"
                 + "UNIQUE KEY `unique` (`project_id`,`reference_id`,`update_id`)"
                 + ") ENGINE=MyISAM;");
 
