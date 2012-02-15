@@ -308,6 +308,13 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         
         ConnectionController.connectPooled(sid).createStatement().execute(query.toString());
     }
+    
+    public float getMultiplier(String sid, String table, String subTable) throws SQLException, RemoteException{
+        int numerator = VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, table, new Condition[0][]);
+        int denominator = VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, subTable, new Condition[0][]);
+        if(denominator == 0) denominator = 1;
+        return (float)numerator / (float)denominator;
+    }
 
     public int addProject(String sid, String name, List<CustomField> fields) throws SQLException, ParserConfigurationException, SAXException, IOException {
 

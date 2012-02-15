@@ -191,8 +191,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             VariantManagerUtils.generateSubset(new File(outputFilenameMerged), subFile);
             ServerLogger.log(VariantManager.class, "Importing to: " + tableNameSub);
             VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, subFile, tableNameSub);
-            float multiplier = (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableName, new Condition[0][]) / (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableNameSub, new Condition[0][]);
-            ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, multiplier);
+            ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
             
             //cleanup 
             ServerLogger.log(VariantManager.class, "Dropping old table(s)");
@@ -339,8 +338,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             VariantManagerUtils.generateSubset(new File(currentFilename), subFile);
             ServerLogger.log(VariantManager.class, "Importing to: " + tableNameSub);
             VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, subFile, tableNameSub);
-            float multiplier = (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableName, new Condition[0][]) / (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableNameSub, new Condition[0][]);
-            ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, multiplier);
+            ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
             
             //add tags to upload
             ServerLogger.log(VariantManager.class, "Adding upload tags");
@@ -426,8 +424,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             VariantManagerUtils.generateSubset(existingVariantsFile, subFile);
             ServerLogger.log(VariantManager.class, "Importing to: " + tableNameSub);
             VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, subFile, tableNameSub);
-            float multiplier = (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableName, new Condition[0][]) / (float)VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableNameSub, new Condition[0][]);
-            ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, multiplier);
+            ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
             
             //cleanup 
             ServerLogger.log(VariantManager.class, "Dropping old table(s)");
