@@ -55,6 +55,7 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTabl
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantStarredTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VarianttagTableSchema;
 import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.model.SimplePatient;
 import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.settings.Settings;
@@ -72,6 +73,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     
     private static final int COUNT_ESTIMATE_THRESHOLD = 1000;
     private static final int BIN_TOTAL_THRESHOLD = 10000;
+    private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
 
     private static VariantQueryUtil instance;
 
@@ -120,7 +122,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 queryString += " LIMIT " + limit;
             }
         }
-        System.out.println(queryString);
+        //System.out.println(queryString);
         ResultSet rs = conn.createStatement().executeQuery(queryString);
 
         ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -235,8 +237,6 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
 
-        System.out.println(q.toString());
-        
         ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
 
         rs.next();
@@ -247,6 +247,9 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
      * Convenience method
      */
     public int getNumVariantsForDnaIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException {
+        
+        if(dnaIds.isEmpty()) return 0;
+        
         String name = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectId, referenceId, true);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, name);
         
@@ -1050,4 +1053,91 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         ConnectionController.connectPooled(sid).createStatement().execute(q.toString());
     }
        
+    public Map<SimplePatient, Integer> getPatientHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, List<SimplePatient> patients) throws SQLException, RemoteException{
+        
+        Object[] variantTableInfo = ProjectQueryUtil.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
+        String tablename = (String)variantTableInfo[0];
+        String tablenameSub = (String)variantTableInfo[1];
+        float multiplier = (Float)variantTableInfo[2];     
+        
+        TableSchema subTable = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
+       
+        Map<String, Integer> dnaIdMap = new HashMap<String, Integer>();
+        
+        //get dna ids
+        List<String> dnaIds = new ArrayList<String>();
+        for(SimplePatient sp : patients){
+            for(String id : sp.getDnaIds()){
+                if(!dnaIds.contains(id)){
+                    dnaIds.add(id);
+                }
+            }
+        }
+        
+        //combine conditions
+        Condition[] c1 = new Condition[conditions.length];
+        for(int i = 0; i < conditions.length; i++){
+            c1[i] = ComboCondition.and(conditions[i]);
+        }
+        Condition c2 = ComboCondition.or(c1);
+        
+        //try sub table first
+        this.getPatientHeatMapHelper(sid, subTable, multiplier, dnaIds, c2, true, dnaIdMap);
+        
+        //determine dnaIds with no value yet
+        List<String> dnaIds2 = new ArrayList<String>();
+        for(String dnaId : dnaIds){
+            if(!dnaIdMap.containsKey(dnaId)){
+                dnaIds2.add(dnaId);
+            }
+        }
+        
+        //get remaining dna ids from actual table
+        if(!dnaIds2.isEmpty()){
+            this.getPatientHeatMapHelper(sid, table, 1, dnaIds2, c2, false, dnaIdMap);
+        }
+        
+        //map back to simple patients;
+        Map<SimplePatient, Integer> result = new HashMap<SimplePatient, Integer>();
+        for(SimplePatient p : patients){
+            Integer count = 0;
+            for(String dnaId : p.getDnaIds()){
+                Integer i = dnaIdMap.get(dnaId);
+                if(i!=null){
+                    count += i;
+                }
+            }
+            result.put(p, count);
+        }
+
+        return result;
+    }
+    
+    private void getPatientHeatMapHelper(String sid, TableSchema table, float multiplier, List<String> dnaIds, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException {
+        
+        //generate conditions from dna ids
+        Condition[] dnaIdConditions = new Condition[dnaIds.size()];
+        for(int i = 0; i < dnaIds.size(); i++){
+            dnaIdConditions[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIds.get(i));
+        }
+        Condition dnaCondition = ComboCondition.or(dnaIdConditions);
+        
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(table.getTable());
+        q.addCustomColumns(FunctionCall.countAll());
+        q.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+        q.addCondition(ComboCondition.and(new Condition[]{dnaCondition, c}));
+        q.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+        
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        
+        while(rs.next()){
+            int value = (int)(rs.getInt(1) * multiplier);
+            if(!useThreshold || value >= PATIENT_HEATMAP_THRESHOLD){
+                map.put(rs.getString(2), value);
+            }          
+        }
+    }
+
 }
