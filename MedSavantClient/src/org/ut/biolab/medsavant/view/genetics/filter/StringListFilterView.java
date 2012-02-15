@@ -284,7 +284,11 @@ public class StringListFilterView extends FilterView {
                 //List<String> options = new ArrayList<String>();
                 int[] indices = filterableList.getCheckBoxListSelectedIndices();
                 for (int i : indices) {
-                    acceptableValues.add(filterableList.getModel().getElementAt(i).toString());
+                    if (columnname.equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+                        acceptableValues.add(Integer.toString(MiscUtils.stringToGender(filterableList.getModel().getElementAt(i).toString())));
+                    } else {
+                        acceptableValues.add(filterableList.getModel().getElementAt(i).toString());
+                    }
                 }
 
                 appliedValues = acceptableValues;
