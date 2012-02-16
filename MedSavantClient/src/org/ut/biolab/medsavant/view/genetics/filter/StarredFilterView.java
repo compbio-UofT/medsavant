@@ -80,6 +80,9 @@ public class StarredFilterView extends FilterView {
                             LoginController.sessionId, 
                             ProjectController.getInstance().getCurrentProjectId(), 
                             ReferenceController.getInstance().getCurrentReferenceId());
+                    if(starred.isEmpty()){
+                        return new Condition[]{BinaryCondition.equalTo(0, 1)};
+                    }
                     Iterator<StarredVariant> it = starred.iterator();
                     
                     TableSchema table = MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(
