@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
@@ -252,31 +253,34 @@ public class FilterController {
         return qfs;
     }
 
-    /*public static List<Condition> getQueryFilterConditions(int queryId) {
-        List<Condition> conditions = new ArrayList<Condition>();
-        for(QueryFilter f : FilterController.getQueryFilters(queryId)) {
-            conditions.add(ComboCondition.or(f.getConditions()));
-        }
-        return conditions;
-    }*/
-
     public static Condition[] getQueryFilterConditions(int queryId) {
-        List<QueryFilter> filters = getQueryFilters(queryId);
+        List<QueryFilter> filters = prioritizeFilters(getQueryFilters(queryId));
         Condition[] conditions = new Condition[filters.size()];
         for(int i = 0; i < filters.size(); i++) {
             conditions[i] = ComboCondition.or(filters.get(i).getConditions());
         }
         return conditions;
     }
-
-    /*public static List<List<Condition>> getQueryFilterConditions() {
-        List<List<Condition>> conditions = new ArrayList<List<Condition>>();
-        for(Object key : filterMap.keySet().toArray()) {
-            conditions.add(getQueryFilterConditions((Integer)key));
+    
+    private static List<QueryFilter> prioritizeFilters(List<QueryFilter> filters){
+        
+        List<QueryFilter> result = new ArrayList<QueryFilter>();
+        addFiltersToList(filters, result, DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
+        addFiltersToList(filters, result, DefaultVariantTableSchema.COLUMNNAME_OF_POSITION);
+        for(QueryFilter f : filters) result.add(f); //remaining
+        
+        return result;
+    }
+    
+    //add anything from filters with filterId to list
+    private static void addFiltersToList(List<QueryFilter> filters, List<QueryFilter> list, String filterId){
+        for(int i = filters.size()-1; i >= 0; i--){
+            if(filters.get(i).getId().equals(filterId)){
+                list.add(filters.remove(i));
+            }
         }
-        return conditions;
-    }*/
-
+    }
+    
     public static Condition[][] getQueryFilterConditions() {
         Object[] keys = filterMap.keySet().toArray();
         Condition[][] conditions = new Condition[keys.length][];
