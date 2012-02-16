@@ -123,6 +123,20 @@ public class FilterController {
         setLastFilter(removed, FilterAction.REMOVED);
         fireFiltersChangedEvent();
     }
+    
+    public static void removeFilterSet(int queryId) {
+        Map<String, Filter> map = filterMap.remove(queryId);
+        if(map == null ||map.isEmpty()) return;
+        Filter f = new QueryFilter() {
+            public String getName() {
+                return "Filter Set";
+            }
+            public String getId() {return null;}
+            public Condition[] getConditions() {return null;}
+        };
+        setLastFilter(f, FilterAction.REMOVED);
+        fireFiltersChangedEvent();
+    }
 
     public static void removeAllFilters() {
         filterMap.clear();

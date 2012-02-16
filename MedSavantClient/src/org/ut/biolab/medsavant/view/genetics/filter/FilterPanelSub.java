@@ -25,6 +25,7 @@ import javax.swing.JPopupMenu;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
@@ -299,10 +300,12 @@ public class FilterPanelSub extends JPanel {
     }
 
     private void removeThis() {
+        FilterController.removeFilterSet(id);
         for (int i = subItems.size() - 1; i >= 0; i--) {
             subItems.get(i).removeThis();
         }
         isRemoved = true;
+        refreshSubItems();
         parent.refreshSubPanels();
     }
 

@@ -94,10 +94,8 @@ public class FilterPanelSubItem extends JPanel {
     }
 
     public void removeThis() {
-        FilterController.removeFilter(filterId, parent.getId());
         isRemoved = true;
         filterView.cleanup();       // Give derived classes (e.g. plugin filters) a chance to clean up.
-        parent.refreshSubItems();
     }
 
     public boolean isRemoved() {
