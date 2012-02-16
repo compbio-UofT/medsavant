@@ -231,7 +231,8 @@ public class IndividualDetailedView extends DetailedView {
                         }
                     } else if(SwingUtilities.isLeftMouseButton(e)) {
                         if(patientId != null && patientId > 0){
-                            setSelectedItem(patientId, hospitalId);
+                            selectIndividualInList(patientId);
+                            //setSelectedItem(patientId, hospitalId);
                         }
                     }
                 } else {
@@ -250,6 +251,16 @@ public class IndividualDetailedView extends DetailedView {
         pedigreeDetails.updateUI();
     }
 
+    private void selectIndividualInList(int patientId){
+        List<Object[]> list = this.parent.getList();
+        for(int i = 0; i < list.size(); i++){
+            Object[] o = list.get(i);
+            if(o != null && o.length>=1 && (Integer)o[0] == patientId){
+                this.parent.selectInterval(i,i);
+                return;
+            }
+        }
+    }
 
     public static class HospitalSymbol extends Symbol2D {
         private final String hid;

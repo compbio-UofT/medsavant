@@ -216,7 +216,10 @@ public class ListViewTablePanel extends JPanel {
     public void setFontSize(int newSize){
         this.fontSize = newSize;
     }
-   
+    
+    public void scrollToIndex(int index){
+        table.scrollRectToVisible(table.getCellRect(index, 0, true));
+    }
     
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
 

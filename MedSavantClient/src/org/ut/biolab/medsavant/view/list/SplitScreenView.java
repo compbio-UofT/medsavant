@@ -279,4 +279,14 @@ public class SplitScreenView extends JPanel {
     public void refresh() {
         listView.refreshList();
     }
+    
+    public List<Object[]> getList() {
+        return listView.list;
+    }
+    
+    public void selectInterval(int start, int end){
+        listView.stp.getTable().getSelectionModel().setSelectionInterval(start, end);
+        listView.stp.scrollToIndex(start);
+    }
+    
 }
