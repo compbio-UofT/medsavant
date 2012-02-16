@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.list;
 
+import com.jidesoft.grid.TableModelWrapperUtils;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 import com.jidesoft.utils.SwingWorker;
 import org.ut.biolab.medsavant.view.component.Util;
@@ -285,6 +286,8 @@ public class SplitScreenView extends JPanel {
     }
     
     public void selectInterval(int start, int end){
+        start = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), start);
+        end = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), end);
         listView.stp.getTable().getSelectionModel().setSelectionInterval(start, end);
         listView.stp.scrollToIndex(start);
     }

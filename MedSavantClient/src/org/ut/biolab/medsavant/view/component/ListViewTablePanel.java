@@ -7,6 +7,7 @@ import com.jidesoft.grid.QuickTableFilterField;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableColumnChooserPopupMenuCustomizer;
 import com.jidesoft.grid.TableHeaderPopupMenuInstaller;
+import com.jidesoft.grid.TableModelWrapperUtils;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
