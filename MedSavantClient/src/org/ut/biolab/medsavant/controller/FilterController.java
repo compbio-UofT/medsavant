@@ -56,6 +56,8 @@ public class FilterController {
 
     private static Filter lastFilter;
     private static FilterAction lastAction;
+    
+    private static boolean autoCommit = true;
 
     static {
         projectListener = new ProjectListener() {
@@ -91,10 +93,10 @@ public class FilterController {
 
     public static void init(){};
 
-    public static enum FilterAction {ADDED, REMOVED, MODIFIED};
+    public static enum FilterAction {ADDED, REMOVED, MODIFIED, REPLACED};
 
     public static void addFilter(Filter filter, int queryId) {
-
+        
         if(filterMap.get(queryId) == null) {
             filterMap.put(queryId, new TreeMap<String, Filter>());
         }
@@ -153,6 +155,12 @@ public class FilterController {
     }
 
     public static void fireFiltersChangedEvent() {
+        fireFiltersChangedEvent(false);
+    }
+    
+    private static void fireFiltersChangedEvent(boolean force) {
+        
+        if(!autoCommit && !force) return;
 
         filterSetID++;
         filterMapHistory.put(filterSetID,filterMap);
@@ -285,6 +293,8 @@ public class FilterController {
                 return "Removed";
             case MODIFIED:
                 return "Modified";
+            case REPLACED:
+                return "Replaced";
             default:
                 return "";
         }
@@ -302,6 +312,23 @@ public class FilterController {
 
     public static boolean isFilterActive(int queryId, String filterId) {
         return filterMap.containsKey(queryId) && filterMap.get(queryId).containsKey(filterId);
+    }
+    
+    public static void setAutoCommit(boolean auto){
+        autoCommit = auto;
+    }
+    
+    public static void commit(final String filterName, FilterAction action){ 
+        
+        Filter f = new QueryFilter() {
+            public String getName() {
+                return filterName;
+            }
+            public String getId() {return null;}
+            public Condition[] getConditions() {return null;}
+        };
+        setLastFilter(f, action);
+        fireFiltersChangedEvent(true);
     }
 
 }

@@ -53,6 +53,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterController.FilterAction;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.util.shared.ExtensionFileFilter;
 import org.ut.biolab.medsavant.db.util.shared.ExtensionsFileFilter;
@@ -267,6 +268,7 @@ public class FilterPanel extends javax.swing.JPanel {
 
         //generate
         FilterUtils.clearFilterSets();
+        FilterController.setAutoCommit(false);
         for (int i = 0; i < states.size(); i++) {
             FilterPanelSub fps = createNewSubPanel();
             List<FilterState> filters = states.get(i);
@@ -279,6 +281,8 @@ public class FilterPanel extends javax.swing.JPanel {
                 }
             }
         }
+        FilterController.commit(file.getName(), FilterAction.REPLACED);
+        FilterController.setAutoCommit(true);
         refreshSubPanels();
 
     }
