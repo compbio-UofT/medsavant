@@ -25,6 +25,7 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -63,8 +64,12 @@ public class StarredFilterView extends FilterView {
     private void createContentPanel(JPanel p) {
         p.setLayout(new BorderLayout());
         p.setMaximumSize(new Dimension(1000, 80));
-        p.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));        
-        p.add(new JLabel("Filtering on variants that have been marked as important by any user."));
+        p.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));     
+        JTextArea label = new JTextArea("Filtering on variants that have been marked as important by any user.");
+        label.setOpaque(false);
+        label.setLineWrap(true);
+        label.setWrapStyleWord(true);
+        p.add(label);
         
         Filter f = new QueryFilter() {
 

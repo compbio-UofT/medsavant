@@ -302,7 +302,7 @@ public class FilterPanelSub extends JPanel {
     private void removeThis() {
         FilterController.removeFilterSet(id);
         for (int i = subItems.size() - 1; i >= 0; i--) {
-            subItems.get(i).removeThis();
+            subItems.get(i).removeThisSilent();
         }
         isRemoved = true;
         refreshSubItems();
