@@ -170,7 +170,9 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                 }
                 
                 //add entry
-                chartMap.addEntry(key.toString(), numVariants);
+                if(numVariants > 0){
+                    chartMap.addEntry(key.toString(), numVariants);
+                }
             }
         }
 

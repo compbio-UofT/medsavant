@@ -322,12 +322,7 @@ public class SummaryChart extends JLayeredPane {
             highlights.add(h);
             chart.setHighlightStyle(h, new ChartStyle(color));
         }
-
-        addEntriesToChart(filteredChartModel, filteredChartMap, chartCategories,highlights);
-        if (this.showComparedToOriginal) {
-            addEntriesToChart(unfilteredChartModel, unfilteredChartMap, chartCategories,null);
-        }
-
+        
         CategoryAxis xaxis = new CategoryAxis(range, "Category");
         chart.setXAxis(xaxis);
         if (this.isLogScaleY()) {
@@ -335,6 +330,12 @@ public class SummaryChart extends JLayeredPane {
         } else {
             chart.setYAxis(new Axis(new NumericRange(0, max * 1.1), "Frequency"));
         }
+        
+        addEntriesToChart(filteredChartModel, filteredChartMap, chartCategories,highlights);
+        if (this.showComparedToOriginal) {
+            addEntriesToChart(unfilteredChartModel, unfilteredChartMap, chartCategories,null);
+        }
+          
         chart.getXAxis().getLabel().setFont(ViewUtil.getMediumTitleFont());
         chart.getYAxis().getLabel().setFont(ViewUtil.getMediumTitleFont());
 
