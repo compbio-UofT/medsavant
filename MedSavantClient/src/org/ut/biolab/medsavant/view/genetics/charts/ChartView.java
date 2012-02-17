@@ -23,6 +23,7 @@ import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.view.genetics.charts.SummaryChart.ChartAxis;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -136,8 +137,12 @@ public class ChartView extends JPanel {
         for(AnnotationFormat af : afs){
             for(CustomField field : af.getCustomFields()){
                 ColumnType type = field.getColumnType();
-                if(field.isFilterable() &&
-                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))){
+                if(field.isFilterable() && 
+                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER)) && 
+                        !(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID) || 
+                            field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID) || 
+                            field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID) || 
+                            field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID))){
                     addCMG(VariantFieldChartMapGenerator.createVariantChart(field));
                 }
             }
@@ -145,7 +150,11 @@ public class ChartView extends JPanel {
         for(CustomField field : ProjectController.getInstance().getCurrentPatientFormat()){
             ColumnType type = field.getColumnType();
             if(field.isFilterable() &&
-                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER))){
+                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER)) && 
+                        !(field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID) || 
+                            field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID) ||
+                            field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM) ||
+                            field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD))){
                 addCMG(VariantFieldChartMapGenerator.createPatientChart(field));
             }
         }
