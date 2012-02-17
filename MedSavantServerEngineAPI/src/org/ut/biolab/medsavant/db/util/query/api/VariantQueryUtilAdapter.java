@@ -59,5 +59,6 @@ public interface VariantQueryUtilAdapter extends Remote {
     public int addStarredVariants(String sid, int projectId, int referenceId, List<StarredVariant> variant) throws SQLException, RemoteException;
     public void unstarVariant(String sid, int projectId, int referenceId, int uploadId, int fileId, int variantId, String user) throws SQLException, RemoteException;    
     public Map<SimplePatient, Integer> getPatientHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, List<SimplePatient> patients) throws SQLException, RemoteException;
+    public Map<String, Integer> getDnaIdHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException;
     
 }

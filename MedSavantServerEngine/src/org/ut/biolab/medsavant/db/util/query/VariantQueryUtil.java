@@ -1055,16 +1055,6 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
        
     public Map<SimplePatient, Integer> getPatientHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, List<SimplePatient> patients) throws SQLException, RemoteException{
         
-        Object[] variantTableInfo = ProjectQueryUtil.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
-        String tablename = (String)variantTableInfo[0];
-        String tablenameSub = (String)variantTableInfo[1];
-        float multiplier = (Float)variantTableInfo[2];     
-        
-        TableSchema subTable = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
-       
-        Map<String, Integer> dnaIdMap = new HashMap<String, Integer>();
-        
         //get dna ids
         List<String> dnaIds = new ArrayList<String>();
         for(SimplePatient sp : patients){
@@ -1075,28 +1065,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             }
         }
         
-        //combine conditions
-        Condition[] c1 = new Condition[conditions.length];
-        for(int i = 0; i < conditions.length; i++){
-            c1[i] = ComboCondition.and(conditions[i]);
-        }
-        Condition c2 = ComboCondition.or(c1);
-        
-        //try sub table first
-        this.getPatientHeatMapHelper(sid, subTable, multiplier, dnaIds, c2, true, dnaIdMap);
-        
-        //determine dnaIds with no value yet
-        List<String> dnaIds2 = new ArrayList<String>();
-        for(String dnaId : dnaIds){
-            if(!dnaIdMap.containsKey(dnaId)){
-                dnaIds2.add(dnaId);
-            }
-        }
-        
-        //get remaining dna ids from actual table
-        if(!dnaIds2.isEmpty()){
-            this.getPatientHeatMapHelper(sid, table, 1, dnaIds2, c2, false, dnaIdMap);
-        }
+        Map<String, Integer> dnaIdMap = getDnaIdHeatMap(sid, projectId, referenceId, conditions, dnaIds);
         
         //map back to simple patients;
         Map<SimplePatient, Integer> result = new HashMap<SimplePatient, Integer>();
@@ -1114,7 +1083,45 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return result;
     }
     
-    private void getPatientHeatMapHelper(String sid, TableSchema table, float multiplier, List<String> dnaIds, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException {
+    public Map<String, Integer> getDnaIdHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException{
+        
+        Object[] variantTableInfo = ProjectQueryUtil.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
+        String tablename = (String)variantTableInfo[0];
+        String tablenameSub = (String)variantTableInfo[1];
+        float multiplier = (Float)variantTableInfo[2];     
+        
+        TableSchema subTable = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
+       
+        Map<String, Integer> dnaIdMap = new HashMap<String, Integer>();
+        
+        //combine conditions
+        Condition[] c1 = new Condition[conditions.length];
+        for(int i = 0; i < conditions.length; i++){
+            c1[i] = ComboCondition.and(conditions[i]);
+        }
+        Condition c2 = ComboCondition.or(c1);
+        
+        //try sub table first
+        this.getDnaIdHeatMapHelper(sid, subTable, multiplier, dnaIds, c2, true, dnaIdMap);
+        
+        //determine dnaIds with no value yet
+        List<String> dnaIds2 = new ArrayList<String>();
+        for(String dnaId : dnaIds){
+            if(!dnaIdMap.containsKey(dnaId)){
+                dnaIds2.add(dnaId);
+            }
+        }
+        
+        //get remaining dna ids from actual table
+        if(!dnaIds2.isEmpty()){
+            this.getDnaIdHeatMapHelper(sid, table, 1, dnaIds2, c2, false, dnaIdMap);
+        }
+        
+        return dnaIdMap;
+    }
+    
+    private void getDnaIdHeatMapHelper(String sid, TableSchema table, float multiplier, List<String> dnaIds, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException {
         
         //generate conditions from dna ids
         Condition[] dnaIdConditions = new Condition[dnaIds.size()];

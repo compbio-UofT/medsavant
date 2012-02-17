@@ -117,74 +117,57 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         if (Thread.currentThread().isInterrupted()) {
             return null;
         }
+        
+        Condition[][] filterConditions;
+        if (useFilteredCounts) {
+            filterConditions = FilterController.getQueryFilterConditions();
+        } else {
+            filterConditions = new Condition[][]{};
+        }
+        
         if (whichTable == Table.VARIANT) {
-
-            Condition[][] conditions;
-
-            if (useFilteredCounts) {
-                conditions = FilterController.getQueryFilterConditions();
-
-            } else {
-                conditions = new Condition[][]{};
-            }
 
             chartMap.addAll(MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForCategoricalColumn(
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectId(),
                     ReferenceController.getInstance().getCurrentReferenceId(),
-                    conditions,
+                    filterConditions,
                     field.getColumnName()));
+            
         } else if (whichTable == Table.PATIENT) {
+
+            //get dna ids for each distinct value
             Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectId(),
                     field.getColumnName());
 
-            Condition[][] filterConditions;
-
-            if (useFilteredCounts) {
-                filterConditions = FilterController.getQueryFilterConditions();
-            } else {
-                filterConditions = new Condition[][]{};
-            }
-
             if (field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
                 map = modifyGenderMap(map);
             }
-
-            for (Object key : map.keySet()) {
-
-                if (Thread.currentThread().isInterrupted()) {
-                    return null;
-                }
-
-                //create dnaid list
-                List<String> individuals = map.get(key);
-                Condition[] dnaConditions = new Condition[individuals.size()];
-                int pos = 0;
-                for (String ind : individuals) {
-                    dnaConditions[pos++] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
-                }
-                ComboCondition dnaCondition = ComboCondition.or(dnaConditions);
-
-                //create new condition set
-                Condition[][] conditions = new Condition[filterConditions.length][];
-                for (int j = 0; j < filterConditions.length; j++) {
-                    conditions[j] = new Condition[filterConditions[j].length + 1];
-                    System.arraycopy(filterConditions[j], 0, conditions[j], 0, filterConditions[j].length);
-                    conditions[j][filterConditions[j].length] = dnaCondition;
-                }
-                if (filterConditions.length == 0) {
-                    conditions = new Condition[1][];
-                    conditions[0] = new Condition[]{dnaCondition};
-                }
-
-                //calculate number of variants satisfying conditions
+            
+            if (Thread.currentThread().isInterrupted()) return null;
+            
+            //get a count for each dna id
+            Map<String, Integer> dnaIdToCount = MedSavantClient.VariantQueryUtilAdapter.getDnaIdHeatMap(
+                    LoginController.sessionId, 
+                    ProjectController.getInstance().getCurrentProjectId(), 
+                    ReferenceController.getInstance().getCurrentReferenceId(), 
+                    filterConditions, 
+                    MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
+                        LoginController.sessionId, 
+                        ProjectController.getInstance().getCurrentVariantTableName(), 
+                        DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+            
+            for(Object key : map.keySet()){
+                
+                //generate sum from each dna id
                 int numVariants = 0;
-                if (individuals.size() > 0) {
-                    numVariants = ResultController.getInstance().getNumFilteredVariants();
+                for(String dnaId : map.get(key)){
+                    Integer value = dnaIdToCount.get(dnaId);
+                    if(value != null) numVariants += value;
                 }
-
+                
                 //add entry
                 chartMap.addEntry(key.toString(), numVariants);
             }
@@ -244,6 +227,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
 
 
         } else {
+            //TODO
         }
         return chartMap;
 
