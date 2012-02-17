@@ -62,6 +62,20 @@ public class MiscUtils {
         return (int) l;
     }
 
+    public static double getDouble(Object o){
+        if(o instanceof Double){
+            return (Double)o;
+        } else if (o instanceof Integer){
+            return ((Integer)o).doubleValue();
+        } else if (o instanceof Long){
+            return ((Long)o).doubleValue();
+        } else if (o instanceof Float){
+            return ((Float)o).doubleValue();
+        } else {
+            return -1;
+        }
+    }
+    
     public static void checkSQLException(SQLException e){
 
         e.printStackTrace();

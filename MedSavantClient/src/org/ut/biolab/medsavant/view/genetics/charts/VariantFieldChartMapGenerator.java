@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 import java.util.HashMap;
 import org.ut.biolab.medsavant.MedSavantClient;
 
@@ -191,33 +192,27 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         }
     }
 
-    public ChartFrequencyMap generateNumericChartMap(boolean useFilteredCounts, double min, double binSize, boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
+    public ChartFrequencyMap generateNumericChartMap(boolean useFilteredCounts, double binSize, boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
 
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
 
+        Condition[][] conditions;
+        if(useFilteredCounts){
+            conditions = FilterController.getQueryFilterConditions();
+        } else {
+            conditions = new Condition[][]{};
+        }
+        
         if (whichTable == Table.VARIANT) {
-                Map<Range,Long> resultMap;
-                if (useFilteredCounts) {
-                    // filter conditions
-                    resultMap = MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForNumericColumn(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectId(),
-                            ReferenceController.getInstance().getCurrentReferenceId(),
-                            FilterController.getQueryFilterConditions(),
-                            field.getColumnName(),
-                            min,
-                            binSize);
-                } else {
-                    // no conditions
-                    resultMap = MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForNumericColumn(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectId(),
-                            ReferenceController.getInstance().getCurrentReferenceId(),
-                            new Condition[][]{},
-                            field.getColumnName(),
-                            min,
-                            binSize);
-                }
+                
+                Map<Range,Long> resultMap = MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForNumericColumn(
+                        LoginController.sessionId,
+                        ProjectController.getInstance().getCurrentProjectId(),
+                        ReferenceController.getInstance().getCurrentReferenceId(),
+                        conditions,
+                        field.getColumnName(),
+                        0,
+                        binSize);
 
                 for (Range key : resultMap.keySet()) {
                     chartMap.addEntry(
@@ -225,99 +220,59 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                         resultMap.get(key));
                 }
 
-
         } else {
-            //TODO
-        }
-        return chartMap;
-
-
-
-
-        ////////////////////////
-        /*
-        for (Range binrange : bins) {
-            if (Thread.currentThread().isInterrupted()) {
-                return null;
-            }
-            if (whichTable == Table.VARIANT) {
-                long result;
-                if (useFilteredCounts) {
-                    // filter conditions
-                    result = MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForColumnInRange(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectId(),
-                            ReferenceController.getInstance().getCurrentReferenceId(),
-                            FilterController.getQueryFilterConditions(),
-                            field.getColumnName(),
-                            binrange.getMin(),
-                            binrange.getMax());
-
-                } else {
-                    // no conditions
-                    result = MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForColumnInRange(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectId(),
-                            ReferenceController.getInstance().getCurrentReferenceId(),
-                            new Condition[][]{},
-                            field.getColumnName(),
-                            binrange.getMin(),
-                            binrange.getMax());
+            
+            //get dna ids for each distinct value
+            Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentProjectId(),
+                    field.getColumnName());
+            int maxBin = 0;
+            for(Object key : map.keySet()){
+                double value = MiscUtils.getDouble(key);
+                if((int)(value / binSize) > maxBin){
+                    maxBin = (int)(value / binSize);
                 }
+            }
 
+            if (Thread.currentThread().isInterrupted()) return null;
+            
+            //get a count for each dna id
+            Map<String, Integer> dnaIdToCount = MedSavantClient.VariantQueryUtilAdapter.getDnaIdHeatMap(
+                    LoginController.sessionId, 
+                    ProjectController.getInstance().getCurrentProjectId(), 
+                    ReferenceController.getInstance().getCurrentReferenceId(), 
+                    conditions, 
+                    MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
+                        LoginController.sessionId, 
+                        ProjectController.getInstance().getCurrentVariantTableName(), 
+                        DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+            
+            int[] counts = new int[maxBin+1];
+            Arrays.fill(counts, 0);
+            for(Object key : map.keySet()){
+                
+                double value = MiscUtils.getDouble(key);
+                int bin = (int)(value / binSize);
+                
+                for(String dnaId : map.get(key)){
+                    Integer count = dnaIdToCount.get(dnaId);
+                    if(count != null){
+                        counts[bin] += count;
+                    }
+                }
+            }
+            
+            for(int i = 0; i < counts.length; i++){
+                double min = i * binSize;
+                double max = min + binSize;
                 chartMap.addEntry(
-                        binrange.toString(),
-                        result);
-
-            } else if (whichTable == Table.PATIENT) {
-
-                //get dna ids
-                List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsWithValuesInRange(
-                        LoginController.sessionId,
-                        ProjectController.getInstance().getCurrentProjectId(),
-                        field.getColumnName(),
-                        binrange);
-
-                //create new dna id filter
-                Condition[] dnaConditions = new Condition[individuals.size()];
-                int pos = 0;
-                for (String ind : individuals) {
-                    dnaConditions[pos++] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
-                }
-                ComboCondition dnaCondition = ComboCondition.or(dnaConditions);
-
-                Condition[][] filterConditions;
-                //add dna ids as new condition
-                if (useFilteredCounts) {
-                    filterConditions = FilterController.getQueryFilterConditions();
-                } else {
-                    filterConditions = new Condition[][]{};
-                }
-
-                Condition[][] conditions = new Condition[filterConditions.length][];
-                for (int j = 0; j < filterConditions.length; j++) {
-                    conditions[j] = new Condition[filterConditions[j].length + 1];
-                    System.arraycopy(filterConditions[j], 0, conditions[j], 0, filterConditions[j].length);
-                    conditions[j][filterConditions[j].length] = dnaCondition;
-                }
-                if (filterConditions.length == 0) {
-                    conditions = new Condition[1][];
-                    conditions[0] = new Condition[]{dnaCondition};
-                }
-
-                //get num variants
-                int numVariants = 0;
-                if (individuals.size() > 0) {
-                    numVariants = ResultController.getInstance().getNumFilteredVariants();
-                }
-
-                //add entry
-                chartMap.addEntry(binrange.toString(), numVariants);
+                        checkInt(min) + " - " + checkInt(max),
+                        counts[i]);
             }
+            
         }
         return chartMap;
-         *
-         */
     }
 
     public ChartFrequencyMap generateChartMap(boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
@@ -359,7 +314,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                     field.getColumnName()));
 
             double binSize = generateBins(r, isLogScaleX);
-            chartMap = generateNumericChartMap(useFilteredCounts, 0 /*r.getMin()*/, binSize, isLogScaleX);
+            chartMap = generateNumericChartMap(useFilteredCounts, binSize, isLogScaleX);
 
         } else {
             chartMap = generateCategoricalChartMap(useFilteredCounts, isLogScaleX);
