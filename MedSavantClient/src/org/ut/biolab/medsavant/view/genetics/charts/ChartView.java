@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -24,6 +25,7 @@ import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.db.format.VariantFormat;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.view.genetics.charts.SummaryChart.ChartAxis;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -58,7 +60,7 @@ public class ChartView extends JPanel {
         initCards();
         initBottomBar();
         init = true;
-        chartChooser.setSelectedIndex(0);
+        chartChooser.setSelectedItem(VariantFormat.ALIAS_OF_DNA_ID);
     }
 
     private void initToolBar() {
@@ -66,7 +68,25 @@ public class ChartView extends JPanel {
         JPanel toolbar = ViewUtil.getSubBannerPanel("Chart");
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
 
-        chartChooser = new JComboBox();
+        chartChooser = new JComboBox(){
+            public void addItem(Object anObject) {
+                int size = ((DefaultComboBoxModel) dataModel).getSize();
+                Object obj;
+                boolean added = false;
+                for (int i=0; i<size; i++) {
+                    obj = dataModel.getElementAt(i);
+                    int compare = anObject.toString().compareToIgnoreCase(obj.toString());
+                    if (compare <= 0) { // if anObject less than or equal obj
+                        super.insertItemAt(anObject, i);
+                        added = true;
+                        break;
+                    }
+                }
+                if (!added) {
+                    super.addItem(anObject);
+                }
+            }
+        };
         toolbar.add(chartChooser);
 
         chartChooser.addActionListener(new ActionListener() {
