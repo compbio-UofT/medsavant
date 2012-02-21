@@ -196,22 +196,15 @@ public class SummaryChart extends JLayeredPane {
 
     private void updateDataAndDrawChart() {
 
+        this.removeAll();
+        waitPanel.setVisible(true);
+        setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
+        
         //begin creating chart
         new ChartMapWorker().execute();
-
-        //show wait panel
-        new Thread() {
-
-            @Override
-            public void run() {
-                waitPanel.setVisible(true);
-                setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
-            }
-        }.start();
-
     }
 
-    private synchronized void drawChart(ChartFrequencyMap[] chartMaps) {
+    private synchronized Chart drawChart(ChartFrequencyMap[] chartMaps) {
 
 
         ChartFrequencyMap filteredChartMap = chartMaps[0];
@@ -235,16 +228,6 @@ public class SummaryChart extends JLayeredPane {
 
         boolean multiColor = !mapGenerator.isNumeric() || isPie;
 
-        //if (multiColor) {
-        //    chart.addModel(filteredChartModel);
-        //} else {
-            chart.addModel(filteredChartModel, new ChartStyle().withBars());
-        //}
-
-        if (this.showComparedToOriginal) {
-            chart.addModel(unfilteredChartModel, new ChartStyle(new Color(10, 10, 10, 100)).withBars());
-        }
-
         chart.setRolloverEnabled(true);
         chart.setSelectionEnabled(true);
         chart.setSelectionShowsOutline(true);
@@ -257,11 +240,10 @@ public class SummaryChart extends JLayeredPane {
         chart.setAnimateOnShow(false);
 
         //chart.setBarsGrouped(true);
-
-        chart.getSelectionsForModel(filteredChartModel).setSelectionMode(
+        /*chart.getSelectionsForModel(filteredChartModel).setSelectionMode(
                 (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER))
                 ? ListSelectionModel.SINGLE_SELECTION
-                : ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+                : ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);*/
 
         chart.addMouseListener(new MouseAdapter() {
 
@@ -335,7 +317,7 @@ public class SummaryChart extends JLayeredPane {
         if (this.showComparedToOriginal) {
             addEntriesToChart(unfilteredChartModel, unfilteredChartMap, chartCategories,null);
         }
-          
+        
         chart.getXAxis().getLabel().setFont(ViewUtil.getMediumTitleFont());
         chart.getYAxis().getLabel().setFont(ViewUtil.getMediumTitleFont());
 
@@ -349,8 +331,13 @@ public class SummaryChart extends JLayeredPane {
         for (int i = 1; i < this.getComponentCount(); i++) {
             this.remove(i);
         }
-        this.add(chart, c, JLayeredPane.DEFAULT_LAYER);
-        waitPanel.setVisible(false);
+        
+        chart.addModel(filteredChartModel, new ChartStyle().withBars());
+        if (this.showComparedToOriginal) {
+            chart.addModel(unfilteredChartModel, new ChartStyle(new Color(10, 10, 10, 100)).withBars());
+        }
+        
+        return chart;
     }
 
     private void addEntriesToChart(
@@ -424,9 +411,6 @@ public class SummaryChart extends JLayeredPane {
 
                 result[0] = mapGenerator.generateChartMap(true, isLogScaleX && mapGenerator.isNumeric());
 
-                if (result != null) {
-                    drawChart(result);
-                }
                 
                 return result;
             } catch (SQLException ex) {
@@ -436,10 +420,12 @@ public class SummaryChart extends JLayeredPane {
         }
 
         public void showSuccess(ChartFrequencyMap[] result) {
-            //TODO: why is this sometimes not called??
-            //if (result != null) {
-             //   drawChart(result);
-            //}
+            if (result != null) {
+                Chart chart = drawChart(result);
+                add(chart, c, JLayeredPane.DEFAULT_LAYER);
+            }
+            
+            waitPanel.setVisible(false);
         }
 
         public void showProgress(double prog) {

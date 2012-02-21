@@ -98,7 +98,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         //
     }
 
-    public class GeneListPanel extends JPanel implements FiltersChangedListener {
+    public class GeneListPanel extends JPanel {
 
         private final JPanel banner;
         private final JComboBox geneLister;
@@ -157,7 +157,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             (new GeneListGetter()).execute();
 
-            FilterController.addFilterListener(this);
+            //FilterController.addFilterListener(this);
         }
 
         public void update(){
@@ -310,7 +310,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         }
 
         private synchronized void updateGeneTable() {
-
+            
             regionToVariantCountMap.clear();
             regionToIndividualCountMap.clear();
 
@@ -336,7 +336,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         }
 
         public synchronized void updateData() {
-
+            
             List<Object[]> data = new ArrayList<Object[]>();
 
             int i = 0;
@@ -393,9 +393,9 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             return new Object[] { r.getName(), r.getChrom(), r.getStart(), r.getEnd(), numVariants, numIndividuals };
         }
 
-        public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-            updateGeneTable();
-        }
+        //public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+            //updateGeneTable();
+        //}
 
         private void incrementProgress() {
             numbersRetrieved++;

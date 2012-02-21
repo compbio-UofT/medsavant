@@ -70,7 +70,8 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
     private static final Logger LOG = Logger.getLogger(GeneListPanelGenerator.class.getName());
     private FamilyPanel panel;
-
+    private boolean updateRequired = false;
+    
     public FamilyPanelGenerator() {
     }
 
@@ -81,20 +82,24 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
     public JPanel getPanel() {
         if (panel == null) {
             panel = new FamilyPanel();
+        } else {
+            run(false);
         }
         return panel;
     }
 
     public void run(boolean update) {
-        panel.run();
+        if(update || updateRequired){
+            panel.run();
+        }
     }
 
     @Override
     public void setUpdateRequired(boolean required) {
-        //
+        updateRequired = required;
     }
 
-    public class FamilyPanel extends JPanel implements FiltersChangedListener {
+    public class FamilyPanel extends JPanel {
 
         private final JPanel banner;
         private final JComboBox familyLister;
@@ -144,18 +149,12 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
             (new FamilyListGetter()).execute();
 
-            FilterController.addFilterListener(this);
         }
 
         public void updateFamilyDropDown(List<String> familyList) {
             for (String fam : familyList) {
                 familyLister.addItem(fam);
             }
-        }
-
-        public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-            stopThreads();
-            showFamilyAggregates((String) familyLister.getSelectedItem());
         }
 
         private void stopThreads() {
@@ -200,7 +199,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
         }
 
         private void showFamilyAggregates(String familyId) {
-
+            
             this.pedigreePanel.removeAll();
             this.pedigreePanel.add(new WaitPanel("Getting pedigree"));
             this.pedigreePanel.updateUI();

@@ -94,6 +94,7 @@ public class GeneticsChartPage extends SubSectionView implements FiltersChangedL
 
     @Override
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        ThreadController.getInstance().cancelWorkers(getName());
         tryUpdate();
     }
 

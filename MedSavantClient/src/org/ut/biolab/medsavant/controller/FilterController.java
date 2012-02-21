@@ -200,7 +200,7 @@ public class FilterController {
         }
 
         //current view should be refreshed if it relies on filters
-        ViewController.getInstance().refreshView();
+        //ViewController.getInstance().refreshView();
     }
 
     public static Filter getFilter(String title, int queryId) {

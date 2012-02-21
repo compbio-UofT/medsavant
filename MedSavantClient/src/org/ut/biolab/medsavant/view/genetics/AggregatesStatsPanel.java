@@ -7,16 +7,12 @@ package org.ut.biolab.medsavant.view.genetics;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
 import java.util.TreeMap;
 import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.aggregates.AggregatePanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.aggregates.CohortPanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.aggregates.FamilyPanelGenerator;
@@ -70,6 +66,7 @@ public class AggregatesStatsPanel extends JPanel {
 
         //stopAll(currentRegionStat);
         AggregatePanelGenerator panelObj = panelMap.get(currentRegionStat);
+        panelObj.run(false);
         
         this.add(panelObj.getPanel());    
         this.updateUI();
@@ -115,12 +112,14 @@ public class AggregatesStatsPanel extends JPanel {
         currentRegionStat = regionStatsName;
     }
     
-    public void update(boolean reset){
-        for(String key : panelMap.keySet()){
-            panelMap.get(key).setUpdateRequired(true);
+    public void update(boolean update, boolean isLoaded){
+        if(update){
+            for(String key : panelMap.keySet()){
+                panelMap.get(key).setUpdateRequired(true);
+            }
         }
-        if(panelMap != null && currentRegionStat != null)
-            panelMap.get(currentRegionStat).run(reset);
+        if(isLoaded && panelMap != null && currentRegionStat != null)
+            panelMap.get(currentRegionStat).run(update);
     }
     
     /**

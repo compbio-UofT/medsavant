@@ -7,8 +7,6 @@ package org.ut.biolab.medsavant.view.genetics;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
@@ -17,7 +15,6 @@ import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
@@ -29,6 +26,7 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
 
     private JPanel panel;
     private AggregatesStatsPanel asp;
+    private boolean isLoaded = false;
 
     public AggregatePage(SectionView parent) { 
         super(parent);
@@ -48,7 +46,7 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
             }
         }
         if(asp != null)
-            asp.update(false);
+            asp.update(update, isLoaded);
         return panel;
     }
 
@@ -77,24 +75,23 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
 
     @Override
     public void viewDidLoad() {
+        isLoaded = true;
         if(asp != null)
-            asp.update(false);
-        //if (asp != null)
-        //    asp.resumeAggregation();
+            asp.update(false, isLoaded);
     }
 
     @Override
     public void viewDidUnload() {
+        isLoaded = false;
         ThreadController.getInstance().cancelWorkers(getName());
-        //if (asp != null)
-        //    asp.stopAggregation();
     }
 
     @Override
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        /*if(asp != null){
-            asp.update(false);   
-        }*/
+        ThreadController.getInstance().cancelWorkers(getName());
+        if(asp != null){
+            asp.update(true, isLoaded);   
+        }
     }
 
     @Override
@@ -106,7 +103,7 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
     @Override
     public void referenceChanged(String name) {
         if(asp != null){
-            asp.update(true);   
+            asp.update(true, isLoaded);   
         }
     }
 
