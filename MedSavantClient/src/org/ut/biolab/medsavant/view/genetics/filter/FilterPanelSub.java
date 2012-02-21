@@ -613,7 +613,7 @@ public class FilterPanelSub extends JPanel {
     class FilterComparator implements Comparator<FilterPlaceholder> {
 
         public int compare(FilterPlaceholder o1, FilterPlaceholder o2) {
-            return o1.getFilterName().compareTo(o2.getFilterName());
+            return o1.getFilterName().toLowerCase().compareTo(o2.getFilterName().toLowerCase());
         }
     }
 }
