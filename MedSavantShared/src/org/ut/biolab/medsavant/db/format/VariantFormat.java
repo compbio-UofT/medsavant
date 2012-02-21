@@ -44,7 +44,7 @@ public class VariantFormat implements Serializable {
     public static String ALIAS_OF_AN = "Number of Alleles";
     public static String ALIAS_OF_BQ = "Base Quality";
     public static String ALIAS_OF_CIGAR = "Cigar";
-    public static String ALIAS_OF_DB = "dbSNP";
+    public static String ALIAS_OF_DB = "dbSNP Membership";
     public static String ALIAS_OF_DP = "Depth of Coverage";
     public static String ALIAS_OF_END = "End Position";
     public static String ALIAS_OF_H2 = "HapMap Membership";
@@ -63,7 +63,7 @@ public class VariantFormat implements Serializable {
         fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID, "VARCHAR(10)", true, ALIAS_OF_DNA_ID, "", Category.PATIENT));
         fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, "VARCHAR(5)", true, ALIAS_OF_CHROM, ""));
         fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, "INT(11)", true, ALIAS_OF_POSITION, ""));
-        fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID, "(VARCHAR(45)", true, ALIAS_OF_DBSNP_ID, ""));
+        fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID, "(VARCHAR(45)", false, ALIAS_OF_DBSNP_ID, ""));
         fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_REF, "VARCHAR(30)", true, ALIAS_OF_REF, ""));
         fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_ALT, "VARCHAR(30)", true, ALIAS_OF_ALT, ""));
         fields.add(new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_QUAL, "FLOAT(10,0)", true, ALIAS_OF_QUAL, ""));
