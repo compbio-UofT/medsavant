@@ -51,6 +51,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -196,12 +197,18 @@ public class SummaryChart extends JLayeredPane {
 
     private void updateDataAndDrawChart() {
 
-        this.removeAll();
-        waitPanel.setVisible(true);
-        setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
-        
         //begin creating chart
         new ChartMapWorker().execute();
+        
+        Thread t = new Thread(){
+            public void run(){
+                removeAll();
+                add(waitPanel, c, JLayeredPane.MODAL_LAYER);
+                waitPanel.setVisible(true);
+                setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
+            }
+        };
+        t.start();
     }
 
     private synchronized Chart drawChart(ChartFrequencyMap[] chartMaps) {
@@ -420,12 +427,15 @@ public class SummaryChart extends JLayeredPane {
         }
 
         public void showSuccess(ChartFrequencyMap[] result) {
-            if (result != null) {
+            if (result != null && result[0] != null && result[0].getEntries().size() < 200) {
                 Chart chart = drawChart(result);
                 add(chart, c, JLayeredPane.DEFAULT_LAYER);
+            } else {
+                add(ViewUtil.getMessagePanelBig("Too many values to display chart. "), c);
             }
             
             waitPanel.setVisible(false);
+            revalidate();
         }
 
         public void showProgress(double prog) {

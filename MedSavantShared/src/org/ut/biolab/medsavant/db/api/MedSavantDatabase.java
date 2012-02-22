@@ -1097,6 +1097,49 @@ public class MedSavantDatabase {
         }
     }
     
+    /*public static class VariantDistinctFieldTableSchema extends TableSchema {
+        
+        public static final String TABLE_NAME = "variant_distinct_field";
+        
+        public VariantDistinctFieldTableSchema(DbSchema s) {
+            super(s.addTable(TABLE_NAME));
+            addColumns();
+        }
+        // variant_distinct_field.project_id
+        public static final int INDEX_OF_PROJECT_ID = 0;
+        public static final ColumnType TYPE_OF_PROJECT_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_PROJECT_ID = 11;
+        public static final String COLUMNNAME_OF_PROJECT_ID = "project_id";
+        // variant_distinct_field.reference_id
+        public static final int INDEX_OF_REFERENCE_ID = 1;
+        public static final ColumnType TYPE_OF_REFERENCE_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_REFERENCE_ID = 11;
+        public static final String COLUMNNAME_OF_REFERENCE_ID = "reference_id";
+        // variant_distinct_field.update_id
+        public static final int INDEX_OF_UPDATE_ID = 2;
+        public static final ColumnType TYPE_OF_UPDATE_ID = TableSchema.ColumnType.INTEGER;
+        public static final int LENGTH_OF_UPDATE_ID = 11;
+        public static final String COLUMNNAME_OF_UPDATE_ID = "update_id";
+        // variant_distinct_field.column_name
+        public static final int INDEX_OF_COLUMN_NAME = 3;
+        public static final ColumnType TYPE_OF_COLUMN_NAME = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_COLUMN_NAME = 200;
+        public static final String COLUMNNAME_OF_COLUMN_NAME = "column_name";
+        // variant_distinct_field.values
+        public static final int INDEX_OF_VALUES = 4;
+        public static final ColumnType TYPE_OF_VALUES = TableSchema.ColumnType.VARCHAR;
+        public static final int LENGTH_OF_VALUES = XXX;
+        public static final String COLUMNNAME_OF_VALUES = "values";
+        
+        private void addColumns() {
+            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_UPDATE_ID, COLUMNNAME_OF_UPDATE_ID, TableSchema.ColumnType.INTEGER, 11);
+            addColumn(XXX);
+            addColumn(XXX);
+        }
+    }*/
+    
     public static final DbSchema schema = (new DbSpec()).addDefaultSchema();
     //AnnotationTableSchema
     public static final AnnotationTableSchema AnnotationTableSchema = new AnnotationTableSchema(schema);
@@ -1140,4 +1183,6 @@ public class MedSavantDatabase {
     public static final VariantStarredTableSchema VariantStarredTableSchema = new VariantStarredTableSchema(schema);
     //VariantFileTableSchema
     public static final VariantFileTableSchema VariantFileTableSchema = new VariantFileTableSchema(schema);
+    //VariantDistinctFieldTableSchema
+    //public static final VariantDistinctFieldTableSchema VariantDistinctFieldTableSchema = new VariantDistinctFieldTableSchema(schema);
 }

@@ -8,6 +8,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.list.QuickListFilterField;
 import com.jidesoft.swing.SearchableUtils;
 import com.jidesoft.list.FilterableCheckBoxList;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -28,6 +30,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -214,6 +217,18 @@ public class StringListFilterView extends FilterView {
     }
 
     private void initHelper(JComponent container, final List<String> uniq) {
+        
+        if(uniq == null){
+            container.setLayout(new BorderLayout());
+            container.setMaximumSize(new Dimension(1000, 80));
+            container.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));     
+            JTextArea label = new JTextArea("There are too many unique values to generate this list. You will not be able to filter on this column. ");
+            label.setOpaque(false);
+            label.setLineWrap(true);
+            label.setWrapStyleWord(true);
+            container.add(label);
+            return;
+        }
 
         if (columnname.equals(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM)) {
             Collections.sort(uniq, new ChromosomeComparator());

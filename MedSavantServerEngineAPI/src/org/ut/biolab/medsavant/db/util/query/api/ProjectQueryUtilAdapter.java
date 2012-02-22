@@ -25,6 +25,7 @@ public interface ProjectQueryUtilAdapter extends Remote {
     public String createVariantTable(String sid,int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging) throws SQLException, RemoteException;
     public int getNumberOfRecordsInVariantTable(String sid,int projectid, int refid) throws SQLException, RemoteException;
     public String getVariantTablename(String sid,int projectid, int refid, boolean published) throws SQLException, RemoteException;
+    public String getVariantTablename(String sid,int projectid, int refid, boolean published, boolean sub) throws SQLException, RemoteException;
     public int addProject(String sid,String name, List<CustomField> fields) throws SQLException, ParserConfigurationException, SAXException, IOException, RemoteException;
     public void removeProject(String sid,String projectName) throws SQLException, RemoteException;
     public void removeProject(String sid,int projectid) throws SQLException, RemoteException;

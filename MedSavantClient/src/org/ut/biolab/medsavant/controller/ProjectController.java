@@ -193,6 +193,17 @@ public class ProjectController implements ReferenceListener {
         return null;
     }
     
+    public String getCurrentVariantSubTableName(){
+        try {
+            return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectId, ReferenceController.getInstance().getCurrentReferenceId(), true, true);
+        } catch (SQLException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
     public DbTable getCurrentVariantTable(){
         return currentVariantTableSchema.getTable();
     }

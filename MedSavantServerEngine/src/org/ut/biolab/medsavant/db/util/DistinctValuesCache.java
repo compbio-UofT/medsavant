@@ -7,11 +7,12 @@ package org.ut.biolab.medsavant.db.util;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.ut.biolab.medsavant.db.model.Range;
 
 /**
  *
@@ -19,26 +20,28 @@ import org.ut.biolab.medsavant.db.model.Range;
  */
 public class DistinctValuesCache {
     
-    private static String CACHE_DIR = "cache";
+    private static final String CACHE_DIR = "cache";
+    public static final int CACHE_LIMIT = 10000;
+    private static final String CACHE_NULL = "##NULL";
     
-    private static File getDirectory(String tableName){
-        return new File(CACHE_DIR + File.separator + tableName);
+    private static File getDirectory(String dbName, String tableName){
+        return new File(CACHE_DIR + File.separator + dbName + File.separator + tableName);
     }
     
     private static File getFile(File dir, String columnName){
         return new File(dir, columnName);
     }
     
-    private static File getFile(String tableName, String columnName){
-        return getFile(getDirectory(tableName), columnName);
+    private static File getFile(String dbName, String tableName, String columnName){
+        return getFile(getDirectory(dbName, tableName), columnName);
     }
     
-    public static boolean isCached(String tableName, String columnName){
-        return getFile(tableName, columnName).exists();
+    public static boolean isCached(String dbName, String tableName, String columnName){
+        return getFile(dbName, tableName, columnName).exists();
     }
     
-    public static void cacheResults(String tableName, String columnName, List<Object> result){
-        File dir = getDirectory(tableName);
+    public static void cacheResults(String dbName, String tableName, String columnName, List<Object> result){
+        File dir = getDirectory(dbName, tableName);
         if(!dir.exists() && !dir.mkdirs()){
             System.err.println("Failed to create dir: " + dir.getAbsolutePath());
             return; //couldn't create directory
@@ -47,44 +50,47 @@ public class DistinctValuesCache {
         File file = getFile(dir, columnName);
         try{
             BufferedWriter out = new BufferedWriter(new FileWriter(file, false));
-            for(Object o : result){
-                out.write(o.toString());
-                out.newLine();
+            if(result == null){
+                out.write(CACHE_NULL);
+            } else {
+                for(Object o : result){
+                    out.write(o.toString());
+                    out.newLine();
+                }
             }
             out.close();
         }catch (Exception e){
             System.err.println("Failed to cache results");
             e.printStackTrace();
             file.delete();
-        }       
+        }
     }
     
-    private static List<String> getResults(String tableName, String columnName){
+    private static List<String> getResults(String dbName, String tableName, String columnName) throws FileNotFoundException, IOException{
         List<String> result = new ArrayList<String>();
         
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(getFile(tableName, columnName)));
-            String line;
-            while ((line = in.readLine()) != null)   {
-                result.add(line);
+        BufferedReader in = new BufferedReader(new FileReader(getFile(dbName, tableName, columnName)));
+        String line;
+        while ((line = in.readLine()) != null)   {
+            if(result.isEmpty() && line.startsWith(CACHE_NULL)){
+                in.close();
+                return null;
             }
-            in.close();
-        }catch (Exception e){
-            System.err.println("Failed to retrieve cached results");
-            return null; //indicates error
+            result.add(line);
         }
+        in.close();
         
         return result;
     }
     
-    public static List<String> getCachedStringList(String tableName, String columnName){
-        return getResults(tableName, columnName);
+    public static List<String> getCachedStringList(String dbName, String tableName, String columnName) throws FileNotFoundException, IOException{
+        return getResults(dbName, tableName, columnName);
     }
     
-    public static double[] getCachedRange(String tableName, String columnName){
-        List<String> results = getResults(tableName, columnName);
+    public static double[] getCachedRange(String dbName, String tableName, String columnName) throws FileNotFoundException, IOException{
+        List<String> results = getResults(dbName, tableName, columnName);
         if(results == null || results.size() != 2) return null;
         return new double[]{Double.parseDouble(results.get(0)), Double.parseDouble(results.get(1))};
     }
-
+    
 }

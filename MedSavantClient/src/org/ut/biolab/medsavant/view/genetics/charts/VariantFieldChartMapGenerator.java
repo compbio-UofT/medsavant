@@ -150,15 +150,13 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             if (Thread.currentThread().isInterrupted()) return null;
             
             //get a count for each dna id
+            List<String> dnaIds = getDnaIds();
             Map<String, Integer> dnaIdToCount = MedSavantClient.VariantQueryUtilAdapter.getDnaIdHeatMap(
                     LoginController.sessionId, 
                     ProjectController.getInstance().getCurrentProjectId(), 
                     ReferenceController.getInstance().getCurrentReferenceId(), 
                     filterConditions, 
-                    MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
-                        LoginController.sessionId, 
-                        ProjectController.getInstance().getCurrentVariantTableName(), 
-                        DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+                    dnaIds);
             
             for(Object key : map.keySet()){
                 
@@ -239,16 +237,14 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
 
             if (Thread.currentThread().isInterrupted()) return null;
             
+            List<String> dnaIds = getDnaIds();
             //get a count for each dna id
             Map<String, Integer> dnaIdToCount = MedSavantClient.VariantQueryUtilAdapter.getDnaIdHeatMap(
                     LoginController.sessionId, 
                     ProjectController.getInstance().getCurrentProjectId(), 
                     ReferenceController.getInstance().getCurrentReferenceId(), 
                     conditions, 
-                    MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
-                        LoginController.sessionId, 
-                        ProjectController.getInstance().getCurrentVariantTableName(), 
-                        DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+                    dnaIds);
             
             int[] counts = new int[maxBin+1];
             Arrays.fill(counts, 0);
@@ -373,5 +369,20 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         if (!filteredMapCache.isEmpty()) {
             filteredMapCache.clear();
         }
+    }
+    
+    private List<String> getDnaIds() throws SQLException, RemoteException{
+        List<String> dnaIds = MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
+                    LoginController.sessionId, 
+                    ProjectController.getInstance().getCurrentVariantTableName(), 
+                    DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
+        if(dnaIds == null) {
+            dnaIds = MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
+                    LoginController.sessionId, 
+                    ProjectController.getInstance().getCurrentVariantSubTableName(), 
+                    DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID,
+                    false);
+        }
+        return dnaIds;
     }
 }

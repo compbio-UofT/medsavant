@@ -421,6 +421,15 @@ public class ViewUtil {
         p.add(Box.createVerticalGlue());
         return p;
     }
+    
+    public static JPanel getMessagePanelBig(String string) {
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+        p.add(Box.createVerticalGlue());
+        p.add(ViewUtil.getCenterAlignedComponent(getTitleLabel(string)));
+        p.add(Box.createVerticalGlue());
+        return p;
+    }
 
     public static void applyVerticalBoxLayout(JComponent p) {
         p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));

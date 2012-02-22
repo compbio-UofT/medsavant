@@ -16,6 +16,8 @@
 package org.ut.biolab.medsavant.db.util.query;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -39,6 +41,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import java.rmi.RemoteException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
@@ -64,6 +67,7 @@ import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.DistinctValuesCache;
 import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
+import org.ut.biolab.medsavant.server.SessionController;
 
 /**
  *
@@ -140,11 +144,16 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return result;
     }
 
-    public double[] getExtremeValuesForColumn(String sid,String tablename, String columnname) throws SQLException, RemoteException {
+    public double[] getExtremeValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException {
 
-        if(DistinctValuesCache.isCached(tablename, columnname)){
-            double[] result = DistinctValuesCache.getCachedRange(tablename, columnname);
-            if(result != null) return result;
+        String dbName = SessionController.getInstance().getDatabaseForSession(sid);
+        if(DistinctValuesCache.isCached(dbName, tablename, columnname)){
+            try {
+                double[] result = DistinctValuesCache.getCachedRange(dbName, tablename, columnname);
+                if(result != null) return result;
+            } catch (Exception ex) {
+                Logger.getLogger(VariantQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
+            } 
         }
         
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
@@ -161,16 +170,31 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         List<Double> list = new ArrayList<Double>();
         list.add(result[0]);
         list.add(result[1]);
-        DistinctValuesCache.cacheResults(tablename, columnname, (List)list);
+        DistinctValuesCache.cacheResults(dbName, tablename, columnname, (List)list);
         
         return result;
     }
 
+    /*
+     * A return value of null indicates too many values.
+     */
     public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException {
+        return getDistinctValuesForColumn(sid, tablename, columnname, true);
+    }
 
-        if(DistinctValuesCache.isCached(tablename, columnname)){
-            List<String> result = DistinctValuesCache.getCachedStringList(tablename, columnname);
-            if(result != null) return result;
+    /*
+     * A return value of null indicates too many values.
+     */
+    public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname, boolean cache) throws SQLException, RemoteException {
+
+        String dbName = SessionController.getInstance().getDatabaseForSession(sid);
+        if(cache && DistinctValuesCache.isCached(dbName, tablename, columnname)){
+            try {
+                List<String> result = DistinctValuesCache.getCachedStringList(dbName, tablename, columnname);
+                return result;
+            } catch (Exception ex) {
+                Logger.getLogger(VariantQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
  
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
@@ -179,10 +203,10 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addFromTable(table.getTable());
         query.setIsDistinct(true);
         query.addColumns(table.getDBColumn(columnname));
-        query.addOrdering(table.getDBColumn(columnname), Dir.ASCENDING);
+        //query.addOrdering(table.getDBColumn(columnname), Dir.ASCENDING);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
-
+        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + (cache ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
+        
         List<String> result = new ArrayList<String>();
         while (rs.next()) {
             String val = rs.getString(1);
@@ -192,8 +216,17 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 result.add(val);
             }
         }
-
-        DistinctValuesCache.cacheResults(tablename, columnname, (List)result);
+        
+        if(cache) {
+            if(result.size() == DistinctValuesCache.CACHE_LIMIT){
+                DistinctValuesCache.cacheResults(dbName, tablename, columnname, null);
+                return null;
+            } else {
+                Collections.sort(result);
+                DistinctValuesCache.cacheResults(dbName, tablename, columnname, (List)result);
+            }
+        }
+        
         return result;
     }
 

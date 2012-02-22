@@ -250,11 +250,15 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
      * published variant table. 
      */
     public String getVariantTablename(String sid, int projectid, int refid, boolean published) throws SQLException {
+        return getVariantTablename(sid, projectid, refid, published, false);
+    }
+    
+    public String getVariantTablename(String sid, int projectid, int refid, boolean published, boolean sub) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
-        query.addColumns(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME));
+        query.addColumns(table.getDBColumn((sub ? VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME : VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME)));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
         if(published){
@@ -270,7 +274,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             return null;
         }
     }
-    
+
     public Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) throws SQLException {
         
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;

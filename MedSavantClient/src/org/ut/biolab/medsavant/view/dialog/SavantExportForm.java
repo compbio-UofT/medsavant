@@ -72,7 +72,11 @@ public class SavantExportForm extends javax.swing.JDialog {
 
         //populate individuals
         try {
-            List<String> temp = MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableName(), DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS);
+            List<String> temp = MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
+                    LoginController.sessionId, 
+                    ProjectController.getInstance().getCurrentPatientTableName(), 
+                    DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, 
+                    false);
             dnaIds = new ArrayList<String>();
             for(String s : temp){
                 for(String s1 : s.split(",")){

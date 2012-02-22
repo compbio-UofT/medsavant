@@ -33,6 +33,7 @@ public interface VariantQueryUtilAdapter extends Remote {
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order) throws SQLException, RemoteException;
     public double[] getExtremeValuesForColumn(String sid,String tablename, String columnname) throws SQLException, RemoteException;
     public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException;
+    public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname, boolean cache) throws SQLException, RemoteException;
     public int getNumFilteredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException;
     public int getNumFilteredVariants(String sid,int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException;
     public int getNumVariantsForDnaIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException;
