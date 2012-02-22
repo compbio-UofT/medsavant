@@ -427,11 +427,13 @@ public class SummaryChart extends JLayeredPane {
         }
 
         public void showSuccess(ChartFrequencyMap[] result) {
-            if (result != null && result[0] != null && result[0].getEntries().size() < 200) {
+            if (result != null && result[0] != null && result[0].getEntries().size() < 200 && !result[0].getEntries().isEmpty()) {
                 Chart chart = drawChart(result);
                 add(chart, c, JLayeredPane.DEFAULT_LAYER);
+            } else if (result != null && result[0] != null && result[0].getEntries().isEmpty()){
+                add(ViewUtil.getMessagePanelBig("No variants pass query"), c);
             } else {
-                add(ViewUtil.getMessagePanelBig("Too many values to display chart. "), c);
+                add(ViewUtil.getMessagePanelBig("Too many values to display chart"), c);
             }
             
             waitPanel.setVisible(false);
