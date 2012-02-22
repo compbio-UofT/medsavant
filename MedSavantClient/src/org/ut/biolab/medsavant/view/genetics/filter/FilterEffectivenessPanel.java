@@ -96,6 +96,10 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
 
         bottomPanel.add(historyPanel,BorderLayout.CENTER);
         historyPanel.setVisible(false);
+        
+        //disclaimer for count approximation
+        JLabel countDisclaimer = new JLabel("* Large counts may be approximate");
+        bottomPanel.add(ViewUtil.alignLeft(countDisclaimer), BorderLayout.SOUTH);
 
         this.add(bottomPanel,BorderLayout.SOUTH);
 
