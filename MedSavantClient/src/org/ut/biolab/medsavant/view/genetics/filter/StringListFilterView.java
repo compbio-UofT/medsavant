@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.list.QuickListFilterField;
 import com.jidesoft.swing.SearchableUtils;
@@ -355,6 +356,8 @@ public class StringListFilterView extends FilterView {
                                 try {
                                     List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForStringList(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableSchema(), acceptableValues, columnname);
 
+                                    if(individuals.isEmpty()) return new Condition[] { BinaryCondition.equalTo(0, 1) };
+                                    
                                     Condition[] results = new Condition[individuals.size()];
                                     int i = 0;
                                     for (String ind : individuals) {
