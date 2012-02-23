@@ -42,7 +42,6 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
@@ -143,7 +142,7 @@ class HPOFilterView extends FilterView {
                     Condition[] conditions = new Condition[dnaIds.size()];
                     for (int i = 0; i < dnaIds.size(); i++) {
                         if (dnaIds.get(i) == null || dnaIds.get(i).equals("")) { continue; }
-                        conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIds.get(i));
+                        conditions[i] = BinaryCondition.equalTo(variantTable.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIds.get(i));
                     }
 
                     if (dnaIds.isEmpty()) {
