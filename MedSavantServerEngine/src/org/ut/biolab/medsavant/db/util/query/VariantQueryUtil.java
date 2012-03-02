@@ -106,11 +106,19 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     }
     
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order) throws SQLException, RemoteException {
+        return getVariants(sessionId, projectId, referenceId, conditions, start, limit, order, null);
+    }
+    
+    public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order, Column[] columns) throws SQLException, RemoteException {
 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId,ProjectQueryUtil.getInstance().getVariantTablename(sessionId,projectId, referenceId, true));
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
-        query.addAllColumns();
+        if(columns == null){
+            query.addAllColumns();
+        } else {
+            query.addColumns(columns);
+        }
         addConditionsToQuery(query, conditions);
         if(order != null){
             query.addOrderings(order);
@@ -126,7 +134,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 queryString += " LIMIT " + limit;
             }
         }
-        //System.out.println(queryString);
+        System.out.println(queryString);
         ResultSet rs = conn.createStatement().executeQuery(queryString);
 
         ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -414,7 +422,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, name);
         
         Condition[] rangeConditions = new Condition[]{
-            BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom),
+            BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom),
             BinaryCondition.greaterThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), start, true),
             BinaryCondition.lessThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), end, false)
         };
