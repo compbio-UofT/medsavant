@@ -20,12 +20,20 @@ import java.util.TreeMap;
  */
 public class ChartFrequencyMap {
 
-    static ChartFrequencyMap subtract(ChartFrequencyMap map1, ChartFrequencyMap map2) {
+    /*
+     * LogY flag indicates that the log of each value will later be taken. This
+     * should be used for "show original frequencies" in order to get an accurate
+     * difference (as it is stacked on top of current frequencies). Do not use 
+     * otherwise. 
+     */
+    static ChartFrequencyMap subtract(ChartFrequencyMap map1, ChartFrequencyMap map2, boolean logY) {
         ChartFrequencyMap result = new ChartFrequencyMap();
         for (FrequencyEntry fe1 : map1.entries) {
             FrequencyEntry fe2 = map2.getEntry(fe1.getKey());
             if (fe2 == null) {
                 result.addEntry(fe1.getKey(), fe1.getFrequency());
+            } else if (logY) {
+                result.addEntry(fe1.getKey(), (long)(Math.pow(10, Math.log10(fe1.getFrequency()) - Math.log10(fe2.getFrequency()))));
             } else {
                 result.addEntry(fe1.getKey(), fe1.getFrequency() - fe2.getFrequency());
             }

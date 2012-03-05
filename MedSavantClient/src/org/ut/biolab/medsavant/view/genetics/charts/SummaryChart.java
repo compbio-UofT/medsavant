@@ -221,7 +221,7 @@ public class SummaryChart extends JLayeredPane {
         DefaultChartModel unfilteredChartModel = null;
 
         if (this.showComparedToOriginal) {
-            unfilteredChartMap = ChartFrequencyMap.subtract(chartMaps[1], filteredChartMap);
+            unfilteredChartMap = ChartFrequencyMap.subtract(chartMaps[1], filteredChartMap, isLogScaleY());
             unfilteredChartModel = new DefaultChartModel();
         }
 
