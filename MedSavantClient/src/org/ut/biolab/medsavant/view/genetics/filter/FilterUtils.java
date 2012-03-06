@@ -33,6 +33,7 @@ public class FilterUtils {
     public static List<FilterPanelSubItem> createAndApplyGenericFixedFilter(String title, String description, Condition c) {
 
         FilterPanel fp = getFilterPanel();
+        FilterController.setAutoCommit(false);
 
         //create and apply filter to each subquery
         List<FilterPanelSubItem> filterPanels = new ArrayList<FilterPanelSubItem>();
@@ -43,12 +44,17 @@ public class FilterUtils {
         }
 
         fp.refreshSubPanels();
+        
+        FilterController.commit(title, FilterController.FilterAction.ADDED);
+        FilterController.setAutoCommit(true);
+        
         return filterPanels;
     }
 
     public static void createAndApplyNumericFilterView(String column, String alias, Table whichTable, double low, double high) throws SQLException, RemoteException{
 
         FilterPanel fp = startFilterBy(column);
+        FilterController.setAutoCommit(false);
 
         //create and apply filter to each subquery
         for(FilterPanelSub fps : fp.getFilterPanelSubs()){
@@ -58,11 +64,15 @@ public class FilterUtils {
         }
 
         fp.refreshSubPanels();
+        
+        FilterController.commit(alias, FilterController.FilterAction.ADDED);
+        FilterController.setAutoCommit(true);
     }
 
     public static void createAndApplyStringListFilterView(String column, String alias, Table whichTable, List<String> values) throws SQLException, RemoteException {
 
         FilterPanel fp = startFilterBy(column);
+        FilterController.setAutoCommit(false);
 
         //create and apply filter to each subquery
         for(FilterPanelSub fps : fp.getFilterPanelSubs()){
@@ -72,6 +82,9 @@ public class FilterUtils {
         }
 
         fp.refreshSubPanels();
+        
+        FilterController.commit(alias, FilterController.FilterAction.ADDED);
+        FilterController.setAutoCommit(true);
     }
 
     public static void removeFiltersById(String id){
