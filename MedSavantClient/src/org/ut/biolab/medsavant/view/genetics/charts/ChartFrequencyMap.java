@@ -155,6 +155,7 @@ public class ChartFrequencyMap {
         }
     }
     private List<FrequencyEntry> entries;
+    private List<FrequencyEntry> originalEntries;
 
     public ChartFrequencyMap() {
         this.entries = new ArrayList<FrequencyEntry>();
@@ -192,8 +193,19 @@ public class ChartFrequencyMap {
     }
 
     public void sortNumerically() {
+        if(originalEntries == null){
+            originalEntries = new ArrayList<FrequencyEntry>();
+            originalEntries.addAll(entries);
+        }
         Collections.sort(entries, new NumericComparator());
         Collections.reverse(entries);
+    }
+    
+    public void undoSortNumerically() {
+        if(originalEntries != null){
+            entries = originalEntries;
+            originalEntries = null;
+        }
     }
 
     public void sortKaryotypically() {

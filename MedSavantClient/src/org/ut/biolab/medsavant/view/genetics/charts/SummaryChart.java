@@ -283,6 +283,11 @@ public class SummaryChart extends JLayeredPane {
             if (this.showComparedToOriginal) {
                 chartMaps[1].sortNumerically();
             }
+        } else {
+            filteredChartMap.undoSortNumerically();
+            if(this.showComparedToOriginal){
+                chartMaps[1].undoSortNumerically();
+            }
         }
 
         long max = filteredChartMap.getMax();

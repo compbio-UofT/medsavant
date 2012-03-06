@@ -263,8 +263,7 @@ public class ChartView extends JPanel {
 
     public void setIsSorted(boolean b) {
         if (bSort.isEnabled()) {
-            sc.setIsSorted(!sc.isSorted());
-            bSort.setSelected(sc.isSorted());
+            sc.setIsSorted(b);
         }
     }
 
