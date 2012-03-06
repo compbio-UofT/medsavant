@@ -211,8 +211,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                         ReferenceController.getInstance().getCurrentReferenceId(),
                         conditions,
                         field.getColumnName(),
-                        0,
-                        binSize);
+                        binSize,
+                        isLogScaleX);
 
                 for (Range key : resultMap.keySet()) {
                     chartMap.addEntry(
@@ -281,7 +281,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
 
         String cacheKey = ProjectController.getInstance().getCurrentProjectId()
                 + "_" + ReferenceController.getInstance().getCurrentReferenceId()
-                + "_" + field.getColumnName();
+                + "_" + field.getColumnName()
+                + "_" + isLogScaleX;
 
         boolean noConditions = !useFilteredCounts || (FilterController.getQueryFilterConditions().length == 0);
 

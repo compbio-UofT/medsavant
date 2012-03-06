@@ -309,7 +309,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return getNumFilteredVariants(sid, projectId, referenceId, new Condition[][]{finalCondition});
     }
 
-    public Map<Range,Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnname, double min, double binSize) throws SQLException, RemoteException {
+    public Map<Range,Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnname, double binSize, boolean logBins) throws SQLException, RemoteException {
 
         //pick table from approximate or exact
         TableSchema table;
@@ -325,20 +325,17 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             multiplier = 1;
         }
         
-        //TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
-
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
 
-        // SELECT (dp % 10) as m, COUNT(*) FROM z_variant_proj1_ref3_update0a GROUP BY m ORDER BY m ASC;
-        String round = "floor("
-                + columnname
-                + " / "
-                + binSize
-                + ") as m";
-        //String modFunction = "(" + columnname + " % " + binSize + ") AS m ";
+        String round;
+        if(logBins){
+            round = "floor(log10(" + columnname + ")) as m";
+        } else {
+            round = "floor(" + columnname + " / " + binSize + ") as m";
+        }
 
         String query = q.toString().replace("COUNT(*)", "COUNT(*), " + round);
         query += " GROUP BY m ORDER BY m ASC";
@@ -347,31 +344,19 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         Map<Range, Long> results = new TreeMap<Range, Long>();
         while (rs.next()) {
-
             int binNo = rs.getInt(2);
-
-            //Range r = new Range(binNo*binSize, (binNo+1)*binSize);
-
-            Range r = new Range(min + binNo*binSize, min + (binNo+1)*binSize);
-
+            Range r;
+            if(logBins){
+                r = new Range(Math.pow(10, binNo), Math.pow(10, binNo+1));
+            } else {
+                r = new Range(binNo*binSize, (binNo+1)*binSize);
+            }
             long count = (long)(rs.getLong(1) * multiplier);
-
             results.put(r, count);
         }
 
         return results;
     }
-
-    /*public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException {
-        
-        //TODO: approximate counts
-
-        TableSchema tableSchema = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
-        DbTable table = tableSchema.getTable();
-        DbColumn col = tableSchema.getDBColumnByAlias(columnAlias);
-
-        return getFilteredFrequencyValuesForCategoricalColumn(sid,table, conditions, col);
-    }*/
 
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException {
 
