@@ -222,6 +222,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
 
         } else {
             
+            //TODO: This hasn't been properly tested. Need a numeric field in patients. 
+            
             //get dna ids for each distinct value
             Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
                     LoginController.sessionId,
@@ -317,6 +319,15 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
 
         } else {
             chartMap = generateCategoricalChartMap(useFilteredCounts, isLogScaleX);
+            if(field.getColumnType() == ColumnType.BOOLEAN){
+                for(FrequencyEntry fe : chartMap.getEntries()){
+                    if(fe.getKey().equals("0")){
+                        fe.setKey("False");
+                    } else if (fe.getKey().equals("1")){
+                        fe.setKey("True");
+                    }
+                }
+            }
         }
 
         if (!useFilteredCounts) {
