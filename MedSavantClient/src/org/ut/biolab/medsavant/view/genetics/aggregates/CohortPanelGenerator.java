@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -114,7 +115,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         //private boolean resortPending = true;
         private JPanel progressPanel;
         private JButton exportButton;
-        private JProgressBar progress;
+        //private JProgressBar progress;
         private int numWorking = 0;
         private int numCompleted = 0;
         
@@ -127,8 +128,8 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             this.removeAll();
             this.setLayout(new BorderLayout());
             
-            progress = new JProgressBar();
-            progress.setStringPainted(true);
+            //progress = new JProgressBar();
+            //progress.setStringPainted(true);
             
             exportButton = new JButton("Export Page");
             exportButton.setEnabled(false);
@@ -145,24 +146,25 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             
             progressPanel = new JPanel();
             progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.X_AXIS));
-            progressPanel.add(Box.createHorizontalStrut(10));
-            progressPanel.add(progress);
-            progressPanel.add(Box.createHorizontalStrut(10));
+            //progressPanel.add(Box.createHorizontalStrut(10));
+            //progressPanel.add(progress);
+            //progressPanel.add(Box.createHorizontalStrut(10));
+            progressPanel.add(Box.createHorizontalGlue());
             progressPanel.add(exportButton);           
             progressPanel.add(Box.createRigidArea(new Dimension(10,30)));            
             
             showWaitCard();
             
-            SwingWorker initWorker = new SwingWorker() {
+            MedSavantWorker initWorker = new MedSavantWorker(pageName) {
 
                 @Override
-                protected Object doInBackground() throws Exception {
+                protected List doInBackground() throws Exception {
                     container = new JScrollPane();
                     add(container, BorderLayout.CENTER);
 
                     List rows = new ArrayList();
                     List<Cohort> cohorts = MedSavantClient.CohortQueryUtilAdapter.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
-                    addToWorking(cohorts.size());
+                    //addToWorking(cohorts.size());
                     for(Cohort c : cohorts){
                         List<SimplePatient> simplePatients = MedSavantClient.CohortQueryUtilAdapter.getIndividualsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), c.getId());           
                         CohortNode n = new CohortNode(c, simplePatients);      
@@ -174,7 +176,24 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                         rows.add(n);
                     }
 
-                    tableModel = new CohortTreeTableModel(rows);
+                    
+                    
+                    return rows;
+                }
+
+                @Override
+                protected void showProgress(double fraction) {}
+
+                @Override
+                protected void showSuccess(Object result) {
+                    
+                    try {
+                        tableModel = new CohortTreeTableModel((List)get());
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(CohortPanelGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ExecutionException ex) {
+                        Logger.getLogger(CohortPanelGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                    }
 
                     sortableTreeTableModel = new StripeSortableTreeTableModel(tableModel);
                     sortableTreeTableModel.setAutoResort(false);
@@ -184,12 +203,6 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
 
                     container.getViewport().add(table);
                     
-                    return null;
-                }
-                
-                @Override
-                public void done() {
-                    //startResortWorker();     
                     showShowCard();
                     init = true;
                 }
@@ -211,8 +224,8 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         }
         
         public void update(){
-            resetProgress();
-            addToWorking(nodes.size());
+            //resetProgress();
+            //addToWorking(nodes.size());
             table.collapseAll();
             for(CohortNode n : nodes){               
                 n.reset();
@@ -224,7 +237,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             if(updateRequired){
                 update();
             } else {
-                resetProgress();
+                //resetProgress();
                 for(CohortNode n : nodes){
                     n.finish();
                 }
@@ -244,7 +257,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         
         /* Progress */
         
-        public synchronized void resetProgress(){
+        /*public synchronized void resetProgress(){
             numCompleted = 0;
             numWorking = 0;
         }
@@ -278,7 +291,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 progress.setValue((int)((double)numCompleted / (double)numWorking * 100.0));
                 exportButton.setEnabled(false);
             }
-        }
+        }*/
     }
 
     private class CohortNode extends DefaultExpandableRow{
@@ -345,7 +358,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                     //panel.setResortPending(true);
                     panel.refresh();
                     panel.repaint();
-                    panel.incrementCompleted();
+                    //panel.incrementCompleted();
                     cleanup();
                 }
                

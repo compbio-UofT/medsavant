@@ -40,13 +40,10 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     private GenomeContainer gp;
     private boolean isLoaded = false;
 
-    private static GeneticsTablePage instance;
-
     public GeneticsTablePage(SectionView parent) {
         super(parent);
         FilterController.addFilterListener(this);
         ReferenceController.getInstance().addReferenceListener(this);
-        instance = this;
     }
 
     public String getName() {
@@ -105,10 +102,6 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
             this.setUpdateRequired(true);
         }
         isLoaded = false;
-    }
-
-    public static GeneticsTablePage getInstance(){
-        return instance;
     }
 
     public void updateContents(){

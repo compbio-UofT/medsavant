@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 /**
  * @author AndrewBrook
  */
-public class FilterHistoryPanel extends JPanel implements FiltersChangedListener {
+public class FilterHistoryPanel extends JPanel {
 
     private int maxRecords = 0;
     private JTable table;
@@ -105,7 +105,7 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
 
         reset();
 
-        FilterController.addFilterListener(this);
+        //FilterController.addFilterListener(this);
 
     }
 
@@ -137,36 +137,40 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
         table.repaint();
     }
 
-    public void filtersChanged() {
-        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                "Applying Filter",
-                "Filter is being applied. Please wait.",
-                true);
-
+    public void filtersChanged(final FilterEffectivenessPanel fep) {
+        //final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+        //        "Applying Filter",
+        //        "Filter is being applied. Please wait.",
+        //        true);
+        
+        final Filter filter = FilterController.getLastFilter();
+        final String action = FilterController.getLastActionString();
+        
         Thread thread = new Thread() {
             @Override
             public void run() {
+                fep.showWaitCard();
                 try {
                     int numLeft = ResultController.getInstance().getNumFilteredVariants();
-                    
-                    addFilterSet(numLeft);
+                    addFilterSet(filter, action, numLeft);
+                    //addFilterSet(numLeft);
                 } catch (NonFatalDatabaseException ex) {
                     Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                dialog.close();
+                fep.showShowCard();
+                //dialog.close();
             }
         };
 
         thread.start();
-        dialog.setVisible(true);
+        //dialog.setVisible(true);
     }
 
-    private void addFilterSet(int numRecords){
-        Filter filter = FilterController.getLastFilter();
-        String action = FilterController.getLastActionString();
-        model.addRow(filter.getName(), action, numRecords);
+    private void addFilterSet(Filter filter, String action, int numLeft){
+        model.addRow(filter.getName(), action, numLeft);
         table.updateUI();
         this.repaint();
+        
     }
 
     private class ProgressTableModel extends AbstractTableModel {

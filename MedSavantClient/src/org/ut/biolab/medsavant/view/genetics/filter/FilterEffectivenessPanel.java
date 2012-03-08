@@ -2,6 +2,8 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
@@ -10,6 +12,7 @@ import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -22,24 +25,47 @@ import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.component.ProgressPanel;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
  *
  * @author mfiume
  */
-public class FilterEffectivenessPanel extends JPanel implements FiltersChangedListener, ReferenceListener {
+public class FilterEffectivenessPanel extends JLayeredPane implements FiltersChangedListener, ReferenceListener {
 
     Color bg = new Color(139, 149, 164);
     private final ProgressPanel pp;
     private final JLabel labelVariantsRemaining;
     private final JLabel labelVariantsTotal;
     private final FilterHistoryPanel historyPanel;
+    private GridBagConstraints c;
+    private WaitPanel waitPanel;
+    private int waitCounter = 0;
+    private JPanel panel;
 
     public FilterEffectivenessPanel() {
-        this.setBackground(bg);
-        this.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getTopLineBorder(),ViewUtil.getBigBorder()));
-        this.setLayout(new BorderLayout());
-
+        
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+        
+        this.setLayout(new GridBagLayout());
+        
+        panel = new JPanel();
+        panel.setBackground(bg);
+        panel.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getTopLineBorder(),ViewUtil.getBigBorder()));
+        panel.setLayout(new BorderLayout());
+        this.add(panel, c, JLayeredPane.DEFAULT_LAYER);
+        
+        waitPanel = new WaitPanel("Applying Filters");
+        waitPanel.setVisible(false);
+        this.add(waitPanel, c, JLayeredPane.DRAG_LAYER);
+        
         labelVariantsRemaining = new JLabel("");
         labelVariantsTotal = new JLabel("");
 
@@ -50,11 +76,11 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
         infoPanel.add(labelVariantsTotal);
         infoPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());
 
-        this.add(infoPanel,BorderLayout.NORTH);
+        panel.add(infoPanel,BorderLayout.NORTH);
 
         pp = new ProgressPanel();
         //pp.setBorder(ViewUtil.getBigBorder());
-        this.add(pp, BorderLayout.CENTER);
+        panel.add(pp, BorderLayout.CENTER);
 
         historyPanel = new FilterHistoryPanel();
         
@@ -101,7 +127,7 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
         JLabel countDisclaimer = new JLabel("* Large counts may be approximate");
         bottomPanel.add(ViewUtil.alignLeft(countDisclaimer), BorderLayout.SOUTH);
 
-        this.add(bottomPanel,BorderLayout.SOUTH);
+        panel.add(bottomPanel,BorderLayout.SOUTH);
 
         FilterController.addFilterListener(this);
         ReferenceController.getInstance().addReferenceListener(this);
@@ -118,27 +144,37 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
     @Override
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
 
-        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                "Applying Filter",
-                "Filter is being applied. Please wait.",
-                true);
+        //final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+        //        "Applying Filter",
+        //        "Filter is being applied. Please wait.",
+        //        true);
+        
+        final FilterEffectivenessPanel instance = this;
+        historyPanel.filtersChanged(instance);
+        
 
         Thread thread = new Thread() {
 
             @Override
             public void run() {
+                instance.showWaitCard();
                 try {
                     int numLeft = ResultController.getInstance().getNumFilteredVariants();
-                    dialog.close();
+                    instance.showShowCard();
+                    //dialog.close();
                     setNumLeft(numLeft);
                 } catch (NonFatalDatabaseException ex) {
+                    instance.showShowCard();
                     Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                
             }
         };
 
         thread.start();
-        dialog.setVisible(true);
+        
+        
+        //dialog.setVisible(true);
 
     }
 
@@ -179,5 +215,20 @@ public class FilterEffectivenessPanel extends JPanel implements FiltersChangedLi
     public void referenceChanged(String name) {
         historyPanel.reset();
         setMaxValues();
+    }
+    
+    public synchronized void showWaitCard() {
+        waitCounter++;
+        waitPanel.setVisible(true);
+        this.setLayer(waitPanel, JLayeredPane.DRAG_LAYER);
+        waitPanel.repaint();
+    }
+
+    public synchronized void showShowCard() {
+        waitCounter--;
+        if(waitCounter <= 0){
+            waitPanel.setVisible(false);
+            waitCounter = 0;
+        }
     }
 }

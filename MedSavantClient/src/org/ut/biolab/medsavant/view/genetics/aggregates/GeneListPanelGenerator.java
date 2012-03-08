@@ -8,12 +8,8 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.grid.SortableTable;
-import com.jidesoft.grid.TableModelWrapperUtils;
 import java.sql.SQLException;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.model.BEDRecord;
-import com.jidesoft.utils.SwingWorker;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -24,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -43,7 +38,7 @@ import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
@@ -76,17 +71,6 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         }
         return panel;
     }
-
-    /*public void setUpdate(boolean update) {
-
-        if (panel == null) { return; }
-
-        if (update) {
-
-        } else {
-            panel.stopThreads();
-        }
-    }*/
 
     public void run(boolean reset){
         if(panel != null)
@@ -417,11 +401,12 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             progress.setString("stopped");
         }
 
-        private class GeneAggregator extends SwingWorker<List<BEDRecord>, BEDRecord> {
+        private class GeneAggregator extends MedSavantWorker<List<BEDRecord>> {
 
             private final RegionSet geneList;
 
             private GeneAggregator(RegionSet geneList) {
+                super(pageName);
                 this.geneList = geneList;
             }
 
@@ -431,31 +416,31 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             }
 
             @Override
-            protected void done() {
-                try {
-                    initGeneTable(get());
-                } catch (Exception x) {
-                    // TODO: #90
-                    LOG.log(Level.SEVERE, null, x);
-                }
+            protected void showProgress(double fraction) {}
+
+            @Override
+            protected void showSuccess(List<BEDRecord> result) {
+                initGeneTable(result);
             }
         }
 
-        private class GeneListGetter extends SwingWorker<List<RegionSet>, RegionSet> {
+        private class GeneListGetter extends MedSavantWorker<List<RegionSet>> {
 
+            public GeneListGetter(){
+                super(pageName);
+            }
+            
             @Override
             protected List<RegionSet> doInBackground() throws Exception {
                 return MedSavantClient.RegionQueryUtilAdapter.getRegionSets(LoginController.sessionId);
             }
+            
+            @Override
+            protected void showProgress(double fraction) {}
 
             @Override
-            protected void done() {
-                try {
-                    updateGeneListDropDown(get());
-                } catch (Exception x) {
-                    // TODO: #90
-                    LOG.log(Level.SEVERE, null, x);
-                }
+            protected void showSuccess(List<RegionSet> result) {
+                updateGeneListDropDown(result);
             }
         }
 

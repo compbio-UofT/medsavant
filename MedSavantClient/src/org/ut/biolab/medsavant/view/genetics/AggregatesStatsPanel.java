@@ -50,7 +50,7 @@ public class AggregatesStatsPanel extends JPanel {
         addPanel(new OntologyPanelGenerator(pageName));
         addPanel(new GeneListPanelGenerator(pageName));
         addPanel(new CohortPanelGenerator(pageName));
-        addPanel(new FamilyPanelGenerator());
+        addPanel(new FamilyPanelGenerator(pageName));
     }
     
     private void addPanel(AggregatePanelGenerator p) {

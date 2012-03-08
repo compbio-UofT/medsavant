@@ -9,9 +9,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D.Float;
 import java.sql.SQLException;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -40,8 +37,8 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.patients.individual.Pedigree;
 import org.ut.biolab.medsavant.view.patients.individual.PedigreeBasicRule;
@@ -71,8 +68,10 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
     private static final Logger LOG = Logger.getLogger(GeneListPanelGenerator.class.getName());
     private FamilyPanel panel;
     private boolean updateRequired = false;
+    private final String pageName;
     
-    public FamilyPanelGenerator() {
+    public FamilyPanelGenerator(String pageName) {
+        this.pageName = pageName;
     }
 
     public String getName() {
@@ -175,7 +174,11 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
             this.showFamilyAggregates((String) familyLister.getSelectedItem());
         }
 
-        private class FamilyListGetter extends SwingWorker<List<String>, String> {
+        private class FamilyListGetter extends MedSavantWorker<List<String>> {
+            
+            public FamilyListGetter(){
+                super(pageName);
+            }
 
             @Override
             protected List<String> doInBackground() throws Exception {
@@ -188,9 +191,12 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
             }
 
             @Override
-            protected void done() {
+            protected void showProgress(double fraction) {}
+
+            @Override
+            protected void showSuccess(List<String> result) {
                 try {
-                    updateFamilyDropDown(get());
+                    updateFamilyDropDown(result);
                 } catch (Exception x) {
                     // TODO: #90
                     LOG.log(Level.SEVERE, null, x);
@@ -219,11 +225,12 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
         private GraphView2D graphView;
         private Map<String, Integer> individualVariantIntersection;
 
-        private class FamilyVariantIntersectionAggregator extends SwingWorker<Map<String, Integer>, Map<String, Integer>> {
+        private class FamilyVariantIntersectionAggregator extends MedSavantWorker<Map<String, Integer>> {
 
             private final String familyId;
 
             public FamilyVariantIntersectionAggregator(String familyId) {
+                super(pageName);
                 this.familyId = familyId;
             }
 
@@ -241,22 +248,21 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
                 }
             }
 
-            protected void done() {
-                try {
-                    Map<String, Integer> map = get();
-                    setIndividualVariantIntersection(map);
-                } catch (Exception ex) {
-                    // TODO: report error if necessary
-                    return;
-                }
+            @Override
+            protected void showProgress(double fraction) {}
+
+            @Override
+            protected void showSuccess(Map<String, Integer> result) {
+                setIndividualVariantIntersection(result);
             }
         }
 
-        private class PedigreeGrabber extends SwingWorker<File, File> {
+        private class PedigreeGrabber extends MedSavantWorker<File> {
 
             private final String familyId;
 
             public PedigreeGrabber(String familyId) {
+                super(pageName);
                 this.familyId = familyId;
             }
 
@@ -292,17 +298,14 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
                 return outfile;
             }
 
-            protected void done() {
+            @Override
+            protected void showProgress(double fraction) {}
 
-                File pedigreeCSVFile;
-                try {
-                    pedigreeCSVFile = get();
-                } catch (Exception ex) {
-                    return;
-                }
+            @Override
+            protected void showSuccess(File result) {
 
                 Graph pedigree = new Graph();
-                CsvGraphLoader loader = new CsvGraphLoader(pedigreeCSVFile.getAbsolutePath(), ",");
+                CsvGraphLoader loader = new CsvGraphLoader(result.getAbsolutePath(), ",");
                 loader.setSettings(Pedigree.FIELD_HOSPITALID, Pedigree.FIELD_MOM, Pedigree.FIELD_DAD);
                 loader.load(pedigree);
 

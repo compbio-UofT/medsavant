@@ -33,18 +33,21 @@ public class ResultController implements FiltersChangedListener {
     private int projectId_records;
     private int referenceId_records;
     private String dbName_records;
+    private final Object lock_records = new Object();
     
     //last state seen by getTotalNumVariants    
     private int projectId_total;
     private int referenceId_total;
     private String dbName_total;
+    private final Object lock_total = new Object();
     
     //last state seen by getNumFilteredVariants
     private int filterSetId_remaining = -1;
     private int projectId_remaining;
     private int referenceId_remaining;
     private String dbName_remaining;
-
+    private final Object lock_remaining = new Object();
+    
     private static ResultController instance;
     private int totalNumVariantsRemaining;
     private int totalNumVariants = -1;
@@ -68,26 +71,28 @@ public class ResultController implements FiltersChangedListener {
         return filteredVariants;
     }
 
-    public synchronized List<Object[]> getFilteredVariantRecords(int start, int limit, Column[] order) {
-        if (filterSetId_records != FilterController.getCurrentFilterSetID() || this.limit < limit || this.start != start ||
-                ProjectController.getInstance().getCurrentProjectId() != projectId_records ||
-                ReferenceController.getInstance().getCurrentReferenceId() != referenceId_records || 
-                !SettingsController.getInstance().getDBName().equals(dbName_records)){
-            try {
-                updateFilteredVariantDBResults(start, limit, order);
-                this.limit = limit;
-                this.start = start;
-            } catch (NonFatalDatabaseException ex) {
-                ex.printStackTrace();
-            }
-            projectId_records = ProjectController.getInstance().getCurrentProjectId();
-            referenceId_records = ReferenceController.getInstance().getCurrentReferenceId();
-            dbName_records = SettingsController.getInstance().getDBName();
-        }   
-        return filteredVariants;
+    public List<Object[]> getFilteredVariantRecords(int start, int limit, Column[] order) {
+        synchronized(lock_records){
+            if (filterSetId_records != FilterController.getCurrentFilterSetID() || this.limit < limit || this.start != start ||
+                    ProjectController.getInstance().getCurrentProjectId() != projectId_records ||
+                    ReferenceController.getInstance().getCurrentReferenceId() != referenceId_records || 
+                    !SettingsController.getInstance().getDBName().equals(dbName_records)){
+                try {
+                    updateFilteredVariantDBResults(start, limit, order);
+                    this.limit = limit;
+                    this.start = start;
+                } catch (NonFatalDatabaseException ex) {
+                    ex.printStackTrace();
+                }
+                projectId_records = ProjectController.getInstance().getCurrentProjectId();
+                referenceId_records = ReferenceController.getInstance().getCurrentReferenceId();
+                dbName_records = SettingsController.getInstance().getDBName();
+            }   
+            return filteredVariants;
+        }
     }
     
-    private synchronized void updateFilteredVariantDBResults(int start, int limit, Column[] order) throws NonFatalDatabaseException {
+    private void updateFilteredVariantDBResults(int start, int limit, Column[] order) throws NonFatalDatabaseException {
         
         filterSetId_records = FilterController.getCurrentFilterSetID();
         
@@ -108,62 +113,70 @@ public class ResultController implements FiltersChangedListener {
         }
     }
     
-    public synchronized int getNumFilteredVariants() {
-        try {
-            if (filterSetId_remaining != FilterController.getCurrentFilterSetID() ||
-                    updateTotalNumVariantsRemainingIsRequired ||
-                    ProjectController.getInstance().getCurrentProjectId() != projectId_remaining ||
-                    ReferenceController.getInstance().getCurrentReferenceId() != referenceId_remaining || 
-                    !SettingsController.getInstance().getDBName().equals(dbName_remaining)) {
-                totalNumVariantsRemaining =  MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                        LoginController.sessionId, 
-                        ProjectController.getInstance().getCurrentProjectId(), 
-                        ReferenceController.getInstance().getCurrentReferenceId(), 
-                        FilterController.getQueryFilterConditions());
-                updateTotalNumVariantsRemainingIsRequired = false;
-                projectId_remaining = ProjectController.getInstance().getCurrentProjectId();
-                referenceId_remaining = ReferenceController.getInstance().getCurrentReferenceId();
-                dbName_remaining = SettingsController.getInstance().getDBName();
-                filterSetId_remaining = FilterController.getCurrentFilterSetID();
+    public int getNumFilteredVariants() {
+        synchronized(lock_remaining){
+            try {
+                if (filterSetId_remaining != FilterController.getCurrentFilterSetID() ||
+                        updateTotalNumVariantsRemainingIsRequired ||
+                        ProjectController.getInstance().getCurrentProjectId() != projectId_remaining ||
+                        ReferenceController.getInstance().getCurrentReferenceId() != referenceId_remaining || 
+                        !SettingsController.getInstance().getDBName().equals(dbName_remaining)) {
+                    System.out.println("getNumFilteredVariants");
+                    updateTotalNumVariantsRemainingIsRequired = false;
+                    projectId_remaining = ProjectController.getInstance().getCurrentProjectId();
+                    referenceId_remaining = ReferenceController.getInstance().getCurrentReferenceId();
+                    dbName_remaining = SettingsController.getInstance().getDBName();
+                    int tempFilterId = FilterController.getCurrentFilterSetID();
+                    totalNumVariantsRemaining =  MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
+                            LoginController.sessionId, 
+                            ProjectController.getInstance().getCurrentProjectId(), 
+                            ReferenceController.getInstance().getCurrentReferenceId(), 
+                            FilterController.getQueryFilterConditions());
+                    filterSetId_remaining = tempFilterId; //temp not really necessary as this is synched...
+                    System.out.println("...X...");
+                }
+                System.out.println("return");
+                return totalNumVariantsRemaining;
+            } catch (SQLException ex) {
+                MiscUtils.checkSQLException(ex);
+                ex.printStackTrace();
+                return 0;
+            } catch (RemoteException ex) {
+                ex.printStackTrace();
+                return 0;
             }
-            return totalNumVariantsRemaining;
-        } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
-            ex.printStackTrace();
-            return 0;
-        } catch (RemoteException ex) {
-            ex.printStackTrace();
-            return 0;
         }
     }
     
-    public synchronized int getNumTotalVariants() {
-        try {
-            if (totalNumVariants == -1 ||
-                    ProjectController.getInstance().getCurrentProjectId() != projectId_total ||
-                    ReferenceController.getInstance().getCurrentReferenceId() != referenceId_total || 
-                    !SettingsController.getInstance().getDBName().equals(dbName_total)) {
-                totalNumVariants =  MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
-                        LoginController.sessionId, 
-                        ProjectController.getInstance().getCurrentProjectId(), 
-                        ReferenceController.getInstance().getCurrentReferenceId());
-                projectId_total = ProjectController.getInstance().getCurrentProjectId();
-                referenceId_total = ReferenceController.getInstance().getCurrentReferenceId();
-                dbName_total = SettingsController.getInstance().getDBName();
+    public int getNumTotalVariants() {
+        synchronized(lock_total){
+            try {
+                if (totalNumVariants == -1 ||
+                        ProjectController.getInstance().getCurrentProjectId() != projectId_total ||
+                        ReferenceController.getInstance().getCurrentReferenceId() != referenceId_total || 
+                        !SettingsController.getInstance().getDBName().equals(dbName_total)) {
+                    totalNumVariants =  MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
+                            LoginController.sessionId, 
+                            ProjectController.getInstance().getCurrentProjectId(), 
+                            ReferenceController.getInstance().getCurrentReferenceId());
+                    projectId_total = ProjectController.getInstance().getCurrentProjectId();
+                    referenceId_total = ReferenceController.getInstance().getCurrentReferenceId();
+                    dbName_total = SettingsController.getInstance().getDBName();
+                }
+                return totalNumVariants;
+            } catch (SQLException ex) {
+                MiscUtils.checkSQLException(ex);
+                ex.printStackTrace();
+                return 0;
+            } catch (RemoteException ex) {
+                ex.printStackTrace();
+                return 0;
             }
-            return totalNumVariants;
-        } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
-            ex.printStackTrace();
-            return 0;
-        } catch (RemoteException ex) {
-            ex.printStackTrace();
-            return 0;
         }
     }
 
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-        setUpdateTotalNumRequired(true);
+            setUpdateTotalNumRequired(true);
     }
     
     public void setUpdateTotalNumRequired(boolean required){

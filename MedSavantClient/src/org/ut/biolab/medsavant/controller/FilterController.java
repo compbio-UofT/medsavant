@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
@@ -36,6 +37,7 @@ import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.ViewController;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 
 
 /**
@@ -50,7 +52,7 @@ public class FilterController {
 
     private static int filterSetID = 0;
 
-    private static Map<Integer, Map<Integer, Map<String, Filter>>> filterMapHistory = new TreeMap<Integer, Map<Integer, Map<String, Filter>>>();
+    //private static Map<Integer, Map<Integer, Map<String, Filter>>> filterMapHistory = new TreeMap<Integer, Map<Integer, Map<String, Filter>>>();
     private static Map<Integer, Map<String, Filter>> filterMap = new TreeMap<Integer, Map<String, Filter>>();
     private static List<FiltersChangedListener> listeners = new ArrayList<FiltersChangedListener>();
     private static List<FiltersChangedListener> activeListeners = new ArrayList<FiltersChangedListener>();
@@ -141,7 +143,7 @@ public class FilterController {
 
     public static void removeAllFilters() {
         filterMap.clear();
-        filterMapHistory.clear();
+        //filterMapHistory.clear();
     }
 
     public static void addFilterListener(FiltersChangedListener l, boolean first) {
@@ -160,26 +162,40 @@ public class FilterController {
         activeListeners.add(l);
     }
 
-    public static int getCurrentFilterSetID() {
+    public synchronized static int getCurrentFilterSetID() {
         return filterSetID;
     }
 
     //public static Map<String,Filter> getFilterSet(int filterSetID) {
-    public static Map<Integer, Map<String, Filter>> getFilterSet(int filterSetID) {
+    /*public static Map<Integer, Map<String, Filter>> getFilterSet(int filterSetID) {
         return filterMapHistory.get(filterSetID);
-    }
+    }*/
 
     public static void fireFiltersChangedEvent() {
         fireFiltersChangedEvent(false);
     }
     
-    private static void fireFiltersChangedEvent(boolean force) {
+    private synchronized static void fireFiltersChangedEvent(boolean force) {
         
         if(!autoCommit && !force) return;
 
         filterSetID++;
-        filterMapHistory.put(filterSetID,filterMap);
-
+        //filterMapHistory.put(filterSetID,filterMap);
+        
+        System.out.println("S" + filterSetID);
+        
+        Thread t = new Thread(){
+            public void run(){
+                try {
+                    ResultController.getInstance().getNumFilteredVariants();
+                } catch (NonFatalDatabaseException ex) {
+                    Logger.getLogger(FilterController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        };
+        t.setPriority(Thread.MAX_PRIORITY);//Make sure this thread executes immediately. Is this good enough?
+        t.start();
+        
         //cancel any running workers from last filter
         for (FiltersChangedListener l : activeListeners) {
             try {
@@ -198,7 +214,7 @@ public class FilterController {
                 LOG.log(Level.SEVERE, null, e);
             }
         }
-
+        
         //current view should be refreshed if it relies on filters
         //ViewController.getInstance().refreshView();
     }
@@ -348,5 +364,5 @@ public class FilterController {
         setLastFilter(f, action);
         fireFiltersChangedEvent(true);
     }
-
+    
 }
