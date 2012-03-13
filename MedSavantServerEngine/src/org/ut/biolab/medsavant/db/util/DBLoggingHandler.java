@@ -47,7 +47,7 @@ public class DBLoggingHandler extends Handler {
             query.addColumn(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_EVENT), lr.getLevel());
             query.addColumn(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION), lr.getMessage());
             query.addColumn(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), new Timestamp(new Date().getTime()));
-            ConnectionController.executeUpdate(sessionId, query.toString());
+            ConnectionController.executePreparedUpdate(sessionId, query.toString());
         } catch (SQLException x) {
             LOG.log(Level.SEVERE, null, x);
         }

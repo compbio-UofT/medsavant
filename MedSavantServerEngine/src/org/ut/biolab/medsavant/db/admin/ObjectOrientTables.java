@@ -71,9 +71,7 @@ public class ObjectOrientTables {
 
         String sessionId = SessionController.getInstance().registerNewSession(username, password, dbname);
 
-        Connection conn = ConnectionController.connectPooled(sessionId);
-
-        ResultSet rs = conn.createStatement().executeQuery("SHOW TABLES in " + dbname);
+        ResultSet rs = ConnectionController.executeQuery(sessionId, "SHOW TABLES in " + dbname);
 
         bw.write("package " + tableSchemaClass.getPackage().getName() + ";\n\n");
         bw.write("import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;\n");

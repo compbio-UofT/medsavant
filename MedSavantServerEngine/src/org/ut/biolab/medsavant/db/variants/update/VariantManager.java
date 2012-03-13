@@ -83,6 +83,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
         }   
         
         ServerLogger.log(VariantManager.class, "Publish complete");
+        c.close();
     }
     
     
@@ -100,6 +101,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
         ServerLogger.log(VariantManager.class, "Publishing table");
         ProjectQueryUtil.getInstance().publishVariantTable(c, projectID, referenceID, updateID);  
         ServerLogger.log(VariantManager.class, "Publish complete");
+        c.close();
     }
     
     
@@ -471,7 +473,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
                 + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"'"
                 + " LINES TERMINATED BY '\\r\\n' ";
         String queryString = query.toString().replace("FROM", intoString + "FROM");
-        ConnectionController.connectPooled(sessionId).createStatement().execute(queryString);
+        ConnectionController.execute(sessionId, queryString);
         System.out.println("done: " + (System.nanoTime()-start));
                
         

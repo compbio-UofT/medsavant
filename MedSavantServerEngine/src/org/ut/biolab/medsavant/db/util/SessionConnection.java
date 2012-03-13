@@ -5,6 +5,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.ut.biolab.medsavant.db.connection.ConnectionDriver;
 
 /**
  * @author mfiume
@@ -15,11 +18,18 @@ public class SessionConnection {
     private String dbName;
     private final String user;
     private final String pw;
+    
+    private ConnectionDriver driver;
 
     public SessionConnection(String user, String pw, String dbname) {
         this.user = user;
         this.pw = pw;
         this.dbName = dbname;
+        try {
+            this.driver = new ConnectionDriver("com.mysql.jdbc.Driver", String.format("jdbc:mysql://%s:%d/%s?%s", ConnectionController.getHost(), ConnectionController.getPort(), dbname, "enableQueryTimeouts=false"), user, pw);
+        } catch (Exception ex) {
+            Logger.getLogger(SessionConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } 
     }
 
     public void disconnectAll() {
@@ -34,11 +44,13 @@ public class SessionConnection {
 
     public Connection connectPooled() throws SQLException {
 
-        if (lastConnection == null || lastConnection.isClosed()) {
+        return driver.connect();
+        
+        /*if (lastConnection == null || lastConnection.isClosed()) {
             lastConnection = connectUnpooled(dbName,user,pw);
         }
 
-        return lastConnection;
+        return lastConnection;*/
     }
 
     public Connection connectUnpooled(String dbname, String userName, String password) throws SQLException {

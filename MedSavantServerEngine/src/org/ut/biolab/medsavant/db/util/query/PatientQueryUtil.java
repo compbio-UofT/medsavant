@@ -91,7 +91,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER),
                 table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Object[]> result = new ArrayList<Object[]>();
         while (rs.next()){
@@ -116,7 +116,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addFromTable(table.getTable());
         query.addAllColumns();
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Object[]> result = new ArrayList<Object[]>();
         while (rs.next()){
@@ -143,7 +143,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addAllColumns();
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID), patientId));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         rs.next();
         Object[] v = new Object[rs.getMetaData().getColumnCount()];
@@ -166,7 +166,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         query.addOrdering(table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), Dir.ASCENDING);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<String> result = new ArrayList<String>();
 
@@ -208,7 +208,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         query.addOrdering(table.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), Dir.ASCENDING);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<CustomField> result = new ArrayList<CustomField>();
         while(rs.next()){
@@ -231,7 +231,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addColumns(table.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PATIENT_TABLENAME));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         rs.next();
         return rs.getString(1);
@@ -242,6 +242,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         String patientTableName = DBSettings.createPatientTableName(projectid);
         Connection c = ConnectionController.connectPooled(sid);
+        
 
         //create basic fields
         String query =
@@ -290,6 +291,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         c.commit();
         c.setAutoCommit(true);
+        c.close();
 
     }
 
@@ -311,6 +313,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         c.commit();
         c.setAutoCommit(true);
+        c.close();
     }
 
     public void addPatient(String sid,int projectId, List<CustomField> cols, List<String> values) throws SQLException, RemoteException {
@@ -323,7 +326,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             query.addColumn(new DbColumn(table.getTable(), cols.get(i).getColumnName(), cols.get(i).getColumnTypeString(), 100), values.get(i));
         }
 
-        ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
+        ConnectionController.executeUpdate(sid,  query.toString());
     }
 
     public Map<Object, List<String>> getDNAIdsForValues(String sid,int projectId, String columnName) throws NonFatalDatabaseException, SQLException, RemoteException {
@@ -340,8 +343,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.setIsDistinct(true);
         q.addColumns(currentDNAId, testColumn);
 
-        Statement s = ConnectionController.connectPooled(sid).createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         Map<Object, List<String>> map = new HashMap<Object, List<String>>();
         while(rs.next()){
@@ -376,8 +378,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCondition(BinaryCondition.greaterThan(testColumn, r.getMin(), true));
         q.addCondition(BinaryCondition.lessThan(testColumn, r.getMax(), true));
 
-        Statement s = ConnectionController.connectPooled(sid).createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<String> result = new ArrayList<String>();
         while(rs.next()){
@@ -407,8 +408,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         q.addCondition(ComboCondition.or(conditions));
 
-        Statement s = ConnectionController.connectPooled(sid).createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<String> result = new ArrayList<String>();
         while(rs.next()){
@@ -533,6 +533,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         c.commit();
         c.setAutoCommit(true);
+        c.close();
     }
 
     /*
@@ -551,7 +552,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         query.addCondition(ComboCondition.or(conditions));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Object> result = new ArrayList<Object>();
         while(rs.next()){
@@ -591,7 +592,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
 
         String s = query.toString();
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<String> result = new ArrayList<String>();
         while(rs.next()){
@@ -621,7 +622,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID), family_id));
 
         String s = query.toString();
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Object[]> result = new ArrayList<Object[]>();
         while(rs.next()){
@@ -658,7 +659,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q1.addColumns(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID));
         q1.addCondition(BinaryCondition.equalTo(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID), pid));
 
-        ResultSet rs1 = ConnectionController.connectPooled(sid).createStatement().executeQuery(q1.toString());
+        ResultSet rs1 = ConnectionController.executeQuery(sid, q1.toString());
 
         if (!rs1.next()) {
             return null;
@@ -679,7 +680,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         q1.setIsDistinct(true);
 
-        ResultSet rs1 = ConnectionController.connectPooled(sid).createStatement().executeQuery(q1.toString());
+        ResultSet rs1 = ConnectionController.executeQuery(sid, q1.toString());
 
         List<String> ids = new ArrayList<String>();
         while (rs1.next()) {
@@ -705,7 +706,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q1.addCondition(BinaryCondition.equalTo(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID), familyId));
 
 
-        ResultSet rs1 = ConnectionController.connectPooled(sid).createStatement().executeQuery(q1.toString());
+        ResultSet rs1 = ConnectionController.executeQuery(sid, q1.toString());
 
         Map<String,String> patientIDToDNAIDMap = new HashMap<String,String>();
 
@@ -728,7 +729,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         DeleteQuery query = new DeleteQuery(table.getTable());
 
-        ConnectionController.connectPooled(sid).createStatement().execute(query.toString());
+        ConnectionController.execute(sid, query.toString());
     }
 
     public List<String> parseDnaIds(String s){
@@ -749,7 +750,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         //TODO: make a prepared statement
         String query = "SELECT dna_ids FROM " + getPatientTablename(sid,projectid)  + " WHERE " + MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO + "='" + id + "';";
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query);
+        ResultSet rs = ConnectionController.executeQuery(sid, query);
 
         List<String> results = new ArrayList<String>();
         while (rs.next()) {

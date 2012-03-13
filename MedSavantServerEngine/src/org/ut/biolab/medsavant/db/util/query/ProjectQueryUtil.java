@@ -70,7 +70,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addFromTable(table.getTable());
         query.addColumns(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<String> results = new ArrayList<String>();
 
@@ -89,7 +89,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addFromTable(table.getTable());
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), projectName));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         return rs.next();
     }
@@ -102,7 +102,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addColumns(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), projectName));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs.next()) {
             return rs.getInt(1);
@@ -121,7 +121,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), project_id),
                 BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), ref_id)));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query1.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query1.toString());
 
         while (rs.next()) {
             String tableName = rs.getString(1);
@@ -132,7 +132,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query2.addCondition(ComboCondition.and(
                 BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), project_id),
                 BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), ref_id)));
-        ConnectionController.connectPooled(sid).createStatement().execute(query2.toString());
+        ConnectionController.execute(sid, query2.toString());
     }
 
     public String getProjectName(String sid, int projectid) throws SQLException {
@@ -143,7 +143,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addColumns(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
 
-        ResultSet rs1 = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs1 = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs1.next()) {
             return rs1.getString(1);
@@ -220,6 +220,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             c.createStatement().execute(query1.toString());
         } 
 
+        c.close();
         return variantTableName;
     }
     
@@ -266,7 +267,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
         
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs.next()) {
             return rs.getString(1);
@@ -291,7 +292,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
         
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs.next()) {
             return new Object[]{rs.getString(1), rs.getString(2), rs.getFloat(3)};
@@ -310,7 +311,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
         
-        ConnectionController.connectPooled(sid).createStatement().execute(query.toString());
+        ConnectionController.execute(sid, query.toString());
     }
     
     public float getMultiplier(String sid, String table, String subTable) throws SQLException, RemoteException{
@@ -326,7 +327,8 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         InsertQuery query = new InsertQuery(table.getTable());
         query.addColumn(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), name);
 
-        PreparedStatement stmt = (ConnectionController.connectPooled(sid)).prepareStatement(query.toString(),
+        Connection c = ConnectionController.connectPooled(sid);
+        PreparedStatement stmt = c.prepareStatement(query.toString(),
                 Statement.RETURN_GENERATED_KEYS);
 
         stmt.execute();
@@ -337,6 +339,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         PatientQueryUtil.getInstance().createPatientTable(sid, projectid, fields);
 
+        c.close();
         return projectid;
     }
 
@@ -348,7 +351,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addColumns(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), projectName));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs.next()) {
             removeProject(sid, rs.getInt(1));
@@ -359,7 +362,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
 
         Connection c = ConnectionController.connectPooled(sid);
-
+        
         TableSchema projectTable = MedSavantDatabase.ProjectTableSchema;
         TableSchema patientMapTable = MedSavantDatabase.PatienttablemapTableSchema;
         TableSchema patientFormatTable = MedSavantDatabase.PatientformatTableSchema;
@@ -376,7 +379,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q2.addColumns(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PATIENT_TABLENAME));
         q2.addCondition(BinaryConditionMS.equalTo(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
 
-        ResultSet rs1 = ConnectionController.connectPooled(sid).createStatement().executeQuery(q2.toString());
+        ResultSet rs1 = ConnectionController.executeQuery(sid, q2.toString());
 
         rs1.next();
         String patientTableName = rs1.getString(PatientTablemapTableSchema.COLUMNNAME_OF_PATIENT_TABLENAME);
@@ -398,7 +401,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q5.addColumns(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME));
         q5.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
 
-        ResultSet rs2 = c.createStatement().executeQuery(q5.toString());
+        ResultSet rs2 = ConnectionController.executeQuery(sid, q5.toString());
 
         while (rs2.next()) {
             String variantTableName = rs2.getString(1);
@@ -415,7 +418,8 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         for (Integer cohortId : cohortIds) {
             CohortQueryUtil.getInstance().removeCohort(sid, cohortId);
         }
-
+        
+        c.close();
     }
 
     public void setAnnotations(String sid, int projectid, int refid, int updateid, String annotation_ids) throws SQLException {
@@ -430,7 +434,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateid));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), tablename)); //should only affect published table
 
-        (ConnectionController.connectPooled(sid)).createStatement().execute(query.toString());
+        ConnectionController.execute(sid, query.toString());
     }
 
     public List<ProjectDetails> getProjectDetails(String sid, int projectId) throws SQLException {
@@ -449,7 +453,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
         query.addOrdering(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Integer> refs = new ArrayList<Integer>();
         List<ProjectDetails> result = new ArrayList<ProjectDetails>();
@@ -477,7 +481,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addSetClause(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), newName);
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
 
-        ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
+        ConnectionController.executeUpdate(sid,  query.toString());
     }
 
     public void setCustomVariantFields(String sid, int projectId, int referenceId, int updateId, List<CustomField> fields) throws SQLException {
@@ -502,7 +506,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         c.commit();
         c.setAutoCommit(true);
-
+        c.close();
     }
 
     //Get the most up-to-date custom fields, as specified in variant_format table
@@ -517,7 +521,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
         query.addOrdering(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_POSITION), Dir.ASCENDING);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<CustomField> result = new ArrayList<CustomField>();
         while (rs.next()) {
@@ -545,7 +549,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
         
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
         
         rs.next();
         return rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID);       
@@ -585,7 +589,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 projectTable.getTable(),
                 BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID)));
         
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());       
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());       
         
         Map<Integer, Map<Integer, ProjectDetails>> map = new HashMap<Integer, Map<Integer, ProjectDetails>>();
         
@@ -650,7 +654,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 BinaryCondition.lessThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMax, true), 
                 BinaryCondition.greaterThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMin, true)));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
                
         while(rs.next()){
             int updateId = rs.getInt(1);
@@ -664,7 +668,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId)); 
             dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
             dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
-            ConnectionController.connectPooled(sid).createStatement().execute(dq1.toString());
+            ConnectionController.execute(sid, dq1.toString());
 
             //remove from variant format
             TableSchema formatTable = MedSavantDatabase.VariantformatTableSchema;

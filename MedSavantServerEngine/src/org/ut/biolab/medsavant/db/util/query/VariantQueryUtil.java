@@ -124,8 +124,6 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             query.addOrderings(order);
         }       
         
-        Connection conn = ConnectionController.connectPooled(sessionId);
-       
         String queryString = query.toString();
         if(limit != -1){
             if(start != -1){
@@ -135,7 +133,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             }
         }
         System.out.println(queryString);
-        ResultSet rs = conn.createStatement().executeQuery(queryString);
+        ResultSet rs = ConnectionController.executeQuery(sessionId, queryString);
 
         ResultSetMetaData rsMetaData = rs.getMetaData();
         int numberColumns = rsMetaData.getColumnCount();
@@ -171,7 +169,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addCustomColumns(FunctionCall.min().addColumnParams(table.getDBColumn(columnname)));
         query.addCustomColumns(FunctionCall.max().addColumnParams(table.getDBColumn(columnname)));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
         rs.next();
         
         double[] result = new double[]{rs.getDouble(1), rs.getDouble(2)};
@@ -213,7 +211,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addColumns(table.getDBColumn(columnname));
         //query.addOrdering(table.getDBColumn(columnname), Dir.ASCENDING);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + (cache ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + (cache ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
         
         List<String> result = new ArrayList<String>();
         while (rs.next()) {
@@ -278,7 +276,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         rs.next();
         return rs.getInt(1);
@@ -340,7 +338,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         String query = q.toString().replace("COUNT(*)", "COUNT(*), " + round);
         query += " GROUP BY m ORDER BY m ASC";
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query);
+        ResultSet rs = ConnectionController.executeQuery(sid, query);
 
         Map<Range, Long> results = new TreeMap<Range, Long>();
         while (rs.next()) {
@@ -383,7 +381,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         addConditionsToQuery(q, conditions);
         q.addGroupings(column);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         Map<String, Integer> map = new HashMap<String, Integer>();
 
@@ -456,8 +454,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         String query = queryBase.toString().replace("COUNT(*)", "COUNT(*)," + roundFunction) + "," + roundFunction;
 
         long start = System.nanoTime();
-        Connection conn = ConnectionController.connectPooled(sid);
-        ResultSet rs = conn.createStatement().executeQuery(query);
+        ResultSet rs = ConnectionController.executeQuery(sid, query);
         System.out.println(query);
         System.out.println("  time:" + (System.nanoTime() - start)/1000000000);
         
@@ -565,7 +562,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         // TODO: for some reason the connection is closed going into this function
         Connection c = ConnectionController.connectPooled(sid);
-
+        
         Statement s = c.createStatement();
         s.setQueryTimeout(60 * 60); // 1 hour
         s.execute(
@@ -573,6 +570,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 + "INTO TABLE " + tableName + " "
                 + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
                 + "LINES TERMINATED BY '\\r\\n';");
+        c.close();
     }
 
     public int getNumPatientsWithVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int start, int end) throws SQLException, RemoteException {
@@ -595,8 +593,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         String query = q.toString();
         query = query.replaceFirst("'", "").replaceFirst("'", "");
 
-        Statement s = ConnectionController.connectPooled(sid).createStatement();
-        ResultSet rs = s.executeQuery(query);
+        ResultSet rs = ConnectionController.executeQuery(sid, query);
         rs.next();
 
         int numrows = rs.getInt(1);
@@ -631,7 +628,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         query.addCondition(ComboCondition.or(dnaIdConditions));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + ((limit == -1) ? "" : (" LIMIT " + limit)));
 
         while (rs.next()) {
             results.get(rs.getString(1)).add(rs.getString(2) + ":" + (rs.getLong(3) - 100) + "-" + (rs.getLong(3) + 100));
@@ -690,7 +687,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
             q.addCondition(ComboCondition.or(dnaIDConditions));
 
-            ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+            ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
             while (rs.next()) {
                 dnaIDsToCountMap.put(rs.getString(1), rs.getInt(2));
@@ -759,7 +756,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         DeleteQuery q = new DeleteQuery(table.getTable());
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId));
 
-        ConnectionController.connectPooled(sid).createStatement().execute(q.toString());
+        ConnectionController.execute(sid, q.toString());
     }
 
     public List<String> getDistinctTagNames(String sid) throws SQLException {
@@ -771,7 +768,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.setIsDistinct(true);
         q.addColumns(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGKEY));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<String> tagNames = new ArrayList<String>();
         while (rs.next()) {
@@ -791,7 +788,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addColumns(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGVALUE));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGKEY), tagName));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<String> tagValues = new ArrayList<String>();
         while (rs.next()) {
@@ -838,7 +835,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addGroupings(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID));
         q.addHaving(BinaryCondition.equalTo(FunctionCall.countAll(), variantTags.length-duplicates));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<Integer> results = new ArrayList<Integer>();
         while (rs.next()) {
@@ -862,7 +859,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID),
                 table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID));
 
-        ResultSet idRs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet idRs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Integer> uploadIds = new ArrayList<Integer>();
         List<Integer> fileIds = new ArrayList<Integer>();
@@ -899,7 +896,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCondition(BinaryCondition.equalTo(fileTable.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), pendingTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID)));
         q.addCondition(ComboCondition.or(idConditions));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<SimpleVariantFile> result = new ArrayList<SimpleVariantFile>();
         while(rs.next()){
@@ -924,7 +921,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_TAGVALUE));
         q.addCondition(BinaryCondition.equalTo(tagTable.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<String[]> result = new ArrayList<String[]>();
         while(rs.next()){
@@ -950,7 +947,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         Set<StarredVariant> result = new HashSet<StarredVariant>();
         while(rs.next()){
@@ -1000,6 +997,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         c.commit();
         c.setAutoCommit(true);
+        c.close();
 
         return numStarred;
     }
@@ -1035,7 +1033,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), variantId));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), user));
 
-        ConnectionController.connectPooled(sid).createStatement().execute(q.toString());
+        ConnectionController.execute(sid, q.toString());
     }
 
     private int getTotalNumStarred(String sid, int projectId, int referenceId) throws SQLException {
@@ -1048,7 +1046,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         rs.next();
         return rs.getInt(1);
@@ -1063,7 +1061,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileId);
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME), fileName);
 
-        ConnectionController.connectPooled(sid).createStatement().executeUpdate(q.toString());
+        ConnectionController.executeUpdate(sid,  q.toString());
     }
 
     public void removeEntryFromFileTable(String sid, int uploadId, int fileId) throws SQLException {
@@ -1076,7 +1074,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             BinaryCondition.equalTo(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileId)
         }));
 
-        ConnectionController.connectPooled(sid).createStatement().execute(q.toString());
+        ConnectionController.execute(sid, q.toString());
     }
        
     public Map<SimplePatient, Integer> getPatientHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, List<SimplePatient> patients) throws SQLException, RemoteException{
@@ -1163,7 +1161,7 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         q.addCondition(ComboCondition.and(new Condition[]{dnaCondition, c}));
         q.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
         
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
         
         while(rs.next()){
             int value = (int)(rs.getInt(1) * multiplier);

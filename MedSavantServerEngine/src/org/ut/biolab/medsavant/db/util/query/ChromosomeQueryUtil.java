@@ -60,7 +60,7 @@ public class ChromosomeQueryUtil extends java.rmi.server.UnicastRemoteObject imp
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ChromosomeTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
         query.addOrdering(table.getDBColumn(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_ID), Dir.ASCENDING);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Chromosome> result = new ArrayList<Chromosome>();
         while(rs.next()){

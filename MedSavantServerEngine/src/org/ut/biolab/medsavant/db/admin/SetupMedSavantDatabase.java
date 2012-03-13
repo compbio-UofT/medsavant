@@ -89,6 +89,8 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
         DBUtil.dropTable(sessionId,MedSavantDatabase.ChromosomeTableSchema.getTablename());
         DBUtil.dropTable(sessionId,MedSavantDatabase.PatientformatTableSchema.getTablename());
         DBUtil.dropTable(sessionId,MedSavantDatabase.AnnotationformatTableSchema.getTablename());
+        
+        c.close();
     }
 
     private static void createTables(String sessionId) throws SQLException {
@@ -316,7 +318,8 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
                 + "`file_name` varchar(500) COLLATE latin1_bin NOT NULL,"
                 + "UNIQUE KEY `unique` (`upload_id`,`file_id`)"
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
-        
+     
+        c.close();
     }
 
     /**
@@ -350,6 +353,7 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
         for (String user: UserQueryUtil.getInstance().getUserNames(sessionId)) {
             UserQueryUtil.getInstance().grantPrivileges(sessionId,user, UserQueryUtil.getInstance().getUserLevel(sessionId, user));
         }
+        c.close();
     }
 
     private static void addDbSettings(String sid, String versionString) throws SQLException, RemoteException {

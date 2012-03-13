@@ -27,6 +27,7 @@ import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
 
 import java.rmi.RemoteException;
+import java.sql.Connection;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
@@ -72,11 +73,13 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);
         query.addColumn(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_USER), user);
 
-        PreparedStatement stmt = (ConnectionController.connectPooled(sid)).prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
+        Connection c = ConnectionController.connectPooled(sid);
+        PreparedStatement stmt = c.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
         stmt.execute();
 
         ResultSet rs = stmt.getGeneratedKeys();
         rs.next();
+        c.close();
         return rs.getInt(1);
     }
 
@@ -86,7 +89,7 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
         DeleteQuery query = new DeleteQuery(table.getTable());
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
 
-        ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
+        ConnectionController.executeUpdate(sid,  query.toString());
     }
 
     public void setAnnotationLogStatus(String sid,int updateId, Status status) throws SQLException {
@@ -96,7 +99,7 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
         query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_STATUS), AnnotationLog.statusToInt(status));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
 
-        ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
+        ConnectionController.executeUpdate(sid,  query.toString());
     }
 
     public void setAnnotationLogStatus(String sid,int updateId, Status status, Timestamp sqlDate) throws SQLException {
@@ -107,7 +110,7 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
         query.addSetClause(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_UPLOAD_ID), updateId));
 
-        ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
+        ConnectionController.executeUpdate(sid,  query.toString());
     }
 
 }

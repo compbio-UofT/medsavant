@@ -31,6 +31,7 @@ import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.rmi.RemoteException;
+import java.sql.Connection;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.xml.sax.SAXException;
 
@@ -81,7 +82,7 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
                     annTable.getDBColumn(AnnotationTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                     refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Annotation> results = new ArrayList<Annotation>();
 
@@ -116,7 +117,7 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
                     refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
         query.addCondition(BinaryConditionMS.equalTo(annTable.getDBColumn(AnnotationTableSchema.COLUMNNAME_OF_ANNOTATION_ID), annotation_id));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         rs.next();
         Annotation result = new Annotation(
@@ -148,7 +149,7 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
 
 
         String a = query.toString();
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         rs.next();
         String annotationString = rs.getString(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS);
@@ -174,7 +175,7 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
         query1.addAllColumns();
         query1.addCondition(BinaryConditionMS.equalTo(annTable.getDBColumn(AnnotationTableSchema.COLUMNNAME_OF_ANNOTATION_ID), annotationId));
 
-        ResultSet rs1 = ConnectionController.connectPooled(sid).createStatement().executeQuery(query1.toString());
+        ResultSet rs1 = ConnectionController.executeQuery(sid, query1.toString());
 
         rs1.next();
 
@@ -194,7 +195,7 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
         query2.addCondition(BinaryConditionMS.equalTo(annFormatTable.getDBColumn(AnnotationFormatTableSchema.COLUMNNAME_OF_ANNOTATION_ID), annotationId));
         query2.addOrdering(annFormatTable.getDBColumn(AnnotationFormatTableSchema.COLUMNNAME_OF_POSITION), Dir.ASCENDING);
 
-        ResultSet rs2 = ConnectionController.connectPooled(sid).createStatement().executeQuery(query2.toString());
+        ResultSet rs2 = ConnectionController.executeQuery(sid, query2.toString());
 
         List<CustomField> fields = new ArrayList<CustomField>();
         while(rs2.next()){
@@ -224,7 +225,8 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
         query.addColumn(table.getDBColumn(AnnotationTableSchema.COLUMNNAME_OF_HAS_ALT), hasAlt);
         query.addColumn(table.getDBColumn(AnnotationTableSchema.COLUMNNAME_OF_TYPE), type);
 
-        PreparedStatement stmt = (ConnectionController.connectPooled(sid)).prepareStatement(
+        Connection c = ConnectionController.connectPooled(sid);
+        PreparedStatement stmt = c.prepareStatement(
                 query.toString(),
                 Statement.RETURN_GENERATED_KEYS);
 
@@ -234,6 +236,7 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
 
         int annotid = res.getInt(1);
 
+        c.close();
         return annotid;
     }
 
@@ -249,7 +252,7 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
         query.addColumn(table.getDBColumn(AnnotationFormatTableSchema.COLUMNNAME_OF_ALIAS), alias);
         query.addColumn(table.getDBColumn(AnnotationFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), description);
 
-        ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
+        ConnectionController.executeUpdate(sid,  query.toString());
     }
 
 }

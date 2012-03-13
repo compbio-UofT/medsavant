@@ -93,7 +93,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
         query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID)));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<SimplePatient> result = new ArrayList<SimplePatient>();
         while(rs.next()){
@@ -117,7 +117,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query1.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
         query1.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortTableSchema.COLUMNNAME_OF_PROJECT_ID), patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID)));
 
-        ResultSet rs = c.createStatement().executeQuery(query1.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query1.toString());
         rs.next();
         String patientTablename = rs.getString(1);
 
@@ -130,7 +130,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
         query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID));
 
-        rs = c.createStatement().executeQuery(query2.toString());
+        rs = ConnectionController.executeQuery(sid, query2.toString());
 
         List<String> result = new ArrayList<String>();
         while(rs.next()){
@@ -160,7 +160,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
     }
 
     public List<String> getIndividualFieldFromCohort(String sid,int cohortId, String columnname) throws SQLException, RemoteException {
-        Connection c = ConnectionController.connectPooled(sid);
+        
         TableSchema patientMapTable = MedSavantDatabase.PatienttablemapTableSchema;
         TableSchema cohortTable = MedSavantDatabase.CohortTableSchema;
         TableSchema cohortMembershipTable = MedSavantDatabase.CohortmembershipTableSchema;
@@ -173,7 +173,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query1.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
         query1.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortTableSchema.COLUMNNAME_OF_PROJECT_ID), patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID)));
 
-        ResultSet rs = c.createStatement().executeQuery(query1.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query1.toString());
         rs.next();
         String patientTablename = rs.getString(1);
 
@@ -186,7 +186,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
         query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID)));
 
-        rs = c.createStatement().executeQuery(query2.toString());
+        rs = ConnectionController.executeQuery(sid, query2.toString());
 
         List<String> result = new ArrayList<String>();
         while(rs.next()){
@@ -221,6 +221,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
 
         c.commit();
         c.setAutoCommit(true);
+        c.close();
     }
 
     public void removePatientsFromCohort(String sid,int[] patientIds, int cohortId) throws SQLException {
@@ -239,6 +240,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
 
         c.commit();
         c.setAutoCommit(true);
+        c.close();
     }
 
     public List<Cohort> getCohorts(String sid,int projectId) throws SQLException {
@@ -249,7 +251,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query.addAllColumns();
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Cohort> result = new ArrayList<Cohort>();
         while(rs.next()){
@@ -265,7 +267,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query.addColumn(table.getDBColumn(CohortTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId);
         query.addColumn(table.getDBColumn(CohortTableSchema.COLUMNNAME_OF_NAME), name);
 
-        ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
+        ConnectionController.executeUpdate(sid,  query.toString());
     }
 
     public void removeCohort(String sid,int cohortId) throws SQLException {
@@ -273,6 +275,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         TableSchema cohortMembershipTable = MedSavantDatabase.CohortmembershipTableSchema;
         TableSchema cohortTable = MedSavantDatabase.CohortTableSchema;
         Connection c = ConnectionController.connectPooled(sid);
+        
 
         //remove all entries from membership
         DeleteQuery query1 = new DeleteQuery(cohortMembershipTable.getTable());
@@ -284,6 +287,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query2.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
         c.createStatement().execute(query2.toString());
 
+        c.close();
     }
 
     public void removeCohorts(String sid,Cohort[] cohorts) throws SQLException {
@@ -300,7 +304,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query.addColumns(table.getDBColumn(CohortTableSchema.COLUMNNAME_OF_COHORT_ID));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Integer> result = new ArrayList<Integer>();
         while(rs.next()){
@@ -314,13 +318,12 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         List<Integer> cohortIds = getCohortIds(sid,projectId);
 
         TableSchema table = MedSavantDatabase.CohortmembershipTableSchema;
-        Connection c = ConnectionController.connectPooled(sid);
-
+        
         for(Integer cohortId : cohortIds){
             DeleteQuery query = new DeleteQuery(table.getTable());
             query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
             query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientId));
-            c.createStatement().executeUpdate(query.toString());
+            ConnectionController.executeUpdate(sid, query.toString());
         }
     }
 

@@ -56,7 +56,6 @@ public class VariantManagerUtils {
     }
 
     public static void variantsToFile(String sid, String tableName, File file, String conditions, boolean complete) throws SQLException {
-        Connection c = (ConnectionController.connectPooled(sid));
         String query;
         
         if(complete) {
@@ -78,7 +77,7 @@ public class VariantManagerUtils {
         
         System.err.println(query);
 
-        c.createStatement().executeQuery(query);
+        ConnectionController.executeQuery(sid, query);
     }
 
     public static void removeTemp(String filename) {
@@ -92,9 +91,7 @@ public class VariantManagerUtils {
     }
 
     public static void dropTableIfExists(String sid, String tableName) throws SQLException {
-        Connection c = (ConnectionController.connectPooled(sid));
-        c.createStatement().execute(
-                "DROP TABLE IF EXISTS " + tableName + ";");
+        ConnectionController.execute(sid, "DROP TABLE IF EXISTS " + tableName + ";");
     }
 
     public static void splitFileOnColumn(File splitDir, String outputFilename, int i) throws FileNotFoundException, IOException {

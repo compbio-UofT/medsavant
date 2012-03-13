@@ -121,7 +121,6 @@ public class ResultController implements FiltersChangedListener {
                         ProjectController.getInstance().getCurrentProjectId() != projectId_remaining ||
                         ReferenceController.getInstance().getCurrentReferenceId() != referenceId_remaining || 
                         !SettingsController.getInstance().getDBName().equals(dbName_remaining)) {
-                    System.out.println("getNumFilteredVariants");
                     updateTotalNumVariantsRemainingIsRequired = false;
                     projectId_remaining = ProjectController.getInstance().getCurrentProjectId();
                     referenceId_remaining = ReferenceController.getInstance().getCurrentReferenceId();
@@ -133,9 +132,7 @@ public class ResultController implements FiltersChangedListener {
                             ReferenceController.getInstance().getCurrentReferenceId(), 
                             FilterController.getQueryFilterConditions());
                     filterSetId_remaining = tempFilterId; //temp not really necessary as this is synched...
-                    System.out.println("...X...");
                 }
-                System.out.println("return");
                 return totalNumVariantsRemaining;
             } catch (SQLException ex) {
                 MiscUtils.checkSQLException(ex);

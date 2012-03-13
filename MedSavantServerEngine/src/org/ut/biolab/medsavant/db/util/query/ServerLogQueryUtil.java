@@ -68,7 +68,7 @@ public class ServerLogQueryUtil extends java.rmi.server.UnicastRemoteObject impl
             query.addColumn(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_EVENT), t.toString());
             query.addColumn(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION), description);
             query.addColumn(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), sqlDate);
-            ConnectionController.connectPooled(sid).createStatement().execute(query.toString());
+            ConnectionController.execute(sid, query.toString());
 
         } catch (SQLException ex) {
             DBLogger.log(ex.getLocalizedMessage(), Level.SEVERE);
@@ -86,7 +86,7 @@ public class ServerLogQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         //query.addCustomOrderings(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP));
         query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT 1");
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT 1");
 
         if (rs.next()) {
             Date d = new Date(rs.getTimestamp(1).getTime());

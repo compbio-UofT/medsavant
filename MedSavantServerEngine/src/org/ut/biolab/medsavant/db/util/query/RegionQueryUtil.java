@@ -118,6 +118,7 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
             conn.commit();
         }
         conn.setAutoCommit(true);
+        conn.close();
     }
 
     public void removeRegionList(String sid,int regionSetId) throws SQLException {
@@ -125,17 +126,15 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         TableSchema regionMemberTable = MedSavantDatabase.RegionsetmembershipTableSchema;
         TableSchema regionSetTable = MedSavantDatabase.RegionsetTableSchema;
 
-        Connection c = ConnectionController.connectPooled(sid);
-
         //remove members
         DeleteQuery q1 = new DeleteQuery(regionMemberTable.getTable());
         q1.addCondition(BinaryConditionMS.equalTo(regionMemberTable.getDBColumn(RegionSetMembershipTableSchema.COLUMNNAME_OF_REGION_SET_ID), regionSetId));
-        c.createStatement().execute(q1.toString());
+        ConnectionController.execute(sid, q1.toString());
 
         //remove from region regionSetTable
         DeleteQuery q2 = new DeleteQuery(regionSetTable.getTable());
         q2.addCondition(BinaryConditionMS.equalTo(regionSetTable.getDBColumn(RegionSetTableSchema.COLUMNNAME_OF_REGION_SET_ID), regionSetId));
-        c.createStatement().execute(q2.toString());
+        ConnectionController.execute(sid, q2.toString());
     }
 
     public List<RegionSet> getRegionSets(String sid) throws SQLException {
@@ -146,7 +145,7 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query.addFromTable(table.getTable());
         query.addAllColumns();
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<RegionSet> result = new ArrayList<RegionSet>();
         while(rs.next()){
@@ -164,7 +163,7 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query.addCustomColumns(FunctionCall.countAll());
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(RegionSetMembershipTableSchema.COLUMNNAME_OF_REGION_SET_ID), regionSetId));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         rs.next();
         return rs.getInt(1);
@@ -179,7 +178,7 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query.addAllColumns();
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(RegionSetMembershipTableSchema.COLUMNNAME_OF_REGION_SET_ID), regionSetId));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT " + limit);
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + limit);
 
         List<String> result = new ArrayList<String>();
         while(rs.next()){
@@ -197,7 +196,7 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query.addAllColumns();
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(RegionSetMembershipTableSchema.COLUMNNAME_OF_REGION_SET_ID), regionSetId));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<GenomicRegion> result = new ArrayList<GenomicRegion>();
         while(rs.next()){
@@ -217,7 +216,7 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query.addAllColumns();
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(RegionSetMembershipTableSchema.COLUMNNAME_OF_REGION_SET_ID), regionSetId));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT " + limit);
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + limit);
 
         List<BEDRecord> result = new ArrayList<BEDRecord>();
         while(rs.next()){
@@ -239,7 +238,7 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         query.addAllColumns();
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(RegionSetTableSchema.COLUMNNAME_OF_NAME), name));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
         return rs.next();
     }
 

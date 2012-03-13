@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.db.util;
+package org.ut.biolab.medsavant.db.connection;
 
 import java.rmi.RemoteException;
 import java.sql.Connection;

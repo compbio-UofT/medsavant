@@ -1,6 +1,8 @@
 package org.ut.biolab.medsavant.server;
 
 import java.rmi.RemoteException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -37,7 +39,6 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
 
         int newSessionIdNumber = ++lastSessionId;
         String sessionId = CryptoUtils.encrypt(newSessionIdNumber + "");
-
         //String sessionId = ++lastSessionId + "";
 
         boolean success = ConnectionController.registerCredentials(sessionId, uname, pw, dbname);
@@ -57,8 +58,14 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
     }
 
     @Override
-    public boolean testConnection(String sessionId) throws RemoteException {
-        return ConnectionController.connectPooled(sessionId) != null;
+    public boolean testConnection(String sessionId) throws RemoteException, SQLException {
+        Connection c = ConnectionController.connectPooled(sessionId);
+        if(c == null){
+            return false;
+        } else {
+            c.close();
+            return true;
+        }
     }
 
     public String getUserForSession(String sid) {

@@ -182,8 +182,6 @@ public class FilterController {
         filterSetID++;
         //filterMapHistory.put(filterSetID,filterMap);
         
-        System.out.println("S" + filterSetID);
-        
         Thread t = new Thread(){
             public void run(){
                 try {

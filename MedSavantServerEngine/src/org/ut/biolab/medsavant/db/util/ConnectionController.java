@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.client.api.ClientCallbackAdapter;
+import org.ut.biolab.medsavant.db.connection.MSConnection;
 
 /**
  *
@@ -69,19 +70,19 @@ public class ConnectionController {
             }
         }
 
-        return new MSConnection(DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s?%s", dbhost, port, dbname, props), username, password));
+        return DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s?%s", dbhost, port, dbname, props), username, password);
     }
 
     /**
      * Utility statement to retrieve a prepared statement if one has already been prepared,
      * or to prepare a new statement if the given one is not found in the cache.
      */
-    private static PreparedStatement getPreparedStatement(String sessionId, String query) throws SQLException {
+    private static PreparedStatement getPreparedStatement(Connection c, String sessionId, String query) throws SQLException {
         synchronized(statementCache) {
             if (statementCache.containsKey(query)) {
                 return statementCache.get(query);
             }
-            PreparedStatement result = connectPooled(sessionId).prepareStatement(query);
+            PreparedStatement result = c.prepareStatement(query);
             statementCache.put(query, result);
             return result;
         }
@@ -99,6 +100,25 @@ public class ConnectionController {
         }
         return null;
     }
+    
+    public static ResultSet executeQuery(String sid, String query) throws SQLException {
+        Connection conn = connectPooled(sid);
+        ResultSet rs = conn.createStatement().executeQuery(query);
+        conn.close();
+        return rs;
+    }
+    
+    public static void executeUpdate(String sid, String query) throws SQLException {
+        Connection conn = connectPooled(sid);
+        conn.createStatement().executeUpdate(query);
+        conn.close();
+    }
+    
+    public static void execute(String sid, String query) throws SQLException {
+        Connection conn = connectPooled(sid);
+        conn.createStatement().execute(query);
+        conn.close();
+    }
 
     /**
      * Utility method to make it easier to execute SELECT-style queries.
@@ -108,12 +128,15 @@ public class ConnectionController {
      * @return a ResultSet containing the results of the query
      * @throws SQLException
      */
-    public static ResultSet executeQuery(String sessionId, String query, Object... args) throws SQLException {
-        PreparedStatement st = getPreparedStatement(sessionId, query);
+    public static ResultSet executePreparedQuery(String sessionId, String query, Object... args) throws SQLException {
+        Connection c = connectPooled(sessionId);
+        PreparedStatement st = getPreparedStatement(c, sessionId, query);
         for (int i = 0; i < args.length; i++) {
             st.setObject(i + 1, args[i]);
         }
-        return st.executeQuery();
+        ResultSet rs = st.executeQuery();
+        c.close();
+        return rs;
     }
 
     /**
@@ -124,13 +147,15 @@ public class ConnectionController {
      * @param args arguments for the placeholders
      * @throws SQLException
      */
-    public static void executeUpdate(String sessionId, String query, Object... args) throws SQLException {
-        PreparedStatement st = getPreparedStatement(sessionId, query);
+    public static void executePreparedUpdate(String sessionId, String query, Object... args) throws SQLException {
+        Connection c = connectPooled(sessionId);
+        PreparedStatement st = getPreparedStatement(c, sessionId, query);
         for (int i = 0; i < args.length; i++) {
             st.setObject(i + 1, args[i]);
         }
         LOG.log(Level.INFO, query);
         st.executeUpdate();
+        c.close();
     }
 
     public static boolean registerCredentials(String sessionId, String uname, String pw, String dbname) {
@@ -141,14 +166,12 @@ public class ConnectionController {
         try {
             Connection c = sc.connectPooled();
             if (c != null && !c.isClosed()) {
+                c.close();
                 return true;
-            } else {
-                return false;
             }
-        } catch (Exception e) {
-            return false;
-        }
-
+            c.close();
+        } catch (Exception e) {}
+        return false;
     }
 
     public static void switchDatabases(String sessionId, String dbname) {

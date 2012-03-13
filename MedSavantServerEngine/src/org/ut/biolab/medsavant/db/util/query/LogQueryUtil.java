@@ -68,7 +68,7 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
         query.addCondition(BinaryCondition.notEqualTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
         query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + start + "," + limit);
         
         List<GeneralLog> result = new ArrayList<GeneralLog>();
         while(rs.next()) {
@@ -90,7 +90,7 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
         query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + start + "," + limit);
     
         List<GeneralLog> result = new ArrayList<GeneralLog>();
         while(rs.next()) {
@@ -133,7 +133,7 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
                         updateTable.getDBColumn(VariantPendingUpdateTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                         referenceTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString() + " LIMIT " + start + "," + limit);
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + start + "," + limit);
     
         List<AnnotationLog> result = new ArrayList<AnnotationLog>();
         while (rs.next()) {
@@ -178,7 +178,7 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
             query.addCondition(c);
         }
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
         rs.next();
         return rs.getInt(1);
     }

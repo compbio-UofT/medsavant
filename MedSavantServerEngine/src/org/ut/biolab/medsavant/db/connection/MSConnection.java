@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.db.util;
+package org.ut.biolab.medsavant.db.connection;
 
 import java.sql.Array;
 import java.sql.Blob;
@@ -24,261 +24,295 @@ import java.util.Properties;
 
 /**
  *
- * Wrapper to allow usage of MSStatement. 
- * 
  * @author Andrew
  */
 public class MSConnection implements Connection {
+
+    private ConnectionPool pool;
+    private Connection conn;
+    private boolean inuse;
+    private long timestamp;
     
-    private Connection c;
+    public MSConnection(Connection conn, ConnectionPool pool){
+        this.conn = conn;
+        this.pool = pool;
+        this.inuse = false;
+        this.timestamp = 0;
+    }
     
-    public MSConnection(Connection c){
-        this.c = c;
+    public synchronized boolean lease() {
+       if(inuse)  {
+           return false;
+       } else {
+          inuse=true;
+          timestamp=System.currentTimeMillis();
+          return true;
+       }
+    }
+    public boolean validate() {
+	try {
+            conn.getMetaData();
+        }catch (Exception e) {
+	    return false;
+	}
+	return true;
     }
 
+    public boolean inUse() {
+        return inuse;
+    }
+
+    public long getLastUse() {
+        return timestamp;
+    }
+
+    protected void expireLease() {
+        inuse=false;
+    }
+    
+    @Override
+    public void close() throws SQLException {
+        pool.returnConnection(this);
+    }
+    
     @Override
     public Statement createStatement() throws SQLException {
-        return new MSStatement(c.createStatement());
+        return new MSStatement(conn.createStatement());
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        return c.prepareStatement(sql);
+        return conn.prepareStatement(sql);
     }
 
     @Override
     public CallableStatement prepareCall(String sql) throws SQLException {
-        return c.prepareCall(sql);
+        return conn.prepareCall(sql);
     }
 
     @Override
     public String nativeSQL(String sql) throws SQLException {
-        return c.nativeSQL(sql);
+        return conn.nativeSQL(sql);
     }
 
     @Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
-        c.setAutoCommit(autoCommit);
+        conn.setAutoCommit(autoCommit);
     }
 
     @Override
     public boolean getAutoCommit() throws SQLException {
-        return c.getAutoCommit();
+        return conn.getAutoCommit();
     }
 
     @Override
     public void commit() throws SQLException {
-        c.commit();
+        conn.commit();
     }
 
     @Override
     public void rollback() throws SQLException {
-        c.rollback();
-    }
-
-    @Override
-    public void close() throws SQLException {
-        c.close();
+        conn.rollback();
     }
 
     @Override
     public boolean isClosed() throws SQLException {
-        return c.isClosed();
+        return conn.isClosed();
     }
 
     @Override
     public DatabaseMetaData getMetaData() throws SQLException {
-        return c.getMetaData();
+        return conn.getMetaData();
     }
 
     @Override
     public void setReadOnly(boolean readOnly) throws SQLException {
-        c.setReadOnly(readOnly);
+        conn.setReadOnly(readOnly);
     }
 
     @Override
     public boolean isReadOnly() throws SQLException {
-        return c.isReadOnly();
+        return conn.isReadOnly();
     }
 
     @Override
     public void setCatalog(String catalog) throws SQLException {
-        c.setCatalog(catalog);
+        conn.setCatalog(catalog);
     }
 
     @Override
     public String getCatalog() throws SQLException {
-        return c.getCatalog();
+        return conn.getCatalog();
     }
 
     @Override
     public void setTransactionIsolation(int level) throws SQLException {
-        c.setTransactionIsolation(level);
+        conn.setTransactionIsolation(level);
     }
 
     @Override
     public int getTransactionIsolation() throws SQLException {
-        return c.getTransactionIsolation();
+        return conn.getTransactionIsolation();
     }
 
     @Override
     public SQLWarning getWarnings() throws SQLException {
-        return c.getWarnings();
+        return conn.getWarnings();
     }
 
     @Override
     public void clearWarnings() throws SQLException {
-        c.clearWarnings();
+        conn.clearWarnings();
     }
 
     @Override
     public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
-        return new MSStatement(c.createStatement(resultSetType, resultSetConcurrency));
+        return new MSStatement(conn.createStatement(resultSetType, resultSetConcurrency));
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-        return c.prepareCall(sql, resultSetType, resultSetConcurrency);
+        return conn.prepareCall(sql, resultSetType, resultSetConcurrency);
     }
 
     @Override
     public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-        return c.prepareCall(sql, resultSetType, resultSetConcurrency);
+        return conn.prepareCall(sql, resultSetType, resultSetConcurrency);
     }
 
     @Override
     public Map<String, Class<?>> getTypeMap() throws SQLException {
-        return c.getTypeMap();
+        return conn.getTypeMap();
     }
 
     @Override
     public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
-        c.setTypeMap(map);
+        conn.setTypeMap(map);
     }
 
     @Override
     public void setHoldability(int holdability) throws SQLException {
-        c.setHoldability(holdability);
+        conn.setHoldability(holdability);
     }
 
     @Override
     public int getHoldability() throws SQLException {
-        return c.getHoldability();
+        return conn.getHoldability();
     }
 
     @Override
     public Savepoint setSavepoint() throws SQLException {
-        return c.setSavepoint();
+        return conn.setSavepoint();
     }
 
     @Override
     public Savepoint setSavepoint(String name) throws SQLException {
-        return c.setSavepoint(name);
+        return conn.setSavepoint(name);
     }
 
     @Override
     public void rollback(Savepoint savepoint) throws SQLException {
-        c.rollback(savepoint);
+        conn.rollback(savepoint);
     }
 
     @Override
     public void releaseSavepoint(Savepoint savepoint) throws SQLException {
-        c.releaseSavepoint(savepoint);
+        conn.releaseSavepoint(savepoint);
     }
 
     @Override
     public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        return new MSStatement(c.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
+        return conn.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        return c.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
+        return conn.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
     }
 
     @Override
     public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        return c.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
+        return conn.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
-        return c.prepareStatement(sql, autoGeneratedKeys);
+        return conn.prepareStatement(sql, autoGeneratedKeys);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
-        return c.prepareStatement(sql, columnIndexes);
+        return conn.prepareStatement(sql, columnIndexes);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
-        return c.prepareStatement(sql, columnNames);
+        return conn.prepareStatement(sql, columnNames);
     }
 
     @Override
     public Clob createClob() throws SQLException {
-        return c.createClob();
+        return conn.createClob();
     }
 
     @Override
     public Blob createBlob() throws SQLException {
-        return c.createBlob();
+        return conn.createBlob();
     }
 
     @Override
     public NClob createNClob() throws SQLException {
-        return c.createNClob();
+        return conn.createNClob();
     }
 
     @Override
     public SQLXML createSQLXML() throws SQLException {
-        return c.createSQLXML();
+        return conn.createSQLXML();
     }
 
     @Override
     public boolean isValid(int timeout) throws SQLException {
-        return c.isValid(timeout);
+        return conn.isValid(timeout);
     }
 
     @Override
     public void setClientInfo(String name, String value) throws SQLClientInfoException {
-        c.setClientInfo(name, value);
+        conn.setClientInfo(name, value);
     }
 
     @Override
     public void setClientInfo(Properties properties) throws SQLClientInfoException {
-        c.setClientInfo(properties);
+        conn.setClientInfo(properties);
     }
 
     @Override
     public String getClientInfo(String name) throws SQLException {
-        return c.getClientInfo(name);
+        return conn.getClientInfo(name);
     }
 
     @Override
     public Properties getClientInfo() throws SQLException {
-        return c.getClientInfo();
+        return conn.getClientInfo();
     }
 
     @Override
     public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-        return c.createArrayOf(typeName, elements);
+        return conn.createArrayOf(typeName, elements);
     }
 
     @Override
     public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
-        return c.createStruct(typeName, attributes);
+        return conn.createStruct(typeName, attributes);
     }
 
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        return c.unwrap(iface);
+        return conn.unwrap(iface);
     }
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return c.isWrapperFor(iface);
+        return conn.isWrapperFor(iface);
     }
     
 }

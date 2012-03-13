@@ -30,9 +30,7 @@ public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUti
     }
 
     public static boolean fieldExists(String sid, String tableName, String fieldName) throws SQLException {
-        Statement s = ConnectionController.connectPooled(sid).createStatement();
-
-        ResultSet rs = s.executeQuery("SHOW COLUMNS IN " + tableName);
+        ResultSet rs = ConnectionController.executeQuery(sid, "SHOW COLUMNS IN " + tableName);
 
         while(rs.next()) {
             if (rs.getString(1).equals(fieldName)) {
@@ -93,21 +91,12 @@ public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUti
 
     public DbTable importTable(String sessionId, String tablename) throws SQLException {
 
-        Connection c;
-        try {
-            c = ConnectionController.connectPooled(sessionId);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
-        }
-
         DbSpec spec = new DbSpec();
         DbSchema schema = spec.addDefaultSchema();
 
         DbTable table = schema.addTable(tablename);
 
-        Statement s = c.createStatement ();
-        ResultSet rs = s.executeQuery("DESCRIBE " + tablename);
+        ResultSet rs = ConnectionController.executeQuery(sessionId, "DESCRIBE " + tablename);
 
         ResultSetMetaData rsMetaData = rs.getMetaData();
         int numberOfColumns = rsMetaData.getColumnCount();
@@ -122,16 +111,13 @@ public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUti
     @Override
     public TableSchema importTableSchema(String sessionId, String tablename) throws SQLException, RemoteException {
 
-        Connection c = ConnectionController.connectPooled(sessionId);
-
         DbSpec spec = new DbSpec();
         DbSchema schema = spec.addDefaultSchema();
 
         DbTable table = schema.addTable(tablename);
         TableSchema ts = new TableSchema(table);
 
-        Statement s = c.createStatement ();
-        ResultSet rs = s.executeQuery("DESCRIBE " + tablename);
+        ResultSet rs = ConnectionController.executeQuery(sessionId, "DESCRIBE " + tablename);
 
         while (rs.next()) {
             table.addColumn(rs.getString(1), getColumnTypeString(rs.getString(2)), getColumnLength(rs.getString(2)));
@@ -151,16 +137,11 @@ public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUti
     }
 
     public static void dropTable(String sessionId,String tablename) throws SQLException {
-        Connection c = (ConnectionController.connectPooled(sessionId));
-
-        c.createStatement().execute(
-                "DROP TABLE IF EXISTS " + tablename + ";");
+        ConnectionController.execute(sessionId, "DROP TABLE IF EXISTS " + tablename + ";");
     }
 
     public static boolean tableExists(String sessionId, String tablename) throws SQLException {
-        Statement s = ConnectionController.connectPooled(sessionId).createStatement();
-
-        ResultSet rs = s.executeQuery("SHOW TABLES");
+        ResultSet rs = ConnectionController.executeQuery(sessionId, "SHOW TABLES");
 
         while(rs.next()) {
             if (rs.getString(1).equals(tablename)) {
@@ -173,8 +154,7 @@ public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUti
 
     public static int getNumRecordsInTable(String sessionId, String tablename) {
         try {
-            Connection c = ConnectionController.connectPooled(sessionId);
-            ResultSet rs =  c.createStatement().executeQuery("SELECT COUNT(*) FROM `" + tablename + "`");
+            ResultSet rs =  ConnectionController.executeQuery(sessionId, "SELECT COUNT(*) FROM `" + tablename + "`");
             rs.next();
             return rs.getInt(1);
         } catch (SQLException ex) {

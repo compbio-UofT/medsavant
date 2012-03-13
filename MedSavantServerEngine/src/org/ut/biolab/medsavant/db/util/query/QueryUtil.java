@@ -59,10 +59,9 @@ public class QueryUtil extends java.rmi.server.UnicastRemoteObject implements Qu
         q.addColumns(col);
         q.addFromTable(t.getTable());
 
-        Statement s = ConnectionController.connectPooled(sid).createStatement();
         String queryString = q.toString();
         if(limit > 0) queryString = queryString + " LIMIT " + limit;
-        ResultSet rs = s.executeQuery(queryString);
+        ResultSet rs = ConnectionController.executeQuery(sid, queryString);
 
         List<String> distinctValues = new ArrayList<String>();
 
@@ -92,8 +91,7 @@ public class QueryUtil extends java.rmi.server.UnicastRemoteObject implements Qu
         q.addCustomColumns(FunctionCall.min().addColumnParams(col));
         q.addCustomColumns(FunctionCall.max().addColumnParams(col));
 
-        Statement s = ConnectionController.connectPooled(sid).createStatement();
-        ResultSet rs = s.executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         double min = 0;
         double max = 0;
@@ -197,7 +195,7 @@ public class QueryUtil extends java.rmi.server.UnicastRemoteObject implements Qu
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         rs.next();
         return rs.getInt(1);

@@ -48,7 +48,7 @@ public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject imple
         query.addColumn(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key);
         query.addColumn(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_VALUE), value);
 
-        ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
+        ConnectionController.executeUpdate(sid,  query.toString());
     }
 
     public String getSetting(String sid, String key) throws SQLException {
@@ -59,7 +59,7 @@ public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject imple
         query.addColumns(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_VALUE));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
         if(rs.next()){
             return rs.getString(1);
         } else {
@@ -74,7 +74,7 @@ public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject imple
         query.addSetClause(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_VALUE), value);
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key));
         
-        ConnectionController.connectPooled(sid).createStatement().executeUpdate(query.toString());
+        ConnectionController.executeUpdate(sid,  query.toString());
     }
     
     private void updateSetting(Connection c, String key, String value) throws SQLException {
@@ -112,7 +112,9 @@ public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject imple
         }
     }
     
-    public void releaseDbLock(String sid) { 
-        releaseDbLock(ConnectionController.connectPooled(sid));
+    public void releaseDbLock(String sid) throws SQLException { 
+        Connection c = ConnectionController.connectPooled(sid);
+        releaseDbLock(c);
+        c.close();
     }
 }

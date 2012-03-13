@@ -83,7 +83,7 @@ public class MedSavantClient {
         Registry registry;
         System.out.println("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort);
         registry = LocateRegistry.getRegistry(serverAddress,(new Integer(serverPort)).intValue());
-
+        
         // look up the remote object
         setAdaptersFromRegistry(registry);
     }

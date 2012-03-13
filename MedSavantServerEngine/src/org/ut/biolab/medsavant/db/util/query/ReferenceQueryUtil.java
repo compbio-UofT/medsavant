@@ -73,7 +73,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
                 table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                 table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Reference> results = new ArrayList<Reference>();
         while(rs.next()) {
@@ -92,7 +92,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         query.addFromTable(table.getTable());
         query.addColumns(table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<String> results = new ArrayList<String>();
         while (rs.next()) {
@@ -110,7 +110,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         query.addColumns(table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME), refName));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs.next()) {
             return rs.getInt(1);
@@ -127,7 +127,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         query.addAllColumns();
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME), name));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         return rs.next();
     }
@@ -169,6 +169,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         }
         c.commit();
         c.setAutoCommit(true);
+        c.close();
 
         return refid;
     }
@@ -180,29 +181,27 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
          TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
          TableSchema chromTable = MedSavantDatabase.ChromosomeTableSchema;
 
-         Connection c = ConnectionController.connectPooled(sid);
-
          SelectQuery q1 = new SelectQuery();
          q1.addFromTable(annotationTable.getTable());
          q1.addAllColumns();
          q1.addCondition(BinaryConditionMS.equalTo(annotationTable.getDBColumn(AnnotationTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
-         ResultSet rs = c.createStatement().executeQuery(q1.toString());
+         ResultSet rs = ConnectionController.executeQuery(sid, q1.toString());
          if (rs.next()) { return false; }
 
          SelectQuery q2 = new SelectQuery();
          q2.addFromTable(variantMapTable.getTable());
          q2.addAllColumns();
          q2.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
-         rs = c.createStatement().executeQuery(q2.toString());
+         rs = ConnectionController.executeQuery(sid, q2.toString());
          if (rs.next()) { return false; }
 
          DeleteQuery q3 = new DeleteQuery(refTable.getTable());
          q3.addCondition(BinaryConditionMS.equalTo(refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
-         c.createStatement().execute(q3.toString());
+         ConnectionController.execute(sid, q3.toString());
 
          DeleteQuery q4 = new DeleteQuery(chromTable.getTable());
          q4.addCondition(BinaryConditionMS.equalTo(chromTable.getDBColumn(ChromosomeTableSchema.COLUMNNAME_OF_REFERENCE_ID), refid));
-         c.createStatement().execute(q4.toString());
+         ConnectionController.execute(sid, q4.toString());
 
          return true;
     }
@@ -224,7 +223,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
         query.addCondition(BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<String> references = new ArrayList<String>();
         while (rs.next()) {
@@ -246,7 +245,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
 
-        ResultSet rs = ConnectionController.connectPooled(sid).createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Integer> references = new ArrayList<Integer>();
         while (rs.next()) {
@@ -258,8 +257,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
 
     public Map<Integer, String> getReferencesWithoutTablesInProject(String sid,int projectid) throws SQLException {
 
-        Connection c = org.ut.biolab.medsavant.db.util.ConnectionController.connectPooled(sid);
-        ResultSet rs = c.createStatement().executeQuery(
+        ResultSet rs = ConnectionController.executeQuery(sid, 
                 "SELECT *"
                 + " FROM " + ReferenceTableSchema.TABLE_NAME
                 + " WHERE " + ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID + " NOT IN"
@@ -277,7 +275,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
 
     public String getReferenceUrl(String sid,int referenceid) throws SQLException {
 
-        Connection c = ConnectionController.connectPooled(sid);
+        
 
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
@@ -285,14 +283,14 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         query.addColumns(refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_URL));
         query.addCondition(BinaryConditionMS.equalTo(refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceid));
 
-        ResultSet rs = c.createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
         rs.next();
         return rs.getString(1);
     }
 
     public List<Chromosome> getChromosomes(String sid,int referenceid) throws SQLException {
 
-        Connection c = ConnectionController.connectPooled(sid);
+        
 
         TableSchema table = MedSavantDatabase.ChromosomeTableSchema;
         SelectQuery query = new SelectQuery();
@@ -301,7 +299,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(ChromosomeTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceid));
         query.addOrdering(table.getDBColumn(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_ID), Dir.ASCENDING);
 
-        ResultSet rs = c.createStatement().executeQuery(query.toString());
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Chromosome> result = new ArrayList<Chromosome>();
         while(rs.next()){
