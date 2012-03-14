@@ -7,12 +7,16 @@ package org.ut.biolab.medsavant.vcf;
 import au.com.bytecode.opencsv.CSVReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
 
 /**
@@ -121,8 +125,17 @@ public class VCFParser {
         r.close();
     }
 
-    private static CSVReader openFile(File vcffile, char delim) throws FileNotFoundException {
-        return new CSVReader(new FileReader(vcffile), delim);
+    private static CSVReader openFile(File vcffile, char delim) throws FileNotFoundException, IOException {
+
+        Reader reader;
+        if (vcffile.getAbsolutePath().endsWith(".gz") || vcffile.getAbsolutePath().endsWith(".zip")) {
+            FileInputStream fin = new FileInputStream(vcffile.getAbsolutePath());
+            reader = new InputStreamReader(new GZIPInputStream(fin));
+        } else {
+            reader = new FileReader(vcffile);
+        }
+
+        return new CSVReader(reader, delim);
     }
 
     private static VCFHeader parseHeader(String[] headerLine) {
@@ -184,13 +197,13 @@ public class VCFParser {
             System.err.println("WARNING: error parsing line " + line + ". Skipping");
             return new ArrayList<VariantRecord>();
         }
-        
+
         int indexGT = getIndexGT(line);
         for (int i = 0; i < ids.size(); i++) {
             String id = ids.get(i);
             VariantRecord r2 = new VariantRecord(r);
             r2.setDnaID(id);
-            
+
             //add gt and zygosity;
             if(indexGT != -1){
                 r2.setGenotype(line[numMandatoryFields+i+1].split(":")[indexGT]);
@@ -201,8 +214,8 @@ public class VCFParser {
         }
 
         return records;
-    }    
-        
+    }
+
     private static int getIndexGT(String[] line){
         if(line.length < VCFHeader.getNumMandatoryFields()+1) return -1;
         String[] list = line[VCFHeader.getNumMandatoryFields()].trim().split(":");
@@ -213,11 +226,11 @@ public class VCFParser {
         }
         return -1;
     }
-    
+
     private static Zygosity calculateZygosity(String gt){
         String[] split = gt.split("/|\\\\|\\|"); // splits on / or \ or |
         if(split.length < 2 || split[0] == null || split[1] == null || split[0].length() == 0 || split[1].length() == 0) return null;
-        
+
         try {
             int a = Integer.parseInt(split[0]);
             int b = Integer.parseInt(split[1]);
@@ -235,5 +248,5 @@ public class VCFParser {
         }
     }
 
-    
+
 }
