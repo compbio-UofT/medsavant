@@ -73,7 +73,7 @@ public class ResultController implements FiltersChangedListener {
 
     public List<Object[]> getFilteredVariantRecords(int start, int limit, Column[] order) {
         synchronized(lock_records){
-            if (filterSetId_records != FilterController.getCurrentFilterSetID() || this.limit < limit || this.start != start ||
+            if (filterSetId_records != FilterController.getCurrentFilterSetID() || this.limit != limit || this.start != start ||
                     ProjectController.getInstance().getCurrentProjectId() != projectId_records ||
                     ReferenceController.getInstance().getCurrentReferenceId() != referenceId_records || 
                     !SettingsController.getInstance().getDBName().equals(dbName_records)){
