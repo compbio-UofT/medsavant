@@ -339,10 +339,11 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
         String sessionId = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
 
         Connection c = ConnectionController.connectPooled(sessionId);
-
         createDatabase(c,dbname);
-
-        ConnectionController.switchDatabases(sessionId,dbname);
+        c.close();
+        
+        ConnectionController.switchDatabases(sessionId,dbname); //closes all connections
+        c = ConnectionController.connectPooled(sessionId);
 
         dropTables(sessionId);
         createTables(sessionId);

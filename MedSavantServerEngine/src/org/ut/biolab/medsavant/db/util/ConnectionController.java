@@ -174,6 +174,9 @@ public class ConnectionController {
         return false;
     }
 
+    /*
+     * Make sure you get a new connection after this!
+     */
     public static void switchDatabases(String sessionId, String dbname) {
         synchronized(sessionConnectionMap) {
             SessionConnection sc = sessionConnectionMap.get(sessionId);

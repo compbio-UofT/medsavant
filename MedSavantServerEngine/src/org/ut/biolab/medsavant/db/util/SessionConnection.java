@@ -25,21 +25,29 @@ public class SessionConnection {
         this.user = user;
         this.pw = pw;
         this.dbName = dbname;
+        createNewDriver();
+    }
+    
+    private void createNewDriver(){
         try {
-            this.driver = new ConnectionDriver("com.mysql.jdbc.Driver", String.format("jdbc:mysql://%s:%d/%s?%s", ConnectionController.getHost(), ConnectionController.getPort(), dbname, "enableQueryTimeouts=false"), user, pw);
+            this.driver = new ConnectionDriver("com.mysql.jdbc.Driver", String.format("jdbc:mysql://%s:%d/%s?%s", ConnectionController.getHost(), ConnectionController.getPort(), dbName, "enableQueryTimeouts=false"), user, pw);
         } catch (Exception ex) {
             Logger.getLogger(SessionConnection.class.getName()).log(Level.SEVERE, null, ex);
         } 
     }
 
-    public void disconnectAll() {
-        if (lastConnection != null) {
+    public void reconnect() {
+        
+        createNewDriver();
+       
+        
+        /*if (lastConnection != null) {
             try {
                 lastConnection.close();
             } catch (SQLException ex) {
             }
             lastConnection = null;
-        }
+        }*/
     }
 
     public Connection connectPooled() throws SQLException {
@@ -58,8 +66,8 @@ public class SessionConnection {
     }
 
     void setDBName(String dbname) {
-        this.disconnectAll();
         this.dbName = dbname;
+        reconnect();
     }
 
     public String getDBName() {
