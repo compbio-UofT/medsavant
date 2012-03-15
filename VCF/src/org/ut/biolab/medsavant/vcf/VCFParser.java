@@ -104,10 +104,12 @@ public class VCFParser {
                 }
                 //add records to tdf
                 for (VariantRecord v : records) {
-                    out.write(v.toTabString(updateId, fileId, variantId));
-                    numLinesWritten++;
-                    out.write("\r\n");
-                    variantId++;
+                    if (v.getZygosity() != Zygosity.HomoRef) {
+                        out.write(v.toTabString(updateId, fileId, variantId));
+                        numLinesWritten++;
+                        out.write("\r\n");
+                        variantId++;
+                    }
                 }
                 numRecords++;
             }
