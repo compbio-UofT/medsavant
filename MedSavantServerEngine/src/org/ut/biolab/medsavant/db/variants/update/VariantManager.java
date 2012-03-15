@@ -227,7 +227,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
 
         int i = 0;
         for (RemoteInputStream s : fileStreams) {
-            vcfFiles[i] = FileServer.getInstance().sendFile(s);
+            vcfFiles[i] = FileServer.getInstance().sendFile(s, fileNames[i]);
             i++;
         }
 

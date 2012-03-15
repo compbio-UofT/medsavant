@@ -43,5 +43,5 @@ public interface RemoteFileServer extends Remote
 {
 
   public File sendFile(RemoteInputStream ristream) throws IOException;
-
+  
 }

@@ -52,15 +52,19 @@ public class FileServer extends java.rmi.server.UnicastRemoteObject implements R
     }
 
     public FileServer() throws RemoteException {}
-
+    
     public File sendFile(RemoteInputStream ristream) throws IOException {
+        return sendFile(ristream, ".dat");
+    }
+
+    public File sendFile(RemoteInputStream ristream, String extension) throws IOException {
         InputStream istream = RemoteInputStreamClient.wrap(ristream);
         FileOutputStream ostream = null;
         File tempFile;
 
         try {
 
-            tempFile = File.createTempFile("sentFile_", ".dat");
+            tempFile = File.createTempFile("sentFile_", extension);
             ostream = new FileOutputStream(tempFile);
             System.out.println("Writing file " + tempFile);
 

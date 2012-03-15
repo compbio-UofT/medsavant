@@ -8,11 +8,13 @@ import au.com.bytecode.opencsv.CSVReader;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -20,6 +22,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
@@ -236,7 +239,16 @@ public class VariantManagerUtils {
             int iteration = 0;
 
             //create csv reader
-            CSVReader r = new CSVReader(new FileReader(vcfFiles[i]), VCFParser.defaultDelimiter);
+            Reader reader;
+            if (vcfFiles[i].getAbsolutePath().endsWith(".gz") || vcfFiles[i].getAbsolutePath().endsWith(".zip")) {
+                FileInputStream fin = new FileInputStream(vcfFiles[i].getAbsolutePath());
+                reader = new InputStreamReader(new GZIPInputStream(fin));
+            } else {
+                reader = new FileReader(vcfFiles[i]);
+            }
+            CSVReader r = new CSVReader(reader, VCFParser.defaultDelimiter);
+            
+            //CSVReader r = new CSVReader(new FileReader(vcfFiles[i]), VCFParser.defaultDelimiter);
             if (r == null) {
                 throw new FileNotFoundException();
             }
