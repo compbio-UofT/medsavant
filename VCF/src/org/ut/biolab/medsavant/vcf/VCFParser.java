@@ -16,6 +16,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
 
@@ -197,6 +199,10 @@ public class VCFParser {
         } catch (Exception e) {
             //e.printStackTrace();
             System.err.println("WARNING: error parsing line " + line + ". Skipping");
+            /*for(String s : line){
+                System.err.print(s + "\t");
+            }
+            System.err.println();*/
             return new ArrayList<VariantRecord>();
         }
 
@@ -249,6 +255,19 @@ public class VCFParser {
             return null;
         }
     }
-
-
+    
+    /*
+     * Useful for testing
+     */
+    static public void main(String args[]) {
+        File input = new File(args[0]);
+        try {
+            parseVariants(input, new File(input.getName() + "_parsed"), 0, 0);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(VCFParser.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(VCFParser.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
 }
