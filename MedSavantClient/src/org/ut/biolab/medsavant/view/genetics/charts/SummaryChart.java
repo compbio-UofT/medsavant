@@ -196,11 +196,16 @@ public class SummaryChart extends JLayeredPane {
     }
 
     private void updateDataAndDrawChart() {
+        
+        removeAll();
+        add(waitPanel, c, JLayeredPane.MODAL_LAYER);
+        waitPanel.setVisible(true);
+        setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
 
         //begin creating chart
         new ChartMapWorker().execute();
         
-        Thread t = new Thread(){
+        /*Thread t = new Thread(){
             public void run(){
                 removeAll();
                 add(waitPanel, c, JLayeredPane.MODAL_LAYER);
@@ -208,7 +213,7 @@ public class SummaryChart extends JLayeredPane {
                 setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
             }
         };
-        t.start();
+        t.start();*/
     }
 
     private synchronized Chart drawChart(ChartFrequencyMap[] chartMaps) {
@@ -278,7 +283,7 @@ public class SummaryChart extends JLayeredPane {
             }
         }
 
-        if (this.isSorted()) {
+        if (this.isSorted() && !mapGenerator.isNumeric()) {
             filteredChartMap.sortNumerically();
             if (this.showComparedToOriginal) {
                 chartMaps[1].sortNumerically();
@@ -428,7 +433,7 @@ public class SummaryChart extends JLayeredPane {
             } catch (SQLException ex) {
                 MiscUtils.checkSQLException(ex);
                 throw ex;
-            }
+            }             
         }
 
         public void showSuccess(ChartFrequencyMap[] result) {
@@ -437,8 +442,10 @@ public class SummaryChart extends JLayeredPane {
                 add(chart, c, JLayeredPane.DEFAULT_LAYER);
             } else if (result != null && result[0] != null && result[0].getEntries().isEmpty()){
                 add(ViewUtil.getMessagePanelBig("No variants pass query"), c);
-            } else {
+            } else if (result != null && result[0] != null && result[0].getEntries().size() >= 200){
                 add(ViewUtil.getMessagePanelBig("Too many values to display chart"), c);
+            } else {
+                add(ViewUtil.getMessagePanelBig("Error creating chart"), c);
             }
             
             waitPanel.setVisible(false);

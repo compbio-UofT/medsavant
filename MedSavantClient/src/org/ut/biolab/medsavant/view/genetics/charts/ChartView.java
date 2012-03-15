@@ -101,15 +101,12 @@ public class ChartView extends JPanel {
                 if (alias.equals(VariantFormat.ALIAS_OF_CHROM)) {
                     bSort.setEnabled(false);
                     sc.setIsSortedKaryotypically(true);
-                    sc.setIsSorted(false);
                 } else if (cmg.isNumeric()) {
                     bSort.setEnabled(false);
                     sc.setIsSortedKaryotypically(false);
-                    sc.setIsSorted(false);
                 } else {
                     bSort.setEnabled(true);
                     sc.setIsSortedKaryotypically(false);
-                    sc.setIsSorted(bSort.isSelected());
                 }
 
             }
