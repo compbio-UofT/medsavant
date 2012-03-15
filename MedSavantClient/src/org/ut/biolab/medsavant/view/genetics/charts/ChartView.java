@@ -95,9 +95,6 @@ public class ChartView extends JPanel {
                 if(!init) return;
                 String alias = (String) chartChooser.getSelectedItem();
                 ChartMapGenerator cmg = mapGenerators.get(alias);
-                sc.setChartMapGenerator(cmg);
-                bLogX.setEnabled(cmg.isNumeric());
-                if (bSort == null) { return; }
                 if (alias.equals(VariantFormat.ALIAS_OF_CHROM)) {
                     bSort.setEnabled(false);
                     sc.setIsSortedKaryotypically(true);
@@ -108,7 +105,8 @@ public class ChartView extends JPanel {
                     bSort.setEnabled(true);
                     sc.setIsSortedKaryotypically(false);
                 }
-
+                sc.setChartMapGenerator(cmg);
+                bLogX.setEnabled(cmg.isNumeric());
             }
         });
 
