@@ -98,12 +98,18 @@ public class ChartView extends JPanel {
                 sc.setChartMapGenerator(cmg);
                 bLogX.setEnabled(cmg.isNumeric());
                 if (bSort == null) { return; }
-                if (alias.equals(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM))) {
+                if (alias.equals(VariantFormat.ALIAS_OF_CHROM)) {
                     bSort.setEnabled(false);
                     sc.setIsSortedKaryotypically(true);
+                    sc.setIsSorted(false);
+                } else if (cmg.isNumeric()) {
+                    bSort.setEnabled(false);
+                    sc.setIsSortedKaryotypically(false);
+                    sc.setIsSorted(false);
                 } else {
                     bSort.setEnabled(true);
                     sc.setIsSortedKaryotypically(false);
+                    sc.setIsSorted(bSort.isSelected());
                 }
 
             }
