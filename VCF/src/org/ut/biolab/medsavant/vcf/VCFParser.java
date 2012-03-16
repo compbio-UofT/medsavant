@@ -51,7 +51,7 @@ public class VCFParser {
     }
 
     public static int parseVariantsFromReader(CSVReader r, int outputLinesLimit, File outfile, int updateId, int fileId) throws IOException {
-        return parseVariantsFromReader(r, null, outputLinesLimit, outfile, updateId, fileId);
+        return parseVariantsFromReader(r, null, outputLinesLimit, outfile, updateId, fileId, false);
     }
 
     /**
@@ -66,7 +66,7 @@ public class VCFParser {
      * @return number of lines written to outfile
      * @throws IOException
      */
-    public static int parseVariantsFromReader(CSVReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId) throws IOException {
+    public static int parseVariantsFromReader(CSVReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId, boolean includeHomoRef) throws IOException {
 
         System.out.println("Starting to parse variants from reader");
 
@@ -106,7 +106,7 @@ public class VCFParser {
                 }
                 //add records to tdf
                 for (VariantRecord v : records) {
-                    if (v.getZygosity() != Zygosity.HomoRef) {
+                    if (includeHomoRef || v.getZygosity() != Zygosity.HomoRef) {
                         out.write(v.toTabString(updateId, fileId, variantId));
                         numLinesWritten++;
                         out.write("\r\n");
