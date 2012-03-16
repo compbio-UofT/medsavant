@@ -17,7 +17,7 @@ import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
 public interface VariantManagerAdapter extends Remote
 {
 
-  public int uploadVariants(String sid, RemoteInputStream[] fileStreams, String[] fileNames, int projectId, int referenceId, String[][] variantTags) throws RemoteException, IOException, Exception;
+  public int uploadVariants(String sid, RemoteInputStream[] fileStreams, String[] fileNames, int projectId, int referenceId, String[][] variantTags, boolean includeHomoRef) throws RemoteException, IOException, Exception;
   public void publishVariants(String sid, int projectID, int referenceID, int updateID) throws Exception;
   public void publishVariants(String sid, int projectID) throws Exception;
   public void cancelPublish(String sid, int projectID, int referenceID, int updateID) throws Exception;

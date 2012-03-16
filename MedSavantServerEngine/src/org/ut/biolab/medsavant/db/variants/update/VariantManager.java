@@ -222,7 +222,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
      * of a new, unpublished, up-to-date variant table. 
      */
     @Override
-    public int uploadVariants(String sid, RemoteInputStream[] fileStreams, String[] fileNames, int projectId, int referenceId, String[][] variantTags) throws RemoteException, IOException, Exception {
+    public int uploadVariants(String sid, RemoteInputStream[] fileStreams, String[] fileNames, int projectId, int referenceId, String[][] variantTags, boolean includeHomoRef) throws RemoteException, IOException, Exception {
         File[] vcfFiles = new File[fileStreams.length];
 
         int i = 0;
@@ -231,13 +231,13 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
             i++;
         }
 
-        return uploadVariants(sid, vcfFiles, fileNames, projectId, referenceId, variantTags);     
+        return uploadVariants(sid, vcfFiles, fileNames, projectId, referenceId, variantTags, includeHomoRef);     
     }
     
     /*
      * Helper that does all the actual work of uploading new vcf files. 
      */
-    private static int uploadVariants(String sid, File[] vcfFiles, String[] fileNames, int projectId, int referenceId, String[][] variantTags) throws Exception {
+    private static int uploadVariants(String sid, File[] vcfFiles, String[] fileNames, int projectId, int referenceId, String[][] variantTags, boolean includeHomoRef) throws Exception {
 
         ServerLogger.log(VariantManager.class, "Beginning new vcf upload");
         
@@ -260,7 +260,7 @@ public class VariantManager extends java.rmi.server.UnicastRemoteObject implemen
 
             //parse and cat new files
             ServerLogger.log(VariantManager.class, "Parsing vcf files and concatenating");
-            File tempFile = VariantManagerUtils.parseVCFs(vcfFiles, baseDir, updateId);
+            File tempFile = VariantManagerUtils.parseVCFs(vcfFiles, baseDir, updateId, includeHomoRef);
             String tempFilename = tempFile.getAbsolutePath();
             currentFilename = tempFilename;
 

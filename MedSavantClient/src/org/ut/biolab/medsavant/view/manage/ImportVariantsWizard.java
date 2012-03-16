@@ -64,6 +64,7 @@ public class ImportVariantsWizard extends WizardDialog {
     private File[] variantFiles;
     private Thread uploadThread = null;
     private Thread publishThread = null;
+    private boolean includeHomoRef = false;
 
     public ImportVariantsWizard() {
 
@@ -212,7 +213,17 @@ public class ImportVariantsWizard extends WizardDialog {
         container.add(chooseFileButton);
 
         page.addComponent(container);
-        page.addText("Files can be in Variant Call Format (*.vcf) or BGZipped\nVCF (*.vcf.gz).");
+        page.addText("Files can be in Variant Call Format (*.vcf) or BGZipped\nVCF (*.vcf.gz).\n\n");
+
+        final JCheckBox homoRefBox = new JCheckBox("Include HomoRef variants (strongly not recommended)");
+        homoRefBox.setOpaque(false);
+        homoRefBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                includeHomoRef = homoRefBox.isSelected();
+            }
+        });
+        page.addComponent(homoRefBox);
 
         return page;
 
@@ -396,6 +407,7 @@ public class ImportVariantsWizard extends WizardDialog {
         final JButton publishCancelButton = new JButton("Cancel");
 
         final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after upload");
+        autoPublishVariants.setOpaque(false);
 
         final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
         final JProgressBar publishProgressBar = new JProgressBar();
@@ -507,7 +519,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
                                     //upload variants
                                     progressLabel.setText("Uploading variant files...");
-                                    updateID = MedSavantClient.VariantManagerAdapter.uploadVariants(LoginController.sessionId, streams, fileNames, projectId, referenceId, tagsToStringArray(variantTags));
+                                    updateID = MedSavantClient.VariantManagerAdapter.uploadVariants(LoginController.sessionId, streams, fileNames, projectId, referenceId, tagsToStringArray(variantTags), includeHomoRef);
                                     MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
 
                                     //success

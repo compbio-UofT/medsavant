@@ -225,7 +225,7 @@ public class VariantManagerUtils {
      * Given vcf files, parse out the relevant information and concatenate to 
      * create a single, ready-to-use csv. 
      */
-    public static File parseVCFs(File[] vcfFiles, File tmpDir, int updateId) throws IOException, InterruptedException, ParseException {
+    public static File parseVCFs(File[] vcfFiles, File tmpDir, int updateId, boolean includeHomoRef) throws IOException, InterruptedException, ParseException {
         
         boolean variantFound = false;
         File outfile = new File(tmpDir, "1_tmp.tdf");
@@ -262,7 +262,7 @@ public class VariantManagerUtils {
 
                 //parse vcf file
                 VariantManagerUtils.checkInterrupt();
-                lastChunkWritten = VCFParser.parseVariantsFromReader(r, header, outputLinesLimit, outfile, updateId, i);
+                lastChunkWritten = VCFParser.parseVariantsFromReader(r, header, outputLinesLimit, outfile, updateId, i, includeHomoRef);
                 if (lastChunkWritten > 0) {
                     variantFound = true;
                 }
