@@ -283,7 +283,7 @@ public class SummaryChart extends JLayeredPane {
             }
         }
 
-        if (this.isSorted() && !mapGenerator.isNumeric()) {
+        if (this.isSorted() && !mapGenerator.isNumeric() && !this.isSortedKaryotypically()) {
             filteredChartMap.sortNumerically();
             if (this.showComparedToOriginal) {
                 chartMaps[1].sortNumerically();
