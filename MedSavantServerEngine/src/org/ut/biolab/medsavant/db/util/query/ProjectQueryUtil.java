@@ -156,9 +156,9 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return createVariantTable(sid, projectid, referenceid, updateid, null, false);
     }
      */
-    
-    
-    
+
+
+
     public String createVariantTable(String sid, int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging) throws SQLException {
         return createVariantTable(sid, projectid, referenceid, updateid, annotationIds, isStaging, false);
     }
@@ -188,7 +188,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_TYPE + "` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_ZYGOSITY + "` varchar(20) COLLATE latin1_bin DEFAULT NULL,"
                 + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_GT + "` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,";
+                + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO + "` varchar(1000) COLLATE latin1_bin DEFAULT NULL,";
 
         //add custom vcf fields
         List<CustomField> customFields = getCustomVariantFields(sid, projectid, referenceid, updateid);
@@ -207,9 +207,9 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query += ") ENGINE=BRIGHTHOUSE;";
 
         c.createStatement().execute(query);
-        
-        //create new entry in variant table map       
-        if(!isSub){         
+
+        //create new entry in variant table map
+        if(!isSub){
             TableSchema variantTableMap = MedSavantDatabase.VarianttablemapTableSchema;
             InsertQuery query1 = new InsertQuery(variantTableMap.getTable());
             query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid);
@@ -218,12 +218,12 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), !isStaging);
             query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), variantTableName);
             c.createStatement().execute(query1.toString());
-        } 
+        }
 
         c.close();
         return variantTableName;
     }
-    
+
     private static String getAnnotationSchema(String sid, int annotationId) {
 
         AnnotationFormat format = null;
@@ -247,13 +247,13 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     }
 
     /*
-     * Get the name of the most up-to-date variant table, or the most up-to-date, 
-     * published variant table. 
+     * Get the name of the most up-to-date variant table, or the most up-to-date,
+     * published variant table.
      */
     public String getVariantTablename(String sid, int projectid, int refid, boolean published) throws SQLException {
         return getVariantTablename(sid, projectid, refid, published, false);
     }
-    
+
     public String getVariantTablename(String sid, int projectid, int refid, boolean published, boolean sub) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
@@ -266,7 +266,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
         }
         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
-        
+
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs.next()) {
@@ -277,7 +277,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     }
 
     public Object[] getVariantTableInfo(String sid, int projectid, int refid, boolean published) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
@@ -291,7 +291,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
         }
         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
-        
+
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         if (rs.next()) {
@@ -300,9 +300,9 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             return null;
         }
     }
-    
+
     public void addSubsetInfoToMap(String sid, int projectId, int referenceId, int updateId, String subTableName, float multiplier) throws SQLException{
-        
+
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addCustomSetClause(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME), subTableName);
@@ -310,10 +310,10 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
-        
+
         ConnectionController.execute(sid, query.toString());
     }
-    
+
     public float getMultiplier(String sid, String table, String subTable) throws SQLException, RemoteException{
         int numerator = VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, table, new Condition[0][]);
         int denominator = VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, subTable, new Condition[0][]);
@@ -425,7 +425,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     public void setAnnotations(String sid, int projectid, int refid, int updateid, String annotation_ids) throws SQLException {
 
         String tablename = getVariantTablename(sid, projectid, refid, true);
-        
+
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addSetClause(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS), annotation_ids);
@@ -535,9 +535,9 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         }
         return result;
     }
-    
+
     public int getNewestUpdateId(String sid, int projectId, int referenceId, boolean published) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
@@ -548,31 +548,31 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true));
         }
         query.addOrdering(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), Dir.DESCENDING);
-        
+
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-        
+
         rs.next();
-        return rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID);       
+        return rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID);
     }
-    
+
     public void publishVariantTable(Connection c, int projectId, int referenceId, int updateId) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addSetClause(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), true);
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
-        
+
         c.createStatement().executeUpdate(query.toString());
     }
-    
+
     public List<ProjectDetails> getUnpublishedTables(String sid) throws SQLException {
-        
+
         TableSchema variantMapTable = MedSavantDatabase.VarianttablemapTableSchema;
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         TableSchema projectTable = MedSavantDatabase.ProjectTableSchema;
-        
+
         SelectQuery query = new SelectQuery();
         query.addFromTable(variantMapTable.getTable());
         query.addAliasedColumn(projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_NAME), "A");
@@ -592,22 +592,22 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());       
         
         Map<Integer, Map<Integer, ProjectDetails>> map = new HashMap<Integer, Map<Integer, ProjectDetails>>();
-        
+
         while(rs.next()){
             int projectId = rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID);
             int referenceId = rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID);
             int updateId = rs.getInt(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID);
             boolean published = rs.getBoolean(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED);
-            
+
             if(!map.containsKey(projectId)){
                 map.put(projectId, new HashMap<Integer, ProjectDetails>());
             }
-            
+
             if(!map.get(projectId).containsKey(referenceId) || map.get(projectId).get(referenceId).getUpdateId() < updateId){
                 map.get(projectId).put(referenceId, new ProjectDetails(projectId, referenceId, updateId, published, rs.getString("A"), rs.getString("B"), null));
-            } 
+            }
         }
-        
+
         List<ProjectDetails> tables = new ArrayList<ProjectDetails>();
         for(Integer project : map.keySet()){
             for(ProjectDetails details : map.get(project).values()){
@@ -616,56 +616,56 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 }
             }
         }
-        
+
         return tables;
     }
-    
+
     public boolean existsUnpublishedChanges(String sid, int projectId) throws SQLException, RemoteException {
-        
+
         for(Integer referenceId : ReferenceQueryUtil.getInstance().getReferenceIdsForProject(sid, projectId)){
             if(existsUnpublishedChanges(sid, projectId, referenceId)){
                 return true;
             }
         }
-        return false;       
+        return false;
     }
 
     public boolean existsUnpublishedChanges(String sid, int projectId, int referenceId) throws SQLException {
         int newestId = getNewestUpdateId(sid, projectId, referenceId, false);
         int newestPublishedId = getNewestUpdateId(sid, projectId, referenceId, true);
-        return newestId > newestPublishedId;     
+        return newestId > newestPublishedId;
     }
-    
+
     /*
      * Remove any variant tables with updateMin <= updateId <= updateMax
      */
     public void removeTables(String sid, int projectId, int referenceId, int updateMax, int updateMin) throws SQLException {
-        
+
         //find update ids
         TableSchema mapTable = MedSavantDatabase.VarianttablemapTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(mapTable.getTable());
         query.addColumns(
-                mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), 
+                mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID),
                 mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME));
         query.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         query.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
         query.addCondition(ComboCondition.and(
-                BinaryCondition.lessThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMax, true), 
+                BinaryCondition.lessThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMax, true),
                 BinaryCondition.greaterThan(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateMin, true)));
 
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-               
+
         while(rs.next()){
             int updateId = rs.getInt(1);
             String tableName = rs.getString(2);
-            
+
             //remove variant table
             VariantManagerUtils.dropTableIfExists(sid, tableName);
-        
+
             //remove from variant tablemap
             DeleteQuery dq1 = new DeleteQuery(mapTable.getTable());
-            dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId)); 
+            dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
             dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
             dq1.addCondition(BinaryConditionMS.equalTo(mapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
             ConnectionController.execute(sid, dq1.toString());
@@ -675,9 +675,9 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
             DeleteQuery dq2 = new DeleteQuery(formatTable.getTable());
             dq2.addCondition(BinaryConditionMS.equalTo(formatTable.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
             dq2.addCondition(BinaryConditionMS.equalTo(formatTable.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
-            dq2.addCondition(BinaryConditionMS.equalTo(formatTable.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));  
+            dq2.addCondition(BinaryConditionMS.equalTo(formatTable.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId));
         }
 
     }
-    
+
 }
