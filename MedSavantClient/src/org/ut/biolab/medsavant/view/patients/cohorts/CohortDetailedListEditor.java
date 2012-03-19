@@ -6,7 +6,7 @@ import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.db.model.Cohort;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.CohortWizard;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
@@ -44,21 +44,21 @@ public class CohortDetailedListEditor extends DetailedListEditor {
 
         if (items.size() == 1) {
             String name = ((Cohort) items.get(0)[0]).getName();
-            result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+            result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                     "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
                     "Confirm", JOptionPane.YES_NO_OPTION);
         } else {
-            result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+            result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                     "Are you sure you want to remove these " + items.size() + " cohorts?\nThis cannot be undone.",
                     "Confirm", JOptionPane.YES_NO_OPTION);
         }
 
 
         if (result == JOptionPane.YES_OPTION) {
-            
+
             final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                    "Removing Cohort(s)", 
-                    items.size() + " cohort(s) being removed. Please wait.", 
+                    "Removing Cohort(s)",
+                    items.size() + " cohort(s) being removed. Please wait.",
                     true);
             Thread thread = new Thread() {
                 @Override
@@ -73,14 +73,14 @@ public class CohortDetailedListEditor extends DetailedListEditor {
                             DialogUtils.displayErrorMessage("Couldn't remove " + ((Cohort) v[0]).getName(), ex);
                         }
                     }
-                    
+
                     dialog.close();
                     if (numCouldntRemove != items.size()) {
                         DialogUtils.displayMessage("Successfully removed " + (items.size() - numCouldntRemove) + " cohort(s)");
                     }
                 }
             };
-            thread.start(); 
+            thread.start();
             dialog.setVisible(true);
         }
     }

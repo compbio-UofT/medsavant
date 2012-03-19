@@ -33,7 +33,7 @@ import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.view.list.DetailedView;
@@ -102,11 +102,11 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
             if (items.size() == 1) {
                 String name = (String) items.get(0)[nameIndex];
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                              "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
                              "Confirm", JOptionPane.YES_NO_OPTION);
             } else {
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                              "Are you sure you want to remove these " + items.size() + " projects?\nThis cannot be undone.",
                              "Confirm", JOptionPane.YES_NO_OPTION);
             }
@@ -155,19 +155,19 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
     public void projectTableRemoved(int projid, int refid) {
     }
 
- 
+
     private static class ProjectsDetailedView extends DetailedView implements ProjectListener {
 
         private final JPanel content;
         private String projectName;
         private ProjectDetailsSW sw;
-        
+
         private static JPanel details;
         private CollapsiblePanel tableInfoPanel;
 
 
         public ProjectsDetailedView() {
-            
+
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());
 
@@ -260,11 +260,11 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                 }
             }
         }
-        
+
         public synchronized void setDetailsList(List<ProjectDetails> projectDetails) {
-            
+
             details.removeAll();
-            
+
             ViewUtil.setBoxYLayout(details);
 
             String[][] values = new String[projectDetails.size()][2];
@@ -272,11 +272,11 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                 values[i][0] = projectDetails.get(i).getReferenceName();
                 values[i][1] = projectDetails.get(i).getNumAnnotations() + " annotation(s) applied";
             }
-                        
+
             details.add(ViewUtil.getKeyValuePairList(values));
-            
+
             details.updateUI();
-            
+
         }
 
         @Override

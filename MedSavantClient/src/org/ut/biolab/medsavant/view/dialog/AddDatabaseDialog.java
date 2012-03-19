@@ -28,7 +28,7 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
 
 import org.ut.biolab.medsavant.settings.VersionSettings;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -43,12 +43,12 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
     public static final int RET_OK = 1;
 
     public AddDatabaseDialog(String hostname, String port, String dbname) {
-        super(MainFrame.getInstance(), true);
+        super(MedSavantFrame.getInstance(), true);
         initComponents();
 
         this.setResizable(false);
 
-        setLocationRelativeTo(MainFrame.getInstance());
+        setLocationRelativeTo(MedSavantFrame.getInstance());
         this.field_hostname.setText(hostname);
         this.field_port.setText(port);
         this.field_database.setText(dbname);
@@ -252,9 +252,9 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         final IndeterminateProgressDialog progress = new IndeterminateProgressDialog("Creating Database", "Creating database " + field_database.getText() + ". Please wait...", true, this);
         Thread t = new Thread(){
             @Override
-            public void run(){               
-                try {                
-                    MedSavantClient.initializeRegistry(field_hostname.getText(), field_port.getText());                    
+            public void run(){
+                try {
+                    MedSavantClient.initializeRegistry(field_hostname.getText(), field_port.getText());
                     MedSavantClient.SetupAdapter.createDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword(), VersionSettings.getVersionString());
                     progress.setVisible(false);
                     DialogUtils.displayMessage("Database \"" + field_database.getText() + "\" created successfuly");
@@ -264,7 +264,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
                     x.printStackTrace();
                     DialogUtils.displayException("Sorry", "Database could not be created:\n" + x.getMessage() + "\nPlease check the settings and try again.", x);
                 }
-            }           
+            }
         };
         t.start();
         progress.setVisible(true);

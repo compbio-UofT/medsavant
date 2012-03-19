@@ -133,7 +133,7 @@ public class LoggedInView extends JPanel implements ProjectListener {
                     while (true) {
                         int result = DialogUtils.askYesNo("Welcome to MedSavant", "To begin using MedSavant, you will need to create a project.");
                         if (result == DialogUtils.NO) {
-                            MainFrame.getInstance().requestClose();
+                            MedSavantFrame.getInstance().requestClose();
                             // don't break, the user chose not to quit
                         } else {
                             ProjectWizard npd = new ProjectWizard();

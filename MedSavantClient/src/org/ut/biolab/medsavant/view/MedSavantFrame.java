@@ -51,12 +51,12 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-public class MainFrame extends JFrame implements LoginListener {
+public class MedSavantFrame extends JFrame implements LoginListener {
     private static final String LOGIN_CARD_NAME = "login";
     private static final String SESSION_VIEW_CARD_NAME = "main";
     private static final String WAIT_CARD_NAME = "wait";
 
-    private static MainFrame instance;
+    private static MedSavantFrame instance;
 
     private JPanel view;
     private CardLayout viewCardLayout;
@@ -67,39 +67,39 @@ public class MainFrame extends JFrame implements LoginListener {
     private String currentCard;
     private boolean queuedForExit = false;
 
-    public static MainFrame getInstance() {
+    public static MedSavantFrame getInstance() {
         if (instance == null) {
-            instance = new MainFrame();
+            instance = new MedSavantFrame();
             LoginController.addLoginListener(instance);
         }
         return instance;
     }
 
-    private MainFrame() {
+    private MedSavantFrame() {
         super("MedSavant");
 
         setLayout(new BorderLayout());
         setMinimumSize(new Dimension(500,500));
-        
+
         view = new JPanel();
         viewCardLayout = new CardLayout();
         view.setLayout(viewCardLayout);
-        
+
         add(view, BorderLayout.CENTER);
 
         if (ViewUtil.isMac()) {
             customizeForMac();
         }
 
-        JMenuBar menu = new JMenuBar();   
+        JMenuBar menu = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
-        
+
         JMenuItem pluginsItem = new JMenuItem("Plugins…");
         pluginsItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 PluginManagerDialog.getInstance().setVisible(true);
             }
-            
+
         });
 
         logOutItem = new JMenuItem("Sign out");
@@ -136,24 +136,24 @@ public class MainFrame extends JFrame implements LoginListener {
 
         if (SettingsController.getInstance().getAutoLogin()) {
             LoginController.login(
-                    SettingsController.getInstance().getUsername(), 
-                    SettingsController.getInstance().getPassword(), 
-                    SettingsController.getInstance().getDBName(), 
-                    SettingsController.getInstance().getServerAddress(), 
+                    SettingsController.getInstance().getUsername(),
+                    SettingsController.getInstance().getPassword(),
+                    SettingsController.getInstance().getDBName(),
+                    SettingsController.getInstance().getServerAddress(),
                     SettingsController.getInstance().getServerPort());
         } else {
             switchToLoginView();
         }
-        
+
         FilterController.init();
     }
 
     public void switchToSessionView() {
         if (!LoginController.isLoggedIn() || (currentCard != null && currentCard.equals(SESSION_VIEW_CARD_NAME))) { return; }
-               
+
         view.add(new WaitPanel("Loading Projects"), WAIT_CARD_NAME);
         switchToView(WAIT_CARD_NAME);
-        
+
         MiscUtils.invokeLaterIfNecessary(new Runnable() {
             @Override
             public void run() {
@@ -164,7 +164,7 @@ public class MainFrame extends JFrame implements LoginListener {
                 BottomBar.getInstance().updateLoginStatus();
                 switchToView(SESSION_VIEW_CARD_NAME);
             }
-        });       
+        });
     }
 
     public final void switchToLoginView() {
@@ -172,13 +172,13 @@ public class MainFrame extends JFrame implements LoginListener {
         if (sessionView != null) {
             view.remove(sessionView);
         }
-        
+
         if (loginView != null) {
             LoginController.removeLoginListener(loginView.getLoginForm());
         }
         loginView = new LoginView();
         view.add(loginView, LOGIN_CARD_NAME);
-        
+
         logOutItem.setEnabled(false);
         //manageDBItem.setEnabled(false);
         BottomBar.getInstance().updateLoginStatus();
@@ -189,7 +189,7 @@ public class MainFrame extends JFrame implements LoginListener {
          viewCardLayout.show(view, cardname);
          currentCard = cardname;
     }
-    
+
     public void requestClose() {
         if (!LoginController.isLoggedIn() || DialogUtils.askYesNo("Exit MedSavant?", "Are you sure you want to quit?") == DialogUtils.YES) {
             queuedForExit = true; //sometimes logout aborts this exit, so wait for event
@@ -213,7 +213,7 @@ public class MainFrame extends JFrame implements LoginListener {
             System.exit(0);
         }
     }
-    
+
     private void customizeForMac() {
 
         try {
@@ -228,9 +228,9 @@ public class MainFrame extends JFrame implements LoginListener {
 
                 @Override
                 public void handleAbout(AboutEvent evt) {
-                    JOptionPane.showMessageDialog(MainFrame.this, "MedSavant " + 
-                            MedSavantProgramInformation.getVersion() + " " + 
-                            MedSavantProgramInformation.getReleaseType() + 
+                    JOptionPane.showMessageDialog(MedSavantFrame.this, "MedSavant " +
+                            MedSavantProgramInformation.getVersion() + " " +
+                            MedSavantProgramInformation.getReleaseType() +
                             "\nCreated by Biolab at University of Toronto.");
                 }
             });

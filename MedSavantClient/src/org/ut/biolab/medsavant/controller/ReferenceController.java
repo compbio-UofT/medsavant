@@ -10,7 +10,7 @@ import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -22,7 +22,7 @@ public class ReferenceController {
     private int currentReferenceId;
     private String currentReferenceName;
     private boolean referenceSet = false;
-    
+
     private final ArrayList<ReferenceListener> referenceListeners;
 
     /*
@@ -34,7 +34,7 @@ public class ReferenceController {
     e.printStackTrace();
     }
     }
-     * 
+     *
      */
 
     /*
@@ -44,7 +44,7 @@ public class ReferenceController {
     l.referenceRemoved(referenceName);
     }
     }
-     * 
+     *
      */
     public void addReference(String name, List<Chromosome> contigs, String url) {
         try {
@@ -59,8 +59,8 @@ public class ReferenceController {
 
     public void removeReference(final String refName) {
         final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                "Removing Reference", 
-                "Reference " + refName + " is being removed. Please wait.", 
+                "Removing Reference",
+                "Reference " + refName + " is being removed. Please wait.",
                 true);
         Thread thread = new Thread() {
             @Override
@@ -69,12 +69,12 @@ public class ReferenceController {
                     MedSavantClient.ReferenceQueryUtilAdapter.removeReference(LoginController.sessionId, MedSavantClient.ReferenceQueryUtilAdapter.getReferenceId(LoginController.sessionId, refName));
                     fireReferenceRemovedEvent(refName);
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(MainFrame.getInstance(), "Cannot remove this reference because projects\nor annotations still refer to it.", "", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(MedSavantFrame.getInstance(), "Cannot remove this reference because projects\nor annotations still refer to it.", "", JOptionPane.ERROR_MESSAGE);
                 }
-                dialog.close();  
+                dialog.close();
             }
         };
-        thread.start(); 
+        thread.start();
         dialog.setVisible(true);
     }
 
@@ -112,28 +112,28 @@ public class ReferenceController {
     public void addReferenceListener(ReferenceListener l) {
         this.referenceListeners.add(l);
     }
-    
+
      public boolean setReference(String refName){
         return setReference(refName, false);
     }
-    
-     
 
-    
+
+
+
 
     public boolean setReference(String refName, boolean getConfirmation) {
         try {
             if (MedSavantClient.ReferenceQueryUtilAdapter.containsReference(LoginController.sessionId, refName)) {
-                
+
                 if(getConfirmation && FilterController.hasFiltersApplied()){
                     if(!DialogUtils.confirmChangeReference(false)){
                         return false;
                     }
                 }
-                
+
                 this.currentReferenceId = this.getReferenceId(refName);
                 this.currentReferenceName = refName;
-                
+
                 this.fireReferenceChangedEvent(refName);
             }
         } catch (Exception ex) {
@@ -144,7 +144,7 @@ public class ReferenceController {
         referenceSet = true;
         return true;
     }
-    
+
     public void fireReferenceChangedEvent(String referenceName){
         for (ReferenceListener l : referenceListeners){
             l.referenceChanged(referenceName);
@@ -158,11 +158,11 @@ public class ReferenceController {
     public int getCurrentReferenceId() {
         return this.currentReferenceId;
     }
-    
+
     public String getCurrentReferenceName(){
         return this.currentReferenceName;
     }
-    
+
     public String getCurrentReferenceUrl(){
         try {
             return MedSavantClient.ReferenceQueryUtilAdapter.getReferenceUrl(LoginController.sessionId, currentReferenceId);
@@ -170,11 +170,11 @@ public class ReferenceController {
             return null;
         }
     }
-    
+
     public List<Chromosome> getChromosomes() throws SQLException, RemoteException {
         return MedSavantClient.ReferenceQueryUtilAdapter.getChromosomes(LoginController.sessionId, currentReferenceId);
     }
-    
+
     public boolean isReferenceSet(){
         return referenceSet;
     }

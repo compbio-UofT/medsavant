@@ -36,7 +36,7 @@ import com.jidesoft.dialog.JideOptionPane;
 import org.ut.biolab.medsavant.db.util.shared.ExtensionFileFilter;
 
 import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 
 
 /**
@@ -217,7 +217,7 @@ public class DialogUtils {
                 fd.setFileFilter(filter);
                 }
             fd.setMultiSelectionEnabled(true);
-            int result = fd.showOpenDialog(MainFrame.getInstance());
+            int result = fd.showOpenDialog(MedSavantFrame.getInstance());
             if (result == JFileChooser.APPROVE_OPTION) {
                 return fd.getSelectedFiles();
             }

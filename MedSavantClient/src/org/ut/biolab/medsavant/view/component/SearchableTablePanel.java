@@ -37,7 +37,7 @@ import javax.swing.border.Border;
 import javax.swing.table.TableColumn;
 import org.ut.biolab.medsavant.util.ExportTable;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -595,7 +595,7 @@ public class SearchableTablePanel extends JPanel {
         }
 
         public void showDialog(){
-            TableColumnChooserDialog dialog = super.createTableColumnChooserDialog(MainFrame.getInstance(), "Choose Columns to Display", table);
+            TableColumnChooserDialog dialog = super.createTableColumnChooserDialog(MedSavantFrame.getInstance(), "Choose Columns to Display", table);
             dialog.setPreferredSize(new Dimension(300,500));
             dialog.setSize(new Dimension(300,500));
             dialog.setLocationRelativeTo(null);

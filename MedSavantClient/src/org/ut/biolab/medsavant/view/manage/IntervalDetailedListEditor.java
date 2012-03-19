@@ -6,7 +6,7 @@ import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.db.model.RegionSet;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.dialog.IntervalWizard;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
@@ -44,11 +44,11 @@ class IntervalDetailedListEditor extends DetailedListEditor {
 
         if (items.size() == 1) {
             String name = ((RegionSet) items.get(0)[0]).getName();
-            result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+            result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                     "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
                     "Confirm", JOptionPane.YES_NO_OPTION);
         } else {
-            result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+            result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                     "Are you sure you want to remove these " + items.size() + " lists?\nThis cannot be undone.",
                     "Confirm", JOptionPane.YES_NO_OPTION);
         }
@@ -85,5 +85,5 @@ class IntervalDetailedListEditor extends DetailedListEditor {
         }
     }
 
-    
+
 }

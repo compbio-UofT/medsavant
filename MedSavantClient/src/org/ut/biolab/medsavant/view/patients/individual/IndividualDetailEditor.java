@@ -7,7 +7,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.util.MiscUtils;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.AddPatientsForm;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
@@ -42,11 +42,11 @@ class IndividualDetailEditor extends DetailedListEditor {
 
         if (items.size() == 1) {
             String name = (String) items.get(0)[nameIndex];
-            result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+            result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                     "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
                     "Confirm", JOptionPane.YES_NO_OPTION);
         } else {
-            result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+            result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                     "Are you sure you want to remove these " + items.size() + " individuals?\nThis cannot be undone.",
                     "Confirm", JOptionPane.YES_NO_OPTION);
         }
@@ -58,31 +58,31 @@ class IndividualDetailEditor extends DetailedListEditor {
                 int id = (Integer) v[keyIndex];
                 patients[index++] = id;
             }
-                      
+
             final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                    "Removing Patient(s)", 
-                    patients.length + " patient(s) being removed. Please wait.", 
+                    "Removing Patient(s)",
+                    patients.length + " patient(s) being removed. Please wait.",
                     true);
             Thread thread = new Thread() {
                 @Override
                 public void run() {
                     try {
                         MedSavantClient.PatientQueryUtilAdapter.removePatient(
-                                LoginController.sessionId, 
-                                ProjectController.getInstance().getCurrentProjectId(), 
+                                LoginController.sessionId,
+                                ProjectController.getInstance().getCurrentProjectId(),
                                 patients);
-                        dialog.close();  
+                        dialog.close();
                         DialogUtils.displayMessage("Successfully removed " + (items.size()) + " individuals(s)");
                     } catch (Exception ex) {
                         if(ex instanceof SQLException)
                             MiscUtils.checkSQLException((SQLException)ex);
-                        dialog.close();  
+                        dialog.close();
                         DialogUtils.displayErrorMessage("Couldn't remove patient(s)", ex);
                     }
-                    
+
                 }
             };
-            thread.start(); 
+            thread.start();
             dialog.setVisible(true);
         }
     }

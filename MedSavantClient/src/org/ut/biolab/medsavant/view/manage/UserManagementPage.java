@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.controller.UserController;
 import org.ut.biolab.medsavant.controller.UserController.UserListener;
 import org.ut.biolab.medsavant.db.model.UserLevel;
 import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
@@ -56,7 +56,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
 
         @Override
         public void addItems() {
-            NewUserDialog npd = new NewUserDialog(MainFrame.getInstance(), true);
+            NewUserDialog npd = new NewUserDialog(MedSavantFrame.getInstance(), true);
             npd.setVisible(true);
         }
 
@@ -72,11 +72,11 @@ public class UserManagementPage extends SubSectionView implements UserListener {
 
             if (results.size() == 1) {
                 String name = (String) results.get(0)[nameIndex];
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                         "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
                         "Confirm", JOptionPane.YES_NO_OPTION);
             } else {
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                         "Are you sure you want to remove these " + results.size() + " users?\nThis cannot be undone.",
                         "Confirm", JOptionPane.YES_NO_OPTION);
             }
@@ -114,10 +114,10 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         private CollapsiblePanel infoPanel;
 
         public UserDetailedView() {
-            
+
             fieldNames = new ArrayList<String>();
             fieldNames.add("User Level");
-        
+
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());
 
@@ -159,29 +159,29 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         public void setRightClick(MouseEvent e) {
             //nothing yet
         }
-        
+
         public synchronized void setUserInfoList(List<String> info) {
-            
+
             details.removeAll();
-            
+
             details.setLayout(new BorderLayout());
             ViewUtil.setBoxYLayout(details);
-            
+
             String[][] values = new String[fieldNames.size()][2];
             for(int i = 0; i < fieldNames.size(); i++){
                 values[i][0] = fieldNames.get(0);
                 values[i][1] = info.get(0);
             }
             details.add(ViewUtil.getKeyValuePairList(values));
-            
+
             details.updateUI();
-            
+
         }
-        
+
         private class DetailsSW extends SwingWorker {
 
             private String userName;
-            
+
             public DetailsSW(String userName) {
                 this.userName = userName;
             }
@@ -194,13 +194,13 @@ public class UserManagementPage extends SubSectionView implements UserListener {
                     return null;
                 }
             }
-            
+
             @Override
             protected void done() {
                 List<String> infoList = new ArrayList<String>();
                 try {
                     UserLevel level = (UserLevel) get();
-                    infoList.add(MiscUtils.userLevelToString(level)); 
+                    infoList.add(MiscUtils.userLevelToString(level));
                 } catch (Exception ex){
                     infoList.add("Unknown");
                 }
@@ -300,7 +300,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                NewUserDialog npd = new NewUserDialog(MainFrame.getInstance(), true);
+                NewUserDialog npd = new NewUserDialog(MedSavantFrame.getInstance(), true);
                 npd.setVisible(true);
             }
         });

@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.model.Chromosome;
 import org.ut.biolab.medsavant.db.model.Reference;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.dialog.NewReferenceDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
@@ -44,10 +44,10 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Andrew
  */
 public class ReferenceGenomePage extends SubSectionView implements ReferenceListener {
-    
+
     private SplitScreenView panel;
     private boolean updateRequired = false;
-    
+
     public ReferenceGenomePage(SectionView parent){
         super(parent);
         ReferenceController.getInstance().addReferenceListener(this);
@@ -62,7 +62,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
     public JPanel getView(boolean update) {
         if (panel == null || updateRequired) {
             setPanel();
-        } 
+        }
         return panel;
     }
 
@@ -73,7 +73,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
     public void viewDidUnload() {
         ThreadController.getInstance().cancelWorkers(getName());
     }
-    
+
     public void setPanel() {
         panel = new SplitScreenView(
                 new ReferenceListModel(),
@@ -101,12 +101,12 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             panel.refresh();
         }
     }
-    
+
     public void update(){
         panel.refresh();
     }
 
-    
+
     /*
      * REFERENCE GENOMES LIST MODEL
      */
@@ -125,7 +125,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
                 Object[] v = new Object[] {refs.get(i)};
                 refVector.add(v);
             }
-            return refVector;          
+            return refVector;
         }
 
         public List<String> getColumnNames() {
@@ -166,9 +166,9 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
         private Object[] columnNames;
 
         public ReferenceDetailedView() {
-            
-            columnNames = new Object[]{"Contig Name", "Contig Length", "Centromere Position"};          
-        
+
+            columnNames = new Object[]{"Contig Name", "Contig Length", "Centromere Position"};
+
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());
 
@@ -206,7 +206,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
         }
 
         public synchronized void setReferenceInfoTable(Object[][] data) {
-            
+
             details.removeAll();
 
             JTable table = new JTable(data, columnNames) {
@@ -227,18 +227,18 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             table.setGridColor(new Color(235,235,235));
             table.setRowHeight(21);
 
-            
+
             details.add((table.getTableHeader()));
-            details.add(table); 
+            details.add(table);
 
             details.updateUI();
-            
+
         }
-        
+
         private class DetailsSW extends SwingWorker {
 
             private Reference ref;
-            
+
             public DetailsSW(Reference ref) {
                 this.ref = ref;
             }
@@ -251,7 +251,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
                     return null;
                 }
             }
-            
+
             @Override
             protected void done() {
                 //List<Object[]> list = new ArrayList<Object[]>();
@@ -262,7 +262,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
                     for(int i = 0; i < result.size(); i++){
                         Chromosome c = result.get(i);
                         list[i] = new Object[]{c.getName(), c.getLength(), c.getCentromerepos()};
-                    }     
+                    }
                 } catch (InterruptedException ex) {
                     Logger.getLogger(ReferenceGenomePage.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (ExecutionException ex) {
@@ -283,9 +283,9 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             details.updateUI();
         }
     }
-    
-    
-    
+
+
+
     /*
      * REFERENCE GENOMES DETAILED LIST EDITOR
      */
@@ -303,7 +303,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
         @Override
         public void addItems() {
-            NewReferenceDialog npd = new NewReferenceDialog(MainFrame.getInstance(), true);
+            NewReferenceDialog npd = new NewReferenceDialog(MedSavantFrame.getInstance(), true);
             npd.setVisible(true);
         }
 
@@ -318,11 +318,11 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
             if (items.size() == 1) {
                 String name = ((Reference) items.get(0)[0]).getName();
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                              "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
                              "Confirm", JOptionPane.YES_NO_OPTION);
             } else {
-                result = JOptionPane.showConfirmDialog(MainFrame.getInstance(),
+                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
                              "Are you sure you want to remove these " + items.size() + " references?\nThis cannot be undone.",
                              "Confirm", JOptionPane.YES_NO_OPTION);
             }
@@ -340,5 +340,5 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
             }
         }
     }
-    
+
 }

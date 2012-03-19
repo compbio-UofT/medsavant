@@ -16,7 +16,7 @@ import org.ut.biolab.medsavant.controller.ExternalAnnotationController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.format.AnnotationFormat;
 import org.ut.biolab.medsavant.db.model.Annotation;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
@@ -46,7 +46,7 @@ public class AnnotationsPage extends SubSectionView {
 
         @Override
         public void addItems() {
-            JOptionPane.showMessageDialog(MainFrame.getInstance(),
+            JOptionPane.showMessageDialog(MedSavantFrame.getInstance(),
                         "Annotations can only be added using the \n"
                         + "MedSavant Database Utility.",
                         "",JOptionPane.INFORMATION_MESSAGE);
@@ -58,7 +58,7 @@ public class AnnotationsPage extends SubSectionView {
 
         @Override
         public void deleteItems(List<Object[]> items) {
-            JOptionPane.showMessageDialog(MainFrame.getInstance(),
+            JOptionPane.showMessageDialog(MedSavantFrame.getInstance(),
                         "Annotations can only be deleted using the \n"
                         + "MedSavant Database Utility.",
                         "",JOptionPane.INFORMATION_MESSAGE);
@@ -187,7 +187,7 @@ public class AnnotationsPage extends SubSectionView {
 
         @Override
         public void setSelectedItem(Object[] item) {
-            
+
             Annotation annotation = (Annotation) item[0];
 
             String title = annotation.toString();
@@ -197,12 +197,12 @@ public class AnnotationsPage extends SubSectionView {
             details.updateUI();
 
             List<String[]> infoList = new ArrayList<String[]>();
-            
+
             infoList.add(new String[]{"Program", annotation.getProgram()});
             infoList.add(new String[]{"Version", annotation.getVersion()});
             infoList.add(new String[]{"Reference Genome", annotation.getReferenceName()});
             infoList.add(new String[]{"Type", AnnotationFormat.annotationTypToString(annotation.getAnnotationType())});
-            
+
             setDetailsList(infoList);
         }
 
@@ -221,23 +221,23 @@ public class AnnotationsPage extends SubSectionView {
         public void setRightClick(MouseEvent e) {
             //nothing yet
         }
-        
+
         private synchronized void setDetailsList(List<String[]> info) {
-            
+
             details.removeAll();
-            
+
             ViewUtil.setBoxYLayout(details);
-            
+
             String[][] values = new String[info.size()][2];
             for(int i = 0; i < info.size(); i++){
                 values[i][0] = info.get(i)[0];
                 values[i][1] = info.get(i)[1];
             }
-            
+
             details.add(ViewUtil.getKeyValuePairList(values));
-            
+
             details.updateUI();
-            
+
         }
 
     }

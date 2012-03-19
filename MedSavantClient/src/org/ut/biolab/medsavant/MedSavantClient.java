@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.db.util.query.api.NotificationQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.query.api.SetupAdapter;
 import org.ut.biolab.medsavant.db.variants.upload.api.VariantManagerAdapter;
 import org.ut.biolab.medsavant.log.ClientLogger;
-import org.ut.biolab.medsavant.view.MainFrame;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 
 
 public class MedSavantClient {
@@ -64,14 +64,14 @@ public class MedSavantClient {
 
     public static boolean initialized = false;
 
-    private static MainFrame frame;
+    private static MedSavantFrame frame;
 
     static public void main(String args[]) {
         verifyJIDE();
         setLAF();
         SettingsController.getInstance();
-        frame = MainFrame.getInstance();
-        frame.setExtendedState(MainFrame.MAXIMIZED_BOTH);
+        frame = MedSavantFrame.getInstance();
+        frame.setExtendedState(MedSavantFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
         ClientLogger.log(MedSavantClient.class, "MedSavant booted");
     }
@@ -119,7 +119,7 @@ public class MedSavantClient {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
             LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
-            
+
             //tooltips
             UIManager.put("ToolTip.background", new ColorUIResource(255,255,255));
             ToolTipManager.sharedInstance().setDismissDelay(8000);
