@@ -280,7 +280,7 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
                 + "`variant_type` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
                 + "`zygosity` varchar(20) COLLATE latin1_bin DEFAULT NULL,"
                 + "`gt` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
-                + "`custom_info` varchar(500) COLLATE latin1_bin DEFAULT NULL"
+                + "`custom_info` varchar(1000) COLLATE latin1_bin DEFAULT NULL"
                 + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
         c.createStatement().execute(
@@ -297,7 +297,7 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
                   + "`tagvalue` varchar(1000) COLLATE latin1_bin NOT NULL DEFAULT ''"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin"
                 );
-        
+
         c.createStatement().execute(
                 "CREATE TABLE `" + MedSavantDatabase.VariantStarredTableSchema.getTablename() + "` ("
                 + "`project_id` int(11) unsigned NOT NULL,"
