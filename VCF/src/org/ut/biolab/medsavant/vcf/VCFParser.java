@@ -103,6 +103,10 @@ public class VCFParser {
                 } catch (NullPointerException e) {
                     System.out.println("Next line: " + nextLine);
                     throw e;
+                } catch (Exception e){
+                    System.out.println("Line: " + nextLine[0] + ", " + nextLine[1] + ", ...");
+                    e.printStackTrace();
+                    throw new NullPointerException();
                 }
                 //add records to tdf
                 for (VariantRecord v : records) {
@@ -151,7 +155,9 @@ public class VCFParser {
 
             // get the genotype labels
             for (int i = VCFHeader.getNumMandatoryFields() + 1; i < headerLine.length; i++) {
-                result.addGenotypeLabel(headerLine[i]);
+                if(headerLine[i] != null && headerLine[i].length() != 0){
+                    result.addGenotypeLabel(headerLine[i]);
+                }
             }
         }
 
@@ -197,12 +203,7 @@ public class VCFParser {
         try {
             r = new VariantRecord(line);
         } catch (Exception e) {
-            //e.printStackTrace();
             System.err.println("WARNING: error parsing line " + line + ". Skipping");
-            /*for(String s : line){
-                System.err.print(s + "\t");
-            }
-            System.err.println();*/
             return new ArrayList<VariantRecord>();
         }
 
