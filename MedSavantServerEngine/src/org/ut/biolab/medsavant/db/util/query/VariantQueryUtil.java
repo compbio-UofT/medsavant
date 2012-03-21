@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.broad.igv.feature.Genome.ChromosomeComparator;
 import org.ut.biolab.medsavant.db.model.StarredVariant;
 
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
@@ -58,6 +59,8 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTabl
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantStarredTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VarianttagTableSchema;
 import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.model.ScatterChartEntry;
+import org.ut.biolab.medsavant.db.model.ScatterChartMap;
 import org.ut.biolab.medsavant.db.model.SimplePatient;
 import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
@@ -395,7 +398,86 @@ public class VariantQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         return map;
     }
-
+    
+    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, int projectId, int referenceId, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, double binSizeX, double binSizeY, boolean sortKaryotypically) throws SQLException, RemoteException {
+        
+        //pick table from approximate or exact
+        TableSchema table;
+        int total = getNumFilteredVariants(sid, projectId, referenceId, conditions);
+        Object[] variantTableInfo = ProjectQueryUtil.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
+        String tablename = (String)variantTableInfo[0];
+        String tablenameSub = (String)variantTableInfo[1];
+        float multiplier = (Float)variantTableInfo[2];        
+        if(total >= BIN_TOTAL_THRESHOLD){
+            table = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
+        } else {
+            table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
+            multiplier = 1;
+        }
+        
+        //DbColumn columnX = table.getDBColumnByAlias(columnAliasX);
+        //DbColumn columnY = table.getDBColumnByAlias(columnAliasY);
+        
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(table.getTable());
+        //q.addColumns(columnX, columnY);
+        q.addCustomColumns(FunctionCall.countAll());
+        addConditionsToQuery(q, conditions);
+        //q.addGroupings(columnX, columnY);
+        //q.addOrderings(columnX, columnY);
+        
+        
+        String m = columnnameX + " as m";
+        if(!columnXCategorical){
+            m = "floor(" + columnnameX + " / " + binSizeX + ") as m";
+        }
+        String n = columnnameY + " as n";
+        if(!columnYCategorical){
+            n = "floor(" + columnnameY + " / " + binSizeY + ") as n";
+        }
+        String query = q.toString().replace("COUNT(*)", "COUNT(*), " + m + ", " + n);
+        query += " GROUP BY m, n ORDER BY m, n ASC";
+        
+        
+        //String round = "floor(" + columnname + " / " + binSize + ") as m";
+        
+        ResultSet rs = ConnectionController.executeQuery(sid, query);
+        
+        List<ScatterChartEntry> entries = new ArrayList<ScatterChartEntry>();
+        List<String> xRanges = new ArrayList<String>();
+        List<String> yRanges = new ArrayList<String>();
+        
+        while(rs.next()){
+            String x = rs.getString(2);
+            String y = rs.getString(3);
+            if(!columnXCategorical){
+                x = Double.toString(Integer.parseInt(x) * binSizeX) + " - " + Double.toString(Integer.parseInt(x) * binSizeX + binSizeX);
+            }
+            if(!columnYCategorical){
+                y = Double.toString(Integer.parseInt(y) * binSizeY) + " - " + Double.toString(Integer.parseInt(y) * binSizeY + binSizeY);
+            }
+            ScatterChartEntry entry = new ScatterChartEntry(x, y, (int)(rs.getInt(1)*multiplier));
+            entries.add(entry);
+            if(!xRanges.contains(entry.getXRange())){
+                xRanges.add(entry.getXRange());
+            }
+            if(!yRanges.contains(entry.getYRange())){
+                yRanges.add(entry.getYRange());
+            }
+        }
+        
+        if(sortKaryotypically){
+            Collections.sort(xRanges, new ChromosomeComparator());
+        } else if (columnXCategorical){
+            Collections.sort(xRanges);
+        }
+        if(columnYCategorical){
+            Collections.sort(yRanges);
+        }
+        
+        return new ScatterChartMap(xRanges, yRanges, entries);
+    }
+    
     /*
      * Convenience method
      */

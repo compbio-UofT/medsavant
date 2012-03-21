@@ -38,10 +38,13 @@ import javax.swing.*;
 
 import com.mysql.jdbc.CommunicationsException;
 import net.sf.samtools.SAMRecord;
+import org.ut.biolab.medsavant.db.format.CustomField;
+import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.UserLevel;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 
 
 /**
@@ -575,4 +578,44 @@ public class MiscUtils {
         return result;
     }
     
+    public static double generateBins(CustomField field, Range r, boolean isLogScaleX) {
+
+        //log scale
+        if (isLogScaleX) {
+            return 10;
+
+            //percent fields
+        } else if ((field.getColumnType() == ColumnType.DECIMAL || field.getColumnType() == ColumnType.FLOAT) && r.getMax() - r.getMin() <= 1 && r.getMax() <= 1) {
+
+            return 0.05;
+
+            //boolean fields
+        } else if ((field.getColumnType() == ColumnType.INTEGER && Integer.parseInt(field.getColumnLength()) == 1) || field.getColumnType() == ColumnType.BOOLEAN) {
+
+            return 1;
+
+            //other fields
+        } else {
+
+            int min = (int) (r.getMin() - Math.abs(r.getMin() % (int) Math.pow(10, getNumDigits((int) (r.getMax() - r.getMin())) - 1)));
+            int step1 = (int) Math.ceil((r.getMax() - min) / 25.0);
+            int step2 = (int) Math.pow(10, getNumDigits(step1));
+            int step = step2;
+            while (step * 0.5 > step1) {
+                step *= 0.5;
+            }
+            step = Math.max(step, 1);
+
+            return step;
+        }
+    }
+
+    public static int getNumDigits(int x) {
+        x = Math.abs(x);
+        int digits = 1;
+        while (Math.pow(10, digits) < x) {
+            digits++;
+        }
+        return digits;
+    }
 }

@@ -20,6 +20,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Map;
@@ -37,7 +38,6 @@ import com.jidesoft.chart.model.ChartPoint;
 import com.jidesoft.chart.model.DefaultChartModel;
 import com.jidesoft.chart.model.Highlight;
 import com.jidesoft.chart.model.InvertibleTransform;
-import com.jidesoft.chart.model.RealPosition;
 import com.jidesoft.chart.render.AbstractPieSegmentRenderer;
 import com.jidesoft.chart.render.DefaultBarRenderer;
 import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
@@ -51,22 +51,26 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.FilterController;
 
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
+import org.ut.biolab.medsavant.db.model.ScatterChartEntry;
+import org.ut.biolab.medsavant.db.model.ScatterChartMap;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.MiscUtils;
@@ -100,14 +104,18 @@ public class SummaryChart extends JLayeredPane {
     private boolean isPie = false;
     private boolean isSorted = false;
     private static final int DEFAULT_NUM_QUANTITATIVE_CATEGORIES = 15;
-    private ChartMapWorker mapWorker;
+    private MedSavantWorker mapWorker;
     private ChartMapGenerator mapGenerator;
+    private ChartMapGenerator mapGeneratorScatter;
     private boolean isSortedKaryotypically;
     private String pageName;
     private final Object updateLock = new Object();
     private boolean updateRequired = false;
     private GridBagConstraints c;
     private WaitPanel waitPanel = new WaitPanel("Getting chart data");
+    private boolean isScatter = false;
+    //private String scatterAliasX;
+    //private String scatterAliasY;
 
     public SummaryChart(final String pageName) {
         this.pageName = pageName;
@@ -177,7 +185,24 @@ public class SummaryChart extends JLayeredPane {
 
     public void setChartMapGenerator(ChartMapGenerator cmg) {
         this.mapGenerator = cmg;
-        updateDataAndDrawChart();
+        //updateDataAndDrawChart();
+    }
+    
+    /*public void setScatterChart(String aliasX, String aliasY){
+        this.scatterAliasX = aliasX;
+        this.scatterAliasY = aliasY;
+    }*/
+    
+    public void setScatterChartMapGenerator(ChartMapGenerator cmg){
+        mapGeneratorScatter = cmg;
+    }
+    
+    public void setIsScatterChart(boolean scatter){
+        isScatter = scatter;
+    }
+    
+    public boolean isScatterChart(){
+        return isScatter;
     }
 
     public void updateIfRequired() {
@@ -203,8 +228,12 @@ public class SummaryChart extends JLayeredPane {
         setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
 
         //begin creating chart
-        new ChartMapWorker().execute();
-        
+        if(isScatter){
+            new ScatterChartMapWorker().execute();
+        } else {
+            new ChartMapWorker().execute();
+        }
+            
         /*Thread t = new Thread(){
             public void run(){
                 removeAll();
@@ -356,6 +385,61 @@ public class SummaryChart extends JLayeredPane {
         
         return chart;
     }
+    
+    private synchronized void drawScatterChart(ScatterChartMap entries) {
+        
+        Chart chart = new Chart(new Dimension(200, 200));
+        Legend legend = new Legend(chart);
+        
+        //Create x axis
+        int max = 0;
+        CategoryRange<String> range = new CategoryRange<String>();
+        for(int i = 0; i < entries.getNumX(); i++){
+            range.add(new ChartCategory(entries.getXValueAt(i)));
+        }
+        
+        //create models
+        DefaultChartModel[] models = new DefaultChartModel[entries.getNumY()];
+        for(int i = 0; i < entries.getNumY(); i++){
+            models[i] = new DefaultChartModel();
+        }
+        for (int i = 0; i < entries.getNumX(); i++) {
+            //ScatterChartEntry[] x = entries[i];
+            for(int j = 0; j < entries.getNumY(); j++){
+                ScatterChartEntry entry = entries.getValueAt(i, j);
+                if(entry != null){
+                    max = Math.max(max, entry.getFrequency());
+                    models[j].addPoint(new ChartPoint(range.getCategoryValues().get(i), entry.getFrequency()));
+                    models[j].setName(entry.getYRange());
+                } else {
+                    models[j].addPoint(new ChartPoint(range.getCategoryValues().get(i), 0));
+                }
+            }
+        }
+        
+        //add models
+        for(int i = 0; i < models.length; i++){
+            chart.addModel(models[i], new ChartStyle(ViewUtil.getColor(i, models.length), true, true));
+        }
+        
+        //add axes
+        CategoryAxis xaxis = new CategoryAxis(range, mapGenerator.getName());
+        chart.setXAxis(xaxis);
+        chart.setYAxis(new Axis(new NumericRange(0, max * 1.1), "Frequency"));
+        
+        //add chart
+        add(chart, c, JLayeredPane.DEFAULT_LAYER);
+        
+        //add legend in scrollpane
+        JScrollPane scroll = new JScrollPane(legend);
+        scroll.setPreferredSize(new Dimension(150,100));
+        c.gridx = 1;
+        c.weightx = 0;
+        add(scroll, c, JLayeredPane.DEFAULT_LAYER);
+        c.weightx = 1;
+        c.gridx = 0;
+        
+    }
 
     private void addEntriesToChart(
             DefaultChartModel chartModel,
@@ -448,6 +532,140 @@ public class SummaryChart extends JLayeredPane {
                 add(ViewUtil.getMessagePanelBig("Error creating chart"), c);
             }
             
+            waitPanel.setVisible(false);
+            revalidate();
+        }
+
+        public void showProgress(double prog) {
+            if (prog == 1.0) {
+                mapWorker = null;
+                //removeAll();        // Clear away the WaitPanel.
+            }
+        }
+    }
+    
+    public class ScatterChartMapWorker extends MedSavantWorker<ScatterChartMap> {
+        
+        @SuppressWarnings("LeakingThisInConstructor")
+        ScatterChartMapWorker() {
+            super(pageName);
+            if (mapWorker != null) {
+                mapWorker.cancel(true);
+            }
+            mapWorker = this;
+        }
+        
+        private double generateBinsize(ChartMapGenerator generator) throws SQLException, RemoteException{
+            VariantFieldChartMapGenerator gen  = (VariantFieldChartMapGenerator)generator;
+            String tablename = null;
+            if (gen.getTable() == Table.VARIANT) {
+                tablename = ProjectController.getInstance().getCurrentVariantTableName();
+            } else if (gen.getTable() == Table.PATIENT) {
+                tablename = ProjectController.getInstance().getCurrentPatientTableName();
+            }
+            Range r = new Range(MedSavantClient.VariantQueryUtilAdapter.getExtremeValuesForColumn(
+                    LoginController.sessionId,
+                    tablename,
+                    gen.getField().getColumnName()));
+            return org.ut.biolab.medsavant.db.util.shared.MiscUtils.generateBins(gen.getField(), r, isLogScaleX);
+        }
+
+        @Override
+        protected ScatterChartMap doInBackground() throws Exception {
+            if (mapGenerator == null) {
+                return null;
+            }
+            if (this.isThreadCancelled()) {
+                return null;
+            }
+            try {
+                
+                //get column names
+                String columnX = mapGenerator.getFilterId();
+                String columnY = mapGeneratorScatter.getFilterId();
+                if(mapGenerator.getTable() == Table.PATIENT){
+                    columnX = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
+                }
+                if(mapGeneratorScatter.getTable() == Table.PATIENT){
+                    columnY = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
+                }
+                
+                //use binning if field is numeric and on the variant table
+                double binsizeX = 0;
+                double binsizeY = 0;
+                if(mapGenerator.isNumeric() && mapGenerator.getTable() == Table.VARIANT){
+                    binsizeX = generateBinsize(mapGenerator);
+                } 
+                if(mapGeneratorScatter.isNumeric() && mapGeneratorScatter.getTable() == Table.VARIANT){
+                    binsizeY = generateBinsize(mapGeneratorScatter);
+                }
+                
+                ScatterChartMap scatterMap =  MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForScatter(
+                        LoginController.sessionId, 
+                        ProjectController.getInstance().getCurrentProjectId(), 
+                        ReferenceController.getInstance().getCurrentReferenceId(), 
+                        FilterController.getQueryFilterConditions(), 
+                        columnX, 
+                        columnY, 
+                        !mapGenerator.isNumeric() || mapGenerator.getTable() == Table.PATIENT, 
+                        !mapGeneratorScatter.isNumeric() || mapGeneratorScatter.getTable() == Table.PATIENT,
+                        binsizeX,
+                        binsizeY,
+                        isSortedKaryotypically());
+
+                //map for patient field
+                if(mapGenerator.getTable() == Table.PATIENT){
+                    Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
+                            LoginController.sessionId,
+                            ProjectController.getInstance().getCurrentProjectId(),
+                            mapGenerator.getFilterId());
+                    if(mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+                        map = MiscUtils.modifyGenderMap(map);
+                    }
+                    
+                    List<String> xRanges = new ArrayList<String>();
+                    for(Object o : map.keySet()){
+                        xRanges.add(o.toString());
+                    }
+                    List<String> yRanges = scatterMap.getYRanges();
+                    
+                    List<ScatterChartEntry> entries = new ArrayList<ScatterChartEntry>();
+                    for(Object x : map.keySet()){
+                        List<Integer> indices = new ArrayList<Integer>();
+                        for(String dnaId : map.get(x)){
+                            int index = scatterMap.getIndexOnX(dnaId);
+                            if(index != -1){
+                                indices.add(index);
+                            }
+                        }
+                        for(int y = 0; y < yRanges.size(); y++){
+                            int sum = 0;
+                            for(Integer index : indices){
+                                if(scatterMap.getValueAt(index, y) != null){
+                                    sum += scatterMap.getValueAt(index, y).getFrequency();
+                                }
+                            }
+                            entries.add(new ScatterChartEntry(x.toString(), yRanges.get(y), sum));
+                        }
+                    }
+                    scatterMap = new ScatterChartMap(xRanges, yRanges, entries);
+                }
+                
+                if(mapGeneratorScatter.getTable() == Table.PATIENT){
+                    //TODO
+                }
+                
+                
+                return scatterMap;
+                
+            } catch (SQLException ex) {
+                MiscUtils.checkSQLException(ex);
+                throw ex;
+            }             
+        }
+
+        public void showSuccess(ScatterChartMap result) {
+            drawScatterChart(result);
             waitPanel.setVisible(false);
             revalidate();
         }

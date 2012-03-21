@@ -8,6 +8,9 @@ import com.jidesoft.docking.DockableFrame;
 import com.jidesoft.docking.DockingManager;
 import com.mysql.jdbc.exceptions.MySQLSyntaxErrorException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -84,5 +87,23 @@ public class MiscUtils {
             DialogUtils.displayErrorMessage("<HTML>It appears that the database structure has been modified. <BR>Please log back in for the changes to take effect.</HTML>", e);
             LoginController.logout();
         }
+    }
+    
+    public static Map<Object, List<String>> modifyGenderMap(Map<Object, List<String>> original) {
+        Map<Object, List<String>> result = new HashMap<Object, List<String>>();
+        for (Object key : original.keySet()) {
+            String s;
+            if (key instanceof Long || key instanceof Integer) {
+                s = MiscUtils.genderToString(MiscUtils.safeLongToInt((Long) key));
+            } else {
+                s = MiscUtils.GENDER_UNKNOWN;
+            }
+            if (result.get(s) == null) {
+                result.put(s, original.get(key));
+            } else {
+                result.get(s).addAll(original.get(key));
+            }
+        }
+        return result;
     }
 }

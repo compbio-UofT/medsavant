@@ -37,21 +37,24 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class ChartView extends JPanel {
 
     private SummaryChart sc;
-    private JComboBox chartChooser;
+    private JComboBox chartChooser1;
+    private JComboBox chartChooser2;
     private Map<String, ChartMapGenerator> mapGenerators;
     private JCheckBox bPie;
     private JCheckBox bSort;
     private JCheckBox bLogY;
     private JCheckBox bLogX;
+    private JCheckBox bScatter;
     private String pageName;
     private boolean init = false;
     private JCheckBox bOriginal;
+    private JPanel bottomToolbar;
 
     public ChartView(String pageName) {
         this.pageName = pageName;
         mapGenerators = new HashMap<String, ChartMapGenerator>();
         initGUI();
-        this.chartChooser.setSelectedItem(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
+        //this.chartChooser1.setSelectedItem(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
     }
 
     private void initGUI() {
@@ -60,7 +63,7 @@ public class ChartView extends JPanel {
         initCards();
         initBottomBar();
         init = true;
-        chartChooser.setSelectedItem(VariantFormat.ALIAS_OF_DNA_ID);
+        chartChooser1.setSelectedItem(VariantFormat.ALIAS_OF_DNA_ID);
     }
 
     private void initToolBar() {
@@ -68,7 +71,7 @@ public class ChartView extends JPanel {
         JPanel toolbar = ViewUtil.getSubBannerPanel("Chart");
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
 
-        chartChooser = new JComboBox(){
+        chartChooser1 = new JComboBox(){
             public void addItem(Object anObject) {
                 int size = ((DefaultComboBoxModel) dataModel).getSize();
                 Object obj;
@@ -87,13 +90,13 @@ public class ChartView extends JPanel {
                 }
             }
         };
-        toolbar.add(chartChooser);
+        toolbar.add(chartChooser1);
 
-        chartChooser.addActionListener(new ActionListener() {
+        chartChooser1.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 if(!init) return;
-                String alias = (String) chartChooser.getSelectedItem();
+                String alias = (String) chartChooser1.getSelectedItem();
                 ChartMapGenerator cmg = mapGenerators.get(alias);
                 if (alias.equals(VariantFormat.ALIAS_OF_CHROM)) {
                     bSort.setEnabled(false);
@@ -106,7 +109,77 @@ public class ChartView extends JPanel {
                     sc.setIsSortedKaryotypically(false);
                 }
                 sc.setChartMapGenerator(cmg);
+                //updateScatterAxes();
+                sc.setScatterChartMapGenerator(mapGenerators.get((String)chartChooser2.getSelectedItem()));
                 bLogX.setEnabled(cmg.isNumeric());
+                
+                sc.setUpdateRequired(true);
+                sc.updateIfRequired();
+            }
+        });
+        
+        toolbar.add(Box.createHorizontalGlue());
+        
+        bScatter = new JCheckBox("Scatter");
+        bScatter.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                chartChooser2.setEnabled(bScatter.isSelected());
+                sc.setIsScatterChart(bScatter.isSelected());
+                
+                bottomToolbar.setVisible(!bScatter.isSelected());
+                                
+                sc.setUpdateRequired(true);
+                sc.updateIfRequired();
+            }
+        });
+        toolbar.add(bScatter);
+        
+        chartChooser2 = new JComboBox(){
+            public void addItem(Object anObject) {
+                int size = ((DefaultComboBoxModel) dataModel).getSize();
+                Object obj;
+                boolean added = false;
+                for (int i=0; i<size; i++) {
+                    obj = dataModel.getElementAt(i);
+                    int compare = anObject.toString().compareToIgnoreCase(obj.toString());
+                    if (compare <= 0) { // if anObject less than or equal obj
+                        super.insertItemAt(anObject, i);
+                        added = true;
+                        break;
+                    }
+                }
+                if (!added) {
+                    super.addItem(anObject);
+                }
+            }
+        };
+        chartChooser2.setEnabled(false);
+        toolbar.add(chartChooser2);
+
+        chartChooser2.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if(!init) return;
+                //updateScatterAxes();
+                sc.setScatterChartMapGenerator(mapGenerators.get((String)chartChooser2.getSelectedItem()));
+                
+                sc.setUpdateRequired(true);
+                sc.updateIfRequired();
+                /*String alias = (String) chartChooser2.getSelectedItem();
+                ChartMapGenerator cmg = mapGenerators.get(alias);
+                if (alias.equals(VariantFormat.ALIAS_OF_CHROM)) {
+                    bSort.setEnabled(false);
+                    sc.setIsSortedKaryotypically(true);
+                } else if (cmg.isNumeric()) {
+                    bSort.setEnabled(false);
+                    sc.setIsSortedKaryotypically(false);
+                } else {
+                    bSort.setEnabled(true);
+                    sc.setIsSortedKaryotypically(false);
+                }
+                sc.setChartMapGenerator(cmg);
+                bLogX.setEnabled(cmg.isNumeric());*/
             }
         });
 
@@ -123,7 +196,7 @@ public class ChartView extends JPanel {
         //toolbar.add(ViewUtil.clear(b1));
         //toolbar.add(ViewUtil.clear(b2));
 
-        toolbar.add(Box.createHorizontalGlue());
+        //toolbar.add(Box.createHorizontalGlue());
 
         b1.setSelected(true);
 
@@ -149,7 +222,8 @@ public class ChartView extends JPanel {
 
     private void addCMG(ChartMapGenerator cmg) {
         mapGenerators.put(cmg.getName(), cmg);
-        chartChooser.addItem(cmg.getName());
+        chartChooser1.addItem(cmg.getName());
+        chartChooser2.addItem(cmg.getName());
     }
 
     private void addCMGs() {
@@ -183,7 +257,7 @@ public class ChartView extends JPanel {
     }
 
     private void initBottomBar() {
-        JPanel bottomToolbar = ViewUtil.getSecondaryBannerPanel();
+        bottomToolbar = ViewUtil.getSecondaryBannerPanel();
         bottomToolbar.setBorder(ViewUtil.getTinyLineBorder());
         bottomToolbar.setLayout(new BoxLayout(bottomToolbar, BoxLayout.X_AXIS));
 

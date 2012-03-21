@@ -262,6 +262,7 @@ public class VariantManagerUtils {
 
                 //parse vcf file
                 VariantManagerUtils.checkInterrupt();
+                System.out.println("Current file: " + vcfFiles[i].getName());
                 lastChunkWritten = VCFParser.parseVariantsFromReader(r, header, outputLinesLimit, outfile, updateId, i, includeHomoRef);
                 if (lastChunkWritten > 0) {
                     variantFound = true;

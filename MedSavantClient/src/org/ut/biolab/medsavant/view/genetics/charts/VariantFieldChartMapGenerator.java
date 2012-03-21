@@ -68,45 +68,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         this.whichTable = whichTable;
     }
 
-    private double generateBins(Range r, boolean isLogScaleX) {
-
-        //log scale
-        if (isLogScaleX) {
-            return 10;
-
-            //percent fields
-        } else if ((field.getColumnType() == ColumnType.DECIMAL || field.getColumnType() == ColumnType.FLOAT) && r.getMax() - r.getMin() <= 1 && r.getMax() <= 1) {
-
-            return 0.05;
-
-            //boolean fields
-        } else if ((field.getColumnType() == ColumnType.INTEGER && Integer.parseInt(field.getColumnLength()) == 1) || field.getColumnType() == ColumnType.BOOLEAN) {
-
-            return 1;
-
-            //other fields
-        } else {
-
-            int min = (int) (r.getMin() - Math.abs(r.getMin() % (int) Math.pow(10, getNumDigits((int) (r.getMax() - r.getMin())) - 1)));
-            int step1 = (int) Math.ceil((r.getMax() - min) / 25.0);
-            int step2 = (int) Math.pow(10, getNumDigits(step1));
-            int step = step2;
-            while (step * 0.5 > step1) {
-                step *= 0.5;
-            }
-            step = Math.max(step, 1);
-
-            return step;
-        }
-    }
-
-    private int getNumDigits(int x) {
-        x = Math.abs(x);
-        int digits = 1;
-        while (Math.pow(10, digits) < x) {
-            digits++;
-        }
-        return digits;
+    public CustomField getField(){
+        return field;
     }
 
     Map<String,ChartFrequencyMap> unfilteredMapCache = new HashMap<String,ChartFrequencyMap>();
@@ -144,7 +107,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                     field.getColumnName());
 
             if (field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
-                map = modifyGenderMap(map);
+                map = MiscUtils.modifyGenderMap(map);
             }
             
             if (Thread.currentThread().isInterrupted()) return null;
@@ -314,7 +277,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                     tablename,
                     field.getColumnName()));
 
-            double binSize = generateBins(r, isLogScaleX);
+            double binSize = org.ut.biolab.medsavant.db.util.shared.MiscUtils.generateBins(field, r, isLogScaleX);
             chartMap = generateNumericChartMap(useFilteredCounts, binSize, isLogScaleX);
 
         } else {
@@ -356,24 +319,6 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
 
     public String getFilterId() {
         return field.getColumnName();
-    }
-
-    private Map<Object, List<String>> modifyGenderMap(Map<Object, List<String>> original) {
-        Map<Object, List<String>> result = new HashMap<Object, List<String>>();
-        for (Object key : original.keySet()) {
-            String s;
-            if (key instanceof Long || key instanceof Integer) {
-                s = MiscUtils.genderToString(MiscUtils.safeLongToInt((Long) key));
-            } else {
-                s = MiscUtils.GENDER_UNKNOWN;
-            }
-            if (result.get(s) == null) {
-                result.put(s, original.get(key));
-            } else {
-                result.get(s).addAll(original.get(key));
-            }
-        }
-        return result;
     }
 
     @Override
