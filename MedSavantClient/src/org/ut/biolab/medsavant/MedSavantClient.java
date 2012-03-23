@@ -83,7 +83,7 @@ public class MedSavantClient {
         Registry registry;
         System.out.println("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort);
         registry = LocateRegistry.getRegistry(serverAddress,(new Integer(serverPort)).intValue());
-        
+
         // look up the remote object
         setAdaptersFromRegistry(registry);
     }
@@ -114,12 +114,27 @@ public class MedSavantClient {
         NotificationQueryUtilAdapter = (NotificationQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_NotificationQueryUtilAdapter));
     }
 
+    public static final boolean MAC;
+    public static final boolean WINDOWS;
+    public static final boolean LINUX;
+
+
+    static {
+        String os = System.getProperty("os.name").toLowerCase();
+        MAC = os.startsWith("mac");
+        WINDOWS = os.startsWith("windows");
+        LINUX = os.contains("linux");
+    }
+
     private static void setLAF() {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
-            LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
 
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
+            if(WINDOWS){
+                LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
+            }
+            UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
             //tooltips
             UIManager.put("ToolTip.background", new ColorUIResource(255,255,255));
             ToolTipManager.sharedInstance().setDismissDelay(8000);
