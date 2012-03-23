@@ -36,6 +36,7 @@ import org.ut.biolab.medsavant.db.model.AnnotationLog.Action;
 import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.shared.DBUtil;
 
@@ -43,7 +44,7 @@ import org.ut.biolab.medsavant.db.util.shared.DBUtil;
  *
  * @author Andrew
  */
-public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject implements AnnotationLogQueryUtilAdapter  {
+public class AnnotationLogQueryUtil extends MedSavantServerUnicastRemoteObject implements AnnotationLogQueryUtilAdapter  {
 
     private static AnnotationLogQueryUtil instance;
 
@@ -54,7 +55,7 @@ public class AnnotationLogQueryUtil extends java.rmi.server.UnicastRemoteObject 
         return instance;
     }
 
-    public AnnotationLogQueryUtil() throws RemoteException {}
+    public AnnotationLogQueryUtil() throws RemoteException {super();}
 
     public int addAnnotationLogEntry(String sid,int projectId, int referenceId, Action action, String user) throws SQLException{
         return addAnnotationLogEntry(sid,projectId,referenceId,action,Status.STARTED, user);

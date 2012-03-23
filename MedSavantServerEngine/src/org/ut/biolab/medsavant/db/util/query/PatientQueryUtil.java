@@ -55,13 +55,14 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.PatientQueryUtilAdapter;
 
 /**
  *
  * @author Andrew
  */
-public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implements PatientQueryUtilAdapter {
+public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject implements PatientQueryUtilAdapter {
 
     private static PatientQueryUtil instance;
 
@@ -72,7 +73,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         return instance;
     }
 
-    public PatientQueryUtil() throws RemoteException {}
+    public PatientQueryUtil() throws RemoteException { super(); }
 
 
     public List<Object[]> getBasicPatientInfo(String sid,int projectId, int limit) throws SQLException, NonFatalDatabaseException, RemoteException {
@@ -242,7 +243,7 @@ public class PatientQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
         String patientTableName = DBSettings.createPatientTableName(projectid);
         Connection c = ConnectionController.connectPooled(sid);
-        
+
 
         //create basic fields
         String query =

@@ -39,13 +39,14 @@ import org.ut.biolab.medsavant.db.model.AnnotationLog;
 import org.ut.biolab.medsavant.db.model.GeneralLog;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.LogQueryUtilAdapter;
 
 /**
  *
  * @author mfiume
  */
-public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements LogQueryUtilAdapter {
+public class LogQueryUtil extends MedSavantServerUnicastRemoteObject implements LogQueryUtilAdapter {
 
     private static LogQueryUtil instance;
 
@@ -56,7 +57,7 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
         return instance;
     }
 
-    public LogQueryUtil() throws RemoteException {}
+    public LogQueryUtil() throws RemoteException {super();}
 
 
     public List<GeneralLog> getClientLog(String sid,int start, int limit) throws SQLException {
@@ -69,7 +70,7 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
         query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
 
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + start + "," + limit);
-        
+
         List<GeneralLog> result = new ArrayList<GeneralLog>();
         while(rs.next()) {
             result.add(new GeneralLog(
@@ -91,7 +92,7 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
         query.addOrdering(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP), Dir.DESCENDING);
 
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + start + "," + limit);
-    
+
         List<GeneralLog> result = new ArrayList<GeneralLog>();
         while(rs.next()) {
             result.add(new GeneralLog(
@@ -134,26 +135,26 @@ public class LogQueryUtil extends java.rmi.server.UnicastRemoteObject implements
                         referenceTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
 
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + start + "," + limit);
-    
+
         List<AnnotationLog> result = new ArrayList<AnnotationLog>();
         while (rs.next()) {
-            
+
             Timestamp t = null;
             try {
                 t = rs.getTimestamp(5);
-            } catch (Exception e) {}           
-            
+            } catch (Exception e) {}
+
             result.add(new AnnotationLog(
-                    rs.getString(1), 
-                    rs.getString(2), 
-                    AnnotationLog.intToAction(rs.getInt(3)), 
-                    AnnotationLog.intToStatus(rs.getInt(4)), 
-                    t, 
-                    rs.getString(6), 
+                    rs.getString(1),
+                    rs.getString(2),
+                    AnnotationLog.intToAction(rs.getInt(3)),
+                    AnnotationLog.intToStatus(rs.getInt(4)),
+                    t,
+                    rs.getString(6),
                     rs.getInt(7)));
         }
-        return result;        
-        
+        return result;
+
     }
 
     public int getAnnotationLogSize(String sid) throws SQLException {

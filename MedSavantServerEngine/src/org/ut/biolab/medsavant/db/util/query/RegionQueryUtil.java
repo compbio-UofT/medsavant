@@ -50,13 +50,14 @@ import org.ut.biolab.medsavant.db.model.RegionSet;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.FileServer;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.RegionQueryUtilAdapter;
 
 /**
  *
  * @author Andrew
  */
-public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject implements RegionQueryUtilAdapter {
+public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implements RegionQueryUtilAdapter {
 
     private static RegionQueryUtil instance;
 
@@ -67,7 +68,7 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         return instance;
     }
 
-    public RegionQueryUtil() throws RemoteException {}
+    public RegionQueryUtil() throws RemoteException {super();}
 
 
     public void addRegionList(String sid,String geneListName, int genomeId,  RemoteInputStream fileStream, char delim, FileFormat fileFormat, int numHeaderLines) throws NonFatalDatabaseException, SQLException, RemoteException {
@@ -88,7 +89,7 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         rs.next();
 
         int regionSetId = rs.getInt(1);
-        
+
         //prepare
         Iterator<String[]> i = null;
         try {
@@ -97,8 +98,8 @@ public class RegionQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         } catch (IOException ex) {
             Logger.getLogger(RegionQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
             return;
-        }       
-        
+        }
+
         //add regions
         while (i.hasNext() && !Thread.currentThread().isInterrupted()){
             String[] line = i.next();

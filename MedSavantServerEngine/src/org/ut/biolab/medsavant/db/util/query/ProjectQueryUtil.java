@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.format.CustomField.Category;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.DBSettings;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.ProjectQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.variants.update.VariantManagerUtils;
 
@@ -49,7 +50,7 @@ import org.ut.biolab.medsavant.db.variants.update.VariantManagerUtils;
  *
  * @author mfiume
  */
-public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implements ProjectQueryUtilAdapter {
+public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject implements ProjectQueryUtilAdapter {
 
     private static ProjectQueryUtil instance;
 
@@ -61,6 +62,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
     }
 
     public ProjectQueryUtil() throws RemoteException {
+        super();
     }
 
     public List<String> getProjectNames(String sid) throws SQLException {
@@ -362,7 +364,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
 
 
         Connection c = ConnectionController.connectPooled(sid);
-        
+
         TableSchema projectTable = MedSavantDatabase.ProjectTableSchema;
         TableSchema patientMapTable = MedSavantDatabase.PatienttablemapTableSchema;
         TableSchema patientFormatTable = MedSavantDatabase.PatientformatTableSchema;
@@ -418,7 +420,7 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
         for (Integer cohortId : cohortIds) {
             CohortQueryUtil.getInstance().removeCohort(sid, cohortId);
         }
-        
+
         c.close();
     }
 
@@ -588,9 +590,9 @@ public class ProjectQueryUtil extends java.rmi.server.UnicastRemoteObject implem
                 variantMapTable.getTable(),
                 projectTable.getTable(),
                 BinaryConditionMS.equalTo(variantMapTable.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectTable.getDBColumn(ProjectTableSchema.COLUMNNAME_OF_PROJECT_ID)));
-        
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());       
-        
+
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+
         Map<Integer, Map<Integer, ProjectDetails>> map = new HashMap<Integer, Map<Integer, ProjectDetails>>();
 
         while(rs.next()){

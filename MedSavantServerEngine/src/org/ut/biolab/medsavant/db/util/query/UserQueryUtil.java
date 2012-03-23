@@ -25,13 +25,14 @@ import java.util.List;
 
 import org.ut.biolab.medsavant.db.model.UserLevel;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.UserQueryUtilAdapter;
 
 /**
  *
  * @author mfiume
  */
-public class UserQueryUtil extends java.rmi.server.UnicastRemoteObject implements UserQueryUtilAdapter {
+public class UserQueryUtil extends MedSavantServerUnicastRemoteObject implements UserQueryUtilAdapter {
 
     private static UserQueryUtil instance;
 
@@ -42,7 +43,7 @@ public class UserQueryUtil extends java.rmi.server.UnicastRemoteObject implement
         return instance;
     }
 
-    public UserQueryUtil() throws RemoteException {}
+    public UserQueryUtil() throws RemoteException {super();}
 
 
     public List<String> getUserNames(String sid) throws SQLException {

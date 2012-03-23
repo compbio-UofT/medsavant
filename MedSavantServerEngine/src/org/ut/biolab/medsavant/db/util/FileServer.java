@@ -34,6 +34,7 @@ import java.io.InputStream;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import java.rmi.RemoteException;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.RemoteFileServer;
 
 /**
@@ -41,7 +42,7 @@ import org.ut.biolab.medsavant.server.RemoteFileServer;
  *
  * @author James Ahlborn
  */
-public class FileServer extends java.rmi.server.UnicastRemoteObject implements RemoteFileServer {
+public class FileServer extends MedSavantServerUnicastRemoteObject implements RemoteFileServer {
     private static FileServer instance;
 
     public static synchronized FileServer getInstance() throws RemoteException {
@@ -51,8 +52,8 @@ public class FileServer extends java.rmi.server.UnicastRemoteObject implements R
         return instance;
     }
 
-    public FileServer() throws RemoteException {}
-    
+    public FileServer() throws RemoteException { super(); }
+
     public File sendFile(RemoteInputStream ristream) throws IOException {
         return sendFile(ristream, ".dat");
     }

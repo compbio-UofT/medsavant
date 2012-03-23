@@ -20,13 +20,14 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.SettingsTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.settings.Settings;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.SettingsQueryUtilAdapter;
 
 /**
  *
  * @author Andrew
  */
-public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject implements SettingsQueryUtilAdapter {
+public class SettingsQueryUtil extends MedSavantServerUnicastRemoteObject implements SettingsQueryUtilAdapter {
 
     private static SettingsQueryUtil instance;
     private static boolean lockReleased = false;
@@ -38,7 +39,7 @@ public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject imple
         return instance;
     }
 
-    public SettingsQueryUtil() throws RemoteException {}
+    public SettingsQueryUtil() throws RemoteException {super();}
 
 
     public void addSetting(String sid, String key, String value) throws SQLException {
@@ -66,31 +67,31 @@ public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject imple
             return null;
         }
     }
-    
+
     public void updateSetting(String sid, String key, String value) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.SettingsTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addSetClause(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_VALUE), value);
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key));
-        
+
         ConnectionController.executeUpdate(sid,  query.toString());
     }
-    
+
     private void updateSetting(Connection c, String key, String value) throws SQLException {
-        
+
         TableSchema table = MedSavantDatabase.SettingsTableSchema;
         UpdateQuery query = new UpdateQuery(table.getTable());
         query.addSetClause(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_VALUE), value);
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key));
-        
+
         c.createStatement().executeUpdate(query.toString());
     }
 
     public synchronized boolean getDbLock(String sid) throws SQLException {
-        
+
         System.out.print(sid + " getting lock");
-        
+
         String value = getSetting(sid, Settings.KEY_DB_LOCK);
         if(Boolean.parseBoolean(value) && !lockReleased){
             System.out.println(" - FAILED");
@@ -101,8 +102,8 @@ public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject imple
         lockReleased = false;
         return true;
     }
-    
-    public synchronized void releaseDbLock(Connection c) { 
+
+    public synchronized void releaseDbLock(Connection c) {
         System.out.println("Server releasing lock");
         try {
             updateSetting(c, Settings.KEY_DB_LOCK, Boolean.toString(false));
@@ -111,8 +112,8 @@ public class SettingsQueryUtil extends java.rmi.server.UnicastRemoteObject imple
             Logger.getLogger(SettingsQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    public void releaseDbLock(String sid) throws SQLException { 
+
+    public void releaseDbLock(String sid) throws SQLException {
         Connection c = ConnectionController.connectPooled(sid);
         releaseDbLock(c);
         c.close();

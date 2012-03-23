@@ -47,13 +47,14 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantTablemapTableSche
 import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Annotation;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.AnnotationQueryUtilAdapter;
 
 /**
  *
  * @author mfiume
  */
-public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject implements AnnotationQueryUtilAdapter {
+public class AnnotationQueryUtil extends MedSavantServerUnicastRemoteObject implements AnnotationQueryUtilAdapter {
 
     private static AnnotationQueryUtil instance;
 
@@ -64,7 +65,7 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
         return instance;
     }
 
-    public AnnotationQueryUtil() throws RemoteException {}
+    public AnnotationQueryUtil() throws RemoteException {super();}
 
     public List<Annotation> getAnnotations(String sid) throws SQLException {
 
@@ -133,7 +134,7 @@ public class AnnotationQueryUtil extends java.rmi.server.UnicastRemoteObject imp
     }
 
     /*
-     * Get the annotation ids associated with the latest published table. 
+     * Get the annotation ids associated with the latest published table.
      */
     public int[] getAnnotationIds(String sid,int projectId, int referenceId) throws SQLException {
 

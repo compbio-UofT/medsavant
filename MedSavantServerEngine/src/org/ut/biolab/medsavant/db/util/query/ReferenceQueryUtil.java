@@ -44,13 +44,14 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantTablemapTableSche
 import org.ut.biolab.medsavant.db.model.Reference;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.ReferenceQueryUtilAdapter;
 
 /**
  *
  * @author mfiume
  */
-public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject implements ReferenceQueryUtilAdapter {
+public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject implements ReferenceQueryUtilAdapter {
 
     private static ReferenceQueryUtil instance;
 
@@ -61,7 +62,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         return instance;
     }
 
-    public ReferenceQueryUtil() throws RemoteException {}
+    public ReferenceQueryUtil() throws RemoteException {super();}
 
 
     public List<Reference> getReferences(String sid) throws SQLException {
@@ -257,7 +258,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
 
     public Map<Integer, String> getReferencesWithoutTablesInProject(String sid,int projectid) throws SQLException {
 
-        ResultSet rs = ConnectionController.executeQuery(sid, 
+        ResultSet rs = ConnectionController.executeQuery(sid,
                 "SELECT *"
                 + " FROM " + ReferenceTableSchema.TABLE_NAME
                 + " WHERE " + ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID + " NOT IN"
@@ -275,7 +276,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
 
     public String getReferenceUrl(String sid,int referenceid) throws SQLException {
 
-        
+
 
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
@@ -290,7 +291,7 @@ public class ReferenceQueryUtil extends java.rmi.server.UnicastRemoteObject impl
 
     public List<Chromosome> getChromosomes(String sid,int referenceid) throws SQLException {
 
-        
+
 
         TableSchema table = MedSavantDatabase.ChromosomeTableSchema;
         SelectQuery query = new SelectQuery();

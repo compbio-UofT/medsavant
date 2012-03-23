@@ -40,13 +40,14 @@ import org.ut.biolab.medsavant.db.model.SimplePatient;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.CohortQueryUtilAdapter;
 
 /**
  *
  * @author Andrew
  */
-public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject implements CohortQueryUtilAdapter {
+public class CohortQueryUtil extends MedSavantServerUnicastRemoteObject implements CohortQueryUtilAdapter {
 
     private static CohortQueryUtil instance;
 
@@ -57,7 +58,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         return instance;
     }
 
-    public CohortQueryUtil() throws RemoteException {}
+    public CohortQueryUtil() throws RemoteException {super();}
 
 
     /*public List<Integer> getIndividualsInCohort(int cohortId) throws SQLException {
@@ -160,7 +161,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
     }
 
     public List<String> getIndividualFieldFromCohort(String sid,int cohortId, String columnname) throws SQLException, RemoteException {
-        
+
         TableSchema patientMapTable = MedSavantDatabase.PatienttablemapTableSchema;
         TableSchema cohortTable = MedSavantDatabase.CohortTableSchema;
         TableSchema cohortMembershipTable = MedSavantDatabase.CohortmembershipTableSchema;
@@ -275,7 +276,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         TableSchema cohortMembershipTable = MedSavantDatabase.CohortmembershipTableSchema;
         TableSchema cohortTable = MedSavantDatabase.CohortTableSchema;
         Connection c = ConnectionController.connectPooled(sid);
-        
+
 
         //remove all entries from membership
         DeleteQuery query1 = new DeleteQuery(cohortMembershipTable.getTable());
@@ -318,7 +319,7 @@ public class CohortQueryUtil extends java.rmi.server.UnicastRemoteObject impleme
         List<Integer> cohortIds = getCohortIds(sid,projectId);
 
         TableSchema table = MedSavantDatabase.CohortmembershipTableSchema;
-        
+
         for(Integer cohortId : cohortIds){
             DeleteQuery query = new DeleteQuery(table.getTable());
             query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));

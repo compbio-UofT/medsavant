@@ -36,13 +36,14 @@ import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.api.SetupAdapter;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.SessionController;
 
 /**
  *
  * @author mfiume
  */
-public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject implements SetupAdapter {
+public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject implements SetupAdapter {
     private static final Logger LOG = Logger.getLogger(SetupMedSavantDatabase.class.getName());
 
     private static SetupMedSavantDatabase instance;
@@ -54,7 +55,7 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
         return instance;
     }
 
-    public SetupMedSavantDatabase() throws RemoteException {}
+    public SetupMedSavantDatabase() throws RemoteException {super();}
 
     private static void dropTables(String sessionId) throws SQLException {
 
@@ -89,7 +90,7 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
         DBUtil.dropTable(sessionId,MedSavantDatabase.ChromosomeTableSchema.getTablename());
         DBUtil.dropTable(sessionId,MedSavantDatabase.PatientformatTableSchema.getTablename());
         DBUtil.dropTable(sessionId,MedSavantDatabase.AnnotationformatTableSchema.getTablename());
-        
+
         c.close();
     }
 
@@ -318,7 +319,7 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
                 + "`file_name` varchar(500) COLLATE latin1_bin NOT NULL,"
                 + "UNIQUE KEY `unique` (`upload_id`,`file_id`)"
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
-     
+
         c.close();
     }
 
@@ -341,7 +342,7 @@ public class SetupMedSavantDatabase extends java.rmi.server.UnicastRemoteObject 
         Connection c = ConnectionController.connectPooled(sessionId);
         createDatabase(c,dbname);
         c.close();
-        
+
         ConnectionController.switchDatabases(sessionId,dbname); //closes all connections
         c = ConnectionController.connectPooled(sessionId);
 

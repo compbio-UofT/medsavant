@@ -17,6 +17,7 @@ import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.FileServer;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ChromosomeQueryUtil;
@@ -39,20 +40,22 @@ import org.ut.biolab.medsavant.server.api.MedSavantServerRegistry;
  *
  * @author mfiume
  */
-public class MedSavantServerEngine extends java.rmi.server.UnicastRemoteObject {
+public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject {
 
     int thisPort;
     String thisAddress;
     Registry registry;    // rmi registry for lookup the remote objects.
 
     public MedSavantServerEngine(String host, int port, String rootuser) throws RemoteException, SQLException {
+        super();
+
         try {
             // get the address of this host.
             thisAddress = (InetAddress.getLocalHost()).toString();
         } catch (Exception e) {
             throw new RemoteException("Can't get inet address.");
         }
-        thisPort = 3232;  // this port(registry’s port)
+        thisPort = super.getPort();  // this port(registry’s port)
 
         System.out.println("== MedSavant Server Engine ==\n");
 

@@ -11,6 +11,7 @@ import org.ut.biolab.medsavant.client.api.ClientCallbackAdapter;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.SessionConnection;
 import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
 import org.ut.biolab.medsavant.server.mail.CryptoUtils;
@@ -19,7 +20,7 @@ import org.ut.biolab.medsavant.server.mail.CryptoUtils;
  *
  * @author mfiume
  */
-public class SessionController extends java.rmi.server.UnicastRemoteObject implements SessionAdapter {
+public class SessionController extends MedSavantServerUnicastRemoteObject implements SessionAdapter {
 
     int lastSessionId = 0;
     private static SessionController instance;
@@ -32,6 +33,7 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
     }
 
     public SessionController() throws RemoteException {
+        super();
     }
 
     @Override
@@ -52,7 +54,7 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
     }
 
     @Override
-    public void unregisterSession(String sessionId) throws RemoteException {      
+    public void unregisterSession(String sessionId) throws RemoteException {
         ConnectionController.removeSession(sessionId);
         System.out.println("Unregistered session: " + sessionId);
     }
@@ -84,7 +86,7 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
     public void terminateSessionsForDatabase(String dbname) {
         terminateSessionsForDatabase(dbname, null);
     }
-    
+
     public void terminateAllSessions(String message) {
         for(String dbName : ConnectionController.getDbNames()){
             terminateSessionsForDatabase(dbName, message);
@@ -100,7 +102,7 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
         for (String sid : ConnectionController.getSessionIDs()) {
             try {
                 if (SessionController.getInstance().getDatabaseForSession(sid).equals(dbname)) {
-                   
+
                     sessionIDsToTerminate.add(sid);
                     // terminate session for this client
                 }
@@ -110,25 +112,25 @@ public class SessionController extends java.rmi.server.UnicastRemoteObject imple
         }
 
         for (final String sid : sessionIDsToTerminate) {
-            Thread t = new Thread(){              
+            Thread t = new Thread(){
                 @Override
                 public void run(){
                     try {
                         System.out.print("Terminating session " + sid + "...");
                         ClientCallbackAdapter ca = ConnectionController.getCallback(sid);
                         SessionController.getInstance().unregisterSession(sid);
-                        
+
                         if (ca != null) {
-                            ca.sessionTerminated(message);                            
+                            ca.sessionTerminated(message);
                         }
                         System.out.println("Complete");
                     } catch (Exception ex) {
                         System.out.println("Failed");
                         Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }          
+                }
             };
-            t.start();  
-        }    
+            t.start();
+        }
     }
 }

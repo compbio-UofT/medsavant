@@ -24,13 +24,14 @@ import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.QueryUtilAdapter;
 
 /**
  *
  * @author Andrew
  */
-public class QueryUtil extends java.rmi.server.UnicastRemoteObject implements QueryUtilAdapter {
+public class QueryUtil extends MedSavantServerUnicastRemoteObject implements QueryUtilAdapter {
 
     private static QueryUtil instance;
 
@@ -41,7 +42,7 @@ public class QueryUtil extends java.rmi.server.UnicastRemoteObject implements Qu
         return instance;
     }
 
-    public QueryUtil() throws RemoteException {}
+    public QueryUtil() throws RemoteException {super();}
 
 
     public List<String> getDistinctValuesForColumn(String sid,TableSchema t, DbColumn col) throws SQLException {

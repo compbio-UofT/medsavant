@@ -13,12 +13,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.query.api.DBUtilAdapter;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 
 /**
  *
  * @author mfiume
  */
-public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUtilAdapter {
+public class DBUtil extends MedSavantServerUnicastRemoteObject implements DBUtilAdapter {
 
     private static DBUtil instance;
 
@@ -41,7 +42,7 @@ public class DBUtil extends java.rmi.server.UnicastRemoteObject implements DBUti
         return false;
     }
 
-    public DBUtil() throws RemoteException {}
+    public DBUtil() throws RemoteException {super(); }
 
     /*public static enum FieldType {VARCHAR, FLOAT, INT, BOOLEAN, DECIMAL, DATE, TIMESTAMP}
 

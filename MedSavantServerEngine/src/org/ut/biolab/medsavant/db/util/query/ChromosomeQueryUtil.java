@@ -32,13 +32,14 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ChromosomeTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.ChromosomeQueryUtilAdapter;
 
 /**
  *
  * @author Andrew
  */
-public class ChromosomeQueryUtil extends java.rmi.server.UnicastRemoteObject implements ChromosomeQueryUtilAdapter {
+public class ChromosomeQueryUtil extends MedSavantServerUnicastRemoteObject implements ChromosomeQueryUtilAdapter {
 
     private static ChromosomeQueryUtil instance;
 
@@ -49,7 +50,7 @@ public class ChromosomeQueryUtil extends java.rmi.server.UnicastRemoteObject imp
         return instance;
     }
 
-    public ChromosomeQueryUtil() throws RemoteException {}
+    public ChromosomeQueryUtil() throws RemoteException {super();}
 
     public List<Chromosome> getContigs(String sid,int refid) throws SQLException{
 

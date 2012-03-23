@@ -33,12 +33,13 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ServerLogTableSchema;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.ServerLogQueryUtilAdapter;
 
 /**
  * @author mfiume
  */
-public class ServerLogQueryUtil extends java.rmi.server.UnicastRemoteObject implements ServerLogQueryUtilAdapter {
+public class ServerLogQueryUtil extends MedSavantServerUnicastRemoteObject implements ServerLogQueryUtilAdapter {
 
    private static ServerLogQueryUtil instance;
 
@@ -49,7 +50,7 @@ public class ServerLogQueryUtil extends java.rmi.server.UnicastRemoteObject impl
         return instance;
     }
 
-    public ServerLogQueryUtil() throws RemoteException {}
+    public ServerLogQueryUtil() throws RemoteException { super(); }
 
 
     public final String SERVER_UNAME = "server";
