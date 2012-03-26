@@ -10,6 +10,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
+import gnu.getopt.Getopt;
 import javax.swing.ToolTipManager;
 import javax.swing.plaf.ColorUIResource;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -67,9 +68,37 @@ public class MedSavantClient {
     private static MedSavantFrame frame;
 
     static public void main(String args[]) {
+
         verifyJIDE();
         setLAF();
+
         SettingsController.getInstance();
+
+        Getopt g = new Getopt("MedSavant", args, "h:p:d:");
+            int c;
+
+            while ((c = g.getopt()) != -1) {
+                switch (c) {
+                    case 'h':
+                        String host = g.getOptarg();
+                        SettingsController.getInstance().setServerAddress(host);
+                        break;
+                    case 'p':
+                        int port = Integer.parseInt(g.getOptarg());
+                        SettingsController.getInstance().setServerPort(port + "");
+                        break;
+                    case 'd':
+                        String dbname = g.getOptarg();
+                        SettingsController.getInstance().setDBName(dbname);
+                        break;
+                    case '?':
+                        break; // getopt() already printed an error
+                    default:
+                        System.out.print("getopt() returned " + c + "\n");
+                }
+            }
+
+
         frame = MedSavantFrame.getInstance();
         frame.setExtendedState(MedSavantFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);

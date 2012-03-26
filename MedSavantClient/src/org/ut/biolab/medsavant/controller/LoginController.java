@@ -62,7 +62,7 @@ public class LoginController {
                         fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGGED_OUT));
                     }
 
-                    if (!loggedIn) {                       
+                    if (!loggedIn) {
                         if (!SettingsController.getInstance().getRememberPassword()) {
                             password = "";
                         }
@@ -72,7 +72,7 @@ public class LoginController {
         };
         t.start();
     }
-    
+
     public static void addLog(String message){
         if(!loggedIn) return;
         try {
@@ -171,11 +171,11 @@ public class LoginController {
         }
 
         //register for callback
-        try {
+        /*try {
             SessionAdapter.registerCallback(sessionId, CallbackController.getInstance());
         } catch (RemoteException ex) {
             Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
 
         setLoggedIn(true);
     }
@@ -201,7 +201,7 @@ public class LoginController {
     private static void setLoginException(Exception ex) {
         fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED,ex));
     }
-    
+
     public static void unregister(){
         if(!loggedIn) return;
         try {

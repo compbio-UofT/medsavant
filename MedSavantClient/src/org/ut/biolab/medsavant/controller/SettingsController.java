@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public class SettingsController {
 
-    
+
     /**
      * INSTRUCTIONS: To add a new setting to the map...
      * 1. Add a KEY
@@ -37,14 +37,14 @@ public class SettingsController {
      * 3. Add an entry to the resetPersistenceMap() function
      * 4. (Optional) Create helper getter / setter functions
      */
-    
-    private static SettingsController instance; // a singleton instance 
-    
+
+    private static SettingsController instance; // a singleton instance
+
     private static final String DELIM = "="; // delimiter used in the settings file
     private static final String PERSISTENCE_FILE_PATH = "medsavant.prop"; // location to save settings file
-    
+
     /**
-     * Settings keys 
+     * Settings keys
      */
     public static final String KEY_VERSION = "medsavant.version";
     public static final String KEY_AUTOLOGIN = "general.autologin";
@@ -64,7 +64,7 @@ public class SettingsController {
     public static String booleanToString(boolean bool) {
         return bool ? "true" : "false";
     }
-    
+
     /**
      * Convert a string to a boolean representation
      * @param str A string, usually either "true" or "false"
@@ -73,10 +73,10 @@ public class SettingsController {
     public static boolean stringToBoolean(String str) {
         return str.equals("true") ? true : false;
     }
-    
+
     // A map containing settings and their values
     Map<String,String> persistenceMap;
-    
+
     /**
      * Get an instance of the SettingsController
      * @return An in stance of the Settings Controller
@@ -87,7 +87,7 @@ public class SettingsController {
         }
         return instance;
     }
-    
+
     /**
      * Initialize the SettingsController
      */
@@ -95,8 +95,8 @@ public class SettingsController {
         persistenceMap = new TreeMap<String,String>();
         readPersistenceMap();
     }
-    
-    
+
+
     /**
      * Add a setting and save
      * @param key The key for the setting
@@ -106,7 +106,7 @@ public class SettingsController {
         setValueSilent(key, value);
         savePersistenceMap();
     }
-    
+
     /**
      * Add a setting without saving.
      * @param key The key for the setting
@@ -119,7 +119,7 @@ public class SettingsController {
             persistenceMap.put(key, value);
         }
     }
-    
+
     /**
      * Get the value of a setting
      * @param key The key for the setting to get
@@ -168,23 +168,23 @@ public class SettingsController {
      */
     private void readPersistenceMap() {
         File pFile = new File(PERSISTENCE_FILE_PATH);
-        
+
         if (!pFile.exists()) {
             resetPersistenceMap();
         } else {
-            
+
             BufferedReader br = null;
-            
+
             try {
                 br = new BufferedReader(new FileReader(pFile));
-                
+
                 String line = "";
                 while ((line = br.readLine()) != null) {
-                    
+
                     int splitIndex = line.indexOf(DELIM);
                     String key = line.substring(0,splitIndex);
                     String value = line.substring(splitIndex+1);
-                    
+
                     setValueSilent(key,value);
                 }
             } catch (IOException ex) {
@@ -197,7 +197,7 @@ public class SettingsController {
             }
         }
         }
-        
+
     }
 
     /*
@@ -218,10 +218,10 @@ public class SettingsController {
         resetSettingSilent(KEY_SERVER_PORT);
         savePersistenceMap();
     }
-    
+
     /**
      * Helper function. Reset the setting for key to its default
-     * @param key 
+     * @param key
      */
     private void resetSettingSilent(String key) {
        setValueSilent(key,getDefaultValue(key));
@@ -254,7 +254,7 @@ public class SettingsController {
             }
         }
     }
-    
+
     /**
      * Get default values for persistent settings
      * @param key The key of the value
@@ -281,23 +281,23 @@ public class SettingsController {
             return null;
         }
     }
-    
+
     /**
      * CONVENIENCE METHODS
      */
-    
+
     public void setRememberPassword(boolean b) {
         setValue(KEY_REMEMBER_PASSWORD,booleanToString(b));
     }
-    
+
     public boolean getRememberPassword() {
          return stringToBoolean(getValue(KEY_REMEMBER_PASSWORD));
     }
-    
+
     public void setAutoLogin(boolean b) {
         setValue(KEY_AUTOLOGIN,booleanToString(b));
     }
-    
+
     public boolean getAutoLogin() {
          return stringToBoolean(getValue(KEY_AUTOLOGIN));
     }
@@ -305,15 +305,15 @@ public class SettingsController {
     public void setUsername(String str) {
         setValue(KEY_USERNAME, str);
     }
-    
+
     public String getUsername() {
         return getValue(KEY_USERNAME);
     }
-    
+
     public void setPassword(String str) {
         setValue(KEY_PASSWORD, str);
     }
-    
+
     public String getPassword() {
         return getValue(SettingsController.KEY_PASSWORD);
     }
@@ -321,29 +321,29 @@ public class SettingsController {
     public String getDBDriver() {
         return getValue(SettingsController.KEY_DB_DRIVER);
     }
-    
+
     public String getDBName() {
         return getValue(SettingsController.KEY_DB_NAME);
     }
-    
+
     public void setDBName(String name) {
         setValue(KEY_DB_NAME, name);
     }
-    
+
     public String getServerAddress() {
         return getValue(SettingsController.KEY_SERVER_ADDRESS);
     }
-    
+
     public void setServerAddress(String address) {
         setValue(KEY_SERVER_ADDRESS, address);
     }
-    
+
     public String getServerPort() {
         return getValue(SettingsController.KEY_SERVER_PORT);
     }
-    
+
     public void setServerPort(String port) {
         setValue(KEY_SERVER_PORT, port);
     }
-    
+
 }
