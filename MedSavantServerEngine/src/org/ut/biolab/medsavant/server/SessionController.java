@@ -37,7 +37,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
     }
 
     @Override
-    public synchronized String registerNewSession(String uname, String pw, String dbname) {
+    public synchronized String registerNewSession(String uname, String pw, String dbname) throws RemoteException {
 
         int newSessionIdNumber = ++lastSessionId;
         String sessionId = CryptoUtils.encrypt(newSessionIdNumber + "");
