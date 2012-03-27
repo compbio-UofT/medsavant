@@ -25,6 +25,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Set;
 import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -177,11 +178,22 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                         binSize,
                         isLogScaleX);
 
-                for (Range key : resultMap.keySet()) {
+                Object[] keySet = resultMap.keySet().toArray();
+                double startFirstRange = ((Range)(keySet[0])).getMin();
+                double startLastRange = ((Range)(keySet[keySet.length-1])).getMin();
+                for(double start = startFirstRange; start <= startLastRange; start+=binSize){
+                    Long value = resultMap.get(new Range(start, start+binSize));
+                    if(value == null) value = 0L;
+                    chartMap.addEntry(
+                            checkInt(start) + " - " + checkInt(start+binSize),
+                            value);
+                }
+                
+                /*for (Range key : resultMap.keySet()) {
                     chartMap.addEntry(
                         checkInt(key.getMin()) + " - " + checkInt(key.getMax()),
                         resultMap.get(key));
-                }
+                }*/
 
         } else {
             
