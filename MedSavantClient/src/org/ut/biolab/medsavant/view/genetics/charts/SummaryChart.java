@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
@@ -57,6 +58,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import net.ericaro.surfaceplotter.JSurfacePanel;
+import net.ericaro.surfaceplotter.Mapper;
+import net.ericaro.surfaceplotter.ProgressiveSurfaceModel;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 
@@ -386,6 +390,41 @@ public class SummaryChart extends JLayeredPane {
         return chart;
     }
     
+    private void addEntriesToChart(
+            DefaultChartModel chartModel,
+            ChartFrequencyMap chartMap,
+            List<ChartCategory> chartCategories,
+            List<Highlight> highlights) {
+
+        boolean addHighlights = highlights != null;
+
+        int index = 0;
+        for (ChartCategory cat : chartCategories) {
+
+            FrequencyEntry fe = chartMap.getEntry(cat.getName());
+            long value = 0;
+            if (fe != null) {
+                value = fe.getFrequency();
+            }
+
+            ChartPoint p = new ChartPoint(cat, value);
+            ChartPoint logp = new ChartPoint(cat, Math.log10(value));
+
+            if (addHighlights) {
+                p.setHighlight(highlights.get(index));
+                logp.setHighlight(highlights.get(index));
+            }
+
+            if (this.isLogScaleY()) {
+                chartModel.addPoint(logp);
+            } else {
+                chartModel.addPoint(p);
+            }
+
+            index++;
+        }
+    }
+    
     private synchronized void drawScatterChart(ScatterChartMap entries) {
         
         Chart chart = new Chart(new Dimension(200, 200));
@@ -440,42 +479,65 @@ public class SummaryChart extends JLayeredPane {
         c.gridx = 0;
         
     }
+    
+    private synchronized void drawSurface(final ScatterChartMap entries){
 
-    private void addEntriesToChart(
-            DefaultChartModel chartModel,
-            ChartFrequencyMap chartMap,
-            List<ChartCategory> chartCategories,
-            List<Highlight> highlights) {
-
-        boolean addHighlights = highlights != null;
-
-        int index = 0;
-        for (ChartCategory cat : chartCategories) {
-
-            FrequencyEntry fe = chartMap.getEntry(cat.getName());
-            long value = 0;
-            if (fe != null) {
-                value = fe.getFrequency();
+        String[] firstX = entries.getXValueAt(0).split("[^(\\d|\\.|E)]");
+        String[] firstY = entries.getYValueAt(0).split("[^(\\d|\\.|E)]");
+        String[] lastX = entries.getXValueAt(entries.getNumX()-1).split("[^(\\d|\\.|E)]");
+        String[] lastY = entries.getYValueAt(entries.getNumY()-1).split("[^(\\d|\\.|E)]");
+        
+        float startX = Float.parseFloat(firstX[0]);
+        float endX = Float.parseFloat(lastX[lastX.length-1]);
+        final float binSizeX = Float.parseFloat(firstX[firstX.length-1]) - startX;
+        
+        float startY = Float.parseFloat(firstY[0]);
+        float endY = Float.parseFloat(lastY[lastY.length-1]);
+        final float binSizeY = Float.parseFloat(firstY[firstY.length-1]) - startY;
+        
+        JSurfacePanel panel = new JSurfacePanel();
+        panel.setTitleText("");
+        
+        ProgressiveSurfaceModel model = new ProgressiveSurfaceModel();
+        panel.setModel(model);
+        model.setXMin(startX);
+        model.setXMax(endX);
+        model.setYMin(startY);
+        model.setYMax(endY);
+        model.setZMin(0);
+        model.setZMax(entries.getMaxFrequency()+1);
+        model.setDisplayXY(true);
+        model.setDisplayZ(true);
+        
+        model.setMapper(new Mapper() {
+            @Override
+            public float f1(float x, float y) {
+                
+                try {
+                    int binX = (int)(x / binSizeX);
+                    int binY = (int)(y / binSizeY);
+                    ScatterChartEntry entry = entries.getValueAt(binX, binY);
+                    if(entry == null) {
+                        return 0;
+                    } else {
+                        return entry.getFrequency();
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+                return x;
             }
 
-            ChartPoint p = new ChartPoint(cat, value);
-            ChartPoint logp = new ChartPoint(cat, Math.log10(value));
-
-            if (addHighlights) {
-                p.setHighlight(highlights.get(index));
-                logp.setHighlight(highlights.get(index));
+            @Override
+            public float f2(float x, float y) {
+                return 0;
             }
+        });
+        model.plot().execute();
 
-            if (this.isLogScaleY()) {
-                chartModel.addPoint(logp);
-            } else {
-                chartModel.addPoint(p);
-            }
-
-            index++;
-        }
+        add(panel, c, JLayeredPane.DEFAULT_LAYER);
     }
-
+    
     void setIsSortedKaryotypically(boolean b) {
         this.isSortedKaryotypically = b;
     }
@@ -661,11 +723,18 @@ public class SummaryChart extends JLayeredPane {
             } catch (SQLException ex) {
                 MiscUtils.checkSQLException(ex);
                 throw ex;
-            }             
+            }
         }
 
         public void showSuccess(ScatterChartMap result) {
-            drawScatterChart(result);
+            if(mapGenerator.isNumeric() 
+                    && mapGeneratorScatter.isNumeric() 
+                    && !mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER) 
+                    && !mapGeneratorScatter.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+                drawSurface(result);
+            } else {
+                drawScatterChart(result);
+            }
             waitPanel.setVisible(false);
             revalidate();
         }

@@ -28,6 +28,9 @@ public class ScatterChartMap implements Serializable {
     }
     
     public ScatterChartEntry getValueAt(int x, int y){
+        if(x < 0 || x >= getNumX() || y < 0 || y >= getNumY()){
+            return null;
+        }
         return entries[x][y];
     }
     
@@ -61,6 +64,18 @@ public class ScatterChartMap implements Serializable {
     
     public int getIndexOnY(String value){
         return yRanges.indexOf(value);
+    }
+    
+    public int getMaxFrequency(){
+        int max = 0;
+        for(int x = 0; x < getNumX(); x++){
+            for(int y = 0; y < getNumY(); y++){
+                if(getValueAt(x, y) != null){
+                    max = Math.max(max, getValueAt(x, y).getFrequency());
+                }
+            }
+        }
+        return max;
     }
     
 }

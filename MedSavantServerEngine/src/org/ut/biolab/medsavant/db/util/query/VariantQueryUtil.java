@@ -451,6 +451,10 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         while(rs.next()){
             String x = rs.getString(2);
             String y = rs.getString(3);
+            
+            if(x == null) x = "null"; //prevents NPE when sorting below
+            if(y == null) y = "null";
+            
             if(!columnXCategorical){
                 x = Double.toString(Integer.parseInt(x) * binSizeX) + " - " + Double.toString(Integer.parseInt(x) * binSizeX + binSizeX);
             }
