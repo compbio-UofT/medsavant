@@ -68,6 +68,7 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
@@ -631,6 +632,43 @@ public class SummaryChart extends JLayeredPane {
                     gen.getField().getColumnName()));
             return org.ut.biolab.medsavant.db.util.shared.MiscUtils.generateBins(gen.getField(), r, isLogScaleX);
         }
+        
+        private ScatterChartMap mapPatientField(ScatterChartMap scatterMap, ChartMapGenerator generator, boolean isX) throws NonFatalDatabaseException, SQLException, RemoteException{
+            Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentProjectId(),
+                    generator.getFilterId());
+            if(generator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+                map = MiscUtils.modifyGenderMap(map);
+            }
+
+            List<String> rangesA = new ArrayList<String>();
+            for(Object o : map.keySet()){
+                rangesA.add(o.toString());
+            }
+            List<String> rangesB = (isX ? scatterMap.getYRanges() : scatterMap.getXRanges());
+
+            List<ScatterChartEntry> entries = new ArrayList<ScatterChartEntry>();
+            for(Object a : map.keySet()){
+                List<Integer> indices = new ArrayList<Integer>();
+                for(String dnaId : map.get(a)){
+                    int index = (isX ? scatterMap.getIndexOnX(dnaId) : scatterMap.getIndexOnY(dnaId));
+                    if(index != -1){
+                        indices.add(index);
+                    }
+                }
+                for(int b = 0; b < rangesB.size(); b++){
+                    int sum = 0;
+                    for(Integer index : indices){
+                        if((isX ? scatterMap.getValueAt(index, b) : scatterMap.getValueAt(b, index)) != null){
+                            sum += (isX ? scatterMap.getValueAt(index, b) : scatterMap.getValueAt(b, index)).getFrequency();
+                        }
+                    }
+                    entries.add((isX ? new ScatterChartEntry(a.toString(), rangesB.get(b), sum) : new ScatterChartEntry(rangesB.get(b), a.toString(), sum)));
+                }
+            }
+            return (isX ? new ScatterChartMap(rangesA, rangesB, entries) : new ScatterChartMap(rangesB, rangesA, entries));
+        }
 
         @Override
         protected ScatterChartMap doInBackground() throws Exception {
@@ -675,48 +713,16 @@ public class SummaryChart extends JLayeredPane {
                         binsizeY,
                         isSortedKaryotypically());
 
+                //TODO: re-mapping below works only for categorical patient fields. Generalize for numeric/categorical.
+                
                 //map for patient field
                 if(mapGenerator.getTable() == Table.PATIENT){
-                    Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectId(),
-                            mapGenerator.getFilterId());
-                    if(mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
-                        map = MiscUtils.modifyGenderMap(map);
-                    }
-                    
-                    List<String> xRanges = new ArrayList<String>();
-                    for(Object o : map.keySet()){
-                        xRanges.add(o.toString());
-                    }
-                    List<String> yRanges = scatterMap.getYRanges();
-                    
-                    List<ScatterChartEntry> entries = new ArrayList<ScatterChartEntry>();
-                    for(Object x : map.keySet()){
-                        List<Integer> indices = new ArrayList<Integer>();
-                        for(String dnaId : map.get(x)){
-                            int index = scatterMap.getIndexOnX(dnaId);
-                            if(index != -1){
-                                indices.add(index);
-                            }
-                        }
-                        for(int y = 0; y < yRanges.size(); y++){
-                            int sum = 0;
-                            for(Integer index : indices){
-                                if(scatterMap.getValueAt(index, y) != null){
-                                    sum += scatterMap.getValueAt(index, y).getFrequency();
-                                }
-                            }
-                            entries.add(new ScatterChartEntry(x.toString(), yRanges.get(y), sum));
-                        }
-                    }
-                    scatterMap = new ScatterChartMap(xRanges, yRanges, entries);
+                    scatterMap = mapPatientField(scatterMap, mapGenerator, true);
                 }
                 
                 if(mapGeneratorScatter.getTable() == Table.PATIENT){
-                    //TODO
+                    scatterMap = mapPatientField(scatterMap, mapGeneratorScatter, false);
                 }
-                
                 
                 return scatterMap;
                 
@@ -742,7 +748,6 @@ public class SummaryChart extends JLayeredPane {
         public void showProgress(double prog) {
             if (prog == 1.0) {
                 mapWorker = null;
-                //removeAll();        // Clear away the WaitPanel.
             }
         }
     }
