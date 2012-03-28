@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,7 +147,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             File variantDumpFile = new File(basedir,"temp_" + existingTableName);
             String variantDump = variantDumpFile.getAbsolutePath();
             ServerLogger.log(VariantManager.class, "Dumping variants to file");
-            VariantManagerUtils.variantsToFile(sid,existingTableName, variantDumpFile, null, false);
+            VariantManagerUtils.variantsToFile(sid,existingTableName, variantDumpFile, null, false, 0);
 
             //sort variants
             ServerLogger.log(VariantManager.class, "Sorting variants");
@@ -194,8 +195,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             VariantManagerUtils.generateSubset(new File(outputFilenameMerged), subFile);
             ServerLogger.log(VariantManager.class, "Importing to: " + tableNameSub);
             VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, subFile, tableNameSub);
-            ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
-
+            //ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
+            
+            //add entries to tablemap
+            ProjectQueryUtil.getInstance().addTableToMap(sid, projectId, referenceId, updateId, false, tableName, tableNameSub);
+            
             //cleanup
             ServerLogger.log(VariantManager.class, "Dropping old table(s)");
             int newestId = ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, true);
@@ -234,11 +238,169 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         return uploadVariants(sid, vcfFiles, fileNames, projectId, referenceId, variantTags, includeHomoRef);
     }
-
+    
     /*
      * Helper that does all the actual work of uploading new vcf files.
      */
     private static int uploadVariants(String sid, File[] vcfFiles, String[] fileNames, int projectId, int referenceId, String[][] variantTags, boolean includeHomoRef) throws Exception {
+        
+        ServerLogger.log(VariantManager.class, "Beginning new vcf upload");
+
+        String user = SessionController.getInstance().getUserForSession(sid);
+
+        //generate directory
+        ServerLogger.log(VariantManager.class, "Generating base directory");
+        File baseDir = ServerDirectorySettings.generateDateStampDirectory(new File("./"));
+        ServerLogger.log(VariantManager.class, "Base directory: " + baseDir.getAbsolutePath());
+        Process p = Runtime.getRuntime().exec("chmod -R o+w " + baseDir);
+        p.waitFor();
+
+        //add log
+        ServerLogger.log(VariantManager.class, "Adding log and generating update id");
+        int updateId = AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid, projectId, referenceId, org.ut.biolab.medsavant.db.model.AnnotationLog.Action.ADD_VARIANTS, user);
+        
+        try {
+
+            //dump existing table
+            String existingTableName = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectId, referenceId, false);
+            File existingVariantsFile = new File(baseDir,"temp_proj" + projectId + "_ref" + referenceId + "_update" + updateId);
+            ServerLogger.log(VariantManager.class, "Dumping variants to file");
+            VariantManagerUtils.variantsToFile(sid,existingTableName, existingVariantsFile, null, true, 0);
+
+            //create the staging table
+            ServerLogger.log(VariantManager.class, "Creating new variant table for resulting variants");
+            ProjectQueryUtil.getInstance().setCustomVariantFields(
+                    sid, projectId, referenceId, updateId,
+                    ProjectQueryUtil.getInstance().getCustomVariantFields(sid, projectId, referenceId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, false)));
+            String tableName = ProjectQueryUtil.getInstance().createVariantTable(sid, projectId, referenceId, updateId, AnnotationQueryUtil.getInstance().getAnnotationIds(sid,projectId, referenceId), true);
+            String tableNameSub = ProjectQueryUtil.getInstance().createVariantTable(sid, projectId, referenceId, updateId, AnnotationQueryUtil.getInstance().getAnnotationIds(sid,projectId, referenceId), false, true);
+
+            //upload dump to staging table
+            ServerLogger.log(VariantManager.class, "Uploading variants to table: " + tableName);
+            VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, existingVariantsFile, tableName);
+
+            VCFIterator parser = new VCFIterator(vcfFiles, baseDir, updateId, includeHomoRef);
+            File f;
+            while((f = parser.next()) != null){
+                
+                List<String> filesUsed = new ArrayList<String>();
+
+                String tempFilename = f.getAbsolutePath();
+                filesUsed.add(tempFilename);
+                String currentFilename = tempFilename;
+
+                //add custom fields
+                ServerLogger.log(VariantManager.class, "Adding custom vcf fields");
+                List<CustomField> customFields = ProjectQueryUtil.getInstance().getCustomVariantFields(sid, projectId, referenceId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, false));
+                if(!customFields.isEmpty()){
+                    String customFieldFilename = currentFilename + "_vcf";
+                    filesUsed.add(customFieldFilename);
+                    VariantManagerUtils.addCustomVcfFields(currentFilename, customFieldFilename, customFields, DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO); //last of the default fields
+                    currentFilename = customFieldFilename;
+                }
+
+                //get annotation ids
+                int[] annotationIds = AnnotationQueryUtil.getInstance().getAnnotationIds(sid,projectId, referenceId);
+
+                if(annotationIds.length > 0){
+
+                    //sort variants
+                    ServerLogger.log(VariantManager.class, "Sorting variants");
+                    String sortedVariants = currentFilename + "_sorted";
+                    filesUsed.add(sortedVariants);
+                    VariantManagerUtils.sortFileByPosition(currentFilename, sortedVariants);
+                    VariantManagerUtils.logFileSize(sortedVariants);
+                    currentFilename = sortedVariants;
+
+                    //annotate
+                    String annotatedFilename = currentFilename + "_annotated";
+                    filesUsed.add(annotatedFilename);
+                    ServerLogger.log(VariantManager.class, "File containing annotated variants, sorted by position: " + annotatedFilename);
+                    VariantManagerUtils.annotateTDF(sid, currentFilename, annotatedFilename, annotationIds);
+                    VariantManagerUtils.logFileSize(annotatedFilename);
+                    currentFilename = annotatedFilename;
+                }
+
+                if(annotationIds.length > 0){
+
+                    //split
+                    File splitDir = new File(baseDir,"splitDir");
+                    splitDir.mkdir();
+                    ServerLogger.log(VariantManager.class, "Splitting annotation file into multiple files by file ID");
+                    VariantManagerUtils.splitFileOnColumn(splitDir, currentFilename, 1);
+
+                    //merge
+                    ServerLogger.log(VariantManager.class, "Merging files");
+                    String outputFilenameMerged = tempFilename + "_annotated_merged";
+                    filesUsed.add(outputFilenameMerged);
+                    ServerLogger.log(VariantManager.class, "File containing annotated variants, sorted by file: " + outputFilenameMerged);
+                    VariantManagerUtils.concatenateFilesInDir(splitDir, outputFilenameMerged);
+                    VariantManagerUtils.logFileSize(outputFilenameMerged);
+                    currentFilename = outputFilenameMerged;
+                }
+
+                //upload to staging table
+                ServerLogger.log(VariantManager.class, "Uploading variants to table: " + tableName);
+                VariantQueryUtil.getInstance().uploadFileToVariantTable(sid,new File(currentFilename), tableName);
+                
+                //cleanup
+                System.gc();
+                for(String filename : filesUsed){
+                    boolean deleted = (new File(filename)).delete();
+                    ServerLogger.log(VariantManager.class, "Deleting " + filename + " - " + (deleted ? "successful" : "failed"));
+                }
+
+            }
+            
+            //create sub table dump
+            File subDump = new File(baseDir,"temp_proj" + projectId + "_ref" + referenceId + "_update" + updateId + "_sub");
+            ServerLogger.log(VariantManager.class, "Dumping variants to file for sub table");
+            VariantManagerUtils.variantsToFile(sid,tableName, subDump, null, true, VariantManagerUtils.determineStepForSubset(VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, tableName, new Condition[][]{})));
+            
+            //upload to sub table
+            ServerLogger.log(VariantManager.class, "Uploading variants to table: " + tableNameSub);
+            VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, subDump, tableNameSub);
+            //ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub)); 
+
+            //add entries to tablemap
+            ProjectQueryUtil.getInstance().addTableToMap(sid, projectId, referenceId, updateId, false, tableName, tableNameSub);
+            
+            //add tags to upload
+            ServerLogger.log(VariantManager.class, "Adding upload tags");
+            VariantManagerUtils.addTagsToUpload(sid, updateId, variantTags);
+
+            //add entries to file table
+            ServerLogger.log(VariantManager.class, "Adding entries to file table");
+            for (int i = 0; i < fileNames.length; i++) {
+                VariantQueryUtil.getInstance().addEntryToFileTable(sid, updateId, i, fileNames[i]);
+            }
+
+            //cleanup
+            ServerLogger.log(VariantManager.class, "Dropping old table(s)");
+            int newestId = ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, true);
+            int minId = -1;
+            int maxId = newestId-1;
+            ProjectQueryUtil.getInstance().removeTables(sid, projectId, referenceId, minId, maxId);
+
+            //TODO: remove files
+
+            //TODO: server logs
+
+            //set as pending
+            AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, updateId, Status.PENDING);
+
+            return updateId;
+            
+        } catch (Exception e){
+            AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, updateId, Status.ERROR);
+            throw e;
+        }
+    }
+
+    /*
+     * Helper that does all the actual work of uploading new vcf files.
+     */
+    /*private static int uploadVariants(String sid, File[] vcfFiles, String[] fileNames, int projectId, int referenceId, String[][] variantTags, boolean includeHomoRef) throws Exception {
 
         ServerLogger.log(VariantManager.class, "Beginning new vcf upload");
 
@@ -298,7 +460,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             String existingTableName = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectId, referenceId, false);
             File existingVariantsFile = new File(baseDir,"temp_proj" + projectId + "_ref" + referenceId + "_update" + updateId);
             ServerLogger.log(VariantManager.class, "Dumping variants to file");
-            VariantManagerUtils.variantsToFile(sid,existingTableName, existingVariantsFile, null, true);
+            VariantManagerUtils.variantsToFile(sid,existingTableName, existingVariantsFile, null, true, 0);
             VariantManagerUtils.logFileSize(tempFilename);
 
             //cat existing table to new annotations
@@ -373,7 +535,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, updateId, Status.ERROR);
             throw e;
         }
-    }
+    }*/
 
     @Override
     public int removeVariants(String sid, int projectId, int referenceId, List<SimpleVariantFile> files) throws Exception {
@@ -407,7 +569,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     conditions += " AND ";
                 }
             }
-            VariantManagerUtils.variantsToFile(sid, existingTableName, existingVariantsFile, conditions, true);
+            VariantManagerUtils.variantsToFile(sid, existingTableName, existingVariantsFile, conditions, true, 0);
 
             //create the staging table
             ServerLogger.log(VariantManager.class, "Creating new variant table for resulting variants");
@@ -427,8 +589,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             VariantManagerUtils.generateSubset(existingVariantsFile, subFile);
             ServerLogger.log(VariantManager.class, "Importing to: " + tableNameSub);
             VariantQueryUtil.getInstance().uploadFileToVariantTable(sid, subFile, tableNameSub);
-            ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
+            //ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
 
+            //add entries to tablemap
+            ProjectQueryUtil.getInstance().addTableToMap(sid, projectId, referenceId, updateId, false, tableName, tableNameSub);
+            
             //cleanup
             ServerLogger.log(VariantManager.class, "Dropping old table(s)");
             int newestId = ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, true);

@@ -211,7 +211,7 @@ public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         c.createStatement().execute(query);
 
         //create new entry in variant table map
-        if(!isSub){
+        /*if(!isSub){
             TableSchema variantTableMap = MedSavantDatabase.VarianttablemapTableSchema;
             InsertQuery query1 = new InsertQuery(variantTableMap.getTable());
             query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid);
@@ -220,10 +220,22 @@ public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject impleme
             query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), !isStaging);
             query1.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), variantTableName);
             c.createStatement().execute(query1.toString());
-        }
+        }*/
 
         c.close();
         return variantTableName;
+    }
+    
+    public void addTableToMap(String sid, int projectid, int referenceid, int updateid, boolean published, String tablename, String subTablename) throws SQLException{
+        TableSchema variantTableMap = MedSavantDatabase.VarianttablemapTableSchema;
+        InsertQuery query = new InsertQuery(variantTableMap.getTable());
+        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid);
+        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceid);
+        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updateid);
+        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), published);
+        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), tablename);
+        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME), subTablename);
+        ConnectionController.executeQuery(sid, query.toString());
     }
 
     private static String getAnnotationSchema(String sid, int annotationId) {

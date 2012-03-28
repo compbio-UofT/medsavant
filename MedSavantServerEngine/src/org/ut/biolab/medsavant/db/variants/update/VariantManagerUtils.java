@@ -58,7 +58,7 @@ public class VariantManagerUtils {
         reader.close();
     }
 
-    public static void variantsToFile(String sid, String tableName, File file, String conditions, boolean complete) throws SQLException {
+    public static void variantsToFile(String sid, String tableName, File file, String conditions, boolean complete, int step) throws SQLException {
         String query;
         
         if(complete) {
@@ -73,6 +73,14 @@ public class VariantManagerUtils {
                 + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"'"
                 + " LINES TERMINATED BY '\\r\\n'"
                 + " FROM " + tableName;
+        
+        if(step > 1){
+            if(conditions != null && conditions.length()> 1){
+                conditions += " AND `variant_id`%" + step + "=0";
+            } else {
+                conditions = "`variant_id`%" + step + "=0";
+            }
+        }
 
         if(conditions != null && conditions.length()> 1){
             query += " WHERE " + conditions;
@@ -220,7 +228,7 @@ public class VariantManagerUtils {
             throw new InterruptedException();
         }
     }
-    
+        
     /*
      * Given vcf files, parse out the relevant information and concatenate to 
      * create a single, ready-to-use csv. 
@@ -284,6 +292,17 @@ public class VariantManagerUtils {
         }
         
         return outfile;
+    }
+    
+    public static int determineStepForSubset(long length) {
+        int step;
+        if(length <= MIN_SUBSET_SIZE){
+            step = 1;
+        } else {
+            long targetSize = Math.max(MIN_SUBSET_SIZE, length / 1000);
+            step = (int)Math.ceil((double)length / (double)targetSize);
+        }
+        return step;
     }
     
     public static void generateSubset(File inFile, File outFile) throws IOException, InterruptedException{

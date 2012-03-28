@@ -37,5 +37,6 @@ public interface ProjectQueryUtilAdapter extends Remote {
     public int getNewestUpdateId(String sid, int projectId, int referenceId, boolean published) throws SQLException, RemoteException;
     public boolean existsUnpublishedChanges(String sid, int projectId) throws SQLException, RemoteException;
     public boolean existsUnpublishedChanges(String sid, int projectId, int referenceId) throws SQLException, RemoteException;
+    public void addTableToMap(String sid, int projectid, int referenceid, int updateid, boolean published, String tablename, String subTablename) throws SQLException, RemoteException;
 
 }

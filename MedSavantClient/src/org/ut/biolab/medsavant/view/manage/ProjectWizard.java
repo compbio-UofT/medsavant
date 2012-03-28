@@ -844,8 +844,9 @@ public class ProjectWizard extends WizardDialog {
 
                 //add new ref
                 if(pd == null && cli.isSelected()){
-                    MedSavantClient.ProjectQueryUtilAdapter.createVariantTable(LoginController.sessionId, projectId, cli.getReference().getId(), 0, annotationIds, false);
+                    String tablename = MedSavantClient.ProjectQueryUtilAdapter.createVariantTable(LoginController.sessionId, projectId, cli.getReference().getId(), 0, annotationIds, false);
                     MedSavantClient.ProjectQueryUtilAdapter.setCustomVariantFields(LoginController.sessionId, projectId, cli.getReference().getId(), 0, variantFields);
+                    MedSavantClient.ProjectQueryUtilAdapter.addTableToMap(LoginController.sessionId, projectId, cli.getReference().getId(), 0, true, tablename, null);
                     continue;
                 //remove existing ref
                 } else if (pd != null && !cli.isSelected()){
@@ -879,7 +880,8 @@ public class ProjectWizard extends WizardDialog {
                     for(int i = 0; i < annotationIds.size(); i++) {
                         annIds[i] = annotationIds.get(i);
                     }
-                    MedSavantClient.ProjectQueryUtilAdapter.createVariantTable(LoginController.sessionId, projectid, cli.getReference().getId(), 0, (annotationIds.isEmpty() ? null : annIds), false);
+                    String tablename = MedSavantClient.ProjectQueryUtilAdapter.createVariantTable(LoginController.sessionId, projectid, cli.getReference().getId(), 0, (annotationIds.isEmpty() ? null : annIds), false);
+                    MedSavantClient.ProjectQueryUtilAdapter.addTableToMap(LoginController.sessionId, projectid, cli.getReference().getId(), 0, true, tablename, null);
 
                 }
             }
