@@ -384,6 +384,10 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
         q.addGroupings(column);
+        
+        if(column.getColumnNameSQL().equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT) || column.getColumnNameSQL().equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)){
+            q.addCondition(createNucleotideCondition(column));
+        }
 
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
@@ -424,9 +428,16 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         //q.addColumns(columnX, columnY);
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
-        //q.addGroupings(columnX, columnY);
-        //q.addOrderings(columnX, columnY);
+        
+        DbColumn columnX = table.getDBColumn(columnnameX);     
+        if(columnnameX.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT) || columnnameX.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)){
+            q.addCondition(createNucleotideCondition(columnX));
+        }
 
+        DbColumn columnY = table.getDBColumn(columnnameY);     
+        if(columnnameY.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT) || columnnameY.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)){
+            q.addCondition(createNucleotideCondition(columnY));
+        }
 
         String m = columnnameX + " as m";
         if(!columnXCategorical){
@@ -1258,4 +1269,12 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         }
     }
 
+    private Condition createNucleotideCondition(DbColumn column){
+        return ComboCondition.or(
+                BinaryCondition.equalTo(column, "A"),
+                BinaryCondition.equalTo(column, "C"),
+                BinaryCondition.equalTo(column, "G"),
+                BinaryCondition.equalTo(column, "T"));
+    }
+    
 }
