@@ -235,7 +235,7 @@ public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), published);
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), tablename);
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME), subTablename);
-        ConnectionController.executeQuery(sid, query.toString());
+        ConnectionController.execute(sid, query.toString());
     }
 
     private static String getAnnotationSchema(String sid, int annotationId) {
