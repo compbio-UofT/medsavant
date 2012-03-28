@@ -189,6 +189,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         result.add(new CustomField(DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM, "varchar(100)", true, PatientFormat.ALIAS_OF_IDBIOMOM, "", Category.PATIENT));
         result.add(new CustomField(DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD, "varchar(100)", true, PatientFormat.ALIAS_OF_IDBIODAD, "", Category.PATIENT));
         result.add(new CustomField(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER, "int(11)", true, PatientFormat.ALIAS_OF_GENDER, "", Category.PATIENT));
+        result.add(new CustomField(DefaultpatientTableSchema.COLUMNNAME_OF_AFFECTED, "int(11)", true, PatientFormat.ALIAS_OF_AFFECTED, "", Category.PATIENT));
         result.add(new CustomField(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, "varchar(1000)", false, PatientFormat.ALIAS_OF_DNA_IDS, "", Category.PATIENT));
         result.add(new CustomField(DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, "varchar(5000)", false, PatientFormat.ALIAS_OF_BAM_URL, "", Category.PATIENT));
         result.addAll(getCustomPatientFields(sid,projectId));

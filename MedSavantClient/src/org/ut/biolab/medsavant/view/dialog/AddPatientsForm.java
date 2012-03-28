@@ -203,77 +203,96 @@ public class AddPatientsForm extends javax.swing.JDialog {
         //remove current data
         MedSavantClient.PatientQueryUtilAdapter.clearPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
                 
-        File file = DialogUtils.chooseFileForOpen("Import File", new ExtensionsFileFilter(new String[]{"csv"}), null);
+        final File file = DialogUtils.chooseFileForOpen("Import File", new ExtensionsFileFilter(new String[]{"csv"}), null);
         if(file == null) return;
         
         progressBar.setIndeterminate(true);
         progressMessage.setText("Importing Patients");
+        setButtonsEnabled(false);
         
-        List<CustomField> fields = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
-        
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-            CSVReader in = new CSVReader(bufferedReader);
-            
-            String[] header = in.readNext();
-            if(header == null) return;
-            List<CustomField> headerToField = new ArrayList<CustomField>();
-            for(String s : header){
-                boolean found = false;
-                for(CustomField f : fields){
-                    if(s.equals(f.getAlias())){
-                        headerToField.add(f);
-                        found = true;
-                        break;
-                    }
-                }
-                if(!found){
-                    JOptionPane.showMessageDialog(
-                                null, 
-                                "<HTML>The headers in this file do not match those in the database.<BR>Please regenerate the template file.</HTML>", 
-                                "Error", 
-                                JOptionPane.ERROR_MESSAGE);
-                    progressMessage.setText("Error importing patients");
-                    progressBar.setIndeterminate(false);
-                    progressBar.setValue(0);
-                    return;
-                }
-            }
-            
-            String[] line;
-            while((line = in.readNext()) != null){
-                List<String> values = new ArrayList<String>();
-                values.addAll(Arrays.asList(line));
-                
-                // replace empty strings for nulls and booleans with 0,1
-                for (int i = 0; i < values.size(); i++) {
-                    String s = values.get(i);
-                    if(s.equals("") || s.equals("null")){
-                        values.set(i, null);
-                    } else if (headerToField.get(i).getColumnType() == ColumnType.BOOLEAN){
-                        if(s.toLowerCase().equals("true")){
-                            values.set(i, "1");
-                        } else if (s.toLowerCase().equals("false")){
-                            values.set(i, "0");
+        Thread t = new Thread(){
+            public void run(){
+
+                try {
+                    
+                    List<CustomField> fields = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
+                    
+                    BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+                    CSVReader in = new CSVReader(bufferedReader);
+
+                    String[] header = in.readNext();
+                    if(header == null) return;
+                    List<CustomField> headerToField = new ArrayList<CustomField>();
+                    for(String s : header){
+                        boolean found = false;
+                        for(CustomField f : fields){
+                            if(s.equals(f.getAlias())){
+                                headerToField.add(f);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(!found){
+                            JOptionPane.showMessageDialog(
+                                        null, 
+                                        "<HTML>The headers in this file do not match those in the database.<BR>Please regenerate the template file.</HTML>", 
+                                        "Error", 
+                                        JOptionPane.ERROR_MESSAGE);
+                            progressMessage.setText("Error importing patients");
+                            progressBar.setIndeterminate(false);
+                            progressBar.setValue(0);
+                            setButtonsEnabled(true);
+                            return;
                         }
                     }
+
+                    String[] line;
+                    while((line = in.readNext()) != null){
+                        List<String> values = new ArrayList<String>();
+                        values.addAll(Arrays.asList(line));
+
+                        // replace empty strings for nulls and booleans with 0,1
+                        for (int i = 0; i < values.size(); i++) {
+                            String s = values.get(i);
+                            if(s.equals("") || s.equals("null")){
+                                values.set(i, null);
+                            } else if (headerToField.get(i).getColumnType() == ColumnType.BOOLEAN){
+                                if(s.toLowerCase().equals("true")){
+                                    values.set(i, "1");
+                                } else if (s.toLowerCase().equals("false")){
+                                    values.set(i, "0");
+                                }
+                            }
+                        }
+
+                        MedSavantClient.PatientQueryUtilAdapter.addPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), headerToField, values);
+                    }
+
+                    in.close();
+                    bufferedReader.close();
+                    progressMessage.setText("Import successful");
+                } catch (SQLException ex) {
+                    MiscUtils.checkSQLException(ex);
+                } catch (Exception ex) {           
+                    ex.printStackTrace();
+                    progressMessage.setText("Error importing patients");
+                } finally {
+                    setButtonsEnabled(true);
+                    progressBar.setIndeterminate(false);
+                    progressBar.setValue(0);
                 }
                 
-                MedSavantClient.PatientQueryUtilAdapter.addPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), headerToField, values);
             }
-            
-            in.close();
-            bufferedReader.close();
-            progressMessage.setText("Import successful");
-        } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
-        } catch (Exception ex) {           
-            ex.printStackTrace();
-            progressMessage.setText("Error importing patients");
-        } 
-        
-        progressBar.setIndeterminate(false);
-        progressBar.setValue(0);
+        };
+        t.start();
+             
+    }
+    
+    private void setButtonsEnabled(boolean enabled){
+        doneButton.setEnabled(enabled);
+        jButton1.setEnabled(enabled);
+        jButton2.setEnabled(enabled);
+        jButton3.setEnabled(enabled);
     }
 
     private void close(){
