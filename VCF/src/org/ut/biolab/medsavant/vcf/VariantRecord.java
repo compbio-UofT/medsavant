@@ -77,10 +77,16 @@ public class VariantRecord implements Serializable {
         filter =        (String)    parse(CLASS_OF_FILTER, line[FILE_INDEX_OF_FILTER]);
         customInfo =    (String)    parse(CLASS_OF_CUSTOMINFO, line[FILE_INDEX_OF_INFO]);
         
-        if((ref != null && ref.length() > 30) || (alt != null && alt.length() > 30) || ((ref == null || ref.length()==0) && (alt == null || alt.length()==0))){
+        if ((ref == null || ref.length()==0) && (alt == null || alt.length()==0)){
             throw new Exception();
         }
-        
+        if(ref != null && ref.length() > 30){
+            ref = "(too long to display)";
+        }
+        if (alt != null && alt.length() > 30){
+            alt = "(too long to display)";
+        }
+                
         type = getVariantType(ref, alt);
         //genotype = getGenotype(ref, alt); // DO THESE TOGETHER?
         //zygosity = calculateZygosity(); //
