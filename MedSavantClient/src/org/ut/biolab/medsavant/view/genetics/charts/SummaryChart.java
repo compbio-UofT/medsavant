@@ -460,14 +460,14 @@ public class SummaryChart extends JLayeredPane {
         
         //add models
         for(int i = 0; i < models.length; i++){
-            chart.addModel(models[i], new ChartStyle(ViewUtil.getColor(i, models.length), true, true));
+            chart.addModel(models[i], new ChartStyle(ViewUtil.getColor(i, models.length), true, mapGenerator.isNumeric()));
         }
         
         //add axes
         CategoryAxis xaxis = new CategoryAxis(range, mapGenerator.getName());
         chart.setXAxis(xaxis);
         chart.setYAxis(new Axis(new NumericRange(0, max * 1.1), "Frequency"));
-        
+
         //add chart
         add(chart, c, JLayeredPane.DEFAULT_LAYER);
         
@@ -619,21 +619,6 @@ public class SummaryChart extends JLayeredPane {
             mapWorker = this;
         }
         
-        /*private double generateBinsize(ChartMapGenerator generator) throws SQLException, RemoteException{
-            VariantFieldChartMapGenerator gen  = (VariantFieldChartMapGenerator)generator;
-            String tablename = null;
-            if (gen.getTable() == Table.VARIANT) {
-                tablename = ProjectController.getInstance().getCurrentVariantTableName();
-            } else if (gen.getTable() == Table.PATIENT) {
-                tablename = ProjectController.getInstance().getCurrentPatientTableName();
-            }
-            Range r = new Range(MedSavantClient.VariantQueryUtilAdapter.getExtremeValuesForColumn(
-                    LoginController.sessionId,
-                    tablename,
-                    gen.getField().getColumnName()));
-            return org.ut.biolab.medsavant.db.util.shared.MiscUtils.generateBins(gen.getField(), r, isLogScaleX);
-        }*/
-        
         private ScatterChartMap mapPatientField(ScatterChartMap scatterMap, ChartMapGenerator generator, boolean isX) throws NonFatalDatabaseException, SQLException, RemoteException{
             Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
                     LoginController.sessionId,
@@ -690,29 +675,7 @@ public class SummaryChart extends JLayeredPane {
                 if(mapGeneratorScatter.getTable() == Table.PATIENT){
                     columnY = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
                 }
-                
-                //get columns
-                /*CustomField columnX = ((VariantFieldChartMapGenerator)mapGenerator).getField();
-                CustomField columnY = ((VariantFieldChartMapGenerator)mapGeneratorScatter).getField();
-                if(mapGenerator.getTable() == Table.PATIENT){
-                    for(CustomField f : ProjectController.getInstance().get){
-                        if(f.getColumnName().equals(DefaultpatientTableSchema))
-                    }
-                }
-                if(mapGeneratorScatter.getTable() == Table.PATIENT){
-                    columnY = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
-                }*/
-                
-                //use binning if field is numeric and on the variant table
-                /*double binsizeX = 0;
-                double binsizeY = 0;
-                if(mapGenerator.isNumeric() && mapGenerator.getTable() == Table.VARIANT){
-                    binsizeX = generateBinsize(mapGenerator);
-                } 
-                if(mapGeneratorScatter.isNumeric() && mapGeneratorScatter.getTable() == Table.VARIANT){
-                    binsizeY = generateBinsize(mapGeneratorScatter);
-                }*/
-                
+                                
                 ScatterChartMap scatterMap =  MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForScatter(
                         LoginController.sessionId, 
                         ProjectController.getInstance().getCurrentProjectId(), 
