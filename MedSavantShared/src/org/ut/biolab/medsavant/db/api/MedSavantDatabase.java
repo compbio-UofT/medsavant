@@ -282,7 +282,7 @@ public class MedSavantDatabase {
         // default_patient.affected
         public static final int INDEX_OF_AFFECTED = 6;
         public static final ColumnType TYPE_OF_AFFECTED = TableSchema.ColumnType.INTEGER;
-        public static final int LENGTH_OF_AFFECTED = 11;
+        public static final int LENGTH_OF_AFFECTED = 1;
         public static final String COLUMNNAME_OF_AFFECTED = "affected";
         // default_patient.dna_ids
         public static final int INDEX_OF_DNA_IDS = 7;

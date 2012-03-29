@@ -205,8 +205,21 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             
             //TODO: This hasn't been properly tested. Need a numeric field in patients. 
             
+            String tablename = null;
+            if (whichTable == Table.VARIANT) {
+                tablename = ProjectController.getInstance().getCurrentVariantTableName();
+            } else if (whichTable == Table.PATIENT) {
+                tablename = ProjectController.getInstance().getCurrentPatientTableName();
+            }
+            Range r = new Range(MedSavantClient.VariantQueryUtilAdapter.getExtremeValuesForColumn(
+                    LoginController.sessionId,
+                    tablename,
+                    field.getColumnName()));
+
+            double binSize = org.ut.biolab.medsavant.db.util.shared.MiscUtils.generateBins(field, r, isLogScaleX);
+            
             //get dna ids for each distinct value
-            /*Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
+            Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectId(),
                     field.getColumnName());
@@ -250,7 +263,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                 chartMap.addEntry(
                         checkInt(min) + " - " + checkInt(max),
                         counts[i]);
-            }*/
+            }
             
         }
         return chartMap;
