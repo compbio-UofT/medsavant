@@ -72,6 +72,7 @@ import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.RangeCondition;
 import org.ut.biolab.medsavant.db.model.ScatterChartEntry;
@@ -618,7 +619,7 @@ public class SummaryChart extends JLayeredPane {
             mapWorker = this;
         }
         
-        private double generateBinsize(ChartMapGenerator generator) throws SQLException, RemoteException{
+        /*private double generateBinsize(ChartMapGenerator generator) throws SQLException, RemoteException{
             VariantFieldChartMapGenerator gen  = (VariantFieldChartMapGenerator)generator;
             String tablename = null;
             if (gen.getTable() == Table.VARIANT) {
@@ -631,7 +632,7 @@ public class SummaryChart extends JLayeredPane {
                     tablename,
                     gen.getField().getColumnName()));
             return org.ut.biolab.medsavant.db.util.shared.MiscUtils.generateBins(gen.getField(), r, isLogScaleX);
-        }
+        }*/
         
         private ScatterChartMap mapPatientField(ScatterChartMap scatterMap, ChartMapGenerator generator, boolean isX) throws NonFatalDatabaseException, SQLException, RemoteException{
             Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
@@ -690,15 +691,27 @@ public class SummaryChart extends JLayeredPane {
                     columnY = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
                 }
                 
+                //get columns
+                /*CustomField columnX = ((VariantFieldChartMapGenerator)mapGenerator).getField();
+                CustomField columnY = ((VariantFieldChartMapGenerator)mapGeneratorScatter).getField();
+                if(mapGenerator.getTable() == Table.PATIENT){
+                    for(CustomField f : ProjectController.getInstance().get){
+                        if(f.getColumnName().equals(DefaultpatientTableSchema))
+                    }
+                }
+                if(mapGeneratorScatter.getTable() == Table.PATIENT){
+                    columnY = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
+                }*/
+                
                 //use binning if field is numeric and on the variant table
-                double binsizeX = 0;
+                /*double binsizeX = 0;
                 double binsizeY = 0;
                 if(mapGenerator.isNumeric() && mapGenerator.getTable() == Table.VARIANT){
                     binsizeX = generateBinsize(mapGenerator);
                 } 
                 if(mapGeneratorScatter.isNumeric() && mapGeneratorScatter.getTable() == Table.VARIANT){
                     binsizeY = generateBinsize(mapGeneratorScatter);
-                }
+                }*/
                 
                 ScatterChartMap scatterMap =  MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForScatter(
                         LoginController.sessionId, 
@@ -709,8 +722,6 @@ public class SummaryChart extends JLayeredPane {
                         columnY, 
                         !mapGenerator.isNumeric() || mapGenerator.getTable() == Table.PATIENT, 
                         !mapGeneratorScatter.isNumeric() || mapGeneratorScatter.getTable() == Table.PATIENT,
-                        binsizeX,
-                        binsizeY,
                         isSortedKaryotypically());
 
                 //TODO: re-mapping below works only for categorical patient fields. Generalize for numeric/categorical.

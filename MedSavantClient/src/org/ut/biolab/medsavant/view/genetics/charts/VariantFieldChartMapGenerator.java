@@ -156,7 +156,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         }
     }
 
-    public ChartFrequencyMap generateNumericChartMap(boolean useFilteredCounts, double binSize, boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
+    public ChartFrequencyMap generateNumericChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
 
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
 
@@ -174,19 +174,25 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                         ProjectController.getInstance().getCurrentProjectId(),
                         ReferenceController.getInstance().getCurrentReferenceId(),
                         conditions,
-                        field.getColumnName(),
-                        binSize,
+                        field,
                         isLogScaleX);
 
                 Object[] keySet = resultMap.keySet().toArray();
-                double startFirstRange = ((Range)(keySet[0])).getMin();
-                double startLastRange = ((Range)(keySet[keySet.length-1])).getMin();
-                for(double start = startFirstRange; start <= startLastRange; start+=binSize){
-                    Long value = resultMap.get(new Range(start, start+binSize));
-                    if(value == null) value = 0L;
-                    chartMap.addEntry(
-                            checkInt(start) + " - " + checkInt(start+binSize),
-                            value);
+                if(!isLogScaleX){
+                    double startFirstRange = ((Range)(keySet[0])).getMin();
+                    double startLastRange = ((Range)(keySet[keySet.length-1])).getMin();
+                    double binSize = ((Range)(keySet[0])).getMax() - ((Range)(keySet[0])).getMin();
+                    for(double start = startFirstRange; start <= startLastRange; start+=binSize){
+                        Long value = resultMap.get(new Range(start, start+binSize));
+                        if(value == null) value = 0L;
+                        chartMap.addEntry(
+                                checkInt(start) + " - " + checkInt(start+binSize),
+                                value);
+                    }
+                } else {
+                    for(Object key : keySet){
+                        chartMap.addEntry(checkInt(((Range)key).getMin()) + " - " + checkInt(((Range)key).getMax()), resultMap.get((Range)key));
+                    }
                 }
                 
                 /*for (Range key : resultMap.keySet()) {
@@ -200,7 +206,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             //TODO: This hasn't been properly tested. Need a numeric field in patients. 
             
             //get dna ids for each distinct value
-            Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
+            /*Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectId(),
                     field.getColumnName());
@@ -244,7 +250,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                 chartMap.addEntry(
                         checkInt(min) + " - " + checkInt(max),
                         counts[i]);
-            }
+            }*/
             
         }
         return chartMap;
@@ -278,7 +284,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
 
         if (isNumeric() && !field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
 
-            String tablename = null;
+            /*String tablename = null;
             if (whichTable == Table.VARIANT) {
                 tablename = ProjectController.getInstance().getCurrentVariantTableName();
             } else if (whichTable == Table.PATIENT) {
@@ -289,8 +295,8 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                     tablename,
                     field.getColumnName()));
 
-            double binSize = org.ut.biolab.medsavant.db.util.shared.MiscUtils.generateBins(field, r, isLogScaleX);
-            chartMap = generateNumericChartMap(useFilteredCounts, binSize, isLogScaleX);
+            double binSize = org.ut.biolab.medsavant.db.util.shared.MiscUtils.generateBins(field, r, isLogScaleX);*/
+            chartMap = generateNumericChartMap(useFilteredCounts, isLogScaleX);
 
         } else {
             chartMap = generateCategoricalChartMap(useFilteredCounts, isLogScaleX);

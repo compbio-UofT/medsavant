@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.db.model.ScatterChartMap;
@@ -40,7 +41,7 @@ public interface VariantQueryUtilAdapter extends Remote {
     public int getNumFilteredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException;
     public int getNumFilteredVariants(String sid,int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException;
     public int getNumVariantsForDnaIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException;
-    public Map<Range,Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnname, double binSize, boolean logBins) throws SQLException, RemoteException;
+    public Map<Range,Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, CustomField column, boolean logBins) throws SQLException, RemoteException;
     //public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException;
     //public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, DbTable table, Condition[][] conditions, DbColumn column) throws SQLException, RemoteException;
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException;
@@ -64,6 +65,6 @@ public interface VariantQueryUtilAdapter extends Remote {
     public void unstarVariant(String sid, int projectId, int referenceId, int uploadId, int fileId, int variantId, String user) throws SQLException, RemoteException;    
     public Map<SimplePatient, Integer> getPatientHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, List<SimplePatient> patients) throws SQLException, RemoteException;
     public Map<String, Integer> getDnaIdHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException;
-    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, int projectId, int referenceId, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, double binSizeX, double binSizeY, boolean sortKaryotypically) throws SQLException, RemoteException;
+    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, int projectId, int referenceId, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically) throws SQLException, RemoteException;
     
 }

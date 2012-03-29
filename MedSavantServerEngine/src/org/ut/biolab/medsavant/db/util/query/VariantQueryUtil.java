@@ -58,6 +58,7 @@ import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantFileTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantStarredTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VarianttagTableSchema;
+import org.ut.biolab.medsavant.db.format.CustomField;
 import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.db.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.db.model.ScatterChartMap;
@@ -71,6 +72,7 @@ import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.DistinctValuesCache;
 import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
+import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import org.ut.biolab.medsavant.server.SessionController;
 
 /**
@@ -311,7 +313,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return getNumFilteredVariants(sid, projectId, referenceId, new Condition[][]{finalCondition});
     }
 
-    public Map<Range,Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnname, double binSize, boolean logBins) throws SQLException, RemoteException {
+    public Map<Range,Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, CustomField column, boolean logBins) throws SQLException, RemoteException {
 
         //pick table from approximate or exact
         TableSchema table;
@@ -326,7 +328,10 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
             table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
             multiplier = 1;
         }
-
+        
+        Range range = new Range(getExtremeValuesForColumn(sid, table.getTablename(), column.getColumnName()));
+        double binSize = MiscUtils.generateBins(column, range, logBins);
+        
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
@@ -334,9 +339,9 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
         String round;
         if(logBins){
-            round = "floor(log10(" + columnname + ")) as m";
+            round = "floor(log10(" + column.getColumnName() + ")) as m";
         } else {
-            round = "floor(" + columnname + " / " + binSize + ") as m";
+            round = "floor(" + column.getColumnName() + " / " + binSize + ") as m";
         }
 
         String query = q.toString().replace("COUNT(*)", "COUNT(*), " + round);
@@ -404,7 +409,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return map;
     }
 
-    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, int projectId, int referenceId, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, double binSizeX, double binSizeY, boolean sortKaryotypically) throws SQLException, RemoteException {
+    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, int projectId, int referenceId, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically) throws SQLException, RemoteException {
 
         //pick table from approximate or exact
         TableSchema table;
@@ -419,9 +424,21 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
             table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
             multiplier = 1;
         }
+        
+        DbColumn columnX = table.getDBColumn(columnnameX);   
+        DbColumn columnY = table.getDBColumn(columnnameY);     
 
-        //DbColumn columnX = table.getDBColumnByAlias(columnAliasX);
-        //DbColumn columnY = table.getDBColumnByAlias(columnAliasY);
+        double binSizeX = 0;
+        if(!columnXCategorical){
+            Range rangeX = new Range(getExtremeValuesForColumn(sid, table.getTablename(), columnnameX));
+            binSizeX = MiscUtils.generateBins(new CustomField(columnnameX, columnX.getTypeNameSQL() + "(" + columnX.getTypeLength() + ")", false, "", ""), rangeX, false);
+        }
+        
+        double binSizeY = 0;
+        if(!columnYCategorical){
+            Range rangeY = new Range(getExtremeValuesForColumn(sid, table.getTablename(), columnnameY));
+            binSizeY = MiscUtils.generateBins(new CustomField(columnnameY, columnY.getTypeNameSQL() + "(" + columnY.getTypeLength() + ")", false, "", ""), rangeY, false);
+        }
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
@@ -429,12 +446,10 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
         
-        DbColumn columnX = table.getDBColumn(columnnameX);     
         if(columnnameX.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT) || columnnameX.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)){
             q.addCondition(createNucleotideCondition(columnX));
         }
-
-        DbColumn columnY = table.getDBColumn(columnnameY);     
+        
         if(columnnameY.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT) || columnnameY.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)){
             q.addCondition(createNucleotideCondition(columnY));
         }
