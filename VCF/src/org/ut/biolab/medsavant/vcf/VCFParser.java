@@ -67,6 +67,10 @@ public class VCFParser {
      * @throws IOException
      */
     public static int parseVariantsFromReader(CSVReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId, boolean includeHomoRef) throws IOException {
+        return parseVariantsFromReader(r, header, outputLinesLimit, outfile, updateId, fileId, includeHomoRef, 0);
+    }
+    
+    public static int parseVariantsFromReader(CSVReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId, boolean includeHomoRef, int variantIdOffset) throws IOException {
 
         System.out.println("Starting to parse variants from reader");
 
@@ -76,7 +80,7 @@ public class VCFParser {
 
         BufferedWriter out = new BufferedWriter(new FileWriter(outfile, true));
 
-        int variantId = 0;
+        int variantId = variantIdOffset;
         int numLinesWritten = 0;
 
         while (true) {
