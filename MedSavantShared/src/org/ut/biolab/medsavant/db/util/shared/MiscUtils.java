@@ -618,4 +618,16 @@ public class MiscUtils {
         }
         return digits;
     }
+    
+    public static String doubleToString(double d, int sigDigs){
+        String s = Double.toString(d);
+        if(Math.abs(d) < 10){
+            int pos = s.indexOf(".");
+            if(pos != -1){
+                s = s.substring(0, Math.min(pos+3, s.length()));
+            }
+        }
+        return s;
+    }
+    
 }

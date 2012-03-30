@@ -482,10 +482,10 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
             if(y == null) y = "null";
             
             if(!columnXCategorical){
-                x = Double.toString(Integer.parseInt(x) * binSizeX) + " - " + Double.toString(Integer.parseInt(x) * binSizeX + binSizeX);
+                x = MiscUtils.doubleToString(Integer.parseInt(x) * binSizeX, 2) + " - " + MiscUtils.doubleToString(Integer.parseInt(x) * binSizeX + binSizeX, 2);
             }
             if(!columnYCategorical){
-                y = Double.toString(Integer.parseInt(y) * binSizeY) + " - " + Double.toString(Integer.parseInt(y) * binSizeY + binSizeY);
+                y = MiscUtils.doubleToString(Integer.parseInt(y) * binSizeY, 2) + " - " + MiscUtils.doubleToString(Integer.parseInt(y) * binSizeY + binSizeY, 2);
             }
             ScatterChartEntry entry = new ScatterChartEntry(x, y, (int)(rs.getInt(1)*multiplier));
             entries.add(entry);
