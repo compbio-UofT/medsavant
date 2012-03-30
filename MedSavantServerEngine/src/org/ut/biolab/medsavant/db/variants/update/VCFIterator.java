@@ -32,6 +32,7 @@ public class VCFIterator {
     private int fileIndex;
     private VCFHeader header;
     private File outfile;
+    private int variantIdOffset;
     
     public VCFIterator(File[] files, File baseDir, int updateId, boolean includeHomoRef) throws FileNotFoundException, IOException{
         this.files = files;
@@ -53,6 +54,7 @@ public class VCFIterator {
         }
         r = new CSVReader(reader, VCFParser.defaultDelimiter);
         header = VCFParser.parseVCFHeader(r);
+        variantIdOffset = 0;
     }
     
     public File next() throws IOException{
@@ -63,8 +65,9 @@ public class VCFIterator {
         int numWritten = 0;
         
         while (numWritten < LINES_PER_IMPORT){
-            int num = VCFParser.parseVariantsFromReader(r, header, LINES_PER_IMPORT - numWritten, outfile, updateId, fileIndex, includeHomoRef);
+            int num = VCFParser.parseVariantsFromReader(r, header, LINES_PER_IMPORT - numWritten, outfile, updateId, fileIndex, includeHomoRef, variantIdOffset);
             numWritten += num;
+            variantIdOffset += num;
             if(num == 0){
                 fileIndex++;
                 if(fileIndex >= files.length){
