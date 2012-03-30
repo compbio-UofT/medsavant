@@ -198,7 +198,8 @@ public class ConnectionController {
         }
     }
 
-    public static void removeSession(String sid) {
+    public static void removeSession(String sid) throws SQLException {
+        sessionConnectionMap.get(sid).close();
         synchronized(sessionConnectionMap) {
             sessionConnectionMap.remove(sid);
         }

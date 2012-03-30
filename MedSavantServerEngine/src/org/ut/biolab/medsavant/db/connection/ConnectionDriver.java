@@ -55,4 +55,8 @@ public class ConnectionDriver implements Driver {
     public boolean jdbcCompliant() {
         return false;
     }
+    
+    public void close() throws SQLException {
+        pool.close();
+    }
 }

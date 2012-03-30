@@ -208,6 +208,8 @@ public class LoginController {
             SessionAdapter.unregisterSession(LoginController.sessionId);
         } catch (RemoteException ex) {
             Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

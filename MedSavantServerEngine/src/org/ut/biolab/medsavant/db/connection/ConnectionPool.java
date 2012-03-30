@@ -89,7 +89,7 @@ public class ConnectionPool {
                     return c;
                 }
             }
-           
+            
             //wait for a connection to close
             try {
                 Thread.sleep(100);
@@ -104,6 +104,15 @@ public class ConnectionPool {
         synchronized(lock){
             //System.out.println("Expiring Lease");
             conn.expireLease();
+        }
+    }
+    
+    public void close() throws SQLException {
+        for(int i = 0; i < connections.size(); i++) {
+            MSConnection c = (MSConnection)connections.elementAt(i);
+            if (c.lease()) {
+                c.closeConnection();
+            }
         }
     }
 }

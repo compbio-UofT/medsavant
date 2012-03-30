@@ -77,4 +77,10 @@ public class SessionConnection {
     public String getUser() {
         return this.user;
     }
+    
+    public void close() throws SQLException {
+        if(driver != null){
+            driver.close();
+        }
+    }
 }

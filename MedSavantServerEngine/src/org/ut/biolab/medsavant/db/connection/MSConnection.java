@@ -70,6 +70,13 @@ public class MSConnection implements Connection {
         inuse=false;
     }
     
+    /* 
+     * Actually close mysql connection 
+     */
+    public void closeConnection() throws SQLException {
+        conn.close();
+    }
+    
     @Override
     public void close() throws SQLException {
         pool.returnConnection(this);
