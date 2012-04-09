@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,64 +16,38 @@
 package org.ut.biolab.medsavant.db.util.query;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.rmi.RemoteException;
+import java.sql.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.DeleteQuery;
-import com.healthmarketscience.sqlbuilder.FunctionCall;
-import com.healthmarketscience.sqlbuilder.InsertQuery;
-import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.UpdateQuery;
+import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
-import java.rmi.RemoteException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.broad.igv.feature.Genome.ChromosomeComparator;
-import org.ut.biolab.medsavant.db.model.StarredVariant;
 
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantFileTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantStarredTableSchema;
 import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VarianttagTableSchema;
+import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.model.Range;
-import org.ut.biolab.medsavant.db.model.ScatterChartEntry;
-import org.ut.biolab.medsavant.db.model.ScatterChartMap;
-import org.ut.biolab.medsavant.db.model.SimplePatient;
-import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
+import org.ut.biolab.medsavant.db.model.*;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.db.settings.Settings;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.DistinctValuesCache;
+import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
 import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import org.ut.biolab.medsavant.server.SessionController;
+import org.ut.biolab.medsavant.util.ChromosomeComparator;
 
 /**
  *
@@ -103,18 +77,22 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     }
 
 
+    @Override
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, int start, int limit) throws SQLException, RemoteException {
         return getVariants(sessionId,projectId, referenceId, new Condition[1][], start, limit);
     }
 
+    @Override
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException {
         return getVariants(sessionId, projectId, referenceId, conditions, start, limit, null);
     }
 
+    @Override
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order) throws SQLException, RemoteException {
         return getVariants(sessionId, projectId, referenceId, conditions, start, limit, order, null);
     }
 
+    @Override
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order, Column[] columns) throws SQLException, RemoteException {
 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId,ProjectQueryUtil.getInstance().getVariantTablename(sessionId,projectId, referenceId, true));
@@ -156,6 +134,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
+    @Override
     public double[] getExtremeValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException {
 
         String dbName = SessionController.getInstance().getDatabaseForSession(sid);
@@ -190,6 +169,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     /*
      * A return value of null indicates too many values.
      */
+    @Override
     public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException {
         return getDistinctValuesForColumn(sid, tablename, columnname, true);
     }
@@ -197,6 +177,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     /*
      * A return value of null indicates too many values.
      */
+    @Override
     public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname, boolean cache) throws SQLException, RemoteException {
 
         String dbName = SessionController.getInstance().getDatabaseForSession(sid);
@@ -242,10 +223,12 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
+    @Override
     public int getNumFilteredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException {
         return getNumFilteredVariants(sid,projectId, referenceId, new Condition[0][], true);
     }
 
+    @Override
     public int getNumFilteredVariants(String sid,int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException {
         return getNumFilteredVariants(sid,projectId, referenceId, conditions, false);
     }
@@ -291,6 +274,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     /*
      * Convenience method
      */
+    @Override
     public int getNumVariantsForDnaIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException {
 
         if(dnaIds.isEmpty()) return 0;
@@ -313,6 +297,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return getNumFilteredVariants(sid, projectId, referenceId, new Condition[][]{finalCondition});
     }
 
+    @Override
     public Map<Range,Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, CustomField column, boolean logBins) throws SQLException, RemoteException {
 
         //pick table from approximate or exact
@@ -365,6 +350,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return results;
     }
 
+    @Override
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException {
 
         //pick table from approximate or exact
@@ -409,6 +395,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return map;
     }
 
+    @Override
     public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, int projectId, int referenceId, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically) throws SQLException, RemoteException {
 
         //pick table from approximate or exact
@@ -512,6 +499,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     /*
      * Convenience method
      */
+    @Override
     public int getNumVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException, RemoteException {
 
         String name = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectId, referenceId, true);
@@ -533,6 +521,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return getNumFilteredVariants(sid, projectId, referenceId, new Condition[][]{finalCondition});
     }
 
+    @Override
     public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, int binsize) throws SQLException, RemoteException {
 
         //pick table from approximate or exact
@@ -593,84 +582,9 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         }
 
         return results;
-
-
-        //TODO
-        /*
-        String query = "select y.range as `range`, count(*) as `number of occurences` "
-        + "from ("
-        + "select case ";
-        int pos = 0;
-        for(int i = 0; i < numbins; i++) {
-        query += "when `" + DefaultVariantTableSchema.COLUMNNAME_OF_POSITION + "` between " + pos + " and " + (pos+binsize) + " then " + i + " ";
-        pos += binsize;
-        }
-
-        query += "end as `range` "
-        + "from (";
-        query += queryBase.toString();
-        query += ") x ) y "
-        + "group by y.`range`";
-
-
-        Connection conn = ConnectionController.connectPooled();
-        ResultSet rs = conn.createStatement().executeQuery(query.toString());
-
-        int[] numRows = new int[numbins];
-        for(int i = 0; i < numbins; i++) numRows[i] = 0;
-        while (rs.next()) {
-        int index = rs.getInt(1);
-        numRows[index] = rs.getInt(2);
-        }
-        return numRows;
-         *
-         */
     }
 
-    /*public int[] getNumVariantsForBins(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int binsize, int numbins) throws SQLException, NonFatalDatabaseException, RemoteException {
-
-        //TODO: approximate counts
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true));
-
-        SelectQuery queryBase = new SelectQuery();
-        queryBase.addFromTable(table.getTable());
-        queryBase.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION));
-        queryBase.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom));
-        addConditionsToQuery(queryBase, conditions);
-
-
-        //TODO
-        String query = "select y.range as `range`, count(*) as `number of occurences` "
-                + "from ("
-                + "select case ";
-        int pos = 0;
-        for (int i = 0; i < numbins; i++) {
-            query += "when `" + DefaultVariantTableSchema.COLUMNNAME_OF_POSITION + "` between " + pos + " and " + (pos + binsize) + " then " + i + " ";
-            pos += binsize;
-        }
-
-        query += "end as `range` "
-                + "from (";
-        query += queryBase.toString();
-        query += ") x ) y "
-                + "group by y.`range`";
-
-
-        Connection conn = ConnectionController.connectPooled(sid);
-        ResultSet rs = conn.createStatement().executeQuery(query.toString());
-
-        int[] numRows = new int[numbins];
-        for (int i = 0; i < numbins; i++) {
-            numRows[i] = 0;
-        }
-        while (rs.next()) {
-            int index = rs.getInt(1);
-            numRows[index] = rs.getInt(2);
-        }
-        return numRows;
-    }*/
-
+    @Override
     public void uploadFileToVariantTable(String sid, File file, String tableName) throws SQLException {
 
         // TODO: for some reason the connection is closed going into this function
@@ -686,6 +600,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         c.close();
     }
 
+    @Override
     public int getNumPatientsWithVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, int start, int end) throws SQLException, RemoteException {
 
         //TODO: approximate counts??
@@ -714,6 +629,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return numrows;
     }
 
+    @Override
     public void addConditionsToQuery(SelectQuery query, Condition[][] conditions) {
         Condition[] c = new Condition[conditions.length];
         for (int i = 0; i < conditions.length; i++) {
@@ -722,6 +638,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         query.addCondition(ComboCondition.or(c));
     }
 
+    @Override
     public Map<String, List<String>> getSavantBookmarkPositionsForDNAIds(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds, int limit) throws SQLException, RemoteException {
 
         Map<String, List<String>> results = new HashMap<String, List<String>>();
@@ -750,6 +667,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return results;
     }
 
+    @Override
     public Map<String, Integer> getNumVariantsInFamily(String sid, int projectId, int referenceId, String familyId, Condition[][] conditions) throws SQLException, RemoteException {
 
         //TODO: approximate counts
@@ -821,6 +739,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return patientIDTOCount;
     }
 
+    @Override
     public void cancelUpload(String sid,int uploadId, String tableName) {
         try {
 
@@ -872,6 +791,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ConnectionController.execute(sid, q.toString());
     }
 
+    @Override
     public List<String> getDistinctTagNames(String sid) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VarianttagTableSchema;
@@ -891,6 +811,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return tagNames;
     }
 
+    @Override
     public List<String> getValuesForTagName(String sid, String tagName) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VarianttagTableSchema;
@@ -912,6 +833,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
     }
 
+    @Override
     public List<Integer> getUploadIDsMatchingVariantTags(String sid, String[][] variantTags) throws SQLException {
         TableSchema table = MedSavantDatabase.VarianttagTableSchema;
 
@@ -958,6 +880,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return results;
     }
 
+    @Override
     public List<SimpleVariantFile> getUploadedFiles(String sid, int projectId, int referenceId) throws SQLException, RemoteException {
 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, ProjectQueryUtil.getInstance().getVariantTablename(sid, projectId, referenceId, true));
@@ -1023,6 +946,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
+    @Override
     public List<String[]> getTagsForUpload(String sid, int uploadId) throws SQLException, RemoteException {
 
         TableSchema tagTable = MedSavantDatabase.VarianttagTableSchema;
@@ -1190,6 +1114,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ConnectionController.execute(sid, q.toString());
     }
 
+    @Override
     public Map<SimplePatient, Integer> getPatientHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, List<SimplePatient> patients) throws SQLException, RemoteException{
 
         //get dna ids
@@ -1220,6 +1145,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
+    @Override
     public Map<String, Integer> getDnaIdHeatMap(String sid, int projectId, int referenceId, Condition[][] conditions, List<String> dnaIds) throws SQLException, RemoteException{
 
         Object[] variantTableInfo = ProjectQueryUtil.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);

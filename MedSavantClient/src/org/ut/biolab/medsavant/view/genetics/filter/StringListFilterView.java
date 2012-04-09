@@ -53,7 +53,7 @@ import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
-import org.ut.biolab.medsavant.view.util.ChromosomeComparator;
+import org.ut.biolab.medsavant.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
