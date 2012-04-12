@@ -110,10 +110,16 @@ public class LoginController {
         username = un;
         password = pw;
         try {
+            System.out.print("Starting session...");
+            System.out.flush();
             sessionId = SessionAdapter.registerNewSession(un, pw, dbname);
+            System.out.println("Done");
+            System.out.println("My session ID is: " + sessionId);
         } catch (RemoteException ex) {
+            System.out.println("");
             setLoginException(ex);
         }
+
         if(sessionId == null){
             fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
             return;
@@ -171,11 +177,13 @@ public class LoginController {
         }
 
         //register for callback
-        /*try {
+        /*
+        try {
             SessionAdapter.registerCallback(sessionId, CallbackController.getInstance());
         } catch (RemoteException ex) {
             Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
+        }
+         */
 
         setLoggedIn(true);
     }
@@ -206,9 +214,7 @@ public class LoginController {
         if(!loggedIn) return;
         try {
             SessionAdapter.unregisterSession(LoginController.sessionId);
-        } catch (RemoteException ex) {
-            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
