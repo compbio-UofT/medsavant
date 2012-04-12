@@ -74,7 +74,7 @@ public class MedSavantClient {
 
         SettingsController.getInstance();
 
-        Getopt g = new Getopt("MedSavant", args, "h:p:d:");
+        Getopt g = new Getopt("MedSavant", args, "h:p:d:u:w:");
             int c;
 
             while ((c = g.getopt()) != -1) {
@@ -90,6 +90,14 @@ public class MedSavantClient {
                     case 'd':
                         String dbname = g.getOptarg();
                         SettingsController.getInstance().setDBName(dbname);
+                        break;
+                    case 'u':
+                        String username = g.getOptarg();
+                        SettingsController.getInstance().setUsername(username);
+                        break;
+                    case 'w':
+                        String password = g.getOptarg();
+                        SettingsController.getInstance().setPassword(password);
                         break;
                     case '?':
                         break; // getopt() already printed an error
@@ -110,11 +118,16 @@ public class MedSavantClient {
         if(initialized) return;
 
         Registry registry;
-        System.out.println("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort);
+        System.out.print("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");
+        System.out.flush();
         registry = LocateRegistry.getRegistry(serverAddress,(new Integer(serverPort)).intValue());
+        System.out.println("Connected");
 
         // look up the remote object
+        System.out.print("Retriving adapters...");
+        System.out.flush();
         setAdaptersFromRegistry(registry);
+        System.out.println("Done");
     }
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {

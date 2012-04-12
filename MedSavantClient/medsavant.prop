@@ -1,11 +1,11 @@
 db.driver=com.mysql.jdbc.Driver
 db.host=localhost
-db.name=big6
+db.name=public1
 db.port=5029
 general.autologin=false
 medsavant.version=1.0
-server.address=localhost
-server.port=46802
+server.address=ec2-174-129-167-222.compute-1.amazonaws.com
+server.port=36800
 user.name=root
 user.password=
 user.rememberpass=false

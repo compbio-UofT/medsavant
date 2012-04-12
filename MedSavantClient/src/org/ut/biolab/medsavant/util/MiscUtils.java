@@ -4,8 +4,6 @@
  */
 package org.ut.biolab.medsavant.util;
 
-import com.jidesoft.docking.DockableFrame;
-import com.jidesoft.docking.DockingManager;
 import com.mysql.jdbc.exceptions.MySQLSyntaxErrorException;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -33,7 +31,7 @@ public class MiscUtils {
             m.hideFrame(frameKey);
         }
     }
-     * 
+     *
      */
 
     public static String genderToString(int gender){
@@ -78,7 +76,7 @@ public class MiscUtils {
             return -1;
         }
     }
-    
+
     public static void checkSQLException(SQLException e){
 
         e.printStackTrace();
@@ -88,7 +86,7 @@ public class MiscUtils {
             LoginController.logout();
         }
     }
-    
+
     public static Map<Object, List<String>> modifyGenderMap(Map<Object, List<String>> original) {
         Map<Object, List<String>> result = new HashMap<Object, List<String>>();
         for (Object key : original.keySet()) {

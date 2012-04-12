@@ -84,10 +84,8 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         this.field_port.setText(SettingsController.getInstance().getServerPort());
         this.field_hostname.setText(SettingsController.getInstance().getServerAddress());
 
-
         this.setOpaque(false);
         this.setMaximumSize(new Dimension(400, 400));
-
     }
 
     /** This method is called from within the constructor to
