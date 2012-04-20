@@ -4,11 +4,11 @@
  */
 package org.ut.biolab.medsavant.util;
 
-import com.mysql.jdbc.exceptions.MySQLSyntaxErrorException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -78,10 +78,7 @@ public class MiscUtils {
     }
 
     public static void checkSQLException(SQLException e){
-
-        e.printStackTrace();
-
-        if(e instanceof MySQLSyntaxErrorException && (e.getMessage().contains("Unknown column") || e.getMessage().contains("doesn't exist"))){
+        if (e.getMessage().contains("Unknown column") || e.getMessage().contains("doesn't exist")){
             DialogUtils.displayErrorMessage("<HTML>It appears that the database structure has been modified. <BR>Please log back in for the changes to take effect.</HTML>", e);
             LoginController.logout();
         }

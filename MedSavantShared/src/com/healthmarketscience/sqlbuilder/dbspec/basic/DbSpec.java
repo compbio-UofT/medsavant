@@ -27,7 +27,6 @@ King of Prussia, PA 19406
 
 package com.healthmarketscience.sqlbuilder.dbspec.basic;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +45,7 @@ import java.util.List;
  *
  * @author James Ahlborn
  */
-public class DbSpec implements Serializable {
+public class DbSpec {
 
   /** schemas currently created for this db spec */
   private final List<DbSchema> _schemas = new ArrayList<DbSchema>();

@@ -32,7 +32,6 @@ import java.io.IOException;
 import com.healthmarketscience.common.util.AppendableExt;
 import com.healthmarketscience.common.util.AppendeeObject;
 import com.healthmarketscience.common.util.StringAppendableExt;
-import java.io.Serializable;
 
 
 
@@ -45,7 +44,7 @@ import java.io.Serializable;
  *
  * @author James Ahlborn
  */
-public abstract class SqlObject extends AppendeeObject implements Serializable
+public abstract class SqlObject extends AppendeeObject
 {
   /** SqlObject which represents a <code>?</code> string for generating
       prepared statements. */

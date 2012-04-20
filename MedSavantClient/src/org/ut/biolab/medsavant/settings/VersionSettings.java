@@ -1,5 +1,5 @@
 /*
- *    Copyright 2009-2011 University of Toronto
+ *    Copyright 2009-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,16 +26,19 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.db.settings.Settings;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
-import org.ut.biolab.medsavant.db.util.shared.NetworkUtils;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.db.settings.Settings;
+import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.db.util.shared.NetworkUtils;
+
 
 /**
  *
@@ -51,8 +54,8 @@ public class VersionSettings {
     public static final URL PLUGIN_URL = NetworkUtils.getKnownGoodURL(URL, "plugins/plugin.xml");
     public static final URL LOG_USAGE_STATS_URL = NetworkUtils.getKnownGoodURL(URL, "scripts/logUsageStats.cgi");
 
-    public static final String VERSION = "1.0.0";
-    public static String BUILD = "beta";
+    public static final String VERSION = "1.0.1";
+    public static String BUILD = "developer";
 
     /**
      * Is this version a beta release?

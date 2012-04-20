@@ -1,5 +1,5 @@
 /*
- *    Copyright 2010-2011 University of Toronto
+ *    Copyright 2010-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -36,14 +36,14 @@ import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.*;
 
-import com.mysql.jdbc.CommunicationsException;
 import net.sf.samtools.SAMRecord;
-import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.model.Range;
-import org.ut.biolab.medsavant.db.model.UserLevel;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import org.ut.biolab.medsavant.db.format.CustomField;
+import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.model.UserLevel;
 import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
 
 
@@ -282,26 +282,6 @@ public class MiscUtils {
 
 
     /**
-     * The message for a MySQL CommunicationsException contains a lot of junk (including
-     * a full stack-trace), but hidden inside is a useful message.  Extract it.
-     * @param x the exception to be parsed.
-     * @return text found on line starting with "MESSAGE: "
-     */
-    public static String extractMySQLMessage(CommunicationsException x) {
-        // MySQL stuffs the whole stack-trace into this exception.
-        String key = "\nMESSAGE: ";
-        String msg = x.getMessage();
-        int startPos = msg.indexOf(key);
-        if (startPos >= 0) {
-            startPos += key.length();
-            int endPos = msg.indexOf('\n', startPos);
-            return msg.substring(startPos, endPos);
-        }
-        // Couldn' find our magic string.  Return the whole thing.
-        return msg;
-    }
-
-    /**
      * Sometimes Throwable.getMessage() returns a useless string (e.g. "null" for a NullPointerException).
      * Return a string which is more meaningful to the end-user.
      */
@@ -310,15 +290,7 @@ public class MiscUtils {
             return "Null pointer exception";
         } else if (t instanceof FileNotFoundException) {
             return String.format("File %s not found", t.getMessage());
-        } else if (t instanceof CommunicationsException) {
-            String result = t.getMessage();
-            int retPos = result.indexOf('\n');
-            if (retPos > 0) {
-                result = result.substring(0, retPos);
-                result += extractMySQLMessage((CommunicationsException)t);
-            }
-            return result;
-        } else {
+        } else  {
             return t.getMessage();
         }
     }

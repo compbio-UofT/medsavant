@@ -34,7 +34,6 @@ import java.util.Map;
 
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.Constraint;
-import java.io.Serializable;
 import java.sql.Types;
 
 /**
@@ -43,7 +42,7 @@ import java.sql.Types;
  * @author James Ahlborn
  */
 public class DbColumn extends DbObject<DbTable>
-  implements Column, Serializable
+  implements Column
 {
   private static final Map<Integer,String> _typeNameMap = new HashMap<Integer,String>();
   static {
@@ -66,7 +65,8 @@ public class DbColumn extends DbObject<DbTable>
     
   private final String _typeName;
   private final Integer _typeLength;
-  private List<DbConstraint> _constraints = new ArrayList<DbConstraint>();
+  private final List<DbConstraint> _constraints = new ArrayList<DbConstraint>();
+  private Object _defaultValue;
 
   public DbColumn(DbTable parent, String name,
                   String typeName, Integer typeLength) {
@@ -93,6 +93,19 @@ public class DbColumn extends DbObject<DbTable>
 
   public List<DbConstraint> getConstraints() {
     return _constraints;
+  }
+
+  /**
+   * Sets the default value for this column.  A value of {@code null} will
+   * be treated as <i>no</i> default value.  
+   */
+  public DbColumn setDefaultValue(Object defaultValue) {
+    _defaultValue = defaultValue;
+    return this;
+  }
+
+  public Object getDefaultValue() {
+    return _defaultValue;
   }
 
   /**
