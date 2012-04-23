@@ -27,6 +27,8 @@ King of Prussia, PA 19406
 
 package com.healthmarketscience.sqlbuilder.dbspec.basic;
 
+import java.io.Serializable;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +36,6 @@ import java.util.Map;
 
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.Constraint;
-import java.sql.Types;
 
 /**
  * Representation of a column in a database schema.
@@ -42,7 +43,7 @@ import java.sql.Types;
  * @author James Ahlborn
  */
 public class DbColumn extends DbObject<DbTable>
-  implements Column
+  implements Column, Serializable
 {
   private static final Map<Integer,String> _typeNameMap = new HashMap<Integer,String>();
   static {

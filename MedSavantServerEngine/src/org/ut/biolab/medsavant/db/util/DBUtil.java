@@ -109,6 +109,7 @@ public class DBUtil extends MedSavantServerUnicastRemoteObject implements DBUtil
         DbTable table = schema.addTable(tablename);
         TableSchema ts = new TableSchema(table);
 
+        LOG.info(String.format("Executing %s on %s...", "DESCRIBE " + tablename, sessionId));
         ResultSet rs = ConnectionController.executeQuery(sessionId, "DESCRIBE " + tablename);
 
         while (rs.next()) {

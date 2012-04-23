@@ -27,6 +27,7 @@ King of Prussia, PA 19406
 
 package com.healthmarketscience.sqlbuilder.dbspec.basic;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -35,7 +36,7 @@ import java.util.Collection;
  *
  * @author James Ahlborn
  */
-public class DbObject<ParentType extends DbObject>
+public class DbObject<ParentType extends DbObject> implements Serializable
 {
   /** parent object for this db object */
   private final ParentType _parent;
