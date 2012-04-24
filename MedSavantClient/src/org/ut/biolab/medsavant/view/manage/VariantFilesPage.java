@@ -1,38 +1,44 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.manage;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Box;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingWorker;
+import javax.swing.*;
+
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
@@ -57,7 +63,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
     private boolean updateRequired = false;
     private boolean showPeekOnUnload = false;
     
-    public VariantFilesPage(SectionView parent){
+    public VariantFilesPage(SectionView parent) {
         super(parent);
         ReferenceController.getInstance().addReferenceListener(this);
     }
@@ -104,14 +110,14 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
 
     @Override
     public void referenceChanged(String prnameojectName) {
-        if(isLoaded) {
+        if (isLoaded) {
             update();
         } else {
             updateRequired = true;
         }
     }
     
-    public void update(){
+    public void update() {
         panel.refresh();
     }
 
@@ -127,18 +133,20 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
 
         public VariantFilesListModel() {}
 
+        @Override
         public List<Object[]> getList(int limit) throws Exception {
             List<SimpleVariantFile> files = MedSavantClient.VariantQueryUtilAdapter.getUploadedFiles(
                     LoginController.sessionId, 
                     ProjectController.getInstance().getCurrentProjectId(), 
                     ReferenceController.getInstance().getCurrentReferenceId());
             List<Object[]> result = new ArrayList<Object[]>();
-            for(SimpleVariantFile svf : files){
+            for (SimpleVariantFile svf : files) {
                 result.add(new Object[]{svf});
             }
             return result;
         }
 
+        @Override
         public List<String> getColumnNames() {
             if (cnames == null) {
                 cnames = new ArrayList<String>();
@@ -147,6 +155,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
             return cnames;
         }
 
+        @Override
         public List<Class> getColumnClasses() {
             if (cclasses == null) {
                 cclasses = new ArrayList<Class>();
@@ -155,6 +164,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
             return cclasses;
         }
 
+        @Override
         public List<Integer> getHiddenColumns() {
             if (chidden == null) {
                 chidden = new ArrayList<Integer>();
@@ -225,7 +235,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
             ViewUtil.setBoxYLayout(details);
             
             String[][] values = new String[info.size()][2];
-            for(int i = 0; i < info.size(); i++){
+            for (int i = 0; i < info.size(); i++) {
                 values[i][0] = info.get(i)[0];
                 values[i][1] = info.get(i)[1];
             }
@@ -274,7 +284,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
         @Override
         public void setMultipleSelections(List<Object[]> items) {
             files = new SimpleVariantFile[items.size()];
-            for(int i = 0; i < items.size(); i++){
+            for (int i = 0; i < items.size(); i++) {
                 files[i] = (SimpleVariantFile) (items.get(i)[0]);
             }
             
@@ -287,10 +297,10 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
             details.updateUI();
         }
         
-        private JPopupMenu createPopup(final SimpleVariantFile[] files){
+        private JPopupMenu createPopup(final SimpleVariantFile[] files) {
             JPopupMenu popupMenu = new JPopupMenu();
 
-            if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
+            if (ProjectController.getInstance().getCurrentVariantTableSchema() == null) {
                 popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
             } else {
 
@@ -298,12 +308,13 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
                 JMenuItem filter1Item = new JMenuItem("Filter by Variant File");
                 filter1Item.addActionListener(new ActionListener() {
 
+                    @Override
                     public void actionPerformed(ActionEvent e) {
 
                         Condition[] conditions = new Condition[files.length];
                         DbColumn upload = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID);
                         DbColumn file = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID);
-                        for(int i = 0; i < files.length; i++){
+                        for (int i = 0; i < files.length; i++) {
                             conditions[i] = ComboCondition.and(
                                     BinaryCondition.equalTo(upload, files[i].getUploadId()),
                                     BinaryCondition.equalTo(file, files[i].getFileId()));
@@ -322,9 +333,9 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
             return popupMenu;
         }
         
-        private void removeExistingFilters(){
-            if(filterPanels != null){
-                for(FilterPanelSubItem panel : filterPanels){
+        private void removeExistingFilters() {
+            if (filterPanels != null) {
+                for (FilterPanelSubItem panel : filterPanels) {
                     panel.removeThis();
                 }
             }
@@ -361,7 +372,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
         @Override
         public void deleteItems(List<Object[]> results) {
             List<SimpleVariantFile> files = new ArrayList<SimpleVariantFile>();
-            for(Object[] f : results){
+            for (Object[] f : results) {
                 files.add((SimpleVariantFile)f[0]);
             }
             new RemoveVariantsWizard(files);

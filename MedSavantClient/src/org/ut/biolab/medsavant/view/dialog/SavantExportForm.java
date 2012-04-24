@@ -1,14 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * SavantExportForm.java
+ *    Copyright 2011-2012 University of Toronto
  *
- * Created on 5-Jul-2011, 12:51:11 PM
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.dialog;
 
 import java.awt.BorderLayout;
@@ -29,16 +33,18 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.model.Chromosome;
-import org.ut.biolab.medsavant.db.util.shared.ExtensionsFileFilter;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.model.Chromosome;
+import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
+
 
 /**
  *
@@ -78,18 +84,18 @@ public class SavantExportForm extends javax.swing.JDialog {
                     DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, 
                     false);
             dnaIds = new ArrayList<String>();
-            for(String s : temp){
-                for(String s1 : s.split(",")){
-                    if(s1 != null && !s1.equals("") && !dnaIds.contains(s1)){
+            for (String s : temp) {
+                for (String s1 : s.split(",")) {
+                    if (s1 != null && !s1.equals("") && !dnaIds.contains(s1)) {
                         dnaIds.add(s1);
                     }
                 }
             }
-            for(String id : dnaIds){
+            for (String id : dnaIds) {
                 addId(id);
             }
         } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
+            ClientMiscUtils.checkSQLException(ex);
             Logger.getLogger(SavantExportForm.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
             Logger.getLogger(SavantExportForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -100,21 +106,21 @@ public class SavantExportForm extends javax.swing.JDialog {
         this.setVisible(true);  
     }
     
-    private void addId(String id){
+    private void addId(String id) {
         JCheckBox box = new JCheckBox(id);
         checkBoxPane.add(box);       
         checkBoxes.add(box);
     }
     
-    private void export(){
+    private void export() {
         //get selected DNA IDs
         List<String> selectedIds = new ArrayList<String>();
-        for(JCheckBox box : checkBoxes){
-            if(box.isSelected()){
+        for (JCheckBox box : checkBoxes) {
+            if (box.isSelected()) {
                 selectedIds.add(box.getText());
             }
         }
-        if(selectedIds.isEmpty()){
+        if (selectedIds.isEmpty()) {
             progressLabel.setText("No individuals selected");
             progressDialog.setVisible(false);
             this.setVisible(true);
@@ -132,8 +138,8 @@ public class SavantExportForm extends javax.swing.JDialog {
                     FilterController.getQueryFilterConditions(),
                     selectedIds, 
                     -1);
-        } catch (SQLException ex){
-            MiscUtils.checkSQLException(ex);
+        } catch (SQLException ex) {
+            ClientMiscUtils.checkSQLException(ex);
             ex.printStackTrace();
         } catch (RemoteException ex) {
             ex.printStackTrace();
@@ -144,8 +150,8 @@ public class SavantExportForm extends javax.swing.JDialog {
         List<String> bamFiles = new ArrayList<String>();
         try {
             bamFiles = MedSavantClient.PatientQueryUtilAdapter.getValuesFromDNAIds(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, selectedIds);
-        } catch (SQLException ex){
-            MiscUtils.checkSQLException(ex);
+        } catch (SQLException ex) {
+            ClientMiscUtils.checkSQLException(ex);
             ex.printStackTrace();
         } catch (RemoteException ex) {
             ex.printStackTrace();
@@ -162,25 +168,25 @@ public class SavantExportForm extends javax.swing.JDialog {
             out.write("<?xml version=\"1.0\" ?>\n"
                     + "<savant version=\"1\" range=\"chr1:1-1000\">\n");
             
-            if(genomeUrl != null){
+            if (genomeUrl != null) {
                 out.write(" <genome name=\"" + genomeName + "\" uri=\"" + genomeUrl + "\" />\n");
             } else {
                 out.write(" <genome name=\"" + genomeName + "\" >\n");               
-                for(Chromosome c : ReferenceController.getInstance().getChromosomes()){
+                for (Chromosome c : ReferenceController.getInstance().getChromosomes()) {
                     out.write("   <reference name=\"" + c.getName() + "\" length=\"" + c.getLength() + "\" />\n");
                 }  
                 out.write(" </genome>\n");          
             }
 
-            for(String path : bamFiles){
+            for (String path : bamFiles) {
                 out.write("  <track uri=\"" + path + "\"/>\n");
             }  
 
             Object[] keys = map.keySet().toArray();
-            for(Object keyObject : keys){
+            for (Object keyObject : keys) {
                 String key = (String) keyObject;
                 List<String> positions = map.get(key);
-                for(String p : positions){
+                for (String p : positions) {
                     out.write("  <bookmark range=\"" + p + "\">" + key + "</bookmark>\n");
                 }           
             }
@@ -190,7 +196,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         
             //out.write(s);
             out.close();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
                 
@@ -299,7 +305,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         
         //exportButton.setEnabled(false);
         //chooseFileButton.setEnabled(false);
-        //for(JCheckBox box : checkBoxes){
+        //for (JCheckBox box : checkBoxes) {
         //    box.setEnabled(false);
         //}
         
@@ -352,6 +358,7 @@ public class SavantExportForm extends javax.swing.JDialog {
     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new SavantExportForm().setVisible(true);
             }

@@ -1,42 +1,39 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.util;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import com.healthmarketscience.rmiio.RemoteInputStream;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.format.AnnotationFormat;
-import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.db.ColumnType;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.format.AnnotationFormat;
+import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 
 /**
@@ -66,7 +63,7 @@ public class ExportVCF {
                 FilterController.getQueryFilterConditions());
         
         //copy stream to file
-        File tempFile = NetworkUtils.copyFileFromRemoteStream(ris);   
+        File tempFile = ClientNetworkUtils.copyFileFromRemoteStream(ris);   
         BufferedReader in = new BufferedReader(new FileReader(tempFile));
         
         //maintain lists of chrs, dnaids, ...
@@ -78,14 +75,14 @@ public class ExportVCF {
         //info fields
         TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
         String[] customColumnNames = new String[table.getNumFields() - DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO - 1];
-        for(int i = DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO+2; i <= table.getNumFields(); i++){
+        for (int i = DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO+2; i <= table.getNumFields(); i++) {
             customColumnNames[i-2-DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO] = table.getDBName(i).toUpperCase();
         }
         int infoMin = DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO+1;
         int infoMax = table.getNumFields();
 
         String line;
-        while((line = in.readLine()) != null){
+        while ((line = in.readLine()) != null) {
             
             //parse row
             String[] record = line.split(",");
@@ -110,14 +107,14 @@ public class ExportVCF {
                     parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_FILTER])) + "\t";
             
             //extra fields
-            for(int j = infoMin; j < infoMax; j++){
-                if(j < record.length) row += cleanField(record[j]);
-                if(j != infoMax-1) row += "\t";
+            for (int j = infoMin; j < infoMax; j++) {
+                if (j < record.length) row += cleanField(record[j]);
+                if (j != infoMax-1) row += "\t";
             }
 
             //get writer for chrom, or create
             BufferedWriter writer = out.get(cleanField(record[DefaultVariantTableSchema.INDEX_OF_CHROM]));
-            if(writer == null){
+            if (writer == null) {
                 String chrom = cleanField(record[DefaultVariantTableSchema.INDEX_OF_CHROM]);
                 File f = new File(DirectorySettings.getTmpDirectory() + File.separator + file.getName() + chrom);
                 writer = new BufferedWriter(new FileWriter(f, false));
@@ -131,14 +128,14 @@ public class ExportVCF {
         }
         
         //close writers
-        for(String key : out.keySet()){
+        for (String key : out.keySet()) {
             out.get(key).close();
         }
         
         //concatenate separate chrom files in proper order
         Collections.sort(chrs, new ChromosomeComparator());      
         File temp1 = new File(DirectorySettings.getTmpDirectory() + File.separator + file.getName() + "_complete");
-        for(int i = 0; i < files.size(); i++){
+        for (int i = 0; i < files.size(); i++) {
             copyFile(files.get(chrs.get(i)), temp1, i != 0);
         }
         
@@ -146,12 +143,12 @@ public class ExportVCF {
         mergeVcf(temp1, file, dnaIds, customColumnNames);
     }
     
-    private static String parseMandatoryField(String s){
+    private static String parseMandatoryField(String s) {
         return (s == null || s.length() == 0) ? "." : s;
     }
     
-    private static String cleanField(String s){
-        if(s.startsWith("\"") && s.length()>=2){
+    private static String cleanField(String s) {
+        if (s.startsWith("\"") && s.length()>=2) {
             return s.substring(1, s.length()-1); //remove quotations
         }      
         return s;
@@ -167,7 +164,7 @@ public class ExportVCF {
 
         byte[] buf = new byte[1024];
         int len;
-        while ((len = in.read(buf)) > 0){
+        while ((len = in.read(buf)) > 0) {
             out.write(buf, 0, len);
         }
         in.close();
@@ -185,7 +182,7 @@ public class ExportVCF {
         //create maps for dna ids
         Object[] dnaIds = dnaIdsSet.toArray();
         Map<String, Integer> idToPosition = new HashMap<String, Integer>();
-        for(Integer i = 0; i < dnaIds.length; i++){
+        for (Integer i = 0; i < dnaIds.length; i++) {
             idToPosition.put((String)dnaIds[i], i);
         }
         
@@ -194,9 +191,9 @@ public class ExportVCF {
         clearArray(flagColumns, false);
         int pos = 0;
         AnnotationFormat[] formats = ProjectController.getInstance().getCurrentAnnotationFormats();
-        for(int i = 1; i < formats.length; i++){
-            for(CustomField f : formats[i].getCustomFields()){
-                if(f.getColumnType() == ColumnType.BOOLEAN){
+        for (int i = 1; i < formats.length; i++) {
+            for (CustomField f : formats[i].getCustomFields()) {
+                if (f.getColumnType() == ColumnType.BOOLEAN) {
                     flagColumns[pos] = true;
                 }
                 pos++;
@@ -223,31 +220,31 @@ public class ExportVCF {
         clearArray(records);    
         clearArray(availableIds, false);
         
-        while(true){
+        while (true) {
 
             //parse current record
             line = in.readLine();
-            if(line != null){
+            if (line != null) {
                 record = line.split("\t");
             }
             
             //write records for previous position
-            if(line == null || !lastPos.equals(record[INTERMEDIATE_INDEX_POSITION]) || !lastChr.equals(record[INTERMEDIATE_INDEX_CHROM])){              
+            if (line == null || !lastPos.equals(record[INTERMEDIATE_INDEX_POSITION]) || !lastChr.equals(record[INTERMEDIATE_INDEX_CHROM])) {              
                 
-                for(int i = 0; i < dnaIds.length; i++){   
+                for (int i = 0; i < dnaIds.length; i++) {   
                     
                     clearArray(dnaMatches, false);
                     clearArray(columnMatches, true);
                     
                     String[] row1 = records[i];
-                    if(!availableIds[i] || row1 == null) continue; //no variant for this dna id                  
+                    if (!availableIds[i] || row1 == null) continue; //no variant for this dna id                  
                     
                     dnaMatches[i] = true;
 
                     //look for other matching lines
-                    for(int j = i+1; j < dnaIds.length; j++){                     
+                    for (int j = i+1; j < dnaIds.length; j++) {                     
                         String[] row2 = records[j];
-                        if(availableIds[j] && row2 != null && compareRows(row1, row2)){
+                        if (availableIds[j] && row2 != null && compareRows(row1, row2)) {
                             dnaMatches[j] = true;
                             determineMatches(columnMatches, row1, row2);
                             availableIds[j] = false; //skip next time
@@ -256,26 +253,26 @@ public class ExportVCF {
                     
                     //write line
                     String output = "";
-                    for(int col = INTERMEDIATE_INDEX_CHROM; col < INTERMEDIATE_INDEX_QUAL; col++){
+                    for (int col = INTERMEDIATE_INDEX_CHROM; col < INTERMEDIATE_INDEX_QUAL; col++) {
                         output += row1[col] + "\t";
                     }
-                    for(int col = INTERMEDIATE_INDEX_QUAL; col < INTERMEDIATE_INDEX_CUSTOM; col++){
-                        if(columnMatches[col-INTERMEDIATE_INDEX_QUAL]) output += row1[col];
+                    for (int col = INTERMEDIATE_INDEX_QUAL; col < INTERMEDIATE_INDEX_CUSTOM; col++) {
+                        if (columnMatches[col-INTERMEDIATE_INDEX_QUAL]) output += row1[col];
                         else output += ".";    
                         output += "\t";
                     }
-                    for(int col = INTERMEDIATE_INDEX_CUSTOM; col < row1.length; col++){
-                        if(columnMatches[col-INTERMEDIATE_INDEX_QUAL] && !row1[col].equals("")){
-                            if(flagColumns[col-INTERMEDIATE_INDEX_CUSTOM] && row1[col].equals("1")) output += customColumnNames[col-INTERMEDIATE_INDEX_CUSTOM] + ";";
+                    for (int col = INTERMEDIATE_INDEX_CUSTOM; col < row1.length; col++) {
+                        if (columnMatches[col-INTERMEDIATE_INDEX_QUAL] && !row1[col].equals("")) {
+                            if (flagColumns[col-INTERMEDIATE_INDEX_CUSTOM] && row1[col].equals("1")) output += customColumnNames[col-INTERMEDIATE_INDEX_CUSTOM] + ";";
                             else if (!flagColumns[col-INTERMEDIATE_INDEX_CUSTOM]) output += customColumnNames[col-INTERMEDIATE_INDEX_CUSTOM] + "=" + row1[col] + ";";                          
                         }
                     }
                     output += "\t";
                     output += "GT\t"; //format column
-                    for(int id = 0; id < dnaIds.length; id++){
-                        if(dnaMatches[id]) output += records[id][INTERMEDIATE_INDEX_GENOTYPE];
+                    for (int id = 0; id < dnaIds.length; id++) {
+                        if (dnaMatches[id]) output += records[id][INTERMEDIATE_INDEX_GENOTYPE];
                         else output += ".";
-                        if(id != dnaIds.length-1) output += "\t";
+                        if (id != dnaIds.length-1) output += "\t";
                     }
                     out.write(output + "\n");                    
                     
@@ -284,7 +281,7 @@ public class ExportVCF {
                 clearArray(availableIds, false);
             }
             
-            if(line == null){
+            if (line == null) {
                 break;
             }
             
@@ -304,37 +301,37 @@ public class ExportVCF {
     
     
     
-    private static boolean compareRows(String[] row1, String[] row2){
-        if(row1.length != row2.length) return false;
-        for(int i = INTERMEDIATE_INDEX_DBSNP; i < INTERMEDIATE_INDEX_QUAL; i++){ //compare ref, alt, dbsnp_id
-            if(!row1[i].equals(row2[i])){
+    private static boolean compareRows(String[] row1, String[] row2) {
+        if (row1.length != row2.length) return false;
+        for (int i = INTERMEDIATE_INDEX_DBSNP; i < INTERMEDIATE_INDEX_QUAL; i++) { //compare ref, alt, dbsnp_id
+            if (!row1[i].equals(row2[i])) {
                 return false;
             }
         }
         return true;
     }
     
-    private static void clearArray(String[][] array){
-        for(int i = 0; i < array.length; i++){
+    private static void clearArray(String[][] array) {
+        for (int i = 0; i < array.length; i++) {
             array[i] = null;
         }
     }
     
-    private static void clearArray(Boolean[] array, boolean value){
-        for(int i = 0; i < array.length; i++){
+    private static void clearArray(Boolean[] array, boolean value) {
+        for (int i = 0; i < array.length; i++) {
             array[i] = value;
         }
     }
     
-    private static void determineMatches(Boolean[] matches, String[] row1, String[] row2){
-        for(int i = INTERMEDIATE_INDEX_DBSNP; i < row1.length; i++){
-            if(!row1[i].equals(row2[i])){
+    private static void determineMatches(Boolean[] matches, String[] row1, String[] row2) {
+        for (int i = INTERMEDIATE_INDEX_DBSNP; i < row1.length; i++) {
+            if (!row1[i].equals(row2[i])) {
                 matches[i-INTERMEDIATE_INDEX_QUAL] = false;
             }
         }
     }
     
-    private static String createHeader(Object[] dnaIds){
+    private static String createHeader(Object[] dnaIds) {
         String header = "";
         
         //file format
@@ -353,11 +350,11 @@ public class ExportVCF {
         
         //info
         AnnotationFormat[] annotationFormats = ProjectController.getInstance().getCurrentAnnotationFormats();
-        for(int i = 1; i < annotationFormats.length; i++){
+        for (int i = 1; i < annotationFormats.length; i++) {
             AnnotationFormat af = annotationFormats[i];
-            for(CustomField field : af.getCustomFields()){
+            for (CustomField field : af.getCustomFields()) {
                 header += "##INFO=<ID=" + field.getColumnName().toUpperCase() + ",";
-                switch(field.getColumnType()){
+                switch(field.getColumnType()) {
                     case INTEGER:
                         header += "Number=1,Type=Integer";
                         break;
@@ -379,13 +376,12 @@ public class ExportVCF {
         
         //column headers
         header += "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t";
-        for(int i = 0; i < dnaIds.length; i++){
+        for (int i = 0; i < dnaIds.length; i++) {
             header += (String)dnaIds[i];
-            if(i != dnaIds.length-1) header += "\t";
+            if (i != dnaIds.length-1) header += "\t";
         }
         header += "\n";
         
         return header;
-    }
-    
+    }    
 }

@@ -15,6 +15,8 @@
  */
 package org.ut.biolab.medsavant.db.util;
 
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import java.rmi.RemoteException;
 import java.util.logging.Logger;
 import java.sql.ResultSet;
@@ -26,10 +28,9 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import com.mysql.jdbc.CommunicationsException;
 
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.query.api.DBUtilAdapter;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.db.ColumnType;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.serverapi.DBUtilAdapter;
 
 /**
  *
@@ -62,8 +63,11 @@ public class DBUtil extends MedSavantServerUnicastRemoteObject implements DBUtil
 
     public static String getColumnTypeString(String s) {
         int pos = s.indexOf("(");
-        if (pos == -1) { return s; }
-        else { return s.substring(0,pos); }
+        if (pos == -1) {
+            return s;
+        } else {
+            return s.substring(0, pos);
+        }
     }
 
     public static int getColumnLength(String s) {
@@ -75,8 +79,9 @@ public class DBUtil extends MedSavantServerUnicastRemoteObject implements DBUtil
             rpos = cpos;
         }
 
-        if (fpos == -1) { return -1; }
-        else {
+        if (fpos == -1) {
+            return -1;
+        } else {
             return Integer.parseInt(s.substring(fpos+1,rpos));
         }
     }
@@ -114,7 +119,7 @@ public class DBUtil extends MedSavantServerUnicastRemoteObject implements DBUtil
 
         while (rs.next()) {
             table.addColumn(rs.getString(1), getColumnTypeString(rs.getString(2)), getColumnLength(rs.getString(2)));
-            ts.addColumn(rs.getString(1), rs.getString(1), TableSchema.convertStringToColumnType(getColumnTypeString(rs.getString(2))), getColumnLength(rs.getString(2)));
+            ts.addColumn(rs.getString(1), rs.getString(1), ColumnType.fromString(getColumnTypeString(rs.getString(2))), getColumnLength(rs.getString(2)));
         }
 
         return ts;

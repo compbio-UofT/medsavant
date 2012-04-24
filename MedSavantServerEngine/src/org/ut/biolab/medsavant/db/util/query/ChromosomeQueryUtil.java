@@ -21,19 +21,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
 import java.rmi.RemoteException;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.db.model.Chromosome;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ChromosomeTableSchema;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.ChromosomeTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.query.api.ChromosomeQueryUtilAdapter;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.ChromosomeQueryUtilAdapter;
 
 /**
  *
@@ -52,7 +51,8 @@ public class ChromosomeQueryUtil extends MedSavantServerUnicastRemoteObject impl
 
     public ChromosomeQueryUtil() throws RemoteException {super();}
 
-    public List<Chromosome> getContigs(String sid,int refid) throws SQLException{
+    @Override
+    public List<Chromosome> getContigs(String sid, int refid) throws SQLException{
 
         TableSchema table = MedSavantDatabase.ChromosomeTableSchema;
         SelectQuery query = new SelectQuery();

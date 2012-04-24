@@ -21,7 +21,7 @@ import javax.swing.table.DefaultTableModel;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.model.Chromosome;
+import org.ut.biolab.medsavant.model.Chromosome;
 
 /**
  *

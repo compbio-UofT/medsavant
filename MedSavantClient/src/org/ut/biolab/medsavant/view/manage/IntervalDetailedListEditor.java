@@ -5,7 +5,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.db.model.RegionSet;
+import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.dialog.IntervalWizard;

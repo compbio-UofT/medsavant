@@ -1,15 +1,22 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
-import java.sql.SQLException;
-import javax.swing.JPanel;
 import javax.swing.JTree;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+
 import org.ut.biolab.medsavant.view.genetics.OntologyPanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.filter.HPOFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPTree;
@@ -37,6 +44,7 @@ public class HPOsubPanel extends OntologySubPanel{
         return "Human Phenotype Ontology";
     }
     
+    @Override
     public boolean treeIsReadyToBeFetched(){
         return FilterObjectStorer.containsObjectWithName(HPOFilter.NAME_TREE);
     } 
@@ -45,6 +53,7 @@ public class HPOsubPanel extends OntologySubPanel{
         return (Tree)FilterObjectStorer.getObject(HPOFilter.NAME_TREE);
     }
     
+    @Override
     public JTree getJTree(){
         if (jTree != null){
             return jTree;

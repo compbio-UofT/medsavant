@@ -1,16 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.jidesoft.grid.SortableTable;
 import java.sql.SQLException;
-import org.ut.biolab.medsavant.db.model.BEDRecord;
-import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,25 +26,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.logging.Logger;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
+
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.jidesoft.grid.SortableTable;
+
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.model.RegionSet;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
+import org.ut.biolab.medsavant.controller.*;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.model.BEDRecord;
+import org.ut.biolab.medsavant.model.RegionSet;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -59,10 +61,12 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         this.pageName = pageName;
     }
 
+    @Override
     public String getName() {
         return "Genomic Region";
     }
 
+    @Override
     public JPanel getPanel() {
         if (panel == null) {
             panel = new GeneListPanel();
@@ -72,8 +76,9 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         return panel;
     }
 
-    public void run(boolean reset){
-        if(panel != null)
+    @Override
+    public void run(boolean reset) {
+        if (panel != null)
             panel.update();
     }
 
@@ -134,6 +139,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             geneLister.addActionListener(new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     update();
                 }
@@ -144,22 +150,23 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             //FilterController.addFilterListener(this);
         }
 
-        public void update(){
-            if(geneLister != null && geneLister.getSelectedItem() != null)
+        public void update() {
+            if (geneLister != null && geneLister.getSelectedItem() != null)
                 showGeneAggregates((RegionSet) geneLister.getSelectedItem());
         }
 
-        private void createSearchableTable(){
+        private void createSearchableTable() {
             DataRetriever retriever = new DataRetriever() {
 
+                @Override
                 public List<Object[]> retrieve(int start, int limit) {
 
-                    synchronized(lock){
+                    synchronized(lock) {
                         //Do nothing. This ensures that no data is being written from previous worker.
                     }
 
                     //compute variant field
-                    for(int i = 0; i < Math.min(currentGenes.size(), limit); i++){
+                    for(int i = 0; i < Math.min(currentGenes.size(), limit); i++) {
                         try {
                             BEDRecord r = currentGenes.get(i);
                             int recordsInRegion = MedSavantClient.VariantQueryUtilAdapter.getNumVariantsInRange(
@@ -171,19 +178,19 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                                     r.getStart(),
                                     r.getEnd());
                             if (!Thread.interrupted()) {
-                                synchronized(lock){
+                                synchronized(lock) {
                                     updateBEDRecordVariantValue(r, recordsInRegion);
                                 }
                             } else {
                                 return new ArrayList<Object[]>();
                             }
                         } catch (SQLException ex) {
-                            MiscUtils.checkSQLException(ex);
-                        } catch (Exception e){}
+                            ClientMiscUtils.checkSQLException(ex);
+                        } catch (Exception e) {}
                     }
 
                     //compute patient field
-                    for(int i = 0; i < Math.min(currentGenes.size(), limit); i++){
+                    for(int i = 0; i < Math.min(currentGenes.size(), limit); i++) {
                         try {
                             BEDRecord r = currentGenes.get(i);
                             int recordsInRegion = MedSavantClient.VariantQueryUtilAdapter.getNumPatientsWithVariantsInRange(
@@ -195,24 +202,26 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                                     r.getStart(),
                                     r.getEnd());
                             if (!Thread.interrupted()) {
-                                synchronized(lock){
+                                synchronized(lock) {
                                     updateBEDRecordPatientValue(r, recordsInRegion);
                                 }
                             } else {
                                 return new ArrayList<Object[]>();
                             }
                         } catch (SQLException ex) {
-                            MiscUtils.checkSQLException(ex);
-                        } catch (Exception e){}
+                            ClientMiscUtils.checkSQLException(ex);
+                        } catch (Exception e) {}
                     }
 
                     return currentData;
                 }
 
+                @Override
                 public int getTotalNum() {
                     return currentGenes.size();
                 }
 
+                @Override
                 public void retrievalComplete() {
                     //xxx
                 }
@@ -223,30 +232,31 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             stp = new SearchableTablePanel(pageName, columnNames, columnClasses, new ArrayList<Integer>(), limit, retriever);
 
             stp.getTable().addMouseListener(new MouseAdapter() {
-                    public void mouseReleased(MouseEvent e) {
+                @Override
+                public void mouseReleased(MouseEvent e) {
 
-                        //check for right click
-                        if(!SwingUtilities.isRightMouseButton(e)) return;
+                    //check for right click
+                    if (!SwingUtilities.isRightMouseButton(e)) return;
 
-                        SortableTable table = stp.getTable();
-                        int numSelected = table.getSelectedRows().length;
-                        if(numSelected == 1){
-                            int r = table.rowAtPoint(e.getPoint());
-                            if(r < 0 || r >= table.getRowCount()) return;
-                            JPopupMenu popup = createPopupSingle(table, r);
-                            popup.show(e.getComponent(), e.getX(), e.getY());
-                        } else if(numSelected > 1){
-                            //JPopupMenu popup = createPopupMultiple(table);
-                            //popup.show(e.getComponent(), e.getX(), e.getY());
-                        }
+                    SortableTable table = stp.getTable();
+                    int numSelected = table.getSelectedRows().length;
+                    if (numSelected == 1) {
+                        int r = table.rowAtPoint(e.getPoint());
+                        if (r < 0 || r >= table.getRowCount()) return;
+                        JPopupMenu popup = createPopupSingle(table, r);
+                        popup.show(e.getComponent(), e.getX(), e.getY());
+                    } else if (numSelected > 1) {
+                        //JPopupMenu popup = createPopupMultiple(table);
+                        //popup.show(e.getComponent(), e.getX(), e.getY());
                     }
-                });
+                }
+            });
 
 
             showShowCard();
         }
 
-        private JPopupMenu createPopupSingle(SortableTable table, int r){
+        private JPopupMenu createPopupSingle(SortableTable table, int r) {
 
         table.setRowSelectionInterval(r, r);
         //int row = TableModelWrapperUtils.getActualRowAt(table.getModel(), r);
@@ -261,6 +271,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         JMenuItem filter1Item = new JMenuItem("Filter by Region");
         filter1Item.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
 
                 ThreadController.getInstance().cancelWorkers(pageName);
@@ -281,13 +292,13 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
     }
 
 
-        private void showWaitCard(){
+        private void showWaitCard() {
             tablePanel.removeAll();
             tablePanel.add(new WaitPanel("Getting aggregate information"), BorderLayout.CENTER);
             tablePanel.updateUI();
         }
 
-        private void showShowCard(){
+        private void showShowCard() {
             tablePanel.removeAll();
             tablePanel.add(stp, BorderLayout.CENTER);
             tablePanel.updateUI();
@@ -325,7 +336,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             int i = 0;
             for (BEDRecord r : regionToVariantCountMap.keySet()) {
-                if(i >= limit) break;
+                if (i >= limit) break;
                 data.add(BEDToVector(r, regionToVariantCountMap.get(r), regionToIndividualCountMap.get(r)));
                 i++;
             }
@@ -426,7 +437,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
         private class GeneListGetter extends MedSavantWorker<List<RegionSet>> {
 
-            public GeneListGetter(){
+            public GeneListGetter() {
                 super(pageName);
             }
             
@@ -443,6 +454,5 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                 updateGeneListDropDown(result);
             }
         }
-
     }
 }

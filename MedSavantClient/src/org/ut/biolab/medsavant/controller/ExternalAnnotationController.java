@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.model.Annotation;
+import org.ut.biolab.medsavant.model.Annotation;
 
 /**
  * @author mfiume

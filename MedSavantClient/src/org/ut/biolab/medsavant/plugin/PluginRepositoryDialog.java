@@ -41,7 +41,7 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.dialog.DownloadDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.TreeBrowserEntry;
@@ -101,7 +101,7 @@ public class PluginRepositoryDialog extends JDialog {
         pack();
 
         setLocationRelativeTo(parent);
-        MiscUtils.registerCancelButton(cancelButton);
+        ClientMiscUtils.registerCancelButton(cancelButton);
     }
 
     private void downloadSelectedItem(boolean ignoreBranchSelected) {

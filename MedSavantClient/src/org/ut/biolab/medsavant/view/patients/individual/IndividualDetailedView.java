@@ -33,11 +33,11 @@ import javax.swing.SwingUtilities;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.format.PatientFormat;
-import org.ut.biolab.medsavant.db.model.Cohort;
+import org.ut.biolab.medsavant.format.PatientFormat;
+import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.view.list.DetailedView;
@@ -88,7 +88,7 @@ public class IndividualDetailedView extends DetailedView {
             try {
                 return MedSavantClient.PatientQueryUtilAdapter.getPatientRecord(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
             } catch (SQLException ex) {
-                MiscUtils.checkSQLException(ex);
+                ClientMiscUtils.checkSQLException(ex);
                 throw ex;
             }
         }
@@ -124,7 +124,7 @@ public class IndividualDetailedView extends DetailedView {
                 results = MedSavantClient.PatientQueryUtilAdapter.getFamilyOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
                 familyId = MedSavantClient.PatientQueryUtilAdapter.getFamilyIdOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
             } catch (SQLException ex) {
-                MiscUtils.checkSQLException(ex);
+                ClientMiscUtils.checkSQLException(ex);
                 throw ex;
             }
 
@@ -302,9 +302,9 @@ public class IndividualDetailedView extends DetailedView {
                 if(values[i][0].equals(PatientFormat.ALIAS_OF_GENDER)){
                     String s;
                     if(result[i] instanceof Long || result[i] instanceof Integer){
-                        s = MiscUtils.genderToString(MiscUtils.safeLongToInt((Long)result[i]));
+                        s = ClientMiscUtils.genderToString(ClientMiscUtils.safeLongToInt((Long)result[i]));
                     } else {
-                        s = MiscUtils.GENDER_UNKNOWN;
+                        s = ClientMiscUtils.GENDER_UNKNOWN;
                     }
                     values[i][1] = s;
                 }
@@ -325,7 +325,7 @@ public class IndividualDetailedView extends DetailedView {
         try {
             fieldNames = MedSavantClient.PatientQueryUtilAdapter.getPatientFieldAliases(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
         } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
+            ClientMiscUtils.checkSQLException(ex);
             ex.printStackTrace();
             ClientLogger.log(IndividualDetailedView.class,ex.getLocalizedMessage(),Level.SEVERE);
         } catch (RemoteException ex) {

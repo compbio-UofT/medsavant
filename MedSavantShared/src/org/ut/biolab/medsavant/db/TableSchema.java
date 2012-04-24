@@ -31,31 +31,6 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
  */
 public class TableSchema implements Serializable {
 
-    public static ColumnType convertStringToColumnType(String typeNameSQL) {
-        typeNameSQL = typeNameSQL.toLowerCase();
-        if (typeNameSQL.contains("float")) {
-            return ColumnType.FLOAT;
-        } else if (typeNameSQL.contains("boolean") || (typeNameSQL.contains("int") && typeNameSQL.contains("(1)"))){
-            return ColumnType.BOOLEAN;
-        } else if (typeNameSQL.contains("int")) {
-            return ColumnType.INTEGER;
-        } else if (typeNameSQL.contains("varchar")) {
-            return ColumnType.VARCHAR;
-        } else if (typeNameSQL.contains("tinyint")) {
-            return ColumnType.INTEGER;
-        } else if (typeNameSQL.contains("blob")) {
-            return ColumnType.VARCHAR;
-        } else if (typeNameSQL.contains("datetime")) {
-            return ColumnType.DATE;
-        } else if(typeNameSQL.contains("decimal")){
-            return ColumnType.DECIMAL;
-        } else if (typeNameSQL.contains("date")){
-            return ColumnType.DATE;
-        } 
-        
-        throw new UnsupportedOperationException("Type not supported: " + typeNameSQL);
-    }
-
     private final LinkedHashMap<String,String> dbNameToAlias;
     private final LinkedHashMap<Integer,String> indexToDBName;
     private final LinkedHashMap<Integer,ColumnType> indexToColumnType;
@@ -65,28 +40,9 @@ public class TableSchema implements Serializable {
     private final LinkedHashMap<String,Integer> dbNameToIndex;
     private final LinkedHashMap<String, String> aliasToDBName;
 
-    public static String getColumnTypeString(ColumnType t) {
-        switch (t) {
-            case INTEGER:
-                return COLUMN_INTEGER;
-            case FLOAT:
-                return COLUMN_FLOAT;
-            case BOOLEAN:
-                return COLUMN_BOOLEAN;
-            case VARCHAR:
-                return COLUMN_VARCHAR;
-            case DECIMAL:
-                return COLUMN_DECIMAL;
-            case DATE:
-                return COLUMN_DATE;
-            default:
-                throw new FatalDatabaseException("Unrecognized column type " + t);
-        }
-    }
-
     private void addColumn(int index, String dbName, String alias, ColumnType t, int length) {
         assert (!indexToDBName.containsKey(index));
-        DbColumn c = table.addColumn(dbName, getColumnTypeString(t), length);
+        DbColumn c = table.addColumn(dbName, t.toString(), length);
         dbNameToAlias.put(dbName,alias);
         indexToDBName.put(index, dbName);
         aliasToColumn.put(alias, c);
@@ -157,51 +113,6 @@ public class TableSchema implements Serializable {
         return indexToDBName.get(index);
     }
 
-    public Object[][] getColumnGrid() {
-
-        Object[][] result = new Object[this.indexToColumn.keySet().size()][3];
-
-        for (int index : this.indexToColumn.keySet()) {
-            result[index-1][0] = index;
-            result[index-1][1] = this.indexToColumn.get(index);
-            result[index-1][2] = this.indexToColumnType.get(index);
-        }
-
-        return result;
-    }
-    
-    public static boolean isNumeric(ColumnType columnType) {
-        return ColumnType.INTEGER == columnType || ColumnType.FLOAT == columnType || ColumnType.DECIMAL == columnType;
-    }
-
-    public static boolean isInt(ColumnType columnType) {
-        return ColumnType.INTEGER == columnType;
-    }
-    
-    public static boolean isFloat(ColumnType columnType) {
-        return ColumnType.FLOAT == columnType || ColumnType.DECIMAL == columnType;        
-    }
-
-    public static boolean isBoolean(ColumnType columnType) {
-        return ColumnType.BOOLEAN == columnType;
-    }
-
-    public enum ColumnType {
-        VARCHAR,
-        BOOLEAN,
-        INTEGER,
-        FLOAT,
-        DECIMAL,
-        DATE
-    };
-
-    public static final String COLUMN_VARCHAR = "varchar";
-    public static final String COLUMN_BOOLEAN = "bool";
-    public static final String COLUMN_INTEGER = "int";
-    public static final String COLUMN_FLOAT = "float";
-    public static final String COLUMN_DECIMAL = "decimal";
-    public static final String COLUMN_DATE = "date";
-    
     private DbTable table;
 
     public TableSchema(DbTable t) {

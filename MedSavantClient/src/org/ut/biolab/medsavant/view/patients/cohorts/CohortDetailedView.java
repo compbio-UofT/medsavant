@@ -1,13 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.patients.cohorts;
 
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -19,25 +26,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
+
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import com.jidesoft.utils.SwingWorker;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.model.Cohort;
-import org.ut.biolab.medsavant.db.model.SimplePatient;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.model.Cohort;
+import org.ut.biolab.medsavant.model.SimplePatient;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
@@ -121,7 +127,7 @@ public class CohortDetailedView extends DetailedView {
         details.removeAll();
         
         Object[][] data = new Object[patients.size()][1];
-        for(int i = 0; i < patients.size(); i++){
+        for (int i = 0; i < patients.size(); i++) {
             data[i][0] = patients.get(i);
         }
         
@@ -189,7 +195,7 @@ public class CohortDetailedView extends DetailedView {
     @Override
     public void setRightClick(MouseEvent e) {
         Cohort[] selected;
-        if(multipleSelected){
+        if (multipleSelected) {
             selected = cohorts;
         } else {
             selected = new Cohort[1];
@@ -201,7 +207,7 @@ public class CohortDetailedView extends DetailedView {
     }
 
     /*
-    private JButton setDefaultCaseButton(){
+    private JButton setDefaultCaseButton() {
     JButton button = new JButton("Set default Case cohort");
     button.setBackground(ViewUtil.getDetailsBackgroundColor());
     button.addActionListener(new ActionListener() {
@@ -212,7 +218,7 @@ public class CohortDetailedView extends DetailedView {
     return button;
     }
 
-    private JButton setDefaultControlButton(){
+    private JButton setDefaultControlButton() {
     JButton button = new JButton("Set default Control cohort");
     button.setBackground(ViewUtil.getDetailsBackgroundColor());
     button.addActionListener(new ActionListener() {
@@ -230,6 +236,7 @@ public class CohortDetailedView extends DetailedView {
         button.setOpaque(false);
         button.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 
                 int[] rows = list.getSelectedRows();
@@ -259,10 +266,10 @@ public class CohortDetailedView extends DetailedView {
         return button;
     }
 
-    private JPopupMenu createPopup(final Cohort[] cohorts){
+    private JPopupMenu createPopup(final Cohort[] cohorts) {
         JPopupMenu popupMenu = new JPopupMenu();
 
-        if(ProjectController.getInstance().getCurrentVariantTableSchema() == null){
+        if (ProjectController.getInstance().getCurrentVariantTableSchema() == null) {
             popupMenu.add(new JLabel("(You must choose a variant table before filtering)"));
         } else {
 
@@ -270,20 +277,21 @@ public class CohortDetailedView extends DetailedView {
             JMenuItem filter1Item = new JMenuItem("Filter by Cohort(s)");
             filter1Item.addActionListener(new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent e) {
 
                     List<String> dnaIds = new ArrayList<String>();
 
-                    for(Cohort c : cohorts){
+                    for (Cohort c : cohorts) {
                         try {
                             List<String> current = MedSavantClient.CohortQueryUtilAdapter.getDNAIdsInCohort(LoginController.sessionId, c.getId());
-                            for(String s : current){
-                                if(!dnaIds.contains(s)){
+                            for (String s : current) {
+                                if (!dnaIds.contains(s)) {
                                     dnaIds.add(s);
                                 }
                             }
                         } catch (SQLException ex) {
-                            MiscUtils.checkSQLException(ex);
+                            ClientMiscUtils.checkSQLException(ex);
                             Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
                         } catch (RemoteException ex) {
                             Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
@@ -293,7 +301,7 @@ public class CohortDetailedView extends DetailedView {
 
                     DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
                     Condition[] conditions = new Condition[dnaIds.size()];
-                    for(int i = 0; i < dnaIds.size(); i++){
+                    for (int i = 0; i < dnaIds.size(); i++) {
                         conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
                     }
                     removeExistingFilters();
@@ -310,9 +318,9 @@ public class CohortDetailedView extends DetailedView {
         return popupMenu;
     }
 
-    private void removeExistingFilters(){
-        if(filterPanels != null){
-            for(FilterPanelSubItem panel : filterPanels){
+    private void removeExistingFilters() {
+        if (filterPanels != null) {
+            for (FilterPanelSubItem panel : filterPanels) {
                 panel.removeThis();
             }
         }

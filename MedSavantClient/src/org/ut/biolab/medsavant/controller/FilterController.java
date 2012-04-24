@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import java.util.logging.Logger;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Filter;
@@ -36,8 +36,6 @@ import org.ut.biolab.medsavant.model.RangeFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
-import org.ut.biolab.medsavant.view.ViewController;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 
 
 /**
@@ -64,19 +62,35 @@ public class FilterController {
 
     static {
         projectListener = new ProjectListener() {
-            public void projectAdded(String projectName) {}
-            public void projectRemoved(String projectName) {}
+            @Override
+            public void projectAdded(String projectName) {
+            }
+
+            @Override
+            public void projectRemoved(String projectName) {
+            }
+
+            @Override
             public void projectChanged(String projectName) {
                 removeAllFilters();
             }
-            public void projectTableRemoved(int projid, int refid) {}
+            @Override
+            public void projectTableRemoved(int projid, int refid) {
+            }
         };
         ProjectController.getInstance().addProjectListener(projectListener);
 
         referenceListener = new ReferenceListener() {
-            public void referenceAdded(String name) {}
-            public void referenceRemoved(String name) {}
-            public void referenceChanged(String prnameojectName) {
+            @Override
+            public void referenceAdded(String name) {
+            }
+
+            @Override
+            public void referenceRemoved(String name) {
+            }
+
+            @Override
+            public void referenceChanged(String name) {
                 removeAllFilters();
             }
         };
@@ -84,6 +98,7 @@ public class FilterController {
 
 
         logoutListener = new LoginListener() {
+            @Override
             public void loginEvent(LoginEvent evt) {
                 if (evt.getType() == LoginEvent.EventType.LOGGED_OUT) {
                     removeAllFilters();
@@ -100,12 +115,12 @@ public class FilterController {
 
     public static void addFilter(Filter filter, int queryId) {
         
-        if(filterMap.get(queryId) == null) {
+        if (filterMap.get(queryId) == null) {
             filterMap.put(queryId, new TreeMap<String, Filter>());
         }
         Filter prev = filterMap.get(queryId).put(filter.getId(), filter);
 
-        if(prev == null) {
+        if (prev == null) {
             setLastFilter(filter, FilterAction.ADDED);
         } else {
             setLastFilter(filter, FilterAction.MODIFIED);
@@ -115,27 +130,36 @@ public class FilterController {
 
     public static void removeFilter(String filterId, int queryId) {
 
-        if(filterMap.get(queryId) == null) return; //filter was never actually added
+        if (filterMap.get(queryId) == null) return; //filter was never actually added
 
         Filter removed = filterMap.get(queryId).remove(filterId);
-        if(filterMap.get(queryId).isEmpty()) {
+        if (filterMap.get(queryId).isEmpty()) {
             filterMap.remove(queryId);
         }
 
-        if(removed == null) return; //something went wrong, but ignore it
+        if (removed == null) return; //something went wrong, but ignore it
         setLastFilter(removed, FilterAction.REMOVED);
         fireFiltersChangedEvent();
     }
     
     public static void removeFilterSet(int queryId) {
         Map<String, Filter> map = filterMap.remove(queryId);
-        if(map == null ||map.isEmpty()) return;
+        if (map == null ||map.isEmpty()) return;
         Filter f = new QueryFilter() {
+            @Override
             public String getName() {
                 return "Filter Set";
             }
-            public String getId() {return null;}
-            public Condition[] getConditions() {return null;}
+
+            @Override
+            public String getId() {
+                return null;
+            }
+
+            @Override
+            public Condition[] getConditions() {
+                return null;
+            }
         };
         setLastFilter(f, FilterAction.REMOVED);
         fireFiltersChangedEvent();
@@ -177,12 +201,13 @@ public class FilterController {
     
     private synchronized static void fireFiltersChangedEvent(boolean force) {
         
-        if(!autoCommit && !force) return;
+        if (!autoCommit && !force) return;
 
         filterSetID++;
         //filterMapHistory.put(filterSetID,filterMap);
         
         Thread t = new Thread(){
+            @Override
             public void run(){
                 try {
                     ResultController.getInstance().getNumFilteredVariants();
@@ -253,7 +278,7 @@ public class FilterController {
                 qfs.add((QueryFilter) f);
             }
         }
-        if(hasRangeFilter) {
+        if (hasRangeFilter) {
             qfs.add((QueryFilter)rf);
         }
         return qfs;
@@ -289,7 +314,7 @@ public class FilterController {
     //add anything from filters with filterId to list
     private static void addFiltersToList(List<QueryFilter> filters, List<QueryFilter> list, String filterId){
         for(int i = filters.size()-1; i >= 0; i--){
-            if(filters.get(i).getId().equals(filterId)){
+            if (filters.get(i).getId().equals(filterId)){
                 list.add(filters.remove(i));
             }
         }
@@ -335,7 +360,7 @@ public class FilterController {
     public static boolean hasFiltersApplied() {
         for(Integer key : filterMap.keySet()) {
             Map<String, Filter> current = filterMap.get(key);
-            if(current != null && !current.isEmpty()) {
+            if (current != null && !current.isEmpty()) {
                 return true;
             }
         }
@@ -353,11 +378,20 @@ public class FilterController {
     public static void commit(final String filterName, FilterAction action){ 
         
         Filter f = new QueryFilter() {
+            @Override
             public String getName() {
                 return filterName;
             }
-            public String getId() {return null;}
-            public Condition[] getConditions() {return null;}
+
+            @Override
+            public String getId() {
+                return null;
+            }
+
+            @Override
+            public Condition[] getConditions() {
+                return null;
+            }
         };
         setLastFilter(f, action);
         fireFiltersChangedEvent(true);

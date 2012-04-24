@@ -27,7 +27,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.ut.biolab.medsavant.db.util.shared.NetworkUtils;
+import org.ut.biolab.medsavant.util.ClientNetworkUtils;
 
 /**
  * Given a file (typically the plugin.xml file from our web-site), create an index of plugin versions.
@@ -41,7 +41,7 @@ public class PluginIndex {
     public PluginIndex(URL url) throws IOException {
         urls = new HashMap<String, URL>();
         try {
-            XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(NetworkUtils.openStream(url));
+            XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(ClientNetworkUtils.openStream(url));
             boolean done = false;
             String id = null;
             do {

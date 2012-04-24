@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.ut.biolab.medsavant.db.util;
 
-import com.healthmarketscience.sqlbuilder.InsertQuery;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -24,9 +23,12 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ServerLogTableSchema;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+
+import com.healthmarketscience.sqlbuilder.InsertQuery;
+
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.ServerLogTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
 
 /**
  * Logging handler which publishes log records to the database.

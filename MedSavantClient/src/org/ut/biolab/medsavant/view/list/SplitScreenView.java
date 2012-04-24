@@ -1,13 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.list;
 
-import com.jidesoft.grid.TableModelWrapperUtils;
-import org.ut.biolab.medsavant.view.util.WaitPanel;
-import com.jidesoft.utils.SwingWorker;
-import org.ut.biolab.medsavant.view.component.Util;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -21,11 +28,17 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import com.jidesoft.grid.TableModelWrapperUtils;
+import com.jidesoft.utils.SwingWorker;
+
 import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
+import org.ut.biolab.medsavant.view.component.Util;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
  *
@@ -87,8 +100,6 @@ public class SplitScreenView extends JPanel {
             buttonPanel.setBorder(ViewUtil.getMediumBorder());
             buttonPanel.add(Box.createHorizontalGlue());
 
-            final ListView instance = this;
-
             if (detailedEditer.doesImplementAdding()) {
 
                 JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD_ON_TOOLBAR));
@@ -97,7 +108,7 @@ public class SplitScreenView extends JPanel {
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         detailedEditer.addItems();
-                        instance.refreshList();
+                        refreshList();
                     }
                 });
                 buttonPanel.add(butt);
@@ -111,7 +122,7 @@ public class SplitScreenView extends JPanel {
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         detailedEditer.deleteItems(selectionGrabber.getSelectedItems());
-                        instance.refreshList();
+                        refreshList();
                     }
                 });
                 buttonPanel.add(butt);
@@ -126,7 +137,7 @@ public class SplitScreenView extends JPanel {
                     public void mouseClicked(MouseEvent e) {
                         if (selectionGrabber.getSelectedItems().size() > 0) {
                             detailedEditer.editItems(selectionGrabber.getSelectedItems().get(0));
-                            instance.refreshList();
+                            refreshList();
                         } else {
                             DialogUtils.displayMessage("Choose one item to edit");
                         }
@@ -208,6 +219,7 @@ public class SplitScreenView extends JPanel {
 
             stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
+                @Override
                 public void valueChanged(ListSelectionEvent e) {
 
                     if(e.getValueIsAdjusting()) return;
@@ -223,8 +235,9 @@ public class SplitScreenView extends JPanel {
             });
 
             stp.getTable().addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    if(SwingUtilities.isRightMouseButton(e)){
+                @Override
+                public void mouseClicked(MouseEvent e) {  
+                    if(SwingUtilities.isRightMouseButton(e)) {
                         int row = stp.getTable().rowAtPoint(e.getPoint());
                         stp.getTable().getSelectionModel().setSelectionInterval(row, row);
                         detailedView.setRightClick(e);

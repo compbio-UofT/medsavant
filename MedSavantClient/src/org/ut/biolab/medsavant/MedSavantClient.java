@@ -1,7 +1,21 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 
 package org.ut.biolab.medsavant;
 
-import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 import java.rmi.*;
 import java.rmi.registry.*;
 import java.awt.Insets;
@@ -16,28 +30,28 @@ import javax.swing.ToolTipManager;
 import javax.swing.plaf.ColorUIResource;
 import org.ut.biolab.medsavant.controller.LoginController;
 
-import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.AnnotationQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.ChromosomeQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.CohortQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.LogQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.PatientQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.ProjectQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.QueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.ReferenceQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.RegionQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.ServerLogQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.SettingsQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.UserQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.VariantQueryUtilAdapter;
-import org.ut.biolab.medsavant.server.api.MedSavantServerRegistry;
-import org.ut.biolab.medsavant.server.api.SessionAdapter;
+import org.ut.biolab.medsavant.serverapi.AnnotationLogQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.AnnotationQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.ChromosomeQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.CohortQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.LogQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.PatientQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.ProjectQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.QueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.ReferenceQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.RegionQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.ServerLogQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.SettingsQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.UserQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.VariantQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.MedSavantServerRegistry;
+import org.ut.biolab.medsavant.serverapi.SessionAdapter;
 import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.db.util.query.api.CustomTablesAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.DBUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.NotificationQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.query.api.SetupAdapter;
-import org.ut.biolab.medsavant.db.variants.upload.api.VariantManagerAdapter;
+import org.ut.biolab.medsavant.serverapi.CustomTablesAdapter;
+import org.ut.biolab.medsavant.serverapi.DBUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.NotificationQueryUtilAdapter;
+import org.ut.biolab.medsavant.serverapi.SetupAdapter;
+import org.ut.biolab.medsavant.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 

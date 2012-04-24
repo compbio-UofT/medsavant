@@ -1,10 +1,20 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 package org.ut.biolab.medsavant.db.variants.update;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,11 +25,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
-import org.ut.biolab.medsavant.db.model.SimpleVariantFile;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.dbspec.Column;
+
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.model.AnnotationLog.Status;
+import org.ut.biolab.medsavant.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.FileServer;
@@ -29,8 +46,8 @@ import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.variants.upload.api.VariantManagerAdapter;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.server.log.ServerLogger;
 
@@ -49,7 +66,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return instance;
     }
 
-    public VariantManager() throws RemoteException {super();}
+    public VariantManager() throws RemoteException {
+    }
 
 
     /*
@@ -66,13 +84,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         ServerLogger.log(VariantManager.class, "Getting map of update ids");
         List<Integer> refIds = ReferenceQueryUtil.getInstance().getReferenceIdsForProject(sid, projectID);
         Map<Integer, Integer> ref2Update = new HashMap<Integer, Integer>();
-        for(Integer refId : refIds){
+        for (Integer refId : refIds) {
             ref2Update.put(refId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectID, refId, false));
         }
 
         //update annotation log table
         ServerLogger.log(VariantManager.class, "Setting log status to published");
-        for(Integer refId : ref2Update.keySet()){
+        for (Integer refId : ref2Update.keySet()) {
             AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, ref2Update.get(refId), Status.PUBLISHED);
         }
 
@@ -80,7 +98,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         ServerLogger.log(VariantManager.class, "Terminating active sessions");
         SessionController.getInstance().terminateSessionsForDatabase(SessionController.getInstance().getDatabaseForSession(sid), "Administrator (" + SessionController.getInstance().getUserForSession(sid) + ") published new variants");
         ServerLogger.log(VariantManager.class, "Publishing tables");
-        for(Integer refId : ref2Update.keySet()){
+        for (Integer refId : ref2Update.keySet()) {
             ProjectQueryUtil.getInstance().publishVariantTable(c, projectID, refId, ref2Update.get(refId));
         }
 
@@ -137,7 +155,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //add log
         ServerLogger.log(VariantManager.class, "Adding log and generating update id");
-        int updateId = AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid, projectId, referenceId, org.ut.biolab.medsavant.db.model.AnnotationLog.Action.ADD_VARIANTS, user);
+        int updateId = AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid, projectId, referenceId, org.ut.biolab.medsavant.model.AnnotationLog.Action.ADD_VARIANTS, user);
 
         try {
 
@@ -216,7 +234,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             return updateId;
 
-        } catch (Exception e){
+        } catch (Exception e) {
             AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, updateId, Status.ERROR);
             throw e;
         }
@@ -257,7 +275,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //add log
         ServerLogger.log(VariantManager.class, "Adding log and generating update id");
-        int updateId = AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid, projectId, referenceId, org.ut.biolab.medsavant.db.model.AnnotationLog.Action.ADD_VARIANTS, user);
+        int updateId = AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid, projectId, referenceId, org.ut.biolab.medsavant.model.AnnotationLog.Action.ADD_VARIANTS, user);
         
         try {
 
@@ -281,7 +299,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             VCFIterator parser = new VCFIterator(vcfFiles, baseDir, updateId, includeHomoRef);
             File f;
-            while((f = parser.next()) != null){
+            while ((f = parser.next()) != null) {
                 
                 List<String> filesUsed = new ArrayList<String>();
 
@@ -292,7 +310,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 //add custom fields
                 ServerLogger.log(VariantManager.class, "Adding custom vcf fields");
                 List<CustomField> customFields = ProjectQueryUtil.getInstance().getCustomVariantFields(sid, projectId, referenceId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, false));
-                if(!customFields.isEmpty()){
+                if (!customFields.isEmpty()) {
                     String customFieldFilename = currentFilename + "_vcf";
                     filesUsed.add(customFieldFilename);
                     VariantManagerUtils.addCustomVcfFields(currentFilename, customFieldFilename, customFields, DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO); //last of the default fields
@@ -302,7 +320,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 //get annotation ids
                 int[] annotationIds = AnnotationQueryUtil.getInstance().getAnnotationIds(sid,projectId, referenceId);
 
-                if(annotationIds.length > 0){
+                if (annotationIds.length > 0) {
 
                     //sort variants
                     ServerLogger.log(VariantManager.class, "Sorting variants");
@@ -321,7 +339,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     currentFilename = annotatedFilename;
                 }
 
-                if(annotationIds.length > 0){
+                if (annotationIds.length > 0) {
 
                     //split
                     File splitDir = new File(baseDir,"splitDir");
@@ -345,7 +363,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 
                 //cleanup
                 System.gc();
-                for(String filename : filesUsed){
+                for (String filename : filesUsed) {
                     boolean deleted = (new File(filename)).delete();
                     ServerLogger.log(VariantManager.class, "Deleting " + filename + " - " + (deleted ? "successful" : "failed"));
                 }
@@ -391,7 +409,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             return updateId;
             
-        } catch (Exception e){
+        } catch (Exception e) {
             AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, updateId, Status.ERROR);
             throw e;
         }
@@ -430,7 +448,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //add custom fields
             ServerLogger.log(VariantManager.class, "Adding custom vcf fields");
             List<CustomField> customFields = ProjectQueryUtil.getInstance().getCustomVariantFields(sid, projectId, referenceId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectId, referenceId, false));
-            if(!customFields.isEmpty()){
+            if (!customFields.isEmpty()) {
                 String customFieldFilename = currentFilename + "_vcf";
                 VariantManagerUtils.addCustomVcfFields(currentFilename, customFieldFilename, customFields, DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO); //last of the default fields
                 currentFilename = customFieldFilename;
@@ -439,7 +457,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //get annotation ids
             int[] annotationIds = AnnotationQueryUtil.getInstance().getAnnotationIds(sid,projectId, referenceId);
 
-            if(annotationIds.length > 0){
+            if (annotationIds.length > 0) {
 
                 //sort variants
                 ServerLogger.log(VariantManager.class, "Sorting variants");
@@ -468,7 +486,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             VariantManagerUtils.appendToFile(existingVariantsFile.getAbsolutePath(), currentFilename);
             currentFilename = existingVariantsFile.getAbsolutePath();
 
-            if(annotationIds.length > 0){
+            if (annotationIds.length > 0) {
 
                 //split
                 File splitDir = new File(baseDir,"splitDir");
@@ -531,7 +549,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             return updateId;
 
-        } catch (Exception e){
+        } catch (Exception e) {
             AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, updateId, Status.ERROR);
             throw e;
         }
@@ -552,7 +570,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //add log
         ServerLogger.log(VariantManager.class, "Adding log and generating update id");
-        int updateId = AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid, projectId, referenceId, org.ut.biolab.medsavant.db.model.AnnotationLog.Action.REMOVE_VARIANTS, user);
+        int updateId = AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sid, projectId, referenceId, org.ut.biolab.medsavant.model.AnnotationLog.Action.REMOVE_VARIANTS, user);
 
         try {
 
@@ -561,11 +579,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             File existingVariantsFile = new File(baseDir,"temp_proj" + projectId + "_ref" + referenceId + "_update" + updateId);
             ServerLogger.log(VariantManager.class, "Dumping variants to file");
             String conditions = "";
-            for(int i = 0; i < files.size(); i++){
+            for (int i = 0; i < files.size(); i++) {
                 conditions +=
                         "!(" + DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID + "=" + files.get(i).getUploadId() +
                         " AND " + DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID + "=" + files.get(i).getFileId() + ")";
-                if(i != files.size()-1){
+                if (i != files.size()-1) {
                     conditions += " AND ";
                 }
             }
@@ -610,12 +628,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             return updateId;
 
-        } catch (Exception e){
+        } catch (Exception e) {
             AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, updateId, Status.ERROR);
             throw e;
         }
     }
 
+    @Override
     public RemoteInputStream exportVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException, IOException, InterruptedException {
 
         //generate directory
@@ -660,7 +679,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             ZipEntry entry = new ZipEntry(files[i]);
             out.putNextEntry(entry);
             int count;
-            while((count = origin.read(data, 0, BUFFER)) != -1) {
+            while ((count = origin.read(data, 0, BUFFER)) != -1) {
                 out.write(data, 0, count);
             }
             origin.close();
@@ -669,6 +688,4 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         return (new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath()))).export();
     }
-
-
 }

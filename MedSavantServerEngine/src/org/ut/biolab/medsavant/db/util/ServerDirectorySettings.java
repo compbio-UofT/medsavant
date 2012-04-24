@@ -16,10 +16,10 @@ package org.ut.biolab.medsavant.db.util;
  *    limitations under the License.
  */
 
+import org.ut.biolab.medsavant.util.MiscUtils;
 import java.io.File;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 
 
 /**

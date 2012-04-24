@@ -38,7 +38,7 @@ import org.ut.biolab.medsavant.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.plugin.PluginManagerDialog;
@@ -154,7 +154,7 @@ public class MedSavantFrame extends JFrame implements LoginListener {
         view.add(new WaitPanel("Loading Projects"), WAIT_CARD_NAME);
         switchToView(WAIT_CARD_NAME);
 
-        MiscUtils.invokeLaterIfNecessary(new Runnable() {
+        ClientMiscUtils.invokeLaterIfNecessary(new Runnable() {
             @Override
             public void run() {
                 sessionView = new LoggedInView();

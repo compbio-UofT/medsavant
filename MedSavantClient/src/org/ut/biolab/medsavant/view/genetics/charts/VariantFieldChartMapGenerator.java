@@ -18,31 +18,26 @@ package org.ut.biolab.medsavant.view.genetics.charts;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Set;
-import org.ut.biolab.medsavant.MedSavantClient;
 
+import com.healthmarketscience.sqlbuilder.Condition;
+
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.model.Range;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.db.ColumnType;
+import org.ut.biolab.medsavant.db.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -108,7 +103,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                     field.getColumnName());
 
             if (field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
-                map = MiscUtils.modifyGenderMap(map);
+                map = ClientMiscUtils.modifyGenderMap(map);
             }
             
             if (Thread.currentThread().isInterrupted()) return null;
@@ -216,7 +211,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                     tablename,
                     field.getColumnName()));
 
-            double binSize = org.ut.biolab.medsavant.db.util.shared.MiscUtils.generateBins(field, r, isLogScaleX);
+            double binSize = org.ut.biolab.medsavant.util.ClientMiscUtils.generateBins(field, r, isLogScaleX);
             
             //get dna ids for each distinct value
             Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
@@ -225,7 +220,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                     field.getColumnName());
             int maxBin = 0;
             for(Object key : map.keySet()){
-                double value = MiscUtils.getDouble(key);
+                double value = ClientMiscUtils.getDouble(key);
                 if((int)(value / binSize) > maxBin){
                     maxBin = (int)(value / binSize);
                 }
@@ -246,7 +241,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             Arrays.fill(counts, 0);
             for(Object key : map.keySet()){
                 
-                double value = MiscUtils.getDouble(key);
+                double value = ClientMiscUtils.getDouble(key);
                 int bin = (int)(value / binSize);
                 
                 for(String dnaId : map.get(key)){
@@ -273,6 +268,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         return generateChartMap(true, isLogScaleX);
     }
 
+    @Override
     public ChartFrequencyMap generateChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws SQLException, NonFatalDatabaseException, RemoteException {
 
         String cacheKey = ProjectController.getInstance().getCurrentProjectId()
@@ -335,19 +331,22 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         return chartMap;
     }
 
+    @Override
     public boolean isNumeric() {
-        ColumnType type = field.getColumnType();
-        return type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER);
+        return field.getColumnType().isNumeric();
     }
 
+    @Override
     public String getName() {
         return field.getAlias();
     }
 
+    @Override
     public Table getTable() {
         return whichTable;
     }
 
+    @Override
     public String getFilterId() {
         return field.getColumnName();
     }

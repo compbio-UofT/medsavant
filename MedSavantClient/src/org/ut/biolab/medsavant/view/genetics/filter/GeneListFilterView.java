@@ -38,14 +38,14 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.db.model.GenomicRegion;
-import org.ut.biolab.medsavant.db.model.RangeCondition;
-import org.ut.biolab.medsavant.db.model.RegionSet;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.model.GenomicRegion;
+import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.model.RangeCondition;
+import org.ut.biolab.medsavant.model.RegionSet;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.model.Range;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 
 /**
@@ -65,7 +65,7 @@ class GeneListFilterView extends FilterView {
 
     public GeneListFilterView(FilterState state, int queryId) {
         this(queryId, new JPanel());
-        if(state.getValues().get("value") != null){
+        if (state.getValues().get("value") != null){
             applyFilter(Integer.parseInt(state.getValues().get("value")));
         }
     }
@@ -74,9 +74,9 @@ class GeneListFilterView extends FilterView {
     private ActionListener al;
     private JComboBox b;
 
-    public void applyFilter(int geneListId){
-        for(int i = 0; i < b.getItemCount(); i++){
-            if(b.getItemAt(i) instanceof RegionSet && ((RegionSet)b.getItemAt(i)).getId() == geneListId){
+    public final void applyFilter(int geneListId){
+        for (int i = 0; i < b.getItemCount(); i++){
+            if (b.getItemAt(i) instanceof RegionSet && ((RegionSet)b.getItemAt(i)).getId() == geneListId){
                 b.setSelectedIndex(i);
                 al.actionPerformed(new ActionEvent(this, 0, null));
                 return;
@@ -117,6 +117,7 @@ class GeneListFilterView extends FilterView {
 
         al = new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
 
                 applyButton.setEnabled(false);
@@ -126,7 +127,7 @@ class GeneListFilterView extends FilterView {
                     @Override
                     public Condition[] getConditions() {
 
-                        if(b.getSelectedItem().equals(GENELIST_NONE)){
+                        if (b.getSelectedItem().equals(GENELIST_NONE)){
                             return new Condition[0];
                         }
 
@@ -141,7 +142,7 @@ class GeneListFilterView extends FilterView {
                             Map<String, List<Range>> rangeMap = GenomicRegion.mergeGenomicRegions(regions);
                             Condition[] results = new Condition[rangeMap.size()];
                             int i = 0;
-                            for(String chrom : rangeMap.keySet()){
+                            for (String chrom : rangeMap.keySet()){
 
                                 Condition[] tmp = new Condition[2];
 
@@ -153,7 +154,7 @@ class GeneListFilterView extends FilterView {
                                 //create range conditions
                                 List<Range> ranges = rangeMap.get(chrom);
                                 Condition[] rangeConditions = new Condition[ranges.size()];
-                                for(int j = 0; j < ranges.size(); j++){
+                                for (int j = 0; j < ranges.size(); j++){
                                     rangeConditions[j] = new RangeCondition(
                                             ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION),
                                             (long)ranges.get(j).getMin(),
@@ -195,6 +196,7 @@ class GeneListFilterView extends FilterView {
 
         b.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 applyButton.setEnabled(true);
             }
@@ -218,7 +220,7 @@ class GeneListFilterView extends FilterView {
     @Override
     public FilterState saveState() {
         Map<String, String> map = new HashMap<String, String>();
-        if(appliedId != null) map.put("value", Integer.toString(appliedId));
+        if (appliedId != null) map.put("value", Integer.toString(appliedId));
         return new FilterState(FilterType.GENELIST, FILTER_NAME, FILTER_ID, map);
     }
 }

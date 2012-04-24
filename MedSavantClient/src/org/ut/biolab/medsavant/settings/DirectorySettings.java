@@ -21,7 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 
 
 /**
@@ -45,7 +45,7 @@ public class DirectorySettings {
      */
     public static File getMedSavantDirectory() {
         if (medSavantDir == null) {
-            File f = new File(System.getProperty("user.home"), MiscUtils.WINDOWS ? "medsavant" : ".medsavant");
+            File f = new File(System.getProperty("user.home"), ClientMiscUtils.WINDOWS ? "medsavant" : ".medsavant");
             if (!f.exists()) {
                 f.mkdir();
             }

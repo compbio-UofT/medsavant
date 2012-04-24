@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,46 +17,39 @@
 package org.ut.biolab.medsavant.db.util.query;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.parsers.ParserConfigurationException;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.DeleteQuery;
-import com.healthmarketscience.sqlbuilder.InsertQuery;
+import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.UpdateQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import java.rmi.RemoteException;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.util.ConnectionController;
 
-import org.ut.biolab.medsavant.db.model.Range;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.PatientFormatTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.PatientTablemapTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabaseExtras;
-import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.format.CustomField.Category;
-import org.ut.biolab.medsavant.db.format.PatientFormat;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.PatientFormatTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.PatientTablemapTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabaseExtras;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.format.CustomField.Category;
+import org.ut.biolab.medsavant.format.PatientFormat;
+import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.query.api.PatientQueryUtilAdapter;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.PatientQueryUtilAdapter;
 
 /**
  *
@@ -76,7 +69,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     public PatientQueryUtil() throws RemoteException { super(); }
 
 
-    public List<Object[]> getBasicPatientInfo(String sid,int projectId, int limit) throws SQLException, NonFatalDatabaseException, RemoteException {
+    @Override
+    public List<Object[]> getBasicPatientInfo(String sid, int projectId, int limit) throws SQLException, NonFatalDatabaseException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
 
@@ -109,7 +103,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
-    public List<Object[]> getPatients(String sid,int projectId) throws SQLException, RemoteException {
+    @Override
+    public List<Object[]> getPatients(String sid, int projectId) throws SQLException, RemoteException {
         String tablename = getPatientTablename(sid,projectId);
 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
@@ -134,7 +129,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
-    public Object[] getPatientRecord(String sid,int projectId, int patientId) throws SQLException, RemoteException {
+    @Override
+    public Object[] getPatientRecord(String sid, int projectId, int patientId) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
 
@@ -158,7 +154,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return v;
     }
 
-    public List<String> getPatientFieldAliases(String sid,int projectId) throws SQLException {
+    @Override
+    public List<String> getPatientFieldAliases(String sid, int projectId) throws SQLException {
 
         TableSchema table = MedSavantDatabase.PatientformatTableSchema;
         SelectQuery query = new SelectQuery();
@@ -181,14 +178,16 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
-    public List<CustomField> getPatientFields(String sid,int projectId) throws SQLException {
+    @Override
+    public List<CustomField> getPatientFields(String sid, int projectId) throws SQLException {
         List<CustomField> result = new ArrayList<CustomField>();
         result.addAll(PatientFormat.getDefaultAnnotationFormat());
         result.addAll(getCustomPatientFields(sid,projectId));
         return result;
     }
 
-    public List<CustomField> getCustomPatientFields(String sid,int projectId) throws SQLException {
+    @Override
+    public List<CustomField> getCustomPatientFields(String sid, int projectId) throws SQLException {
 
         TableSchema table = MedSavantDatabase.PatientformatTableSchema;
         SelectQuery query = new SelectQuery();
@@ -217,7 +216,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
-    public String getPatientTablename(String sid,int projectId) throws SQLException {
+    @Override
+    public String getPatientTablename(String sid, int projectId) throws SQLException {
 
         TableSchema table = MedSavantDatabase.PatienttablemapTableSchema;
         SelectQuery query = new SelectQuery();
@@ -232,7 +232,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     }
 
 
-    public void createPatientTable(String sid,int projectid, List<CustomField> fields) throws SQLException, ParserConfigurationException, SAXException, IOException {
+    @Override
+    public void createPatientTable(String sid, int projectid, List<CustomField> fields) throws SQLException, ParserConfigurationException, SAXException, IOException {
 
         String patientTableName = DBSettings.createPatientTableName(projectid);
         Connection c = ConnectionController.connectPooled(sid);
@@ -289,7 +290,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
     }
 
-    public void removePatient(String sid,int projectId, int[] patientIds) throws SQLException, RemoteException {
+    @Override
+    public void removePatient(String sid, int projectId, int[] patientIds) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
@@ -310,7 +312,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         c.close();
     }
 
-    public void addPatient(String sid,int projectId, List<CustomField> cols, List<String> values) throws SQLException, RemoteException {
+    @Override
+    public void addPatient(String sid, int projectId, List<CustomField> cols, List<String> values) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
@@ -323,7 +326,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ConnectionController.executeUpdate(sid,  query.toString());
     }
 
-    public Map<Object, List<String>> getDNAIdsForValues(String sid,int projectId, String columnName) throws NonFatalDatabaseException, SQLException, RemoteException {
+    @Override
+    public Map<Object, List<String>> getDNAIdsForValues(String sid, int projectId, String columnName) throws NonFatalDatabaseException, SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
 
@@ -356,7 +360,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return map;
     }
 
-    public List<String> getDNAIdsWithValuesInRange(String sid,int projectId, String columnName, Range r) throws NonFatalDatabaseException, SQLException, RemoteException {
+    @Override
+    public List<String> getDNAIdsWithValuesInRange(String sid, int projectId, String columnName, Range r) throws NonFatalDatabaseException, SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
 
@@ -392,7 +397,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
-    public List<String> getDNAIdsForStringList(String sid,TableSchema table, List<String> list, String columnname) throws NonFatalDatabaseException, SQLException {
+    @Override
+    public List<String> getDNAIdsForStringList(String sid, TableSchema table, List<String> list, String columnname) throws NonFatalDatabaseException, SQLException {
 
         DbColumn currentDNAId = table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS);
         DbColumn testColumn = table.getDBColumn(columnname);
@@ -455,7 +461,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }*/
 
-    public void updateFields(String sid,int projectId, List<CustomField> fields) throws SQLException, RemoteException {
+    @Override
+    public void updateFields(String sid, int projectId, List<CustomField> fields) throws SQLException, RemoteException {
 
         List<CustomField> currentFields = getCustomPatientFields(sid,projectId);
 
@@ -539,7 +546,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     /*
      * Given a list of values for field A, get the corresponding values from field B
      */
-    public List<Object> getValuesFromField(String sid,int projectId, String columnNameA, String columnNameB, List<Object> values) throws SQLException, RemoteException {
+    @Override
+    public List<Object> getValuesFromField(String sid, int projectId, String columnNameA, String columnNameB, List<Object> values) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
@@ -562,7 +570,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
-    public List<String> getDNAIdsFromField(String sid,int projectId, String columnNameA, List<Object> values) throws SQLException, RemoteException {
+    @Override
+    public List<String> getDNAIdsFromField(String sid, int projectId, String columnNameA, List<Object> values) throws SQLException, RemoteException {
 
         List<Object> l1 = getValuesFromField(sid,projectId, columnNameA, DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, values);
         List<String> result = new ArrayList<String>();
@@ -577,7 +586,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
-    public List<String> getValuesFromDNAIds(String sid,int projectId, String columnNameB, List<String> ids) throws SQLException, RemoteException {
+    @Override
+    public List<String> getValuesFromDNAIds(String sid, int projectId, String columnNameB, List<String> ids) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
@@ -602,7 +612,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return result;
     }
 
-    public List<Object[]> getFamily(String sid,int projectId, String family_id) throws SQLException, RemoteException {
+    @Override
+    public List<Object[]> getFamily(String sid, int projectId, String family_id) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
@@ -640,7 +651,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     }
 
 
-    public List<Object[]> getFamilyOfPatient(String sid,int projectId, int pid) throws SQLException, RemoteException {
+    @Override
+    public List<Object[]> getFamilyOfPatient(String sid, int projectId, int pid) throws SQLException, RemoteException {
 
         String family_id = getFamilyIdOfPatient(sid,projectId, pid);
         if(family_id == null){
@@ -650,7 +662,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return getFamily(sid,projectId, family_id);
     }
 
-    public String getFamilyIdOfPatient(String sid,int projectId, int pid) throws SQLException, RemoteException {
+    @Override
+    public String getFamilyIdOfPatient(String sid, int projectId, int pid) throws SQLException, RemoteException {
         String tablename = getPatientTablename(sid,projectId);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
@@ -669,7 +682,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return family_id;
     }
 
-    public List<String> getFamilyIds(String sid,int projectId) throws SQLException, RemoteException {
+    @Override
+    public List<String> getFamilyIds(String sid, int projectId) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
@@ -694,7 +708,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
 
     //SELECT `dna_ids` FROM `z_patient_proj1` WHERE `family_id` = 'AB0001' AND `dna_ids` IS NOT null;
-    public Map<String,String> getDNAIdsForFamily(String sid,int projectId, String familyId) throws SQLException, RemoteException {
+    @Override
+    public Map<String,String> getDNAIdsForFamily(String sid, int projectId, String familyId) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
@@ -722,7 +737,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         return patientIDToDNAIDMap;
     }
 
-    public void clearPatients(String sid,int projectId) throws SQLException, RemoteException{
+    @Override
+    public void clearPatients(String sid, int projectId) throws SQLException, RemoteException{
 
         String tablename = getPatientTablename(sid,projectId);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
@@ -732,6 +748,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ConnectionController.execute(sid, query.toString());
     }
 
+    @Override
     public List<String> parseDnaIds(String s){
         List<String> result = new ArrayList<String>();
         if(s == null) return result;
@@ -765,5 +782,4 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         String tableName = getPatientTablename(sid,pid);
         return DBUtil.fieldExists(sid, tableName,MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO);
     }
-
 }

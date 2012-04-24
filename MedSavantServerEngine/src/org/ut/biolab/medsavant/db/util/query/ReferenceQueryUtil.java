@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.db.util.query;
 
+import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,26 +27,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
-import java.rmi.RemoteException;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.db.model.Chromosome;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.AnnotationTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ChromosomeTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ReferenceTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantTablemapTableSchema;
-import org.ut.biolab.medsavant.db.model.Reference;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.AnnotationTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.ChromosomeTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.ReferenceTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantTablemapTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.model.Chromosome;
+import org.ut.biolab.medsavant.model.Reference;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.query.api.ReferenceQueryUtilAdapter;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.ReferenceQueryUtilAdapter;
 
 /**
  *
@@ -65,6 +63,7 @@ public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject imple
     public ReferenceQueryUtil() throws RemoteException {super();}
 
 
+    @Override
     public List<Reference> getReferences(String sid) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ReferenceTableSchema;
@@ -86,6 +85,7 @@ public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject imple
         return results;
     }
 
+    @Override
     public List<String> getReferenceNames(String sid) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ReferenceTableSchema;
@@ -103,6 +103,7 @@ public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject imple
         return results;
     }
 
+    @Override
     public int getReferenceId(String sid,String refName) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ReferenceTableSchema;
@@ -120,6 +121,7 @@ public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject imple
         }
     }
 
+    @Override
      public boolean containsReference(String sid,String name) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ReferenceTableSchema;
@@ -133,10 +135,12 @@ public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject imple
         return rs.next();
     }
 
+    @Override
     public int addReference(String sid,String name, List<Chromosome> contigs) throws SQLException {
         return addReference(sid,name, contigs, null);
     }
 
+    @Override
     public int addReference(String sid,String name, List<Chromosome> contigs, String url) throws SQLException {
 
         TableSchema referenceTable = MedSavantDatabase.ReferenceTableSchema;
@@ -175,6 +179,7 @@ public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject imple
         return refid;
     }
 
+    @Override
      public boolean removeReference(String sid,int refid) throws SQLException {
 
          TableSchema annotationTable = MedSavantDatabase.AnnotationTableSchema;
@@ -207,6 +212,7 @@ public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject imple
          return true;
     }
 
+    @Override
     public List<String> getReferencesForProject(String sid,int projectid) throws SQLException {
 
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
@@ -236,6 +242,7 @@ public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject imple
         return references;
     }
 
+    @Override
     public List<Integer> getReferenceIdsForProject(String sid,int projectid) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
@@ -256,6 +263,7 @@ public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject imple
         return references;
     }
 
+    @Override
     public Map<Integer, String> getReferencesWithoutTablesInProject(String sid,int projectid) throws SQLException {
 
         ResultSet rs = ConnectionController.executeQuery(sid,
@@ -274,6 +282,7 @@ public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject imple
         return result;
     }
 
+    @Override
     public String getReferenceUrl(String sid,int referenceid) throws SQLException {
 
 
@@ -289,6 +298,7 @@ public class ReferenceQueryUtil extends MedSavantServerUnicastRemoteObject imple
         return rs.getString(1);
     }
 
+    @Override
     public List<Chromosome> getChromosomes(String sid,int referenceid) throws SQLException {
 
 

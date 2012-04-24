@@ -1,21 +1,38 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 package org.ut.biolab.medsavant.controller;
 
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.format.AnnotationFormat;
-import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.format.VariantFormat;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.format.AnnotationFormat;
+import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -105,9 +122,9 @@ public class ProjectController implements ReferenceListener {
         try {
             if (MedSavantClient.ProjectQueryUtilAdapter.containsProject(LoginController.sessionId, projectName)) {
 
-                if(MedSavantClient.ProjectQueryUtilAdapter.containsProject(LoginController.sessionId, this.currentProjectName) &&
-                        FilterController.hasFiltersApplied()){
-                    if(!DialogUtils.confirmChangeReference(true)){
+                if (MedSavantClient.ProjectQueryUtilAdapter.containsProject(LoginController.sessionId, this.currentProjectName) &&
+                        FilterController.hasFiltersApplied()) {
+                    if (!DialogUtils.confirmChangeReference(true)) {
                         return false;
                     }
                 }
@@ -183,7 +200,7 @@ public class ProjectController implements ReferenceListener {
         this.projectListeners.add(l);
     }
 
-    public String getCurrentVariantTableName(){
+    public String getCurrentVariantTableName() {
         try {
             return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectId, ReferenceController.getInstance().getCurrentReferenceId(), true);
         } catch (SQLException ex) {
@@ -194,7 +211,7 @@ public class ProjectController implements ReferenceListener {
         return null;
     }
 
-    public String getCurrentVariantSubTableName(){
+    public String getCurrentVariantSubTableName() {
         try {
             return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectId, ReferenceController.getInstance().getCurrentReferenceId(), true, true);
         } catch (SQLException ex) {
@@ -205,15 +222,15 @@ public class ProjectController implements ReferenceListener {
         return null;
     }
 
-    public DbTable getCurrentVariantTable(){
+    public DbTable getCurrentVariantTable() {
         return currentVariantTableSchema.getTable();
     }
 
-    public TableSchema getCurrentVariantTableSchema(){
+    public TableSchema getCurrentVariantTableSchema() {
         return currentVariantTableSchema;
     }
 
-    private void setCurrentVariantTable(){
+    private void setCurrentVariantTable() {
         try {
             //this.currentTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentTableName());
             this.currentVariantTableSchema =  MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, getCurrentVariantTableName());
@@ -224,11 +241,11 @@ public class ProjectController implements ReferenceListener {
         }
     }
 
-    public String getCurrentPatientTableName(){
+    public String getCurrentPatientTableName() {
         try {
             return MedSavantClient.PatientQueryUtilAdapter.getPatientTablename(LoginController.sessionId, currentProjectId);
         } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
+            ClientMiscUtils.checkSQLException(ex);
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
             Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
@@ -236,15 +253,15 @@ public class ProjectController implements ReferenceListener {
         return null;
     }
 
-    public DbTable getCurrentPatientTable(){
+    public DbTable getCurrentPatientTable() {
         return currentPatientTableSchema.getTable();
     }
 
-    public TableSchema getCurrentPatientTableSchema(){
+    public TableSchema getCurrentPatientTableSchema() {
         return currentPatientTableSchema;
     }
 
-    private void setCurrentPatientTable(){
+    private void setCurrentPatientTable() {
         try {
 
             DbColumn dbc = new DbColumn(null, "A", "B", 1);
@@ -257,8 +274,8 @@ public class ProjectController implements ReferenceListener {
         }
     }
 
-    public AnnotationFormat[] getCurrentAnnotationFormats(){
-        if(currentAnnotationFormats == null){
+    public AnnotationFormat[] getCurrentAnnotationFormats() {
+        if (currentAnnotationFormats == null) {
             try {
                 int[] annotationIds = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationIds(LoginController.sessionId, this.currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
                 AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+2];
@@ -273,7 +290,7 @@ public class ProjectController implements ReferenceListener {
                                 currentProjectId,
                                 ReferenceController.getInstance().getCurrentReferenceId(),
                                 true)));
-                for(int i = 0; i < annotationIds.length; i++){
+                for(int i = 0; i < annotationIds.length; i++) {
                     af[i+2] = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationFormat(LoginController.sessionId, annotationIds[i]);
                 }
                 currentAnnotationFormats = af;
@@ -286,12 +303,12 @@ public class ProjectController implements ReferenceListener {
         return currentAnnotationFormats;
     }
 
-    public List<CustomField> getCurrentPatientFormat(){
-        if(currentPatientFormat == null){
+    public List<CustomField> getCurrentPatientFormat() {
+        if (currentPatientFormat == null) {
             try {
                 currentPatientFormat = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, currentProjectId);
             } catch (SQLException ex) {
-                MiscUtils.checkSQLException(ex);
+                ClientMiscUtils.checkSQLException(ex);
                 Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
             } catch (RemoteException ex) {
                 Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
@@ -300,18 +317,21 @@ public class ProjectController implements ReferenceListener {
         return currentPatientFormat;
     }
 
-    public void setCurrentAnnotationFormats(AnnotationFormat[] formats){
-        this.currentAnnotationFormats = formats;
+    public void setCurrentAnnotationFormats(AnnotationFormat[] formats) {
+        currentAnnotationFormats = formats;
     }
 
+    @Override
     public void referenceChanged(String referenceName) {
         setCurrentVariantTable();
         setCurrentAnnotationFormats(null);
     }
 
+    @Override
     public void referenceAdded(String name) {
     }
 
+    @Override
     public void referenceRemoved(String name) {
     }
 

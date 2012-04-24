@@ -1,8 +1,26 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.db.util.query;
+
+import java.rmi.RemoteException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
@@ -10,22 +28,16 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import java.rmi.RemoteException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.model.Range;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
+
+import org.ut.biolab.medsavant.db.ColumnType;
+import org.ut.biolab.medsavant.db.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.query.api.QueryUtilAdapter;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.QueryUtilAdapter;
 
 /**
  *
@@ -45,13 +57,15 @@ public class QueryUtil extends MedSavantServerUnicastRemoteObject implements Que
     public QueryUtil() throws RemoteException {super();}
 
 
+    @Override
     public List<String> getDistinctValuesForColumn(String sid,TableSchema t, DbColumn col) throws SQLException {
         return getDistinctValuesForColumn(sid,t, col, -1);
     }
 
+    @Override
     public List<String> getDistinctValuesForColumn(String sid,TableSchema t, DbColumn col, int limit) throws SQLException {
 
-        if (t.isNumeric(t.getColumnType(t.getColumnIndex(col)))) {
+        if (t.getColumnType(t.getColumnIndex(col)).isNumeric()) {
             throw new FatalDatabaseException("Can't get distinct values for numeric field : " + col.getAbsoluteName());
         }
 
@@ -81,9 +95,10 @@ public class QueryUtil extends MedSavantServerUnicastRemoteObject implements Que
     }
 
 
+    @Override
     public Range getExtremeValuesForColumn(String sid,TableSchema t, DbColumn col) throws SQLException {
 
-        if (!t.isNumeric(t.getColumnType(t.getColumnIndex(col)))) {
+        if (!t.getColumnType(t.getColumnIndex(col)).isNumeric()) {
             throw new FatalDatabaseException("Can't get extreme values for non-numeric field : " + col.getAbsoluteName());
         }
 
@@ -123,6 +138,7 @@ public class QueryUtil extends MedSavantServerUnicastRemoteObject implements Que
     }
 
 
+    @Override
     public List<String> getBAMFilesForDNAIds(List<String> dnaIds) throws SQLException, NonFatalDatabaseException {
 
 
@@ -151,6 +167,7 @@ public class QueryUtil extends MedSavantServerUnicastRemoteObject implements Que
         return new ArrayList<String>();
     }
 
+    @Override
     public String getGenomeBAMPathForVersion(String genomeVersion) throws SQLException, NonFatalDatabaseException {
 
         //todo:dbref
@@ -178,6 +195,7 @@ public class QueryUtil extends MedSavantServerUnicastRemoteObject implements Que
 
 
 
+    @Override
     public Condition getRangeCondition(DbColumn col, Range r) {
         Condition[] results = new Condition[2];
         results[0] = BinaryCondition.greaterThan(col, r.getMin(), true);
@@ -186,6 +204,7 @@ public class QueryUtil extends MedSavantServerUnicastRemoteObject implements Que
         return ComboCondition.and(results);
     }
 
+    @Override
     public int getNumRecordsInTable(String sid,String name) throws SQLException, RemoteException {
 
         if (name == null) { return -1; }

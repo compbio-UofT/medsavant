@@ -1,17 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 
-/*
- * AddPatientsForm.java
- *
- * Created on 29-Jul-2011, 1:34:59 PM
- */
 package org.ut.biolab.medsavant.view.dialog;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -30,16 +34,21 @@ import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+
+import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
-import org.ut.biolab.medsavant.db.util.shared.ExtensionFileFilter;
-import org.ut.biolab.medsavant.db.util.shared.ExtensionsFileFilter;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.db.ColumnType;
+import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
+
 
 /**
  *
@@ -59,10 +68,10 @@ public class AddPatientsForm extends javax.swing.JDialog {
         this.setVisible(true);          
     }
     
-    private void createTable(){       
+    private void createTable() {       
         scrollPane.getViewport().setBackground(Color.white);
         
-        DefaultTableModel model = new DefaultTableModel(){
+        DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int col) {  
                 if (col == 0) return false;
@@ -74,11 +83,11 @@ public class AddPatientsForm extends javax.swing.JDialog {
         
         try {
             List<CustomField> fields = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
-            for(int i = 1; i < fields.size(); i++){ //skip patient id
+            for (int i = 1; i < fields.size(); i++) { //skip patient id
                 model.addRow(new Object[]{fields.get(i), ""});
             }
         } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
+            ClientMiscUtils.checkSQLException(ex);
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -88,6 +97,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         table.setModel(model);    
         
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 setTip();
             }
@@ -96,14 +106,14 @@ public class AddPatientsForm extends javax.swing.JDialog {
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
     }
     
-    private void setTip(){
+    private void setTip() {
         int index = table.getSelectedRow();
         Object o = table.getValueAt(index, 0);
-        if(o == null) return;
+        if (o == null) return;
 
         CustomField f = (CustomField)o;
         String s = f.getAlias() + " | " + f.getColumnType().toString().toLowerCase();
-        switch(f.getColumnType()){
+        switch(f.getColumnType()) {
             case DATE:
                 s += "(yyyy-mm-dd)";
                 break;
@@ -118,9 +128,9 @@ public class AddPatientsForm extends javax.swing.JDialog {
 
         List<String> values = new ArrayList<String>();
         List<CustomField> cols = new ArrayList<CustomField>();
-        for(int i = 0; i < table.getRowCount(); i++){
+        for (int i = 0; i < table.getRowCount(); i++) {
             String value = (String) table.getModel().getValueAt(i, 1);
-            if(value != null && !value.equals("")){
+            if (value != null && !value.equals("")) {
                 cols.add((CustomField) table.getModel().getValueAt(i, 0));
                 values.add((String)table.getModel().getValueAt(i, 1));
             }           
@@ -135,8 +145,8 @@ public class AddPatientsForm extends javax.swing.JDialog {
         clearTable();    
     }
     
-    private void clearTable(){
-        for(int i = 0; i < table.getRowCount(); i++){
+    private void clearTable() {
+        for (int i = 0; i < table.getRowCount(); i++) {
             table.getModel().setValueAt("", i, 1);
         }
     }
@@ -144,7 +154,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
     private void generateTemplate() throws SQLException, RemoteException {
         
         File file = DialogUtils.chooseFileForSave("Export Patients", "template.csv", ExtensionFileFilter.createFilters(new String[]{"csv"}), null);
-        if(file == null) return;
+        if (file == null) return;
         
         progressBar.setIndeterminate(true);
         progressMessage.setText("Exporting Patients");
@@ -158,15 +168,15 @@ public class AddPatientsForm extends javax.swing.JDialog {
             
             //write header
             String[] headerList = new String[fields.size()-1];
-            for(int i = 1; i < fields.size(); i++){ //skip patientId
+            for (int i = 1; i < fields.size(); i++) { //skip patientId
                 headerList[i-1] = fields.get(i).getAlias(); 
             }
             out.writeNext(headerList);
             
             //write patients
-            for(Object[] patient : patients){
+            for (Object[] patient : patients) {
                 String[] line = new String[patient.length-1];
-                for(int i = 1; i < patient.length; i++){
+                for (int i = 1; i < patient.length; i++) {
                     line[i-1] = valueToString(patient[i]);
                 }                
                 out.writeNext(line);
@@ -175,7 +185,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
             out.close();
             writer.close();
             progressMessage.setText("Export successful");
-        } catch (IOException ex){
+        } catch (IOException ex) {
             ex.printStackTrace();
             progressMessage.setText("Error exporting patients");
         } 
@@ -183,8 +193,8 @@ public class AddPatientsForm extends javax.swing.JDialog {
         progressBar.setValue(0);
     }
     
-    private String valueToString(Object val){
-        if(val == null){
+    private String valueToString(Object val) {
+        if (val == null) {
             return "";
         } 
         return val.toString();
@@ -193,7 +203,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
     private void importFile() throws SQLException, RemoteException {
         
         //Warn that data will be replaced
-        if(JOptionPane.NO_OPTION == JOptionPane.showConfirmDialog(
+        if (JOptionPane.NO_OPTION == JOptionPane.showConfirmDialog(
                 null, 
                 "<html>Importing patients will REPLACE all existing patients.<br>Are you sure you want to do this?</html>", 
                 "Confirm", 
@@ -204,14 +214,15 @@ public class AddPatientsForm extends javax.swing.JDialog {
         MedSavantClient.PatientQueryUtilAdapter.clearPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
                 
         final File file = DialogUtils.chooseFileForOpen("Import File", new ExtensionsFileFilter(new String[]{"csv"}), null);
-        if(file == null) return;
+        if (file == null) return;
         
         progressBar.setIndeterminate(true);
         progressMessage.setText("Importing Patients");
         setButtonsEnabled(false);
         
-        Thread t = new Thread(){
-            public void run(){
+        Thread t = new Thread() {
+            @Override
+            public void run() {
 
                 try {
                     
@@ -221,18 +232,18 @@ public class AddPatientsForm extends javax.swing.JDialog {
                     CSVReader in = new CSVReader(bufferedReader);
 
                     String[] header = in.readNext();
-                    if(header == null) return;
+                    if (header == null) return;
                     List<CustomField> headerToField = new ArrayList<CustomField>();
-                    for(String s : header){
+                    for (String s : header) {
                         boolean found = false;
-                        for(CustomField f : fields){
-                            if(s.equals(f.getAlias())){
+                        for (CustomField f : fields) {
+                            if (s.equals(f.getAlias())) {
                                 headerToField.add(f);
                                 found = true;
                                 break;
                             }
                         }
-                        if(!found){
+                        if (!found) {
                             JOptionPane.showMessageDialog(
                                         null, 
                                         "<HTML>The headers in this file do not match those in the database.<BR>Please regenerate the template file.</HTML>", 
@@ -247,19 +258,19 @@ public class AddPatientsForm extends javax.swing.JDialog {
                     }
 
                     String[] line;
-                    while((line = in.readNext()) != null){
+                    while ((line = in.readNext()) != null) {
                         List<String> values = new ArrayList<String>();
                         values.addAll(Arrays.asList(line));
 
                         // replace empty strings for nulls and booleans with 0,1
                         for (int i = 0; i < values.size(); i++) {
                             String s = values.get(i);
-                            if(s.equals("") || s.equals("null")){
+                            if (s.equals("") || s.equals("null")) {
                                 values.set(i, null);
-                            } else if (headerToField.get(i).getColumnType() == ColumnType.BOOLEAN){
-                                if(s.toLowerCase().equals("true")){
+                            } else if (headerToField.get(i).getColumnType() == ColumnType.BOOLEAN) {
+                                if (s.toLowerCase().equals("true")) {
                                     values.set(i, "1");
-                                } else if (s.toLowerCase().equals("false")){
+                                } else if (s.toLowerCase().equals("false")) {
                                     values.set(i, "0");
                                 }
                             }
@@ -272,7 +283,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
                     bufferedReader.close();
                     progressMessage.setText("Import successful");
                 } catch (SQLException ex) {
-                    MiscUtils.checkSQLException(ex);
+                    ClientMiscUtils.checkSQLException(ex);
                 } catch (Exception ex) {           
                     ex.printStackTrace();
                     progressMessage.setText("Error importing patients");
@@ -288,14 +299,14 @@ public class AddPatientsForm extends javax.swing.JDialog {
              
     }
     
-    private void setButtonsEnabled(boolean enabled){
+    private void setButtonsEnabled(boolean enabled) {
         doneButton.setEnabled(enabled);
         jButton1.setEnabled(enabled);
         jButton2.setEnabled(enabled);
         jButton3.setEnabled(enabled);
     }
 
-    private void close(){
+    private void close() {
         ViewController.getInstance().refreshView();
         this.setVisible(false);
         this.dispose();
@@ -452,7 +463,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         try {
             addPatient();
         } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
+            ClientMiscUtils.checkSQLException(ex);
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -463,7 +474,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         try {
             generateTemplate();
         } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
+            ClientMiscUtils.checkSQLException(ex);
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -474,7 +485,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         try {
             importFile();
         } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
+            ClientMiscUtils.checkSQLException(ex);
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
             Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);

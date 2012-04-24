@@ -26,10 +26,10 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.model.ProjectDetails;
+import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -86,7 +86,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                             ProjectController.getInstance().fireProjectAddedEvent(MedSavantClient.ProjectQueryUtilAdapter.getProjectName(LoginController.sessionId, projectId));
                         }
                     } catch (SQLException ex) {
-                        MiscUtils.checkSQLException(ex);
+                        ClientMiscUtils.checkSQLException(ex);
                         Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
                     } catch (RemoteException ex) {
                         Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);

@@ -23,20 +23,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.model.Chromosome;
-import org.ut.biolab.medsavant.db.model.UserLevel;
-import org.ut.biolab.medsavant.db.settings.Settings;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.model.Chromosome;
+import org.ut.biolab.medsavant.model.UserLevel;
+import org.ut.biolab.medsavant.db.Settings;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.api.SetupAdapter;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.SetupAdapter;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.SessionController;
 
 /**

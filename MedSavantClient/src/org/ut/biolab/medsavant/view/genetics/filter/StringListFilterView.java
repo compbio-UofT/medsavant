@@ -1,60 +1,61 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.jidesoft.list.QuickListFilterField;
-import com.jidesoft.swing.SearchableUtils;
-import com.jidesoft.list.FilterableCheckBoxList;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Position;
+
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.jidesoft.list.QuickListFilterField;
+import com.jidesoft.swing.SearchableUtils;
+import com.jidesoft.list.FilterableCheckBoxList;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ChromosomeComparator;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord.VariantType;
 import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
-import org.ut.biolab.medsavant.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+
 
 /**
  *
@@ -94,7 +95,7 @@ public class StringListFilterView extends FilterView {
     private Table whichTable;
     private List<String> appliedValues;
 
-    public void applyFilter(List<String> list) {
+    public final void applyFilter(List<String> list) {
 
         ArrayList<Integer> indiciesOfItemsFromListInFilterableList = new ArrayList<Integer>();
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
@@ -155,7 +156,7 @@ public class StringListFilterView extends FilterView {
         } else if (columnname.equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
             uniq.addAll(Arrays.asList(
                     new String[]{
-                        MiscUtils.GENDER_MALE, MiscUtils.GENDER_FEMALE, MiscUtils.GENDER_UNKNOWN
+                        ClientMiscUtils.GENDER_MALE, ClientMiscUtils.GENDER_FEMALE, ClientMiscUtils.GENDER_UNKNOWN
                     }));
         } else {
             final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
@@ -164,6 +165,7 @@ public class StringListFilterView extends FilterView {
                     true);
             Thread t = new Thread() {
 
+                @Override
                 public void run() {
                     try {
                         initHelper(container, MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(LoginController.sessionId, tablename, columnname));
@@ -301,7 +303,7 @@ public class StringListFilterView extends FilterView {
                 int[] indices = filterableList.getCheckBoxListSelectedIndices();
                 for (int i : indices) {
                     if (columnname.equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
-                        acceptableValues.add(Integer.toString(MiscUtils.stringToGender(filterableList.getModel().getElementAt(i).toString())));
+                        acceptableValues.add(Integer.toString(ClientMiscUtils.stringToGender(filterableList.getModel().getElementAt(i).toString())));
                     } else {
                         acceptableValues.add(filterableList.getModel().getElementAt(i).toString());
                     }
@@ -368,7 +370,7 @@ public class StringListFilterView extends FilterView {
                                 } catch (NonFatalDatabaseException ex) {
                                     Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
                                 } catch (SQLException ex) {
-                                    MiscUtils.checkSQLException(ex);
+                                    ClientMiscUtils.checkSQLException(ex);
                                     Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
                                 } catch (RemoteException ex) {
                                     Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);

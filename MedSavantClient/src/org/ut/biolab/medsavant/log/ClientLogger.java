@@ -1,6 +1,6 @@
 package org.ut.biolab.medsavant.log;
 
-import org.ut.biolab.medsavant.db.log.BriefLogFormatter;
+import org.ut.biolab.medsavant.logging.BriefLogFormatter;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.logging.FileHandler;

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,19 +15,26 @@
  */
 package org.ut.biolab.medsavant.view.genetics.charts;
 
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JPanel;
+import javax.swing.*;
 
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.chart.Chart;
 import com.jidesoft.chart.ChartType;
 import com.jidesoft.chart.Legend;
@@ -44,42 +51,23 @@ import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.JLayeredPane;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import net.ericaro.surfaceplotter.JSurfacePanel;
 import net.ericaro.surfaceplotter.Mapper;
 import net.ericaro.surfaceplotter.ProgressiveSurfaceModel;
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.FilterController;
 
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.model.Range;
-import org.ut.biolab.medsavant.db.model.RangeCondition;
-import org.ut.biolab.medsavant.db.model.ScatterChartEntry;
-import org.ut.biolab.medsavant.db.model.ScatterChartMap;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.*;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.model.RangeCondition;
+import org.ut.biolab.medsavant.model.ScatterChartEntry;
+import org.ut.biolab.medsavant.model.ScatterChartMap;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -194,20 +182,20 @@ public class SummaryChart extends JLayeredPane {
         //updateDataAndDrawChart();
     }
     
-    /*public void setScatterChart(String aliasX, String aliasY){
+    /*public void setScatterChart(String aliasX, String aliasY) {
         this.scatterAliasX = aliasX;
         this.scatterAliasY = aliasY;
     }*/
     
-    public void setScatterChartMapGenerator(ChartMapGenerator cmg){
+    public void setScatterChartMapGenerator(ChartMapGenerator cmg) {
         mapGeneratorScatter = cmg;
     }
     
-    public void setIsScatterChart(boolean scatter){
+    public void setIsScatterChart(boolean scatter) {
         isScatter = scatter;
     }
     
-    public boolean isScatterChart(){
+    public boolean isScatterChart() {
         return isScatter;
     }
 
@@ -234,14 +222,14 @@ public class SummaryChart extends JLayeredPane {
         setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
 
         //begin creating chart
-        if(isScatter){
+        if (isScatter) {
             new ScatterChartMapWorker().execute();
         } else {
             new ChartMapWorker().execute();
         }
             
-        /*Thread t = new Thread(){
-            public void run(){
+        /*Thread t = new Thread() {
+            public void run() {
                 removeAll();
                 add(waitPanel, c, JLayeredPane.MODAL_LAYER);
                 waitPanel.setVisible(true);
@@ -294,6 +282,7 @@ public class SummaryChart extends JLayeredPane {
 
         chart.addMouseListener(new MouseAdapter() {
 
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     JPopupMenu popup = createPopup(chart);
@@ -325,7 +314,7 @@ public class SummaryChart extends JLayeredPane {
             }
         } else {
             filteredChartMap.undoSortNumerically();
-            if(this.showComparedToOriginal){
+            if (this.showComparedToOriginal) {
                 chartMaps[1].undoSortNumerically();
             }
         }
@@ -435,20 +424,20 @@ public class SummaryChart extends JLayeredPane {
         //Create x axis
         int max = 0;
         CategoryRange<String> range = new CategoryRange<String>();
-        for(int i = 0; i < entries.getNumX(); i++){
+        for (int i = 0; i < entries.getNumX(); i++) {
             range.add(new ChartCategory(entries.getXValueAt(i)));
         }
         
         //create models
         DefaultChartModel[] models = new DefaultChartModel[entries.getNumY()];
-        for(int i = 0; i < entries.getNumY(); i++){
+        for (int i = 0; i < entries.getNumY(); i++) {
             models[i] = new DefaultChartModel();
         }
         for (int i = 0; i < entries.getNumX(); i++) {
             //ScatterChartEntry[] x = entries[i];
-            for(int j = 0; j < entries.getNumY(); j++){
+            for (int j = 0; j < entries.getNumY(); j++) {
                 ScatterChartEntry entry = entries.getValueAt(i, j);
-                if(entry != null){
+                if (entry != null) {
                     max = Math.max(max, entry.getFrequency());
                     models[j].addPoint(new ChartPoint(range.getCategoryValues().get(i), entry.getFrequency()));
                     models[j].setName(entry.getYRange());
@@ -459,7 +448,7 @@ public class SummaryChart extends JLayeredPane {
         }
         
         //add models
-        for(int i = 0; i < models.length; i++){
+        for (int i = 0; i < models.length; i++) {
             chart.addModel(models[i], new ChartStyle(ViewUtil.getColor(i, models.length), true, mapGenerator.isNumeric()));
         }
         
@@ -482,7 +471,7 @@ public class SummaryChart extends JLayeredPane {
         
     }
     
-    private synchronized void drawSurface(final ScatterChartMap entries){
+    private synchronized void drawSurface(final ScatterChartMap entries) {
 
         String[] firstX = entries.getXValueAt(0).split("[^(\\d|\\.|E)]");
         String[] firstY = entries.getYValueAt(0).split("[^(\\d|\\.|E)]");
@@ -519,12 +508,12 @@ public class SummaryChart extends JLayeredPane {
                     int binX = (int)(x / binSizeX);
                     int binY = (int)(y / binSizeY);
                     ScatterChartEntry entry = entries.getValueAt(binX, binY);
-                    if(entry == null) {
+                    if (entry == null) {
                         return 0;
                     } else {
                         return entry.getFrequency();
                     }
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return x;
@@ -579,18 +568,19 @@ public class SummaryChart extends JLayeredPane {
                 
                 return result;
             } catch (SQLException ex) {
-                MiscUtils.checkSQLException(ex);
+                ClientMiscUtils.checkSQLException(ex);
                 throw ex;
             }             
         }
 
+        @Override
         public void showSuccess(ChartFrequencyMap[] result) {
             if (result != null && result[0] != null && result[0].getEntries().size() < 200 && !result[0].getEntries().isEmpty()) {
                 Chart chart = drawChart(result);
                 add(chart, c, JLayeredPane.DEFAULT_LAYER);
-            } else if (result != null && result[0] != null && result[0].getEntries().isEmpty()){
+            } else if (result != null && result[0] != null && result[0].getEntries().isEmpty()) {
                 add(ViewUtil.getMessagePanelBig("No variants pass query"), c);
-            } else if (result != null && result[0] != null && result[0].getEntries().size() >= 200){
+            } else if (result != null && result[0] != null && result[0].getEntries().size() >= 200) {
                 add(ViewUtil.getMessagePanelBig("Too many values to display chart"), c);
             } else {
                 add(ViewUtil.getMessagePanelBig("Error creating chart"), c);
@@ -600,6 +590,7 @@ public class SummaryChart extends JLayeredPane {
             revalidate();
         }
 
+        @Override
         public void showProgress(double prog) {
             if (prog == 1.0) {
                 mapWorker = null;
@@ -624,29 +615,29 @@ public class SummaryChart extends JLayeredPane {
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectId(),
                     generator.getFilterId());
-            if(generator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
-                map = MiscUtils.modifyGenderMap(map);
+            if (generator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
+                map = ClientMiscUtils.modifyGenderMap(map);
             }
 
             List<String> rangesA = new ArrayList<String>();
-            for(Object o : map.keySet()){
+            for (Object o : map.keySet()) {
                 rangesA.add(o.toString());
             }
             List<String> rangesB = (isX ? scatterMap.getYRanges() : scatterMap.getXRanges());
 
             List<ScatterChartEntry> entries = new ArrayList<ScatterChartEntry>();
-            for(Object a : map.keySet()){
+            for (Object a : map.keySet()) {
                 List<Integer> indices = new ArrayList<Integer>();
-                for(String dnaId : map.get(a)){
+                for (String dnaId : map.get(a)) {
                     int index = (isX ? scatterMap.getIndexOnX(dnaId) : scatterMap.getIndexOnY(dnaId));
-                    if(index != -1){
+                    if (index != -1) {
                         indices.add(index);
                     }
                 }
-                for(int b = 0; b < rangesB.size(); b++){
+                for (int b = 0; b < rangesB.size(); b++) {
                     int sum = 0;
-                    for(Integer index : indices){
-                        if((isX ? scatterMap.getValueAt(index, b) : scatterMap.getValueAt(b, index)) != null){
+                    for (Integer index : indices) {
+                        if ((isX ? scatterMap.getValueAt(index, b) : scatterMap.getValueAt(b, index)) != null) {
                             sum += (isX ? scatterMap.getValueAt(index, b) : scatterMap.getValueAt(b, index)).getFrequency();
                         }
                     }
@@ -669,10 +660,10 @@ public class SummaryChart extends JLayeredPane {
                 //get column names
                 String columnX = mapGenerator.getFilterId();
                 String columnY = mapGeneratorScatter.getFilterId();
-                if(mapGenerator.getTable() == Table.PATIENT){
+                if (mapGenerator.getTable() == Table.PATIENT) {
                     columnX = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
                 }
-                if(mapGeneratorScatter.getTable() == Table.PATIENT){
+                if (mapGeneratorScatter.getTable() == Table.PATIENT) {
                     columnY = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
                 }
                                 
@@ -690,27 +681,28 @@ public class SummaryChart extends JLayeredPane {
                 //TODO: re-mapping below works only for categorical patient fields. Generalize for numeric/categorical.
                 
                 //map for patient field
-                if(mapGenerator.getTable() == Table.PATIENT){
+                if (mapGenerator.getTable() == Table.PATIENT) {
                     scatterMap = mapPatientField(scatterMap, mapGenerator, true);
                 }
                 
-                if(mapGeneratorScatter.getTable() == Table.PATIENT){
+                if (mapGeneratorScatter.getTable() == Table.PATIENT) {
                     scatterMap = mapPatientField(scatterMap, mapGeneratorScatter, false);
                 }
                 
                 return scatterMap;
                 
             } catch (SQLException ex) {
-                MiscUtils.checkSQLException(ex);
+                ClientMiscUtils.checkSQLException(ex);
                 throw ex;
             }
         }
 
+        @Override
         public void showSuccess(ScatterChartMap result) {
-            if(mapGenerator.isNumeric() 
+            if (mapGenerator.isNumeric() 
                     && mapGeneratorScatter.isNumeric() 
                     && !mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER) 
-                    && !mapGeneratorScatter.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)){
+                    && !mapGeneratorScatter.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
                 drawSurface(result);
             } else {
                 drawScatterChart(result);
@@ -719,6 +711,7 @@ public class SummaryChart extends JLayeredPane {
             revalidate();
         }
 
+        @Override
         public void showProgress(double prog) {
             if (prog == 1.0) {
                 mapWorker = null;
@@ -734,6 +727,7 @@ public class SummaryChart extends JLayeredPane {
             this.base = base;
         }
 
+        @Override
         public int compare(Object a, Object b) {
 
             if ((Integer) base.get(a) < (Integer) base.get(b)) {
@@ -748,10 +742,12 @@ public class SummaryChart extends JLayeredPane {
 
     class LogTransform implements InvertibleTransform<Double> {
 
+        @Override
         public Double transform(Double pos) {
             return Math.log10(pos);
         }
 
+        @Override
         public Double inverseTransform(Double t) {
             return Math.pow(10, t);
         }
@@ -765,6 +761,7 @@ public class SummaryChart extends JLayeredPane {
         JMenuItem filter1Item = new JMenuItem("Filter by Selection" + (mapGenerator.isNumeric() ? "" : "(s)"));
         filter1Item.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
 
                 ThreadController.getInstance().cancelWorkers(pageName);
@@ -809,7 +806,7 @@ public class SummaryChart extends JLayeredPane {
                                     mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
                                     ComboCondition.or(conditions));
                         } catch (SQLException ex) {
-                            MiscUtils.checkSQLException(ex);
+                            ClientMiscUtils.checkSQLException(ex);
                         } catch (Exception ex) {
                             Logger.getLogger(SummaryChart.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -833,7 +830,7 @@ public class SummaryChart extends JLayeredPane {
                             if (mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
                                 List<String> values1 = new ArrayList<String>();
                                 for (String s : values) {
-                                    values1.add(Integer.toString(MiscUtils.stringToGender(s)));
+                                    values1.add(Integer.toString(ClientMiscUtils.stringToGender(s)));
                                 }
                                 values = values1;
                             }
@@ -852,7 +849,7 @@ public class SummaryChart extends JLayeredPane {
                                     mapGenerator.getName() + ": " + values.size() + " selection(s)",
                                     ComboCondition.or(conditions));
                         } catch (SQLException ex) {
-                            MiscUtils.checkSQLException(ex);
+                            ClientMiscUtils.checkSQLException(ex);
                         } catch (Exception ex) {
                             Logger.getLogger(SummaryChart.class.getName()).log(Level.SEVERE, null, ex);
                         }

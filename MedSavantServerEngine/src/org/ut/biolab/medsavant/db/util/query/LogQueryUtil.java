@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,8 +16,12 @@
 
 package org.ut.biolab.medsavant.db.util.query;
 
+import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
@@ -25,22 +29,18 @@ import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 
-import java.rmi.RemoteException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ProjectTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ReferenceTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ServerLogTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
-import org.ut.biolab.medsavant.db.model.AnnotationLog;
-import org.ut.biolab.medsavant.db.model.GeneralLog;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.ProjectTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.ReferenceTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.ServerLogTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.model.AnnotationLog;
+import org.ut.biolab.medsavant.model.GeneralLog;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.query.api.LogQueryUtilAdapter;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.LogQueryUtilAdapter;
 
 /**
  *
@@ -60,7 +60,8 @@ public class LogQueryUtil extends MedSavantServerUnicastRemoteObject implements 
     public LogQueryUtil() throws RemoteException {super();}
 
 
-    public List<GeneralLog> getClientLog(String sid,int start, int limit) throws SQLException {
+    @Override
+    public List<GeneralLog> getClientLog(String sid, int start, int limit) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         SelectQuery query = new SelectQuery();
@@ -82,7 +83,8 @@ public class LogQueryUtil extends MedSavantServerUnicastRemoteObject implements 
         return result;
     }
 
-    public List<GeneralLog> getServerLog(String sid,int start, int limit) throws SQLException {
+    @Override
+    public List<GeneralLog> getServerLog(String sid, int start, int limit) throws SQLException {
 
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         SelectQuery query = new SelectQuery();
@@ -103,7 +105,8 @@ public class LogQueryUtil extends MedSavantServerUnicastRemoteObject implements 
         return result;
     }
 
-    public List<AnnotationLog> getAnnotationLog(String sid,int start, int limit) throws SQLException {
+    @Override
+    public List<AnnotationLog> getAnnotationLog(String sid, int start, int limit) throws SQLException {
 
         TableSchema projectTable = MedSavantDatabase.ProjectTableSchema;
         TableSchema referenceTable = MedSavantDatabase.ReferenceTableSchema;
@@ -157,21 +160,24 @@ public class LogQueryUtil extends MedSavantServerUnicastRemoteObject implements 
 
     }
 
+    @Override
     public int getAnnotationLogSize(String sid) throws SQLException {
         return getLogSize(sid,MedSavantDatabase.VariantpendingupdateTableSchema, null);
     }
 
+    @Override
     public int getServerLogSize(String sid) throws SQLException {
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         return getLogSize(sid,table, BinaryConditionMS.equalTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
     }
 
+    @Override
     public int getClientLogSize(String sid) throws SQLException {
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
         return getLogSize(sid,table, BinaryCondition.notEqualTo(table.getDBColumn(ServerLogTableSchema.COLUMNNAME_OF_USER), "server"));
     }
 
-    private static int getLogSize(String sid,TableSchema table, Condition c) throws SQLException {
+    private static int getLogSize(String sid, TableSchema table, Condition c) throws SQLException {
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addCustomColumns(FunctionCall.countAll());

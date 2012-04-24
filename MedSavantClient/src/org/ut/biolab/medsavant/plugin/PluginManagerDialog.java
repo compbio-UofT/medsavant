@@ -31,8 +31,8 @@ import javax.swing.JScrollPane;
 
 import org.ut.biolab.medsavant.settings.VersionSettings;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.db.util.shared.NetworkUtils;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientNetworkUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 
@@ -58,7 +58,7 @@ public class PluginManagerDialog extends JDialog {
     private PluginManagerDialog(Window parent) {
         super(parent, "Plugin Manager", Dialog.ModalityType.APPLICATION_MODAL);
         initComponents();
-        MiscUtils.registerCancelButton(closeButton);
+        ClientMiscUtils.registerCancelButton(closeButton);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(parent);
         setResizable(false);
@@ -164,7 +164,7 @@ public class PluginManagerDialog extends JDialog {
     private void fromRepositoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fromRepositoryButtonActionPerformed
         try {
             if (repositoryBrowser == null) {
-                File file = NetworkUtils.downloadFile(VersionSettings.PLUGIN_URL, DirectorySettings.getTmpDirectory(), null);
+                File file = ClientNetworkUtils.downloadFile(VersionSettings.PLUGIN_URL, DirectorySettings.getTmpDirectory(), null);
                 repositoryBrowser = new PluginRepositoryDialog(this, "Install Plugins", "Install", file);
             }
             repositoryBrowser.setVisible(true);

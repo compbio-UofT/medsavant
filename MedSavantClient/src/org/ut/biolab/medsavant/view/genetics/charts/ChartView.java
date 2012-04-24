@@ -1,6 +1,17 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics.charts;
 
@@ -10,23 +21,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import org.ut.biolab.medsavant.controller.FilterController;
+import javax.swing.*;
+
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.format.AnnotationFormat;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultpatientTableSchema;
-import org.ut.biolab.medsavant.db.format.VariantFormat;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema.ColumnType;
+import org.ut.biolab.medsavant.db.ColumnType;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.format.AnnotationFormat;
+import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.view.genetics.charts.SummaryChart.ChartAxis;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -71,7 +74,8 @@ public class ChartView extends JPanel {
         JPanel toolbar = ViewUtil.getSubBannerPanel("Chart");
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
 
-        chartChooser1 = new JComboBox(){
+        chartChooser1 = new JComboBox() {
+            @Override
             public void addItem(Object anObject) {
                 int size = ((DefaultComboBoxModel) dataModel).getSize();
                 Object obj;
@@ -95,7 +99,7 @@ public class ChartView extends JPanel {
         chartChooser1.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                if(!init) return;
+                if (!init) return;
                 String alias = (String) chartChooser1.getSelectedItem();
                 ChartMapGenerator cmg = mapGenerators.get(alias);
                 if (alias.equals(VariantFormat.ALIAS_OF_CHROM)) {
@@ -135,7 +139,8 @@ public class ChartView extends JPanel {
         });
         toolbar.add(bScatter);
         
-        chartChooser2 = new JComboBox(){
+        chartChooser2 = new JComboBox() {
+            @Override
             public void addItem(Object anObject) {
                 int size = ((DefaultComboBoxModel) dataModel).getSize();
                 Object obj;
@@ -159,8 +164,9 @@ public class ChartView extends JPanel {
 
         chartChooser2.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
-                if(!init) return;
+                if (!init) return;
                 //updateScatterAxes();
                 sc.setScatterChartMapGenerator(mapGenerators.get((String)chartChooser2.getSelectedItem()));
                 
@@ -229,27 +235,27 @@ public class ChartView extends JPanel {
     private void addCMGs() {
 
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
-        for(AnnotationFormat af : afs){
-            for(CustomField field : af.getCustomFields()){
+        for (AnnotationFormat af : afs) {
+            for (CustomField field : af.getCustomFields()) {
                 ColumnType type = field.getColumnType();
-                if(field.isFilterable() && 
+                if (field.isFilterable() && 
                         (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER)) && 
                         !(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID) || 
                             field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID) || 
                             field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID) || 
-                            field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID))){
+                            field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID))) {
                     addCMG(VariantFieldChartMapGenerator.createVariantChart(field));
                 }
             }
         }
-        for(CustomField field : ProjectController.getInstance().getCurrentPatientFormat()){
+        for (CustomField field : ProjectController.getInstance().getCurrentPatientFormat()) {
             ColumnType type = field.getColumnType();
-            if(field.isFilterable() &&
+            if (field.isFilterable() &&
                         (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER)) && 
                         !(field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID) || 
                             field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID) ||
                             field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM) ||
-                            field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD))){
+                            field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD))) {
                 addCMG(VariantFieldChartMapGenerator.createPatientChart(field));
             }
         }
@@ -272,30 +278,35 @@ public class ChartView extends JPanel {
         bLogX = new JCheckBox("Log scale X axis");
 
         bPie.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setIsPie(!sc.isPie());
             }
         });
 
         bOriginal.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setDoesCompareToOriginal(!sc.doesCompareToOriginal());
             }
         });
 
         bSort.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setIsSorted(!sc.isSorted());
             }
         });
 
         bLogY.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setIsLogScale(!sc.isLogScaleY(), ChartAxis.Y);
             }
         });
 
         bLogX.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setIsLogScale(!sc.isLogScaleX(), ChartAxis.X);
             }
@@ -342,8 +353,8 @@ public class ChartView extends JPanel {
         }
     }
 
-    public void setIsLogScale(boolean b, ChartAxis axis){
-        if((axis == ChartAxis.Y && !bLogY.isEnabled()) || (axis == ChartAxis.X && !bLogX.isEnabled())) return;
+    public void setIsLogScale(boolean b, ChartAxis axis) {
+        if ((axis == ChartAxis.Y && !bLogY.isEnabled()) || (axis == ChartAxis.X && !bLogX.isEnabled())) return;
         sc.setIsLogScale(b, axis);
         bLogY.setSelected(sc.isLogScaleY());
         bLogX.setSelected(sc.isLogScaleX());
@@ -353,7 +364,7 @@ public class ChartView extends JPanel {
         if (bLogY.isEnabled()) {
             sc.setIsLogScaleY(!sc.isLogScaleY());
             bLogY.setSelected(sc.isLogScaleY());
-            if(sc.isLogScaleY()){
+            if (sc.isLogScaleY()) {
                 sc.setIsLogScaleX(false);
                 bLogX.setSelected(false);
             }
@@ -364,23 +375,22 @@ public class ChartView extends JPanel {
         if (bLogX.isEnabled()) {
             sc.setIsLogScaleX(!sc.isLogScaleX());
             bLogX.setSelected(sc.isLogScaleX());
-            if(sc.isLogScaleX()){
+            if (sc.isLogScaleX()) {
                 sc.setIsLogScaleY(false);
                 bLogY.setSelected(false);
             }
         }
     }*/
 
-    public void updateIfRequired(){
-        if(sc != null){
+    public void updateIfRequired() {
+        if (sc != null) {
             sc.updateIfRequired();
         }
     }
 
-    public void setUpdateRequired(boolean required){
-        if(sc != null){
+    public void setUpdateRequired(boolean required) {
+        if (sc != null) {
             sc.setUpdateRequired(required);
         }
     }
-
 }

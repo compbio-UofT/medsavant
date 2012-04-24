@@ -1,44 +1,48 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractButton;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import com.healthmarketscience.sqlbuilder.Condition;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+
 
 /**
  *
@@ -57,7 +61,7 @@ public class BooleanFilterView extends FilterView{
     public BooleanFilterView(FilterState state, int queryId) throws SQLException {
         this(new JPanel(), state.getId(), queryId, state.getName(), Table.valueOf(state.getValues().get("table")));
         String values = state.getValues().get("values");
-        if(values != null){
+        if (values != null) {
             List<String> l = new ArrayList<String>();
             Collections.addAll(l, values.split(";;;"));
             applyFilter(l);
@@ -71,8 +75,8 @@ public class BooleanFilterView extends FilterView{
     private Table whichTable;
     private List<String> appliedValues;
 
-    public void applyFilter(List<String> list){
-        for(JCheckBox box : boxes){
+    public void applyFilter(List<String> list) {
+        for (JCheckBox box : boxes) {
             box.setSelected((box.getText().equals("True") && list.contains("1")) || (box.getText().equals("False") && list.contains("0")));
         }
         al.actionPerformed(new ActionEvent(this, 0, null));
@@ -101,6 +105,7 @@ public class BooleanFilterView extends FilterView{
 
         al = new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
 
                 applyButton.setEnabled(false);
@@ -119,14 +124,14 @@ public class BooleanFilterView extends FilterView{
 
                     @Override
                     public Condition[] getConditions() {
-                        if(whichTable == Table.VARIANT){
+                        if (whichTable == Table.VARIANT) {
                             Condition[] results = new Condition[acceptableValues.size()];
                             int i = 0;
                             for (String s : acceptableValues) {
                                 results[i++] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnname), s);
                             }
                             return results;
-                        } else if (whichTable == Table.PATIENT){
+                        } else if (whichTable == Table.PATIENT) {
                             try {
                                 List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForStringList(
                                         LoginController.sessionId,
@@ -136,7 +141,7 @@ public class BooleanFilterView extends FilterView{
 
                                 Condition[] results = new Condition[individuals.size()];
                                 int i = 0;
-                                for(String ind : individuals){
+                                for (String ind : individuals) {
                                     results[i++] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), ind);
                                 }
                                 return results;
@@ -144,7 +149,7 @@ public class BooleanFilterView extends FilterView{
                             } catch (NonFatalDatabaseException ex) {
                                 Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (SQLException ex) {
-                                MiscUtils.checkSQLException(ex);
+                                ClientMiscUtils.checkSQLException(ex);
                                 Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (RemoteException ex) {
                                 Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
@@ -177,6 +182,7 @@ public class BooleanFilterView extends FilterView{
             b.setSelected(true);
             b.addChangeListener(new ChangeListener() {
 
+                @Override
                 public void stateChanged(ChangeEvent e) {
                     AbstractButton abstractButton =
                             (AbstractButton) e.getSource();
@@ -202,6 +208,7 @@ public class BooleanFilterView extends FilterView{
         JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
         selectAll.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 for (JCheckBox c : boxes) {
                     c.setSelected(true);
@@ -215,6 +222,7 @@ public class BooleanFilterView extends FilterView{
 
         selectNone.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 for (JCheckBox c : boxes) {
                     c.setSelected(false);
@@ -237,11 +245,11 @@ public class BooleanFilterView extends FilterView{
     public FilterState saveState() {
         Map<String, String> map = new HashMap<String, String>();
         map.put("table", whichTable.toString());
-        if(appliedValues != null && !appliedValues.isEmpty()){
+        if (appliedValues != null && !appliedValues.isEmpty()) {
             String values = "";
-            for(int i = 0; i < appliedValues.size(); i++){
+            for (int i = 0; i < appliedValues.size(); i++) {
                 values += appliedValues.get(i);
-                if(i != appliedValues.size()-1){
+                if (i != appliedValues.size()-1) {
                     values += ";;;";
                 }
             }

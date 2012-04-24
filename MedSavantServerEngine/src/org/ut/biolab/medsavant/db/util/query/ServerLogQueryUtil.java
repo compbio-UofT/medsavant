@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,25 +16,25 @@
 
 package org.ut.biolab.medsavant.db.util.query;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import java.rmi.RemoteException;
+import java.sql.Date;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
-
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
-import java.rmi.RemoteException;
-import java.sql.Date;
-import java.sql.ResultSet;
-import org.ut.biolab.medsavant.db.log.DBLogger;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ServerLogTableSchema;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.ServerLogTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.logging.DBLogger;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.query.api.ServerLogQueryUtilAdapter;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.ServerLogQueryUtilAdapter;
 
 /**
  * @author mfiume
@@ -55,10 +55,12 @@ public class ServerLogQueryUtil extends MedSavantServerUnicastRemoteObject imple
 
     public final String SERVER_UNAME = "server";
 
+    @Override
     public void addServerLog(String sid, LogType t, String description) {
         addLog(sid,SERVER_UNAME, t, description);
     }
 
+    @Override
     public void addLog(String sid, String uname, LogType t, String description) {
         try {
             Timestamp sqlDate = new java.sql.Timestamp((new java.util.Date()).getTime());
@@ -76,6 +78,7 @@ public class ServerLogQueryUtil extends MedSavantServerUnicastRemoteObject imple
         }
     }
 
+    @Override
     public Date getDateOfLastServerLog(String sid) throws SQLException {
         TableSchema table = MedSavantDatabase.ServerlogTableSchema;
 
@@ -91,7 +94,9 @@ public class ServerLogQueryUtil extends MedSavantServerUnicastRemoteObject imple
 
         if (rs.next()) {
             Date d = new Date(rs.getTimestamp(1).getTime());
-        return d;
-        } else { return null; }
+            return d;
+        } else {
+            return null;
+        }
     }
 }

@@ -8,10 +8,10 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.ut.biolab.medsavant.db.model.Notification;
-import org.ut.biolab.medsavant.db.model.ProjectDetails;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.query.api.NotificationQueryUtilAdapter;
+import org.ut.biolab.medsavant.model.Notification;
+import org.ut.biolab.medsavant.model.ProjectDetails;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.NotificationQueryUtilAdapter;
 
 /**
  *

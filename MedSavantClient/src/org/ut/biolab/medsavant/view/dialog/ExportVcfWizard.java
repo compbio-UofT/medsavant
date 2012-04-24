@@ -1,18 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.dialog;
 
-import com.jidesoft.dialog.AbstractDialogPage;
-import com.jidesoft.dialog.ButtonEvent;
-import com.jidesoft.dialog.ButtonNames;
-import com.jidesoft.dialog.PageList;
-import com.jidesoft.wizard.AbstractWizardPage;
-import com.jidesoft.wizard.CompletionWizardPage;
-import com.jidesoft.wizard.DefaultWizardPage;
-import com.jidesoft.wizard.WizardDialog;
-import com.jidesoft.wizard.WizardStyle;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -25,13 +28,25 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+
+import com.jidesoft.dialog.AbstractDialogPage;
+import com.jidesoft.dialog.ButtonEvent;
+import com.jidesoft.dialog.ButtonNames;
+import com.jidesoft.dialog.PageList;
+import com.jidesoft.wizard.AbstractWizardPage;
+import com.jidesoft.wizard.CompletionWizardPage;
+import com.jidesoft.wizard.DefaultWizardPage;
+import com.jidesoft.wizard.WizardDialog;
+import com.jidesoft.wizard.WizardStyle;
+
 import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.util.shared.ExtensionFileFilter;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.util.ExtensionFileFilter;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.ExportVCF;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+
 
 /**
  *
@@ -45,7 +60,7 @@ public class ExportVcfWizard extends WizardDialog {
     private boolean cancelled = false;
     private Thread exportThread;
     
-    public ExportVcfWizard(){
+    public ExportVcfWizard() {
         setTitle("Export VCF Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
@@ -65,7 +80,7 @@ public class ExportVcfWizard extends WizardDialog {
 
     private AbstractDialogPage getWelcomePage() {
         
-        final DefaultWizardPage page = new DefaultWizardPage("Begin"){
+        DefaultWizardPage page = new DefaultWizardPage("Begin") {
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
@@ -77,13 +92,13 @@ public class ExportVcfWizard extends WizardDialog {
                 "This wizard will allow you to export all filtered variants to a \n"
                 + "VCF file. ");
         try {
-            if(ResultController.getInstance().getNumFilteredVariants() > NUM_WARNING){
+            if (ResultController.getInstance().getNumFilteredVariants() > NUM_WARNING) {
                 JLabel l = new JLabel("WARNING:");
                 l.setForeground(Color.red);
                 l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, l.getFont().getSize()));
                 page.addComponent(l);
                 page.addText(
-                        "There are currenly more than " + MiscUtils.numToString(NUM_WARNING) + " records to be exported. \n"
+                        "There are currenly more than " + ClientMiscUtils.numToString(NUM_WARNING) + " records to be exported. \n"
                         + "This may take a long time and produce a very large file!");
             }
         } catch (NonFatalDatabaseException ex) {
@@ -116,8 +131,9 @@ public class ExportVcfWizard extends WizardDialog {
         JButton chooseFileButton = new JButton("...");
         chooseFileButton.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent ae) {
-                variantFile = DialogUtils.chooseFileForSave("Export Variants", "export.vcf", new ExtensionFileFilter[]{new ExtensionFileFilter("vcf")}, null);//.chooseFilesForOpen("Import Variants", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz"}), null);
+                variantFile = DialogUtils.chooseFileForSave("Export Variants", "export.vcf", new ExtensionFileFilter[] { new ExtensionFileFilter("vcf")}, null);//.chooseFilesForOpen("Import Variants", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz"}), null);
                 if (variantFile == null) {
                     page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
                 } else {
@@ -142,7 +158,7 @@ public class ExportVcfWizard extends WizardDialog {
     
     private AbstractDialogPage getExportPage() {
         
-        final DefaultWizardPage page = new DefaultWizardPage("Export"){
+        final DefaultWizardPage page = new DefaultWizardPage("Export") {
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -157,25 +173,25 @@ public class ExportVcfWizard extends WizardDialog {
         page.addComponent(progress);
         
         final JButton startButton = new JButton("Start");
-        startButton.addActionListener(new ActionListener(){
+        startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 
                 page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
                 
-                if(running){
+                if (running) {
                     running = false;
                     cancelled = true;
                     startButton.setEnabled(false);                                      
-                    if(exportThread != null){
+                    if (exportThread != null) {
                         exportThread.interrupt();
                     }               
                 } else {
                     startButton.setText("Cancel");
                     progress.setIndeterminate(true);
-                    exportThread = new Thread(){
+                    exportThread = new Thread() {
                         @Override
-                        public void run(){                        
+                        public void run() {                        
                             try {
                                 ExportVCF.exportVCF(variantFile);
                             } catch (Exception ex) {
@@ -197,8 +213,8 @@ public class ExportVcfWizard extends WizardDialog {
         return page;
     }
     
-    private AbstractWizardPage getCompletionPage(){
-        CompletionWizardPage page = new CompletionWizardPage("Complete"){
+    private AbstractWizardPage getCompletionPage() {
+        CompletionWizardPage page = new CompletionWizardPage("Complete") {
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
@@ -207,7 +223,7 @@ public class ExportVcfWizard extends WizardDialog {
             }
         };
         
-        if(cancelled){
+        if (cancelled) {
             page.addText("Export was cancelled by the user. ");
         } else {
             page.addText("Export completed successfully. ");

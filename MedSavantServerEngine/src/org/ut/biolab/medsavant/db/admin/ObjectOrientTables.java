@@ -1,19 +1,36 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 package org.ut.biolab.medsavant.db.admin;
 
 import java.io.IOException;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+
+import org.ut.biolab.medsavant.db.ColumnType;
+import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.server.SessionController;
@@ -120,7 +137,7 @@ public class ObjectOrientTables {
                 String cnameupper = c.getColumnNameSQL().toUpperCase();
                 bw.write("\t\t// " + c.getAbsoluteName() + "\n");
                 bw.write("\t\tpublic static final int " + indexname(cnameupper) + " = " + (index++) + ";" + "\n");
-                bw.write("\t\tpublic static final ColumnType " + typename(cnameupper) + " = " + tableSchemaClass.getSimpleName() + ".ColumnType." + TableSchema.convertStringToColumnType(c.getTypeNameSQL()) + ";" + "\n");
+                bw.write("\t\tpublic static final ColumnType " + typename(cnameupper) + " = " + tableSchemaClass.getSimpleName() + ".ColumnType." + ColumnType.fromString(c.getTypeNameSQL()) + ";" + "\n");
                 bw.write("\t\tpublic static final int " + lengthname(cnameupper) + " = " + c.getTypeLength() + ";" + "\n");
                 bw.write("\t\tpublic static final String " + colname(cnameupper) + " = \"" + cnamelower + "\";" + "\n");
                 bw.write("");
@@ -133,7 +150,7 @@ public class ObjectOrientTables {
 
                 String cname = c.getColumnNameSQL().toUpperCase();
                 //bw.write("\t\t\t// " + cname);
-                bw.write("\t\t\taddColumn(" + colname(cname) + "," + colname(cname) + "," + tableSchemaClass.getSimpleName() + ".ColumnType." + TableSchema.convertStringToColumnType(c.getTypeNameSQL()) + "," + c.getTypeLength() + ");" + "\n");
+                bw.write("\t\t\taddColumn(" + colname(cname) + "," + colname(cname) + "," + tableSchemaClass.getSimpleName() + ".ColumnType." + ColumnType.fromString(c.getTypeNameSQL()) + "," + c.getTypeLength() + ");" + "\n");
                 //bw.write("");
             }
 

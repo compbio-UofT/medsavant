@@ -25,7 +25,7 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.server.api.SessionAdapter;
+import org.ut.biolab.medsavant.serverapi.SessionAdapter;
 
 import org.ut.biolab.medsavant.settings.VersionSettings;
 import org.ut.biolab.medsavant.view.MedSavantFrame;

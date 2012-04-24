@@ -1,12 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.util;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-import com.healthmarketscience.rmiio.RemoteInputStreamClient;
-import org.ut.biolab.medsavant.api.Listener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,11 +24,16 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.RemoteInputStreamClient;
+
+import org.ut.biolab.medsavant.api.Listener;
+
 /**
  *
  * @author Andrew
  */
-public class NetworkUtils {
+public class ClientNetworkUtils extends NetworkUtils {
     
     /**
      * Download a file in the background.  Notification events will be sent to the
@@ -40,11 +54,11 @@ public class NetworkUtils {
                     HttpURLConnection httpConn = (HttpURLConnection) u.openConnection();
                     totalBytes = httpConn.getContentLength();
 
-                    File destFile = new File(destDir, fileName != null ? fileName : org.ut.biolab.medsavant.db.util.shared.MiscUtils.getFilenameFromPath(u.getPath()));
+                    File destFile = new File(destDir, fileName != null ? fileName : org.ut.biolab.medsavant.util.ClientMiscUtils.getFilenameFromPath(u.getPath()));
                     OutputStream out = new FileOutputStream(destFile);
-                    InputStream in = org.ut.biolab.medsavant.db.util.shared.NetworkUtils.openStream(u);
+                    InputStream in = openStream(u);
                     fireDownloadEvent(monitor, new DownloadEvent(DownloadEvent.Type.STARTED));
-                    byte[] buf = new byte[org.ut.biolab.medsavant.db.util.shared.NetworkUtils.BUF_SIZE];
+                    byte[] buf = new byte[BUF_SIZE];
                     long bytesSoFar = 0;
                     int bytesRead;
                     while ((bytesRead = in.read(buf)) != -1 && !monitor.isCancelled()) {
@@ -63,7 +77,7 @@ public class NetworkUtils {
     }
 
     private static void fireDownloadEvent(final Listener<DownloadEvent> listener, final DownloadEvent e) {
-        org.ut.biolab.medsavant.db.util.shared.MiscUtils.invokeLaterIfNecessary(new Runnable() {
+        org.ut.biolab.medsavant.util.ClientMiscUtils.invokeLaterIfNecessary(new Runnable() {
             @Override
             public void run() {
                 listener.handleEvent(e);
@@ -105,6 +119,5 @@ public class NetworkUtils {
         }
         
         return tempFile;
-    }
-    
+    }    
 }

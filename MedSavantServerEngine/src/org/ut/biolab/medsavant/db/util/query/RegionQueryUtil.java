@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@
 
 package org.ut.biolab.medsavant.db.util.query;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,32 +27,32 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
-import java.io.File;
 
-import java.rmi.RemoteException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.RegionSetMembershipTableSchema;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.importfile.FileFormat;
-import org.ut.biolab.medsavant.db.importfile.ImportDelimitedFile;
-import org.ut.biolab.medsavant.db.model.BEDRecord;
-import org.ut.biolab.medsavant.db.model.GenomicRegion;
-import org.ut.biolab.medsavant.db.model.Range;
-import org.ut.biolab.medsavant.db.model.RegionSet;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.RegionSetTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.RegionSetMembershipTableSchema;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.importing.FileFormat;
+import org.ut.biolab.medsavant.importing.ImportDelimitedFile;
+import org.ut.biolab.medsavant.model.BEDRecord;
+import org.ut.biolab.medsavant.model.GenomicRegion;
+import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.FileServer;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.query.api.RegionQueryUtilAdapter;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.RegionQueryUtilAdapter;
+
 
 /**
  *
@@ -71,6 +72,7 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
     public RegionQueryUtil() throws RemoteException {super();}
 
 
+    @Override
     public void addRegionList(String sid,String geneListName, int genomeId,  RemoteInputStream fileStream, char delim, FileFormat fileFormat, int numHeaderLines) throws NonFatalDatabaseException, SQLException, RemoteException {
 
         Connection conn = ConnectionController.connectPooled(sid);
@@ -122,6 +124,7 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
         conn.close();
     }
 
+    @Override
     public void removeRegionList(String sid,int regionSetId) throws SQLException {
 
         TableSchema regionMemberTable = MedSavantDatabase.RegionsetmembershipTableSchema;
@@ -138,6 +141,7 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
         ConnectionController.execute(sid, q2.toString());
     }
 
+    @Override
     public List<RegionSet> getRegionSets(String sid) throws SQLException {
 
         TableSchema table = MedSavantDatabase.RegionsetTableSchema;
@@ -155,6 +159,7 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
         return result;
     }
 
+    @Override
     public int getNumberRegions(String sid, int regionSetId) throws SQLException {
 
         TableSchema table = MedSavantDatabase.RegionsetmembershipTableSchema;
@@ -170,6 +175,7 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
         return rs.getInt(1);
     }
 
+    @Override
     public List<String> getRegionNamesInRegionSet(String sid, int regionSetId, int limit) throws SQLException {
 
         TableSchema table = MedSavantDatabase.RegionsetmembershipTableSchema;
@@ -188,6 +194,7 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
         return result;
     }
 
+    @Override
     public List<GenomicRegion> getRegionsInRegionSet(String sid, int regionSetId) throws SQLException {
 
         TableSchema table = MedSavantDatabase.RegionsetmembershipTableSchema;
@@ -208,6 +215,7 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
         return result;
     }
 
+    @Override
     public List<BEDRecord> getBedRegionsInRegionSet(String sid, int regionSetId, int limit) throws NonFatalDatabaseException, SQLException {
 
         TableSchema table = MedSavantDatabase.RegionsetmembershipTableSchema;
@@ -230,6 +238,7 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
         return result;
     }
 
+    @Override
     public boolean listNameExists(String sid, String name) throws SQLException {
 
         TableSchema table = MedSavantDatabase.RegionsetTableSchema;
@@ -242,7 +251,4 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
         return rs.next();
     }
-
-
-
 }

@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.patients.individual.Pedigree;
 import org.ut.biolab.medsavant.view.patients.individual.PedigreeBasicRule;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -185,7 +185,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
                 try {
                     return MedSavantClient.PatientQueryUtilAdapter.getFamilyIds(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
                 } catch (SQLException ex) {
-                    MiscUtils.checkSQLException(ex);
+                    ClientMiscUtils.checkSQLException(ex);
                     throw ex;
                 }
             }
@@ -243,7 +243,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
                             ReferenceController.getInstance().getCurrentReferenceId(),
                             familyId, FilterController.getQueryFilterConditions());
                 } catch (SQLException ex) {
-                    MiscUtils.checkSQLException(ex);
+                    ClientMiscUtils.checkSQLException(ex);
                     throw ex;
                 }
             }
@@ -273,7 +273,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
                 try {
                     results = MedSavantClient.PatientQueryUtilAdapter.getFamily(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), familyId);
                 } catch (SQLException ex) {
-                    MiscUtils.checkSQLException(ex);
+                    ClientMiscUtils.checkSQLException(ex);
                     throw ex;
                 }
 

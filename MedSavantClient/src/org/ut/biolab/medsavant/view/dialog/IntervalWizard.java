@@ -1,8 +1,27 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.dialog;
+
+import java.awt.event.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
@@ -14,30 +33,13 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-import javax.swing.JTextField;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.importfile.BedFormat;
-import org.ut.biolab.medsavant.db.importfile.FileFormat;
-import org.ut.biolab.medsavant.db.importfile.ImportDelimitedFile;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.importing.BEDFormat;
+import org.ut.biolab.medsavant.importing.FileFormat;
 import org.ut.biolab.medsavant.importfile.ImportFilePanel;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -59,7 +61,7 @@ public class IntervalWizard extends WizardDialog {
     private FileFormat fileFormat;
     private int numHeaderLines;
     
-    public IntervalWizard(){
+    public IntervalWizard() {
         setTitle("Region Lists Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
         
@@ -72,16 +74,16 @@ public class IntervalWizard extends WizardDialog {
         setPageList(model);
         
         //change next action
-        final WizardDialog instance = this;
-        this.setNextAction(new AbstractAction() {
+        setNextAction(new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                String pagename = instance.getCurrentPage().getTitle();
-                if(pagename.equals(PAGENAME_NAME) && validateListName()){
-                    instance.setCurrentPage(PAGENAME_CHOOSE);
+                String pagename = getCurrentPage().getTitle();
+                if (pagename.equals(PAGENAME_NAME) && validateListName()) {
+                    setCurrentPage(PAGENAME_CHOOSE);
                 } else if (pagename.equals(PAGENAME_CHOOSE)) {
-                    instance.setCurrentPage(PAGENAME_IMPORT);
+                    setCurrentPage(PAGENAME_IMPORT);
                 } else if (pagename.equals(PAGENAME_IMPORT)) {
-                    instance.setCurrentPage(PAGENAME_COMPLETE);
+                    setCurrentPage(PAGENAME_COMPLETE);
                 }
             }
         });
@@ -92,16 +94,16 @@ public class IntervalWizard extends WizardDialog {
         setVisible(true);
     }
     
-    private AbstractWizardPage getNamePage(){
+    private AbstractWizardPage getNamePage() {
 
         //setup page
-        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_NAME){
+        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_NAME) {
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
-                if(listName == null || listName.equals("")){
+                if (listName == null || listName.equals("")) {
                     fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
                 } else {
                     fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
@@ -114,11 +116,10 @@ public class IntervalWizard extends WizardDialog {
 
         //setup text field
         final JTextField namefield = new JTextField();
-        namefield.addKeyListener(new KeyListener() {
-            public void keyTyped(KeyEvent e) {}
-            public void keyPressed(KeyEvent e) {}
+        namefield.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyReleased(KeyEvent e) {
-                if(namefield.getText() != null && !namefield.getText().equals("")){
+                if (namefield.getText() != null && !namefield.getText().equals("")) {
                     listName = namefield.getText();
                     page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
                 } else {
@@ -131,16 +132,16 @@ public class IntervalWizard extends WizardDialog {
         return page;
     }
     
-    private AbstractWizardPage getFilePage(){
+    private AbstractWizardPage getFilePage() {
 
         //setup page
-        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_CHOOSE){
+        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_CHOOSE) {
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
-                if(path == null || path.equals("")){
+                if (path == null || path.equals("")) {
                     fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
                 } else {
                     fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
@@ -148,10 +149,10 @@ public class IntervalWizard extends WizardDialog {
             }
         };
         
-        ImportFilePanel importPanel = new ImportFilePanel(){          
+        ImportFilePanel importPanel = new ImportFilePanel() {          
             @Override
-            public void setReady(boolean ready){
-                if(ready){
+            public void setReady(boolean ready) {
+                if (ready) {
                     path = getPath();
                     delim = getDelimiter();
                     fileFormat = getFileFormat();
@@ -162,16 +163,16 @@ public class IntervalWizard extends WizardDialog {
                 }
             }          
         };
-        importPanel.addFileFormat(new BedFormat());
+        importPanel.addFileFormat(new BEDFormat());
         page.addComponent(importPanel);
 
         return page;
     }
     
-    private AbstractWizardPage getImportPage(){
+    private AbstractWizardPage getImportPage() {
 
         //setup page
-        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_IMPORT){
+        final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_IMPORT) {
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -183,8 +184,6 @@ public class IntervalWizard extends WizardDialog {
         
         page.addText("You are now ready to create this region list. ");
 
-        final WizardDialog instance = this;
-
         final JLabel progressLabel = new JLabel("");
         final JProgressBar progressBar = new JProgressBar();
 
@@ -194,7 +193,8 @@ public class IntervalWizard extends WizardDialog {
         final JButton startButton = new JButton("Create List");
         startButton.addMouseListener(new MouseAdapter() {
 
-            public void mouseReleased(MouseEvent e){
+            @Override
+            public void mouseReleased(MouseEvent e) {
                 startButton.setEnabled(false);
                 page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
                 progressBar.setIndeterminate(true);
@@ -203,14 +203,14 @@ public class IntervalWizard extends WizardDialog {
                     public void run() {
                         try {
                             createList();
-                            ((CompletionWizardPage)instance.getPageByTitle(PAGENAME_COMPLETE)).addText(
+                            ((CompletionWizardPage)getPageByTitle(PAGENAME_COMPLETE)).addText(
                                     "List " + listName + " has been successfully created.");
-                            instance.setCurrentPage(PAGENAME_COMPLETE);
+                            setCurrentPage(PAGENAME_COMPLETE);
                         } catch (Exception ex) {
                             DialogUtils.displayException("Error", "There was an error while trying to create your list. ", ex);
                             Logger.getLogger(IntervalWizard.class.getName()).log(Level.SEVERE, null, ex);
-                            instance.setVisible(false);
-                            instance.dispose();
+                            setVisible(false);
+                            dispose();
                         }
                     }
                 };
@@ -224,8 +224,8 @@ public class IntervalWizard extends WizardDialog {
         return page;
     }
     
-    private AbstractWizardPage getCompletionPage(){
-        CompletionWizardPage page = new CompletionWizardPage(PAGENAME_COMPLETE){
+    private AbstractWizardPage getCompletionPage() {
+        CompletionWizardPage page = new CompletionWizardPage(PAGENAME_COMPLETE) {
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
@@ -236,10 +236,10 @@ public class IntervalWizard extends WizardDialog {
         return page;
     }
     
-    private boolean validateListName(){
+    private boolean validateListName() {
         try {
             boolean valid = !MedSavantClient.RegionQueryUtilAdapter.listNameExists(LoginController.sessionId, listName);
-            if(!valid){
+            if (!valid) {
                 JOptionPane.showMessageDialog(this, "List name already in use. ", "Error", JOptionPane.ERROR_MESSAGE);
             }
             return valid;

@@ -16,7 +16,7 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 
@@ -102,7 +102,7 @@ public class WorkingWithOneNode extends MedSavantWorker {
                             start, 
                             end);
                 } catch (SQLException ex) {
-                    MiscUtils.checkSQLException(ex);
+                    ClientMiscUtils.checkSQLException(ex);
                     throw ex;
                 }
                 OntologyStatsWorker.mapLocToFreq.put(key, numCurr);

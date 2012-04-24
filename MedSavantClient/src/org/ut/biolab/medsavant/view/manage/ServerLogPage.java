@@ -31,8 +31,8 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 
-import org.ut.biolab.medsavant.db.model.AnnotationLog;
-import org.ut.biolab.medsavant.db.model.GeneralLog;
+import org.ut.biolab.medsavant.model.AnnotationLog;
+import org.ut.biolab.medsavant.model.GeneralLog;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.subview.SectionView;

@@ -17,6 +17,8 @@
 package org.ut.biolab.medsavant.db.util.query;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,31 +26,28 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
-import java.rmi.RemoteException;
-import java.sql.Connection;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.xml.sax.SAXException;
 
-import org.ut.biolab.medsavant.db.format.AnnotationFormat;
-import org.ut.biolab.medsavant.db.log.DBLogger;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.AnnotationTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.AnnotationFormatTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.ReferenceTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantTablemapTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.format.AnnotationFormat;
+import org.ut.biolab.medsavant.format.AnnotationFormat.AnnotationType;
+import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.logging.DBLogger;
+import org.ut.biolab.medsavant.model.Annotation;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
-import org.ut.biolab.medsavant.db.format.AnnotationFormat.AnnotationType;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.AnnotationTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.AnnotationFormatTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.ReferenceTableSchema;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantTablemapTableSchema;
-import org.ut.biolab.medsavant.db.format.CustomField;
-import org.ut.biolab.medsavant.db.model.Annotation;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.query.api.AnnotationQueryUtilAdapter;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.AnnotationQueryUtilAdapter;
 
 /**
  *
@@ -67,6 +66,7 @@ public class AnnotationQueryUtil extends MedSavantServerUnicastRemoteObject impl
 
     public AnnotationQueryUtil() throws RemoteException {super();}
 
+    @Override
     public List<Annotation> getAnnotations(String sid) throws SQLException {
 
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
@@ -101,6 +101,7 @@ public class AnnotationQueryUtil extends MedSavantServerUnicastRemoteObject impl
         return results;
     }
 
+    @Override
     public Annotation getAnnotation(String sid,int annotation_id) throws SQLException {
 
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
@@ -136,6 +137,7 @@ public class AnnotationQueryUtil extends MedSavantServerUnicastRemoteObject impl
     /*
      * Get the annotation ids associated with the latest published table.
      */
+    @Override
     public int[] getAnnotationIds(String sid,int projectId, int referenceId) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VarianttablemapTableSchema;
@@ -168,7 +170,8 @@ public class AnnotationQueryUtil extends MedSavantServerUnicastRemoteObject impl
         return result;
     }
 
-    public AnnotationFormat getAnnotationFormat(String sid,int annotationId) throws SQLException, IOException, ParserConfigurationException, SAXException {
+    @Override
+    public AnnotationFormat getAnnotationFormat(String sid, int annotationId) throws SQLException, IOException, ParserConfigurationException, SAXException {
 
         TableSchema annTable = MedSavantDatabase.AnnotationTableSchema;
         SelectQuery query1 = new SelectQuery();
@@ -212,7 +215,8 @@ public class AnnotationQueryUtil extends MedSavantServerUnicastRemoteObject impl
     }
 
 
-    public int addAnnotation(String sid,String program, String version, int referenceid, String path, boolean hasRef, boolean hasAlt, int type) throws SQLException {
+    @Override
+    public int addAnnotation(String sid, String program, String version, int referenceid, String path, boolean hasRef, boolean hasAlt, int type) throws SQLException {
 
         DBLogger.log("Adding annotation...");
 
@@ -241,7 +245,8 @@ public class AnnotationQueryUtil extends MedSavantServerUnicastRemoteObject impl
         return annotid;
     }
 
-    public void addAnnotationFormat(String sid,int annotationId, int position, String columnName, String columnType, boolean isFilterable, String alias, String description) throws SQLException {
+    @Override
+    public void addAnnotationFormat(String sid, int annotationId, int position, String columnName, String columnType, boolean isFilterable, String alias, String description) throws SQLException {
 
         TableSchema table = MedSavantDatabase.AnnotationformatTableSchema;
         InsertQuery query = new InsertQuery(table.getTable());

@@ -16,8 +16,6 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.ut.biolab.medsavant.db.util.shared.ExtensionFileFilter;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -31,7 +29,7 @@ public class ExportTable {
         
         if(out == null) return;
 
-        String extension = MiscUtils.getExtension(out.getAbsolutePath());
+        String extension = ClientMiscUtils.getExtension(out.getAbsolutePath());
         
         if(extension.equals("xls") || extension.equals("xlsx")){
             exportExcel(out, table);

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -13,76 +13,40 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
-/*
- * FilterPanel.java
- *
- * Created on 19-Oct-2011, 4:16:02 PM
- */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.jidesoft.combobox.ListExComboBox;
-import com.jidesoft.combobox.ListExComboBoxSearchable;
-import com.jidesoft.combobox.TreeExComboBox;
-import com.jidesoft.combobox.TreeExComboBoxSearchable;
-import com.jidesoft.grid.ListComboBoxShrinkSearchableSupport;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
+import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.FilterController.FilterAction;
-import org.ut.biolab.medsavant.db.format.CustomField.Category;
-import org.ut.biolab.medsavant.db.util.shared.ExtensionFileFilter;
-import org.ut.biolab.medsavant.db.util.shared.ExtensionsFileFilter;
-import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.util.MiscUtils;
-import org.ut.biolab.medsavant.view.component.ProgressPanel;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSub.FilterPlaceholder;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
-import org.ut.biolab.medsavant.view.images.IconFactory;
-import org.ut.biolab.medsavant.view.util.DialogUtils;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.FilterController.FilterAction;
+import org.ut.biolab.medsavant.settings.DirectorySettings;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
+import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -108,7 +72,7 @@ public class FilterPanel extends javax.swing.JPanel {
         createNewSubPanel();
     }
 
-    public FilterPanelSub createNewSubPanel() {
+    public final FilterPanelSub createNewSubPanel() {
 
         FilterPanelSub cp = new FilterPanelSub(this, subNum++);
         filterContainerContent.add(cp);
@@ -287,7 +251,7 @@ public class FilterPanel extends javax.swing.JPanel {
                 try {
                     FilterUtils.loadFilterView(state, fps);
                 } catch (SQLException ex) {
-                    MiscUtils.checkSQLException(ex);
+                    ClientMiscUtils.checkSQLException(ex);
                     Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -330,17 +294,11 @@ public class FilterPanel extends javax.swing.JPanel {
         ViewUtil.applyHorizontalBoxLayout(addFilterPanel);
         final JLabel addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         addLabel.setToolTipText("Add new filter set");
-        addLabel.addMouseListener(new MouseListener() {
-
-            public void mouseClicked(MouseEvent e) {}
-            public void mousePressed(MouseEvent e) {}
-
+        addLabel.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseReleased(MouseEvent e) {
                 createNewSubPanel();
             }
-
-            public void mouseEntered(MouseEvent e) {}
-            public void mouseExited(MouseEvent e) {}
         });
 
 

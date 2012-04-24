@@ -44,11 +44,11 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.model.Cohort;
-import org.ut.biolab.medsavant.db.model.SimplePatient;
+import org.ut.biolab.medsavant.model.Cohort;
+import org.ut.biolab.medsavant.model.SimplePatient;
 import org.ut.biolab.medsavant.util.ExportTable;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -347,7 +347,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                     try {
                         return MedSavantClient.CohortQueryUtilAdapter.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), cohort.getId(), FilterController.getQueryFilterConditions());
                     } catch (SQLException ex) {
-                        MiscUtils.checkSQLException(ex);
+                        ClientMiscUtils.checkSQLException(ex);
                         return -1;
                     }
                 }
@@ -382,7 +382,6 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         
         private void expand(){
             if(!this.hasChildren() || this.getChildAt(0) instanceof PatientNode) return; //already computed
-            final CohortNode instance = this;
             MedSavantWorker worker = new MedSavantWorker(pageName) {
 
                 @Override
@@ -394,7 +393,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                         return MedSavantClient.VariantQueryUtilAdapter.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), FilterController.getQueryFilterConditions(), patients);
                     } catch (SQLException ex) {
                         ex.printStackTrace();
-                        MiscUtils.checkSQLException(ex);
+                        ClientMiscUtils.checkSQLException(ex);
                         return null;
                     }
                 }
@@ -402,9 +401,9 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 @Override
                 protected void showSuccess(Object result) {
                     Map<SimplePatient, Integer> map = (Map<SimplePatient, Integer>)result;
-                    instance.removeAllChildren();
+                    removeAllChildren();
                     for(SimplePatient key : map.keySet()){
-                        instance.addChild(new PatientNode(key, map.get(key)));
+                        addChild(new PatientNode(key, map.get(key)));
                     }
                     panel.refresh();
                 }

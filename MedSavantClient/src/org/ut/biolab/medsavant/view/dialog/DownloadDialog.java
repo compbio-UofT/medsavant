@@ -25,10 +25,10 @@ import java.net.URL;
 import javax.swing.JDialog;
 import javax.swing.WindowConstants;
 
-import org.ut.biolab.medsavant.util.NetworkUtils;
+import org.ut.biolab.medsavant.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.util.DownloadEvent;
 import org.ut.biolab.medsavant.util.DownloadMonitor;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -175,12 +175,12 @@ public class DownloadDialog extends JDialog implements DownloadMonitor {
      * Set up the dialog, start the download process, and make it visible.
      */
     public void downloadFile(URL url, File destDir, String fileName) {
-        shortName = fileName != null ? fileName : MiscUtils.getFilenameFromPath(url.getPath());
+        shortName = fileName != null ? fileName : ClientMiscUtils.getFilenameFromPath(url.getPath());
         setTitle("Downloading " + shortName);
         fileLabel.setText(url.toString());
         destinationLabel.setText(destDir.getPath());
         downloadedFile = new File(destDir, shortName);
-        NetworkUtils.downloadFile(url, destDir, shortName, this);
+        ClientNetworkUtils.downloadFile(url, destDir, shortName, this);
         setVisible(true);
     }
 

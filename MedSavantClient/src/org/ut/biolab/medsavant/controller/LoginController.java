@@ -25,11 +25,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.util.query.api.ServerLogQueryUtilAdapter.LogType;
+import org.ut.biolab.medsavant.serverapi.ServerLogQueryUtilAdapter.LogType;
 
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
-import org.ut.biolab.medsavant.server.api.SessionAdapter;
+import org.ut.biolab.medsavant.serverapi.SessionAdapter;
 import org.ut.biolab.medsavant.settings.VersionSettings;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 

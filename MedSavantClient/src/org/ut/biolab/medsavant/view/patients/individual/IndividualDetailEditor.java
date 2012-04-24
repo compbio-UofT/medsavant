@@ -6,7 +6,7 @@ import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.AddPatientsForm;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
@@ -75,7 +75,7 @@ class IndividualDetailEditor extends DetailedListEditor {
                         DialogUtils.displayMessage("Successfully removed " + (items.size()) + " individuals(s)");
                     } catch (Exception ex) {
                         if(ex instanceof SQLException)
-                            MiscUtils.checkSQLException((SQLException)ex);
+                            ClientMiscUtils.checkSQLException((SQLException)ex);
                         dialog.close();
                         DialogUtils.displayErrorMessage("Couldn't remove patient(s)", ex);
                     }

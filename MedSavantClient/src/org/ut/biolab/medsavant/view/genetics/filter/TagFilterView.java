@@ -1,8 +1,20 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -20,24 +32,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.*;
+
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.VariantTag;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -62,9 +73,9 @@ public class TagFilterView extends FilterView {
     private ActionListener al;
     private JTextArea ta;
 
-    public TagFilterView(FilterState state, int queryId){
+    public TagFilterView(FilterState state, int queryId) {
         this(queryId, new JPanel());
-        if(state.getValues().get("variantTags") != null){
+        if (state.getValues().get("variantTags") != null) {
             applyFilter(stringToVariantTags(state.getValues().get("variantTags")));
         }
     }
@@ -74,12 +85,12 @@ public class TagFilterView extends FilterView {
         createContentPanel(container);
     }
 
-    public void applyFilter(List<VariantTag> tags){
+    public final void applyFilter(List<VariantTag> tags) {
         this.variantTags = tags;
         ta.setText("");
-        for(int i = 0; i < variantTags.size(); i++){
+        for (int i = 0; i < variantTags.size(); i++) {
             VariantTag tag = variantTags.get(i);
-            if(i == 0){
+            if (i == 0) {
                 ta.append(tag.toString() + "\n");
             } else {
                 ta.append("AND " + tag.toString() + "\n");
@@ -147,6 +158,7 @@ public class TagFilterView extends FilterView {
             JButton clear = new JButton("Clear");
             clear.addActionListener(new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent ae) {
                     variantTags.clear();
                     ta.setText("");
@@ -166,6 +178,7 @@ public class TagFilterView extends FilterView {
 
             tagNameCB.addItemListener(new ItemListener() {
 
+                @Override
                 public void itemStateChanged(ItemEvent ie) {
                     updateTagValues((String) tagNameCB.getSelectedItem(), tagValueCB);
                 }
@@ -178,6 +191,7 @@ public class TagFilterView extends FilterView {
 
             al = new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent e) {
 
                     applyButton.setEnabled(false);
@@ -205,7 +219,7 @@ public class TagFilterView extends FilterView {
 
                                 return new Condition[] {ComboCondition.or(uploadIDConditions) };
                             } catch (SQLException ex) {
-                                MiscUtils.checkSQLException(ex);
+                                ClientMiscUtils.checkSQLException(ex);
                                 return new Condition[0];
                             } catch (RemoteException ex) {
                                 return new Condition[0];
@@ -238,7 +252,7 @@ public class TagFilterView extends FilterView {
             p.add(bottomContainer,BorderLayout.SOUTH);
 
         } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
+            ClientMiscUtils.checkSQLException(ex);
             content.add(new JLabel("Problem getting tag information"));
         } catch (RemoteException ex) {
             content.add(new JLabel("Problem getting tag information"));
@@ -261,7 +275,7 @@ public class TagFilterView extends FilterView {
                     tagValueCB.addItem(val);
                 }
             } catch (SQLException ex) {
-                MiscUtils.checkSQLException(ex);
+                ClientMiscUtils.checkSQLException(ex);
                 Logger.getLogger(TagFilterView.class.getName()).log(Level.SEVERE, null, ex);
             } catch (RemoteException ex) {
                 Logger.getLogger(TagFilterView.class.getName()).log(Level.SEVERE, null, ex);
@@ -292,20 +306,20 @@ public class TagFilterView extends FilterView {
         return new FilterState(FilterType.TAG, FILTER_NAME, FILTER_ID, map);
     }
 
-    private String variantTagsToString(List<VariantTag> tags){
+    private String variantTagsToString(List<VariantTag> tags) {
         String s = "";
-        for(VariantTag tag : tags){
+        for (VariantTag tag : tags) {
             s += tag.key + ":::" + tag.value + ";;;";
         }
         return s;
     }
 
-    private List<VariantTag> stringToVariantTags(String s){
+    private List<VariantTag> stringToVariantTags(String s) {
         List<VariantTag> list = new ArrayList<VariantTag>();
         String[] pairs = s.split(";;;");
-        for(String x : pairs){
+        for (String x : pairs) {
             String[] pair = x.split(":::");
-            if(pair.length == 2){
+            if (pair.length == 2) {
                 list.add(new VariantTag(pair[0], pair[1]));
             }
         }

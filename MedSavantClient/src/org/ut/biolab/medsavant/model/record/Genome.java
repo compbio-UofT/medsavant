@@ -5,7 +5,7 @@
 
 package org.ut.biolab.medsavant.model.record;
 
-import org.ut.biolab.medsavant.db.model.Chromosome;
+import org.ut.biolab.medsavant.model.Chromosome;
 import java.util.List;
 
 /**

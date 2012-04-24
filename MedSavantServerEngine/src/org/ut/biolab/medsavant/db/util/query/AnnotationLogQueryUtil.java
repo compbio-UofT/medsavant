@@ -16,6 +16,8 @@
 
 package org.ut.biolab.medsavant.db.util.query;
 
+import java.rmi.RemoteException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,25 +28,23 @@ import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.UpdateQuery;
 
-import java.rmi.RemoteException;
-import java.sql.Connection;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.VariantPendingUpdateTableSchema;
-import org.ut.biolab.medsavant.db.model.AnnotationLog;
-import org.ut.biolab.medsavant.db.model.AnnotationLog.Action;
-import org.ut.biolab.medsavant.db.model.AnnotationLog.Status;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.model.AnnotationLog;
+import org.ut.biolab.medsavant.model.AnnotationLog.Action;
+import org.ut.biolab.medsavant.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.query.api.AnnotationLogQueryUtilAdapter;
-import org.ut.biolab.medsavant.db.util.shared.DBUtil;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.AnnotationLogQueryUtilAdapter;
+import org.ut.biolab.medsavant.util.SQLUtils;
 
 /**
  *
  * @author Andrew
  */
-public class AnnotationLogQueryUtil extends MedSavantServerUnicastRemoteObject implements AnnotationLogQueryUtilAdapter  {
+public class AnnotationLogQueryUtil extends MedSavantServerUnicastRemoteObject implements AnnotationLogQueryUtilAdapter {
 
     private static AnnotationLogQueryUtil instance;
 
@@ -57,13 +57,15 @@ public class AnnotationLogQueryUtil extends MedSavantServerUnicastRemoteObject i
 
     public AnnotationLogQueryUtil() throws RemoteException {super();}
 
+    @Override
     public int addAnnotationLogEntry(String sid,int projectId, int referenceId, Action action, String user) throws SQLException{
         return addAnnotationLogEntry(sid,projectId,referenceId,action,Status.STARTED, user);
     }
 
+    @Override
     public int addAnnotationLogEntry(String sid,int projectId, int referenceId, Action action, Status status, String user) throws SQLException {
 
-        Timestamp sqlDate = DBUtil.getCurrentTimestamp();
+        Timestamp sqlDate = SQLUtils.getCurrentTimestamp();
 
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
         InsertQuery query = new InsertQuery(table.getTable());
@@ -84,6 +86,7 @@ public class AnnotationLogQueryUtil extends MedSavantServerUnicastRemoteObject i
         return rs.getInt(1);
     }
 
+    @Override
     public void removeAnnotationLogEntry(String sid,int updateId) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
@@ -93,6 +96,7 @@ public class AnnotationLogQueryUtil extends MedSavantServerUnicastRemoteObject i
         ConnectionController.executeUpdate(sid,  query.toString());
     }
 
+    @Override
     public void setAnnotationLogStatus(String sid,int updateId, Status status) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
@@ -103,6 +107,7 @@ public class AnnotationLogQueryUtil extends MedSavantServerUnicastRemoteObject i
         ConnectionController.executeUpdate(sid,  query.toString());
     }
 
+    @Override
     public void setAnnotationLogStatus(String sid,int updateId, Status status, Timestamp sqlDate) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VariantpendingupdateTableSchema;
@@ -113,5 +118,4 @@ public class AnnotationLogQueryUtil extends MedSavantServerUnicastRemoteObject i
 
         ConnectionController.executeUpdate(sid,  query.toString());
     }
-
 }

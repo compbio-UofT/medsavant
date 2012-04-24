@@ -24,7 +24,7 @@ import javax.swing.filechooser.FileSystemView;
 
 import com.jidesoft.grid.AbstractExpandableRow;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 
 /**
  * Class which represents an entry in a tree-like display.  Used for the repository
@@ -119,7 +119,7 @@ public class TreeBrowserEntry extends AbstractExpandableRow implements Comparabl
 
     public Icon getIcon() {
         if (isLeaf) {
-            String ext = MiscUtils.getExtension(url);
+            String ext = ClientMiscUtils.getExtension(url);
             try {
                 File f = File.createTempFile("savant_icon.", "." +ext);
                 Icon i = getFileSystemView().getSystemIcon(f);

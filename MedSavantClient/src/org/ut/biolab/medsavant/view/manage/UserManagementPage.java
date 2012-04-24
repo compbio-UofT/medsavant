@@ -23,8 +23,8 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.controller.UserController;
 import org.ut.biolab.medsavant.controller.UserController.UserListener;
-import org.ut.biolab.medsavant.db.model.UserLevel;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.model.UserLevel;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
@@ -200,7 +200,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
                 List<String> infoList = new ArrayList<String>();
                 try {
                     UserLevel level = (UserLevel) get();
-                    infoList.add(MiscUtils.userLevelToString(level));
+                    infoList.add(ClientMiscUtils.userLevelToString(level));
                 } catch (Exception ex){
                     infoList.add("Unknown");
                 }

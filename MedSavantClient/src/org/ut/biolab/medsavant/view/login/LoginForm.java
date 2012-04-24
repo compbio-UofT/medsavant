@@ -1,12 +1,17 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * LoginForm.java
+ *    Copyright 2011-2012 University of Toronto
  *
- * Created on Jun 20, 2011, 11:11:22 AM
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.login;
 
@@ -20,10 +25,11 @@ import java.awt.event.KeyEvent;
 import javax.swing.Box;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+
+import org.ut.biolab.medsavant.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.MedSavantProgramInformation;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.dialog.AddDatabaseDialog;
@@ -43,6 +49,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
             img = IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LOGO).getImage();
         }
 
+        @Override
         public void paintComponent(Graphics g) {
             //g.setColor(Color.black);
             //g.fillRect(0, 0, this.getWidth(), this.getHeight());
@@ -509,6 +516,7 @@ public class LoginForm extends javax.swing.JPanel implements LoginListener {
         }
     }
 
+    @Override
     public void loginEvent(LoginEvent evt) {
         switch(evt.getType()) {
             case LOGGED_IN:

@@ -24,7 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ut.biolab.medsavant.MedSavantClient;
 
-import org.ut.biolab.medsavant.db.model.UserLevel;
+import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 
 /**

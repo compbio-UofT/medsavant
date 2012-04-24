@@ -16,7 +16,6 @@
 
 package org.ut.biolab.medsavant.util;
 
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -83,7 +82,7 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
             DialogUtils.displayMessage("Background task interrupted.");
         } else {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Exception thrown by background task.", t);
-            DialogUtils.displayException("MedSavant", String.format("<html>Exception thrown by background task:<br><br><i>%s</i></html>", MiscUtils.getMessage(t)), t);
+            DialogUtils.displayException("MedSavant", String.format("<html>Exception thrown by background task:<br><br><i>%s</i></html>", ClientMiscUtils.getMessage(t)), t);
         }
     }
     

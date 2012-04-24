@@ -1,15 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.jidesoft.swing.CheckBoxTree;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -18,29 +23,29 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.jidesoft.swing.CheckBoxTree;
+
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.db.model.Range;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.view.genetics.filter.geneontology.*;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
+import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ConstructJTree;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
 import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
@@ -215,6 +220,7 @@ public class GOFilter {
         ((CheckBoxTreeNew)jTree).getCheckBoxTreeSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
 
 
+            @Override
             public void valueChanged(TreeSelectionEvent e) {
 
                 locations.clear();
@@ -279,6 +285,7 @@ public class GOFilter {
         JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
         selectAll.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // select all the nodes in the tree.
                 ((CheckBoxTreeNew)jTree).selectAllFromRoot();
@@ -289,6 +296,7 @@ public class GOFilter {
         JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
         selectNone.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // deselect any node in the tree.
                 ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().clearSelection();
@@ -308,6 +316,7 @@ public class GOFilter {
 
             // Note that an action could have been performed only if some tree
             // element has been selected.
+            @Override
             public void actionPerformed(ActionEvent e) {
 
                 applyButton.setEnabled(false);
@@ -384,5 +393,4 @@ public class GOFilter {
             }
         });
     }
-
 }

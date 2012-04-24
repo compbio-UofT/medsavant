@@ -1,13 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.jidesoft.swing.CheckBoxTree;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -16,28 +23,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
+import com.healthmarketscience.sqlbuilder.ComboCondition;
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.jidesoft.swing.CheckBoxTree;
+
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.util.shared.BinaryConditionMS;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.db.model.Range;
-import org.ut.biolab.medsavant.db.api.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.model.structure.TableSchema;
 import org.ut.biolab.medsavant.view.genetics.filter.hpontology.HPOParser;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.CheckBoxTreeNew;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
@@ -64,7 +69,7 @@ public class HPOFilter {
      * ontology.
      * @return
      */
-    public static FilterView getHPOntologyFilterView(){
+    public static FilterView getHPOntologyFilterView() {
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
@@ -84,7 +89,7 @@ public class HPOFilter {
      * Load the tree to the JPanel container.
      * @param container the JPanel cto contain the tree.
      */
-    private static void loadData(final JPanel container){
+    private static void loadData(final JPanel container) {
 
         // Add progress bar.
         final JProgressBar progressBar = new JProgressBar();
@@ -103,7 +108,7 @@ public class HPOFilter {
                     try{
                         tree = HPOParser.getHPOTree();
                     }
-                    catch(Exception e){
+                    catch(Exception e) {
                     }
 //                    Thread.sleep(10000);
                     setProgress(100);
@@ -117,9 +122,10 @@ public class HPOFilter {
 
             task.addPropertyChangeListener(new PropertyChangeListener() {
 
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
 
-                    if (task.getState() == Task.StateValue.DONE){
+                    if (task.getState() == Task.StateValue.DONE) {
 
                         progressBar.setIndeterminate(false);
                         progressBar.setVisible(false);
@@ -128,7 +134,7 @@ public class HPOFilter {
                         try{
                             showTree(container, task.tree);
                         }
-                        catch(Exception e){
+                        catch(Exception e) {
                             container.remove(progressBar);
                             container.add(new JLabel("Could not display the tree"));
                         }
@@ -141,7 +147,7 @@ public class HPOFilter {
                 }
             });
         }
-        catch (Exception e){
+        catch (Exception e) {
             container.remove(progressBar);
             container.add(new JLabel("Could not display the tree"));
         }
@@ -153,7 +159,7 @@ public class HPOFilter {
      * @param container JPanel object
      * @param tree the tree containing the ontology information.
      */
-    private static void showTree(JPanel container, final Tree tree){
+    private static void showTree(JPanel container, final Tree tree) {
 
         final JButton applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
@@ -169,7 +175,7 @@ public class HPOFilter {
 
         class ThreadTree extends Thread{
             @Override
-            public void run(){
+            public void run() {
                 FilterObjectStorer.addObject(NAME_TREE, tree.getCopyTree());
             }
         }
@@ -191,6 +197,7 @@ public class HPOFilter {
                 (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
 
+            @Override
             public void valueChanged(TreeSelectionEvent e) {
 
                 locations.clear();
@@ -198,14 +205,14 @@ public class HPOFilter {
                         ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().
                         getSelectionPaths();
 
-                if (paths != null){
-                    for (TreePath path: paths){
+                if (paths != null) {
+                    for (TreePath path: paths) {
                         DefaultMutableTreeNode currVisualNode =
                                 (DefaultMutableTreeNode)path.getLastPathComponent();
                         Node currNode = (Node)currVisualNode.getUserObject();
 
                         HashSet<String> arrayLocs = currNode.getLocs();
-                        for (String arrayLoc: arrayLocs){
+                        for (String arrayLoc: arrayLocs) {
 
                             String[] split = arrayLoc.split("\t");
                             // Note: BED format fixed already so get locations as they are.
@@ -214,7 +221,7 @@ public class HPOFilter {
                         }
                     }
 
-                    if (locations.size() != 1){
+                    if (locations.size() != 1) {
                         numberSelected.setText(locations.size() +
                                 " gene location ranges selected");
                     }
@@ -243,6 +250,7 @@ public class HPOFilter {
 
         JButton selectAll = ViewUtil.createHyperLinkButton("Select All");
         selectAll.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // select all the nodes in the tree.
                 ((CheckBoxTreeNew)jTree).selectAllFromRoot();
@@ -253,6 +261,7 @@ public class HPOFilter {
         JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
         selectNone.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // deselect any node in the tree.
                 ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().clearSelection();
@@ -268,6 +277,7 @@ public class HPOFilter {
 
         applyButton.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
 
                 applyButton.setEnabled(false);
@@ -276,7 +286,7 @@ public class HPOFilter {
 
                 TreePath[] paths = ((CheckBoxTree)jTree).getCheckBoxTreeSelectionModel().getSelectionPaths();
 
-                for (String location: locations){
+                for (String location: locations) {
 
                     String[] split = location.split("\t");
                     Double start = Integer.parseInt(split[1]) + 0.0;
@@ -287,7 +297,7 @@ public class HPOFilter {
                 // If there are no conditions at all, do not display
                 // anything (most intuitive). So, create bogus condition that
                 // will never be satisfied.
-                if (classifiedPos.getConditions().isEmpty() && paths != null){
+                if (classifiedPos.getConditions().isEmpty() && paths != null) {
                     classifiedPos.addCondition("chr1", 23, 22);
                 }
                 final HashMap<String, List<Range>> map = classifiedPos.getConditions();
@@ -302,12 +312,12 @@ public class HPOFilter {
 
                         TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
 
-                        for (String key: map.keySet()){
+                        for (String key: map.keySet()) {
 
                             List<ComboCondition> listInnerCond =
                                     new ArrayList<ComboCondition>();
                             List<Range> ranges = map.get(key);
-                            for (Range range: ranges){
+                            for (Range range: ranges) {
 
                                 BinaryCondition innerCond1 = BinaryCondition.greaterThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), range.getMin(), true);
                                 BinaryCondition innerCond2 = BinaryCondition.lessThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), range.getMax(), true);
@@ -334,5 +344,4 @@ public class HPOFilter {
             }
         });
     }
-
 }

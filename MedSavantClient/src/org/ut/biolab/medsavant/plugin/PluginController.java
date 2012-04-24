@@ -26,9 +26,9 @@ import org.ut.biolab.medsavant.settings.VersionSettings;
 
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.Controller;
-import org.ut.biolab.medsavant.db.util.shared.IOUtils;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
-import org.ut.biolab.medsavant.db.util.shared.NetworkUtils;
+import org.ut.biolab.medsavant.util.ClientIOUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 
@@ -106,7 +106,7 @@ public class PluginController extends Controller {
                 }
             }
             if (updated.size() > 0) {
-                DialogUtils.displayMessage("Plugins Updated", String.format("<html>The following plugins were updated to be compatible with MedSavant %s:<br><br><i>%s</i></html>", VersionSettings.VERSION, MiscUtils.join(updated, ", ")));
+                DialogUtils.displayMessage("Plugins Updated", String.format("<html>The following plugins were updated to be compatible with MedSavant %s:<br><br><i>%s</i></html>", VersionSettings.VERSION, ClientMiscUtils.join(updated, ", ")));
                 for (String s: updated) {
                     pluginErrors.remove(s);
                 }
@@ -261,11 +261,11 @@ public class PluginController extends Controller {
     private void copyBuiltInPlugins() {
         File destDir = DirectorySettings.getPluginsDirectory();
         File srcDir = null;
-        if (MiscUtils.MAC) {
+        if (ClientMiscUtils.MAC) {
             srcDir = new File(com.apple.eio.FileManager.getPathToApplicationBundle() + "/Contents/Plugins");
             if (srcDir.exists()) {
                 try {
-                    IOUtils.copyDir(srcDir, destDir);
+                    ClientIOUtils.copyDir(srcDir, destDir);
                     return;
                 } catch (Exception ignored) {
                     // We should expect to see this when running in the debugger.
@@ -274,7 +274,7 @@ public class PluginController extends Controller {
         }
         try {
             srcDir = new File("plugins");
-            IOUtils.copyDir(srcDir, destDir);
+            ClientIOUtils.copyDir(srcDir, destDir);
         } catch (Exception x) {
             LOG.log(Level.SEVERE, "Unable to copy builtin plugins from " + srcDir.getAbsolutePath() + " to " + destDir, x);
         }
@@ -325,7 +325,7 @@ public class PluginController extends Controller {
      */
     public void installPlugin(File selectedFile) throws Throwable {
         File pluginFile = new File(DirectorySettings.getPluginsDirectory(), selectedFile.getName());
-        IOUtils.copyFile(selectedFile, pluginFile);
+        ClientIOUtils.copyFile(selectedFile, pluginFile);
         PluginDescriptor desc = addPlugin(pluginFile);
         if (desc != null) {
             if (pluginLoader == null) {
@@ -344,7 +344,7 @@ public class PluginController extends Controller {
             URL updateURL = repositoryIndex.getPluginURL(id);
             if (updateURL != null) {
                 LOG.log(Level.INFO, "Downloading updated version of {0} from {1}.", new Object[] { id, updateURL });
-                addPlugin(NetworkUtils.downloadFile(updateURL, DirectorySettings.getPluginsDirectory(), null));
+                addPlugin(ClientNetworkUtils.downloadFile(updateURL, DirectorySettings.getPluginsDirectory(), null));
                 return true;
             }
         } catch (IOException x) {

@@ -33,9 +33,9 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import com.jidesoft.dialog.JideOptionPane;
-import org.ut.biolab.medsavant.db.util.shared.ExtensionFileFilter;
+import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 
 
@@ -91,12 +91,12 @@ public class DialogUtils {
     }
 
     public static void displayException(final String title, final String message, final Throwable t) {
-        MiscUtils.invokeLaterIfNecessary(new Runnable() {
+        ClientMiscUtils.invokeLaterIfNecessary(new Runnable() {
             @Override
             public void run() {
                 String msg = message;
                 if (t.getCause() != null) {
-                    msg += "\r\nCause: " + MiscUtils.getMessage(t.getCause()) + ".";
+                    msg += "\r\nCause: " + ClientMiscUtils.getMessage(t.getCause()) + ".";
                 }
                 JideOptionPane optionPane = new JideOptionPane(msg, JOptionPane.ERROR_MESSAGE, JideOptionPane.CLOSE_OPTION);
                 optionPane.setTitle(title);
@@ -105,7 +105,7 @@ public class DialogUtils {
                 ((JComponent) optionPane.getComponent(optionPane.getComponentCount()-1)).add(reportButton);
                 final JDialog dialog = optionPane.createDialog(KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow(), "Error encountered");
                 dialog.setResizable(true);
-                String details = t.getMessage() + "\r\n" + MiscUtils.getStackTrace(t);
+                String details = t.getMessage() + "\r\n" + ClientMiscUtils.getStackTrace(t);
                 optionPane.setDetails(details);
                 dialog.pack();
 
@@ -120,7 +120,7 @@ public class DialogUtils {
 
 
                     issue += "=== ERROR DETAILS ===\n";
-                    issue += MiscUtils.getStackTrace(t);
+                    issue += ClientMiscUtils.getStackTrace(t);
 
                     dialog.dispose();
                     (new BugReportDialog(issue, null)).setVisible(true);
@@ -152,7 +152,7 @@ public class DialogUtils {
      * @return the selected file, or null if nothing was selected
      */
     public static File chooseFileForOpen(String title, FileFilter filter, File initialDir) {
-        if (MiscUtils.MAC) {
+        if (ClientMiscUtils.MAC) {
             FileDialog fd = getFileDialog(title, FileDialog.LOAD);
             if (filter != null) {
                 fd.setFilenameFilter(new FilenameFilterAdapter(filter));

@@ -1,28 +1,34 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 package org.ut.biolab.medsavant.view.subview;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
+
 
 /**
  *
@@ -72,19 +78,18 @@ public class SubSectionViewCollection extends SubSectionView {
 
             {
                 this.setOpaque(false);
-                final JComponent instance = this;
                 this.addMouseListener(new MouseAdapter() {
 
                         @Override
                         public void mouseEntered(MouseEvent e) {
                             over = true;
-                           instance.repaint();
+                            repaint();
                         }
 
                         @Override
                         public void mouseExited(MouseEvent e) {
                             over = false;
-                            instance.repaint();
+                            repaint();
                         }
                     });
               }
@@ -121,7 +126,7 @@ public class SubSectionViewCollection extends SubSectionView {
                 int hpad = 8;
                 int vpad = 4;
 
-                if (over || this.isSelected()){
+                if (over || this.isSelected()) {
                     g2d.setColor(bgColor);
                     int recWidth = width+2*hpad;
                     int recHeight = height+2*vpad;
@@ -161,7 +166,7 @@ public class SubSectionViewCollection extends SubSectionView {
     int blah = 0;
 
     void setPage(String pageName) {
-        if(currentView != null){
+        if (currentView != null) {
             currentView.viewDidUnload();
         }
         currentView = this.subsectionMap.get(pageName);

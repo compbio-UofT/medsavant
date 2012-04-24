@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.db.model.Chromosome;
-import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.model.Chromosome;
+import org.ut.biolab.medsavant.model.Range;
 
 /**
  *

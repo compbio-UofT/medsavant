@@ -1,39 +1,29 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 package org.ut.biolab.medsavant.view.menu;
 
-import com.jidesoft.swing.JideSplitButton;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.ComponentOrientation;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.SwingUtilities;
-import org.jdesktop.swingx.JXCollapsiblePane;
-import org.jdesktop.swingx.JXPanel;
+import javax.swing.*;
+
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
@@ -68,7 +58,6 @@ public class Menu extends JPanel implements ProjectListener {
     private final JPanel sectionMenu;
 
     public Menu(JPanel panel) {
-        super();
 
         bg = new ButtonGroup();
 
@@ -99,25 +88,31 @@ public class Menu extends JPanel implements ProjectListener {
 
         ReferenceController.getInstance().addReferenceListener(new ReferenceListener() {
 
+            @Override
             public void referenceChanged(String referenceName) {
                 updateSections();
             }
 
+            @Override
             public void referenceAdded(String name) {
             }
 
+            @Override
             public void referenceRemoved(String name) {
             }
         });
 
         ProjectController.getInstance().addProjectListener(new ProjectListener() {
 
+            @Override
             public void projectAdded(String projectName) {
             }
 
+            @Override
             public void projectRemoved(String projectName) {
             }
 
+            @Override
             public void projectChanged(String projectName) {
                 if (!GeneticsSection.isInitialized) {
                     //once this section is initialized, referencecombobox fires
@@ -126,12 +121,14 @@ public class Menu extends JPanel implements ProjectListener {
                 }
             }
 
+            @Override
             public void projectTableRemoved(int projid, int refid) {
             }
         });
 
         LoginController.addLoginListener(new LoginListener() {
 
+            @Override
             public void loginEvent(LoginEvent evt) {
                 if (evt.getType() == LoginEvent.EventType.LOGGED_OUT) {
                     contentContainer.removeAll();

@@ -1,24 +1,29 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.sql.SQLException;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.model.Chromosome;
-import org.ut.biolab.medsavant.db.model.Range;
+
+import org.ut.biolab.medsavant.model.Chromosome;
+import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -47,17 +52,16 @@ public class ChromosomePanel extends JPanel {
     void setScaleWithRespectToLength(long len) {
         cdp.setScaleWithRespectToLength(len);
     }
-    
-    public void updateFrequencyCounts(Map<Range,Integer> binCounts,int max){
+
+    public void updateFrequencyCounts(Map<Range,Integer> binCounts,int max) {
         cdp.updateFrequencyCounts(binCounts,max);
     }
     
-    public String getChrName(){
+    public String getChrName() {
         return chr.getName();
     }
     
-    public String getShortChrName(){
+    public String getShortChrName() {
         return chr.getShortname();
     }
-
 }

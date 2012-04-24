@@ -1,21 +1,33 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.sql.SQLException;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.view.genetics.charts.ChartView;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import javax.swing.JPanel;
+
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.view.genetics.charts.ChartView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
@@ -36,10 +48,12 @@ public class GeneticsChartPage extends SubSectionView implements FiltersChangedL
         ReferenceController.getInstance().addReferenceListener(this);
     }
 
+    @Override
     public String getName() {
         return "Chart";
     }
 
+    @Override
     public JPanel getView(boolean update) {
         if (panel == null || update) {
             try {
@@ -109,13 +123,12 @@ public class GeneticsChartPage extends SubSectionView implements FiltersChangedL
         tryUpdate();
     }
 
-    private void tryUpdate(){
-        if(cc != null){
+    private void tryUpdate() {
+        if (cc != null) {
             cc.setUpdateRequired(true);
-            if(isLoaded){
+            if (isLoaded) {
                 cc.updateIfRequired();
             }
         }
     }
-
 }

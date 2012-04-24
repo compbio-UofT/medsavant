@@ -1,12 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 
 package org.ut.biolab.medsavant.model.record;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -14,8 +23,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
-import org.ut.biolab.medsavant.db.util.shared.Util;
+
+import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
+
+import org.ut.biolab.medsavant.util.MiscUtils;
+
 
 /**
  *
@@ -31,27 +44,12 @@ public class FileRecord {
 
     public static final char DELIMITER = '\t';
 
-    public static Vector convertToVector(FileRecord r) {
-        Vector v = new Vector();
-        for (int i = 0; i < NUM_FIELDS; i++) {
-            switch (i) {
-                case INDEX_OF_FILENAME:
-                    v.add(r.getFileName());
-                    break;
-                case INDEX_OF_MODDATE:
-                    v.add(r.getModificationDate());
-                    break;
-            }
-        }
-        return v;
-    }
-
     private String fileName;
     private String moddate;
 
     public FileRecord(String[] line) {
-        fileName =     (String)    Util.parseStringValueAs(CLASS_OF_FILENAME, line[INDEX_OF_FILENAME]);
-        moddate =       (String)  Util.parseStringValueAs(CLASS_OF_MODDATE, line[INDEX_OF_MODDATE]);
+        fileName = (String)MiscUtils.parseStringValueAs(CLASS_OF_FILENAME, line[INDEX_OF_FILENAME]);
+        moddate = (String)MiscUtils.parseStringValueAs(CLASS_OF_MODDATE, line[INDEX_OF_MODDATE]);
     }
 
     public FileRecord(String path, String comments) {
@@ -129,36 +127,6 @@ public class FileRecord {
 
     private static CSVWriter getFileWriter(File f, char delim) throws FileNotFoundException, IOException {
         return new CSVWriter(new FileWriter(f), delim);
-    }
-
-    public static Vector getFieldNames() {
-        Vector v = new Vector();
-        for (int i = 0; i < NUM_FIELDS; i++) {
-            switch (i) {
-                case INDEX_OF_FILENAME:
-                    v.add("File name");
-                    break;
-                case INDEX_OF_MODDATE:
-                    v.add("Added on");
-                    break;
-            }
-        }
-        return v;
-    }
-
-    public static Vector getFieldClasses() {
-        Vector v = new Vector();
-        for (int i = 0; i < NUM_FIELDS; i++) {
-            switch (i) {
-                case INDEX_OF_FILENAME:
-                    v.add(CLASS_OF_FILENAME);
-                    break;
-                case INDEX_OF_MODDATE:
-                    v.add(CLASS_OF_MODDATE);
-                    break;
-            }
-        }
-        return v;
     }
 
     public static List<Boolean> getDefaultColumns(){

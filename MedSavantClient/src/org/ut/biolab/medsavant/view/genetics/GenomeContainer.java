@@ -15,15 +15,9 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -33,20 +27,20 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.util.MedSavantWorker;
 
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.model.Chromosome;
-import org.ut.biolab.medsavant.db.model.Range;
+import org.ut.biolab.medsavant.db.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.model.Chromosome;
+import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -117,16 +111,7 @@ public class GenomeContainer extends JLayeredPane {
 
         updateIfRequired();
 
-        this.addComponentListener(new ComponentListener() {
-
-            @Override
-            public void componentResized(ComponentEvent ce) {
-            }
-
-            @Override
-            public void componentMoved(ComponentEvent ce) {
-            }
-
+        this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent ce) {
                 updateIfRequired();
@@ -141,7 +126,7 @@ public class GenomeContainer extends JLayeredPane {
         });
     }
 
-    public void setGenome(Genome g) {
+    public final void setGenome(Genome g) {
         this.genome = g;
         setChromosomeViews();
     }
@@ -185,7 +170,7 @@ public class GenomeContainer extends JLayeredPane {
         updateRequired = b;
     }
 
-    public void updateIfRequired() {
+    public final void updateIfRequired() {
         if (!init) {
             return;
         }
@@ -249,7 +234,7 @@ public class GenomeContainer extends JLayeredPane {
                 showShowCard();
                 return true;
             } catch (SQLException ex) {
-                MiscUtils.checkSQLException(ex);
+                ClientMiscUtils.checkSQLException(ex);
                 throw ex;
             }
         }
@@ -264,6 +249,7 @@ public class GenomeContainer extends JLayeredPane {
         LOG.log(Level.SEVERE, null, x);
         }
         } */
+        @Override
         public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
             if (!this.isDone()) {
                 this.cancel(true);

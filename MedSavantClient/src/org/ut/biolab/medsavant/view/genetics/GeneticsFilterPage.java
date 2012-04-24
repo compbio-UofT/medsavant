@@ -1,11 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics;
 
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
 import java.awt.BorderLayout;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -14,12 +23,16 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+
+import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
@@ -47,6 +60,7 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
         return "Filters";
     }
 
+    @Override
     public JPanel getView(boolean update) {
         if (view == null || update) {
             view = ViewUtil.getClearPanel();
@@ -54,7 +68,7 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
             view.setLayout(new BorderLayout());
             view.add(fp,BorderLayout.CENTER);
 
-            //if(history != null) FilterController.removeFilterListener(history);
+            //if (history != null) FilterController.removeFilterListener(history);
             //history = new FilterProgressPanel();
             //view.add(new PeekingPanel("History", BorderLayout.EAST, history, true), BorderLayout.WEST);
 
@@ -76,8 +90,8 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
         ThreadController.getInstance().cancelWorkers(getName());
     }
 
-    public static FilterPanel getFilterPanel(){
-        if(fp == null){
+    public static FilterPanel getFilterPanel() {
+        if (fp == null) {
             fp = new FilterPanel();
         }
         return fp;
@@ -91,7 +105,7 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
 
     @Override
     public void referenceChanged(String prnameojectName) {
-        if(fp != null){
+        if (fp != null) {
             fp.clearAll();
             fp.refreshSubPanels();
         }
@@ -111,6 +125,7 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
             FilterController.addFilterListener(this);
         }
 
+        @Override
         public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
             updateSQL();
         }

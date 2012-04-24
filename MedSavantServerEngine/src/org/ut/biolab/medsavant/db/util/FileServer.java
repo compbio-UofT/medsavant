@@ -26,6 +26,7 @@ Health Market Science
 Suite 200
 King of Prussia, PA 19406
  */
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -34,7 +35,6 @@ import java.io.InputStream;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import java.rmi.RemoteException;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.RemoteFileServer;
 
 /**

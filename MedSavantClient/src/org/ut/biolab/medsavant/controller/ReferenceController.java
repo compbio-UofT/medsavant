@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.model.Chromosome;
+import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;

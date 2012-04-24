@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ut.biolab.medsavant.client.api.ClientCallbackAdapter;
+import org.ut.biolab.medsavant.clientapi.ClientCallbackAdapter;
 import org.ut.biolab.medsavant.db.util.ConnectionController;
 import org.ut.biolab.medsavant.db.util.SessionConnection;
 import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.shared.MiscUtils;
-import org.ut.biolab.medsavant.server.api.SessionAdapter;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.serverapi.SessionAdapter;
 import org.ut.biolab.medsavant.server.mail.CryptoUtils;
 
 /**

@@ -1,21 +1,34 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 
 package org.ut.biolab.medsavant.controller;
 
-import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.healthmarketscience.sqlbuilder.dbspec.Column;
+
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.db.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 
 /**
  * @author Andrew
@@ -106,7 +119,7 @@ public class ResultController implements FiltersChangedListener {
                     limit, 
                     order);
         } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
+            ClientMiscUtils.checkSQLException(ex);
             Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
             ex.printStackTrace();
@@ -135,7 +148,7 @@ public class ResultController implements FiltersChangedListener {
                 }
                 return totalNumVariantsRemaining;
             } catch (SQLException ex) {
-                MiscUtils.checkSQLException(ex);
+                ClientMiscUtils.checkSQLException(ex);
                 ex.printStackTrace();
                 return 0;
             } catch (RemoteException ex) {
@@ -162,7 +175,7 @@ public class ResultController implements FiltersChangedListener {
                 }
                 return totalNumVariants;
             } catch (SQLException ex) {
-                MiscUtils.checkSQLException(ex);
+                ClientMiscUtils.checkSQLException(ex);
                 ex.printStackTrace();
                 return 0;
             } catch (RemoteException ex) {
@@ -172,6 +185,7 @@ public class ResultController implements FiltersChangedListener {
         }
     }
 
+    @Override
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
             setUpdateTotalNumRequired(true);
     }

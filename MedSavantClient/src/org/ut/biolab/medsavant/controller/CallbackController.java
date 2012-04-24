@@ -6,8 +6,8 @@ package org.ut.biolab.medsavant.controller;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
-import org.ut.biolab.medsavant.client.api.ClientCallbackAdapter;
-import org.ut.biolab.medsavant.db.util.shared.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.clientapi.ClientCallbackAdapter;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**

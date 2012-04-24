@@ -1,6 +1,17 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics;
 
@@ -14,19 +25,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.view.subview.SectionView;
-import org.ut.biolab.medsavant.view.subview.SubSectionView;
-import org.ut.biolab.medsavant.db.model.Chromosome;
+import org.ut.biolab.medsavant.db.FatalDatabaseException;
+import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
+import org.ut.biolab.medsavant.view.subview.SectionView;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 
 
@@ -49,6 +61,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         ReferenceController.getInstance().addReferenceListener(this);
     }
 
+    @Override
     public String getName() {
         return "Spreadsheet";
     }
@@ -62,6 +75,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         return settingComponents;
     }
 
+    @Override
     public JPanel getView(boolean update) {
 
         if (panel == null || update) {
@@ -107,18 +121,18 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     @Override
     public void viewDidUnload() {
         ThreadController.getInstance().cancelWorkers(getName());
-        if(tablePanel != null && !tablePanel.isInit()){
-            this.setUpdateRequired(true);
+        if (tablePanel != null && !tablePanel.isInit()) {
+            setUpdateRequired(true);
         }
         isLoaded = false;
     }
 
-    public void updateContents(){
+    public void updateContents() {
         ThreadController.getInstance().cancelWorkers(getName());
-        if(tablePanel == null || gp == null) return;
+        if (tablePanel == null || gp == null) return;
         tablePanel.setUpdateRequired(true);
         gp.setUpdateRequired(true);
-        if(isLoaded){
+        if (isLoaded) {
             tablePanel.updateIfRequired();
             gp.updateIfRequired();
         }
@@ -130,14 +144,15 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     }
 
     @Override
-    public void referenceAdded(String name) {}
+    public void referenceAdded(String name) {
+    }
 
     @Override
-    public void referenceRemoved(String name) {}
+    public void referenceRemoved(String name) {
+    }
 
     @Override
     public void referenceChanged(String name) {
         updateContents();
     }
-
 }

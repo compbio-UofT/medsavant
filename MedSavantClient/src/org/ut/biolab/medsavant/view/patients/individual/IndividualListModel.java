@@ -11,8 +11,8 @@ import java.util.Vector;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.db.format.PatientFormat;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.format.PatientFormat;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
 
 /**
@@ -25,7 +25,7 @@ public class IndividualListModel implements DetailedListModel {
         try {
             return MedSavantClient.PatientQueryUtilAdapter.getBasicPatientInfo(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), limit);
         } catch (SQLException ex) {
-            MiscUtils.checkSQLException(ex);
+            ClientMiscUtils.checkSQLException(ex);
             throw ex;
         }
     }
