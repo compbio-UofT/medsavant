@@ -9,6 +9,8 @@ import javax.swing.Icon;
 import org.ut.biolab.medsavant.view.patients.individual.IndividualsPage;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.manage.IntervalPage;
+import org.ut.biolab.medsavant.view.manage.VariantFilesPage;
 import org.ut.biolab.medsavant.view.patients.cohorts.CohortsPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -17,18 +19,21 @@ import org.ut.biolab.medsavant.view.subview.SectionView;
  *
  * @author mfiume
  */
-public class PatientsSection extends SectionView {
+public class ListsSection extends SectionView {
 
     private SubSectionView[] pages;
     {
-        pages = new SubSectionView[2];
+        pages = new SubSectionView[4];
         pages[0] = new IndividualsPage(this);
         pages[1] = new CohortsPage(this);
-    }
+        pages[2] = new IntervalPage(this);
+        pages[3] = new VariantFilesPage(this);
+
+     }
 
     @Override
     public String getName() {
-        return "Patients";
+        return "Tables";
     }
 
     @Override

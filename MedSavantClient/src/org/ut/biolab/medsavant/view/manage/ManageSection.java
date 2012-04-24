@@ -51,7 +51,7 @@ public class ManageSection extends SectionView {
     }
 
     @Override
-    public Component[] getBanner() {
+    public Component[] getSectionMenuComponents() {
         return null;
     }
 

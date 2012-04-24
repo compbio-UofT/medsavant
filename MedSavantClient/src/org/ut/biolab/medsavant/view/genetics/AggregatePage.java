@@ -28,14 +28,14 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
     private AggregatesStatsPanel asp;
     private boolean isLoaded = false;
 
-    public AggregatePage(SectionView parent) { 
+    public AggregatePage(SectionView parent) {
         super(parent);
         FilterController.addFilterListener(this);
         ReferenceController.getInstance().addReferenceListener(this);
     }
 
     public String getName() {
-        return "Aggregate";
+        return "Enrichment";
     }
 
     public JPanel getView(boolean update) {
@@ -59,7 +59,7 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
         panel.add(asp, BorderLayout.CENTER);
     }
 
-    public Component[] getBanner() {
+    public Component[] getSubSectionMenuComponents() {
 //        Component[] cs = new Component[1];
 //        JButton addButton = new JButton("Add Region Statistics");
 //        addButton.addActionListener(new ActionListener() {
@@ -90,7 +90,7 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
     public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
         ThreadController.getInstance().cancelWorkers(getName());
         if(asp != null){
-            asp.update(true, isLoaded);   
+            asp.update(true, isLoaded);
         }
     }
 
@@ -103,7 +103,7 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
     @Override
     public void referenceChanged(String name) {
         if(asp != null){
-            asp.update(true, isLoaded);   
+            asp.update(true, isLoaded);
         }
     }
 

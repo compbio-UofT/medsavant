@@ -20,6 +20,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -30,6 +31,7 @@ import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.server.api.SessionAdapter;
 import org.ut.biolab.medsavant.settings.VersionSettings;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 
 /**
  *
@@ -175,6 +177,17 @@ public class LoginController {
                     JOptionPane.WARNING_MESSAGE);
             ex.printStackTrace();
         }
+        try {
+            setDefaultIds();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    null,
+                    "<html>There was a problem choosing a project</html>",
+                    "Error logging in",
+                    JOptionPane.WARNING_MESSAGE);
+            ex.printStackTrace();
+        }
+
 
         //register for callback
         /*
@@ -203,6 +216,7 @@ public class LoginController {
     }
 
     public static void logout() {
+        MedSavantFrame.getInstance().setTitle("MedSavant");
         setLoggedIn(false);
     }
 
@@ -217,5 +231,19 @@ public class LoginController {
         } catch (Exception ex) {
             Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private static void setDefaultIds() throws SQLException, RemoteException {
+        ProjectController.getInstance().setProject(ProjectController.getInstance().getProjectNames().get(0));
+
+        List<String> references = MedSavantClient.ReferenceQueryUtilAdapter.getReferencesForProject(
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentProjectId());
+
+
+        ReferenceController.getInstance().setReference(references.get(references.size()-1));
+
+        System.out.println("Setting project to " + ProjectController.getInstance().getCurrentProjectName());
+        System.out.println("Setting reference to " + ReferenceController.getInstance().getCurrentReferenceName());
     }
 }

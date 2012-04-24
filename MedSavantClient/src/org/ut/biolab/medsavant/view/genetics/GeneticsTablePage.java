@@ -29,6 +29,7 @@ import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 
+
 /**
  *
  * @author mfiume
@@ -39,6 +40,8 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     private TablePanel tablePanel;
     private GenomeContainer gp;
     private boolean isLoaded = false;
+    private PeekingPanel genomeView;
+    private Component[] settingComponents;
 
     public GeneticsTablePage(SectionView parent) {
         super(parent);
@@ -47,7 +50,16 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     }
 
     public String getName() {
-        return "Table";
+        return "Spreadsheet";
+    }
+
+    @Override
+    public Component[] getSubSectionMenuComponents() {
+        if (settingComponents == null) {
+            settingComponents =  new Component[1];
+            settingComponents[0] = PeekingPanel.getCheckBoxForPanel(genomeView,"Browser");
+        }
+        return settingComponents;
     }
 
     public JPanel getView(boolean update) {
@@ -77,15 +89,12 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         Genome g = new Genome(chrs);
         gp = new GenomeContainer(getName(), g);
 
-        PeekingPanel genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, (JComponent)gp, false,225);
+        genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, (JComponent)gp, false,225);
+        genomeView.setToggleBarVisible(false);
         panel.add(genomeView, BorderLayout.NORTH);
 
         tablePanel = new TablePanel(getName());
         panel.add(tablePanel, BorderLayout.CENTER);
-    }
-
-    public Component[] getBanner() {
-        return null;
     }
 
     @Override

@@ -40,7 +40,7 @@ import org.ut.biolab.medsavant.view.manage.ManageSection;
 import org.ut.biolab.medsavant.view.manage.ProjectWizard;
 import org.ut.biolab.medsavant.view.manage.OtherSection;
 import org.ut.biolab.medsavant.view.manage.PluginsSection;
-import org.ut.biolab.medsavant.view.patients.PatientsSection;
+import org.ut.biolab.medsavant.view.patients.ListsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -49,10 +49,10 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  *
  * @author mfiume
  */
-public class LoggedInView extends JPanel implements ProjectListener {
+public class LoggedInView extends JPanel {
     private static final Logger LOG = Logger.getLogger(LoggedInView.class.getName());
     private ViewController viewController;
-    private JComboBox projectDropDown;
+    //private JComboBox projectDropDown;
 
     public LoggedInView() {
         init();
@@ -62,7 +62,6 @@ public class LoggedInView extends JPanel implements ProjectListener {
         this.setLayout(new BorderLayout());
         initViewContainer();
         initTabs();
-        ProjectController.getInstance().addProjectListener(this);
     }
 
     private void initViewContainer() {
@@ -79,94 +78,18 @@ public class LoggedInView extends JPanel implements ProjectListener {
 
         viewController.clearMenu();
 
-        projectDropDown = new JComboBox();
-
-        projectDropDown.setMinimumSize(new Dimension(210,23));
-        projectDropDown.setPreferredSize(new Dimension(210,23));
-        projectDropDown.setMaximumSize(new Dimension(210,23));
-
-        refreshProjectDropDown();
-
-        viewController.addComponent(projectDropDown);
-        viewController.addComponent(Box.createHorizontalGlue());
-
-        addSection(new PatientsSection());
+        addSection(new ListsSection());
         addSection(new GeneticsSection());
 
         //viewController.addComponent(getSeparator());
 
         //addSection(new PluginsSection());
-        addSection(new OtherSection());
+        //addSection(new OtherSection());
 
         if (LoginController.isAdmin()) {
             addSection(new ManageSection());
         }
 
-        viewController.addComponent(Box.createHorizontalGlue());
-        viewController.addComponent(Box.createHorizontalStrut(
-                (int) projectDropDown.getPreferredSize().getWidth()
-                ));
-
-    }
-
-
-    private void refreshProjectDropDown() {
-        try {
-            projectDropDown.removeAllItems();
-
-            List<String> projects = null;
-
-            while (projects == null || projects.isEmpty()) {
-                projects = ProjectController.getInstance().getProjectNames();
-
-                if (!projects.isEmpty()) {
-                    break;
-                }
-
-                if (projects.isEmpty() && !LoginController.isAdmin()) {
-                    DialogUtils.displayMessage("Welcome to MedSavant. No projects have been started. Please contact your administrator.");
-                    LoginController.logout();
-                    return;
-                }
-
-                if (projects.isEmpty()) {
-                    while (true) {
-                        int result = DialogUtils.askYesNo("Welcome to MedSavant", "To begin using MedSavant, you will need to create a project.");
-                        if (result == DialogUtils.NO) {
-                            MedSavantFrame.getInstance().requestClose();
-                            // don't break, the user chose not to quit
-                        } else {
-                            ProjectWizard npd = new ProjectWizard();
-                            break;
-                        }
-                    }
-                }
-            }
-
-            for (String s : projects) {
-                projectDropDown.addItem(s);
-            }
-            if (projects.isEmpty()) {
-                projectDropDown.addItem("No Projects");
-                projectDropDown.setEnabled(false);
-            } else {
-                projectDropDown.setEnabled(true);
-                projectDropDown.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        String currentName = ProjectController.getInstance().getCurrentProjectName();
-                        if (!ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem())) {
-                            projectDropDown.setSelectedItem(currentName);
-                        }
-                    }
-                });
-                ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
-            }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch (RemoteException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
     }
 
 
@@ -179,18 +102,4 @@ public class LoggedInView extends JPanel implements ProjectListener {
         return p;
     }
 
-    public void projectAdded(String projectName) {
-        refreshProjectDropDown();
-    }
-
-    public void projectRemoved(String projectName) {
-        refreshProjectDropDown();
-    }
-
-    public void projectChanged(String projectName) {
-    }
-
-    public void projectTableRemoved(int projid, int refid) {
-        refreshProjectDropDown();
-    }
 }

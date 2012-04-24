@@ -50,7 +50,7 @@ public class SubSectionViewCollection extends SubSectionView {
 
     }
 
-    public Component[] getBanner() {
+    public Component[] getSubSectionMenuComponents() {
         Component[] arr = new Component[menuComponents.size()];
         for (int i = 0; i < arr.length; i++) {
             arr[i] = menuComponents.get(i);

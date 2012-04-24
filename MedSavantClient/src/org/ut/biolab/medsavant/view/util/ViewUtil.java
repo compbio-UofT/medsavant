@@ -30,6 +30,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
@@ -260,12 +261,20 @@ public class ViewUtil {
         return BorderFactory.createMatteBorder(1,0,1,0,Color.lightGray);
     }
 
+    public static Color getTertiaryMenuColor() {
+        return new Color(80,80,80);
+    }
+
     public static Color getLightColor() {
         return new Color(200,200,200);
     }
 
     public static Color getMidColor() {
         return new Color(60,60,60);
+    }
+
+    public static Color getBGColor() {
+        return new Color(237,237,237);
     }
 
     public static Color getMenuColor() {
@@ -289,6 +298,13 @@ public class ViewUtil {
         l.setOpaque(false);
         p.add(l);
         return p;
+    }
+
+    public static JLabel getWhiteLabel(String string) {
+        JLabel l = new JLabel(string);
+        l.setForeground(Color.white);
+        return l;
+
     }
 
     public static JLabel getTitleLabel(String string) {
@@ -421,7 +437,7 @@ public class ViewUtil {
         p.add(Box.createVerticalGlue());
         return p;
     }
-    
+
     public static JPanel getMessagePanelBig(String string) {
         JPanel p = new JPanel();
         p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
@@ -446,7 +462,7 @@ public class ViewUtil {
                 );
     }
 
-    public static Component center(JComponent c) {
+    public static JPanel center(JComponent c) {
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(p);
         p.add(Box.createHorizontalGlue());
@@ -455,12 +471,40 @@ public class ViewUtil {
         return p;
     }
 
+    public static int getBreathingPadding() {
+        return 20;
+    }
 
+    static int secPad = 2;
+    public static Border getRightLineBorder() {
+        return BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 0, 1, new Color(50,50,50)),
+                BorderFactory.createEmptyBorder(secPad, secPad, secPad, secPad)
+                );
+    }
 
+    public static JButton getSoftButton(String string) {
+        JButton b = new JButton(string);
+        b.putClientProperty( "JButton.buttonType", "segmentedRoundRect" );
+        b.putClientProperty( "JButton.segmentPosition", "only" );
+        return b;
+    }
 
+    public static void makeSmall(JComponent c) {
+        c.putClientProperty("JComponent.sizeVariant", "small");
+    }
 
+    public static JToggleButton getSoftToggleButton(String string) {
+        JToggleButton b = new JToggleButton(string);
+        b.putClientProperty( "JButton.buttonType", "segmentedRoundRect" );
+        b.putClientProperty( "JButton.segmentPosition", "only" );
+        return b;
+    }
 
-
+    public static void applyMenuStyleInset(JPanel p) {
+        p.setBorder(ViewUtil.getMediumBorder());
+        p.setBackground(new Color(100,100,100));
+    }
 
     private static class DetailListCellRenderer extends JLabel implements ListCellRenderer {
 
@@ -568,7 +612,7 @@ public class ViewUtil {
 
     public static JLabel getDetailTitleLabel(String label) {
         JLabel l = new JLabel(label);
-        l.setForeground(Color.darkGray);
+        l.setForeground(Color.black);
         l.setFont(new Font(l.getFont().getFamily(),Font.PLAIN,20));
         return l;
     }

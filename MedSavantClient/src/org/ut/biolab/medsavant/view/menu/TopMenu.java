@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -42,6 +43,7 @@ public class TopMenu extends JToolBar {
         super();
 
         this.setFloatable(false);
+        this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
         contentContainer = panel;
 
@@ -75,10 +77,11 @@ public class TopMenu extends JToolBar {
                 }
             }
         });
+
     }
 
     public void addSection(SectionView section) {
-        JideSplitButton button = new JideSplitButton(section.getName(), section.getIcon());
+        JideSplitButton button = new JideSplitButton(/*section.getName()*/"", section.getIcon());
         button.setAlwaysDropdown(true);
         button.setButtonSelected(false);
         add(button);
@@ -95,7 +98,7 @@ public class TopMenu extends JToolBar {
 
     public void addComponent(Component c) {
         add(c);
-        add(Box.createHorizontalStrut(5));
+        add(Box.createVerticalStrut(5));
     }
 
     public void updateSections(){

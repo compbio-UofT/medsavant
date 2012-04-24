@@ -192,6 +192,8 @@ class TablePanel extends JLayeredPane {
                     }
                 };
 
+                stp.setExportButtonVisible(false);
+
                 stp.getTable().addMouseListener(new MouseAdapter() {
                     public void mouseReleased(MouseEvent e) {
 

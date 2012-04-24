@@ -84,16 +84,8 @@ public class GenomeContainer extends JLayeredPane {
         c.weightx = 1.0;
         c.weighty = 1.0;
 
-        chrPlusButtonContainer = new JPanel() {
-
-            @Override
-            public void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                GradientPaint p = new GradientPaint(0, 0, Color.darkGray, 0, this.getHeight(), Color.black);
-                g2.setPaint(p);
-                g2.fillRect(0, 0, this.getWidth(), this.getHeight());
-            }
-        };
+        chrPlusButtonContainer = new JPanel();
+        chrPlusButtonContainer.setBackground(ViewUtil.getTertiaryMenuColor());
         chrPlusButtonContainer.setLayout(new BorderLayout());
 
         chrContainer = ViewUtil.getClearPanel();
@@ -114,7 +106,7 @@ public class GenomeContainer extends JLayeredPane {
         chrPlusButtonContainer.add(ViewUtil.alignRight(ViewUtil.alignLeft(savantButton)),BorderLayout.SOUTH);
          *
          */
-        
+
         this.add(chrPlusButtonContainer, c, JLayeredPane.DEFAULT_LAYER);
 
         waitPanel = new WaitPanel("Generating Genome View");
@@ -247,11 +239,11 @@ public class GenomeContainer extends JLayeredPane {
                 }
 
                 final int max = mmax;
-                
-                for(ChromosomePanel p : chrViews) {       
+
+                for(ChromosomePanel p : chrViews) {
                     Map<Range, Integer> m = map.get(p.getChrName());
                     if(m == null) m = map.get(p.getShortChrName());
-                    p.updateFrequencyCounts(m, max);                                       
+                    p.updateFrequencyCounts(m, max);
                 }
 
                 showShowCard();

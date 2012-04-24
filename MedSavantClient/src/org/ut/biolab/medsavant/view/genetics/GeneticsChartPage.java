@@ -30,8 +30,8 @@ public class GeneticsChartPage extends SubSectionView implements FiltersChangedL
     private ChartView cc;
     private boolean isLoaded = false;
 
-    public GeneticsChartPage(SectionView parent) { 
-        super(parent); 
+    public GeneticsChartPage(SectionView parent) {
+        super(parent);
         FilterController.addFilterListener(this);
         ReferenceController.getInstance().addReferenceListener(this);
     }
@@ -63,7 +63,7 @@ public class GeneticsChartPage extends SubSectionView implements FiltersChangedL
         panel.add(cc, BorderLayout.CENTER);
     }
 
-    public Component[] getBanner() {
+    public Component[] getSubSectionMenuComponents() {
         /*
         Component[] cs = new Component[1];
         JButton addButton = new JButton("Add chart");
@@ -108,7 +108,7 @@ public class GeneticsChartPage extends SubSectionView implements FiltersChangedL
     public void referenceChanged(String prnameojectName) {
         tryUpdate();
     }
-    
+
     private void tryUpdate(){
         if(cc != null){
             cc.setUpdateRequired(true);

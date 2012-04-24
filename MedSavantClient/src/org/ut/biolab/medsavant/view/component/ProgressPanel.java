@@ -19,7 +19,7 @@ import javax.swing.JPanel;
  */
 public class ProgressPanel extends JPanel implements ComponentListener {
 
-    private static final int preferredHeight = 20;
+    private static final int preferredHeight = 5;
     private int preferredWidth = 300;
     private static final int padding = 0;
     private int width_bar;

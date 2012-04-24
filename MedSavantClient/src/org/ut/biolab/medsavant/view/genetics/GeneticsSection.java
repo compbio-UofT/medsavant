@@ -34,6 +34,7 @@ import org.ut.biolab.medsavant.view.manage.VariantFilesPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionViewCollection;
+import org.ut.biolab.medsavant.view.util.PeekingPanel;
 
 /**
  *
@@ -46,13 +47,13 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     public static boolean isInitialized = false;
 
     public GeneticsSection() {
-        setPersistencePanels();
-        getBanner(); // force banner to be active, in turn forcing default reference selection
+        getSectionMenuComponents(); // force banner to be active, in turn forcing default reference selection
+        System.out.println("Done making genetics section");
     }
 
     @Override
     public String getName() {
-        return "Genetic Variants";
+        return "Variants";
     }
 
     @Override
@@ -62,12 +63,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
     @Override
     public SubSectionView[] getSubSections() {
-        SubSectionView[] pages = new SubSectionView[3];
-
-        SubSectionViewCollection variantCollectionBrowse = new SubSectionViewCollection(this,"Browse");
-        variantCollectionBrowse.addSubSectionView(new GeneticsTablePage(this));
-        variantCollectionBrowse.addSubSectionView(new GeneticsChartPage(this));
-        variantCollectionBrowse.addSubSectionView(new AggregatePage(this));
+        SubSectionView[] pages = new SubSectionView[4];
 
         SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this,"Plugins");
 
@@ -78,9 +74,10 @@ public class GeneticsSection extends SectionView implements ProjectListener {
             variantCollectionPlugins.addSubSectionView(new PluginPage(this, knownPlugins.get(i)));
         }
 
-        pages[0] = new VariantFilesPage(this);
-        pages[1] = variantCollectionBrowse;
-        pages[2] = variantCollectionPlugins;
+        pages[0] = new GeneticsTablePage(this);
+        pages[1] = new GeneticsChartPage(this);
+        pages[2] = new AggregatePage(this);
+        pages[3] = variantCollectionPlugins;
 
         return pages;
     }
@@ -93,24 +90,8 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         return panels;
     }
 
-    /*public JButton createVcfButton() {
-        JButton button = new JButton("Import Variants");
-
-        button.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-
-                new ImportVariantsWizard();
-                //new VCFUploadForm();
-            }
-        });
-
-        return button;
-    }*/
-
-
     private JButton exportVcfButton(){
-        JButton exportButton = new JButton("Export to VCF");
+        JButton exportButton = new JButton("Export Variants");
         exportButton.setOpaque(false);
         exportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -120,49 +101,15 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         return exportButton;
     }
 
-    private JButton addSaveResultSetButton() {
-        JButton button = new JButton("Save Variants");
-        button.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                //TODO
-            }
-        });
-        return button;
-    }
-
     @Override
-    public Component[] getBanner() {
+    public Component[] getSectionMenuComponents() {
 
-        Component[] result = new Component[3];
+        Component[] result = new Component[1];
 
-        JLabel l = new JLabel("Reference:");
-        l.setForeground(Color.white);
-        result[0] = l;
-        if (referenceDropDown == null) {
-            result[1] = getReferenceDropDown();
-        } else {
-            result[1] = referenceDropDown;
-        }
-        
-        result[2] = exportVcfButton();
-        //result[3] = createVcfButton();
-        //result[0] = addSaveResultSetButton();
+        result[0] = exportVcfButton();
 
         isInitialized = true;
         return result;
-    }
-
-    private void setPersistencePanels() {
-        try {
-            /*panels = new JPanel[2];
-            panels[0] = new FilterPanel();
-            panels[1] = new FilterProgressPanel();
-             *
-             */
-            //TODO: account for exception in filter panel instead
-        } catch (Exception ex) {
-        }
     }
 
     private Component getReferenceDropDown() {

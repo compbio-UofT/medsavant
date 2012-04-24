@@ -336,7 +336,7 @@ public class SearchableTablePanel extends JPanel {
             fieldPanel.add(filterField);
         }
 
-        chooseColumnButton = new JButton("Choose Columns");
+        chooseColumnButton = new JButton("More fields ...");
         chooseColumnButton.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e) {
                 columnChooser.showDialog();

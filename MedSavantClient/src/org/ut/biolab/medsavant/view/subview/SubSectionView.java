@@ -18,29 +18,29 @@ public abstract class SubSectionView {
 
     private SectionView parent;
     private boolean updateRequired = true;
-    
+
     public void setUpdateRequired(boolean required){
         this.updateRequired = required;
     }
-    
+
     public boolean isUpdateRequired(){
         return this.updateRequired;
     }
-    
+
     public SubSectionView(SectionView parent) {
         this.parent = parent;
     }
-    
+
     public abstract String getName();
 
     public abstract JPanel getView(boolean update);
 
-    public Component[] getBanner() { return null; }
+    public Component[] getSubSectionMenuComponents() { return null; }
 
     public SectionView getParent() {
         return this.parent;
     }
-    
+
     public abstract void viewDidLoad();
     public abstract void viewDidUnload();
 }

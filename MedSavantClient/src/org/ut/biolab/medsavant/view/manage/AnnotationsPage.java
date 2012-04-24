@@ -99,7 +99,7 @@ public class AnnotationsPage extends SubSectionView {
     }
 
     @Override
-    public Component[] getBanner() {
+    public Component[] getSubSectionMenuComponents() {
         Component[] result = new Component[0];
         //result[0] = getAddExternalAnnotationButton();
         return result;

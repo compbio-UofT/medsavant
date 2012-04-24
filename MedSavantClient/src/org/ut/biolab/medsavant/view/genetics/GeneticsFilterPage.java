@@ -42,13 +42,14 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
         fp = getFilterPanel();
     }
 
+    @Override
     public String getName() {
         return "Filters";
     }
 
     public JPanel getView(boolean update) {
         if (view == null || update) {
-            view = new JPanel();
+            view = ViewUtil.getClearPanel();
             view.setName(this.getName());
             view.setLayout(new BorderLayout());
             view.add(fp,BorderLayout.CENTER);
@@ -95,8 +96,8 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
             fp.refreshSubPanels();
         }
     }
-    
-    
+
+
     private static class FilterSQLPanel extends JPanel implements FiltersChangedListener {
         private final JTextArea content;
 

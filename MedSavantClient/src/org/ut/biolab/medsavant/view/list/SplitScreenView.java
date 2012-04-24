@@ -10,6 +10,7 @@ import com.jidesoft.utils.SwingWorker;
 import org.ut.biolab.medsavant.view.component.Util;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -72,14 +73,18 @@ public class SplitScreenView extends JPanel {
             cl = new CardLayout();
             this.setLayout(cl);
 
-            this.add(new WaitPanel("Getting list"), CARD_WAIT);
+            WaitPanel wp = new WaitPanel("Getting list");
+            wp.setBackground(ViewUtil.getTertiaryMenuColor());
+            this.add(wp, CARD_WAIT);
             showCard = new JPanel();
+
+
             this.add(showCard, CARD_SHOW);
 
-            buttonPanel = new JPanel();
+            buttonPanel = ViewUtil.getClearPanel();
             ViewUtil.applyHorizontalBoxLayout(buttonPanel);
 
-            buttonPanel.setBorder(ViewUtil.getSmallBorder());
+            buttonPanel.setBorder(ViewUtil.getMediumBorder());
             buttonPanel.add(Box.createHorizontalGlue());
 
             final ListView instance = this;
@@ -183,6 +188,8 @@ public class SplitScreenView extends JPanel {
             showCard.removeAll();
 
             showCard.setLayout(new BorderLayout());
+            showCard.setBackground(ViewUtil.getTertiaryMenuColor());
+            showCard.setBorder(ViewUtil.getBigBorder());
 
             final List<Object[]> data = list;
             List<String> columnNames = listModel.getColumnNames();
@@ -202,7 +209,7 @@ public class SplitScreenView extends JPanel {
             stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
                 public void valueChanged(ListSelectionEvent e) {
-                    
+
                     if(e.getValueIsAdjusting()) return;
 
                     List<Object[]> selectedItems = selectionGrabber.getSelectedItems();
@@ -214,14 +221,14 @@ public class SplitScreenView extends JPanel {
 
                 }
             });
-            
+
             stp.getTable().addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {  
+                public void mouseClicked(MouseEvent e) {
                     if(SwingUtilities.isRightMouseButton(e)){
                         int row = stp.getTable().rowAtPoint(e.getPoint());
                         stp.getTable().getSelectionModel().setSelectionInterval(row, row);
-                        detailedView.setRightClick(e);    
-                    }                    
+                        detailedView.setRightClick(e);
+                    }
                 }
             });
 
@@ -273,23 +280,25 @@ public class SplitScreenView extends JPanel {
 
         listView = new ListView(detailedListModel, detailedView, detailEditer);
 
-        this.add(new PeekingPanel("List", BorderLayout.EAST, (JComponent)listView, true, 320), BorderLayout.WEST);
+        PeekingPanel pp = new PeekingPanel("List", BorderLayout.EAST, (JComponent)listView, true, 320);
+        pp.setToggleBarVisible(false);
+        this.add(pp, BorderLayout.WEST);
         this.add(detailedView, BorderLayout.CENTER);
     }
 
     public void refresh() {
         listView.refreshList();
     }
-    
+
     public List<Object[]> getList() {
         return listView.list;
     }
-    
+
     public void selectInterval(int start, int end){
         start = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), start);
         end = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), end);
         listView.stp.getTable().getSelectionModel().setSelectionInterval(start, end);
         listView.stp.scrollToIndex(start);
     }
-    
+
 }

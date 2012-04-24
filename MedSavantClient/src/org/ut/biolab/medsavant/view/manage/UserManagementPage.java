@@ -289,7 +289,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
     }
 
     @Override
-    public Component[] getBanner() {
+    public Component[] getSubSectionMenuComponents() {
         Component[] result = new Component[0];
         //result[0] = getAddButton();
         return result;

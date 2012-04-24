@@ -1,6 +1,7 @@
 
 package org.ut.biolab.medsavant;
 
+import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 import java.rmi.*;
 import java.rmi.registry.*;
 import java.awt.Insets;
@@ -72,6 +73,9 @@ public class MedSavantClient {
         verifyJIDE();
         setLAF();
 
+        //required for FORGE plugin
+        //NativeInterface.open();
+
         SettingsController.getInstance();
 
         Getopt g = new Getopt("MedSavant", args, "h:p:d:u:w:");
@@ -111,6 +115,9 @@ public class MedSavantClient {
         frame.setExtendedState(MedSavantFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
         ClientLogger.log(MedSavantClient.class, "MedSavant booted");
+
+        //required for FORGE plugin
+        //NativeInterface.runEventPump();
     }
 
     public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException {
@@ -124,7 +131,7 @@ public class MedSavantClient {
         System.out.println("Connected");
 
         // look up the remote object
-        System.out.print("Retriving adapters...");
+        System.out.print("Retrieving adapters...");
         System.out.flush();
         setAdaptersFromRegistry(registry);
         System.out.println("Done");

@@ -49,7 +49,7 @@ public class OtherSection extends SectionView {
     }
 
     @Override
-    public Component[] getBanner() {
+    public Component[] getSectionMenuComponents() {
         return null;
     }
 }

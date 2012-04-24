@@ -31,7 +31,9 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ResultController;
+import org.ut.biolab.medsavant.db.exception.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.exception.NonFatalDatabaseException;
+import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.MiscUtils;
@@ -42,12 +44,54 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 /**
  * @author AndrewBrook
  */
-public class FilterHistoryPanel extends JPanel {
+public class FilterHistoryPanel extends JPanel implements ReferenceListener, FiltersChangedListener {
 
     private int maxRecords = 0;
     private JTable table;
     private ProgressTableModel model;
     private Mode mode = Mode.GLOBAL;
+
+    @Override
+    public void referenceAdded(String name) {
+    }
+
+    @Override
+    public void referenceRemoved(String name) {
+    }
+
+    @Override
+    public void referenceChanged(String name) {
+        this.reset();
+    }
+
+    @Override
+    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+        //final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+        //        "Applying Filter",
+        //        "Filter is being applied. Please wait.",
+        //        true);
+
+        final Filter filter = FilterController.getLastFilter();
+        final String action = FilterController.getLastActionString();
+
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+
+                try {
+                    int numLeft = ResultController.getInstance().getNumFilteredVariants();
+                    addFilterSet(filter, action, numLeft);
+                    //addFilterSet(numLeft);
+                } catch (NonFatalDatabaseException ex) {
+                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                //dialog.close();
+            }
+        };
+
+        thread.start();
+        //dialog.setVisible(true);
+    }
     private enum Mode {GLOBAL, RELATIVE};
 
     private Color TOTAL_COLOR = new Color(225,244,254);
@@ -57,10 +101,13 @@ public class FilterHistoryPanel extends JPanel {
 
     public FilterHistoryPanel(){
 
-        this.setPreferredSize(new Dimension(200,150));
+        ReferenceController.getInstance().addReferenceListener(this);
+        FilterController.addFilterListener(this);
+
+        ViewUtil.applyMenuStyleInset(this);
+        this.setPreferredSize(new Dimension(200,300));
         this.setName("History");
         this.setLayout(new BorderLayout());
-        this.setOpaque(false);
         table = new JTable(){
             @Override
             public TableCellRenderer getCellRenderer(int row, int column) {
@@ -77,9 +124,13 @@ public class FilterHistoryPanel extends JPanel {
 
         ButtonGroup group = new ButtonGroup();
         JRadioButton globalButton = new JRadioButton("Global");
+        ViewUtil.makeSmall(globalButton);
+        globalButton.setForeground(Color.white);
         globalButton.setSelected(true);
         globalButton.setOpaque(false);
-        JRadioButton relativeButton = new JRadioButton("Relative");
+        JRadioButton relativeButton = new JRadioButton("Relative to previous change");
+        ViewUtil.makeSmall(relativeButton);
+        relativeButton.setForeground(Color.white);
         relativeButton.setOpaque(false);
         globalButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -116,7 +167,7 @@ public class FilterHistoryPanel extends JPanel {
             public void run() {
                 try {
                     maxRecords = ResultController.getInstance().getNumFilteredVariants();
-                } catch (NonFatalDatabaseException ex) {
+                } catch (Exception ex) {
                     Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 if (maxRecords != -1) {
@@ -127,7 +178,7 @@ public class FilterHistoryPanel extends JPanel {
         };
         t.start();
     }
-    
+
     private synchronized void changeMode(Mode mode){
         if(this.mode == mode) return;
         this.mode = mode;
@@ -137,40 +188,11 @@ public class FilterHistoryPanel extends JPanel {
         table.repaint();
     }
 
-    public void filtersChanged(final FilterEffectivenessPanel fep) {
-        //final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-        //        "Applying Filter",
-        //        "Filter is being applied. Please wait.",
-        //        true);
-        
-        final Filter filter = FilterController.getLastFilter();
-        final String action = FilterController.getLastActionString();
-        
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                fep.showWaitCard();
-                try {
-                    int numLeft = ResultController.getInstance().getNumFilteredVariants();
-                    addFilterSet(filter, action, numLeft);
-                    //addFilterSet(numLeft);
-                } catch (NonFatalDatabaseException ex) {
-                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                fep.showShowCard();
-                //dialog.close();
-            }
-        };
-
-        thread.start();
-        //dialog.setVisible(true);
-    }
-
     private void addFilterSet(Filter filter, String action, int numLeft){
         model.addRow(filter.getName(), action, numLeft);
         table.updateUI();
         this.repaint();
-        
+
     }
 
     private class ProgressTableModel extends AbstractTableModel {
@@ -192,7 +214,7 @@ public class FilterHistoryPanel extends JPanel {
             records.add(numRecords);
             //parameters.add(param);
         }
-        
+
 
         public void clear(){
             names.clear();

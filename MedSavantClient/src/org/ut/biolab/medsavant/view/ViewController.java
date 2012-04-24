@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view;
 
 import java.awt.BorderLayout;
@@ -21,15 +20,27 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.logging.Level;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 
+import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.log.ClientLogger;
+import org.ut.biolab.medsavant.view.manage.ProjectWizard;
+import org.ut.biolab.medsavant.view.menu.Menu;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.menu.TopMenu;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -40,13 +51,12 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class ViewController extends JPanel {
 
     private SectionHeader sectionHeader;
-    private TopMenu menu;
+    private Menu menu;
     private JPanel contentContainer;
     private PersistencePanel sectionPanel;
     private PeekingPanel peekPersistence;
     private SectionView currentSection;
     private SubSectionView currentSubsection;
-
     private static ViewController instance;
 
     private ViewController() {
@@ -59,18 +69,21 @@ public class ViewController extends JPanel {
 
         // create the section header
         sectionHeader = new SectionHeader();
-        h1.add(sectionHeader, BorderLayout.NORTH);
+        //h1.add(sectionHeader, BorderLayout.NORTH);
 
         // create the content container
         contentContainer = new JPanel();
-        contentContainer.setBackground(Color.white);
+        contentContainer.setBackground(ViewUtil.getBGColor());
+        //int padding = ViewUtil.getBreathingPadding();
+        //contentContainer.setBorder(BorderFactory.createEmptyBorder(padding, padding, padding, padding));
         contentContainer.setLayout(new BorderLayout());
         h1.add(contentContainer, BorderLayout.CENTER);
 
         // create the right panel
         sectionPanel = new PersistencePanel();
         sectionPanel.setPreferredSize(new Dimension(350, 999));
-        peekPersistence = new PeekingPanel("", BorderLayout.EAST, (JComponent)sectionPanel, true,400);
+        peekPersistence = new PeekingPanel("", BorderLayout.EAST, (JComponent) sectionPanel, true, 350);
+        peekPersistence.setToggleBarVisible(false);
         h1.add(peekPersistence, BorderLayout.WEST);
 
         // add it all to the view
@@ -78,8 +91,9 @@ public class ViewController extends JPanel {
 
         peekPersistence.setVisible(false);
 
-        menu = new TopMenu(contentContainer);
+        menu = new Menu(contentContainer);
         add(menu, BorderLayout.NORTH);
+        add(menu.getSecondaryMenu(),BorderLayout.WEST);
 
 
         /*
@@ -115,8 +129,6 @@ public class ViewController extends JPanel {
             currentSubsection.viewDidLoad();
         }
 
-        sectionHeader.setSubSection(view);
-
         SectionView parent = view != null ? view.getParent() : null;
 
         if (parent != currentSection && parent != null) {
@@ -128,15 +140,26 @@ public class ViewController extends JPanel {
                 peekPersistence.setVisible(false);
             }
         }
-        currentSection = parent;    
+        currentSection = parent;
     }
 
+    public PeekingPanel getPersistencePanel() {
+        return peekPersistence;
+    }
+    /*
+    public void setPersistencePanelVisible(boolean b) {
+        if (peekPersistence.isVisible()) {
+            peekPersistence.setExpanded(b);
+        }
+    }*/
+
+    //TODO: does this do anything really?
     void setProject(String projectname) {
-         ClientLogger.log(ViewController.class, "Setting project to : " + projectname);
+        ClientLogger.log(ViewController.class, "Setting project to : " + projectname);
     }
 
     void clearMenu() {
-        menu.removeAll();
+        menu.clearMenu();
     }
 
     public void addSection(SectionView section) {
@@ -147,23 +170,27 @@ public class ViewController extends JPanel {
         menu.refreshSelection();
     }
 
-    public void addComponent(Component c) {
-        menu.addComponent(c);
+    public void addProjectDropDown(Component c) {
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+        p.add(c);
+        p.add(Box.createHorizontalGlue());
+        this.add(p, BorderLayout.NORTH);
     }
 
-    public void setPeekRightShown(boolean show){
+    public void setPeekRightShown(boolean show) {
         peekPersistence.setExpanded(show);
     }
 
-    public boolean isPeekRightShown(){
+    public boolean isPeekRightShown() {
         return peekPersistence.isExpanded();
     }
 
     private static class SidePanel extends JPanel {
 
         public SidePanel() {
-            this.setBackground(ViewUtil.getMenuColor());
-            this.setBorder(ViewUtil.getSideLineBorder());
+            this.setBackground(ViewUtil.getTertiaryMenuColor());
+            this.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getRightLineBorder(), ViewUtil.getBigBorder()));
             this.setLayout(new BorderLayout());
         }
 
@@ -184,112 +211,137 @@ public class ViewController extends JPanel {
         private void setSectionPersistencePanels(JPanel[] persistentPanels) {
             this.removeAll();
             if (persistentPanels.length == 1) {
-                JPanel p = ViewUtil.getSecondaryBannerPanel();
+                /*JPanel p = ViewUtil.getClearPanel();
                 p.add(new JLabel(persistentPanels[0].getName()));
                 this.add(
                         p,
                         //ViewUtil.center(new JLabel(persistentPanels[0].getName())),
-                        BorderLayout.NORTH);
-                this.add(persistentPanels[0],BorderLayout.CENTER);
+                        BorderLayout.NORTH);*/
+                this.add(persistentPanels[0], BorderLayout.CENTER);
             } else {
                 panes.removeAll();
                 for (JPanel p : persistentPanels) {
                     panes.addTab(p.getName(), p);
                 }
-                this.add(panes,BorderLayout.CENTER);
+                this.add(panes, BorderLayout.CENTER);
             }
 
         }
     }
 
-    private static class SectionHeader extends JPanel {
-        private static final String DEFAULT_TITLE = "Welcome to MedSavant";
+    private static class SectionHeader extends JPanel implements ProjectListener {
+
+        private static final String DEFAULT_TITLE = "";//Welcome to MedSavant";
         private final JLabel title;
-        private final JPanel sectionMenuPanel;
-        private final JPanel subSectionMenuPanel;
-        //private final ImagePanel leftTab;
-        //private final ImagePanel rightTab;
+        //private final JPanel sectionMenuPanel;
+        //private final JPanel subSectionMenuPanel;
+        private final JComboBox projectDropDown;
 
         public SectionHeader() {
             this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
             this.setBorder(null);
 
-            this.setMinimumSize(new Dimension(9999,30));
-            this.setPreferredSize(new Dimension(9999,30));
-            this.setMaximumSize(new Dimension(9999,30));
-
+            this.setMinimumSize(new Dimension(9999, 30));
+            this.setPreferredSize(new Dimension(9999, 30));
+            this.setMaximumSize(new Dimension(9999, 30));
 
             this.setBorder(ViewUtil.getLargeSideBorder());
+
+            projectDropDown = new JComboBox();
+
+            projectDropDown.setMinimumSize(new Dimension(210, 23));
+            projectDropDown.setPreferredSize(new Dimension(210, 23));
+            projectDropDown.setMaximumSize(new Dimension(210, 23));
+
+            refreshProjectDropDown();
+
+            this.add(projectDropDown);
+
             title = ViewUtil.getHeaderLabel(DEFAULT_TITLE);
             this.add(title);
-            sectionMenuPanel = ViewUtil.getClearPanel();
-            subSectionMenuPanel = ViewUtil.getClearPanel();
 
-            sectionMenuPanel.setBackground(new Color(232, 232, 232));
+            ProjectController.getInstance().addProjectListener(this);
+        }
 
-            subSectionMenuPanel.setBackground(new Color(232, 232, 232));
+        private void refreshProjectDropDown() {
+            try {
+                projectDropDown.removeAllItems();
 
-            sectionMenuPanel.setLayout(new BoxLayout(sectionMenuPanel, BoxLayout.X_AXIS));
-            subSectionMenuPanel.setLayout(new BoxLayout(subSectionMenuPanel, BoxLayout.X_AXIS));
+                List<String> projects = null;
 
-            this.add(Box.createHorizontalGlue());;
+                while (projects == null || projects.isEmpty()) {
+                    projects = ProjectController.getInstance().getProjectNames();
 
-            this.add(subSectionMenuPanel);
-            this.add(Box.createHorizontalGlue());
-            this.add(sectionMenuPanel);
+                    if (!projects.isEmpty()) {
+                        break;
+                    }
 
+                    if (projects.isEmpty() && !LoginController.isAdmin()) {
+                        DialogUtils.displayMessage("Welcome to MedSavant. No projects have been started. Please contact your administrator.");
+                        LoginController.logout();
+                        return;
+                    }
+
+                    if (projects.isEmpty()) {
+                        while (true) {
+                            int result = DialogUtils.askYesNo("Welcome to MedSavant", "To begin using MedSavant, you will need to create a project.");
+                            if (result == DialogUtils.NO) {
+                                MedSavantFrame.getInstance().requestClose();
+                                // don't break, the user chose not to quit
+                            } else {
+                                ProjectWizard npd = new ProjectWizard();
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                for (String s : projects) {
+                    projectDropDown.addItem(s);
+                }
+                if (projects.isEmpty()) {
+                    projectDropDown.addItem("No Projects");
+                    projectDropDown.setEnabled(false);
+                } else {
+                    projectDropDown.setEnabled(true);
+                    projectDropDown.addActionListener(new ActionListener() {
+
+                        public void actionPerformed(ActionEvent e) {
+                            String currentName = ProjectController.getInstance().getCurrentProjectName();
+                            if (!ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem())) {
+                                projectDropDown.setSelectedItem(currentName);
+                            }
+                        }
+                    });
+                    ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
+                }
+            } catch (SQLException ex) {
+            } catch (RemoteException ex) {
+            }
+        }
+
+        public void projectAdded(String projectName) {
+            refreshProjectDropDown();
+        }
+
+        public void projectRemoved(String projectName) {
+            refreshProjectDropDown();
+        }
+
+        public void projectChanged(String projectName) {
+        }
+
+        public void projectTableRemoved(int projid, int refid) {
+            refreshProjectDropDown();
         }
 
         @Override
         public void paintComponent(Graphics g) {
             PaintUtil.paintDarkMenu(g, this);
         }
-
-        private void setTitle(String sectionName, String subsectionName) {
-            title.setText(sectionName.toUpperCase() + " › " + subsectionName.trim());
-        }
-
-        void setSubSection(SubSectionView view) {
-            boolean empty = true;
-
-            if (view != null) {
-                setTitle(view.getParent().getName(), view.getName());
-
-                subSectionMenuPanel.removeAll();
-                sectionMenuPanel.removeAll();
-
-                Component[] subsectionBanner = view.getBanner();
-                Component[] sectionBanner = view.getParent().getBanner();
-
-                if (subsectionBanner != null) {
-                    for (Component c : subsectionBanner) {
-                        subSectionMenuPanel.add(c);
-                        empty = false;
-                    }
-                }
-
-                subSectionMenuPanel.setVisible(!empty);
-
-                subSectionMenuPanel.add(Box.createVerticalGlue());
-
-                empty = true;
-                if (sectionBanner != null) {
-                    for (Component c : sectionBanner) {
-                        sectionMenuPanel.add(c);
-                        empty = false;
-                    }
-                }
-
-                sectionMenuPanel.setVisible(!empty);
-            } else {
-                title.setText(DEFAULT_TITLE);
-            }
-
-            //sectionMenuPanel.add(Box.createVerticalGlue());
-        }
     }
 
-    public SectionView getCurrentSectionView(){
+    public SectionView getCurrentSectionView() {
         return currentSection;
     }
 }

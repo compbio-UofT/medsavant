@@ -20,30 +20,30 @@ public class IntervalPage extends SubSectionView {
 
     int importID = 0;
     SplitScreenView view;
-    
-    public IntervalPage(SectionView parent) { 
+
+    public IntervalPage(SectionView parent) {
         super(parent);
     }
-    
+
     public String getName() {
         return "Region Lists";
     }
 
     public JPanel getView(boolean update) {
         view = new SplitScreenView(
-                new IntervalListModel(), 
+                new IntervalListModel(),
                 new IntervalDetailedView(),
                 new IntervalDetailedListEditor());
-        
+
         return view;
     }
-    
-    public Component[] getBanner() {
+
+    public Component[] getSubSectionMenuComponents() {
         Component[] result = new Component[0];
         //result[0] = getAddCohortButton();
         return result;
     }
-    
+
     @Override
     public void viewDidLoad() {
     }
@@ -52,5 +52,5 @@ public class IntervalPage extends SubSectionView {
     public void viewDidUnload() {
         ThreadController.getInstance().cancelWorkers(getName());
     }
-    
+
 }

@@ -44,7 +44,7 @@ public class PluginsSection extends SectionView {
     public String getName() {
         return "Plugins";
     }
-    
+
     @Override
     public Icon getIcon() {
         return IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART);
@@ -55,7 +55,7 @@ public class PluginsSection extends SectionView {
         PluginController pc = PluginController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
         List<PluginDescriptor> knownPlugins = pc.getDescriptorsOfType(PluginDescriptor.Type.SECTION);
-        
+
         PluginPage[] pages = new PluginPage[knownPlugins.size()];
         for (int i = 0; i < pages.length; i++) {
             pages[i] = new PluginPage(this, knownPlugins.get(i));
@@ -69,7 +69,7 @@ public class PluginsSection extends SectionView {
     }
 
     @Override
-    public Component[] getBanner() {
+    public Component[] getSectionMenuComponents() {
         return null;
     }
 }

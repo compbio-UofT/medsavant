@@ -21,11 +21,19 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import com.jidesoft.combobox.ListExComboBox;
+import com.jidesoft.combobox.ListExComboBoxSearchable;
+import com.jidesoft.combobox.TreeExComboBox;
+import com.jidesoft.combobox.TreeExComboBoxSearchable;
+import com.jidesoft.grid.ListComboBoxShrinkSearchableSupport;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -36,6 +44,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -44,11 +53,16 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -81,10 +95,12 @@ public class FilterPanel extends javax.swing.JPanel {
     private List<FilterPanelSub> subs2 = new ArrayList<FilterPanelSub>();
     private int subNum = 1;
     private JPanel filterContainerContent;
-    private JPanel filterContainer;
+    //private JPanel filterContainer;
     private JComboBox filterList;
     private ActionListener comboBoxListener;
     private boolean addingItems = false;
+    private FilterHistoryPanel historyPanel;
+    private JButton deleteButton;
 
     /** Creates new form FilterPanel */
     public FilterPanel() {
@@ -93,11 +109,6 @@ public class FilterPanel extends javax.swing.JPanel {
     }
 
     public FilterPanelSub createNewSubPanel() {
-
-        /*
-        FilterPanelSub newSub = new FilterPanelSub(this, subNum++);
-        subs.add(newSub);
-         */
 
         FilterPanelSub cp = new FilterPanelSub(this, subNum++);
         filterContainerContent.add(cp);
@@ -287,34 +298,35 @@ public class FilterPanel extends javax.swing.JPanel {
 
     }
 
+    String[][] Data = {
+  {"Amar"}, {"BCA", "Address","rohini","Delhi"},
+  {"Vinod"}, {"BCA", "Software", "Rohini", "Delhi"},
+  {"Chandan"}, {"MCA", "Software", "Programer", "Rohini", "Delhi"},
+  {"Suman"}, {"MCA", "Deginer", "Web", "Delhi"},
+  {"Ravi"},{"MCA","Software","programer"}};
+
     private void initComponents() {
 
         container = this;
+        this.setOpaque(false);
+
         container.setLayout(new BorderLayout());
-        container.setBackground(ViewUtil.getMenuColor());
 
         JPanel filterAndToolbarContainer = ViewUtil.getClearPanel();
         filterAndToolbarContainer.setLayout(new BorderLayout());
         filterAndToolbarContainer.setBorder(ViewUtil.getMediumBorder());
 
-        filterContainer = ViewUtil.getClearPanel();
         filterContainerContent = ViewUtil.getClearPanel();
-       
-        //container.add(filterAndToolbarContainer,BorderLayout.CENTER);
-        //filterAndToolbarContainer.add(filterContainer, BorderLayout.CENTER);
-        //filterAndToolbarContainer.add(createNewOrButton(),BorderLayout.NORTH);
-        //filterAndToolbarContainer.add(createNewOrButton(),BorderLayout.SOUTH);
-
-        filterContainer.setLayout(new BorderLayout());
         filterContainerContent.setLayout(new BoxLayout(filterContainerContent, BoxLayout.Y_AXIS));
 
-        JScrollPane scroll = new JScrollPane(filterContainerContent);
-        scroll.setBorder(null);
+         JPanel topContainer = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(topContainer);
+
+
+        JScrollPane scroll = ViewUtil.getClearBorderlessJSP(filterContainerContent);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        filterContainer.add(scroll, BorderLayout.CENTER);
-
-        JPanel addFilterPanel = new JPanel();
+        JPanel addFilterPanel = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(addFilterPanel);
         final JLabel addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
         addLabel.setToolTipText("Add new filter set");
@@ -331,27 +343,15 @@ public class FilterPanel extends javax.swing.JPanel {
             public void mouseExited(MouseEvent e) {}
         });
 
-        JPanel tmp1 = new JPanel();
-        tmp1.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        ViewUtil.applyHorizontalBoxLayout(tmp1);
 
-        tmp1.add(addLabel);
-        tmp1.add(Box.createRigidArea(new Dimension(5,20)));
-        tmp1.add(new JLabel("Add filter set"));
-        tmp1.add(Box.createHorizontalGlue());
-        filterContainer.add(tmp1, BorderLayout.SOUTH);
-
-        container.add(filterContainer, BorderLayout.CENTER); 
+        container.add(scroll, BorderLayout.CENTER);
 
         FilterEffectivenessPanel hp = new FilterEffectivenessPanel();
-        container.add(hp, BorderLayout.SOUTH);
 
 
-        JButton saveButton = new JButton();
-        saveButton.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.SAVE));
+        JButton saveButton = ViewUtil.getSoftButton("Save");
         saveButton.setToolTipText("Save filter set");
-        saveButton.putClientProperty( "JButton.buttonType", "segmentedRoundRect" );
-        saveButton.putClientProperty( "JButton.segmentPosition", "only" );
+        saveButton.putClientProperty( "JComponent.sizeVariant", "small" );
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -363,11 +363,9 @@ public class FilterPanel extends javax.swing.JPanel {
             }
         });
 
-        JButton  deleteButton = new JButton();
-        deleteButton.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.TRASH));
-        deleteButton.setToolTipText("Remove this set from list");
-        deleteButton.putClientProperty( "JButton.buttonType", "segmentedRoundRect" );
-        deleteButton.putClientProperty( "JButton.segmentPosition", "only" );
+        deleteButton = ViewUtil.getSoftButton("Forget");
+        deleteButton.setToolTipText("Forget this search");
+        deleteButton.putClientProperty( "JComponent.sizeVariant", "small" );
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -385,23 +383,59 @@ public class FilterPanel extends javax.swing.JPanel {
         });
         updateFilterList();
 
-        //JLabel l = new JLabel("Filter variants by:");
-
-        JPanel topContainer = new JPanel();
-        //topContainer.setOpaque(false);
-        topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.X_AXIS));
-        topContainer.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        //topContainer.add(l);
 
 
-        //topContainer.add(Box.createHorizontalGlue());
+        JPanel saveContainer = ViewUtil.getClearPanel();
+        //ViewUtil.applyMenuStyleInset(saveContainer);
 
-        topContainer.add(filterList);
-        topContainer.add(Box.createHorizontalGlue());
-        topContainer.add(saveButton);
-        topContainer.add(deleteButton);
+
+        saveContainer.setLayout(new BoxLayout(saveContainer, BoxLayout.X_AXIS));
+        saveContainer.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+
+        filterList.putClientProperty( "JComponent.sizeVariant", "small" );
+
+        saveContainer.add(filterList);
+        saveContainer.add(Box.createHorizontalGlue());
+        saveContainer.add(saveButton);
+        saveContainer.add(deleteButton);
+
+        JLabel l = ViewUtil.getDetailTitleLabel("Search for variants");
+        l.setForeground(Color.white);
+        l.setBorder(BorderFactory.createEmptyBorder(2, 2, 5, 2));
+
+        topContainer.add(ViewUtil.center(l));
+        topContainer.add(hp);
+        topContainer.add(saveContainer);
 
         container.add(topContainer, BorderLayout.NORTH);
+
+        JPanel bottomContainer = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(bottomContainer);
+
+        historyPanel = new FilterHistoryPanel();
+
+        final JCheckBox showHistoryButton = new JCheckBox("Show Filter Effectiveness");
+        showHistoryButton.setSelected(false);
+        showHistoryButton.setFont(new Font("Arial", Font.BOLD, 12));
+        showHistoryButton.setForeground(Color.white);
+
+        showHistoryButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                historyPanel.setVisible(showHistoryButton.isSelected());
+            }
+
+        });
+
+        JPanel historyButtonPanel = ViewUtil.alignLeft(showHistoryButton);
+        historyButtonPanel.setBorder(ViewUtil.getMediumBorder());
+
+        historyPanel.setVisible(showHistoryButton.isSelected());
+        bottomContainer.add(historyButtonPanel);
+        bottomContainer.add(historyPanel);
+
+        container.add(bottomContainer,BorderLayout.SOUTH);
     }
 
     private void updateFilterList() {
@@ -409,9 +443,18 @@ public class FilterPanel extends javax.swing.JPanel {
 
         addingItems = true;
         filterList.removeAllItems();
-        this.filterList.addItem("Saved Filters");
-        for (String fn : filterDir.list()) {
-            this.filterList.addItem(fn);
+
+        if (filterDir.list().length == 0) {
+            this.filterList.addItem("No saved searches");
+            this.filterList.setEnabled(false);
+            deleteButton.setEnabled(false);
+        } else {
+            this.filterList.addItem("Choose a saved search");
+            for (String fn : filterDir.list()) {
+                this.filterList.addItem(fn);
+            }
+            this.filterList.setEnabled(true);
+            deleteButton.setEnabled(true);
         }
         addingItems = false;
     }

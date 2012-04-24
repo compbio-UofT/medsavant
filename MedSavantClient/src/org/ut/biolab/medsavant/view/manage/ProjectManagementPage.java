@@ -361,7 +361,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
     }
 
     @Override
-    public Component[] getBanner() {
+    public Component[] getSubSectionMenuComponents() {
         Component[] result = new Component[0];
         //result[0] = getAddPatientsButton();
 

@@ -43,29 +43,25 @@ public abstract class DetailedView extends JPanel {
         this.setLayout(new BorderLayout());
 
         JPanel h1 = new JPanel();
-        h1.setBorder(BorderFactory.createCompoundBorder(
-                ViewUtil.getTinyLineBorder(), ViewUtil.getBigBorder()
-                ));
-        
+        h1.setBorder(ViewUtil.getBigBorder());
+        //BorderFactory.createCompoundBorder(
+        //        ViewUtil.getTinyLineBorder(), ViewUtil.getBigBorder()
+        //        ));
+
         h1.setLayout(new BoxLayout(h1, BoxLayout.X_AXIS));
         this.title = ViewUtil.getDetailTitleLabel("");
+        h1.add(Box.createHorizontalGlue());
         h1.add(title);
         h1.add(Box.createHorizontalGlue());
-        //h1.setBorder(ViewUtil.getMediumBorder());
 
         this.add(h1, BorderLayout.NORTH);
 
-        contentPanel = ViewUtil.getClearPanel();
-        contentPanel.setBorder(ViewUtil.getBigBorder());
-        contentPanel.setForeground(Color.darkGray);
-        
-        //JScrollPane jsp = new JScrollPane(contentPanel);
-        //jsp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        
+        contentPanel = new JPanel();
+        contentPanel.setBorder(ViewUtil.getMediumBorder());
+
         this.add(contentPanel, BorderLayout.CENTER);
 
-        bottomPanel = new JPanel();//ViewUtil.getPrimaryBannerPanel();
-        bottomPanel.setBorder(ViewUtil.getTinyLineBorder());
+        bottomPanel = new JPanel();
         ViewUtil.applyHorizontalBoxLayout(bottomPanel);
         bottomPanel.add(Box.createHorizontalGlue());
 
@@ -75,14 +71,10 @@ public abstract class DetailedView extends JPanel {
         this.add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    public void paintComponent(Graphics g) {
-        PaintUtil.paintDrillDown(g, this);
-    }
-
     public abstract void setSelectedItem(Object[] selectedRow);
 
     public abstract void setMultipleSelections(List<Object[]> selectedRows);
-    
+
     public abstract void setRightClick(MouseEvent e);
 
     public void setTitle(String str) {

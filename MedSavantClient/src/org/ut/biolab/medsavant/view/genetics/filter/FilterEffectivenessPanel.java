@@ -2,6 +2,7 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -11,6 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -36,15 +39,14 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
     Color bg = new Color(139, 149, 164);
     private final ProgressPanel pp;
     private final JLabel labelVariantsRemaining;
-    private final JLabel labelVariantsTotal;
-    private final FilterHistoryPanel historyPanel;
+    //private final FilterHistoryPanel historyPanel;
     private GridBagConstraints c;
     private WaitPanel waitPanel;
     private int waitCounter = 0;
     private JPanel panel;
 
     public FilterEffectivenessPanel() {
-        
+
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 0;
@@ -53,85 +55,38 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1.0;
         c.weighty = 1.0;
-        
+
+        this.setBorder(ViewUtil.getMediumBorder());
+
         this.setLayout(new GridBagLayout());
-        
-        panel = new JPanel();
-        panel.setBackground(bg);
-        panel.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getTopLineBorder(),ViewUtil.getBigBorder()));
+
+        panel = ViewUtil.getClearPanel();
+        //panel.setBackground(bg);
+        //panel.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getTopLineBorder(),ViewUtil.getBigBorder()));
         panel.setLayout(new BorderLayout());
         this.add(panel, c, JLayeredPane.DEFAULT_LAYER);
-        
+
         waitPanel = new WaitPanel("Applying Filters");
         waitPanel.setVisible(false);
         this.add(waitPanel, c, JLayeredPane.DRAG_LAYER);
-        
-        labelVariantsRemaining = new JLabel("");
-        labelVariantsTotal = new JLabel("");
+
+        labelVariantsRemaining = ViewUtil.getWhiteLabel("");
 
         JPanel infoPanel = ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(infoPanel);
-        infoPanel.add(labelVariantsRemaining);
-        infoPanel.add(Box.createHorizontalGlue());
-        infoPanel.add(labelVariantsTotal);
+        ViewUtil.applyVerticalBoxLayout(infoPanel);
+        infoPanel.add(ViewUtil.center(labelVariantsRemaining));
+        infoPanel.add(ViewUtil.center(ViewUtil.getWhiteLabel("pass search conditions")));
         infoPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());
 
         panel.add(infoPanel,BorderLayout.NORTH);
 
         pp = new ProgressPanel();
         //pp.setBorder(ViewUtil.getBigBorder());
-        panel.add(pp, BorderLayout.CENTER);
-
-        historyPanel = new FilterHistoryPanel();
-        
-        /*
-        final JFrame historyFrame = new JFrame("Filter History");
-        historyFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        historyFrame.add(historyPanel);
-        historyFrame.pack();
-        historyFrame.setPreferredSize(new Dimension(500,500));
-         *
-         */
-
-
-        //PeekingPanel detailView = new PeekingPanel("History", BorderLayout.NORTH, new FilterProgressPanel(), true,400);
-        //this.add(detailView, BorderLayout.SOUTH);
-        JPanel bottomPanel = ViewUtil.getClearPanel();
-        bottomPanel.setLayout(new BorderLayout());
-        JToggleButton b = new JToggleButton("History");
-
-        b.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-
-                historyPanel.setVisible(!historyPanel.isVisible());
-                /*
-                if (!historyFrame.isVisible()) {
-                historyFrame.setVisible(true);
-                }
-                 *
-                 */
-            }
-
-        });
-
-        JPanel hisPanel = ViewUtil.alignRight(b);
-        hisPanel.setBorder(ViewUtil.getMediumBorder());
-        bottomPanel.add(hisPanel,BorderLayout.NORTH);
-
-        bottomPanel.add(historyPanel,BorderLayout.CENTER);
-        historyPanel.setVisible(false);
-        
-        //disclaimer for count approximation
-        JLabel countDisclaimer = new JLabel("* Large counts may be approximate");
-        bottomPanel.add(ViewUtil.alignLeft(countDisclaimer), BorderLayout.SOUTH);
-
-        panel.add(bottomPanel,BorderLayout.SOUTH);
+        panel.add(pp, BorderLayout.SOUTH);
 
         FilterController.addFilterListener(this);
         ReferenceController.getInstance().addReferenceListener(this);
-       
+
         Thread t = new Thread(){
             @Override
             public void run() {
@@ -148,10 +103,8 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
         //        "Applying Filter",
         //        "Filter is being applied. Please wait.",
         //        true);
-        
+
         final FilterEffectivenessPanel instance = this;
-        historyPanel.filtersChanged(instance);
-        
 
         Thread thread = new Thread() {
 
@@ -167,39 +120,46 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
                     instance.showShowCard();
                     Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
+
             }
         };
 
         thread.start();
-        
-        
+
+
         //dialog.setVisible(true);
 
     }
 
+    long numLeft = 1;
+    long numTotal = 1;
+
     private void setNumLeft(int num) {
-        labelVariantsRemaining.setText("PASSING: " + ViewUtil.numToString(num));
+        numLeft = num;
+        refreshProgressLabel();
+
         pp.animateToValue(num);
     }
 
     private void setMaxValues() {
-        
+
         labelVariantsRemaining.setText("Calculating...");
         updateUI();
-        
+
         int maxRecords = -1;
 
         try {
             maxRecords = ResultController.getInstance().getNumTotalVariants();
-        } catch (NonFatalDatabaseException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        numTotal = maxRecords;
 
         if (maxRecords != -1) {
             pp.setMaxValue(maxRecords);
             pp.setToValue(maxRecords);
-            labelVariantsTotal.setText("TOTAL: " + ViewUtil.numToString(maxRecords));
+            //labelVariantsTotal.setText("TOTAL: " + ViewUtil.numToString(maxRecords));
 
             setNumLeft(maxRecords);
         }
@@ -213,10 +173,9 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
 
     @Override
     public void referenceChanged(String name) {
-        historyPanel.reset();
         setMaxValues();
     }
-    
+
     public synchronized void showWaitCard() {
         waitCounter++;
         waitPanel.setVisible(true);
@@ -230,5 +189,15 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
             waitPanel.setVisible(false);
             waitCounter = 0;
         }
+    }
+
+    private void refreshProgressLabel() {
+        labelVariantsRemaining.setText(
+                ViewUtil.numToString(numLeft)
+                //+ " of "
+                //+ ViewUtil.numToString(numTotal)
+                + " (" + ((numLeft*100)/numTotal) + "%)"
+                //+ "<br>variants pass search conditions"
+                );
     }
 }

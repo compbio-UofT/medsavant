@@ -19,25 +19,25 @@ public class IndividualsPage extends SubSectionView {
     private SplitScreenView view;
 
     public IndividualsPage(SectionView parent) { super(parent); }
-    
+
     public String getName() {
         return "Individuals";
     }
 
-    public JPanel getView(boolean update) { 
+    public JPanel getView(boolean update) {
         view = new SplitScreenView(
-                new IndividualListModel(), 
+                new IndividualListModel(),
                 new IndividualDetailedView(),
                 new IndividualDetailEditor());
         return view;
     }
-    
-    public Component[] getBanner() {
+
+    public Component[] getSubSectionMenuComponents() {
         Component[] result = new Component[0];
         //result[0] = getAddPatientsButton();
         return result;
     }
-    
+
     @Override
     public void viewDidLoad() {
     }
@@ -46,5 +46,5 @@ public class IndividualsPage extends SubSectionView {
     public void viewDidUnload() {
         ThreadController.getInstance().cancelWorkers(getName());
     }
-    
+
 }

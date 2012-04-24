@@ -35,17 +35,17 @@ public class DatabaseManagementPage extends SubSectionView {
     private void setPanel() {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
-  
-        
+
+
         //panel.setBackground(Color.red);
         //panel.add(new TablePanel(), BorderLayout.CENTER);
     }
 
-    public Component[] getBanner() {
+    public Component[] getSubSectionMenuComponents() {
         return null;
     }
-    
-    
+
+
     @Override
     public void viewDidLoad() {
     }
@@ -54,5 +54,5 @@ public class DatabaseManagementPage extends SubSectionView {
     public void viewDidUnload() {
         ThreadController.getInstance().cancelWorkers(getName());
     }
-    
+
 }

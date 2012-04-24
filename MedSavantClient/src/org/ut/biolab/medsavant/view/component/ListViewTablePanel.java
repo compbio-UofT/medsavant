@@ -72,7 +72,7 @@ public class ListViewTablePanel extends JPanel {
                 columns[i] = i;
             }
             filterField.setTableModel(model);
-            filterField.setColumnIndices(columns);           
+            filterField.setColumnIndices(columns);
             filterField.setObjectConverterManagerEnabled(true);
 
             table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
@@ -98,7 +98,7 @@ public class ListViewTablePanel extends JPanel {
         this.columnClasses = columnClasses;
         updateView();
     }
-    
+
     public ListViewTablePanel(Vector data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns) {
         this(data, columnNames, columnClasses, hiddenColumns, true, true, true, true);
     }
@@ -107,7 +107,7 @@ public class ListViewTablePanel extends JPanel {
         Vector data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
         boolean allowSearch, boolean allowSort, boolean allowPages, boolean allowSelection) {
 
-        
+
         this.hiddenColumns = hiddenColumns;
         table = new SortableTable() {
 
@@ -126,9 +126,9 @@ public class ListViewTablePanel extends JPanel {
                     }
                 }
                 comp.setForeground(ViewUtil.detailForeground);
-                
+
                 comp.setFont(new Font((comp.getFont().getFamily()),Font.PLAIN,fontSize));
-                
+
                 return comp;
             }
         };
@@ -149,7 +149,7 @@ public class ListViewTablePanel extends JPanel {
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         table.setAutoResizeMode(SortableTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-        
+
         table.setMinimumSize(new Dimension(500,999));
         //table.setPreferredSize(new Dimension(500,999));
 
@@ -169,12 +169,13 @@ public class ListViewTablePanel extends JPanel {
         filterField.setHintText("Type to search");
 
         this.setLayout(new BorderLayout());
-        fieldPanel = new JPanel();
+        fieldPanel = ViewUtil.getClearPanel();
+        this.setOpaque(false);
 
         if (allowSearch) {
             fieldPanel.add(filterField);
         }
-        
+
         setTableModel(
                 data,
                 Util.listToVector(columnNames),
@@ -183,14 +184,14 @@ public class ListViewTablePanel extends JPanel {
         if (allowSort) {
             this.add(fieldPanel, BorderLayout.NORTH);
         }
-        
+
         JScrollPane jsp = new JScrollPane(table);
         jsp.setBorder(null);
         this.add(jsp, BorderLayout.CENTER);
 
         this.updateData(data);
     }
-    
+
     private int getTotalRowCount() {
         if (data == null) {
             return 0;
@@ -213,15 +214,15 @@ public class ListViewTablePanel extends JPanel {
     public void forceRefreshData(){
         //override this in parent
     }
-    
+
     public void setFontSize(int newSize){
         this.fontSize = newSize;
     }
-    
+
     public void scrollToIndex(int index){
         table.scrollRectToVisible(table.getCellRect(index, 0, true));
     }
-    
+
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
 
         public void hideColumns(JTable table, List<Integer> indices) {

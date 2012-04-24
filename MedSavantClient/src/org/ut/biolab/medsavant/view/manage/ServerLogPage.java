@@ -276,7 +276,7 @@ public class ServerLogPage extends SubSectionView {
     }
 
     @Override
-    public Component[] getBanner() {
+    public Component[] getSubSectionMenuComponents() {
         return null;
     }
 
@@ -301,13 +301,13 @@ public class ServerLogPage extends SubSectionView {
         waitPanel.setIndeterminate();
         waitPanel.setStatus("");
         showWaitPanel();
-        
-        
+
+
         try {
             List<AnnotationLog> logs = MedSavantClient.LogQueryUtilAdapter.getAnnotationLog(LoginController.sessionId, start, limit);
             v = new ArrayList<Object[]>();
             for(final AnnotationLog log : logs){
-                
+
 
                 Object[] r = new Object[6];
                 r[0] = log.getProjectName();
@@ -316,17 +316,17 @@ public class ServerLogPage extends SubSectionView {
                 r[3] = log.getStatus();
                 r[4] = log.getTimestamp();
                 r[5] = log.getUser();
-                
-                v.add(r);    
+
+                v.add(r);
             }
-      
+
         } catch (Exception e) {
             waitPanel.setComplete();
             waitPanel.setStatus("Problem getting log");
             showWaitPanel();
             Logger.getLogger(ServerLogPage.class.getName()).log(Level.SEVERE, null, e);
         }
-        
+
         hideWaitPanel();
         return v;
     }
