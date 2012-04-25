@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Ant-Version: Apache Ant 1.8.2
-Created-By: 1.6.0_26-b03-383-11A511 (Apple Inc.)
-Class-Path: lib/jdom.jar lib/opencsv-2.3.jar lib/mysql-connector-java-
- 5.0.8-bin.jar lib/tabix.jar lib/sam-1.31.jar lib/mail.jar lib/medsava
- nt_lib_db.jar lib/mail.jar lib/common-util-1.0.4.jar lib/sqlbuilder-2
- .0.7.jar
-X-COMMENT: Main-Class will be added automatically by build
-Main-Class: org.ut.biolab.medsavant.server.MedSavantServerUtility

@@ -1,0 +1,396 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package org.ut.biolab.medsavant.view.genetics.charts;
+
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.*;
+
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.db.ColumnType;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.format.AnnotationFormat;
+import org.ut.biolab.medsavant.format.VariantFormat;
+import org.ut.biolab.medsavant.view.genetics.charts.SummaryChart.ChartAxis;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
+
+/**
+ *
+ * @author mfiume
+ */
+public class ChartView extends JPanel {
+
+    private SummaryChart sc;
+    private JComboBox chartChooser1;
+    private JComboBox chartChooser2;
+    private Map<String, ChartMapGenerator> mapGenerators;
+    private JCheckBox bPie;
+    private JCheckBox bSort;
+    private JCheckBox bLogY;
+    private JCheckBox bLogX;
+    private JCheckBox bScatter;
+    private String pageName;
+    private boolean init = false;
+    private JCheckBox bOriginal;
+    private JPanel bottomToolbar;
+
+    public ChartView(String pageName) {
+        this.pageName = pageName;
+        mapGenerators = new HashMap<String, ChartMapGenerator>();
+        initGUI();
+        //this.chartChooser1.setSelectedItem(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
+    }
+
+    private void initGUI() {
+        this.setLayout(new BorderLayout());
+        initToolBar();
+        initCards();
+        initBottomBar();
+        init = true;
+        chartChooser1.setSelectedItem(VariantFormat.ALIAS_OF_DNA_ID);
+    }
+
+    private void initToolBar() {
+
+        JPanel toolbar = ViewUtil.getSubBannerPanel("Chart");
+        toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
+
+        chartChooser1 = new JComboBox() {
+            @Override
+            public void addItem(Object anObject) {
+                int size = ((DefaultComboBoxModel) dataModel).getSize();
+                Object obj;
+                boolean added = false;
+                for (int i=0; i<size; i++) {
+                    obj = dataModel.getElementAt(i);
+                    int compare = anObject.toString().compareToIgnoreCase(obj.toString());
+                    if (compare <= 0) { // if anObject less than or equal obj
+                        super.insertItemAt(anObject, i);
+                        added = true;
+                        break;
+                    }
+                }
+                if (!added) {
+                    super.addItem(anObject);
+                }
+            }
+        };
+        toolbar.add(chartChooser1);
+
+        chartChooser1.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (!init) return;
+                String alias = (String) chartChooser1.getSelectedItem();
+                ChartMapGenerator cmg = mapGenerators.get(alias);
+                if (alias.equals(VariantFormat.ALIAS_OF_CHROM)) {
+                    bSort.setEnabled(false);
+                    sc.setIsSortedKaryotypically(true);
+                } else if (cmg.isNumeric()) {
+                    bSort.setEnabled(false);
+                    sc.setIsSortedKaryotypically(false);
+                } else {
+                    bSort.setEnabled(true);
+                    sc.setIsSortedKaryotypically(false);
+                }
+                sc.setChartMapGenerator(cmg);
+                //updateScatterAxes();
+                sc.setScatterChartMapGenerator(mapGenerators.get((String)chartChooser2.getSelectedItem()));
+                bLogX.setEnabled(cmg.isNumeric());
+                
+                sc.setUpdateRequired(true);
+                sc.updateIfRequired();
+            }
+        });
+        
+        toolbar.add(Box.createHorizontalGlue());
+        
+        bScatter = new JCheckBox("Scatter");
+        bScatter.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                chartChooser2.setEnabled(bScatter.isSelected());
+                sc.setIsScatterChart(bScatter.isSelected());
+                
+                bottomToolbar.setVisible(!bScatter.isSelected());
+                                
+                sc.setUpdateRequired(true);
+                sc.updateIfRequired();
+            }
+        });
+        toolbar.add(bScatter);
+        
+        chartChooser2 = new JComboBox() {
+            @Override
+            public void addItem(Object anObject) {
+                int size = ((DefaultComboBoxModel) dataModel).getSize();
+                Object obj;
+                boolean added = false;
+                for (int i=0; i<size; i++) {
+                    obj = dataModel.getElementAt(i);
+                    int compare = anObject.toString().compareToIgnoreCase(obj.toString());
+                    if (compare <= 0) { // if anObject less than or equal obj
+                        super.insertItemAt(anObject, i);
+                        added = true;
+                        break;
+                    }
+                }
+                if (!added) {
+                    super.addItem(anObject);
+                }
+            }
+        };
+        chartChooser2.setEnabled(false);
+        toolbar.add(chartChooser2);
+
+        chartChooser2.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!init) return;
+                //updateScatterAxes();
+                sc.setScatterChartMapGenerator(mapGenerators.get((String)chartChooser2.getSelectedItem()));
+                
+                sc.setUpdateRequired(true);
+                sc.updateIfRequired();
+                /*String alias = (String) chartChooser2.getSelectedItem();
+                ChartMapGenerator cmg = mapGenerators.get(alias);
+                if (alias.equals(VariantFormat.ALIAS_OF_CHROM)) {
+                    bSort.setEnabled(false);
+                    sc.setIsSortedKaryotypically(true);
+                } else if (cmg.isNumeric()) {
+                    bSort.setEnabled(false);
+                    sc.setIsSortedKaryotypically(false);
+                } else {
+                    bSort.setEnabled(true);
+                    sc.setIsSortedKaryotypically(false);
+                }
+                sc.setChartMapGenerator(cmg);
+                bLogX.setEnabled(cmg.isNumeric());*/
+            }
+        });
+
+        ButtonGroup rg = new ButtonGroup();
+
+        JRadioButton b1 = new JRadioButton("All");
+        JRadioButton b2 = new JRadioButton("Cohort");
+
+        rg.add(b1);
+        rg.add(b2);
+
+        //toolbar.add(ViewUtil.getMediumSeparator());
+
+        //toolbar.add(ViewUtil.clear(b1));
+        //toolbar.add(ViewUtil.clear(b2));
+
+        //toolbar.add(Box.createHorizontalGlue());
+
+        b1.setSelected(true);
+
+        this.add(toolbar, BorderLayout.NORTH);
+    }
+
+    private void initCards() {
+        initAllCard();
+        addCMGs();
+    }
+
+    private void initAllCard() {
+
+        JPanel h1 = new JPanel();
+        h1.setLayout(new GridLayout(1, 1));
+
+        sc = new SummaryChart(pageName);
+
+        h1.add(sc, BorderLayout.CENTER);
+
+        this.add(h1, BorderLayout.CENTER);
+    }
+
+    private void addCMG(ChartMapGenerator cmg) {
+        mapGenerators.put(cmg.getName(), cmg);
+        chartChooser1.addItem(cmg.getName());
+        chartChooser2.addItem(cmg.getName());
+    }
+
+    private void addCMGs() {
+
+        AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
+        for (AnnotationFormat af : afs) {
+            for (CustomField field : af.getCustomFields()) {
+                ColumnType type = field.getColumnType();
+                if (field.isFilterable() && 
+                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER)) && 
+                        !(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID) || 
+                            field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID) || 
+                            field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID) || 
+                            field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID))) {
+                    addCMG(VariantFieldChartMapGenerator.createVariantChart(field));
+                }
+            }
+        }
+        for (CustomField field : ProjectController.getInstance().getCurrentPatientFormat()) {
+            ColumnType type = field.getColumnType();
+            if (field.isFilterable() &&
+                        (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER)) && 
+                        !(field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID) || 
+                            field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID) ||
+                            field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_IDBIOMOM) ||
+                            field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_IDBIODAD))) {
+                addCMG(VariantFieldChartMapGenerator.createPatientChart(field));
+            }
+        }
+
+    }
+
+    private void initBottomBar() {
+        bottomToolbar = ViewUtil.getSecondaryBannerPanel();
+        bottomToolbar.setBorder(ViewUtil.getTinyLineBorder());
+        bottomToolbar.setLayout(new BoxLayout(bottomToolbar, BoxLayout.X_AXIS));
+
+        bottomToolbar.add(Box.createHorizontalGlue());
+
+        //bottomToolbar.add(chartChooser);
+
+        bPie = new JCheckBox("Pie chart");
+        bOriginal = new JCheckBox("Show original frequencies");
+        bSort = new JCheckBox("Sort by frequency");
+        bLogY = new JCheckBox("Log scale Y axis");
+        bLogX = new JCheckBox("Log scale X axis");
+
+        bPie.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setIsPie(!sc.isPie());
+            }
+        });
+
+        bOriginal.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setDoesCompareToOriginal(!sc.doesCompareToOriginal());
+            }
+        });
+
+        bSort.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setIsSorted(!sc.isSorted());
+            }
+        });
+
+        bLogY.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setIsLogScale(!sc.isLogScaleY(), ChartAxis.Y);
+            }
+        });
+
+        bLogX.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setIsLogScale(!sc.isLogScaleX(), ChartAxis.X);
+            }
+        });
+
+        bottomToolbar.add(ViewUtil.getMediumSeparator());
+
+        bottomToolbar.add(ViewUtil.clear(bPie));
+        bottomToolbar.add(ViewUtil.clear(bOriginal));
+        bottomToolbar.add(ViewUtil.clear(bSort));
+        bottomToolbar.add(ViewUtil.clear(bLogY));
+        bottomToolbar.add(ViewUtil.clear(bLogX));
+
+        bottomToolbar.add(Box.createHorizontalGlue());
+
+        // b1.setSelected(true);
+
+        this.add(bottomToolbar, BorderLayout.SOUTH);
+    }
+
+    public void setIsPie(boolean b) {
+        if (bPie.isEnabled()) {
+            sc.setIsPie(!sc.isPie());
+            bPie.setSelected(sc.isPie());
+            if (b) {
+                bOriginal.setEnabled(false);
+            } else {
+                bOriginal.setEnabled(true);
+            }
+        }
+    }
+
+    public void setDoesCompareToOriginal(boolean b) {
+        if (bOriginal.isEnabled()) {
+            sc.setDoesCompareToOriginal(!sc.doesCompareToOriginal());
+            bOriginal.setSelected(sc.doesCompareToOriginal());
+        }
+    }
+
+
+    public void setIsSorted(boolean b) {
+        if (bSort.isEnabled()) {
+            sc.setIsSorted(b);
+        }
+    }
+
+    public void setIsLogScale(boolean b, ChartAxis axis) {
+        if ((axis == ChartAxis.Y && !bLogY.isEnabled()) || (axis == ChartAxis.X && !bLogX.isEnabled())) return;
+        sc.setIsLogScale(b, axis);
+        bLogY.setSelected(sc.isLogScaleY());
+        bLogX.setSelected(sc.isLogScaleX());
+    }
+
+    /*public void setIsLogScaleY(boolean b) {
+        if (bLogY.isEnabled()) {
+            sc.setIsLogScaleY(!sc.isLogScaleY());
+            bLogY.setSelected(sc.isLogScaleY());
+            if (sc.isLogScaleY()) {
+                sc.setIsLogScaleX(false);
+                bLogX.setSelected(false);
+            }
+        }
+    }
+
+    public void setIsLogScaleX(boolean b) {
+        if (bLogX.isEnabled()) {
+            sc.setIsLogScaleX(!sc.isLogScaleX());
+            bLogX.setSelected(sc.isLogScaleX());
+            if (sc.isLogScaleX()) {
+                sc.setIsLogScaleY(false);
+                bLogY.setSelected(false);
+            }
+        }
+    }*/
+
+    public void updateIfRequired() {
+        if (sc != null) {
+            sc.updateIfRequired();
+        }
+    }
+
+    public void setUpdateRequired(boolean required) {
+        if (sc != null) {
+            sc.setUpdateRequired(required);
+        }
+    }
+}
