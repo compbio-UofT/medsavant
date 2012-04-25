@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.db.Settings;
-import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
@@ -334,6 +334,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         }
     }
 
+    @Override
     public void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException, RemoteException {
 
         String sessionId = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");

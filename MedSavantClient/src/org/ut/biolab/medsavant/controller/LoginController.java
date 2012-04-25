@@ -117,9 +117,8 @@ public class LoginController {
             sessionId = SessionAdapter.registerNewSession(un, pw, dbname);
             System.out.println("Done");
             System.out.println("My session ID is: " + sessionId);
-        } catch (RemoteException ex) {
-            System.out.println("");
-            setLoginException(ex);
+        } catch (Exception x) {
+            setLoginException(x);
         }
 
         if(sessionId == null){

@@ -47,7 +47,7 @@ import org.ut.biolab.medsavant.model.BEDRecord;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RegionSet;
-import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.FileServer;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;

@@ -43,7 +43,7 @@ import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.CustomField.Category;
 import org.ut.biolab.medsavant.format.PatientFormat;
 import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;

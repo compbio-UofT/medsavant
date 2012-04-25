@@ -4,21 +4,7 @@
  */
 package org.ut.biolab.medsavant.db.connection;
 
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.CallableStatement;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.NClob;
-import java.sql.PreparedStatement;
-import java.sql.SQLClientInfoException;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Savepoint;
-import java.sql.Statement;
-import java.sql.Struct;
+import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 
@@ -26,40 +12,41 @@ import java.util.Properties;
  *
  * @author Andrew
  */
-public class MSConnection implements Connection {
+public class PooledConnection implements Connection {
 
     private ConnectionPool pool;
     private Connection conn;
-    private boolean inuse;
+    private boolean inUse;
     private long timestamp;
     
-    public MSConnection(Connection conn, ConnectionPool pool){
+    public PooledConnection(Connection conn, ConnectionPool pool){
         this.conn = conn;
         this.pool = pool;
-        this.inuse = false;
+        this.inUse = false;
         this.timestamp = 0;
     }
     
     public synchronized boolean lease() {
-       if(inuse)  {
+       if (inUse) {
            return false;
        } else {
-          inuse=true;
-          timestamp=System.currentTimeMillis();
+          inUse = true;
+          timestamp = System.currentTimeMillis();
           return true;
        }
     }
+
     public boolean validate() {
 	try {
             conn.getMetaData();
-        }catch (Exception e) {
+        } catch (Exception e) {
 	    return false;
 	}
 	return true;
     }
 
     public boolean inUse() {
-        return inuse;
+        return inUse;
     }
 
     public long getLastUse() {
@@ -67,14 +54,7 @@ public class MSConnection implements Connection {
     }
 
     protected void expireLease() {
-        inuse=false;
-    }
-    
-    /* 
-     * Actually close mysql connection 
-     */
-    public void closeConnection() throws SQLException {
-        conn.close();
+        inUse = false;
     }
     
     @Override
@@ -321,5 +301,4 @@ public class MSConnection implements Connection {
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return conn.isWrapperFor(iface);
     }
-    
 }

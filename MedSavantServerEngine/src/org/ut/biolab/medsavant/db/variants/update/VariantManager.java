@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.AnnotationLog.Status;
 import org.ut.biolab.medsavant.model.SimpleVariantFile;
-import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.FileServer;
 import org.ut.biolab.medsavant.db.util.ServerDirectorySettings;

@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ut.biolab.medsavant.model.UserLevel;
-import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.serverapi.UserQueryUtilAdapter;
 

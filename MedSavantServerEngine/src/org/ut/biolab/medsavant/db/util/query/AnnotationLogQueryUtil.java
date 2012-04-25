@@ -34,7 +34,7 @@ import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.model.AnnotationLog;
 import org.ut.biolab.medsavant.model.AnnotationLog.Action;
 import org.ut.biolab.medsavant.model.AnnotationLog.Status;
-import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.serverapi.AnnotationLogQueryUtilAdapter;

@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.db.util;
 
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;

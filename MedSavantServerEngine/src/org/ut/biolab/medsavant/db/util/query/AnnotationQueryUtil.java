@@ -44,7 +44,7 @@ import org.ut.biolab.medsavant.format.AnnotationFormat.AnnotationType;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.logging.DBLogger;
 import org.ut.biolab.medsavant.model.Annotation;
-import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.serverapi.AnnotationQueryUtilAdapter;

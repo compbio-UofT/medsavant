@@ -1,137 +1,130 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.db.connection;
 
 import java.sql.*;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Based on JDC Connection Pool example.
  *
  * @author Andrew
  */
 public class ConnectionPool {
+    private static final Logger LOG = Logger.getLogger(ConnectionPool.class.getName());
+    private static final long TIMEOUT = 60000;
 
-    private Vector connections;
-    private String url, user, password;
-    private final long timeout=60000;
+    private final List<PooledConnection> connections;
+    private final String user, password;
+    private String dbName;
     private ConnectionReaper reaper;
-    private final int poolsize=3;
-    private final static Object lock = new Object();
 
-    public ConnectionPool(String url, String user, String password) {
-        this.url = url;
+    public ConnectionPool(String db, String user, String password) {
+        this.dbName = db;
         this.user = user;
         this.password = password;
-        connections = new Vector(poolsize);
-        reaper = new ConnectionReaper(this);
+        connections = new ArrayList<PooledConnection>();
+        reaper = new ConnectionReaper();
         reaper.start();
     }
 
-    public void reapConnections() {
+    public synchronized void reapConnections() {
 
-        long stale = System.currentTimeMillis() - timeout;
+        long stale = System.currentTimeMillis() - TIMEOUT;
 
-        synchronized(lock){
-            Enumeration connlist = connections.elements();
-            while((connlist != null) && (connlist.hasMoreElements())) {
-                MSConnection conn = (MSConnection)connlist.nextElement();
-                if(conn.inUse() && stale >conn.getLastUse() && !conn.validate()) {
-                    removeConnection(conn);
-                }
-            }
-        }
-    }
-
-    public void closeConnections() {
-        synchronized(lock){
-            Enumeration connlist = connections.elements();
-            while((connlist != null) && (connlist.hasMoreElements())) {
-                MSConnection conn = (MSConnection)connlist.nextElement();
+        for (PooledConnection conn: connections) {
+            if (conn.inUse() && stale > conn.getLastUse() && !conn.validate()) {
                 removeConnection(conn);
             }
         }
     }
 
-    private void removeConnection(MSConnection conn) {
-        synchronized(lock){
-            connections.removeElement(conn);
+    /**
+     * Closes all connections, but also stops the reaper thread.
+     */
+    public synchronized void close() {
+        for (PooledConnection conn: connections) {
+            removeConnection(conn);
         }
+        reaper = null;
+    }
+
+    private synchronized void removeConnection(PooledConnection conn) {
+        connections.remove(conn);
     }
 
 
-    public Connection getConnection() throws SQLException {
+    public synchronized Connection getConnection() throws SQLException {
 
-       MSConnection c;
-       while(true){
-           
-            synchronized(lock){
-
-                //check for existing connection
-                for(int i = 0; i < connections.size(); i++) {
-                    c = (MSConnection)connections.elementAt(i);
-                    if (c.lease()) {
-                        //System.out.println("Leasing connection " + i);
-                        return c;
-                    }
-                }
-
-                //create a new connection
-                if(connections.size() < poolsize){
-                    Connection conn = DriverManager.getConnection(url, user, password);
-                    c = new MSConnection(conn, this);
-                    //System.out.println("Leasing new connection");
-                    c.lease();
-                    connections.addElement(c);
-                    return c;
-                }
+        for (PooledConnection conn: connections) {
+            if (conn.lease()) {
+                return conn;
             }
-            
-            //wait for a connection to close
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ConnectionPool.class.getName()).log(Level.SEVERE, null, ex);
-            }
-       }
+        }
 
+        // Create a new connection
+        LOG.info(String.format("Calling DriverManager.getConnection(%s, %s, %s)", ConnectionController.getConnectionString(dbName), user, password));
+        Connection conn = DriverManager.getConnection(ConnectionController.getConnectionString(dbName), user, password);
+        LOG.info(String.format("conn=%s", conn));
+        PooledConnection pooledConn = new PooledConnection(conn, this);
+        pooledConn.lease();
+        connections.add(pooledConn);
+        return pooledConn;
     } 
 
-    public void returnConnection(MSConnection conn) {
-        synchronized(lock){
-            //System.out.println("Expiring Lease");
-            conn.expireLease();
+    public synchronized void returnConnection(PooledConnection conn) {
+        conn.expireLease();
+    }
+
+    public String getDBName() {
+        return dbName;
+    }
+
+    /**
+     * Change the database name.  As a side-effect, this updates the URL and closes the connections.
+     * @param db the new database name
+     */
+    public synchronized void setDBName(String db) {
+        if (!db.equals(dbName)) {
+            for (PooledConnection c: connections) {
+                returnConnection(c);
+            }
+            dbName = db;
         }
     }
-    
-    public void close() throws SQLException {
-        for(int i = 0; i < connections.size(); i++) {
-            MSConnection c = (MSConnection)connections.elementAt(i);
-            if (c.lease()) {
-                c.closeConnection();
+
+    public String getUser() {
+        return user;
+    }
+
+    private class ConnectionReaper extends Thread {
+
+        private static final long DELAY = 30000;
+
+        @Override
+        public void run() {
+            while (reaper != null) {
+                try {
+                    sleep(DELAY);
+                } catch (InterruptedException e) {
+                }
+                reapConnections();
             }
         }
     }
 }
 
-class ConnectionReaper extends Thread {
-
-    private ConnectionPool pool;
-    private final long delay=30000;
-
-    ConnectionReaper(ConnectionPool pool) {
-        this.pool=pool;
-    }
-
-    public void run() {
-        while(true) {
-            try {
-                sleep(delay);
-            } catch (InterruptedException e) { }
-            pool.reapConnections();
-        }
-    }
-}

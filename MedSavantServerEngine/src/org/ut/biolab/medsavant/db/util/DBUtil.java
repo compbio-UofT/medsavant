@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.db.util;
 
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import java.rmi.RemoteException;

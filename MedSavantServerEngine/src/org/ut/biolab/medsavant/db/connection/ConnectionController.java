@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.db.util;
+package org.ut.biolab.medsavant.db.connection;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.ut.biolab.medsavant.clientapi.ClientCallbackAdapter;
-import org.ut.biolab.medsavant.db.connection.MSConnection;
 
 /**
  *
@@ -36,49 +36,64 @@ import org.ut.biolab.medsavant.db.connection.MSConnection;
  */
 public class ConnectionController {
 
-    private static final Map<String, PreparedStatement> statementCache = new HashMap<String, PreparedStatement>();
     private static final Logger LOG = Logger.getLogger(ConnectionController.class.getName());
-    private static String dbHost;
-    private static int dbPort = -1;
-    private static String dbDriver = "com.mysql.jdbc.Driver";
-    private static String props = "enableQueryTimeouts=false";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
-    private static final Map<String, SessionConnection> sessionConnectionMap = new HashMap<String, SessionConnection>();
+    private static final String DRIVER = "com.mysql.jdbc.Driver";
+    private static final String PROPS = "enableQueryTimeouts=false";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
+    private static final Map<String, PreparedStatement> statementCache = new HashMap<String, PreparedStatement>();
+    private static final Map<String, ConnectionPool> sessionPoolMap = new HashMap<String, ConnectionPool>();
     private static final Map<String, ClientCallbackAdapter> sessionCallbackMap = new HashMap<String, ClientCallbackAdapter>();
 
+    private static String dbHost;
+    private static int dbPort = -1;
+
     public static void setHost(String value) {
-        ConnectionController.dbHost = value;
+        dbHost = value;
     }
 
     public static void setPort(int value) {
-        ConnectionController.dbPort = value;
+        dbPort = value;
     }
 
-    static String getHost() {
+    private static String getHost() {
         return dbHost;
     }
 
-    static int getPort() {
+    private static int getPort() {
         return dbPort;
     }
     
-    public static Connection connectOnce(String dbhost, int port, String dbname, String username, String password) throws SQLException {
+    static String getConnectionString(String host, int port, String db) {
+        return String.format("jdbc:mysql://%s:%d/%s?%s", host, port, db, PROPS);
+    }
+    
+    static String getConnectionString(String db) {
+        return getConnectionString(dbHost, dbPort, db);
+    }
+
+    public static Connection connectOnce(String host, int port, String db, String user, String pass) throws SQLException {
         try {
-            Class.forName(dbDriver).newInstance();
+            Class.forName(DRIVER).newInstance();
         } catch (Exception ex) {
             if (ex instanceof ClassNotFoundException || ex instanceof InstantiationException) {
                 throw new SQLException("Unable to load MySQL driver.");
             }
         }
 
-        return DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s?%s", dbhost, port, dbname, props), username, password);
+        return DriverManager.getConnection(getConnectionString(host, port, db), user, pass);
     }
 
+    public static Connection connectPooled(String sessID) throws SQLException {
+        synchronized (sessionPoolMap) {
+            return sessionPoolMap.get(sessID).getConnection();
+        }
+    }
+    
     /**
      * Utility statement to retrieve a prepared statement if one has already been prepared,
      * or to prepare a new statement if the given one is not found in the cache.
      */
     private static PreparedStatement getPreparedStatement(Connection c, String sessionId, String query) throws SQLException {
-        synchronized(statementCache) {
+        synchronized (statementCache) {
             if (statementCache.containsKey(query)) {
                 return statementCache.get(query);
             }
@@ -88,19 +103,6 @@ public class ConnectionController {
         }
     }
 
-    public static Connection connectPooled(String sessionId) {
-        synchronized(sessionConnectionMap) {
-            if (sessionConnectionMap.containsKey(sessionId)) {
-                try {
-                    return sessionConnectionMap.get(sessionId).connectPooled();
-                } catch (Exception e) {
-                    return null;
-                }
-            }
-        }
-        return null;
-    }
-    
     public static ResultSet executeQuery(String sid, String query) throws SQLException {
         Connection conn = connectPooled(sid);
         ResultSet rs = conn.createStatement().executeQuery(query);
@@ -158,51 +160,72 @@ public class ConnectionController {
         c.close();
     }
 
-    public static boolean registerCredentials(String sessionId, String uname, String pw, String dbname) {
-        SessionConnection sc = new SessionConnection(uname, pw, dbname);
-        synchronized(sessionConnectionMap) {
-            sessionConnectionMap.put(sessionId, sc);
-        }
-        try {
-            Connection c = sc.connectPooled();
-            if (c != null && !c.isClosed()) {
-                c.close();
-                return true;
+    /**
+     * Register credentials for the given session.
+     */
+    public static void registerCredentials(String sessID, String user, String pass, String db) throws SQLException {
+        LOG.log(Level.INFO, String.format("ConnectionController.registerCredentials(%s, %s, %s, %s)", sessID, user, pass, db));
+        ConnectionPool pool = new ConnectionPool(db, user, pass);
+        LOG.log(Level.INFO, String.format("sc=%s", pool));
+        synchronized (sessionPoolMap) {
+            sessionPoolMap.put(sessID, pool);
+
+            Connection c = null;
+            try {
+                LOG.log(Level.INFO, "Calling sc.connectPooled()");
+                c = pool.getConnection();
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE, "Caught exception.", e);
+            } finally {
+                if (c != null) {
+                    c.close();
+                }
             }
-            c.close();
-        } catch (Exception e) {}
-        return false;
+        }
     }
 
     /*
      * Make sure you get a new connection after this!
      */
-    public static void switchDatabases(String sessionId, String dbname) {
-        synchronized(sessionConnectionMap) {
-            SessionConnection sc = sessionConnectionMap.get(sessionId);
-            sc.setDBName(dbname);
+    public static void switchDatabases(String sessID, String db) {
+        synchronized (sessionPoolMap) {
+            sessionPoolMap.get(sessID).setDBName(db);
         }
     }
 
-    public static String getDBName(String sid) {
-        synchronized(sessionConnectionMap) {
-            SessionConnection sc = sessionConnectionMap.get(sid);
-            return sc.getDBName();
+    public static String getDBName(String sessID) {
+        synchronized (sessionPoolMap) {
+            return sessionPoolMap.get(sessID).getDBName();
         }
     }
 
-    public static String getUserForSession(String sid) {
-        synchronized(sessionConnectionMap) {
-            SessionConnection sc = sessionConnectionMap.get(sid);
-            return sc.getUser();
+    public static String getUserForSession(String sessID) {
+        synchronized (sessionPoolMap) {
+            return sessionPoolMap.get(sessID).getUser();
         }
     }
 
-    public static void removeSession(String sid) throws SQLException {
-        sessionConnectionMap.get(sid).close();
-        synchronized(sessionConnectionMap) {
-            sessionConnectionMap.remove(sid);
+    public static void removeSession(String sessID) throws SQLException {
+        synchronized (sessionPoolMap) {
+            ConnectionPool pool = sessionPoolMap.remove(sessID);
+            pool.close();
         }
+    }
+
+    public static Collection<String> getSessionIDs() {
+        synchronized(sessionPoolMap) {
+            return sessionPoolMap.keySet();
+        }
+    }
+    
+    public static Collection<String> getDBNames() {
+        List<String> result = new ArrayList<String>();
+        for (ConnectionPool pool : sessionPoolMap.values()){
+            if (!result.contains(pool.getDBName())){
+                result.add(pool.getDBName());
+            }
+        }
+        return result;
     }
 
     public static void addCallback(String sid, ClientCallbackAdapter c){
@@ -215,28 +238,5 @@ public class ConnectionController {
 
     public static ClientCallbackAdapter getCallback(String sid) {
         return sessionCallbackMap.get(sid);
-    }
-
-    public static String getDatabaseForSession(String sid) {
-        synchronized(sessionConnectionMap) {
-            SessionConnection sc = sessionConnectionMap.get(sid);
-            return sc.getDBName();
-        }
-    }
-
-    public static Collection<String> getSessionIDs() {
-        synchronized(sessionConnectionMap) {
-            return sessionConnectionMap.keySet();
-        }
-    }
-    
-    public static List<String> getDbNames() {
-        List<String> result = new ArrayList<String>();
-        for(SessionConnection sc : sessionConnectionMap.values()){
-            if(!result.contains(sc.getDBName())){
-                result.add(sc.getDBName());
-            }
-        }
-        return result;
     }
 }

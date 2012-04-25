@@ -47,7 +47,7 @@ import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.CustomField.Category;
 import org.ut.biolab.medsavant.model.ProjectDetails;
-import org.ut.biolab.medsavant.db.util.ConnectionController;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;

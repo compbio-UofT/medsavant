@@ -29,7 +29,7 @@ import org.ut.biolab.medsavant.clientapi.ClientCallbackAdapter;
  */
 public interface SessionAdapter extends Remote {
 
-    String registerNewSession(String uname, String pw, String dbname) throws RemoteException;
+    String registerNewSession(String uname, String pw, String dbname) throws RemoteException, SQLException;
     void unregisterSession(String sessionId) throws RemoteException, SQLException;
     boolean testConnection(String sessionId) throws RemoteException, SQLException;    
     void registerCallback(String sessionId, ClientCallbackAdapter cca) throws RemoteException;
