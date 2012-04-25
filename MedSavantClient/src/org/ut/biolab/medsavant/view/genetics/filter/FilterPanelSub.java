@@ -97,20 +97,8 @@ public class FilterPanelSub extends JPanel {
     public void refreshSubItems() {
         contentPanel.removeAll();
 
-        //check for removed items
-        for (int i = subItems.size() - 1; i >= 0; i--) {
-            if (subItems.get(i).isRemoved()) {
-                subItems.remove(i);
-            }
-        }
 
-        //refresh panel
-        for (int i = 0; i < subItems.size(); i++) {
-            this.contentPanel.add(subItems.get(i));
-            contentPanel.add(Box.createRigidArea(new Dimension(5, 5)));
-        }
-
-        final JButton addButton = ViewUtil.getSoftButton("Add filter condition");
+        final JButton addButton = ViewUtil.getSoftButton("Add filter condition ▾");
 
         addButton.setToolTipText("Add a filter");
         addButton.addActionListener(new ActionListener() {
@@ -121,7 +109,7 @@ public class FilterPanelSub extends JPanel {
                 Map<Category, List<FilterPlaceholder>> map = getRemainingFilters();
 
                 final JPopupMenu p = new JPopupMenu();
-                p.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.lightGray), BorderFactory.createLineBorder(Color.white, 5)));
+                //p.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.lightGray), BorderFactory.createLineBorder(Color.white, 5)));
                 //p.setBackground(Color.white);
 
                 Category[] cats = new Category[map.size()];
@@ -133,13 +121,13 @@ public class FilterPanelSub extends JPanel {
                 for (Category c : cats) {
 
                     final JPanel header = new JPanel();
-                    header.setBackground(Color.white);
+                    //header.setBackground(Color.white);
                     header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
                     JLabel label = new JLabel(" " + CustomField.categoryToString(c));
                     header.add(label);
                     header.add(Box.createHorizontalGlue());
                     header.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    label.setFont(ViewUtil.getMediumTitleFont());
+                    //label.setFont(ViewUtil.getMediumTitleFont());
                     header.setPreferredSize(new Dimension(260, 20));
                     header.addMouseListener(new MouseAdapter() {
                         @Override
@@ -160,7 +148,7 @@ public class FilterPanelSub extends JPanel {
 
                         @Override
                         public void mouseEntered(MouseEvent e) {
-                            header.setBackground(new Color(0.9f, 0.9f, 0.9f));
+                            header.setBackground(new Color(90,168,234));
                         }
 
                         @Override
@@ -179,7 +167,7 @@ public class FilterPanelSub extends JPanel {
 
                         final JPanel item = new JPanel();
                         item.setPreferredSize(new Dimension(260, 20));
-                        item.setBackground(Color.white);
+                        //item.setBackground(Color.white);
                         item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
                         JLabel itemLabel = new JLabel("     " + filter.getFilterName());
                         item.add(itemLabel);
@@ -196,7 +184,7 @@ public class FilterPanelSub extends JPanel {
 
                             @Override
                             public void mouseEntered(MouseEvent e) {
-                                item.setBackground(new Color(0.9f, 0.9f, 0.9f));
+                                item.setBackground(new Color(90,168,234));
                             }
 
                             @Override
@@ -212,7 +200,7 @@ public class FilterPanelSub extends JPanel {
                     if (filters.length == 0) {
                         JPanel item = new JPanel();
                         item.setPreferredSize(new Dimension(150, 20));
-                        item.setBackground(Color.white);
+                        //item.setBackground(Color.white);
                         item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
                         JLabel empty = new JLabel("     (No filters)");
                         empty.setFont(ViewUtil.getSmallTitleFont());
@@ -252,8 +240,22 @@ public class FilterPanelSub extends JPanel {
         tmp1.add(addButton);
         tmp1.add(Box.createHorizontalGlue());
 
-        contentPanel.add(Box.createVerticalStrut(5));
         contentPanel.add(tmp1);
+        contentPanel.add(Box.createVerticalStrut(5));
+
+        //check for removed items
+        for (int i = subItems.size() - 1; i >= 0; i--) {
+            if (subItems.get(i).isRemoved()) {
+                subItems.remove(i);
+            }
+        }
+
+        //refresh panel
+        for (int i = 0; i < subItems.size(); i++) {
+            this.contentPanel.add(subItems.get(i));
+            contentPanel.add(Box.createRigidArea(new Dimension(5, 5)));
+        }
+
 
         this.updateUI();
     }
