@@ -77,9 +77,7 @@ public class ConnectionPool {
         }
 
         // Create a new connection
-        LOG.info(String.format("Calling DriverManager.getConnection(%s, %s, %s)", ConnectionController.getConnectionString(dbName), user, password));
         Connection conn = DriverManager.getConnection(ConnectionController.getConnectionString(dbName), user, password);
-        LOG.info(String.format("conn=%s", conn));
         PooledConnection pooledConn = new PooledConnection(conn, this);
         pooledConn.lease();
         connections.add(pooledConn);

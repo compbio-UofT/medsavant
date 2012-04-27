@@ -1,5 +1,5 @@
 /*
- *    Copyright 2010-2011 University of Toronto
+ *    Copyright 2010-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.ut.biolab.medsavant.controller;
 
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -24,11 +23,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.serverapi.ServerLogQueryUtilAdapter.LogType;
 
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.serverapi.ServerLogQueryUtilAdapter.LogType;
 import org.ut.biolab.medsavant.serverapi.SessionAdapter;
 import org.ut.biolab.medsavant.settings.VersionSettings;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
@@ -49,10 +48,10 @@ public class LoginController {
     public static SessionAdapter SessionAdapter;
 
     private synchronized static void setLoggedIn(final boolean loggedIn) {
-        Thread t = new Thread(){
+        Thread t = new Thread() {
             @Override
-            public void run(){
-                synchronized(eventLock){
+            public void run() {
+                synchronized(eventLock) {
                     LoginController.loggedIn = loggedIn;
 
                     if (loggedIn) {
@@ -75,12 +74,13 @@ public class LoginController {
         t.start();
     }
 
-    public static void addLog(String message){
-        if(!loggedIn) return;
-        try {
-            MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, message);
-        } catch (RemoteException ex) {
-            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+    public static void addLog(String message) {
+        if (loggedIn) {
+            try {
+                MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, message);
+            } catch (RemoteException ex) {
+                Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
@@ -104,14 +104,10 @@ public class LoginController {
         //init registry
         try {
             MedSavantClient.initializeRegistry(serverAddress, serverPort);
-        } catch (Exception ex) {
-            setLoginException(ex);
-        }
 
-        //register session
-        username = un;
-        password = pw;
-        try {
+            //register session
+            username = un;
+            password = pw;
             System.out.print("Starting session...");
             System.out.flush();
             sessionId = SessionAdapter.registerNewSession(un, pw, dbname);
@@ -121,7 +117,7 @@ public class LoginController {
             setLoginException(x);
         }
 
-        if(sessionId == null){
+        if (sessionId == null) {
             fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
             return;
         }
@@ -133,7 +129,7 @@ public class LoginController {
         } catch (SQLException ignored) {
             // An SQLException is expected here if the user is not an admin, because they
             // will be unable to read the mysql.users table.
-        } catch (RemoteException e){
+        } catch (RemoteException e) {
 
         }
 
@@ -144,7 +140,7 @@ public class LoginController {
 
         //test connection
         try {
-            if(!SessionAdapter.testConnection(sessionId)){
+            if (!SessionAdapter.testConnection(sessionId)) {
                 fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
                 return;
             }
@@ -156,7 +152,7 @@ public class LoginController {
         //check db version
         try {
             String databaseVersion = VersionSettings.getDatabaseVersion();
-            if(!VersionSettings.isCompatible(VersionSettings.getVersionString(), databaseVersion, false)){
+            if (!VersionSettings.isCompatible(VersionSettings.getVersionString(), databaseVersion, false)) {
                 JOptionPane.showMessageDialog(
                         null,
                         "<html>Your client version (" + VersionSettings.getVersionString() + ") does not match that of the database (" + databaseVersion + ").<br>Visit " + VersionSettings.URL + " to get the correct version.</html>" ,
@@ -165,10 +161,10 @@ public class LoginController {
                 fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
                 return;
             }
-        } catch (SQLException ex){
+        } catch (SQLException ex) {
             fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
             return;
-        } catch (Exception ex){
+        } catch (Exception ex) {
             JOptionPane.showMessageDialog(
                     null,
                     "<html>We could not determine compatibility between MedSavant and your database. <br>Please ensure that your versions are compatible before continuing.</html>" ,
@@ -177,7 +173,7 @@ public class LoginController {
             ex.printStackTrace();
         }
         try {
-            setDefaultIds();
+            setDefaultIDs();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(
                     null,
@@ -209,7 +205,7 @@ public class LoginController {
     }
 
     private static void fireLoginEvent(LoginEvent evt) {
-        for (int i = loginListeners.size()-1; i >= 0; i--){
+        for (int i = loginListeners.size()-1; i >= 0; i--) {
             loginListeners.get(i).loginEvent(evt);
         }
     }
@@ -223,8 +219,8 @@ public class LoginController {
         fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED,ex));
     }
 
-    public static void unregister(){
-        if(!loggedIn) return;
+    public static void unregister() {
+        if (!loggedIn) return;
         try {
             SessionAdapter.unregisterSession(LoginController.sessionId);
         } catch (Exception ex) {
@@ -232,17 +228,21 @@ public class LoginController {
         }
     }
 
-    private static void setDefaultIds() throws SQLException, RemoteException {
-        ProjectController.getInstance().setProject(ProjectController.getInstance().getProjectNames().get(0));
+    private static void setDefaultIDs() throws SQLException, RemoteException {
+        ProjectController pc = ProjectController.getInstance();
+        List<String> projNames = pc.getProjectNames();
+        if (projNames.size() > 0) {
+            pc.setProject(projNames.get(0));
 
-        List<String> references = MedSavantClient.ReferenceQueryUtilAdapter.getReferencesForProject(
-                    LoginController.sessionId,
-                    ProjectController.getInstance().getCurrentProjectId());
+            List<String> references = MedSavantClient.ReferenceQueryUtilAdapter.getReferencesForProject(
+                        LoginController.sessionId,
+                        pc.getCurrentProjectId());
 
 
-        ReferenceController.getInstance().setReference(references.get(references.size()-1));
+            ReferenceController.getInstance().setReference(references.get(references.size()-1));
 
-        System.out.println("Setting project to " + ProjectController.getInstance().getCurrentProjectName());
-        System.out.println("Setting reference to " + ReferenceController.getInstance().getCurrentReferenceName());
+            System.out.println("Setting project to " + pc.getCurrentProjectName());
+            System.out.println("Setting reference to " + ReferenceController.getInstance().getCurrentReferenceName());
+        }
     }
 }

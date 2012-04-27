@@ -68,7 +68,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
     @Override
     public boolean testConnection(String sessionId) throws RemoteException, SQLException {
         Connection c = ConnectionController.connectPooled(sessionId);
-        if(c == null){
+        if (c == null) {
             return false;
         } else {
             c.close();
@@ -94,7 +94,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
     }
 
     public void terminateAllSessions(String message) {
-        for(String dbName : ConnectionController.getDBNames()){
+        for(String dbName : ConnectionController.getDBNames()) {
             terminateSessionsForDatabase(dbName, message);
         }
     }
@@ -118,9 +118,9 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
         }
 
         for (final String sid : sessionIDsToTerminate) {
-            Thread t = new Thread(){
+            Thread t = new Thread() {
                 @Override
-                public void run(){
+                public void run() {
                     try {
                         System.out.print("Terminating session " + sid + "...");
                         ClientCallbackAdapter ca = ConnectionController.getCallback(sid);
