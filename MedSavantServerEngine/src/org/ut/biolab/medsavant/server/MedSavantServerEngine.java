@@ -1,7 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.server;
 
 import gnu.getopt.Getopt;
@@ -10,31 +22,16 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import org.ut.biolab.medsavant.db.admin.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
-import org.ut.biolab.medsavant.db.util.FileServer;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.db.util.query.AnnotationLogQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.ChromosomeQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.CohortQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.LogQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.NotificationQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.PatientQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.ProjectQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.QueryUtil;
-import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.RegionQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
+import org.ut.biolab.medsavant.db.util.query.*;
 import org.ut.biolab.medsavant.db.variants.update.VariantManager;
 import org.ut.biolab.medsavant.serverapi.MedSavantServerRegistry;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+
 
 /**
  *
@@ -150,7 +147,6 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject {
         System.out.flush();
 
         registry.rebind(MedSavantServerRegistry.Registry_UploadVariantsAdapter, VariantManager.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_FileTransferAdapter, FileServer.getInstance());
 
         registry.rebind(MedSavantServerRegistry.Registry_SessionAdapter, SessionController.getInstance());
         registry.rebind(MedSavantServerRegistry.Registry_CustomTablesAdapter, CustomTables.getInstance());

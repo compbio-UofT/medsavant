@@ -319,7 +319,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
             multiplier = 1;
         }
         
-        Range range = new Range(getExtremeValuesForColumn(sid, table.getTablename(), column.getColumnName()));
+        Range range = new Range(getExtremeValuesForColumn(sid, table.getTableName(), column.getColumnName()));
         double binSize = MiscUtils.generateBins(column, range, logBins);
         
         SelectQuery q = new SelectQuery();
@@ -422,13 +422,13 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
         double binSizeX = 0;
         if (!columnXCategorical) {
-            Range rangeX = new Range(getExtremeValuesForColumn(sid, table.getTablename(), columnnameX));
+            Range rangeX = new Range(getExtremeValuesForColumn(sid, table.getTableName(), columnnameX));
             binSizeX = MiscUtils.generateBins(new CustomField(columnnameX, columnX.getTypeNameSQL() + "(" + columnX.getTypeLength() + ")", false, "", ""), rangeX, false);
         }
         
         double binSizeY = 0;
         if (!columnYCategorical) {
-            Range rangeY = new Range(getExtremeValuesForColumn(sid, table.getTablename(), columnnameY));
+            Range rangeY = new Range(getExtremeValuesForColumn(sid, table.getTableName(), columnnameY));
             binSizeY = MiscUtils.generateBins(new CustomField(columnnameY, columnY.getTypeNameSQL() + "(" + columnY.getTypeLength() + ")", false, "", ""), rangeY, false);
         }
 

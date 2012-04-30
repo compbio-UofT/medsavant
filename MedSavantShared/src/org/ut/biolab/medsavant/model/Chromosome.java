@@ -51,7 +51,7 @@ public class Chromosome implements Serializable {
         return  name.toLowerCase().replace("chr", "").replace("contig", "");      
     }
     
-    public static List<Chromosome> getHg17Chromosomes(){
+    public static List<Chromosome> getHG17Chromosomes(){
         List<Chromosome> chrs = new ArrayList<Chromosome>();
         chrs.add(new Chromosome("chr1", "1", 125000000, 245522847));
         chrs.add(new Chromosome("chr2", "2", 93300000, 243018229));
@@ -80,7 +80,7 @@ public class Chromosome implements Serializable {
         return chrs;
     }
     
-    public static List<Chromosome> getHg18Chromosomes(){
+    public static List<Chromosome> getHG18Chromosomes(){
         List<Chromosome> chrs = new ArrayList<Chromosome>();
         chrs.add(new Chromosome("chr1", "1", 125000000, 247249719));
         chrs.add(new Chromosome("chr2", "2", 93300000, 242951149));
@@ -109,7 +109,7 @@ public class Chromosome implements Serializable {
         return chrs;
     }
     
-    public static List<Chromosome> getHg19Chromosomes(){
+    public static List<Chromosome> getHG19Chromosomes(){
         List<Chromosome> chrs = new ArrayList<Chromosome>();
         chrs.add(new Chromosome("chr1", "1", 125000000, 249250621));
         chrs.add(new Chromosome("chr2", "2", 93300000, 243199373));

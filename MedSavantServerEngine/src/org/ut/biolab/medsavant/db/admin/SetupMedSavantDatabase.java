@@ -16,6 +16,8 @@
 
 package org.ut.biolab.medsavant.db.admin;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -23,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
@@ -37,6 +40,7 @@ import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
 import org.ut.biolab.medsavant.serverapi.SetupAdapter;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.SessionController;
+import org.ut.biolab.medsavant.util.NetworkUtils;
 
 /**
  *
@@ -60,35 +64,35 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
 
         Connection c = ConnectionController.connectPooled(sessionId);
 
-        if (DBUtil.tableExists(sessionId, MedSavantDatabase.PatienttablemapTableSchema.getTablename())) {
-            List<String> patientTables = getValuesFromField(c,MedSavantDatabase.PatienttablemapTableSchema.getTablename(), "patient_tablename");
+        if (DBUtil.tableExists(sessionId, MedSavantDatabase.PatienttablemapTableSchema.getTableName())) {
+            List<String> patientTables = getValuesFromField(c,MedSavantDatabase.PatienttablemapTableSchema.getTableName(), "patient_tablename");
             for (String s : patientTables) {
                 DBUtil.dropTable(sessionId,s);
             }
         }
 
-        if (DBUtil.tableExists(sessionId, MedSavantDatabase.VarianttablemapTableSchema.getTablename())) {
-            List<String> variantTables = getValuesFromField(c,MedSavantDatabase.VarianttablemapTableSchema.getTablename(), "variant_tablename");
+        if (DBUtil.tableExists(sessionId, MedSavantDatabase.VarianttablemapTableSchema.getTableName())) {
+            List<String> variantTables = getValuesFromField(c,MedSavantDatabase.VarianttablemapTableSchema.getTableName(), "variant_tablename");
             for (String s : variantTables) {
                 DBUtil.dropTable(sessionId,s);
             }
         }
 
-        DBUtil.dropTable(sessionId,MedSavantDatabase.ServerlogTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.AnnotationTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.ReferenceTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.ProjectTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.PatienttablemapTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.VarianttablemapTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.RegionsetTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.RegionsetmembershipTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.CohortTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.CohortmembershipTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.VariantpendingupdateTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.PatienttablemapTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.ChromosomeTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.PatientformatTableSchema.getTablename());
-        DBUtil.dropTable(sessionId,MedSavantDatabase.AnnotationformatTableSchema.getTablename());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.ServerlogTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.AnnotationTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.ReferenceTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.ProjectTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.PatienttablemapTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.VarianttablemapTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.RegionsetTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.RegionsetmembershipTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.CohortTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.CohortmembershipTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.VariantpendingupdateTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.PatienttablemapTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.ChromosomeTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.PatientformatTableSchema.getTableName());
+        DBUtil.dropTable(sessionId,MedSavantDatabase.AnnotationformatTableSchema.getTableName());
 
         c.close();
     }
@@ -98,7 +102,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         Connection c = ConnectionController.connectPooled(sessionId);
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.ServerlogTableSchema.getTablename() + "` ("
+                "CREATE TABLE `" + MedSavantDatabase.ServerlogTableSchema.getTableName() + "` ("
                   + "`id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
                   + "`user` varchar(50) COLLATE latin1_bin DEFAULT NULL,"
                   + "`event` varchar(50) COLLATE latin1_bin DEFAULT NULL,"
@@ -109,14 +113,14 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 );
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.RegionsetTableSchema.getTablename() + "` ("
+                "CREATE TABLE `" + MedSavantDatabase.RegionsetTableSchema.getTableName() + "` ("
                 + "`region_set_id` int(11) NOT NULL AUTO_INCREMENT,"
                 + "`name` varchar(255) CHARACTER SET latin1 NOT NULL,"
                 + "PRIMARY KEY (`region_set_id`)"
                 + ") ENGINE=MyISAM;");
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.RegionsetmembershipTableSchema.getTablename() + "` ("
+                "CREATE TABLE `" + MedSavantDatabase.RegionsetmembershipTableSchema.getTableName() + "` ("
                 + "`region_set_id` int(11) NOT NULL,"
                 + "`genome_id` int(11) NOT NULL,"
                 + "`chrom` varchar(255) COLLATE latin1_bin NOT NULL,"
@@ -126,7 +130,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + ") ENGINE=MyISAM;");
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.CohortTableSchema.getTablename() + "` ("
+                "CREATE TABLE `" + MedSavantDatabase.CohortTableSchema.getTableName() + "` ("
                 + "`cohort_id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
                 + "`project_id` int(11) unsigned NOT NULL,"
                 + "`name` varchar(255) CHARACTER SET latin1 NOT NULL,"
@@ -134,14 +138,14 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + ") ENGINE=MyISAM;");
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.CohortmembershipTableSchema.getTablename() + "` ("
+                "CREATE TABLE `" + MedSavantDatabase.CohortmembershipTableSchema.getTableName() + "` ("
                 + "`cohort_id` int(11) unsigned NOT NULL,"
                 + "`patient_id` int(11) unsigned NOT NULL,"
                 + "PRIMARY KEY (`patient_id`,`cohort_id`)"
                 + ") ENGINE=MyISAM;");
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.ReferenceTableSchema.getTablename() + "` ("
+                "CREATE TABLE `" + MedSavantDatabase.ReferenceTableSchema.getTableName() + "` ("
                 + "`reference_id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
                 + "`name` varchar(50) COLLATE latin1_bin NOT NULL,"
                 + "`url` varchar(200) COLLATE latin1_bin DEFAULT NULL,"
@@ -150,7 +154,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + ") ENGINE=MyISAM;");
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.AnnotationTableSchema.getTablename() + "` ("
+                "CREATE TABLE `" + MedSavantDatabase.AnnotationTableSchema.getTableName() + "` ("
                 + "`annotation_id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
                 + "`program` varchar(100) COLLATE latin1_bin NOT NULL DEFAULT '',"
                 + "`version` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
@@ -163,7 +167,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + ") ENGINE=MyISAM;");
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.ProjectTableSchema.getTablename() + "` "
+                "CREATE TABLE `" + MedSavantDatabase.ProjectTableSchema.getTableName() + "` "
                 + "(`project_id` int(11) unsigned NOT NULL AUTO_INCREMENT, "
                 + "`name` varchar(50) NOT NULL, "
                 + "PRIMARY KEY (`project_id`), "
@@ -171,14 +175,14 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + ") ENGINE=MyISAM;");
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.PatienttablemapTableSchema.getTablename() + "` ("
+                "CREATE TABLE `" + MedSavantDatabase.PatienttablemapTableSchema.getTableName() + "` ("
                 + "`project_id` int(11) unsigned NOT NULL,"
                 + "`patient_tablename` varchar(100) COLLATE latin1_bin NOT NULL,"
                 + "PRIMARY KEY (`project_id`)"
                 + ") ENGINE=MyISAM;");
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.VarianttablemapTableSchema.getTablename() + "` ("
+                "CREATE TABLE `" + MedSavantDatabase.VarianttablemapTableSchema.getTableName() + "` ("
                 + "`project_id` int(11) unsigned NOT NULL,"
                 + "`reference_id` int(11) unsigned NOT NULL,"
                 + "`update_id` int(11) unsigned NOT NULL,"
@@ -191,7 +195,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + ") ENGINE=MyISAM;");
 
         c.createStatement().execute(
-                "CREATE TABLE  `" + MedSavantDatabase.VariantpendingupdateTableSchema.getTablename() + "` ("
+                "CREATE TABLE  `" + MedSavantDatabase.VariantpendingupdateTableSchema.getTableName() + "` ("
                 + "`upload_id` int(11) unsigned NOT NULL AUTO_INCREMENT,"
                 + "`project_id` int(11) unsigned NOT NULL,"
                 + "`reference_id` int(11) unsigned NOT NULL,"
@@ -203,7 +207,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + ") ENGINE=MyISAM;");
 
         c.createStatement().execute(
-                "CREATE TABLE  `" + MedSavantDatabase.ChromosomeTableSchema.getTablename() + "` ("
+                "CREATE TABLE  `" + MedSavantDatabase.ChromosomeTableSchema.getTableName() + "` ("
                 + "`reference_id` int(11) unsigned NOT NULL,"
                 + "`contig_id` int(11) unsigned NOT NULL,"
                 + "`contig_name` varchar(100) COLLATE latin1_bin NOT NULL,"
@@ -213,7 +217,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 +") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
         c.createStatement().execute(
-                "CREATE TABLE  `" + MedSavantDatabase.AnnotationformatTableSchema.getTablename() + "` ("
+                "CREATE TABLE  `" + MedSavantDatabase.AnnotationformatTableSchema.getTableName() + "` ("
                 + "`annotation_id` int(11) unsigned NOT NULL,"
                 + "`position` int(11) unsigned NOT NULL,"
                 + "`column_name` varchar(200) COLLATE latin1_bin NOT NULL,"
@@ -225,7 +229,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
         c.createStatement().execute(
-                "CREATE TABLE  `" + MedSavantDatabase.PatientformatTableSchema.getTablename() + "` ("
+                "CREATE TABLE  `" + MedSavantDatabase.PatientformatTableSchema.getTableName() + "` ("
                 + "`project_id` int(11) unsigned NOT NULL,"
                 + "`position` int(11) unsigned NOT NULL,"
                 + "`column_name` varchar(200) COLLATE latin1_bin NOT NULL,"
@@ -237,7 +241,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
         c.createStatement().execute(
-                "CREATE TABLE  `" + MedSavantDatabase.VariantformatTableSchema.getTablename() + "` ("
+                "CREATE TABLE  `" + MedSavantDatabase.VariantformatTableSchema.getTableName() + "` ("
                 + "`project_id` int(11) unsigned NOT NULL,"
                 + "`reference_id` int(11) unsigned NOT NULL,"
                 + "`update_id` int(11) unsigned NOT NULL,"
@@ -283,15 +287,19 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + "`custom_info` varchar(1000) COLLATE latin1_bin DEFAULT NULL"
                 + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
+        String s = MedSavantDatabase.GenesTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin";
+        LOG.log(Level.FINE, s);
+        c.createStatement().execute(s);
+
         c.createStatement().execute(
-                "CREATE TABLE  `" + MedSavantDatabase.SettingsTableSchema.getTablename() + "` ("
+                "CREATE TABLE  `" + MedSavantDatabase.SettingsTableSchema.getTableName() + "` ("
                 + "`setting_key` varchar(100) COLLATE latin1_bin NOT NULL,"
                 + "`setting_value` varchar(300) COLLATE latin1_bin NOT NULL,"
                 + "PRIMARY KEY (`setting_key`)"
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.VarianttagTableSchema.getTablename() + "` ("
+                "CREATE TABLE `" + MedSavantDatabase.VarianttagTableSchema.getTableName() + "` ("
                   + "`upload_id` int(11) NOT NULL,"
                   + "`tagkey` varchar(500) COLLATE latin1_bin NOT NULL,"
                   + "`tagvalue` varchar(1000) COLLATE latin1_bin NOT NULL DEFAULT ''"
@@ -299,7 +307,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 );
 
         c.createStatement().execute(
-                "CREATE TABLE `" + MedSavantDatabase.VariantStarredTableSchema.getTablename() + "` ("
+                "CREATE TABLE `" + MedSavantDatabase.VariantStarredTableSchema.getTableName() + "` ("
                 + "`project_id` int(11) unsigned NOT NULL,"
                 + "`reference_id` int(11) unsigned NOT NULL,"
                 + "`upload_id` int(11) NOT NULL,"
@@ -312,7 +320,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
 
         c.createStatement().execute(
-                "CREATE TABLE  `" + MedSavantDatabase.VariantFileTableSchema.getTablename() + "` ("
+                "CREATE TABLE  `" + MedSavantDatabase.VariantFileTableSchema.getTableName() + "` ("
                 + "`upload_id` int(11) NOT NULL,"
                 + "`file_id` int(11) NOT NULL,"
                 + "`file_name` varchar(500) COLLATE latin1_bin NOT NULL,"
@@ -337,23 +345,24 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     @Override
     public void createDatabase(String dbHost, int port, String dbname, String adminName, char[] rootPassword, String versionString) throws SQLException, RemoteException {
 
-        String sessionId = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
+        String sessID = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
 
-        Connection c = ConnectionController.connectPooled(sessionId);
+        Connection c = ConnectionController.connectPooled(sessID);
         createDatabase(c,dbname);
         c.close();
 
-        ConnectionController.switchDatabases(sessionId,dbname); //closes all connections
-        c = ConnectionController.connectPooled(sessionId);
+        ConnectionController.switchDatabases(sessID,dbname); //closes all connections
+        c = ConnectionController.connectPooled(sessID);
 
-        dropTables(sessionId);
-        createTables(sessionId);
-        addRootUser(sessionId,c, rootPassword);
-        addDefaultReferenceGenomes(sessionId);
-        addDbSettings(sessionId,versionString);
+        dropTables(sessID);
+        createTables(sessID);
+        addRootUser(sessID,c, rootPassword);
+        addDefaultReferenceGenomes(sessID);
+        addDbSettings(sessID,versionString);
+        populateGenes(sessID);
 
-        for (String user: UserQueryUtil.getInstance().getUserNames(sessionId)) {
-            UserQueryUtil.getInstance().grantPrivileges(sessionId,user, UserQueryUtil.getInstance().getUserLevel(sessionId, user));
+        for (String user: UserQueryUtil.getInstance().getUserNames(sessID)) {
+            UserQueryUtil.getInstance().grantPrivileges(sessID,user, UserQueryUtil.getInstance().getUserLevel(sessID, user));
         }
         c.close();
     }
@@ -375,16 +384,28 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
 
     private static void createDatabase(Connection c, String dbname) throws SQLException {
-
-        System.out.println("CREATE DATABASE " + dbname);
+        LOG.log(Level.INFO, "CREATE DATABASE %s", dbname);
 
         //TODO: should check if the db exists already
         c.createStatement().execute("CREATE DATABASE " + dbname);
     }
 
     private static void addDefaultReferenceGenomes(String sessionId) throws SQLException, RemoteException {
-        ReferenceQueryUtil.getInstance().addReference(sessionId,"hg17", Chromosome.getHg17Chromosomes());
-        ReferenceQueryUtil.getInstance().addReference(sessionId,"hg18", Chromosome.getHg18Chromosomes(), "http://savantbrowser.com/data/hg18/hg18.fa.savant");
-        ReferenceQueryUtil.getInstance().addReference(sessionId,"hg19", Chromosome.getHg19Chromosomes(), "http://savantbrowser.com/data/hg19/hg19.fa.savant");
+        ReferenceQueryUtil.getInstance().addReference(sessionId,"hg17", Chromosome.getHG17Chromosomes());
+        ReferenceQueryUtil.getInstance().addReference(sessionId,"hg18", Chromosome.getHG18Chromosomes(), "http://savantbrowser.com/data/hg18/hg18.fa.savant");
+        ReferenceQueryUtil.getInstance().addReference(sessionId,"hg19", Chromosome.getHG19Chromosomes(), "http://savantbrowser.com/data/hg19/hg19.fa.savant");
+    }
+    
+    private static void populateGenes(String sessID) throws SQLException, RemoteException {
+        TabixTableLoader loader = new TabixTableLoader(MedSavantDatabase.GenesTableSchema.getTable());
+        
+        try {
+            // bin	name	chrom	strand	txStart	txEnd	cdsStart	cdsEnd	exonCount	exonStarts	exonEnds	score	name2	cdsStartStat	cdsEndStat	exonFrames
+            loader.loadGenes(sessID, NetworkUtils.getKnownGoodURL("http://savantbrowser.com/data/hg18/hg18.refGene.gz").toURI(), "hg18", "RefSeq", null, null, "chrom", null, "start", "end", "thickStart", "thickEnd", null, "exonStarts", "exonEnds", null, "name");
+            loader.loadGenes(sessID, NetworkUtils.getKnownGoodURL("http://savantbrowser.com/data/hg19/hg19.refGene.gz").toURI(), "hg19", "RefSeq", null, null, "chrom", null, "start", "end", "thickStart", "thickEnd", null, "exonStarts", "exonEnds", null, "name");
+        } catch (IOException iox) {
+            throw new RemoteException("Error populating gene tables.", iox);
+        } catch (URISyntaxException ignored) {
+        }
     }
 }

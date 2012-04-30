@@ -51,7 +51,7 @@ public class NewReferenceDialog extends javax.swing.JDialog {
         model.addColumn("Length");
         model.addColumn("Centromere Position");
         
-        for(Chromosome c : Chromosome.getHg19Chromosomes()){
+        for(Chromosome c : Chromosome.getHG19Chromosomes()){
             model.addRow(new Object[]{c.getName(), c.getLength(), c.getCentromerepos()});
         }
         

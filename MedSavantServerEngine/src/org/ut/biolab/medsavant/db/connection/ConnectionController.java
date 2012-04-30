@@ -39,7 +39,6 @@ public class ConnectionController {
     private static final Logger LOG = Logger.getLogger(ConnectionController.class.getName());
     private static final String DRIVER = "com.mysql.jdbc.Driver";
     private static final String PROPS = "enableQueryTimeouts=false";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
-    private static final Map<String, PreparedStatement> statementCache = new HashMap<String, PreparedStatement>();
     private static final Map<String, ConnectionPool> sessionPoolMap = new HashMap<String, ConnectionPool>();
     private static final Map<String, ClientCallbackAdapter> sessionCallbackMap = new HashMap<String, ClientCallbackAdapter>();
 
@@ -88,38 +87,31 @@ public class ConnectionController {
         }
     }
     
-    /**
-     * Utility statement to retrieve a prepared statement if one has already been prepared,
-     * or to prepare a new statement if the given one is not found in the cache.
-     */
-    private static PreparedStatement getPreparedStatement(Connection c, String sessionId, String query) throws SQLException {
-        synchronized (statementCache) {
-            if (statementCache.containsKey(query)) {
-                return statementCache.get(query);
-            }
-            PreparedStatement result = c.prepareStatement(query);
-            statementCache.put(query, result);
-            return result;
-        }
-    }
-
     public static ResultSet executeQuery(String sid, String query) throws SQLException {
         Connection conn = connectPooled(sid);
-        ResultSet rs = conn.createStatement().executeQuery(query);
-        conn.close();
-        return rs;
+        try {
+            return conn.createStatement().executeQuery(query);
+        } finally {
+            conn.close();
+        }
     }
     
-    public static void executeUpdate(String sid, String query) throws SQLException {
-        Connection conn = connectPooled(sid);
-        conn.createStatement().executeUpdate(query);
-        conn.close();
+    public static void executeUpdate(String sessID, String query) throws SQLException {
+        Connection conn = connectPooled(sessID);
+        try {
+            conn.createStatement().executeUpdate(query);
+        } finally {
+            conn.close();
+        }
     }
     
-    public static void execute(String sid, String query) throws SQLException {
-        Connection conn = connectPooled(sid);
-        conn.createStatement().execute(query);
-        conn.close();
+    public static void execute(String sessID, String query) throws SQLException {
+        Connection conn = connectPooled(sessID);
+        try {
+            conn.createStatement().execute(query);
+        } finally {
+            conn.close();
+        }
     }
 
     /**
@@ -130,15 +122,29 @@ public class ConnectionController {
      * @return a ResultSet containing the results of the query
      * @throws SQLException
      */
-    public static ResultSet executePreparedQuery(String sessionId, String query, Object... args) throws SQLException {
-        Connection c = connectPooled(sessionId);
-        PreparedStatement st = getPreparedStatement(c, sessionId, query);
+    public static ResultSet executePreparedQuery(String sessID, String query, Object... args) throws SQLException {
+        Connection conn = connectPooled(sessID);
+        try {
+            return executePreparedQuery(conn, query, args);
+        } finally {
+            conn.close();
+        }
+    }
+
+    /**
+     * Utility method to make it easier to execute SELECT-style queries.
+     *
+     * @param stmt a query, possibly containing '?' placeholder elements
+     * @param args arguments for the placeholders
+     * @return a ResultSet containing the results of the query
+     * @throws SQLException
+     */
+    public static ResultSet executePreparedQuery(Connection conn, String query, Object... args) throws SQLException {
+        PreparedStatement st = conn.prepareStatement(query);
         for (int i = 0; i < args.length; i++) {
             st.setObject(i + 1, args[i]);
         }
-        ResultSet rs = st.executeQuery();
-        c.close();
-        return rs;
+        return st.executeQuery();
     }
 
     /**
@@ -149,15 +155,30 @@ public class ConnectionController {
      * @param args arguments for the placeholders
      * @throws SQLException
      */
-    public static void executePreparedUpdate(String sessionId, String query, Object... args) throws SQLException {
-        Connection c = connectPooled(sessionId);
-        PreparedStatement st = getPreparedStatement(c, sessionId, query);
+    public static void executePreparedUpdate(String sessID, String query, Object... args) throws SQLException {
+        Connection conn = connectPooled(sessID);
+        try {
+            executePreparedUpdate(conn, query, args);
+        } finally {
+            conn.close();
+        }
+    }
+
+    /**
+     * Utility method to make it easier to execute data-manipulation calls which don't
+     * return a result.
+     *
+     * @param stmt a query, possibly containing '?' placeholder elements
+     * @param args arguments for the placeholders
+     * @throws SQLException
+     */
+    public static void executePreparedUpdate(Connection conn, String query, Object... args) throws SQLException {
+        PreparedStatement st = conn.prepareStatement(query);
         for (int i = 0; i < args.length; i++) {
             st.setObject(i + 1, args[i]);
         }
         LOG.log(Level.INFO, query);
         st.executeUpdate();
-        c.close();
     }
 
     /**

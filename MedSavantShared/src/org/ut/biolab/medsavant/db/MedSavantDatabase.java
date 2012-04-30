@@ -1154,6 +1154,20 @@ public class MedSavantDatabase {
     public static final DefaultpatientTableSchema DefaultpatientTableSchema = new DefaultpatientTableSchema(schema);
     //DefaultvariantTableSchema
     public static final DefaultVariantTableSchema DefaultvariantTableSchema = new DefaultVariantTableSchema(schema);
+    
+    public static final TableSchema GenesTableSchema = new TableSchema(schema, "genes",
+        new ColumnDef("genome", ColumnType.VARCHAR, 30, null, true, false),
+        new ColumnDef("type", ColumnType.VARCHAR, 30, null, true, false),
+        new ColumnDef("name", ColumnType.VARCHAR, 30, null, true, false),
+        new ColumnDef("chrom", ColumnType.VARCHAR, 30, null, true, false),
+        new ColumnDef.Integer("start"),
+        new ColumnDef.Integer("end"),
+        new ColumnDef.Integer("thickStart"),
+        new ColumnDef.Integer("thickEnd"),
+        new ColumnDef("exonStarts", ColumnType.VARCHAR, 9000),
+        new ColumnDef("exonEnds", ColumnType.VARCHAR, 9000)
+    );
+            
     //PatientformatTableSchema
     public static final PatientFormatTableSchema PatientformatTableSchema = new PatientFormatTableSchema(schema);
     //PatienttablemapTableSchema

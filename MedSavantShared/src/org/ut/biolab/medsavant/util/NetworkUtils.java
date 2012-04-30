@@ -1,5 +1,5 @@
 /*
- *    Copyright 2010-2011 University of Toronto
+ *    Copyright 2010-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package org.ut.biolab.medsavant.util;
 
-import org.ut.biolab.medsavant.util.MiscUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.SecureRandom;
@@ -31,6 +31,12 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+
+import net.sf.samtools.util.SeekableBufferedStream;
+import net.sf.samtools.util.SeekableFileStream;
+import net.sf.samtools.util.SeekableHTTPStream;
+import net.sf.samtools.util.SeekableStream;
+
 
 /**
  * Some useful methods for performing network-related functions.
@@ -162,6 +168,29 @@ public class NetworkUtils {
         }
 
         return result.toString();
+    }
+
+    /**
+     * Given a URI, return a SeekableStream of the appropriate type.
+     *
+     * @param uri an ftp:, http:, or file: URI
+     * @param allowCaching if true, remote streams will be wrapped in a CachedSeekableStream
+     * @return a SeekableStream which can be passed to SavantROFile or BAMDataSource
+     */
+    public static SeekableStream getSeekableStreamForURI(URI uri) throws IOException {
+        String proto = uri.getScheme().toLowerCase();
+        SeekableStream result;
+        if (proto.equals("file")) {
+            result = new SeekableBufferedStream(new SeekableFileStream(new File(uri)));
+        } else {
+            if (proto.equals("http") || proto.equals("https")) {
+                result = new SeekableHTTPStream(uri.toURL());
+            } else {
+                throw new IOException("Unknown URI scheme " + uri.toString());
+            }
+            result = new SeekableBufferedStream(result);
+        }
+        return result;
     }
 
 }

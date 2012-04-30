@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import com.healthmarketscience.sqlbuilder.CreateTableQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 
 
@@ -40,7 +42,38 @@ public class TableSchema implements Serializable {
     private final LinkedHashMap<String,Integer> dbNameToIndex;
     private final LinkedHashMap<String, String> aliasToDBName;
 
-    private void addColumn(int index, String dbName, String alias, ColumnType t, int length) {
+    private DbTable table;
+
+    public TableSchema(DbTable t) {
+        this.table = t;
+        
+        dbNameToAlias = new LinkedHashMap<String,String>();
+        indexToDBName = new LinkedHashMap<Integer,String>();
+        indexToColumnType = new LinkedHashMap<Integer,ColumnType>();
+        columnToIndex = new LinkedHashMap<DbColumn,Integer>();
+        aliasToColumn = new LinkedHashMap<String,DbColumn>();
+        indexToColumn = new LinkedHashMap<Integer,DbColumn>();
+        dbNameToIndex = new LinkedHashMap<String,Integer>();
+        aliasToDBName = new LinkedHashMap<String,String>();
+    }
+
+    public TableSchema(DbSchema s, String name, ColumnDef... cols) {
+        this(s.addTable(name));
+        for (ColumnDef col: cols) {
+            DbColumn dbc = addColumn(col.name, col.name, col.type, col.length);
+            if (col.defaultValue != null) {
+                dbc.setDefaultValue(col.defaultValue);
+            }
+            if (col.notNull) {
+                dbc.notNull();
+            }
+            if (col.primaryKey) {
+                dbc.primaryKey();
+            }
+        }
+    }
+
+    private DbColumn addColumn(int index, String dbName, String alias, ColumnType t, int length) {
         assert (!indexToDBName.containsKey(index));
         DbColumn c = table.addColumn(dbName, t.toString(), length);
         dbNameToAlias.put(dbName,alias);
@@ -51,10 +84,11 @@ public class TableSchema implements Serializable {
         indexToColumn.put(index, c);
         dbNameToIndex.put(dbName, index);
         aliasToDBName.put(alias,dbName);
+        return c;
     }
 
-    public void addColumn(String dbName, String alias, ColumnType t, int length) {
-        addColumn(getNumFields()+1,dbName,alias,t,length);
+    public final DbColumn addColumn(String dbName, String alias, ColumnType t, int length) {
+        return addColumn(getNumFields() + 1,dbName,alias,t,length);
     }
 
     public List<String> getFieldAliases() {
@@ -113,31 +147,20 @@ public class TableSchema implements Serializable {
         return indexToDBName.get(index);
     }
 
-    private DbTable table;
-
-    public TableSchema(DbTable t) {
-        this.table = t;
-        
-        dbNameToAlias = new LinkedHashMap<String,String>();
-        indexToDBName = new LinkedHashMap<Integer,String>();
-        indexToColumnType = new LinkedHashMap<Integer,ColumnType>();
-        columnToIndex = new LinkedHashMap<DbColumn,Integer>();
-        aliasToColumn = new LinkedHashMap<String,DbColumn>();
-        indexToColumn = new LinkedHashMap<Integer,DbColumn>();
-        dbNameToIndex = new LinkedHashMap<String,Integer>();
-        aliasToDBName = new LinkedHashMap<String,String>();
-    }
-
-    public DbTable getTable() {
-        return table;
-    }
-
     public List<DbColumn> getColumns() {
         // IMPORTANT: this assumes the values returned are in order of insert (LinkedHashMap)
         return new ArrayList<DbColumn>(indexToColumn.values());
     }
     
-    public String getTablename() {
+    public DbTable getTable() {
+        return table;
+    }
+
+    public String getTableName() {
         return table.getName();
+    }
+    
+    public String getCreateQuery() {
+        return new CreateTableQuery(table, true).toString();
     }
 }

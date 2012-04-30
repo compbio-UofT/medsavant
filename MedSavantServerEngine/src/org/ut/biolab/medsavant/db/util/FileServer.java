@@ -1,5 +1,3 @@
-package org.ut.biolab.medsavant.db.util;
-
 /*
 Copyright (c) 2007 Health Market Science, Inc.
 
@@ -26,23 +24,23 @@ Health Market Science
 Suite 200
 King of Prussia, PA 19406
  */
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+package org.ut.biolab.medsavant.db.util;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.rmi.RemoteException;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
-import java.rmi.RemoteException;
-import org.ut.biolab.medsavant.server.RemoteFileServer;
 
 /**
  * Simple example server which can be the target of a streamed file.
  *
  * @author James Ahlborn
  */
-public class FileServer extends MedSavantServerUnicastRemoteObject implements RemoteFileServer {
+public class FileServer  {
     private static FileServer instance;
 
     public static synchronized FileServer getInstance() throws RemoteException {
