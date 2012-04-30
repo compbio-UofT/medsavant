@@ -57,8 +57,8 @@ public class ConnectionPool {
      * Closes all connections, but also stops the reaper thread.
      */
     public synchronized void close() {
-        for (PooledConnection conn: connections) {
-            removeConnection(conn);
+        while (connections.size() > 0) {
+            removeConnection(connections.get(0));
         }
         reaper = null;
     }

@@ -28,6 +28,7 @@ King of Prussia, PA 19406
 package com.healthmarketscience.sqlbuilder;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -45,7 +46,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.Table;
  * @author James Ahlborn
  */
 public abstract class Query<ThisType extends Query<ThisType>>
-  extends SqlObject implements Verifiable<ThisType>
+  extends SqlObject implements Verifiable<ThisType>, Serializable
 {
   protected Query() {}
 

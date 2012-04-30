@@ -202,12 +202,10 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
     }
 
     private void refreshProgressLabel() {
-        labelVariantsRemaining.setText(
-                ViewUtil.numToString(numLeft)
-                //+ " of "
-                //+ ViewUtil.numToString(numTotal)
-                + " (" + ((numLeft*100)/numTotal) + "%)"
-                //+ "<br>variants pass search conditions"
-                );
+        long percent = 100;
+        if (numTotal > 0) {
+            percent = (numLeft * 100) / numTotal;
+        }
+        labelVariantsRemaining.setText(String.format("%,d (%d%%)", numLeft, percent));
     }
 }
