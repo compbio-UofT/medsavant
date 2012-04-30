@@ -29,6 +29,7 @@ public class IconFactory {
     }
 
     public enum StandardIcon {
+        GOOGLE_LOGO,
         SECTION_ADMIN,
         SECTION_OTHER,
         SECTION_VARIANTS,
@@ -64,6 +65,8 @@ public class IconFactory {
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case GOOGLE_LOGO:
+                return getIcon(iconroot + "googleLog.png");
             case SECTION_ADMIN:
                 return getIcon(iconroot + "section_admin.png");
             case SECTION_OTHER:

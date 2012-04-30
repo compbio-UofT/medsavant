@@ -43,6 +43,7 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.FilterController.FilterAction;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.view.component.HoverButton;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -64,7 +65,7 @@ public class FilterPanel extends javax.swing.JPanel {
     private ActionListener comboBoxListener;
     private boolean addingItems = false;
     private FilterHistoryPanel historyPanel;
-    private JButton deleteButton;
+    private HoverButton deleteButton;
 
     /** Creates new form FilterPanel */
     public FilterPanel() {
@@ -262,13 +263,6 @@ public class FilterPanel extends javax.swing.JPanel {
 
     }
 
-    String[][] Data = {
-  {"Amar"}, {"BCA", "Address","rohini","Delhi"},
-  {"Vinod"}, {"BCA", "Software", "Rohini", "Delhi"},
-  {"Chandan"}, {"MCA", "Software", "Programer", "Rohini", "Delhi"},
-  {"Suman"}, {"MCA", "Deginer", "Web", "Delhi"},
-  {"Ravi"},{"MCA","Software","programer"}};
-
     private void initComponents() {
 
         container = this;
@@ -278,7 +272,7 @@ public class FilterPanel extends javax.swing.JPanel {
 
         JPanel filterAndToolbarContainer = ViewUtil.getClearPanel();
         filterAndToolbarContainer.setLayout(new BorderLayout());
-        filterAndToolbarContainer.setBorder(ViewUtil.getMediumBorder());
+        //filterAndToolbarContainer.setBorder(ViewUtil.getMediumBorder());
 
         filterContainerContent = ViewUtil.getClearPanel();
         filterContainerContent.setLayout(new BoxLayout(filterContainerContent, BoxLayout.Y_AXIS));
@@ -306,8 +300,10 @@ public class FilterPanel extends javax.swing.JPanel {
 
         FilterEffectivenessPanel hp = new FilterEffectivenessPanel();
 
+        HoverButton saveButton = new HoverButton("Save");
+        saveButton.setFontSize(11);
 
-        JButton saveButton = ViewUtil.getSoftButton("Save");
+        saveButton.setContentAreaFilled(false);
         saveButton.setToolTipText("Save filter set");
         saveButton.putClientProperty( "JComponent.sizeVariant", "small" );
         saveButton.addActionListener(new ActionListener() {
@@ -321,7 +317,8 @@ public class FilterPanel extends javax.swing.JPanel {
             }
         });
 
-        deleteButton = ViewUtil.getSoftButton("Forget");
+        deleteButton = new HoverButton("Forget");
+        deleteButton.setFontSize(11);
         deleteButton.setToolTipText("Forget this search");
         deleteButton.putClientProperty( "JComponent.sizeVariant", "small" );
         deleteButton.addActionListener(new ActionListener() {
@@ -343,7 +340,8 @@ public class FilterPanel extends javax.swing.JPanel {
 
 
 
-        JPanel saveContainer = ViewUtil.getClearPanel();
+        JToolBar saveContainer = new JToolBar();// ViewUtil.getClearPanel();
+        saveContainer.setBackground(ViewUtil.getTertiaryMenuColor());
         //ViewUtil.applyMenuStyleInset(saveContainer);
 
 
@@ -355,15 +353,11 @@ public class FilterPanel extends javax.swing.JPanel {
         saveContainer.add(filterList);
         saveContainer.add(Box.createHorizontalGlue());
         saveContainer.add(saveButton);
+        saveContainer.add(Box.createHorizontalStrut(3));
         saveContainer.add(deleteButton);
 
-        JLabel l = ViewUtil.getDetailTitleLabel("Search for variants");
-        l.setForeground(Color.white);
-        l.setBorder(BorderFactory.createEmptyBorder(2, 2, 5, 2));
-
-        topContainer.add(ViewUtil.center(l));
-        topContainer.add(hp);
         topContainer.add(saveContainer);
+        topContainer.add(hp);
 
         container.add(topContainer, BorderLayout.NORTH);
 
@@ -372,7 +366,7 @@ public class FilterPanel extends javax.swing.JPanel {
 
         historyPanel = new FilterHistoryPanel();
 
-        final JCheckBox showHistoryButton = new JCheckBox("Show Filter Effectiveness");
+        final JCheckBox showHistoryButton = new JCheckBox("Show query effectiveness");
         showHistoryButton.setSelected(false);
         showHistoryButton.setFont(new Font("Arial", Font.BOLD, 12));
         showHistoryButton.setForeground(Color.white);
@@ -407,7 +401,7 @@ public class FilterPanel extends javax.swing.JPanel {
             this.filterList.setEnabled(false);
             deleteButton.setEnabled(false);
         } else {
-            this.filterList.addItem("Choose a saved search");
+            this.filterList.addItem("Load a saved search");
             for (String fn : filterDir.list()) {
                 this.filterList.addItem(fn);
             }

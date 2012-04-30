@@ -57,7 +57,7 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
 
     @Override
     public String getName() {
-        return "Filters";
+        return "search bar";
     }
 
     @Override

@@ -236,7 +236,7 @@ public class SplitScreenView extends JPanel {
 
             stp.getTable().addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {  
+                public void mouseClicked(MouseEvent e) {
                     if(SwingUtilities.isRightMouseButton(e)) {
                         int row = stp.getTable().rowAtPoint(e.getPoint());
                         stp.getTable().getSelectionModel().setSelectionInterval(row, row);
@@ -293,7 +293,7 @@ public class SplitScreenView extends JPanel {
 
         listView = new ListView(detailedListModel, detailedView, detailEditer);
 
-        PeekingPanel pp = new PeekingPanel("List", BorderLayout.EAST, (JComponent)listView, true, 320);
+        PeekingPanel pp = new PeekingPanel("List", BorderLayout.EAST, (JComponent)listView, true, 330);
         pp.setToggleBarVisible(false);
         this.add(pp, BorderLayout.WEST);
         this.add(detailedView, BorderLayout.CENTER);

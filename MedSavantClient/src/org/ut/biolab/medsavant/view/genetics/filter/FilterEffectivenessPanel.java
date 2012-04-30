@@ -78,12 +78,16 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
         waitPanel.setVisible(false);
         this.add(waitPanel, c, JLayeredPane.DRAG_LAYER);
 
-        labelVariantsRemaining = ViewUtil.getWhiteLabel("");
+        labelVariantsRemaining = ViewUtil.getDetailTitleLabel("");
+        labelVariantsRemaining.setForeground(Color.white);
 
         JPanel infoPanel = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(infoPanel);
         infoPanel.add(ViewUtil.center(labelVariantsRemaining));
-        infoPanel.add(ViewUtil.center(ViewUtil.getWhiteLabel("pass search conditions")));
+
+        JLabel l = ViewUtil.getWhiteLabel("variants pass search conditions");
+        ViewUtil.makeSmall(l);
+        infoPanel.add(ViewUtil.center(l));
         infoPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());
 
         panel.add(infoPanel,BorderLayout.NORTH);

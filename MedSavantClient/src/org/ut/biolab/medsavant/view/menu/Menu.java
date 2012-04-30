@@ -32,6 +32,7 @@ import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.ViewController;
+import org.ut.biolab.medsavant.view.component.HoverButton;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -50,7 +51,7 @@ public class Menu extends JPanel implements ProjectListener {
     private Component primaryGlue;
     private final JPanel primaryMenu;
     private final JPanel secondaryMenu;
-    private final HeaderButton projectButton;
+    private final HoverButton projectButton;
     //private Component secondaryGlue;
 
     private ButtonGroup bg;
@@ -78,7 +79,7 @@ public class Menu extends JPanel implements ProjectListener {
 
         secondaryMenu.setPreferredSize(new Dimension(150,100));
 
-        projectButton = new HeaderButton(ProjectController.getInstance().getCurrentProjectName());
+        projectButton = new HoverButton(ProjectController.getInstance().getCurrentProjectName());
 
         this.setLayout(new BorderLayout());
         this.add(primaryMenu,BorderLayout.NORTH);
@@ -160,7 +161,7 @@ public class Menu extends JPanel implements ProjectListener {
 
     public void addSection(final SectionView section) {
 
-        final HeaderButton hb = new HeaderButton(section.getName());
+        final HoverButton hb = new HoverButton(section.getName());
 
         final JPanel cp = ViewUtil.getClearPanel();
         cp.setLayout(new BoxLayout(cp,BoxLayout.Y_AXIS));
@@ -170,7 +171,7 @@ public class Menu extends JPanel implements ProjectListener {
 
         for (final SubSectionView v : section.getSubSections()) {
             subSectionViews.add(v);
-            final HeaderButton tmpBut = new HeaderButton(v.getName());
+            final HoverButton tmpBut = new HoverButton(v.getName());
             tmpBut.setFontSize(12);
             tmpBut.setFontStyle(Font.BOLD);
             tmpBut.addActionListener(new ActionListener() {
@@ -220,7 +221,7 @@ public class Menu extends JPanel implements ProjectListener {
                         if (previousCp != null) {
                             previousCp.setVisible(false);
                         }
-                        ((HeaderButton) cp.getComponents()[0]).getActionListeners()[0].actionPerformed(null);
+                        ((HoverButton) cp.getComponents()[0]).getActionListeners()[0].actionPerformed(null);
                         cp.setVisible(true);
 
                         previousCp = cp;
@@ -310,89 +311,5 @@ public class Menu extends JPanel implements ProjectListener {
     public void projectTableRemoved(int projid, int refid) {
     }
 
-    public class HeaderButton extends JButton {
 
-        private boolean over;
-        private Font f;
-
-        String face = "Arial";
-        int size = 15;
-        int style = Font.PLAIN;
-
-
-        public void setForeColor(Color c) {
-            this.textColor = c;
-        }
-
-        public void setFontSize(int size) {
-            this.size = size;
-            resetFont();
-
-        }
-
-        public void setFontStyle(int style) {
-            this.style = style;
-            resetFont();
-        }
-
-        public HeaderButton(String s) {
-            super(s);
-
-            resetFont();
-
-            this.setOpaque(false);
-            final JComponent instance = this;
-            this.addMouseListener(new MouseAdapter() {
-
-                @Override
-                public void mouseEntered(MouseEvent e) {
-
-                    over = true;
-                    instance.repaint();
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    over = false;
-                    instance.repaint();
-                }
-            });
-            this.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        }
-
-
-            Color textColorUnselected = Color.gray;
-            Color textColor = Color.white;
-            Color bgColor = new Color(255, 255, 255, 255);
-
-
-        @Override
-        public void paintComponent(Graphics g) {
-
-            String title = this.getText();
-
-            Graphics2D g2d = (Graphics2D) g;
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            g2d.setFont(f);
-
-            int width = g2d.getFontMetrics().stringWidth(title);
-            int height = g2d.getFontMetrics().getAscent();
-
-            if (over || this.isSelected()) {
-                g2d.setColor(textColor);
-            } else {
-                g2d.setColor(textColorUnselected);
-            }
-
-
-            g2d.drawString(title, 8, (getHeight() + height) / 2 - 2);
-            //g2d.drawString(title, (getWidth() - width) / 2, (getHeight() + height) / 2 - 2);
-
-        }
-
-        private void resetFont() {
-            f = new Font(face, style, size);
-        }
-    }
 }

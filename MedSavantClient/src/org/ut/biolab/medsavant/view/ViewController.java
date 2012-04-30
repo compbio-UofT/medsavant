@@ -82,7 +82,7 @@ public class ViewController extends JPanel {
         // create the right panel
         sectionPanel = new PersistencePanel();
         sectionPanel.setPreferredSize(new Dimension(350, 999));
-        peekPersistence = new PeekingPanel("", BorderLayout.EAST, (JComponent) sectionPanel, true, 350);
+        peekPersistence = new PeekingPanel("", BorderLayout.EAST, (JComponent) sectionPanel, true, 330);
         peekPersistence.setToggleBarVisible(false);
         h1.add(peekPersistence, BorderLayout.WEST);
 

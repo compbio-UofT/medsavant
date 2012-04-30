@@ -98,8 +98,9 @@ public class FilterPanelSub extends JPanel {
         contentPanel.removeAll();
 
 
-        final JButton addButton = ViewUtil.getSoftButton("Add filter condition ▾");
+        final JButton addButton = new JButton( /*ViewUtil.getSoftButton(*/"Add search condition   ▾");
 
+        ViewUtil.makeSmall(addButton);
         addButton.setToolTipText("Add a filter");
         addButton.addActionListener(new ActionListener() {
 

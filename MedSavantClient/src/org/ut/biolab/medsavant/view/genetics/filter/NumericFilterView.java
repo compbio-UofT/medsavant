@@ -57,19 +57,19 @@ public class NumericFilterView extends FilterView{
     /* Convenience Functions */
 
     public static FilterView createVariantFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException, RemoteException {
-        return new NumericFilterView(new JPanel(), tablename, columnname, queryId, alias, isDecimal, Table.VARIANT);
+        return new NumericFilterView(ViewUtil.getClearPanel(), tablename, columnname, queryId, alias, isDecimal, Table.VARIANT);
     }
 
     public static FilterView createPatientFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal) throws SQLException, NonFatalDatabaseException, RemoteException {
-        return new NumericFilterView(new JPanel(), tablename, columnname, queryId, alias, isDecimal, Table.PATIENT);
+        return new NumericFilterView(ViewUtil.getClearPanel(), tablename, columnname, queryId, alias, isDecimal, Table.PATIENT);
     }
 
     public NumericFilterView(String tablename, String columnname, int queryId, String alias, boolean isDecimal, Table whichTable) throws SQLException, RemoteException{
-        this(new JPanel(), tablename, columnname, queryId, alias, isDecimal, whichTable);
+        this(ViewUtil.getClearPanel(), tablename, columnname, queryId, alias, isDecimal, whichTable);
     }
 
     public NumericFilterView(FilterState state, int queryId) throws SQLException, RemoteException {
-        this(new JPanel(), FilterUtils.getTableName(Table.valueOf(state.getValues().get("table"))), state.getId(), queryId, state.getName(), Boolean.valueOf(state.getValues().get("isDecimal")), Table.valueOf(state.getValues().get("table")));
+        this(ViewUtil.getClearPanel(), FilterUtils.getTableName(Table.valueOf(state.getValues().get("table"))), state.getId(), queryId, state.getName(), Boolean.valueOf(state.getValues().get("isDecimal")), Table.valueOf(state.getValues().get("table")));
         String minString = state.getValues().get("min");
         String maxString = state.getValues().get("max");
         if (minString != null && maxString != null) {
@@ -121,8 +121,8 @@ public class NumericFilterView extends FilterView{
             extremeValues = new Range(-100,100);
         } else {
             final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                    "Generating List", 
-                    "<HTML>Determining extreme values for field. <BR>This may take a few minutes the first time.</HTML>", 
+                    "Generating List",
+                    "<HTML>Determining extreme values for field. <BR>This may take a few minutes the first time.</HTML>",
                     true);
             Thread t = new Thread() {
                 @Override
@@ -139,12 +139,12 @@ public class NumericFilterView extends FilterView{
             };
             t.start();
             dialog.setVisible(true);
-            return; 
+            return;
         }
-        
+
         initHelper(container, extremeValues);
     }
-    
+
     private void initHelper(JComponent container, Range extremeValues) {
 
         if (columnname.equals("dp")) {
@@ -186,13 +186,23 @@ public class NumericFilterView extends FilterView{
         final JLabel fromLabel = new JLabel(ViewUtil.numToString(min));
         final JLabel toLabel = new JLabel(ViewUtil.numToString(max));
 
-        rangeContainer.add(fromLabel);
         rangeContainer.add(rs);
-        rangeContainer.add(toLabel);
 
-        container.add(frombox);
-        container.add(tobox);
+        JPanel fromToContainer = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(fromToContainer);
+        fromToContainer.add(frombox);
+        fromToContainer.add(new JLabel(" - "));
+        fromToContainer.add(tobox);
+
+        JPanel minMaxContainer = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(minMaxContainer);
+        minMaxContainer.add(fromLabel);
+        minMaxContainer.add(Box.createHorizontalGlue());
+        minMaxContainer.add(toLabel);
+
+        container.add(fromToContainer);
         container.add(rangeContainer);
+        container.add(minMaxContainer);
         container.add(Box.createVerticalBox());
 
         applyButton = new JButton("Apply");

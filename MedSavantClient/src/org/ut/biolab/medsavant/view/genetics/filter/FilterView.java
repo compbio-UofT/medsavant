@@ -15,7 +15,7 @@ public abstract class FilterView {
 
     private JComponent _component;
     private JFrame _frame;
-    private String _title;    
+    private String _title;
     protected int queryId;
 
     public FilterView(String title, JComponent content, int queryId) {
@@ -39,15 +39,15 @@ public abstract class FilterView {
     private void setComponent(JComponent component) {
         _component = component;
     }
-    
+
     public abstract FilterState saveState();
-    
+
     /**
      * Give derived classes a chance to clean up when the filter instance is being removed.
      */
     public void cleanup() {
     }
-    
+
     public int getQueryId(){
         return queryId;
     }

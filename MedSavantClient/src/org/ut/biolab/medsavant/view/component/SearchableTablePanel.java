@@ -336,7 +336,7 @@ public class SearchableTablePanel extends JPanel {
             fieldPanel.add(filterField);
         }
 
-        chooseColumnButton = new JButton("More fields ...");
+        chooseColumnButton = new JButton("Show/Hide fields");
         chooseColumnButton.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e) {
                 columnChooser.showDialog();
@@ -595,7 +595,7 @@ public class SearchableTablePanel extends JPanel {
         }
 
         public void showDialog(){
-            TableColumnChooserDialog dialog = super.createTableColumnChooserDialog(MedSavantFrame.getInstance(), "Choose Columns to Display", table);
+            TableColumnChooserDialog dialog = super.createTableColumnChooserDialog(MedSavantFrame.getInstance(), "Choose fields to display", table);
             dialog.setPreferredSize(new Dimension(300,500));
             dialog.setSize(new Dimension(300,500));
             dialog.setLocationRelativeTo(null);

@@ -249,8 +249,13 @@ public class ViewUtil {
         return BorderFactory.createMatteBorder(1,0,0,0,Color.lightGray);
     }
 
+    /*
     public static Border getBottomLineBorder() {
         return BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray);
+    }*/
+
+    public static Border getBottomLineBorder() {
+        return BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(50,50,50));
     }
 
     public static Border getSideLineBorder() {
@@ -494,6 +499,7 @@ public class ViewUtil {
         c.putClientProperty("JComponent.sizeVariant", "small");
     }
 
+
     public static JToggleButton getSoftToggleButton(String string) {
         JToggleButton b = new JToggleButton(string);
         b.putClientProperty( "JButton.buttonType", "segmentedRoundRect" );
@@ -613,7 +619,7 @@ public class ViewUtil {
     public static JLabel getDetailTitleLabel(String label) {
         JLabel l = new JLabel(label);
         l.setForeground(Color.black);
-        l.setFont(new Font(l.getFont().getFamily(),Font.PLAIN,20));
+        l.setFont(new Font(l.getFont().getFamily(),Font.PLAIN,17));
         return l;
     }
 
