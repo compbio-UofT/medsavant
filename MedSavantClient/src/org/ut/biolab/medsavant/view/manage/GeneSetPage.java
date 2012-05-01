@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011-2012 University of Toronto
+ *    Copyright 2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.manage;
 
 import java.util.List;
@@ -29,7 +30,6 @@ import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.Reference;
-import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.NewReferenceDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
@@ -43,21 +43,20 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
  *
- * @author Andrew
+ * @author tarkvara
  */
-public class ReferenceGenomePage extends SubSectionView implements ReferenceListener {
+public class GeneSetPage extends SubSectionView {
 
     private SplitScreenView panel;
     private boolean updateRequired = false;
 
-    public ReferenceGenomePage(SectionView parent){
+    public GeneSetPage(SectionView parent) {
         super(parent);
-        ReferenceController.getInstance().addReferenceListener(this);
     }
 
     @Override
     public String getName() {
-        return "Reference Genomes";
+        return "Standard Genes";
     }
 
     @Override
@@ -78,57 +77,28 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
     public void setPanel() {
         panel = new SplitScreenView(
-                new SimpleDetailedListModel("Reference") {
+                new SimpleDetailedListModel("Genes") {
                     @Override
                     public List getData() throws Exception {
-                        return MedSavantClient.ReferenceQueryUtilAdapter.getReferences(LoginController.sessionId);
+                        return MedSavantClient.GeneSetAdapter.getGeneSets(LoginController.sessionId);
                     }
+                    
                 },
-                new ReferenceDetailedView(),
-                new ReferenceDetailedListEditor());
-    }
-
-    @Override
-    public void referenceAdded(String name) {
-        if (panel != null) {
-            panel.refresh();
-        }
-    }
-
-    @Override
-    public void referenceRemoved(String name) {
-        if (panel != null) {
-            panel.refresh();
-        }
-    }
-
-    @Override
-    public void referenceChanged(String prnameojectName) {
-        if (panel != null) {
-            panel.refresh();
-        }
+                new GenesDetailedView(),
+                new GenesDetailedListEditor());
     }
 
     public void update(){
         panel.refresh();
     }
 
-
     /*
      * REFERENCE GENOMES DETAILED VIEW
      */
-    private static class ReferenceDetailedView extends DetailedTableView {
+    private static class GenesDetailedView extends DetailedTableView {
 
-        private Reference ref;
-
-        public ReferenceDetailedView() {
-            super("Reference Information", "Multiple references (%d)", new String[] { "Contig Name", "Contig Length", "Centromere Position" });
-        }
-
-        @Override
-        public void setSelectedItem(Object[] item) {
-            ref = (Reference)item[0];
-            super.setSelectedItem(item);
+        public GenesDetailedView() {
+            super("Genes", "Multiple gene sets (%d)", new String[] { "Chromosome", "Start", "End", "Name" });
         }
 
         @Override
@@ -137,7 +107,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
                 @Override
                 protected List<Chromosome> doInBackground() throws Exception {
-                    return MedSavantClient.ChromosomeQueryUtilAdapter.getContigs(LoginController.sessionId, ref.getId());
+                    return MedSavantClient.ChromosomeQueryUtilAdapter.getContigs(LoginController.sessionId, 0);
                 }
 
                 @Override
@@ -167,7 +137,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
     /*
      * REFERENCE GENOMES DETAILED LIST EDITOR
      */
-    private static class ReferenceDetailedListEditor extends DetailedListEditor {
+    private static class GenesDetailedListEditor extends DetailedListEditor {
 
         @Override
         public boolean doesImplementAdding() {

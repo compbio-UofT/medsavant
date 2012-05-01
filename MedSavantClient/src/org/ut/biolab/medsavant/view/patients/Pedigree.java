@@ -13,19 +13,19 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.list;
+
+package org.ut.biolab.medsavant.view.patients;
+
 
 /**
  *
  * @author mfiume
  */
-public interface DetailedListModel {
-    
-    public Object[][] getList(int limit) throws Exception;
-
-    public String[] getColumnNames();
-
-    public Class[] getColumnClasses();
-
-    public int[] getHiddenColumns();
+public class Pedigree {
+    public static final String FIELD_GENDER = "GENDER";
+    public static final String FIELD_HOSPITALID = "HOSPITAL";
+    public static final String FIELD_MOM = "MOM";
+    public static final String FIELD_DAD = "DAD";
+    public static final String FIELD_PATIENTID = "PATIENT";
+    public static final String FIELD_AFFECTED = "AFFECTED";
 }

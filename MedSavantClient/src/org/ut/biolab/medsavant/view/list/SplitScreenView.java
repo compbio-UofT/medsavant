@@ -17,23 +17,24 @@ package org.ut.biolab.medsavant.view.list;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.jidesoft.grid.TableModelWrapperUtils;
-import com.jidesoft.utils.SwingWorker;
 
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
-import org.ut.biolab.medsavant.view.component.Util;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
@@ -45,54 +46,96 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class SplitScreenView extends JPanel {
+    private static final Logger LOG = Logger.getLogger(SplitScreenView.class.getName());
 
     private final DetailedListModel detailedListModel;
+    private final DetailedView detailedView;
+    private final DetailedListEditor detailedEditor;
     private ListView listView;
-    private DetailedView detailedView;
     //TODO: handle limits better!
     private static final int limit = 10000;
-    private final DetailedListEditor detailEditer;
 
-    /*
-    public DetailedView getDetailedView() {
-    return detailedView;
+    public SplitScreenView(DetailedListModel model, DetailedView view) {
+        this(model, view, new DetailedListEditor() {
+
+            @Override
+            public void addItems() {
+            }
+
+            @Override
+            public void editItems(Object[] i) {
+            }
+
+            @Override
+            public void deleteItems(List<Object[]> i) {
+            }
+        });
     }
 
-    public DetailedListModel getListModel() {
-    return detailedListModel;
+    public SplitScreenView(DetailedListModel model, DetailedView view, DetailedListEditor editor) {
+        detailedListModel = model;
+        detailedView = view;
+        detailedEditor = editor;
+        initGUI();
     }
-     *
-     */
-    private static class ListView extends JPanel {
+
+    private void initGUI() {
+        setLayout(new BorderLayout());
+
+        listView = new ListView();
+
+        PeekingPanel pp = new PeekingPanel("List", BorderLayout.EAST, (JComponent)listView, true, 330);
+        pp.setToggleBarVisible(false);
+        add(pp, BorderLayout.WEST);
+        add(detailedView, BorderLayout.CENTER);
+        detailedView.setSplitScreenParent(this);
+    }
+
+    public void refresh() {
+        listView.refreshList();
+    }
+
+    public Object[][] getList() {
+        return listView.data;
+    }
+
+    public void selectInterval(int start, int end){
+        start = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), start);
+        end = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), end);
+        listView.stp.getTable().getSelectionModel().setSelectionInterval(start, end);
+        listView.stp.scrollToIndex(start);
+    }
+
+    private class ListView extends JPanel {
 
         private static final String CARD_WAIT = "wait";
         private static final String CARD_SHOW = "show";
-        private final DetailedListModel listModel;
-        private final CardLayout cl;
-        private List<Object[]> list;
+        private static final String CARD_ERROR = "error";
+
+        private Object[][] data;
         private final JPanel showCard;
-        private final DetailedView detailedView;
+        private final JLabel errorMessage;
         private ListViewTablePanel stp;
         //private int limit = 10000;
         private RowSelectionGrabber selectionGrabber;
-        private final DetailedListEditor detailedEditer;
         private JPanel buttonPanel;
 
-        private ListView(DetailedListModel listModel, DetailedView detailedView, final DetailedListEditor detailedEditer) {
-            this.listModel = listModel;
-            this.detailedView = detailedView;
-            this.detailedEditer = detailedEditer;
-
-            cl = new CardLayout();
-            this.setLayout(cl);
+        private ListView() {
+            setLayout(new CardLayout());
 
             WaitPanel wp = new WaitPanel("Getting list");
             wp.setBackground(ViewUtil.getTertiaryMenuColor());
-            this.add(wp, CARD_WAIT);
+            add(wp, CARD_WAIT);
+            
             showCard = new JPanel();
+            add(showCard, CARD_SHOW);
+            
+            JPanel errorPanel = new JPanel();
+            errorPanel.setLayout(new BorderLayout());
+            errorMessage = new JLabel("An error occurred:");
+            errorPanel.add(errorMessage, BorderLayout.NORTH);
 
-
-            this.add(showCard, CARD_SHOW);
+            add(errorPanel, CARD_ERROR);
 
             buttonPanel = ViewUtil.getClearPanel();
             ViewUtil.applyHorizontalBoxLayout(buttonPanel);
@@ -100,14 +143,14 @@ public class SplitScreenView extends JPanel {
             buttonPanel.setBorder(ViewUtil.getMediumBorder());
             buttonPanel.add(Box.createHorizontalGlue());
 
-            if (detailedEditer.doesImplementAdding()) {
+            if (detailedEditor.doesImplementAdding()) {
 
                 JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD_ON_TOOLBAR));
                 butt.setToolTipText("Add");
                 butt.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        detailedEditer.addItems();
+                        detailedEditor.addItems();
                         refreshList();
                     }
                 });
@@ -115,13 +158,13 @@ public class SplitScreenView extends JPanel {
                 buttonPanel.add(ViewUtil.getSmallSeparator());
             }
 
-            if (detailedEditer.doesImplementDeleting()) {
+            if (detailedEditor.doesImplementDeleting()) {
                 JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
                 butt.setToolTipText("Remove selected");
                 butt.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        detailedEditer.deleteItems(selectionGrabber.getSelectedItems());
+                        detailedEditor.deleteItems(selectionGrabber.getSelectedItems());
                         refreshList();
                     }
                 });
@@ -129,14 +172,14 @@ public class SplitScreenView extends JPanel {
                 buttonPanel.add(ViewUtil.getSmallSeparator());
             }
 
-            if (detailedEditer.doesImplementEditing()) {
+            if (detailedEditor.doesImplementEditing()) {
                 JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EDIT));
                 butt.setToolTipText("Edit selected");
                 butt.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         if (selectionGrabber.getSelectedItems().size() > 0) {
-                            detailedEditer.editItems(selectionGrabber.getSelectedItems().get(0));
+                            detailedEditor.editItems(selectionGrabber.getSelectedItems().get(0));
                             refreshList();
                         } else {
                             DialogUtils.displayMessage("Choose one item to edit");
@@ -153,15 +196,20 @@ public class SplitScreenView extends JPanel {
         }
 
         private void showWaitCard() {
-            cl.show(this, CARD_WAIT);
+            ((CardLayout)getLayout()).show(this, CARD_WAIT);
         }
 
         private void showShowCard() {
-            cl.show(this, CARD_SHOW);
+            ((CardLayout)getLayout()).show(this, CARD_SHOW);
         }
 
-        private synchronized void setList(List<Object[]> list) {
-            this.list = list;
+        private void showErrorCard(String message) {
+            errorMessage.setText(String.format("<html><font color=\"#ff0000\">An error occurred:<br><font size=\"-2\">%s</font></font></html>", message));
+            ((CardLayout)getLayout()).show(this, CARD_ERROR);
+        }
+
+        private synchronized void setList(Object[][] list) {
+            this.data = list;
             updateShowCard();
             showShowCard();
         }
@@ -173,21 +221,20 @@ public class SplitScreenView extends JPanel {
 
         private void fetchList() {
 
-            SwingWorker sw = new SwingWorker() {
+            SwingWorker sw = new SwingWorker<Object[][], Void>() {
 
                 @Override
-                protected Object doInBackground() throws Exception {
-                    return listModel.getList(limit);
+                protected Object[][] doInBackground() throws Exception {
+                    return detailedListModel.getList(limit);
                 }
 
                 @Override
                 protected void done() {
-                    List<Object[]> list;
                     try {
-                        list = (List<Object[]>) get();
-                        setList(list);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+                        setList(get());
+                    } catch (Throwable x) {
+                        LOG.log(Level.SEVERE, "Unable to load detail list.", x);
+                        showErrorCard(MiscUtils.getMessage(x));
                     }
                 }
             };
@@ -202,12 +249,11 @@ public class SplitScreenView extends JPanel {
             showCard.setBackground(ViewUtil.getTertiaryMenuColor());
             showCard.setBorder(ViewUtil.getBigBorder());
 
-            final List<Object[]> data = list;
-            List<String> columnNames = listModel.getColumnNames();
-            List<Class> columnClasses = listModel.getColumnClasses();
-            List<Integer> columnVisibility = listModel.getHiddenColumns();
+            String[] columnNames = detailedListModel.getColumnNames();
+            Class[] columnClasses = detailedListModel.getColumnClasses();
+            int[] columnVisibility = detailedListModel.getHiddenColumns();
 
-            stp = new ListViewTablePanel(Util.listToVector(data), columnNames, columnClasses, columnVisibility) {
+            stp = new ListViewTablePanel(data, columnNames, columnClasses, columnVisibility) {
 
                 @Override
                 public void forceRefreshData() {
@@ -257,61 +303,4 @@ public class SplitScreenView extends JPanel {
             return selectionGrabber;
         }
     }
-
-    /*
-     * public void addButton(JButton b) {
-    buttonPanel.add(b);
-    buttonPanel.updateUI();
-    }*/
-    public SplitScreenView(DetailedListModel lm, DetailedView view) {
-        this(lm, view, new DetailedListEditor() {
-
-            @Override
-            public void addItems() {
-            }
-
-            @Override
-            public void editItems(Object[] i) {
-            }
-
-            @Override
-            public void deleteItems(List<Object[]> i) {
-            }
-        });
-    }
-
-    public SplitScreenView(DetailedListModel lm, DetailedView view, DetailedListEditor detailEditer) {
-        this.detailedListModel = lm;
-        this.detailedView = view;
-        this.detailEditer = detailEditer;
-        initGUI();
-        detailedView.setSplitScreenParent(this);
-    }
-
-    private void initGUI() {
-        this.setLayout(new BorderLayout());
-
-        listView = new ListView(detailedListModel, detailedView, detailEditer);
-
-        PeekingPanel pp = new PeekingPanel("List", BorderLayout.EAST, (JComponent)listView, true, 330);
-        pp.setToggleBarVisible(false);
-        this.add(pp, BorderLayout.WEST);
-        this.add(detailedView, BorderLayout.CENTER);
-    }
-
-    public void refresh() {
-        listView.refreshList();
-    }
-
-    public List<Object[]> getList() {
-        return listView.list;
-    }
-
-    public void selectInterval(int start, int end){
-        start = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), start);
-        end = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), end);
-        listView.stp.getTable().getSelectionModel().setSelectionInterval(start, end);
-        listView.stp.scrollToIndex(start);
-    }
-
 }

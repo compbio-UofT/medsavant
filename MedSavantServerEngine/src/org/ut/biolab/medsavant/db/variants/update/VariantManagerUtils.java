@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.db.util.query.VariantQueryUtil;
+import org.ut.biolab.medsavant.serverapi.VariantQueryUtil;
 import org.ut.biolab.medsavant.server.log.ServerLogger;
 import org.ut.biolab.medsavant.vcf.VCFHeader;
 import org.ut.biolab.medsavant.vcf.VCFParser;

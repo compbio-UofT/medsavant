@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,27 +20,27 @@ import java.util.List;
 
 import com.jidesoft.grid.DefaultContextSensitiveTableModel;
 
+
 /**
  *
  * @author mfiume
  */
 public class GenericTableModel extends DefaultContextSensitiveTableModel {
 
-    List<Class> columnClasses;
+    Class[] columnClasses;
 
-    public GenericTableModel(List<Object[]> data, List<String> columnNames, List<Class> columnClasses) {
-        super(data.toArray(new Object[0][0]), columnNames.toArray());
+    public GenericTableModel(Object[][] data, String[] columnNames, Class[] columnClasses) {
+        super(data, columnNames);
         this.columnClasses = columnClasses;
     }
 
-    public GenericTableModel(List<Object[]> data, List<String> columnNames) {
+    public GenericTableModel(Object[][] data, String[] columnNames) {
         this(data, columnNames, null);
     }
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        if (columnClasses == null || columnClasses.isEmpty()) return String.class;
-        return columnClasses.get(columnIndex);
+        return columnClasses == null || columnClasses.length == 0 ? String.class : columnClasses[columnIndex];
     }
 
     @Override

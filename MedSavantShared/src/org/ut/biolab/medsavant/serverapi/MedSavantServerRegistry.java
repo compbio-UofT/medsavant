@@ -20,7 +20,7 @@ package org.ut.biolab.medsavant.serverapi;
  *
  * @author mfiume
  */
-public class MedSavantServerRegistry {
+public interface MedSavantServerRegistry {
 
     public static final String Registry_UploadVariantsAdapter = "UploadVariantsAdapterÏ";
     public static final String Registry_SessionAdapter = "SessionAdapter";
@@ -30,6 +30,7 @@ public class MedSavantServerRegistry {
     public static final String Registry_AnnotationQueryUtilAdapter = "AnnotationQueryUtilAdapter";
     public static final String Registry_ChromosomeQueryUtilAdapter = "ChromosomeQueryUtilAdapter";
     public static final String Registry_CohortQueryUtilAdapter = "CohortQueryUtilAdapter";
+    public static final String Registry_GeneSetAdapter = "GeneSetAdapter";
     public static final String Registry_LogQueryUtilAdapter = "LogQueryUtilAdapter";
     public static final String Registry_PatientQueryUtilAdapter = "PatientQueryUtilAdapter";
     public static final String Registry_ProjectQueryUtilAdapter = "ProjectQueryUtilAdapter";

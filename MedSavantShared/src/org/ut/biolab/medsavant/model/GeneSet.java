@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011-2012 University of Toronto
+ *    Copyright 2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -13,19 +13,29 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.list;
+package org.ut.biolab.medsavant.model;
+
+import java.io.Serializable;
 
 /**
+ * Class which describes a particular set of genes (e.g. hg18/RefSeq).
  *
- * @author mfiume
+ * @author tarkvara
  */
-public interface DetailedListModel {
+public class GeneSet implements Serializable {
+    /** The associated genome (e.g. hg18) */
+    String genome;
+
+    /** The type of gene set (e.g. RefSeq) */
+    String type;
     
-    public Object[][] getList(int limit) throws Exception;
+    public GeneSet(String g, String t) {
+        genome = g;
+        type = t;
+    }
 
-    public String[] getColumnNames();
-
-    public Class[] getColumnClasses();
-
-    public int[] getHiddenColumns();
+    @Override
+    public String toString() {
+        return String.format("%s – %s Genes", genome, type);
+    }
 }

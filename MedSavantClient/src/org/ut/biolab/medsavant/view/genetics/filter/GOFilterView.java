@@ -133,9 +133,10 @@ class GOFilterView extends FilterView {
 
             retriever = new OntologyRetriever("/org/ut/biolab/medsavant/data/hpo/gene_ontology.1_2.obo");
 
-            List<String> columnNames = Arrays.asList(new String[]{"ID", "Name"});
-            List<Class> columnClasses = Arrays.asList(new Class[]{String.class, String.class});
-            final SearchableTablePanel stp = new SearchableTablePanel("***GO***", columnNames, columnClasses, new ArrayList<Integer>(), 10000, retriever);
+            final SearchableTablePanel stp = new SearchableTablePanel("***GO***",
+                                                                      new String[] { "ID", "Name" },
+                                                                      new Class[] { String.class, String.class },
+                                                                      new int[0], 10000, retriever);
             stp.setBottomBarVisible(false);
             stp.setChooseColumnsButtonVisible(false);
             stp.setExportButtonVisible(false);
@@ -179,7 +180,7 @@ class GOFilterView extends FilterView {
             JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
 
             selectNone.addActionListener(new ActionListener() {
-
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     setSelectedID("");
                     stp.getTable().getSelectionModel().clearSelection();

@@ -102,14 +102,17 @@ public class ImportFilePanel extends JPanel {
         pathField.getPathArea().getDocument().addDocumentListener(
                 new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updatePreview();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updatePreview();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
             }
 
@@ -133,38 +136,6 @@ public class ImportFilePanel extends JPanel {
         add(previewPanel,BorderLayout.CENTER);
 
         updatePreview();
-
-        /*JPanel bottomPanel = ViewUtil.getSecondaryBannerPanel();
-
-        importButton = new JButton("Import");
-        importButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                if (validateForm() && importAccepted) {
-                    ImportFilePanel.this.setVisible(false);
-                }
-            }
-        });
-        importButton.setEnabled(false);
-
-        JButton cancelButton = new JButton("Cancel");
-
-        cancelButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                importAccepted = false;
-                ImportFilePanel.this.setVisible(false);
-            }
-        });
-
-        bottomPanel.add(Box.createHorizontalGlue());
-        bottomPanel.add(importButton);
-        bottomPanel.add(cancelButton);
-
-        getRootPane().setDefaultButton(importButton);
-
-        add(bottomPanel, BorderLayout.SOUTH);*/
-
     }
     
     private void addDelimiterRadioButton(
@@ -178,7 +149,7 @@ public class ImportFilePanel extends JPanel {
         delimiterBarPanel.add(rb);
         delimiterBG.add(rb);
         rb.addActionListener(new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setDelimiter(delim);
             }
@@ -300,7 +271,7 @@ public class ImportFilePanel extends JPanel {
             }
         }
 
-        @SuppressWarnings("unchecked")
+        @Override
         protected void showSuccess(List<String[]> data) {
 
             if (data == null) {
@@ -321,9 +292,9 @@ public class ImportFilePanel extends JPanel {
 
                 SearchableTablePanel searchableTablePanel = new SearchableTablePanel(
                         ImportFileView.class.getName(),
-                        columnNames,
-                        columnClasses,
-                        new ArrayList<Integer>(),
+                        columnNames.toArray(new String[0]),
+                        columnClasses.toArray(new Class[0]),
+                        new int[0],
                         false,
                         false,
                         50,

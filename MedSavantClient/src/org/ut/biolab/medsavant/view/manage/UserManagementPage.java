@@ -30,6 +30,7 @@ import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.view.list.DetailedView;
+import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -220,49 +221,6 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         }
     }
 
-    private static class UserListModel implements DetailedListModel {
-
-        private ArrayList<String> cnames;
-        private ArrayList<Class> cclasses;
-        private ArrayList<Integer> chidden;
-
-        public UserListModel() {
-        }
-
-        public List<Object[]> getList(int limit) throws Exception {
-            List<String> projects = UserController.getInstance().getUserNames();
-            List<Object[]> projectVector = new ArrayList<Object[]>();
-            for (String p : projects) {
-                Object[] oarr = new Object[1];
-                oarr[0] = p;
-                projectVector.add(oarr);
-            }
-            return projectVector;
-        }
-
-        public List<String> getColumnNames() {
-            if (cnames == null) {
-                cnames = new ArrayList<String>();
-                cnames.add("User");
-            }
-            return cnames;
-        }
-
-        public List<Class> getColumnClasses() {
-            if (cclasses == null) {
-                cclasses = new ArrayList<Class>();
-                cclasses.add(String.class);
-            }
-            return cclasses;
-        }
-
-        public List<Integer> getHiddenColumns() {
-            if (chidden == null) {
-                chidden = new ArrayList<Integer>();
-            }
-            return chidden;
-        }
-    }
     private SplitScreenView panel;
 
     public UserManagementPage(SectionView parent) {
@@ -270,10 +228,12 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         UserController.getInstance().addUserListener(this);
     }
 
+    @Override
     public String getName() {
         return "Users";
     }
 
+    @Override
     public JPanel getView(boolean update) {
         if (panel == null) {
             setPanel();
@@ -283,7 +243,12 @@ public class UserManagementPage extends SubSectionView implements UserListener {
 
     public void setPanel() {
         panel = new SplitScreenView(
-                new UserListModel(),
+                new SimpleDetailedListModel("User") {
+                    @Override
+                    public List getData() throws Exception {
+                        return UserController.getInstance().getUserNames();
+                    }
+                },
                 new UserDetailedView(),
                 new UserDetailedListEditor());
     }

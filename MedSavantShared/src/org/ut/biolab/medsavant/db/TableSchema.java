@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.CreateTableQuery;
+import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
@@ -42,7 +43,7 @@ public class TableSchema implements Serializable {
     private final LinkedHashMap<String,Integer> dbNameToIndex;
     private final LinkedHashMap<String, String> aliasToDBName;
 
-    private DbTable table;
+    private final DbTable table;
 
     public TableSchema(DbTable t) {
         this.table = t;
@@ -123,6 +124,10 @@ public class TableSchema implements Serializable {
         return getDBColumnByAlias(dbNameToAlias.get(columnname));
     }
     
+    public DbColumn getDBColumn(int index) {
+        return table.getColumns().get(index);
+    }
+
     public int getFieldIndexInDB(String dbName) {
         assert (dbNameToIndex.containsKey(dbName));
         return dbNameToIndex.get(dbName);
@@ -160,7 +165,18 @@ public class TableSchema implements Serializable {
         return table.getName();
     }
     
-    public String getCreateQuery() {
-        return new CreateTableQuery(table, true).toString();
+    public CreateTableQuery getCreateQuery() {
+        return new CreateTableQuery(table, true);
+    }
+ 
+    /**
+     * For this table, generate the query which is appropriate for retrieving a list of table entities.
+     * By default, this just pulls in a query for the first column.
+     */
+    public SelectQuery getListQuery() {
+        SelectQuery query = new SelectQuery(true);
+        query.addFromTable(table);
+        query.addColumns(getDBColumn(0));
+        return query;
     }
 }

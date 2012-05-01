@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.db.admin.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
-import org.ut.biolab.medsavant.db.util.query.*;
+import org.ut.biolab.medsavant.serverapi.*;
 import org.ut.biolab.medsavant.db.variants.update.VariantManager;
 import org.ut.biolab.medsavant.serverapi.MedSavantServerRegistry;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
  *
  * @author mfiume
  */
-public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject {
+public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject implements MedSavantServerRegistry {
 
     int thisPort;
     String thisAddress;
@@ -146,29 +146,30 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject {
         System.out.print("Initializing server registry ... ");
         System.out.flush();
 
-        registry.rebind(MedSavantServerRegistry.Registry_UploadVariantsAdapter, VariantManager.getInstance());
+        registry.rebind(Registry_UploadVariantsAdapter, VariantManager.getInstance());
 
-        registry.rebind(MedSavantServerRegistry.Registry_SessionAdapter, SessionController.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_CustomTablesAdapter, CustomTables.getInstance());
+        registry.rebind(Registry_SessionAdapter, SessionController.getInstance());
+        registry.rebind(Registry_CustomTablesAdapter, CustomTables.getInstance());
 
-        registry.rebind(MedSavantServerRegistry.Registry_AnnotationLogQueryUtilAdapter, AnnotationLogQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_AnnotationQueryUtilAdapter, AnnotationQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_ChromosomeQueryUtilAdapter, ChromosomeQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_CohortQueryUtilAdapter, CohortQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_LogQueryUtilAdapter, LogQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_PatientQueryUtilAdapter, PatientQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_ProjectQueryUtilAdapter, ProjectQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_QueryUtilAdapter, QueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_ReferenceQueryUtilAdapter, ReferenceQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_RegionQueryUtilAdapter, RegionQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_ServerLogQueryUtilAdapter, ServerLogQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_SettingsQueryUtilAdapter, SettingsQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_UserQueryUtilAdapter, UserQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_VariantQueryUtilAdapter, VariantQueryUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_DBUtilAdapter, DBUtil.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_SetupAdapter, SetupMedSavantDatabase.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_CustomTablesAdapter, CustomTables.getInstance());
-        registry.rebind(MedSavantServerRegistry.Registry_NotificationQueryUtilAdapter, NotificationQueryUtil.getInstance());
+        registry.rebind(Registry_AnnotationLogQueryUtilAdapter, AnnotationLogQueryUtil.getInstance());
+        registry.rebind(Registry_AnnotationQueryUtilAdapter, AnnotationQueryUtil.getInstance());
+        registry.rebind(Registry_ChromosomeQueryUtilAdapter, ChromosomeQueryUtil.getInstance());
+        registry.rebind(Registry_CohortQueryUtilAdapter, CohortQueryUtil.getInstance());
+        registry.rebind(Registry_GeneSetAdapter, GeneSetManager.getInstance());
+        registry.rebind(Registry_LogQueryUtilAdapter, LogQueryUtil.getInstance());
+        registry.rebind(Registry_PatientQueryUtilAdapter, PatientQueryUtil.getInstance());
+        registry.rebind(Registry_ProjectQueryUtilAdapter, ProjectQueryUtil.getInstance());
+        registry.rebind(Registry_QueryUtilAdapter, QueryUtil.getInstance());
+        registry.rebind(Registry_ReferenceQueryUtilAdapter, ReferenceQueryUtil.getInstance());
+        registry.rebind(Registry_RegionQueryUtilAdapter, RegionQueryUtil.getInstance());
+        registry.rebind(Registry_ServerLogQueryUtilAdapter, ServerLogQueryUtil.getInstance());
+        registry.rebind(Registry_SettingsQueryUtilAdapter, SettingsQueryUtil.getInstance());
+        registry.rebind(Registry_UserQueryUtilAdapter, UserQueryUtil.getInstance());
+        registry.rebind(Registry_VariantQueryUtilAdapter, VariantQueryUtil.getInstance());
+        registry.rebind(Registry_DBUtilAdapter, DBUtil.getInstance());
+        registry.rebind(Registry_SetupAdapter, SetupMedSavantDatabase.getInstance());
+        registry.rebind(Registry_CustomTablesAdapter, CustomTables.getInstance());
+        registry.rebind(Registry_NotificationQueryUtilAdapter, NotificationQueryUtil.getInstance());
 
         System.out.println("OK");
     }

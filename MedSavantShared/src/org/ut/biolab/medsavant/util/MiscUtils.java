@@ -624,5 +624,17 @@ public class MiscUtils {
         }
 
         throw new UnsupportedOperationException("Parser doesn't deal with objects of type " + c);
-    }
+   }
+   
+   /**
+    * Unforunately List.toArray can't directly convert a List<Integer> to an int[].  Apache Lang Commons has a utility functioin for
+    * this, so if we ever decide to add Apache Lang Commons, we can eliminate this function here.
+    */
+   public static int[] toIntArray(List<Integer> list) {
+       int[] result = new int[list.size()];
+       for (int i = 0; i < result.length; i++) {
+           result[i] = list.get(i);
+       }
+       return result;
+   }
 }

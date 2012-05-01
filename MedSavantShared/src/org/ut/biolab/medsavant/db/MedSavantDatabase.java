@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.db;
 
+import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 
@@ -1155,7 +1156,7 @@ public class MedSavantDatabase {
     //DefaultvariantTableSchema
     public static final DefaultVariantTableSchema DefaultvariantTableSchema = new DefaultVariantTableSchema(schema);
     
-    public static final TableSchema GenesTableSchema = new TableSchema(schema, "genes",
+    public static final TableSchema GeneSetTableSchema = new TableSchema(schema, "genes",
         new ColumnDef("genome", ColumnType.VARCHAR, 30, null, true, false),
         new ColumnDef("type", ColumnType.VARCHAR, 30, null, true, false),
         new ColumnDef("name", ColumnType.VARCHAR, 30, null, true, false),
@@ -1166,7 +1167,14 @@ public class MedSavantDatabase {
         new ColumnDef.Integer("thickEnd"),
         new ColumnDef("exonStarts", ColumnType.VARCHAR, 9000),
         new ColumnDef("exonEnds", ColumnType.VARCHAR, 9000)
-    );
+    ) {
+        @Override
+        public SelectQuery getListQuery() {
+            SelectQuery query = super.getListQuery();
+            query.addColumns(getDBColumn(1));
+            return query;
+        }
+    };
             
     //PatientformatTableSchema
     public static final PatientFormatTableSchema PatientformatTableSchema = new PatientFormatTableSchema(schema);

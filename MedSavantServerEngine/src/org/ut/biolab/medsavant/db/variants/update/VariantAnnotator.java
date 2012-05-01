@@ -17,8 +17,8 @@ import java.util.logging.Level;
 import org.broad.tabix.TabixReader;
 import org.broad.tabix.TabixReader.Iterator;
 import org.ut.biolab.medsavant.model.Annotation;
-import org.ut.biolab.medsavant.db.util.query.AnnotationQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.ServerLogQueryUtil;
+import org.ut.biolab.medsavant.serverapi.AnnotationQueryUtil;
+import org.ut.biolab.medsavant.serverapi.ServerLogQueryUtil;
 import org.ut.biolab.medsavant.server.log.ServerLogger;
 
 /**

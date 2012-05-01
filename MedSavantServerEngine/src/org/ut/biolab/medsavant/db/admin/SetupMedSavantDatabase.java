@@ -34,9 +34,9 @@ import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.db.Settings;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.DBUtil;
-import org.ut.biolab.medsavant.db.util.query.ReferenceQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.SettingsQueryUtil;
-import org.ut.biolab.medsavant.db.util.query.UserQueryUtil;
+import org.ut.biolab.medsavant.serverapi.ReferenceQueryUtil;
+import org.ut.biolab.medsavant.serverapi.SettingsQueryUtil;
+import org.ut.biolab.medsavant.serverapi.UserQueryUtil;
 import org.ut.biolab.medsavant.serverapi.SetupAdapter;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.server.SessionController;
@@ -287,7 +287,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + "`custom_info` varchar(1000) COLLATE latin1_bin DEFAULT NULL"
                 + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
-        String s = MedSavantDatabase.GenesTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin";
+        String s = MedSavantDatabase.GeneSetTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin";
         LOG.log(Level.FINE, s);
         c.createStatement().execute(s);
 
@@ -397,7 +397,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
     
     private static void populateGenes(String sessID) throws SQLException, RemoteException {
-        TabixTableLoader loader = new TabixTableLoader(MedSavantDatabase.GenesTableSchema.getTable());
+        TabixTableLoader loader = new TabixTableLoader(MedSavantDatabase.GeneSetTableSchema.getTable());
         
         try {
             // bin	name	chrom	strand	txStart	txEnd	cdsStart	cdsEnd	exonCount	exonStarts	exonEnds	score	name2	cdsStartStat	cdsEndStat	exonFrames

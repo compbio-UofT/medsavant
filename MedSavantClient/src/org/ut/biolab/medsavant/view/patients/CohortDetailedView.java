@@ -13,10 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.patients.cohorts;
+package org.ut.biolab.medsavant.view.patients;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -27,7 +26,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
-import javax.swing.table.TableCellRenderer;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
@@ -45,6 +43,7 @@ import org.ut.biolab.medsavant.model.SimplePatient;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
+import org.ut.biolab.medsavant.view.component.StripyTable;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedView;
@@ -131,20 +130,7 @@ public class CohortDetailedView extends DetailedView {
             data[i][0] = patients.get(i);
         }
         
-        list = new JTable(data, new String[]{MedSavantDatabase.DefaultpatientTableSchema.getFieldAlias(DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID)}) {
-            @Override
-            public Component prepareRenderer(TableCellRenderer renderer, int Index_row, int Index_col) {
-                Component comp = super.prepareRenderer(renderer, Index_row, Index_col);
-                if (!isCellSelected(Index_row, Index_col)) {
-                    if (Index_row % 2 == 0) {
-                        comp.setBackground(ViewUtil.evenRowColor);
-                    } else {
-                        comp.setBackground(ViewUtil.oddRowColor);
-                    }
-                }
-                return comp;
-            }
-        };
+        list = new StripyTable(data, new String[] { MedSavantDatabase.DefaultpatientTableSchema.getFieldAlias(DefaultpatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID) });
         list.setBorder(null);
         list.setShowGrid(false);
         list.setRowHeight(21);

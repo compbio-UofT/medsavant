@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,15 +22,14 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-
 import org.ut.biolab.medsavant.model.AnnotationLog;
 import org.ut.biolab.medsavant.model.GeneralLog;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
@@ -46,36 +45,38 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class ServerLogPage extends SubSectionView {
 
-    private static String CARDNAME_WAIT = "0";
-    private static String CARDNAME_CLIENT = "1";
-    private static String CARDNAME_ANNOTATION = "2";
-    private static String CARDNAME_SERVER = "3";
-    private JPanel panel;
-    private JPanel menuPanel;
-    private JPanel listPanel;
+    private static final String CARDNAME_WAIT = "0";
+    private static final String CARDNAME_CLIENT = "1";
+    private static final String CARDNAME_ANNOTATION = "2";
+    private static final String CARDNAME_SERVER = "3";
+    private static final String[] CLIENT_COLUMN_NAMES = new String[] { "User", "Type", "Description", "Time" };
+    private static final Class[] CLIENT_COLUMN_CLASSES = new Class[] { String.class, String.class, String.class, String.class };
+    private static final String[] ANNOTATIONS_COLUMN_NAMES = new String[] { "Project", "Reference", "Action", "Status", "Time", "User" };
+    private static final Class[] ANNOTATIONS_COLUMN_CLASSES = new Class[] { String.class, String.class, String.class, String.class, String.class, String.class };
+
     private boolean clientTableRefreshed = false;
     private boolean serverTableRefreshed = false;
     private boolean annotationTableRefreshed = false;
+    private String currentCard;
+
+    private JPanel panel;
+    private JPanel menuPanel;
+    private JPanel listPanel;
     private SearchableTablePanel clientTable;
     private SearchableTablePanel serverTable;
     private SearchableTablePanel annotationTable;
-    private static final List<String> clientColumnNames = Arrays.asList(new String[]{"User", "Type", "Description", "Time"});
-    private static final List<String> serverColumnNames = Arrays.asList(new String[]{"Type", "Description", "Time"});
-    private static final List<String> annotationsColumnNames = Arrays.asList(new String[]{"Project", "Reference", "Action", "Status", "Time", "User"});
-    private static final List<Class> clientColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class, String.class});
-    private static final List<Class> serverColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class});
-    private static final List<Class> annotationsColumnClasses = Arrays.asList(new Class[]{String.class, String.class, String.class, String.class, String.class, String.class});
-    private String currentCard;
     private WaitPanel waitPanel;
 
     public ServerLogPage(SectionView parent) {
         super(parent);
     }
 
+    @Override
     public String getName() {
         return "Logs";
     }
 
+    @Override
     public JPanel getView(boolean update) {
         if (panel == null) {
             setPanel();
@@ -112,7 +113,7 @@ public class ServerLogPage extends SubSectionView {
         panel.add(listPanel, BorderLayout.CENTER);
 
         b1.addActionListener(new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 changeToCard(CARDNAME_CLIENT);
 
@@ -125,7 +126,7 @@ public class ServerLogPage extends SubSectionView {
             }
         });*/
         b3.addActionListener(new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 changeToCard(CARDNAME_ANNOTATION);
             }
@@ -137,7 +138,7 @@ public class ServerLogPage extends SubSectionView {
 
         JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 refreshCurrentCard();
             }
@@ -202,9 +203,12 @@ public class ServerLogPage extends SubSectionView {
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
         DataRetriever retriever = new DataRetriever(){
+            @Override
             public List<Object[]> retrieve(int start, int limit) {
                 return retrieveClientData(start, limit);
             }
+
+            @Override
             public int getTotalNum() {
                 try {
                     return MedSavantClient.LogQueryUtilAdapter.getClientLogSize(LoginController.sessionId);
@@ -212,9 +216,11 @@ public class ServerLogPage extends SubSectionView {
                     return 0;
                 }
             }
-            public void retrievalComplete() {}
+            @Override
+            public void retrievalComplete() {
+            }
         };
-        clientTable = new SearchableTablePanel(getName(), clientColumnNames, clientColumnClasses, new ArrayList<Integer>(), limit, retriever);
+        clientTable = new SearchableTablePanel(getName(), CLIENT_COLUMN_NAMES, CLIENT_COLUMN_CLASSES, new int[0], limit, retriever);
         p.add(clientTable, BorderLayout.CENTER);
         return p;
     }
@@ -244,9 +250,12 @@ public class ServerLogPage extends SubSectionView {
         JPanel p = new JPanel();
         p.setLayout(new BorderLayout());
         DataRetriever retriever = new DataRetriever(){
+            @Override
             public List<Object[]> retrieve(int start, int limit) {
                 return retrieveAnnotationData(start, limit);
             }
+
+            @Override
             public int getTotalNum() {
                 try {
                     return MedSavantClient.LogQueryUtilAdapter.getAnnotationLogSize(LoginController.sessionId);
@@ -254,11 +263,11 @@ public class ServerLogPage extends SubSectionView {
                     return 0;
                 }
             }
-            public void retrievalComplete() {}
+            @Override
+            public void retrievalComplete() {
+            }
         };
-        annotationTable = new SearchableTablePanel(getName(), annotationsColumnNames, annotationsColumnClasses, new ArrayList<Integer>(), limit, retriever);
-        //annotationTable.getTable().getColumn("Restart").setCellRenderer(new JTableButtonRenderer());
-        //annotationTable.getTable().addMouseListener(new JTableButtonMouseListener(annotationTable.getTable()));
+        annotationTable = new SearchableTablePanel(getName(), ANNOTATIONS_COLUMN_NAMES, ANNOTATIONS_COLUMN_CLASSES, new int[0], limit, retriever);
         p.add(annotationTable, BorderLayout.CENTER);
         return p;
     }

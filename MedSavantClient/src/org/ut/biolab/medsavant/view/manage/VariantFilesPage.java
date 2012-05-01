@@ -45,8 +45,8 @@ import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
-import org.ut.biolab.medsavant.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.view.list.DetailedView;
+import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -97,7 +97,12 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
     
     public void setPanel() {
         panel = new SplitScreenView(
-                new VariantFilesListModel(),
+                new SimpleDetailedListModel("Variant File") {
+                    @Override
+                    public List getData() throws Exception {
+                        return MedSavantClient.VariantQueryUtilAdapter.getUploadedFiles(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId());
+                    }
+                },
                 new VariantFilesDetailedView(),
                 new VariantFilesDetailedListEditor());
     }
@@ -122,58 +127,6 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
     }
 
     
-    /*
-     * VARIANT FILES LIST MODEL
-     */
-    private static class VariantFilesListModel implements DetailedListModel {
-
-        private List<String> cnames;
-        private List<Class> cclasses;
-        private List<Integer> chidden;
-
-        public VariantFilesListModel() {}
-
-        @Override
-        public List<Object[]> getList(int limit) throws Exception {
-            List<SimpleVariantFile> files = MedSavantClient.VariantQueryUtilAdapter.getUploadedFiles(
-                    LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentProjectId(), 
-                    ReferenceController.getInstance().getCurrentReferenceId());
-            List<Object[]> result = new ArrayList<Object[]>();
-            for (SimpleVariantFile svf : files) {
-                result.add(new Object[]{svf});
-            }
-            return result;
-        }
-
-        @Override
-        public List<String> getColumnNames() {
-            if (cnames == null) {
-                cnames = new ArrayList<String>();
-                cnames.add("Variant File");
-            }
-            return cnames;
-        }
-
-        @Override
-        public List<Class> getColumnClasses() {
-            if (cclasses == null) {
-                cclasses = new ArrayList<Class>();
-                cclasses.add(String.class);
-            }
-            return cclasses;
-        }
-
-        @Override
-        public List<Integer> getHiddenColumns() {
-            if (chidden == null) {
-                chidden = new ArrayList<Integer>();
-            }
-            return chidden;
-        }
-    }
-
-
     /*
      * VARIANT FILES DETAILED VIEW
      */

@@ -1,6 +1,17 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.manage;
 
@@ -12,16 +23,12 @@ import java.util.logging.Logger;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
-import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -35,8 +42,8 @@ import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
-import org.ut.biolab.medsavant.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.view.list.DetailedView;
+import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -140,18 +147,21 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         }
     }
 
+    @Override
     public void projectRemoved(String projectName) {
         if (panel != null) {
             panel.refresh();
         }
     }
 
+    @Override
     public void projectChanged(String projectName) {
         if (panel != null) {
             panel.refresh();
         }
     }
 
+    @Override
     public void projectTableRemoved(int projid, int refid) {
     }
 
@@ -196,15 +206,19 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
             refreshSelectedProject();
         }
 
+        @Override
         public void projectAdded(String projectName) {
         }
 
+        @Override
         public void projectRemoved(String projectName) {
         }
 
+        @Override
         public void projectChanged(String projectName) {
         }
 
+        @Override
         public void projectTableRemoved(int projid, int refid) {
             refreshSelectedProject();
         }
@@ -293,48 +307,6 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
     }
 
 
-    private static class ProjectsListModel implements DetailedListModel {
-
-        private ArrayList<String> cnames;
-        private ArrayList<Class> cclasses;
-        private ArrayList<Integer> chidden;
-
-        public ProjectsListModel() {
-        }
-
-        public List<Object[]> getList(int limit) throws Exception {
-            List<String> projects = ProjectController.getInstance().getProjectNames();
-            List<Object[]> projectVector = new ArrayList<Object[]>();
-            for (String p : projects) {
-                Object[] v = new Object[]{ p };
-                projectVector.add(v);
-            }
-            return projectVector;
-        }
-
-        public List<String> getColumnNames() {
-            if (cnames == null) {
-                cnames = new ArrayList<String>();
-                cnames.add("Project");
-            }
-            return cnames;
-        }
-
-        public List<Class> getColumnClasses() {
-            if (cclasses == null) {
-                cclasses = new ArrayList<Class>();
-                cclasses.add(String.class);
-            }
-            return cclasses;
-        }
-
-        public List<Integer> getHiddenColumns() {
-            if (chidden == null) {
-                chidden = new ArrayList<Integer>();
-            }
-            return chidden;
-        }
-    }
     private SplitScreenView panel;
 
     public ProjectManagementPage(SectionView parent) {
@@ -342,10 +314,12 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         ProjectController.getInstance().addProjectListener(this);
     }
 
+    @Override
     public String getName() {
         return "Projects";
     }
 
+    @Override
     public JPanel getView(boolean update) {
         if (panel == null) {
             setPanel();
@@ -355,9 +329,14 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
     public void setPanel() {
         panel = new SplitScreenView(
-                new ProjectsListModel(),
-                new ProjectsDetailedView(),
-                new ProjectDetailedListEditor());
+                    new SimpleDetailedListModel("Projects") {
+                        @Override
+                        public List getData() throws Exception {
+                            return ProjectController.getInstance().getProjectNames();
+                        }
+                    },
+                    new ProjectsDetailedView(),
+                    new ProjectDetailedListEditor());
     }
 
     @Override

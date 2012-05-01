@@ -1,4 +1,31 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 package org.ut.biolab.medsavant.view.component;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.TableCellRenderer;
 
 import com.jidesoft.grid.AutoFilterTableHeader;
 import com.jidesoft.grid.AutoResizePopupMenuCustomizer;
@@ -7,20 +34,8 @@ import com.jidesoft.grid.QuickTableFilterField;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableColumnChooserPopupMenuCustomizer;
 import com.jidesoft.grid.TableHeaderPopupMenuInstaller;
-import com.jidesoft.grid.TableModelWrapperUtils;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.util.List;
-import java.util.Vector;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.TableCellRenderer;
+
+import java.util.Arrays;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -32,11 +47,11 @@ public class ListViewTablePanel extends JPanel {
     private QuickTableFilterField filterField;
     private GenericTableModel model;
     private SortableTable table;
-    private Vector data;
-    private List<String> columnNames;
-    private List<Class> columnClasses;
+    private Object[][] data;
+    private String[] columnNames;
+    private Class[] columnClasses;
     private ColumnChooser columnChooser;
-    private List<Integer> hiddenColumns;
+    private int[] hiddenColumns;
     private final JPanel fieldPanel;
     private int fontSize = 14;
 
@@ -44,8 +59,8 @@ public class ListViewTablePanel extends JPanel {
         return table;
     }
 
-    public synchronized void updateData(Vector data) {
-        this.data = data;
+    public synchronized void updateData(Object[][] newData) {
+        data = newData;
         model.fireTableDataChanged();
         table.repaint();
     }
@@ -61,13 +76,14 @@ public class ListViewTablePanel extends JPanel {
             model = new GenericTableModel(data, columnNames, columnClasses);
             first = true;
         } else {
+            
             model.getDataVector().removeAllElements();
-            model.getDataVector().addAll(data);
+            model.getDataVector().addAll(Arrays.asList(data));
         }
 
 
         if (first) {
-            int[] columns = new int[columnNames.size()];
+            int[] columns = new int[columnNames.length];
             for (int i = 0; i < columns.length; i++) {
                 columns[i] = i;
             }
@@ -78,10 +94,17 @@ public class ListViewTablePanel extends JPanel {
             table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
             columnChooser.hideColumns(table, hiddenColumns);
 
-            int[] favColumns = new int[columnNames.size() - hiddenColumns.size()];
+            int[] favColumns = new int[columnNames.length - hiddenColumns.length];
             int pos = 0;
-            for (int i = 0; i < columnNames.size(); i++) {
-                if (!hiddenColumns.contains(i)) {
+            for (int i = 0; i < columnNames.length; i++) {
+                boolean hidden = false;
+                for (int j = 0; j < hiddenColumns.length; j++) {
+                    if (hiddenColumns[j] == i) {
+                        hidden = true;
+                        break;
+                    }
+                }
+                if (!hidden) {
                     favColumns[pos] = i;
                     pos++;
                 }
@@ -92,19 +115,18 @@ public class ListViewTablePanel extends JPanel {
         }
     }
 
-    private void setTableModel(Vector data, List<String> columnNames, List<Class> columnClasses) {
+    private void setTableModel(Object[][] data, String[] columnNames, Class[] columnClasses) {
         this.data = data;
         this.columnNames = columnNames;
         this.columnClasses = columnClasses;
         updateView();
     }
 
-    public ListViewTablePanel(Vector data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns) {
+    public ListViewTablePanel(Object[][] data, String[] columnNames, Class[] columnClasses, int[] hiddenColumns) {
         this(data, columnNames, columnClasses, hiddenColumns, true, true, true, true);
     }
 
-    public ListViewTablePanel(
-        Vector data, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
+    public ListViewTablePanel(Object[][] data, String[] columnNames, Class[] columnClasses, int[] hiddenColumns,
         boolean allowSearch, boolean allowSort, boolean allowPages, boolean allowSelection) {
 
 
@@ -176,10 +198,7 @@ public class ListViewTablePanel extends JPanel {
             fieldPanel.add(filterField);
         }
 
-        setTableModel(
-                data,
-                Util.listToVector(columnNames),
-                Util.listToVector(columnClasses));
+        setTableModel(data, columnNames, columnClasses);
 
         if (allowSort) {
             this.add(fieldPanel, BorderLayout.NORTH);
@@ -187,16 +206,16 @@ public class ListViewTablePanel extends JPanel {
 
         JScrollPane jsp = new JScrollPane(table);
         jsp.setBorder(null);
-        this.add(jsp, BorderLayout.CENTER);
+        add(jsp, BorderLayout.CENTER);
 
-        this.updateData(data);
+        updateData(data);
     }
 
     private int getTotalRowCount() {
         if (data == null) {
             return 0;
         }
-        return data.size();
+        return data.length;
     }
 
     private JButton niceButton() {
@@ -216,7 +235,7 @@ public class ListViewTablePanel extends JPanel {
     }
 
     public void setFontSize(int newSize){
-        this.fontSize = newSize;
+        fontSize = newSize;
     }
 
     public void scrollToIndex(int index){
@@ -225,8 +244,8 @@ public class ListViewTablePanel extends JPanel {
 
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
 
-        public void hideColumns(JTable table, List<Integer> indices) {
-            for (Integer i : indices) {
+        public void hideColumns(JTable table, int[] indices) {
+            for (int i: indices) {
                 hideColumn(table, i);
             }
         }

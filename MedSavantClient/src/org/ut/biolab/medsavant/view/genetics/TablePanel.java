@@ -51,6 +51,7 @@ import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.SQLUtils;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
@@ -91,7 +92,7 @@ class TablePanel extends JLayeredPane {
 
         waitPanel = new WaitPanel("Generating List View");
 
-        this.add(waitPanel, c, JLayeredPane.MODAL_LAYER);
+        add(waitPanel, c, JLayeredPane.MODAL_LAYER);
 
         showWaitCard();
 
@@ -129,11 +130,13 @@ class TablePanel extends JLayeredPane {
                                     field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID) ||
                                     field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO)))) {
                                 //|| af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_CUSTOM_VCF))) {
-                            hiddenColumns.add(fieldNames.size()-1);
+                            hiddenColumns.add(fieldNames.size() - 1);
                         }
                     }
                 }
-                if (this.isThreadCancelled()) return null;
+                if (isThreadCancelled()) {
+                    return null;
+                }
 
                 DataRetriever retriever = new DataRetriever() {
                     @Override
@@ -172,7 +175,7 @@ class TablePanel extends JLayeredPane {
                     }
                 };
 
-                SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames, fieldClasses, hiddenColumns, 1000, retriever) {
+                SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames.toArray(new String[0]), fieldClasses.toArray(new Class[0]), MiscUtils.toIntArray(hiddenColumns), 1000, retriever) {
                     @Override
                     public String getToolTip(int actualRow) {
                         if (starMap.get(actualRow) != null && !starMap.get(actualRow).isEmpty()) {

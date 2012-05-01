@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011-2012 University of Toronto
+ *    Copyright 2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -13,19 +13,21 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.list;
+package org.ut.biolab.medsavant.serverapi;
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.ut.biolab.medsavant.model.GeneSet;
+
 
 /**
+ * Public interface to the server's standard gene sets.
  *
- * @author mfiume
+ * @author tarkvara
  */
-public interface DetailedListModel {
-    
-    public Object[][] getList(int limit) throws Exception;
-
-    public String[] getColumnNames();
-
-    public Class[] getColumnClasses();
-
-    public int[] getHiddenColumns();
+public interface GeneSetAdapter extends Remote {
+    public List<GeneSet> getGeneSets(String sessID) throws SQLException, RemoteException;
 }

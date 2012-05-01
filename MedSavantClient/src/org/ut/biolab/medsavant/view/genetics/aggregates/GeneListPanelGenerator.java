@@ -22,7 +22,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -227,9 +226,10 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                 }
             };
 
-            List<String> columnNames = Arrays.asList(new String[]{"Name", "Chromosome", "Start", "End", "Variants", "Patients"});
-            List<Class> columnClasses = Arrays.asList(new Class[]{String.class, String.class, Integer.class, Integer.class, Integer.class, Integer.class});
-            stp = new SearchableTablePanel(pageName, columnNames, columnClasses, new ArrayList<Integer>(), limit, retriever);
+            stp = new SearchableTablePanel(pageName,
+                                           new String[] { "Name", "Chromosome", "Start", "End", "Variants", "Patients" },
+                                           new Class[] { String.class, String.class, Integer.class, Integer.class, Integer.class, Integer.class },
+                                           new int[0], limit, retriever);
 
             stp.getTable().addMouseListener(new MouseAdapter() {
                 @Override

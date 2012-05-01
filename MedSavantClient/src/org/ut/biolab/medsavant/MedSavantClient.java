@@ -21,48 +21,29 @@ import java.rmi.registry.*;
 import java.awt.Insets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.plaf.ColorUIResource;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 import gnu.getopt.Getopt;
-import javax.swing.ToolTipManager;
-import javax.swing.plaf.ColorUIResource;
-import org.ut.biolab.medsavant.controller.LoginController;
 
-import org.ut.biolab.medsavant.serverapi.AnnotationLogQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.AnnotationQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.ChromosomeQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.CohortQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.LogQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.PatientQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.ProjectQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.QueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.ReferenceQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.RegionQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.ServerLogQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.SettingsQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.UserQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.VariantQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.MedSavantServerRegistry;
-import org.ut.biolab.medsavant.serverapi.SessionAdapter;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.serverapi.CustomTablesAdapter;
-import org.ut.biolab.medsavant.serverapi.DBUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.NotificationQueryUtilAdapter;
-import org.ut.biolab.medsavant.serverapi.SetupAdapter;
-import org.ut.biolab.medsavant.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.log.ClientLogger;
+import org.ut.biolab.medsavant.serverapi.*;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 
 
-public class MedSavantClient {
+public class MedSavantClient implements MedSavantServerRegistry {
 
     public static CustomTablesAdapter CustomTablesAdapter;
     public static AnnotationLogQueryUtilAdapter AnnotationLogQueryUtilAdapter;
     public static AnnotationQueryUtilAdapter AnnotationQueryUtilAdapter;
     public static ChromosomeQueryUtilAdapter ChromosomeQueryUtilAdapter;
     public static CohortQueryUtilAdapter CohortQueryUtilAdapter;
+    public static GeneSetAdapter GeneSetAdapter;
     public static LogQueryUtilAdapter LogQueryUtilAdapter;
     public static PatientQueryUtilAdapter PatientQueryUtilAdapter;
     public static ProjectQueryUtilAdapter ProjectQueryUtilAdapter;
@@ -153,28 +134,29 @@ public class MedSavantClient {
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
 
-        VariantManagerAdapter = (VariantManagerAdapter) (registry.lookup(MedSavantServerRegistry.Registry_UploadVariantsAdapter));
+        VariantManagerAdapter = (VariantManagerAdapter)registry.lookup(Registry_UploadVariantsAdapter);
 
-        LoginController.SessionAdapter = (SessionAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SessionAdapter));
+        LoginController.SessionAdapter = (SessionAdapter)registry.lookup(Registry_SessionAdapter);
 
-        AnnotationLogQueryUtilAdapter = (AnnotationLogQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationLogQueryUtilAdapter));
-        AnnotationQueryUtilAdapter = (AnnotationQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_AnnotationQueryUtilAdapter));
-        ChromosomeQueryUtilAdapter = (ChromosomeQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_ChromosomeQueryUtilAdapter));
-        CohortQueryUtilAdapter = (CohortQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_CohortQueryUtilAdapter));
-        LogQueryUtilAdapter = (LogQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_LogQueryUtilAdapter));
-        PatientQueryUtilAdapter = (PatientQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_PatientQueryUtilAdapter));
-        ProjectQueryUtilAdapter = (ProjectQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_ProjectQueryUtilAdapter));
-        QueryUtilAdapter = (QueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_QueryUtilAdapter));
-        ReferenceQueryUtilAdapter = (ReferenceQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_ReferenceQueryUtilAdapter));
-        RegionQueryUtilAdapter = (RegionQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_RegionQueryUtilAdapter));
-        ServerLogQueryUtilAdapter = (ServerLogQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_ServerLogQueryUtilAdapter));
-        SettingsQueryUtilAdapter = (SettingsQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SettingsQueryUtilAdapter));
-        UserQueryUtilAdapter = (UserQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_UserQueryUtilAdapter));
-        VariantQueryUtilAdapter = (VariantQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_VariantQueryUtilAdapter));
-        DBUtilAdapter = (DBUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_DBUtilAdapter));
-        SetupAdapter = (SetupAdapter) (registry.lookup(MedSavantServerRegistry.Registry_SetupAdapter));
-        CustomTablesAdapter = (CustomTablesAdapter) (registry.lookup(MedSavantServerRegistry.Registry_CustomTablesAdapter));
-        NotificationQueryUtilAdapter = (NotificationQueryUtilAdapter) (registry.lookup(MedSavantServerRegistry.Registry_NotificationQueryUtilAdapter));
+        AnnotationLogQueryUtilAdapter = (AnnotationLogQueryUtilAdapter)registry.lookup(Registry_AnnotationLogQueryUtilAdapter);
+        AnnotationQueryUtilAdapter = (AnnotationQueryUtilAdapter)registry.lookup(Registry_AnnotationQueryUtilAdapter);
+        ChromosomeQueryUtilAdapter = (ChromosomeQueryUtilAdapter)registry.lookup(Registry_ChromosomeQueryUtilAdapter);
+        CohortQueryUtilAdapter = (CohortQueryUtilAdapter) (registry.lookup(Registry_CohortQueryUtilAdapter));
+        LogQueryUtilAdapter = (LogQueryUtilAdapter)registry.lookup(Registry_LogQueryUtilAdapter);
+        PatientQueryUtilAdapter = (PatientQueryUtilAdapter)registry.lookup(Registry_PatientQueryUtilAdapter);
+        ProjectQueryUtilAdapter = (ProjectQueryUtilAdapter)registry.lookup(Registry_ProjectQueryUtilAdapter);
+        QueryUtilAdapter = (QueryUtilAdapter)registry.lookup(Registry_QueryUtilAdapter);
+        GeneSetAdapter = (GeneSetAdapter)registry.lookup(Registry_GeneSetAdapter);
+        ReferenceQueryUtilAdapter = (ReferenceQueryUtilAdapter)registry.lookup(Registry_ReferenceQueryUtilAdapter);
+        RegionQueryUtilAdapter = (RegionQueryUtilAdapter)registry.lookup(Registry_RegionQueryUtilAdapter);
+        ServerLogQueryUtilAdapter = (ServerLogQueryUtilAdapter)registry.lookup(Registry_ServerLogQueryUtilAdapter);
+        SettingsQueryUtilAdapter = (SettingsQueryUtilAdapter)registry.lookup(Registry_SettingsQueryUtilAdapter);
+        UserQueryUtilAdapter = (UserQueryUtilAdapter)registry.lookup(Registry_UserQueryUtilAdapter);
+        VariantQueryUtilAdapter = (VariantQueryUtilAdapter)registry.lookup(Registry_VariantQueryUtilAdapter);
+        DBUtilAdapter = (DBUtilAdapter)registry.lookup(Registry_DBUtilAdapter);
+        SetupAdapter = (SetupAdapter)registry.lookup(Registry_SetupAdapter);
+        CustomTablesAdapter = (CustomTablesAdapter)registry.lookup(Registry_CustomTablesAdapter);
+        NotificationQueryUtilAdapter = (NotificationQueryUtilAdapter)registry.lookup(Registry_NotificationQueryUtilAdapter);
     }
 
     public static final boolean MAC;

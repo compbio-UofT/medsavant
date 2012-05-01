@@ -1,6 +1,17 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.manage;
 
@@ -12,6 +23,7 @@ import java.util.List;
 import javax.swing.Box;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
 import org.ut.biolab.medsavant.controller.ExternalAnnotationController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
@@ -19,8 +31,8 @@ import org.ut.biolab.medsavant.model.Annotation;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
-import org.ut.biolab.medsavant.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.view.list.DetailedView;
+import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -32,7 +44,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class AnnotationsPage extends SubSectionView {
 
-    private static class ExternalAnnotationDetailedListEditer extends DetailedListEditor {
+    private static class ExternalAnnotationDetailedListEditor extends DetailedListEditor {
 
          @Override
         public boolean doesImplementAdding() {
@@ -86,15 +98,22 @@ public class AnnotationsPage extends SubSectionView {
         //ExternalAnnotationController.getInstance().addExternalAnnotationListener(this);
     }
 
+    @Override
     public String getName() {
         return "Annotations";
     }
 
+    @Override
     public JPanel getView(boolean update) {
         panel = new SplitScreenView(
-                new ExternalAnnotationListModel(),
+                new SimpleDetailedListModel("Program") {
+                    @Override
+                    public List getData() throws Exception {
+                        return ExternalAnnotationController.getInstance().getExternalAnnotations();
+                    }
+                },
                 new ExternalAnnotationDetailedView(),
-                new ExternalAnnotationDetailedListEditer());
+                new ExternalAnnotationDetailedListEditor());
         return panel;
     }
 
@@ -103,49 +122,6 @@ public class AnnotationsPage extends SubSectionView {
         Component[] result = new Component[0];
         //result[0] = getAddExternalAnnotationButton();
         return result;
-    }
-
-    private static class ExternalAnnotationListModel implements DetailedListModel {
-
-        private ArrayList<String> cnames;
-        private ArrayList<Class> cclasses;
-        private ArrayList<Integer> chidden;
-
-        public ExternalAnnotationListModel() {
-        }
-
-        public List<Object[]> getList(int limit) throws Exception {
-            List<Annotation> annotations = ExternalAnnotationController.getInstance().getExternalAnnotations();
-            List<Object[]> annotationVector = new ArrayList<Object[]>();
-            for (Annotation p : annotations) {
-                Object[] v = new Object[] {p};
-                annotationVector.add(v);
-            }
-            return annotationVector;
-        }
-
-        public List<String> getColumnNames() {
-            if (cnames == null) {
-                cnames = new ArrayList<String>();
-                cnames.add("Program");
-            }
-            return cnames;
-        }
-
-        public List<Class> getColumnClasses() {
-            if (cclasses == null) {
-                cclasses = new ArrayList<Class>();
-                cclasses.add(String.class);
-            }
-            return cclasses;
-        }
-
-        public List<Integer> getHiddenColumns() {
-            if (chidden == null) {
-                chidden = new ArrayList<Integer>();
-            }
-            return chidden;
-        }
     }
 
     @Override

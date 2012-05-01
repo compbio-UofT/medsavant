@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,10 +30,12 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
-import com.jidesoft.grid.*;
+import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
 import javax.swing.border.Border;
-import javax.swing.table.TableColumn;
+
+import com.jidesoft.grid.*;
+
 import org.ut.biolab.medsavant.util.ExportTable;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
@@ -65,8 +66,8 @@ public class SearchableTablePanel extends JPanel {
     private int DEFAULT_ROWS_RETRIEVED = 1000;
     private static final int MAX_ROWS_RETRIEVED = 100000;
     private List<Object[]> data;
-    private List<String> columnNames;
-    private List<Class> columnClasses;
+    private String[] columnNames;
+    private Class[] columnClasses;
     private final JLabel pageLabel1;
     private final JLabel pageLabel2;
     private final JTextField pageText;
@@ -75,7 +76,7 @@ public class SearchableTablePanel extends JPanel {
     private final JButton gotoNext;
     private final JButton gotoLast;
     private ColumnChooser columnChooser;
-    private List<Integer> hiddenColumns;
+    private int[] hiddenColumns;
     private DataRetriever retriever;
     private int totalNumRows;
     private GetDataSwingWorker worker;
@@ -92,7 +93,7 @@ public class SearchableTablePanel extends JPanel {
         return table;
     }
 
-    private synchronized void updateView(boolean newData){
+    private synchronized void updateView(boolean newData) {
         if (worker != null) worker.cancel(true);
         (worker = new GetDataSwingWorker(pageName, newData)).execute();
     }
@@ -120,7 +121,7 @@ public class SearchableTablePanel extends JPanel {
 
         boolean update;
 
-        protected GetDataSwingWorker(String pageName, boolean newData){
+        protected GetDataSwingWorker(String pageName, boolean newData) {
             super(pageName);
             this.update = newData;
         }
@@ -128,12 +129,12 @@ public class SearchableTablePanel extends JPanel {
         @Override
         protected List<Object[]> doInBackground() {
             try {
-                if(this.isThreadCancelled()) return null;
-                if(update){
+                if (this.isThreadCancelled()) return null;
+                if (update) {
                     setTotalRowCount(retriever.getTotalNum());
                     pageNum = 1;
                 }
-                if(this.isThreadCancelled()) return null;
+                if (this.isThreadCancelled()) return null;
                 return retriever.retrieve((pageNum-1) * getRowsPerPage(), getRowsPerPage());
             } catch (Exception e) {
                 return null;
@@ -153,11 +154,11 @@ public class SearchableTablePanel extends JPanel {
         }
     }
 
-    public void applyData(List<Object[]> pageData){
+    public void applyData(List<Object[]> pageData) {
 
         boolean first = false;
         if (model == null) {
-            model = new GenericTableModel(pageData, columnNames, columnClasses);
+            model = new GenericTableModel(pageData.toArray(new Object[0][0]), columnNames, columnClasses);
             first = true;
         } else {
             // We can't call setDataVector directly because that blows away any custom table renderers we've set.
@@ -189,7 +190,7 @@ public class SearchableTablePanel extends JPanel {
         amountLabel.setText("  Showing " + start + " - " + end + " of " + getTotalRowCount() + " records");
 
         if (first) {
-            int[] columns = new int[columnNames.size()];
+            int[] columns = new int[columnNames.length];
             for (int i = 0; i < columns.length; i++) {
                 columns[i] = i;
             }
@@ -201,10 +202,17 @@ public class SearchableTablePanel extends JPanel {
             table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
             columnChooser.hideColumns(table, hiddenColumns);
 
-            int[] favColumns = new int[columnNames.size() - hiddenColumns.size()];
+            int[] favColumns = new int[columnNames.length - hiddenColumns.length];
             int pos = 0;
-            for (int i = 0; i < columnNames.size(); i++) {
-                if (!hiddenColumns.contains(i)) {
+            for (int i = 0; i < columnNames.length; i++) {
+                boolean hidden = false;
+                for (int j = 0; j < hiddenColumns.length; j++) {
+                    if (hiddenColumns[j] == i) {
+                        hidden = true;
+                        break;
+                    }
+                }
+                if (!hidden) {
                     favColumns[pos] = i;
                     pos++;
                 }
@@ -216,7 +224,7 @@ public class SearchableTablePanel extends JPanel {
     }
 
 
-    private void setTableModel(List<Object[]> data, List<String> columnNames, List<Class> columnClasses) {
+    private void setTableModel(List<Object[]> data, String[] columnNames, Class[] columnClasses) {
         if (data == null) {
             this.data = new ArrayList<Object[]>();
         } else {
@@ -226,7 +234,7 @@ public class SearchableTablePanel extends JPanel {
         this.columnClasses = columnClasses;
     }
 
-    public SearchableTablePanel(String pageName, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns, int defaultRowsRetrieved, DataRetriever retriever) {
+    public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns, int defaultRowsRetrieved, DataRetriever retriever) {
         this(pageName, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, TableSelectionType.ROW, defaultRowsRetrieved, retriever);
     }
 
@@ -235,8 +243,8 @@ public class SearchableTablePanel extends JPanel {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
-            if (value instanceof JButton) {
-                JCheckBox button = (JCheckBox) value;
+            if (value instanceof JCheckBox) {
+                JCheckBox button = (JCheckBox)value;
                 if (isSelected) {
                     button.setForeground(table.getForeground());
                     button.setBackground(table.getSelectionBackground());
@@ -250,7 +258,7 @@ public class SearchableTablePanel extends JPanel {
         }
     }
 
-    public SearchableTablePanel(String pageName, List<String> columnNames, List<Class> columnClasses, List<Integer> hiddenColumns,
+    public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns,
         boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, TableSelectionType selectionType, int defaultRowsRetrieved, DataRetriever retriever) {
 
         this.pageName = pageName;
@@ -269,7 +277,7 @@ public class SearchableTablePanel extends JPanel {
 
                 if (isCellSelected(Index_row, Index_col)) {
                     comp.setBackground(new Color(75, 149, 229));
-                } else if (selectedRows != null && selectedRows.contains(TableModelWrapperUtils.getActualRowAt(table.getModel(), Index_row))){
+                } else if (selectedRows != null && selectedRows.contains(TableModelWrapperUtils.getActualRowAt(table.getModel(), Index_row))) {
                     comp.setBackground(SELECTED_COLOUR);
                 } else if (Index_row % 2 == 0 && !isCellSelected(Index_row, Index_col)) {
                     comp.setBackground(Color.white);
@@ -281,7 +289,8 @@ public class SearchableTablePanel extends JPanel {
                 return comp;
             }
 
-            public String getToolTipText(MouseEvent e){
+            @Override
+            public String getToolTipText(MouseEvent e) {
                 return getToolTip(TableModelWrapperUtils.getActualRowAt(table.getModel(), table.rowAtPoint(e.getPoint())));
             }
         };
@@ -338,6 +347,7 @@ public class SearchableTablePanel extends JPanel {
 
         chooseColumnButton = new JButton("Show/Hide fields");
         chooseColumnButton.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseReleased(MouseEvent e) {
                 columnChooser.showDialog();
             }
@@ -346,6 +356,7 @@ public class SearchableTablePanel extends JPanel {
 
         exportButton = new JButton("Export Page");
         exportButton.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseReleased(MouseEvent e) {
                 try {
                     ExportTable.exportTable(table);
@@ -371,25 +382,25 @@ public class SearchableTablePanel extends JPanel {
         gotoLast.setIcon(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LAST));
 
         gotoFirst.addActionListener(new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 goToFirstPage();
             }
         });
         gotoPrevious.addActionListener(new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 goToPreviousPage();
             }
         });
         gotoNext.addActionListener(new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 goToNextPage();
             }
         });
         gotoLast.addActionListener(new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent e) {
                 goToLastPage();
             }
@@ -398,15 +409,14 @@ public class SearchableTablePanel extends JPanel {
         pageText = new JTextField();
         pageText.setColumns(5);
         pageText.setMaximumSize(new Dimension(50,20));
-        pageText.addKeyListener(new KeyListener() {
-            public void keyTyped(KeyEvent e) {}
-            public void keyPressed(KeyEvent e) {}
+        pageText.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyReleased(KeyEvent e) {
                 int key = e.getKeyCode();
                 if (key == KeyEvent.VK_ENTER) {
                     try {
                         setPageNumber(Integer.parseInt(pageText.getText()));
-                    } catch (NumberFormatException ex){
+                    } catch (NumberFormatException ex) {
                         setPageNumber(0);
                     }
                 }
@@ -463,6 +473,7 @@ public class SearchableTablePanel extends JPanel {
         }
         rowsPerPageDropdown.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 JComboBox cb = (JComboBox) e.getSource();
                 int rowsPerPage = (Integer) cb.getSelectedItem();
@@ -563,38 +574,38 @@ public class SearchableTablePanel extends JPanel {
         table.setSelectionMode(selectionMode);
     }
 
-    public int getRetrievalLimit(){
+    public int getRetrievalLimit() {
         int limit;
         try {
             limit = Integer.parseInt(this.rowsRetrievedBox.getText());
-        } catch (NumberFormatException ex){
+        } catch (NumberFormatException ex) {
             rowsRetrievedBox.setText(String.valueOf(DEFAULT_ROWS_RETRIEVED));
             return DEFAULT_ROWS_RETRIEVED;
         }
-        if(limit > MAX_ROWS_RETRIEVED){
+        if (limit > MAX_ROWS_RETRIEVED) {
             rowsRetrievedBox.setText(String.valueOf(MAX_ROWS_RETRIEVED));
             return MAX_ROWS_RETRIEVED;
         }
         return limit;
     }
 
-    public void forceRefreshData(){
+    public void forceRefreshData() {
         updateView(true);
     }
 
-    public void setExportButtonEnabled(boolean enable){
+    public void setExportButtonEnabled(boolean enable) {
         exportButton.setEnabled(enable);
     }
 
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
 
-        public void hideColumns(JTable table, List<Integer> indices) {
-            for (Integer i : indices) {
+        public void hideColumns(JTable table, int[] indices) {
+            for (int i : indices) {
                 hideColumn(table, i);
             }
         }
 
-        public void showDialog(){
+        public void showDialog() {
             TableColumnChooserDialog dialog = super.createTableColumnChooserDialog(MedSavantFrame.getInstance(), "Choose fields to display", table);
             dialog.setPreferredSize(new Dimension(300,500));
             dialog.setSize(new Dimension(300,500));
@@ -604,32 +615,32 @@ public class SearchableTablePanel extends JPanel {
 
     }
 
-    public int getActualRowAt(int row){
+    public int getActualRowAt(int row) {
         return TableModelWrapperUtils.getActualRowAt(table.getModel(), row);
     }
 
-    public void setSelectedRows(List<Integer> rows){
+    public void setSelectedRows(List<Integer> rows) {
         this.selectedRows = rows;
     }
 
-    public boolean isRowSelected(int row){
-        if(selectedRows == null) return false;
+    public boolean isRowSelected(int row) {
+        if (selectedRows == null) return false;
         return selectedRows.contains(row);
     }
 
-    public void addSelectedRow(Integer row){
+    public void addSelectedRow(Integer row) {
         selectedRows.add(row);
     }
 
-    public void removeSelectedRow(Integer row){
-        while(selectedRows.remove(row));
+    public void removeSelectedRow(Integer row) {
+        while (selectedRows.remove(row));
     }
 
-    public void addSelectedRows(List<Integer> rows){
+    public void addSelectedRows(List<Integer> rows) {
         selectedRows.addAll(rows);
     }
 
-    public String getToolTip(int actualRow){
+    public String getToolTip(int actualRow) {
         return null;
     }
 

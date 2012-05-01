@@ -1,11 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.patients.individual;
 
-import au.com.bytecode.opencsv.CSVWriter;
-import com.jidesoft.utils.SwingWorker;
+package org.ut.biolab.medsavant.view.patients;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -30,18 +40,9 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.format.PatientFormat;
-import org.ut.biolab.medsavant.model.Cohort;
-import org.ut.biolab.medsavant.log.ClientLogger;
-import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
-import org.ut.biolab.medsavant.view.dialog.ComboForm;
-import org.ut.biolab.medsavant.view.list.DetailedView;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
+
+import au.com.bytecode.opencsv.CSVWriter;
+import com.jidesoft.utils.SwingWorker;
 import pedviz.algorithms.Sugiyama;
 import pedviz.graph.Graph;
 import pedviz.graph.Node;
@@ -55,6 +56,19 @@ import pedviz.view.symbols.Symbol2D;
 import pedviz.view.symbols.SymbolSexFemale;
 import pedviz.view.symbols.SymbolSexMale;
 import pedviz.view.symbols.SymbolSexUndesignated;
+
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.format.PatientFormat;
+import org.ut.biolab.medsavant.log.ClientLogger;
+import org.ut.biolab.medsavant.model.Cohort;
+import org.ut.biolab.medsavant.settings.DirectorySettings;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
+import org.ut.biolab.medsavant.view.dialog.ComboForm;
+import org.ut.biolab.medsavant.view.list.DetailedView;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -98,7 +112,7 @@ public class IndividualDetailedView extends DetailedView {
             try {
                 Object[] result = (Object[]) get();
                 setPatientInformation(result);
-            } catch (CancellationException ex){
+            } catch (CancellationException ex) {
 
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -150,7 +164,7 @@ public class IndividualDetailedView extends DetailedView {
                 File pedigreeCSVFile = (File) get();
                 showPedigree(pedigreeCSVFile);
                 pedigreeCSVFile.delete();
-            } catch (CancellationException ex){
+            } catch (CancellationException ex) {
 
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -189,17 +203,18 @@ public class IndividualDetailedView extends DetailedView {
         view.addRule(new PedigreeBasicRule(patientIds));
 
         selectedNodes = new ArrayList<Integer>();
-        for(Integer i : patientIds){
+        for(Integer i : patientIds) {
             selectedNodes.add(i);
         }
 
         //add ability to click
         view.addNodeListener(new NodeListener() {
+            @Override
             public void onNodeEvent(NodeEvent ne) {
-                if(ne.getType() == NodeEvent.MOUSE_ENTER){
+                if (ne.getType() == NodeEvent.MOUSE_ENTER) {
                     overNode = ne.getNode();
                     overNodeView = ne.getNodeView();
-                } else if (ne.getType() == NodeEvent.MOUSE_LEAVE){
+                } else if (ne.getType() == NodeEvent.MOUSE_LEAVE) {
                     overNode = null;
                     overNodeView = null;
                 }
@@ -207,36 +222,37 @@ public class IndividualDetailedView extends DetailedView {
         });
 
         view.getComponent().addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
-                if(overNode != null){
+                if (overNode != null) {
                     String hospitalId = (String)overNode.getId();
                     Integer patientId = Integer.parseInt((String)overNode.getUserData(Pedigree.FIELD_PATIENTID));
-                    if(SwingUtilities.isRightMouseButton(e)){
+                    if (SwingUtilities.isRightMouseButton(e)) {
                         int[] patientIds = new int[selectedNodes.size()];
-                        for(int i = 0; i < selectedNodes.size(); i++){
+                        for(int i = 0; i < selectedNodes.size(); i++) {
                             patientIds[i] = selectedNodes.get(i);
                         }
                         JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(patientIds);
                         popup.show(e.getComponent(), e.getX(), e.getY());
-                    } else if (SwingUtilities.isLeftMouseButton(e) && e.isControlDown()){
-                        if(!selectedNodes.contains(patientId)){
+                    } else if (SwingUtilities.isLeftMouseButton(e) && e.isControlDown()) {
+                        if (!selectedNodes.contains(patientId)) {
                             selectedNodes.add(patientId);
                             overNodeView.setBorderColor(ViewUtil.detailSelectedBackground);
                         } else {
-                            for(int i : patientIds){
-                                if(i == patientId) return;
+                            for(int i : patientIds) {
+                                if (i == patientId) return;
                             }
                             selectedNodes.remove(patientId);
                             overNodeView.setBorderColor(Color.black);
                         }
-                    } else if(SwingUtilities.isLeftMouseButton(e)) {
-                        if(patientId != null && patientId > 0){
+                    } else if (SwingUtilities.isLeftMouseButton(e)) {
+                        if (patientId != null && patientId > 0) {
                             selectIndividualInList(patientId);
                             //setSelectedItem(patientId, hospitalId);
                         }
                     }
                 } else {
-                    if(SwingUtilities.isRightMouseButton(e) && familyId != null){
+                    if (SwingUtilities.isRightMouseButton(e) && familyId != null) {
                         JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(familyId);
                         popup.show(e.getComponent(), e.getX(), e.getY());
 
@@ -251,12 +267,12 @@ public class IndividualDetailedView extends DetailedView {
         pedigreeDetails.updateUI();
     }
 
-    private void selectIndividualInList(int patientId){
-        List<Object[]> list = this.parent.getList();
-        for(int i = 0; i < list.size(); i++){
-            Object[] o = list.get(i);
-            if(o != null && o.length>=1 && (Integer)o[0] == patientId){
-                this.parent.selectInterval(i,i);
+    private void selectIndividualInList(int patID) {
+        Object[][] list = parent.getList();
+        for(int i = 0; i < list.length; i++) {
+            Object[] o = list[i];
+            if (o != null && o.length>=1 && (Integer)o[0] == patID) {
+                parent.selectInterval(i, i);
                 return;
             }
         }
@@ -295,13 +311,13 @@ public class IndividualDetailedView extends DetailedView {
         for (int i = 0; i < fieldNames.size(); i++) {
             values[i][0] = fieldNames.get(i);
             values[i][1] = "";
-            if(result[i] != null){
+            if (result[i] != null) {
                 values[i][1] = result[i].toString();
 
                 //special case for gender
-                if(values[i][0].equals(PatientFormat.ALIAS_OF_GENDER)){
+                if (values[i][0].equals(PatientFormat.ALIAS_OF_GENDER)) {
                     String s;
-                    if(result[i] instanceof Long || result[i] instanceof Integer){
+                    if (result[i] instanceof Long || result[i] instanceof Integer) {
                         s = ClientMiscUtils.genderToString(ClientMiscUtils.safeLongToInt((Long)result[i]));
                     } else {
                         s = ClientMiscUtils.GENDER_UNKNOWN;
@@ -382,7 +398,7 @@ public class IndividualDetailedView extends DetailedView {
         setSelectedItem(patientId, hospitalId);
     }
 
-    public void setSelectedItem(int patientId, String hospitalId){
+    public void setSelectedItem(int patientId, String hospitalId) {
 
         patientIds = new int[1];
         patientIds[0] = patientId;
@@ -405,13 +421,13 @@ public class IndividualDetailedView extends DetailedView {
         sw2 = new PedigreeSW(patientId);
         sw2.execute();
 
-        if(menu != null) menu.setVisible(true);
+        if (menu != null) menu.setVisible(true);
     }
 
     @Override
-    public void setMultipleSelections(List<Object[]> items){
+    public void setMultipleSelections(List<Object[]> items) {
         patientIds = new int[items.size()];
-        for(int i = 0; i < items.size(); i++){
+        for(int i = 0; i < items.size(); i++) {
             patientIds[i] = (Integer) items.get(i)[0];
         }
         if (items.isEmpty()) {
@@ -428,19 +444,20 @@ public class IndividualDetailedView extends DetailedView {
 
     @Override
     public void setRightClick(MouseEvent e) {
-        if(patientIds != null && patientIds.length > 0){
+        if (patientIds != null && patientIds.length > 0) {
             JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(patientIds);
             popup.show(e.getComponent(), e.getX(), e.getY());
         }
     }
 
-    private JButton addIndividualsButton(){
+    private JButton addIndividualsButton() {
         JButton button = new JButton("Add individual(s) to cohort");
         button.setBackground(ViewUtil.getDetailsBackgroundColor());
         button.setOpaque(false);
         button.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                if(patientIds != null && patientIds.length > 0){
+                if (patientIds != null && patientIds.length > 0) {
                     try {
                         List<Cohort> cohorts = MedSavantClient.CohortQueryUtilAdapter.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
                         ComboForm form = new ComboForm(cohorts.toArray(), "Select Cohort", "Select which cohort to add to:");
