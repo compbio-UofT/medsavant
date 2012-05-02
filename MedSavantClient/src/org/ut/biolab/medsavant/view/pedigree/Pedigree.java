@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.patients;
+package org.ut.biolab.medsavant.view.pedigree;
 
 
 /**

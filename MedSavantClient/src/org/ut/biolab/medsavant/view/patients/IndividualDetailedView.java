@@ -16,6 +16,8 @@
 
 package org.ut.biolab.medsavant.view.patients;
 
+import org.ut.biolab.medsavant.view.pedigree.Pedigree;
+import org.ut.biolab.medsavant.view.pedigree.PedigreeBasicRule;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
