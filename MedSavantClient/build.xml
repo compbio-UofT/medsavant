@@ -10,6 +10,10 @@
 <project name="MedSavantClient" default="default" basedir=".">
     <description>Builds, tests, and runs the project MedSavantClient.</description>
     <import file="nbproject/build-impl.xml"/>
+     <target name="-pre-jar">
+         <copy file="log4j.properties" todir="${build.classes.dir}">
+         </copy>
+     </target>
     <!--
 
     There exist several targets which are by default empty and which can be 

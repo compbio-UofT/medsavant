@@ -19,22 +19,17 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
-import java.util.HashMap;
-import java.util.Map;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
+import java.util.Map;
+import javax.swing.*;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -42,10 +37,9 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.model.Cohort;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 
@@ -54,7 +48,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
  * @author mfiume
  */
 class CohortFilterView extends FilterView {
-
+    private static final Log LOG = LogFactory.getLog(CohortFilterView.class);
     public static final String FILTER_NAME = "Cohort";
     public static final String FILTER_ID = "cohort";
     private static final String COHORT_ALL = "All Individuals";
@@ -94,10 +88,8 @@ class CohortFilterView extends FilterView {
             return MedSavantClient.CohortQueryUtilAdapter.getCohorts(
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectId());
-        } catch (SQLException ex) {
-            Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (RemoteException ex) {
-            Logger.getLogger(CohortFilterView.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception x) {
+            LOG.error("Unable to fetch cohort list.", x);
         }
         return new ArrayList<Cohort>();
     }
@@ -157,10 +149,11 @@ class CohortFilterView extends FilterView {
 
                             return resultsCombined;
 
-                        } catch (SQLException ex) {
-                            ClientMiscUtils.checkSQLException(ex);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+                        } catch (SQLException x) {
+                            ClientMiscUtils.checkSQLException(x);
+                            LOG.error("Error getting DNA IDs.", x);
+                        } catch (Exception x) {
+                            LOG.error("Error getting DNA IDs.", x);
                         }
                         return null;
                     }
@@ -175,7 +168,7 @@ class CohortFilterView extends FilterView {
                         return FILTER_ID;
                     }
                 };
-                ClientLogger.log(ClientLogger.class,"Adding filter: " + f.getName());
+                LOG.info("Adding filter: " + f.getName());
                 FilterController.addFilter(f, getQueryId());
 
             }

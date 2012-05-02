@@ -16,8 +16,6 @@
 
 package org.ut.biolab.medsavant.view.patients;
 
-import org.ut.biolab.medsavant.view.pedigree.Pedigree;
-import org.ut.biolab.medsavant.view.pedigree.PedigreeBasicRule;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -35,8 +33,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -45,6 +41,8 @@ import javax.swing.SwingUtilities;
 
 import au.com.bytecode.opencsv.CSVWriter;
 import com.jidesoft.utils.SwingWorker;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import pedviz.algorithms.Sugiyama;
 import pedviz.graph.Graph;
 import pedviz.graph.Node;
@@ -63,13 +61,14 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.format.PatientFormat;
-import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.dialog.ComboForm;
 import org.ut.biolab.medsavant.view.list.DetailedView;
+import org.ut.biolab.medsavant.view.pedigree.Pedigree;
+import org.ut.biolab.medsavant.view.pedigree.PedigreeBasicRule;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -77,6 +76,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 public class IndividualDetailedView extends DetailedView {
+    private static final Log LOG = LogFactory.getLog(IndividualDetailedView.class);
 
     private List<String> fieldNames;
     private IndividualDetailsSW sw;
@@ -116,10 +116,8 @@ public class IndividualDetailedView extends DetailedView {
                 setPatientInformation(result);
             } catch (CancellationException ex) {
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                ClientLogger.log(IndividualDetailedView.class, ex.getLocalizedMessage());
-                return;
+            } catch (Exception x) {
+                LOG.error("Error fetching individual details.", x);
             }
         }
     }
@@ -168,10 +166,8 @@ public class IndividualDetailedView extends DetailedView {
                 pedigreeCSVFile.delete();
             } catch (CancellationException ex) {
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                ClientLogger.log(IndividualDetailedView.class, ex.getLocalizedMessage());
-                return;
+            } catch (Exception x) {
+                LOG.error("Error fetching pedigree details.", x);
             }
         }
     }
@@ -342,12 +338,11 @@ public class IndividualDetailedView extends DetailedView {
 
         try {
             fieldNames = MedSavantClient.PatientQueryUtilAdapter.getPatientFieldAliases(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
-        } catch (SQLException ex) {
-            ClientMiscUtils.checkSQLException(ex);
-            ex.printStackTrace();
-            ClientLogger.log(IndividualDetailedView.class,ex.getLocalizedMessage(),Level.SEVERE);
-        } catch (RemoteException ex) {
-            ClientLogger.log(IndividualDetailedView.class,ex.getLocalizedMessage(),Level.SEVERE);
+        } catch (SQLException x) {
+            ClientMiscUtils.checkSQLException(x);
+            LOG.error("Error getting patient field aliases.", x);
+        } catch (RemoteException x) {
+            LOG.error("Error getting patient field aliases.", x);
         }
 
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
@@ -468,10 +463,8 @@ public class IndividualDetailedView extends DetailedView {
                             return;
                         }
                         MedSavantClient.CohortQueryUtilAdapter.addPatientsToCohort(LoginController.sessionId, patientIds, selected.getId());
-                    } catch (SQLException ex) {
-                        Logger.getLogger(IndividualDetailedView.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (RemoteException ex) {
-                        Logger.getLogger(IndividualDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (Exception x) {
+                        LOG.error("Error fetching cohorts.", x);
                     }
                     parent.refresh();
                 }

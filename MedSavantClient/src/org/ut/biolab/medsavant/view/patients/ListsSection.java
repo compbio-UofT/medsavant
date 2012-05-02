@@ -20,7 +20,7 @@ import javax.swing.Icon;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.view.images.IconFactory;
-import org.ut.biolab.medsavant.view.manage.IntervalPage;
+import org.ut.biolab.medsavant.view.manage.RegionPage;
 import org.ut.biolab.medsavant.view.manage.VariantFilesPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -36,7 +36,7 @@ public class ListsSection extends SectionView {
         pages = new SubSectionView[4];
         pages[0] = new IndividualsPage(this);
         pages[1] = new CohortsPage(this);
-        pages[2] = new IntervalPage(this);
+        pages[2] = new RegionPage(this);
         pages[3] = new VariantFilesPage(this);
 
      }

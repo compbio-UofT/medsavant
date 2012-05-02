@@ -28,15 +28,18 @@ import javax.swing.plaf.ColorUIResource;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 import gnu.getopt.Getopt;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.serverapi.*;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 
 
 public class MedSavantClient implements MedSavantServerRegistry {
+    private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
 
     public static CustomTablesAdapter CustomTablesAdapter;
     public static AnnotationLogQueryUtilAdapter AnnotationLogQueryUtilAdapter;
@@ -109,7 +112,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
         frame = MedSavantFrame.getInstance();
         frame.setExtendedState(MedSavantFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
-        ClientLogger.log(MedSavantClient.class, "MedSavant booted");
+        LOG.info("MedSavant booted.");
 
         //required for FORGE plugin
         //NativeInterface.runEventPump();
@@ -117,19 +120,17 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
     public static void initializeRegistry(String serverAddress, String serverPort) throws RemoteException, NotBoundException {
 
-        if(initialized) return;
+        if (initialized) return;
 
         Registry registry;
-        System.out.print("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");
-        System.out.flush();
+        LOG.debug("Connecting to MedSavantServerEngine @ " + serverAddress + ":" + serverPort + "...");
         registry = LocateRegistry.getRegistry(serverAddress,(new Integer(serverPort)).intValue());
-        System.out.println("Connected");
+        LOG.debug("Connected");
 
         // look up the remote object
-        System.out.print("Retrieving adapters...");
-        System.out.flush();
+        LOG.debug("Retrieving adapters...");
         setAdaptersFromRegistry(registry);
-        System.out.println("Done");
+        LOG.debug("Done");
     }
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
@@ -159,24 +160,12 @@ public class MedSavantClient implements MedSavantServerRegistry {
         NotificationQueryUtilAdapter = (NotificationQueryUtilAdapter)registry.lookup(Registry_NotificationQueryUtilAdapter);
     }
 
-    public static final boolean MAC;
-    public static final boolean WINDOWS;
-    public static final boolean LINUX;
-
-
-    static {
-        String os = System.getProperty("os.name").toLowerCase();
-        MAC = os.startsWith("mac");
-        WINDOWS = os.startsWith("windows");
-        LINUX = os.contains("linux");
-    }
-
     private static void setLAF() {
         try {
 
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-            if(WINDOWS){
+            if (MiscUtils.WINDOWS) {
                 LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
             }
             UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
@@ -184,15 +173,8 @@ public class MedSavantClient implements MedSavantServerRegistry {
             UIManager.put("ToolTip.background", new ColorUIResource(255,255,255));
             ToolTipManager.sharedInstance().setDismissDelay(8000);
             ToolTipManager.sharedInstance().setInitialDelay(500);
-
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(MedSavantClient.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception x) {
+            LOG.error("Unable to install look & feel.", x);
         }
     }
 

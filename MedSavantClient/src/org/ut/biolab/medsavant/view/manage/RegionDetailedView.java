@@ -15,24 +15,21 @@
  */
 package org.ut.biolab.medsavant.view.manage;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.Box;
+import java.util.concurrent.ExecutionException;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingWorker;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -43,124 +40,66 @@ import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RangeCondition;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
-import org.ut.biolab.medsavant.view.list.DetailedView;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.view.list.DetailedTableView;
+
 
 /**
  *
  * @author mfiume
  */
-public class IntervalDetailedView extends DetailedView {
+public class RegionDetailedView extends DetailedTableView {
+    private static final Log LOG = LogFactory.getLog(RegionDetailedView.class);
 
-    private int limitNumberOfRegionsShown = 500;
+    private static final int LIMIT = 500;
 
-    private RegionDetailsSW sw;
-    private final JPanel content;
-    private final JPanel details;
     private int numRegionsInRegionList;
-    private RegionSet regionSet;
+    private RegionSet selectedRegion;
     private static List<FilterPanelSubItem> filterPanels;
     
-    private final CollapsiblePanel listPane;
     
-    
-    public IntervalDetailedView() {
-
-        JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
-        viewContainer.setLayout(new BorderLayout());
-
-        JPanel infoContainer = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(infoContainer);
-
-        viewContainer.add(ViewUtil.getClearBorderlessJSP(infoContainer), BorderLayout.CENTER);
-
-        listPane = new CollapsiblePanel("Regions in List");
-        infoContainer.add(listPane);
-        infoContainer.add(Box.createVerticalGlue());
-
-        content = listPane.getContentPane();
-
-        details = ViewUtil.getClearPanel();
-        
-        content.add(details);
-        
-        /*content = this.getContentPanel();
-
-        details = ViewUtil.getClearPanel();
-
-        content.setLayout(new BorderLayout());
-
-        content.add(details,BorderLayout.CENTER);*/
-    }
-
-    @Override
-    public void setMultipleSelections(List<Object[]> selectedRows) {
-
-        //TODO: actually store them for possible deletion
-        if (selectedRows.isEmpty()) {
-                setTitle("");
-            } else {
-        setTitle("Multiple lists (" + selectedRows.size() + ")");
-        }
-        details.removeAll();
-        details.updateUI();
+    public RegionDetailedView() {
+        super("Regions in List", "Multiple lists (%d)", new String[] { "Region", "Chromosome", "Start", "End" });
     }
 
     @Override
     public void setRightClick(MouseEvent e) {
-        JPopupMenu popup = createPopup(regionSet);
+        JPopupMenu popup = createPopup(selectedRegion);
         popup.show(e.getComponent(), e.getX(), e.getY());
     }
 
-    /*
-    void removeSelectedRegionLists() {
-        if (regionSet != null) {
-                    int result = JOptionPane.showConfirmDialog(
-                            null,
-                            "Are you sure you want to delete " + regionSet.getName() + "?\nThis cannot be undone.",
-                            "Confirm",
-                            JOptionPane.YES_NO_OPTION);
-                    if (result != JOptionPane.YES_OPTION) return;
-                    try {
-                        MedSavantClient.RegionQueryUtilAdapter.removeRegionList(regionSet.getId());
-                    } catch (SQLException ex) {
-                        Logger.getLogger(IntervalDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+    @Override
+    public SwingWorker createWorker() {
+        return new SwingWorker<List<GenomicRegion>, Void>() {
+
+            @Override
+            protected List<GenomicRegion> doInBackground() throws Exception {
+                //numRegionsInRegionList = QueryUtil.getNumRegionsInRegionSet(regionName);
+                //List<Vector> regionList = QueryUtil.getRegionNamesInRegionSet(regionName,limit);
+                return MedSavantClient.RegionQueryUtilAdapter.getRegionsInRegionSet(LoginController.sessionId, selectedRegion.getId());
+            }
+            
+            @Override
+            protected void done() {
+                //List<Object[]> list = new ArrayList<Object[]>();
+                Object[][] list = null;
+                try {
+                    List<GenomicRegion> result = get();
+                    list = new Object[result.size()][];
+                    for (int i = 0; i < result.size(); i++) {
+                        GenomicRegion r = result.get(i);
+                        list[i] = new Object[] { r.getName(), r.getChrom(), r.getStart(), r.getEnd() };
                     }
-                    parent.refresh();
+                } catch (InterruptedException ignored) {
+                } catch (ExecutionException x) {
+                    LOG.error("Failed to retrieve reference genomes.", x);
                 }
+                setData(list);
+            }
+        };
     }
-     *
-     */
-
-    private class RegionDetailsSW extends MedSavantWorker<List<String>> {
-        private final RegionSet regionSet;
-        private final int limit;
-
-        public RegionDetailsSW(RegionSet regionSet, int limit) {
-            super(getName());
-            this.regionSet = regionSet;
-            this.limit = limit;
-        }
-
-        @Override
-        protected List<String> doInBackground() throws Exception {
-            //numRegionsInRegionList = QueryUtil.getNumRegionsInRegionSet(regionName);
-            //List<Vector> regionList = QueryUtil.getRegionNamesInRegionSet(regionName,limit);
-            numRegionsInRegionList = MedSavantClient.RegionQueryUtilAdapter.getNumberRegions(LoginController.sessionId, regionSet.getId());
-            List<String> regionList = MedSavantClient.RegionQueryUtilAdapter.getRegionNamesInRegionSet(LoginController.sessionId, regionSet.getId(), limit);
-            return regionList;
-        }
-
-        @Override
-        protected void showProgress(double fraction) {
-            //
-        }
-
-        @Override
+/*        @Override
         protected void showSuccess(List<String> result) {
             try {
                 //setTitle(regionSet.getName() + " (" + numRegionsInRegionList + " regions)");
@@ -170,39 +109,12 @@ public class IntervalDetailedView extends DetailedView {
             } catch (Exception ex) {
                 return;
             }
-        }
-
-    }
-
-    public synchronized void setRegionList(List<String> regions) {
-        
-        details.removeAll();
-            
-        ViewUtil.setBoxYLayout(details);
-        
-        String[] values = new String[regions.size()];
-        values = regions.toArray(values);
-
-        details.add(ViewUtil.getKeyList(values));
-
-        details.updateUI();
-    }
+        }*/
 
     @Override
     public void setSelectedItem(Object[] item) {
-
-        RegionSet regionList = (RegionSet) item[0];
-        setTitle(regionList.getName());
-        this.regionSet = regionList;
-
-        details.removeAll();
-        details.updateUI();
-
-        if (sw != null) {
-            sw.cancel(true);
-        }
-        sw = new RegionDetailsSW(regionList,limitNumberOfRegionsShown);
-        sw.execute();
+        selectedRegion = (RegionSet)item[0];
+        super.setSelectedItem(item);
     }
 
     private JPopupMenu createPopup(final RegionSet set) {
@@ -257,10 +169,8 @@ public class IntervalDetailedView extends DetailedView {
                                 regions.size() + " Region(s)",
                                 ComboCondition.or(results));
 
-                    } catch (SQLException ex) {
-                        Logger.getLogger(IntervalDetailedView.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (RemoteException ex) {
-                        Logger.getLogger(IntervalDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (Exception x) {
+                        LOG.error("Error filtering region lists.", x);
                     }
 
                 }

@@ -32,12 +32,12 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  *
  * @author mfiume
  */
-public class IntervalPage extends SubSectionView {
+public class RegionPage extends SubSectionView {
 
     int importID = 0;
     SplitScreenView view;
 
-    public IntervalPage(SectionView parent) {
+    public RegionPage(SectionView parent) {
         super(parent);
     }
 
@@ -55,17 +55,15 @@ public class IntervalPage extends SubSectionView {
                         return MedSavantClient.RegionQueryUtilAdapter.getRegionSets(LoginController.sessionId);
                     }
                 },
-                new IntervalDetailedView(),
-                new IntervalDetailedListEditor());
+                new RegionDetailedView(),
+                new RegionDetailedListEditor());
 
         return view;
     }
 
     @Override
     public Component[] getSubSectionMenuComponents() {
-        Component[] result = new Component[0];
-        //result[0] = getAddCohortButton();
-        return result;
+        return new Component[0];
     }
 
     @Override

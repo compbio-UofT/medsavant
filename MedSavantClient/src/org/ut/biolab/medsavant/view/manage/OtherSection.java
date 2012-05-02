@@ -39,7 +39,7 @@ public class OtherSection extends SectionView {
     public SubSectionView[] getSubSections() {
         SubSectionView[] pages;
         pages = new SubSectionView[1];
-        pages[0] = new IntervalPage(this);
+        pages[0] = new RegionPage(this);
         return pages;
     }
 

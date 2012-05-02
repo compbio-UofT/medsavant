@@ -50,7 +50,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
     private SplitScreenView panel;
     private boolean updateRequired = false;
 
-    public ReferenceGenomePage(SectionView parent){
+    public ReferenceGenomePage(SectionView parent) {
         super(parent);
         ReferenceController.getInstance().addReferenceListener(this);
     }
@@ -69,7 +69,8 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
     }
 
     @Override
-    public void viewDidLoad() {}
+    public void viewDidLoad() {
+    }
 
     @Override
     public void viewDidUnload() {

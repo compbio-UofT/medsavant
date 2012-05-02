@@ -40,7 +40,8 @@ import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.importing.BEDFormat;
 import org.ut.biolab.medsavant.importing.FileFormat;
-import org.ut.biolab.medsavant.importfile.ImportFilePanel;
+import org.ut.biolab.medsavant.importing.ImportFilePanel;
+import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -48,7 +49,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Andrew
  */
-public class IntervalWizard extends WizardDialog {
+public class RegionWizard extends WizardDialog {
     
     private static final String PAGENAME_NAME = "List Name";
     private static final String PAGENAME_CHOOSE = "Choose File";
@@ -61,8 +62,8 @@ public class IntervalWizard extends WizardDialog {
     private FileFormat fileFormat;
     private int numHeaderLines;
     
-    public IntervalWizard() {
-        setTitle("Region Lists Wizard");
+    public RegionWizard() {
+        super(MedSavantFrame.getInstance(), "Region Lists Wizard", true);
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
         
         //add pages
@@ -90,8 +91,7 @@ public class IntervalWizard extends WizardDialog {
         
         pack();
         setResizable(false);
-        setLocationRelativeTo(null);
-        setVisible(true);
+        setLocationRelativeTo(MedSavantFrame.getInstance());
     }
     
     private AbstractWizardPage getNamePage() {
@@ -208,7 +208,7 @@ public class IntervalWizard extends WizardDialog {
                             setCurrentPage(PAGENAME_COMPLETE);
                         } catch (Exception ex) {
                             DialogUtils.displayException("Error", "There was an error while trying to create your list. ", ex);
-                            Logger.getLogger(IntervalWizard.class.getName()).log(Level.SEVERE, null, ex);
+                            Logger.getLogger(RegionWizard.class.getName()).log(Level.SEVERE, null, ex);
                             setVisible(false);
                             dispose();
                         }
@@ -244,7 +244,7 @@ public class IntervalWizard extends WizardDialog {
             }
             return valid;
         } catch (Exception ex) {
-            Logger.getLogger(IntervalWizard.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(RegionWizard.class.getName()).log(Level.SEVERE, null, ex);
             DialogUtils.displayException("Error", "Error trying to create interval list", ex);
             return false;
         }

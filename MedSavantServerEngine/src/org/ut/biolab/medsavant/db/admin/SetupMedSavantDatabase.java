@@ -384,7 +384,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
 
     private static void createDatabase(Connection c, String dbname) throws SQLException {
-        LOG.log(Level.INFO, "CREATE DATABASE %s", dbname);
+        LOG.log(Level.INFO, "CREATE DATABASE {}", dbname);
 
         //TODO: should check if the db exists already
         c.createStatement().execute("CREATE DATABASE " + dbname);

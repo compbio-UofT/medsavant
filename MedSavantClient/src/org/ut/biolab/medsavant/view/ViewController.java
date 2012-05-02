@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.ut.biolab.medsavant.view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -25,23 +24,21 @@ import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.logging.Level;
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.MatteBorder;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.listener.ProjectListener;
-import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.view.manage.ProjectWizard;
 import org.ut.biolab.medsavant.view.menu.Menu;
-import org.ut.biolab.medsavant.view.util.PeekingPanel;
-import org.ut.biolab.medsavant.view.menu.TopMenu;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.PaintUtil;
+import org.ut.biolab.medsavant.view.util.PeekingPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -49,6 +46,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 public class ViewController extends JPanel {
+    private static final Log LOG = LogFactory.getLog(ViewController.class);
 
     private SectionHeader sectionHeader;
     private Menu menu;
@@ -155,7 +153,7 @@ public class ViewController extends JPanel {
 
     //TODO: does this do anything really?
     void setProject(String projectname) {
-        ClientLogger.log(ViewController.class, "Setting project to : " + projectname);
+        LOG.info("Setting project to : " + projectname);
     }
 
     void clearMenu() {
@@ -306,6 +304,7 @@ public class ViewController extends JPanel {
                     projectDropDown.setEnabled(true);
                     projectDropDown.addActionListener(new ActionListener() {
 
+                        @Override
                         public void actionPerformed(ActionEvent e) {
                             String currentName = ProjectController.getInstance().getCurrentProjectName();
                             if (!ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem())) {
@@ -320,17 +319,21 @@ public class ViewController extends JPanel {
             }
         }
 
+        @Override
         public void projectAdded(String projectName) {
             refreshProjectDropDown();
         }
 
+        @Override
         public void projectRemoved(String projectName) {
             refreshProjectDropDown();
         }
 
+        @Override
         public void projectChanged(String projectName) {
         }
 
+        @Override
         public void projectTableRemoved(int projid, int refid) {
             refreshProjectDropDown();
         }

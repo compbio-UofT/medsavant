@@ -38,7 +38,6 @@ public interface RegionQueryUtilAdapter extends Remote {
     public void removeRegionList(String sid,int regionSetId) throws SQLException, RemoteException;
     public List<RegionSet> getRegionSets(String sid) throws SQLException, RemoteException;
     public int getNumberRegions(String sid, int regionSetId) throws SQLException, RemoteException;
-    public List<String> getRegionNamesInRegionSet(String sid, int regionSetId, int limit) throws SQLException, RemoteException;
     public List<GenomicRegion> getRegionsInRegionSet(String sid, int regionSetId) throws SQLException, RemoteException;
     public List<BEDRecord> getBedRegionsInRegionSet(String sid, int regionSetId, int limit) throws NonFatalDatabaseException, SQLException, RemoteException;
     public boolean listNameExists(String sid, String name) throws SQLException, RemoteException;

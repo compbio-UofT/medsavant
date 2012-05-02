@@ -1,3 +1,19 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package org.ut.biolab.medsavant.view;
 
 import java.awt.Dimension;
@@ -7,9 +23,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.log.ClientLogger;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -21,6 +40,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 class ServerStatusPanel extends JPanel implements LoginListener {
+    private static final Log LOG = LogFactory.getLog(ServerStatusPanel.class);
 
     private ServerStateChecker serverStateChecker;
     private final JPanel lastServerCheckInLabel;
@@ -44,6 +64,7 @@ class ServerStatusPanel extends JPanel implements LoginListener {
         setState(ServerState.NOT_CONNECTED);
     }
 
+    @Override
     public void loginEvent(LoginEvent evt) {
         if (evt.isLoggedIn()) {
             if (serverStateChecker != null) {
@@ -58,8 +79,7 @@ class ServerStatusPanel extends JPanel implements LoginListener {
     }
 
     private synchronized void setState(ServerState serverState) {
-
-        ClientLogger.log(ServerStatusPanel.class, "Server state is " + serverState);
+        LOG.info("Server state is " + serverState);
 
         if (lastServerCheckInLabel != null) {
             ImageIcon im = null;

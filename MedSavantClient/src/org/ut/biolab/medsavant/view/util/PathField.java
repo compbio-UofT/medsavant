@@ -1,12 +1,25 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.util;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -19,60 +32,57 @@ import javax.swing.JTextField;
  */
 public class PathField extends JPanel {
 
-    JTextField f;
-    JButton b;
-    JFileChooser fc;
+    JTextField field;
+    JButton button;
+    boolean saving;
+    boolean directoriesOnly;
 
-     public PathField(final int JFileChooserDialogType) {
-         this(JFileChooserDialogType,false);
+     public PathField(int chooserType) {
+         this(chooserType, false);
      }
 
-    public PathField(final int JFileChooserDialogType, boolean directoriesOnly) {
-        f = new JTextField();
-        b = new JButton("...");
-        fc = new JFileChooser();
-        f.setMaximumSize(new Dimension(9999,22));
-        if (JFileChooserDialogType == JFileChooser.SAVE_DIALOG) {
-            fc.setDialogTitle("Save File");
-            f.setToolTipText("Path to output file");
-            b.setToolTipText("Set output file");
+    public PathField(int type, boolean directoriesOnly) {
+        field = new JTextField();
+        button = new JButton("...");
+        saving = type == JFileChooser.SAVE_DIALOG;
+        this.directoriesOnly = directoriesOnly;
+        field.setMaximumSize(new Dimension(9999,22));
+        
+        if (saving) {
+            field.setToolTipText("Path to output file");
+            button.setToolTipText("Set output file");
         } else {
-            fc.setDialogTitle("Open File");
-            f.setToolTipText("Path to input file");
-            b.setToolTipText("Choose input file");
+            field.setToolTipText("Path to input file");
+            button.setToolTipText("Choose input file");
         }
-        if(directoriesOnly){
-            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        }
-        this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        this.add(f);
-        this.add(b);
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        add(field);
+        add(button);
 
-        b.addActionListener(new ActionListener() {
+        button.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                fc.setDialogType(JFileChooserDialogType);
-                int result = fc.showDialog(null, null);
-                if (result == JFileChooser.CANCEL_OPTION || result == JFileChooser.ERROR_OPTION) {
-                    return;
+                File f;
+                if (saving) {
+                    f = DialogUtils.chooseFileForSave(button.getToolTipText(), field.getText());
+                } else {
+                    f = DialogUtils.chooseFileForOpen(button.getToolTipText(), null, null);
                 }
-                setPath(fc.getSelectedFile().getAbsolutePath());
+                setPath(f.getAbsolutePath());
             }
         });
     }
 
     public String getPath() {
-        return this.f.getText();
+        return field.getText();
     }
 
     public void setPath(String s) {
-        this.f.setText(s);
+        field.setText(s);
     }
 
-    public JFileChooser getFileChooser() {
-        return this.fc;
+    public JTextField getPathArea() {
+        return field;
     }
-    
-    public JTextField getPathArea() { return f; }
 }

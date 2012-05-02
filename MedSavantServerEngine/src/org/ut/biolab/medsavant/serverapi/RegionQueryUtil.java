@@ -27,14 +27,14 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.FunctionCall;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.RegionSetTableSchema;
@@ -58,6 +58,7 @@ import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
  * @author Andrew
  */
 public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implements RegionQueryUtilAdapter {
+    private static final Log LOG = LogFactory.getLog(RegionQueryUtil.class);
 
     private static RegionQueryUtil instance;
 
@@ -96,8 +97,8 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
         try {
             File f = FileServer.getInstance().sendFile(fileStream);
             i = ImportDelimitedFile.getFileIterator(f.getAbsolutePath(), delim, numHeaderLines, fileFormat);
-        } catch (IOException ex) {
-            Logger.getLogger(RegionQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException x) {
+            LOG.error("Error importing file.", x);
             return;
         }
 
@@ -175,25 +176,6 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
     }
 
     @Override
-    public List<String> getRegionNamesInRegionSet(String sid, int regionSetId, int limit) throws SQLException {
-
-        TableSchema table = MedSavantDatabase.RegionsetmembershipTableSchema;
-
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addAllColumns();
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(RegionSetMembershipTableSchema.COLUMNNAME_OF_REGION_SET_ID), regionSetId));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + limit);
-
-        List<String> result = new ArrayList<String>();
-        while(rs.next()){
-            result.add(rs.getString(RegionSetMembershipTableSchema.COLUMNNAME_OF_DESCRIPTION));
-        }
-        return result;
-    }
-
-    @Override
     public List<GenomicRegion> getRegionsInRegionSet(String sid, int regionSetId) throws SQLException {
 
         TableSchema table = MedSavantDatabase.RegionsetmembershipTableSchema;
@@ -208,8 +190,10 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
         List<GenomicRegion> result = new ArrayList<GenomicRegion>();
         while(rs.next()){
             result.add(new GenomicRegion(
+                    rs.getString(RegionSetMembershipTableSchema.COLUMNNAME_OF_DESCRIPTION),
                     rs.getString(RegionSetMembershipTableSchema.COLUMNNAME_OF_CHROM),
-                    new Range(rs.getDouble(RegionSetMembershipTableSchema.COLUMNNAME_OF_START), rs.getDouble(RegionSetMembershipTableSchema.COLUMNNAME_OF_END))));
+                    rs.getInt(RegionSetMembershipTableSchema.COLUMNNAME_OF_START),
+                    rs.getInt(RegionSetMembershipTableSchema.COLUMNNAME_OF_END)));
         }
         return result;
     }
