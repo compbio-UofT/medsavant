@@ -20,14 +20,28 @@ public class MedSavantServerUnicastRemoteObject extends UnicastRemoteObject {
     }
     */
 
-    private static final int CONNECT_PORT = 46802;
-    private static final int EXPORT_PORT = 46803;
+    private static int CONNECT_PORT = 36800;
+    private static int EXPORT_PORT = 36801;
 
     public MedSavantServerUnicastRemoteObject() throws java.rmi.RemoteException {
         super(EXPORT_PORT);
     }
 
-    public int getPort() {
+    public static int getListenPort() {
         return CONNECT_PORT;
     }
+
+    public static int getExportPort() {
+        return EXPORT_PORT;
+    }
+
+    public static void setListenPort(int port) {
+        CONNECT_PORT = port;
+    }
+
+    public static void setExportPort(int port) {
+        EXPORT_PORT = port;
+    }
+
 }
+
