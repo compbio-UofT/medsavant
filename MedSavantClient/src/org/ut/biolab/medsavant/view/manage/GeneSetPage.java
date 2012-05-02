@@ -29,6 +29,8 @@ import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.model.Chromosome;
+import org.ut.biolab.medsavant.model.Gene;
+import org.ut.biolab.medsavant.model.GeneSet;
 import org.ut.biolab.medsavant.model.Reference;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.NewReferenceDialog;
@@ -56,7 +58,7 @@ public class GeneSetPage extends SubSectionView {
 
     @Override
     public String getName() {
-        return "Standard Genes";
+        return "Standard Gene Sets";
     }
 
     @Override
@@ -77,7 +79,7 @@ public class GeneSetPage extends SubSectionView {
 
     public void setPanel() {
         panel = new SplitScreenView(
-                new SimpleDetailedListModel("Genes") {
+                new SimpleDetailedListModel("Gene Sets") {
                     @Override
                     public List getData() throws Exception {
                         return MedSavantClient.GeneSetAdapter.getGeneSets(LoginController.sessionId);
@@ -96,37 +98,43 @@ public class GeneSetPage extends SubSectionView {
      * REFERENCE GENOMES DETAILED VIEW
      */
     private static class GenesDetailedView extends DetailedTableView {
-
+        private GeneSet selectedSet = null;
+        
         public GenesDetailedView() {
-            super("Genes", "Multiple gene sets (%d)", new String[] { "Chromosome", "Start", "End", "Name" });
+            super("Gene Sets", "Multiple gene sets (%d)", new String[] { "Name", "Chromosome", "Start", "End", "Coding Start", "Coding End" });
+        }
+
+        @Override
+        public void setSelectedItem(Object[] item) {
+            selectedSet = (GeneSet)item[0];
+            super.setSelectedItem(item);
         }
 
         @Override
         public SwingWorker createWorker() {
-            return new SwingWorker<List<Chromosome>, Void>() {
+            return new SwingWorker<List<Gene>, Void>() {
 
                 @Override
-                protected List<Chromosome> doInBackground() throws Exception {
-                    return MedSavantClient.ChromosomeQueryUtilAdapter.getContigs(LoginController.sessionId, 0);
+                protected List<Gene> doInBackground() throws Exception {
+                    return MedSavantClient.GeneSetAdapter.getGenes(LoginController.sessionId, selectedSet);
                 }
 
                 @Override
                 protected void done() {
                     //List<Object[]> list = new ArrayList<Object[]>();
-                    Object[][] list = null;
+                    Object[][] data = null;
                     try {
-                        List<Chromosome> result = get();
-                        list = new Object[result.size()][];
+                        List<Gene> result = get();
+                        data = new Object[result.size()][];
                         for (int i = 0; i < result.size(); i++) {
-                            Chromosome c = result.get(i);
-                            list[i] = new Object[] { c.getName(), c.getLength(), c.getCentromerepos() };
+                            Gene g = result.get(i);
+                            data[i] = new Object[] { g.getName(), g.getChrom(), g.getStart(), g.getEnd(), g.getCodingStart(), g.getCodingEnd() };
                         }
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(ReferenceGenomePage.class.getName()).log(Level.SEVERE, null, ex);
                     } catch (ExecutionException ex) {
                         Logger.getLogger(ReferenceGenomePage.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    setData(list);
+                    setData(data);
                 }
             };
         }

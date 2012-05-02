@@ -1163,8 +1163,8 @@ public class MedSavantDatabase {
         new ColumnDef("chrom", ColumnType.VARCHAR, 30, null, true, false),
         new ColumnDef.Integer("start"),
         new ColumnDef.Integer("end"),
-        new ColumnDef.Integer("thickStart"),
-        new ColumnDef.Integer("thickEnd"),
+        new ColumnDef.Integer("codingStart"),
+        new ColumnDef.Integer("codingEnd"),
         new ColumnDef("exonStarts", ColumnType.VARCHAR, 9000),
         new ColumnDef("exonEnds", ColumnType.VARCHAR, 9000)
     ) {

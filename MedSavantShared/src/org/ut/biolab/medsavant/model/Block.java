@@ -18,32 +18,16 @@ package org.ut.biolab.medsavant.model;
 import java.io.Serializable;
 
 /**
- * Class which describes a particular set of genes (e.g. hg18/RefSeq).
+ * Dirt-simple class which stores information about an exon.
  *
  * @author tarkvara
  */
-public class GeneSet implements Serializable {
-    /** The associated genome (e.g. hg18) */
-    private final String genome;
+public class Block implements Serializable {
+    private final int start;
+    private final int end;
 
-    /** The type of gene set (e.g. RefSeq) */
-    private final String type;
-    
-    public GeneSet(String genome, String type) {
-        this.genome = genome;
-        this.type = type;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s – %s Genes", genome, type);
-    }
-    
-    public String getGenome() {
-        return genome;
-    }
-    
-    public String getType() {
-        return type;
+    public Block(int start, int end) {
+        this.start = start;
+        this.end = end;
     }
 }

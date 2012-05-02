@@ -16,6 +16,9 @@
 
 package org.ut.biolab.medsavant.serverapi;
 
+import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.dbspec.Table;
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,8 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
+import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
+import org.ut.biolab.medsavant.model.Block;
+import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.GeneSet;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 
 
@@ -59,5 +66,25 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         return result;
+    }
+    
+    @Override
+    public List<Gene> getGenes(String sessID, GeneSet geneSet) throws SQLException {
+
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where("genome", geneSet.getGenome(), "type", geneSet.getType()).select("name", "chrom", "start", "end", "codingStart", "codingEnd");
+
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
+
+        List<Gene> result = new ArrayList<Gene>();
+        while (rs.next()) {
+            result.add(new Gene(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), rs.getInt(6)));
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Block> getBlocks(String sessID, Gene gene) throws SQLException, RemoteException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -20,6 +20,8 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.ut.biolab.medsavant.model.Block;
+import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.GeneSet;
 
 
@@ -29,5 +31,19 @@ import org.ut.biolab.medsavant.model.GeneSet;
  * @author tarkvara
  */
 public interface GeneSetAdapter extends Remote {
+    /**
+     * Get a list of all available gene sets.
+     */
     public List<GeneSet> getGeneSets(String sessID) throws SQLException, RemoteException;
+
+    /**
+     * Get a list of all genes for the given set.
+     */
+    public List<Gene> getGenes(String sessID, GeneSet geneSet) throws SQLException, RemoteException;
+    
+    /**
+     * Get all blocks associated with the given gene.  Not currently presented to the user in any fashion.
+     */
+    public List<Block> getBlocks(String sessID, Gene gene) throws SQLException, RemoteException;
+    
 }

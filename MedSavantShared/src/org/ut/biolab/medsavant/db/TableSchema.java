@@ -27,6 +27,8 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
+
 
 /**
  *
@@ -44,6 +46,7 @@ public class TableSchema implements Serializable {
     private final LinkedHashMap<String, String> aliasToDBName;
 
     private final DbTable table;
+    protected SelectQuery selectQuery;
 
     public TableSchema(DbTable t) {
         this.table = t;
@@ -173,10 +176,36 @@ public class TableSchema implements Serializable {
      * For this table, generate the query which is appropriate for retrieving a list of table entities.
      * By default, this just pulls in a query for the first column.
      */
-    public SelectQuery getListQuery() {
-        SelectQuery query = new SelectQuery(true);
-        query.addFromTable(table);
-        query.addColumns(getDBColumn(0));
-        return query;
+    public synchronized SelectQuery getListQuery() {
+        selectQuery = new SelectQuery(true);
+        selectQuery.addFromTable(table);
+        selectQuery.addColumns(getDBColumn(0));
+        return selectQuery;
+    }
+
+    public synchronized SelectQuery select(String... colNames) {
+        if (selectQuery == null) {
+            selectQuery = new SelectQuery(false);
+            selectQuery.addFromTable(table);
+        }
+        for (String colName: colNames) {
+            selectQuery.addColumns(table.findColumn(colName));
+        }
+        return selectQuery;
+    }
+
+    /**
+     * Create a query object which will match the given values of the given columns.
+     *
+     * @param wheres pairs consisting of column name followed by value
+     * @return <code>this</code>
+     */
+    public synchronized TableSchema where(Object... wheres) {
+        selectQuery = new SelectQuery(false);
+        selectQuery.addFromTable(table);
+        for (int i = 0; i < wheres.length; i += 2) {
+            selectQuery.addCondition(BinaryConditionMS.equalTo(table.findColumn((String)wheres[i]), wheres[i + 1]));
+        }
+        return this;
     }
 }

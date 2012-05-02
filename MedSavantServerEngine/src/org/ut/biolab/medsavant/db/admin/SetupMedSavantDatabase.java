@@ -401,8 +401,8 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         
         try {
             // bin	name	chrom	strand	txStart	txEnd	cdsStart	cdsEnd	exonCount	exonStarts	exonEnds	score	name2	cdsStartStat	cdsEndStat	exonFrames
-            loader.loadGenes(sessID, NetworkUtils.getKnownGoodURL("http://savantbrowser.com/data/hg18/hg18.refGene.gz").toURI(), "hg18", "RefSeq", null, null, "chrom", null, "start", "end", "thickStart", "thickEnd", null, "exonStarts", "exonEnds", null, "name");
-            loader.loadGenes(sessID, NetworkUtils.getKnownGoodURL("http://savantbrowser.com/data/hg19/hg19.refGene.gz").toURI(), "hg19", "RefSeq", null, null, "chrom", null, "start", "end", "thickStart", "thickEnd", null, "exonStarts", "exonEnds", null, "name");
+            loader.loadGenes(sessID, NetworkUtils.getKnownGoodURL("http://savantbrowser.com/data/hg18/hg18.refGene.gz").toURI(), "hg18", "RefSeq", null, null, "chrom", null, "start", "end", "codingStart", "codingEnd", null, "exonStarts", "exonEnds", null, "name");
+            loader.loadGenes(sessID, NetworkUtils.getKnownGoodURL("http://savantbrowser.com/data/hg19/hg19.refGene.gz").toURI(), "hg19", "RefSeq", null, null, "chrom", null, "start", "end", "codingStart", "codingEnd", null, "exonStarts", "exonEnds", null, "name");
         } catch (IOException iox) {
             throw new RemoteException("Error populating gene tables.", iox);
         } catch (URISyntaxException ignored) {
