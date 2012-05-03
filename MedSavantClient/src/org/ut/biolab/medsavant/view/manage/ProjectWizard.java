@@ -468,8 +468,7 @@ public class ProjectWizard extends WizardDialog {
         addRefButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                NewReferenceDialog d = new NewReferenceDialog(MedSavantFrame.getInstance(),true);
-                d.setVisible(true);
+                new NewReferenceDialog().setVisible(true);
                 refreshReferencePanel(p);
             }
         });

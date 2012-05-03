@@ -4,6 +4,7 @@
  */
 package org.ut.biolab.medsavant.view.manage;
 
+import org.ut.biolab.medsavant.view.regions.RegionPage;
 import org.ut.biolab.medsavant.view.genetics.*;
 
 import java.awt.Component;

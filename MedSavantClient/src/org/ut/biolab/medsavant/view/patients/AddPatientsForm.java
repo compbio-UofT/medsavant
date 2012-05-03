@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.dialog;
+package org.ut.biolab.medsavant.view.patients;
 
 import java.awt.Color;
 import java.io.BufferedReader;
@@ -363,7 +363,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11));
         jLabel1.setText("Add Single Patient:");
 
-        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11));
         jLabel2.setText("Batch Add:");
 
         jButton2.setText("Export CSV");
@@ -391,7 +391,7 @@ public class AddPatientsForm extends javax.swing.JDialog {
 
         progressLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 
-        progressMessage.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        progressMessage.setFont(new java.awt.Font("Tahoma", 1, 11));
         progressMessage.setText(" ");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());

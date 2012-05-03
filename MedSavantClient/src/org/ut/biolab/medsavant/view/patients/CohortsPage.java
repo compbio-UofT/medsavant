@@ -27,7 +27,6 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.view.dialog.CohortWizard;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;

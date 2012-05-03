@@ -1,11 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.manage;
 
-import org.ut.biolab.medsavant.view.dialog.NewUserDialog;
-import com.jidesoft.utils.SwingWorker;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -18,6 +28,9 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import com.jidesoft.utils.SwingWorker;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
@@ -27,8 +40,8 @@ import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
+import org.ut.biolab.medsavant.view.dialog.NewUserDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
-import org.ut.biolab.medsavant.view.list.DetailedListModel;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
@@ -62,10 +75,6 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         }
 
         @Override
-        public void editItems(Object[] results) {
-        }
-
-        @Override
         public void deleteItems(List<Object[]> results) {
             int nameIndex = 0;
 
@@ -93,14 +102,17 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         }
     }
 
+    @Override
     public void userAdded(String name) {
         panel.refresh();
     }
 
+    @Override
     public void userRemoved(String name) {
         panel.refresh();
     }
 
+    @Override
     public void userChanged(String name) {
         panel.refresh();
     }
@@ -264,6 +276,7 @@ public class UserManagementPage extends SubSectionView implements UserListener {
         JButton button = new JButton("Add User");
         button.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 NewUserDialog npd = new NewUserDialog(MedSavantFrame.getInstance(), true);
                 npd.setVisible(true);

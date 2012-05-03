@@ -423,7 +423,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected List<BEDRecord> doInBackground() throws Exception {
-                return MedSavantClient.RegionQueryUtilAdapter.getBedRegionsInRegionSet(LoginController.sessionId, geneList.getId(), limit);
+                return MedSavantClient.RegionQueryUtilAdapter.getBedRegionsInRegionSet(LoginController.sessionId, geneList.getID(), limit);
             }
 
             @Override

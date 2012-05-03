@@ -15,19 +15,20 @@
  */
 package org.ut.biolab.medsavant.view.manage;
 
-import java.awt.event.MouseEvent;
-import java.sql.SQLException;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.MouseEvent;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
 import java.util.List;
 import javax.swing.Box;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -53,6 +54,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 public class ProjectManagementPage extends SubSectionView implements ProjectListener {
+    private static final Log LOG = LogFactory.getLog(ProjectManagementPage.class);
 
     private static class ProjectDetailedListEditor extends DetailedListEditor {
 
@@ -94,9 +96,9 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                         }
                     } catch (SQLException ex) {
                         ClientMiscUtils.checkSQLException(ex);
-                        Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.error("Error fetching projects.", ex);
                     } catch (RemoteException ex) {
-                        Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.error("Error fetching projects.", ex);
                     }
         }
 
@@ -129,6 +131,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         }
     }
 
+    @Override
     public void projectAdded(String projectName) {
         if (panel != null) {
             /*try {
@@ -268,9 +271,8 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                     List<ProjectDetails> list = (List)get();
                     setDetailsList(list);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (ExecutionException ex) {
-                    Logger.getLogger(ProjectManagementPage.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error fetching project details.", ex);
                 }
             }
         }

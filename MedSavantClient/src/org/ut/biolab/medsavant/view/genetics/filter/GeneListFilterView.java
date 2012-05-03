@@ -76,7 +76,7 @@ class GeneListFilterView extends FilterView {
 
     public final void applyFilter(int geneListId){
         for (int i = 0; i < b.getItemCount(); i++){
-            if (b.getItemAt(i) instanceof RegionSet && ((RegionSet)b.getItemAt(i)).getId() == geneListId){
+            if (b.getItemAt(i) instanceof RegionSet && ((RegionSet)b.getItemAt(i)).getID() == geneListId){
                 b.setSelectedIndex(i);
                 al.actionPerformed(new ActionEvent(this, 0, null));
                 return;
@@ -132,13 +132,13 @@ class GeneListFilterView extends FilterView {
                         }
 
                         RegionSet regionSet = (RegionSet) b.getSelectedItem();
-                        appliedId = regionSet.getId();
+                        appliedId = regionSet.getID();
 
                         try {
 
                             List<GenomicRegion> regions = MedSavantClient.RegionQueryUtilAdapter.getRegionsInRegionSet(
                                     LoginController.sessionId,
-                                    regionSet.getId());
+                                    regionSet.getID());
                             Map<String, List<Range>> rangeMap = GenomicRegion.mergeGenomicRegions(regions);
                             Condition[] results = new Condition[rangeMap.size()];
                             int i = 0;

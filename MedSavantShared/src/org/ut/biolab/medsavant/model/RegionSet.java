@@ -20,7 +20,7 @@ public class RegionSet implements Serializable {
         this.name = name;
     }
     
-    public int getId(){
+    public int getID(){
         return id;
     }
     

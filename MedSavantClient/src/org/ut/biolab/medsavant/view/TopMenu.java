@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.ut.biolab.medsavant.view.menu;
+package org.ut.biolab.medsavant.view;
 
 import com.jidesoft.swing.JideSplitButton;
 import java.awt.BorderLayout;

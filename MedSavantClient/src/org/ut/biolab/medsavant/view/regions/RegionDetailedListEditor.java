@@ -14,17 +14,14 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.manage;
+package org.ut.biolab.medsavant.view.regions;
 
 import java.util.List;
-import javax.swing.JOptionPane;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.RegionSet;
-import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
-import org.ut.biolab.medsavant.view.dialog.RegionWizard;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -45,12 +42,18 @@ class RegionDetailedListEditor extends DetailedListEditor {
     }
 
     @Override
-    public void addItems() {
-        new RegionWizard().setVisible(true);
+    public boolean doesImplementImporting() {
+        return true;
     }
 
     @Override
-    public void editItems(Object[] results) {
+    public void addItems() {
+        new RegionWizard(false).setVisible(true);
+    }
+
+    @Override
+    public void importItems() {
+        new RegionWizard(true).setVisible(true);
     }
 
     @Override
@@ -59,17 +62,13 @@ class RegionDetailedListEditor extends DetailedListEditor {
         int result;
 
         if (items.size() == 1) {
-            String name = ((RegionSet) items.get(0)[0]).getName();
-            result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                    "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
-                    "Confirm", JOptionPane.YES_NO_OPTION);
+            String name = ((RegionSet)items.get(0)[0]).getName();
+            result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove %s?\nThis cannot be undone.", name);
         } else {
-            result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                    "Are you sure you want to remove these " + items.size() + " lists?\nThis cannot be undone.",
-                    "Confirm", JOptionPane.YES_NO_OPTION);
+            result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove these %d lists?\nThis cannot be undone.", items.size());
         }
 
-        if (result == JOptionPane.YES_OPTION) {
+        if (result == DialogUtils.YES) {
 
             final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
                     "Removing Region List(s)",
@@ -82,17 +81,17 @@ class RegionDetailedListEditor extends DetailedListEditor {
 
                     for (Object[] v : items) {
                         String listName = ((RegionSet) v[0]).getName();
-                        int listId = ((RegionSet) v[0]).getId();
+                        int listID = ((RegionSet) v[0]).getID();
                         try {
-                            MedSavantClient.RegionQueryUtilAdapter.removeRegionList(LoginController.sessionId, listId);
+                            MedSavantClient.RegionQueryUtilAdapter.removeRegionList(LoginController.sessionId, listID);
                         } catch (Exception ex) {
                             numCouldntRemove++;
-                            DialogUtils.displayErrorMessage("Could remove " + listName + ".", ex);
+                            DialogUtils.displayErrorMessage("Could not remove " + listName + ".", ex);
                         }
                     }
                     dialog.close();
                     if (numCouldntRemove != items.size()) {
-                        DialogUtils.displayMessage("Successfully removed " + (items.size()) + " list(s)");
+                        DialogUtils.displayMessage("Successfully removed %d list(s)", items.size());
                     }
                 }
             };
@@ -100,6 +99,4 @@ class RegionDetailedListEditor extends DetailedListEditor {
             dialog.setVisible(true);
         }
     }
-
-
 }

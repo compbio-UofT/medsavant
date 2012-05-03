@@ -73,12 +73,13 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
 
 
     @Override
-    public void addRegionList(String sid,String geneListName, int genomeId,  RemoteInputStream fileStream, char delim, FileFormat fileFormat, int numHeaderLines) throws NonFatalDatabaseException, SQLException, RemoteException {
+    public void addRegionList(String sid,String geneListName, int genomeId,  RemoteInputStream fileStream, char delim, FileFormat fileFormat, int numHeaderLines) throws IOException, SQLException, RemoteException {
 
         Connection conn = ConnectionController.connectPooled(sid);
         TableSchema regionSetTable = MedSavantDatabase.RegionsetTableSchema;
         TableSchema regionMemberTable = MedSavantDatabase.RegionsetmembershipTableSchema;
 
+        // TODO: Since we're using the MyISAM engine for this table, rolling back has no effect.
         conn.setAutoCommit(false);
 
         //add region set
@@ -93,14 +94,8 @@ public class RegionQueryUtil extends MedSavantServerUnicastRemoteObject implemen
         int regionSetId = rs.getInt(1);
 
         //prepare
-        Iterator<String[]> i = null;
-        try {
-            File f = FileServer.getInstance().sendFile(fileStream);
-            i = ImportDelimitedFile.getFileIterator(f.getAbsolutePath(), delim, numHeaderLines, fileFormat);
-        } catch (IOException x) {
-            LOG.error("Error importing file.", x);
-            return;
-        }
+        File f = FileServer.getInstance().sendFile(fileStream);
+        Iterator<String[]> i = ImportDelimitedFile.getFileIterator(f.getAbsolutePath(), delim, numHeaderLines, fileFormat);
 
         //add regions
         while (i.hasNext() && !Thread.currentThread().isInterrupted()){

@@ -17,11 +17,11 @@ package org.ut.biolab.medsavant.view.manage;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -30,7 +30,6 @@ import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.Reference;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
-import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.NewReferenceDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedTableView;
@@ -46,6 +45,7 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author Andrew
  */
 public class ReferenceGenomePage extends SubSectionView implements ReferenceListener {
+    private static final Log LOG = LogFactory.getLog(ReferenceGenomePage.class);
 
     private SplitScreenView panel;
     private boolean updateRequired = false;
@@ -153,9 +153,8 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
                             list[i] = new Object[] { c.getName(), c.getLength(), c.getCentromerepos() };
                         }
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(ReferenceGenomePage.class.getName()).log(Level.SEVERE, null, ex);
                     } catch (ExecutionException ex) {
-                        Logger.getLogger(ReferenceGenomePage.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.error("Error fetching reference genomes.", ex);
                     }
                     setData(list);
                 }
@@ -182,12 +181,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
         @Override
         public void addItems() {
-            NewReferenceDialog npd = new NewReferenceDialog(MedSavantFrame.getInstance(), true);
-            npd.setVisible(true);
-        }
-
-        @Override
-        public void editItems(Object[] results) {
+            new NewReferenceDialog().setVisible(true);
         }
 
         @Override
@@ -197,16 +191,12 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
 
             if (items.size() == 1) {
                 String name = ((Reference) items.get(0)[0]).getName();
-                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                             "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
-                             "Confirm", JOptionPane.YES_NO_OPTION);
+                result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove %s?\nThis cannot be undone.", name);
             } else {
-                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                             "Are you sure you want to remove these " + items.size() + " references?\nThis cannot be undone.",
-                             "Confirm", JOptionPane.YES_NO_OPTION);
+                result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove these %d references?\nThis cannot be undone.", items.size());
             }
 
-            if (result == JOptionPane.YES_OPTION) {
+            if (result == DialogUtils.YES) {
                 int numCouldntRemove = 0;
                 for (Object[] v : items) {
                     String refName = ((Reference)v[0]).getName();
@@ -214,7 +204,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
                 }
 
                 if (items.size() != numCouldntRemove) {
-                    DialogUtils.displayMessage("Successfully removed " + (items.size()-numCouldntRemove) + " reference(s)");
+                    DialogUtils.displayMessage("Successfully removed %d reference(s)", items.size() - numCouldntRemove);
                 }
             }
         }

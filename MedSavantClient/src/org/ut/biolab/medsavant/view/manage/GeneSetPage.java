@@ -18,29 +18,23 @@ package org.ut.biolab.medsavant.view.manage;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.GeneSet;
-import org.ut.biolab.medsavant.model.Reference;
-import org.ut.biolab.medsavant.view.MedSavantFrame;
-import org.ut.biolab.medsavant.view.dialog.NewReferenceDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedTableView;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
-import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 
 /**
@@ -48,6 +42,7 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author tarkvara
  */
 public class GeneSetPage extends SubSectionView {
+    private static final Log LOG = LogFactory.getLog(GeneSetPage.class);
 
     private SplitScreenView panel;
     private boolean updateRequired = false;
@@ -87,7 +82,7 @@ public class GeneSetPage extends SubSectionView {
                     
                 },
                 new GenesDetailedView(),
-                new GenesDetailedListEditor());
+                new DetailedListEditor());
     }
 
     public void update(){
@@ -132,69 +127,11 @@ public class GeneSetPage extends SubSectionView {
                         }
                     } catch (InterruptedException ex) {
                     } catch (ExecutionException ex) {
-                        Logger.getLogger(ReferenceGenomePage.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.error("Error loading gene sets.", ex);
                     }
                     setData(data);
                 }
             };
         }
     }
-
-
-
-    /*
-     * REFERENCE GENOMES DETAILED LIST EDITOR
-     */
-    private static class GenesDetailedListEditor extends DetailedListEditor {
-
-        @Override
-        public boolean doesImplementAdding() {
-            return true;
-        }
-
-        @Override
-        public boolean doesImplementDeleting() {
-            return true;
-        }
-
-        @Override
-        public void addItems() {
-            NewReferenceDialog npd = new NewReferenceDialog(MedSavantFrame.getInstance(), true);
-            npd.setVisible(true);
-        }
-
-        @Override
-        public void editItems(Object[] results) {
-        }
-
-        @Override
-        public void deleteItems(List<Object[]> items) {
-
-            int result;
-
-            if (items.size() == 1) {
-                String name = ((Reference) items.get(0)[0]).getName();
-                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                             "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
-                             "Confirm", JOptionPane.YES_NO_OPTION);
-            } else {
-                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                             "Are you sure you want to remove these " + items.size() + " references?\nThis cannot be undone.",
-                             "Confirm", JOptionPane.YES_NO_OPTION);
-            }
-
-            if (result == JOptionPane.YES_OPTION) {
-                int numCouldntRemove = 0;
-                for (Object[] v : items) {
-                    String refName = ((Reference)v[0]).getName();
-                    ReferenceController.getInstance().removeReference(refName);
-                }
-
-                if (items.size() != numCouldntRemove) {
-                    DialogUtils.displayMessage("Successfully removed " + (items.size()-numCouldntRemove) + " reference(s)");
-                }
-            }
-        }
-    }
-
 }

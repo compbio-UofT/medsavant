@@ -25,8 +25,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.model.Chromosome;
@@ -47,7 +48,7 @@ import org.ut.biolab.medsavant.util.NetworkUtils;
  * @author mfiume
  */
 public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject implements SetupAdapter {
-    private static final Logger LOG = Logger.getLogger(SetupMedSavantDatabase.class.getName());
+    private static final Log LOG = LogFactory.getLog(SetupMedSavantDatabase.class);
 
     private static SetupMedSavantDatabase instance;
 
@@ -288,7 +289,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                 + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
         String s = MedSavantDatabase.GeneSetTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin";
-        LOG.log(Level.FINE, s);
+        LOG.debug(s);
         c.createStatement().execute(s);
 
         c.createStatement().execute(
@@ -384,7 +385,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
 
     private static void createDatabase(Connection c, String dbname) throws SQLException {
-        LOG.log(Level.INFO, "CREATE DATABASE {}", dbname);
+        LOG.info("CREATE DATABASE " + dbname);
 
         //TODO: should check if the db exists already
         c.createStatement().execute("CREATE DATABASE " + dbname);

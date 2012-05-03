@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.serverapi;
 
+import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -34,7 +35,7 @@ import org.ut.biolab.medsavant.model.RegionSet;
  */
 public interface RegionQueryUtilAdapter extends Remote {
 
-    public void addRegionList(String sid,String geneListName, int genomeId, RemoteInputStream fileStream, char delim, FileFormat fileFormat, int numHeaderLines) throws NonFatalDatabaseException, SQLException, RemoteException;
+    public void addRegionList(String sid,String geneListName, int genomeId, RemoteInputStream fileStream, char delim, FileFormat fileFormat, int numHeaderLines) throws IOException, SQLException, RemoteException;
     public void removeRegionList(String sid,int regionSetId) throws SQLException, RemoteException;
     public List<RegionSet> getRegionSets(String sid) throws SQLException, RemoteException;
     public int getNumberRegions(String sid, int regionSetId) throws SQLException, RemoteException;

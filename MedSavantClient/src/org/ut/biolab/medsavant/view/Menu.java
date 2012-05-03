@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.menu;
+package org.ut.biolab.medsavant.view;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

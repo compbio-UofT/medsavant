@@ -52,7 +52,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         } catch (Exception e) {
             throw new RemoteException("Can't get inet address.");
         }
-        thisPort = super.getPort();  // this port(registry’s port)
+        thisPort = super.getExportPort();  // this port(registry’s port)
 
         System.out.println("== MedSavant Server Engine ==\n");
 

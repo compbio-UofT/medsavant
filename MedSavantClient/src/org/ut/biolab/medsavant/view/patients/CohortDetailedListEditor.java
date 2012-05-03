@@ -16,13 +16,11 @@
 package org.ut.biolab.medsavant.view.patients;
 
 import java.util.List;
-import javax.swing.JOptionPane;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
-import org.ut.biolab.medsavant.view.dialog.CohortWizard;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -49,27 +47,19 @@ public class CohortDetailedListEditor extends DetailedListEditor {
     }
 
     @Override
-    public void editItems(Object[] results) {
-    }
-
-    @Override
     public void deleteItems(final List<Object[]> items) {
 
         int result;
 
         if (items.size() == 1) {
             String name = ((Cohort) items.get(0)[0]).getName();
-            result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                    "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
-                    "Confirm", JOptionPane.YES_NO_OPTION);
+            result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove %s?\nThis cannot be undone.", name);
         } else {
-            result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                    "Are you sure you want to remove these " + items.size() + " cohorts?\nThis cannot be undone.",
-                    "Confirm", JOptionPane.YES_NO_OPTION);
+            result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove these %d cohorts?\nThis cannot be undone.", items.size());
         }
 
 
-        if (result == JOptionPane.YES_OPTION) {
+        if (result == DialogUtils.YES) {
 
             final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
                     "Removing Cohort(s)",

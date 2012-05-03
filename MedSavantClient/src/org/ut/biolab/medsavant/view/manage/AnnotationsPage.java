@@ -65,10 +65,6 @@ public class AnnotationsPage extends SubSectionView {
         }
 
         @Override
-        public void editItems(Object[] items) {
-        }
-
-        @Override
         public void deleteItems(List<Object[]> items) {
             JOptionPane.showMessageDialog(MedSavantFrame.getInstance(),
                         "Annotations can only be deleted using the \n"

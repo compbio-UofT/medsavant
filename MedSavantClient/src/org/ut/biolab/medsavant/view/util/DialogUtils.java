@@ -70,6 +70,10 @@ public class DialogUtils {
         return JOptionPane.showConfirmDialog(getMainWindow(), prompt, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
 
+    public static int askYesNo(String title, String prompt, Object... args) {
+        return JOptionPane.showConfirmDialog(getMainWindow(), String.format(prompt, args), title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+    }
+
     public static int askYesNoCancel(String title, String prompt) {
         return JOptionPane.showConfirmDialog(getMainWindow(), prompt, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
@@ -133,13 +137,22 @@ public class DialogUtils {
         });
     }
 
-       /**
-     * Display a Savant message dialog with the given message and the title "Savant".
+    /**
+     * Display a Savant message dialog with the given message and the title "MedSavant".
      *
      * @param message the message to be displayed
      */
     public static void displayMessage(String message) {
         displayMessage("MedSavant", message);
+    }
+
+    /**
+     * Display a Savant message dialog with the given message and the title "MedSavant".
+     *
+     * @param message the message to be displayed
+     */
+    public static void displayMessage(String message, Object... params) {
+        displayMessage(String.format(message, params));
     }
 
     /**

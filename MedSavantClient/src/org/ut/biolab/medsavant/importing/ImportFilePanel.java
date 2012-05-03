@@ -17,6 +17,7 @@
 package org.ut.biolab.medsavant.importing;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -51,7 +52,6 @@ public class ImportFilePanel extends JPanel {
     private JPanel previewPanel;
     private WaitPanel waitPanel = new WaitPanel("Generating preview");
     private PreviewWorker worker;
-    private JButton importButton;
     
     public ImportFilePanel(){
         initGUI();
@@ -133,10 +133,11 @@ public class ImportFilePanel extends JPanel {
         add(h1,BorderLayout.NORTH);
 
         previewPanel = new JPanel();
+        previewPanel.setLayout(new BorderLayout());
         previewPanel.setPreferredSize(new Dimension(1000,1000));
         previewPanel.setBorder(ViewUtil.getTinyLineBorder());
 
-        add(previewPanel,BorderLayout.CENTER);
+        add(previewPanel, BorderLayout.CENTER);
 
         updatePreview();
     }
@@ -198,25 +199,18 @@ public class ImportFilePanel extends JPanel {
 
     public void updatePreview() {
 
-        if (this.pathField == null) { return; }
+        if (pathField == null) { return; }
 
         String path = this.pathField.getPath();
         File file = new File(path);
 
-        this.previewPanel.removeAll();
-        this.previewPanel.setLayout(new BorderLayout());
+        previewPanel.removeAll();
 
         if (path.equals("")) {
-            this.previewPanel.add(
-                    ViewUtil.getCenterAlignedComponent(
-                        new JLabel("No file to preview")),
-                    BorderLayout.CENTER);
+            previewPanel.add(new JLabel("No file to preview.", JLabel.CENTER), BorderLayout.CENTER);
             setReady(false);
         } else if (!file.exists() || !file.isFile()) {
-            this.previewPanel.add(
-                    ViewUtil.getCenterAlignedComponent(
-                        new JLabel("No file at path")),
-                    BorderLayout.CENTER);
+            previewPanel.add(new JLabel("No file at path.", JLabel.CENTER), BorderLayout.CENTER);
             setReady(false);
         } else {
             worker = new PreviewWorker();
@@ -227,16 +221,16 @@ public class ImportFilePanel extends JPanel {
     }
 
     public FileFormat getFileFormat() {
-        return this.formatMap.get((String) this.formatComboBox.getSelectedItem());
+        return formatMap.get((String)formatComboBox.getSelectedItem());
     }
 
 
     public String getPath() {
-        return this.pathField.getPath();
+        return pathField.getPath();
     }
 
     public int getNumHeaderLines() {
-        return this.numHeaderLines;
+        return numHeaderLines;
     }
     
     public void setReady(boolean ready){
@@ -251,7 +245,6 @@ public class ImportFilePanel extends JPanel {
 
         private static final int NUM_LINES = 50;
 
-        @SuppressWarnings("LeakingThisInConstructor")
         PreviewWorker() {
             super("X");
             if (worker != null) {
@@ -263,74 +256,60 @@ public class ImportFilePanel extends JPanel {
         @Override
         protected List<String[]> doInBackground() throws Exception {
             showProgress(-1.0);
-            // This method returns two lists: header and data.  We only care about the data.
 
-            try {
-                return ImportDelimitedFile.getPreview(pathField.getPath(), getDelimiter(), numHeaderLines, NUM_LINES, getFileFormat())[1];
-            }
-            catch (Exception e) {
-                return null;
-            }
+            // This method returns two lists: header and data.  We only care about the data.
+            return ImportDelimitedFile.getPreview(pathField.getPath(), getDelimiter(), numHeaderLines, NUM_LINES, getFileFormat())[1];
         }
 
         @Override
         protected void showSuccess(List<String[]> data) {
 
-            if (data == null) {
-                waitPanel.setStatus("Problem generating preview.\nPlease check that the file is formatted correctly.");
-                waitPanel.setComplete();
-                previewPanel.add(waitPanel,BorderLayout.CENTER);
-                previewPanel.updateUI();
-                importAccepted = false;
-                setReady(false);
-            } else {
-                int[] fields = getFileFormat().getRequiredFieldIndexes();
-                List<String> columnNames = new ArrayList<String>();
-                List<Class> columnClasses = new ArrayList<Class>();
-                for (int i : fields) {
-                    columnNames.add(getFileFormat().getFieldNumberToFieldNameMap().get(i));
-                    columnClasses.add(getFileFormat().getFieldNumberToClassMap().get(i));
-                }
-
-                SearchableTablePanel searchableTablePanel = new SearchableTablePanel(
-                        ImportFileView.class.getName(),
-                        columnNames.toArray(new String[0]),
-                        columnClasses.toArray(new Class[0]),
-                        new int[0],
-                        false,
-                        false,
-                        50,
-                        false,
-                        TableSelectionType.ROW,
-                        1000,
-                        Util.createPrefetchedDataRetriever(data));
-                searchableTablePanel.forceRefreshData();
-
-                //boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection
-                previewPanel.add(searchableTablePanel,BorderLayout.CENTER);
-                previewPanel.updateUI();
-                importAccepted = true;
-                setReady(true);
+            int[] fields = getFileFormat().getRequiredFieldIndexes();
+            List<String> columnNames = new ArrayList<String>();
+            List<Class> columnClasses = new ArrayList<Class>();
+            for (int i : fields) {
+                columnNames.add(getFileFormat().getFieldNumberToFieldNameMap().get(i));
+                columnClasses.add(getFileFormat().getFieldNumberToClassMap().get(i));
             }
 
-            updateImportButton();
+            SearchableTablePanel searchableTablePanel = new SearchableTablePanel(
+                    ImportFileView.class.getName(),
+                    columnNames.toArray(new String[0]),
+                    columnClasses.toArray(new Class[0]),
+                    new int[0],
+                    false,
+                    false,
+                    50,
+                    false,
+                    TableSelectionType.ROW,
+                    1000,
+                    Util.createPrefetchedDataRetriever(data));
+            searchableTablePanel.forceRefreshData();
+
+            //boolean allowSearch, boolean allowSort, int defaultRows, boolean allowSelection
+            previewPanel.add(searchableTablePanel,BorderLayout.CENTER);
+            previewPanel.updateUI();
+            importAccepted = true;
+            setReady(true);
         }
 
         @Override
         protected void showProgress(double fraction) {
             if (fraction < 0.0) {
                 previewPanel.add(waitPanel);
-            } else {
+            } else if (fraction >= 1.0) {
                 worker = null;
                 previewPanel.remove(waitPanel);
             }
         }
 
-        private void updateImportButton() {
-            if (importButton != null) {
-                importButton.setEnabled(validateForm() && importAccepted);
-            }
+        @Override
+        protected void showFailure(Throwable t) {
+            previewPanel.removeAll();
+            previewPanel.add(new JLabel("<html><center><font color=\"#ff0000\">Problem generating preview.<br>Please check that the file is formatted correctly.</font></center></html>", JLabel.CENTER), BorderLayout.CENTER);
+            previewPanel.updateUI();
+            importAccepted = false;
+            setReady(false);
         }
-    }
-    
+    }    
 }

@@ -20,8 +20,6 @@ import java.awt.CardLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -32,6 +30,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.jidesoft.grid.TableModelWrapperUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
@@ -46,7 +46,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class SplitScreenView extends JPanel {
-    private static final Logger LOG = Logger.getLogger(SplitScreenView.class.getName());
+    private static final Log LOG = LogFactory.getLog(SplitScreenView.class);
 
     private final DetailedListModel detailedListModel;
     private final DetailedView detailedView;
@@ -56,20 +56,7 @@ public class SplitScreenView extends JPanel {
     private static final int limit = 10000;
 
     public SplitScreenView(DetailedListModel model, DetailedView view) {
-        this(model, view, new DetailedListEditor() {
-
-            @Override
-            public void addItems() {
-            }
-
-            @Override
-            public void editItems(Object[] i) {
-            }
-
-            @Override
-            public void deleteItems(List<Object[]> i) {
-            }
-        });
+        this(model, view, new DetailedListEditor());
     }
 
     public SplitScreenView(DetailedListModel model, DetailedView view, DetailedListEditor editor) {
@@ -158,6 +145,21 @@ public class SplitScreenView extends JPanel {
                 buttonPanel.add(ViewUtil.getSmallSeparator());
             }
 
+            if (detailedEditor.doesImplementImporting()) {
+
+                JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.IMPORT));
+                butt.setToolTipText("Import");
+                butt.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        detailedEditor.importItems();
+                        refreshList();
+                    }
+                });
+                buttonPanel.add(butt);
+                buttonPanel.add(ViewUtil.getSmallSeparator());
+            }
+
             if (detailedEditor.doesImplementDeleting()) {
                 JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
                 butt.setToolTipText("Remove selected");
@@ -233,7 +235,7 @@ public class SplitScreenView extends JPanel {
                     try {
                         setList(get());
                     } catch (Throwable x) {
-                        LOG.log(Level.SEVERE, "Unable to load detail list.", x);
+                        LOG.error("Unable to load detail list.", x);
                         showErrorCard(MiscUtils.getMessage(x));
                     }
                 }

@@ -23,14 +23,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -57,6 +57,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Andrew
  */
 public class VariantFilesPage extends SubSectionView implements ReferenceListener {
+    private static final Log LOG = LogFactory.getLog(VariantFilesPage.class);
     
     private SplitScreenView panel;
     private boolean isLoaded = false;
@@ -226,9 +227,8 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
                     infoList.add(2, new String[]{"File ID", Integer.toString(file.getFileId())});
                     //infoList.add(3, new String[]{"User", file.getUser()});
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(VariantFilesPage.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (ExecutionException ex) {
-                    Logger.getLogger(VariantFilesPage.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error fetching variant details.", ex);
                 }
                 setFileInfoList(infoList);
             }
@@ -316,10 +316,6 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
         @Override
         public void addItems() {
             new ImportVariantsWizard();
-        }
-
-        @Override
-        public void editItems(Object[] results) {
         }
 
         @Override

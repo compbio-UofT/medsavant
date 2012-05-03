@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.manage;
+package org.ut.biolab.medsavant.view.regions;
 
 import java.awt.Component;
 import java.util.List;

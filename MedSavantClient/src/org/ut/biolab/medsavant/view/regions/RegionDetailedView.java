@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.manage;
+package org.ut.biolab.medsavant.view.regions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -77,7 +77,7 @@ public class RegionDetailedView extends DetailedTableView {
             protected List<GenomicRegion> doInBackground() throws Exception {
                 //numRegionsInRegionList = QueryUtil.getNumRegionsInRegionSet(regionName);
                 //List<Vector> regionList = QueryUtil.getRegionNamesInRegionSet(regionName,limit);
-                return MedSavantClient.RegionQueryUtilAdapter.getRegionsInRegionSet(LoginController.sessionId, selectedRegion.getId());
+                return MedSavantClient.RegionQueryUtilAdapter.getRegionsInRegionSet(LoginController.sessionId, selectedRegion.getID());
             }
             
             @Override
@@ -132,7 +132,7 @@ public class RegionDetailedView extends DetailedTableView {
                 public void actionPerformed(ActionEvent e) {
 
                     try {
-                        List<GenomicRegion> regions = MedSavantClient.RegionQueryUtilAdapter.getRegionsInRegionSet(LoginController.sessionId, set.getId());
+                        List<GenomicRegion> regions = MedSavantClient.RegionQueryUtilAdapter.getRegionsInRegionSet(LoginController.sessionId, set.getID());
                         Map<String, List<Range>> rangeMap = GenomicRegion.mergeGenomicRegions(regions);
                         Condition[] results = new Condition[rangeMap.size()];
                         int i = 0;
