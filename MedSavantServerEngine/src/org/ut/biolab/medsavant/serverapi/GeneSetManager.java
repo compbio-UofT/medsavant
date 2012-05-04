@@ -16,22 +16,20 @@
 
 package org.ut.biolab.medsavant.serverapi;
 
-import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.dbspec.Table;
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.healthmarketscience.sqlbuilder.SelectQuery;
+
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
-import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.db.MedSavantDatabase.GeneSetColumns;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.model.Block;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.GeneSet;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 
 
@@ -40,7 +38,7 @@ import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
  *
  * @author tarkvara
  */
-public class GeneSetManager extends MedSavantServerUnicastRemoteObject implements GeneSetAdapter {
+public class GeneSetManager extends MedSavantServerUnicastRemoteObject implements GeneSetAdapter, GeneSetColumns {
 
     private static GeneSetManager instance;
 
@@ -55,10 +53,17 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     }
 
 
+    /**
+     * Get a list of all available gene sets.
+     * @param sessID
+     * @return
+     * @throws SQLException 
+     */
     @Override
     public List<GeneSet> getGeneSets(String sessID) throws SQLException {
 
-        ResultSet rs = ConnectionController.executeQuery(sessID, MedSavantDatabase.GeneSetTableSchema.getListQuery().toString());
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.select(GENOME, TYPE);
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         List<GeneSet> result = new ArrayList<GeneSet>();
         while (rs.next()) {
@@ -67,11 +72,32 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
 
         return result;
     }
+
+    /**
+     * Get a list of all gene sets for the given reference genome.
+     * @param sessID session ID
+     * @param refName reference name (not ID)
+     * @return
+     * @throws SQLException 
+     */
+    @Override
+    public List<GeneSet> getGeneSets(String sessID, String refName) throws SQLException {
+
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, refName).select(TYPE);
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
+
+        List<GeneSet> result = new ArrayList<GeneSet>();
+        while (rs.next()) {
+            result.add(new GeneSet(refName, rs.getString(1)));
+        }
+
+        return result;
+    }
     
     @Override
     public List<Gene> getGenes(String sessID, GeneSet geneSet) throws SQLException {
 
-        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where("genome", geneSet.getGenome(), "type", geneSet.getType()).select("name", "chrom", "start", "end", "codingStart", "codingEnd");
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getGenome(), TYPE, geneSet.getType()).select(NAME, CHROM, START, END, CODING_START, CODING_END);
 
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
