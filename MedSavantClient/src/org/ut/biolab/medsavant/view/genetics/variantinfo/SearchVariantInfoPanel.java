@@ -59,12 +59,15 @@ public class SearchVariantInfoPanel extends VariantInfoPanel {
 
         googleButton = makeWhite("Google");
         googleButton.setSelected(true);
+        googleButton.setOpaque(false);
         buttonPanel.add(googleButton);
 
         scholarButton = makeWhite("Scholar");
+        scholarButton.setOpaque(false);
         buttonPanel.add(scholarButton);
 
         pmButton = makeWhite("PubMed");
+        pmButton.setOpaque(false);
         buttonPanel.add(pmButton);
 
         field = new JTextField();
@@ -106,10 +109,6 @@ public class SearchVariantInfoPanel extends VariantInfoPanel {
         } else {
             field.setText(r.getDbSNPID());
         }
-    }
-
-    public String getFieldText() {
-        return field.getText();
     }
 
     private JRadioButton makeWhite(String string) {
