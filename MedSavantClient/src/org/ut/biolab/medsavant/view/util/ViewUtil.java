@@ -507,10 +507,10 @@ public class ViewUtil {
         return b;
     }
 
-    public static void applyMenuStyleInset(JPanel p) {
+    /*public static void applyMenuStyleInset(JPanel p) {
         p.setBorder(ViewUtil.getMediumBorder());
         p.setBackground(new Color(100,100,100));
-    }
+    }*/
 
     private static class DetailListCellRenderer extends JLabel implements ListCellRenderer {
 

@@ -5,36 +5,38 @@
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
 
+import java.awt.Color;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 /**
  *
  * @author khushi
  */
-public class GeneInspectorVariantInfoPanel extends VariantInfoPanel {
+public class GeneManiaInfoSubPanel extends InfoSubPanel {
     private final String name;
-    
-    public GeneInspectorVariantInfoPanel(){
+
+    public GeneManiaInfoSubPanel(){
         this.name= "Gene Inspector";
     }
-    
+
     @Override
     public String getName(){
         return this.name;
     }
-    
+
     @Override
     //What's the point of this??
     public boolean showHeader() {
         return false;
     }
-     
+
      @Override
      public JPanel getInfoPanel() {
-         JPanel p= new JPanel();
+         JPanel p = new JPanel();
          return p;
      }
-    
+
      @Override
     public void setInfoFor(VariantRecord r) {
         if (r.getDbSNPID() == null || r.getDbSNPID().equals("")) {

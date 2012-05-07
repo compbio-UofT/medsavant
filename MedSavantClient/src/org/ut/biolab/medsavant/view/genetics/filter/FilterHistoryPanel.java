@@ -105,7 +105,9 @@ public class FilterHistoryPanel extends JPanel implements ReferenceListener, Fil
         ReferenceController.getInstance().addReferenceListener(this);
         FilterController.addFilterListener(this);
 
-        ViewUtil.applyMenuStyleInset(this);
+        this.setBackground(new Color(100,100,100));
+        this.setBorder(ViewUtil.getMediumBorder());
+        
         this.setPreferredSize(new Dimension(200,300));
         this.setName("History");
         this.setLayout(new BorderLayout());

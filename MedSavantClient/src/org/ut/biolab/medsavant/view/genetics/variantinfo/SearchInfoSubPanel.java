@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class SearchVariantInfoPanel extends VariantInfoPanel {
+public class SearchInfoSubPanel extends InfoSubPanel {
 
     private final String name;
     private ButtonGroup bg;
@@ -35,7 +35,7 @@ public class SearchVariantInfoPanel extends VariantInfoPanel {
     private JRadioButton googleButton;
     private JRadioButton scholarButton;
 
-    public SearchVariantInfoPanel() {
+    public SearchInfoSubPanel() {
         this.name = "Search";
     }
     private JTextField field;
@@ -92,7 +92,7 @@ public class SearchVariantInfoPanel extends VariantInfoPanel {
 
         JPanel p = new JPanel();//ViewUtil.getClearPanel();
 
-        ViewUtil.applyMenuStyleInset(p);
+        p.setBorder(ViewUtil.getMediumBorder());
         ViewUtil.applyVerticalBoxLayout(p);
 
 
@@ -113,7 +113,7 @@ public class SearchVariantInfoPanel extends VariantInfoPanel {
 
     private JRadioButton makeWhite(String string) {
         JRadioButton b = new JRadioButton(string);
-        b.setForeground(Color.white);
+        //b.setForeground(Color.white);
         bg.add(b);
         return b;
     }
@@ -130,7 +130,7 @@ public class SearchVariantInfoPanel extends VariantInfoPanel {
             }
         } catch (Exception ex) {
             DialogUtils.displayErrorMessage("Problem searching", ex);
-            Logger.getLogger(SearchVariantInfoPanel.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SearchInfoSubPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

@@ -15,12 +15,16 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
+import com.jidesoft.pane.CollapsiblePane;
+import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.pane.FloorTabbedPane;
+import com.jidesoft.plaf.UIDefaultsLookup;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyVetoException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,10 +34,10 @@ import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import javax.swing.UIManager;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -45,6 +49,9 @@ import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
+import org.ut.biolab.medsavant.view.genetics.variantinfo.GeneManiaInfoSubPanel;
+import org.ut.biolab.medsavant.view.genetics.variantinfo.InfoPanel;
+import org.ut.biolab.medsavant.view.genetics.variantinfo.SearchInfoSubPanel;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
@@ -56,6 +63,36 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class GeneticsTablePage extends SubSectionView implements FiltersChangedListener, ReferenceListener {
 
+    private static class GeneInfoPanel extends InfoPanel {
+
+        public GeneInfoPanel() {
+            super("Gene Inspector");
+            this.addSubInfoPanel(new GeneManiaInfoSubPanel());
+        }
+    }
+
+    private static class SearchInfoPanel extends InfoPanel {
+
+        public SearchInfoPanel() {
+            super("Search");
+            this.addSubInfoPanel(new SearchInfoSubPanel());
+        }
+    }
+
+    private static class VariantInfoPanel extends InfoPanel {
+
+        public VariantInfoPanel() {
+            super("Variant Inspector");
+        }
+    }
+
+    private static class AnalyticsInfoPanel extends InfoPanel {
+
+        public AnalyticsInfoPanel() {
+            super("Analytics");
+        }
+    }
+
     private JPanel panel;
     private TablePanel tablePanel;
     private GenomeContainer gp;
@@ -63,7 +100,8 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     private PeekingPanel genomeView;
     private Component[] settingComponents;
     private PeekingPanel detailView;
-    private FloorTabbedPane _tabbedPane;
+    //private FloorTabbedPane _tabbedPane;
+    private CollapsiblePanes _container;
 
     public GeneticsTablePage(SectionView parent) {
         super(parent);
@@ -119,49 +157,37 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         genomeView.setToggleBarVisible(false);
         genomeView.setBorder(ViewUtil.getBottomLineBorder());
 
-        _tabbedPane = new FloorTabbedPane() {
-            @Override
-            protected AbstractButton createButton(Action action) {
-                final FloorButton fb = new FloorTabbedPane.FloorButton(action);
+        _container = new CollapsiblePanes();
+        _container.setGap(UIDefaultsLookup.getInt("CollapsiblePanes.gap"));
+        _container.setBackground(UIManager.getColor("Panel.background"));
+        _container.setBorder(UIDefaultsLookup.getBorder("CollapsiblePanes.border"));
 
-                fb.setFont(ViewUtil.getMediumTitleFont());
+        VariantInfoPanel vpanel = new VariantInfoPanel();
+        try {
+            vpanel.setCollapsed(false);
+        } catch (PropertyVetoException ex) {
+            Logger.getLogger(GeneticsTablePage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        SearchInfoPanel spanel = new SearchInfoPanel();
+        GeneInfoPanel gpanel = new GeneInfoPanel();
+        AnalyticsInfoPanel apanel = new AnalyticsInfoPanel();
 
-                fb.setBorder(ViewUtil.getMediumBorder());
+        addTabPanel(vpanel);
+        addTabPanel(gpanel);
+        addTabPanel(apanel);
+        addTabPanel(spanel);
 
-                fb.setForeground(Color.white);
-                fb.setBackground(Color.darkGray);
+        _container.addExpansion();
 
-                fb.addMouseListener(new MouseListener() {
-                    @Override
-                    public void mouseClicked(MouseEvent me) {
-                    }
-                    @Override
-                    public void mousePressed(MouseEvent me) {
-                    }
-                    @Override
-                    public void mouseReleased(MouseEvent me) {
-                    }
-                    @Override
-                    public void mouseEntered(MouseEvent me) {
-                        fb.setForeground(Color.darkGray);
-                    }
-                    @Override
-                    public void mouseExited(MouseEvent me) {
-                        fb.setForeground(Color.white);
-                    }
+/*
+        addTabPanel(createTabPanel("Variant Inspector", null, vpanel));
+        addTabPanel(createTabPanel("Gene Inspector", null, gpanel));
+        addTabPanel(createTabPanel("Analytics", null, apanel));
+        addTabPanel(createTabPanel("Search", null, spanel));
 
-                });
-
-                return fb;
-            }
-        };
-
-        addTabPanel(createTabPanel("Variant Inspector",null,new JPanel()));
-        addTabPanel(createTabPanel("Gene Inspector",null,new JPanel()));
-        addTabPanel(createTabPanel("Analytics",null,new JPanel()));
-        addTabPanel(createTabPanel("Search",null,new SearchInfoPanelContainer()));
-
-        detailView = new PeekingPanel("Detail", BorderLayout.WEST, _tabbedPane, false, 320);
+ *
+ */
+        detailView = new PeekingPanel("Detail", BorderLayout.WEST, _container, false, 320);
         detailView.setToggleBarVisible(false);
 
         panel.add(genomeView, BorderLayout.NORTH);
@@ -218,10 +244,11 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         updateContents();
     }
 
-    private void addTabPanel(TabPanel tabPanel) {
-        _tabbedPane.addTab(tabPanel.getTitle(), tabPanel.getIcon(), tabPanel.getComponent(), "tooltip for " + tabPanel.getTitle());
-        _tabbedPane.setToolTipTextAt(_tabbedPane.getTabCount()-1, null);
+    private void addTabPanel(CollapsiblePane tabPanel) {
+        //_tabbedPane.addTab(tabPanel.getTitle(), tabPanel.getIcon(), tabPanel.getComponent(), "tooltip for " + tabPanel.getTitle());
+        //_tabbedPane.setToolTipTextAt(_tabbedPane.getTabCount() - 1, null);
 
+        _container.add(tabPanel);
     }
 
     private class TabPanel extends JPanel {

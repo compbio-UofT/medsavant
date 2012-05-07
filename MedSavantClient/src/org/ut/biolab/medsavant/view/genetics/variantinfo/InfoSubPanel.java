@@ -7,7 +7,7 @@ import org.ut.biolab.medsavant.vcf.VariantRecord;
  *
  * @author mfiume
  */
-public abstract class VariantInfoPanel {
+public abstract class InfoSubPanel {
 
     public abstract String getName();
     public abstract JPanel getInfoPanel();
