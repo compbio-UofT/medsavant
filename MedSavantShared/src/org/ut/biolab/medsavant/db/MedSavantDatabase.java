@@ -513,6 +513,19 @@ public class MedSavantDatabase {
         }
     }
 
+    public interface GeneSetColumns {
+        static final ColumnDef GENOME = new ColumnDef("genome", ColumnType.VARCHAR, 30, null, true, false);
+        static final ColumnDef TYPE = new ColumnDef("type", ColumnType.VARCHAR, 30, null, true, false);
+        static final ColumnDef NAME = new ColumnDef("name", ColumnType.VARCHAR, 30, null, true, false);
+        static final ColumnDef CHROM = new ColumnDef("chrom", ColumnType.VARCHAR, 30, null, true, false);
+        static final ColumnDef START = new ColumnDef.Integer("start");
+        static final ColumnDef END = new ColumnDef.Integer("end");
+        static final ColumnDef CODING_START = new ColumnDef.Integer("codingStart");
+        static final ColumnDef CODING_END = new ColumnDef.Integer("codingEnd");
+        static final ColumnDef EXON_STARTS = new ColumnDef("exonStarts", ColumnType.VARCHAR, 9000);
+        static final ColumnDef EXON_ENDS = new ColumnDef("exonEnds", ColumnType.VARCHAR, 9000);
+    }
+    
     public static class PatientFormatTableSchema extends TableSchema {
 
         public static final String TABLE_NAME = "patient_format";
@@ -1157,24 +1170,8 @@ public class MedSavantDatabase {
     public static final DefaultVariantTableSchema DefaultvariantTableSchema = new DefaultVariantTableSchema(schema);
     
     public static final TableSchema GeneSetTableSchema = new TableSchema(schema, "genes",
-        new ColumnDef("genome", ColumnType.VARCHAR, 30, null, true, false),
-        new ColumnDef("type", ColumnType.VARCHAR, 30, null, true, false),
-        new ColumnDef("name", ColumnType.VARCHAR, 30, null, true, false),
-        new ColumnDef("chrom", ColumnType.VARCHAR, 30, null, true, false),
-        new ColumnDef.Integer("start"),
-        new ColumnDef.Integer("end"),
-        new ColumnDef.Integer("codingStart"),
-        new ColumnDef.Integer("codingEnd"),
-        new ColumnDef("exonStarts", ColumnType.VARCHAR, 9000),
-        new ColumnDef("exonEnds", ColumnType.VARCHAR, 9000)
-    ) {
-        @Override
-        public SelectQuery getListQuery() {
-            SelectQuery query = super.getListQuery();
-            query.addColumns(getDBColumn(1));
-            return query;
-        }
-    };
+            GeneSetColumns.GENOME, GeneSetColumns.TYPE, GeneSetColumns.NAME, GeneSetColumns.CHROM, GeneSetColumns.START,
+            GeneSetColumns.END, GeneSetColumns.CODING_START, GeneSetColumns.CODING_END, GeneSetColumns.EXON_STARTS, GeneSetColumns.EXON_ENDS);
             
     //PatientformatTableSchema
     public static final PatientFormatTableSchema PatientformatTableSchema = new PatientFormatTableSchema(schema);

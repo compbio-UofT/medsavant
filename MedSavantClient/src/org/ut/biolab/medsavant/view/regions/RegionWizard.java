@@ -31,6 +31,7 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
+import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -41,7 +42,9 @@ import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.importing.BEDFormat;
 import org.ut.biolab.medsavant.importing.FileFormat;
 import org.ut.biolab.medsavant.importing.ImportFilePanel;
+import org.ut.biolab.medsavant.model.GeneSet;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -183,7 +186,26 @@ public class RegionWizard extends WizardDialog {
     }
     
     private AbstractWizardPage getSelectionPage() {
-        return null;
+        return new DefaultWizardPage(PAGENAME_SELECT) {
+            {
+                try {
+                    List<GeneSet> sets = MedSavantClient.GeneSetAdapter.getGeneSets(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceName());
+                    JComboBox geneSetCombo = new JComboBox();
+                    for (GeneSet s: sets) {
+                        geneSetCombo.addItem(s);
+                    }
+                    addComponent(geneSetCombo);
+                } catch (Exception ex) {
+                    addText("Unable to fetch gene sets: " + MiscUtils.getMessage(ex));
+                }
+            }
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
+            }            
+        };
     }
 
 
@@ -250,7 +272,7 @@ public class RegionWizard extends WizardDialog {
     }
     
     private AbstractWizardPage getCompletionPage() {
-        CompletionWizardPage page = new CompletionWizardPage(PAGENAME_COMPLETE) {
+        return new CompletionWizardPage(PAGENAME_COMPLETE) {
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
@@ -258,7 +280,6 @@ public class RegionWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
             }
         };
-        return page;
     }
     
     private boolean validateListName() {

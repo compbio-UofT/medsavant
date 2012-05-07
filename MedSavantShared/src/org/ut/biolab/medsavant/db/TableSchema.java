@@ -172,24 +172,13 @@ public class TableSchema implements Serializable {
         return new CreateTableQuery(table, true);
     }
  
-    /**
-     * For this table, generate the query which is appropriate for retrieving a list of table entities.
-     * By default, this just pulls in a query for the first column.
-     */
-    public synchronized SelectQuery getListQuery() {
-        selectQuery = new SelectQuery(true);
-        selectQuery.addFromTable(table);
-        selectQuery.addColumns(getDBColumn(0));
-        return selectQuery;
-    }
-
-    public synchronized SelectQuery select(String... colNames) {
+    public synchronized SelectQuery select(ColumnDef... cols) {
         if (selectQuery == null) {
             selectQuery = new SelectQuery(false);
             selectQuery.addFromTable(table);
         }
-        for (String colName: colNames) {
-            selectQuery.addColumns(table.findColumn(colName));
+        for (ColumnDef col: cols) {
+            selectQuery.addColumns(table.findColumn(col.name));
         }
         return selectQuery;
     }
@@ -204,7 +193,7 @@ public class TableSchema implements Serializable {
         selectQuery = new SelectQuery(false);
         selectQuery.addFromTable(table);
         for (int i = 0; i < wheres.length; i += 2) {
-            selectQuery.addCondition(BinaryConditionMS.equalTo(table.findColumn((String)wheres[i]), wheres[i + 1]));
+            selectQuery.addCondition(BinaryConditionMS.equalTo(table.findColumn(((ColumnDef)wheres[i]).name), wheres[i + 1]));
         }
         return this;
     }
