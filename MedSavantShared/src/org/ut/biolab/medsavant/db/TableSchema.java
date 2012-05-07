@@ -172,6 +172,12 @@ public class TableSchema implements Serializable {
         return new CreateTableQuery(table, true);
     }
  
+    /**
+     * Create a query object for retrieving the given columns.  The query can be modified using the where() and distinct() modifiers.
+     * 
+     * @param cols list of columns whose values are to be fetched
+     * @return a selection query
+     */
     public synchronized SelectQuery select(ColumnDef... cols) {
         if (selectQuery == null) {
             selectQuery = new SelectQuery(false);
@@ -180,20 +186,37 @@ public class TableSchema implements Serializable {
         for (ColumnDef col: cols) {
             selectQuery.addColumns(table.findColumn(col.name));
         }
-        return selectQuery;
+        SelectQuery result = selectQuery;
+        selectQuery = null;
+        return result;
     }
 
     /**
      * Create a query object which will match the given values of the given columns.
      *
-     * @param wheres pairs consisting of column name followed by value
+     * @param wheres pairs consisting of column def followed by value
      * @return <code>this</code>
      */
     public synchronized TableSchema where(Object... wheres) {
-        selectQuery = new SelectQuery(false);
-        selectQuery.addFromTable(table);
+        if (selectQuery == null) {
+            selectQuery = new SelectQuery(false);
+            selectQuery.addFromTable(table);
+        }
         for (int i = 0; i < wheres.length; i += 2) {
             selectQuery.addCondition(BinaryConditionMS.equalTo(table.findColumn(((ColumnDef)wheres[i]).name), wheres[i + 1]));
+        }
+        return this;
+    }
+    
+    /**
+     * Make the query only fetch unique values.
+     */
+    public synchronized TableSchema distinct() {
+        if (selectQuery != null) {
+            selectQuery.setIsDistinct(true);
+        } else {
+            selectQuery = new SelectQuery(true);
+            selectQuery.addFromTable(table);
         }
         return this;
     }

@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.GeneSetColumns;
@@ -39,6 +41,7 @@ import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
  * @author tarkvara
  */
 public class GeneSetManager extends MedSavantServerUnicastRemoteObject implements GeneSetAdapter, GeneSetColumns {
+    private static final Log LOG = LogFactory.getLog(GeneSetManager.class);
 
     private static GeneSetManager instance;
 
@@ -62,7 +65,8 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<GeneSet> getGeneSets(String sessID) throws SQLException {
 
-        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.select(GENOME, TYPE);
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.distinct().select(GENOME, TYPE);
+        LOG.info("getGeneSets:" + query);
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         List<GeneSet> result = new ArrayList<GeneSet>();
@@ -83,7 +87,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<GeneSet> getGeneSets(String sessID, String refName) throws SQLException {
 
-        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, refName).select(TYPE);
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.distinct().where(GENOME, refName).select(TYPE);
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         List<GeneSet> result = new ArrayList<GeneSet>();
@@ -98,7 +102,7 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     public List<Gene> getGenes(String sessID, GeneSet geneSet) throws SQLException {
 
         SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getGenome(), TYPE, geneSet.getType()).select(NAME, CHROM, START, END, CODING_START, CODING_END);
-
+        LOG.info("getGenes: " + query);
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         List<Gene> result = new ArrayList<Gene>();

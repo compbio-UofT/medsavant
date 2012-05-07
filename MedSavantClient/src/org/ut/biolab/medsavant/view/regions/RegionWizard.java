@@ -56,8 +56,9 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class RegionWizard extends WizardDialog {
     private static final Log LOG = LogFactory.getLog(RegionWizard.class);
     private static final String PAGENAME_NAME = "List Name";
-    private static final String PAGENAME_CHOOSE = "Choose File";
-    private static final String PAGENAME_SELECT = "Select Genes";
+    private static final String PAGENAME_FILE = "Choose File";
+    private static final String PAGENAME_STANDARD_GENES = "Choose Standard Gene Set";
+    private static final String PAGENAME_GENES = "Select Genes";
     private static final String PAGENAME_CREATE = "Create";
     private static final String PAGENAME_COMPLETE = "Complete";
     
@@ -67,6 +68,7 @@ public class RegionWizard extends WizardDialog {
     private FileFormat fileFormat;
     private int numHeaderLines;
     private final boolean importing;
+    private List<GeneSet> standardGenes;
     
     public RegionWizard(boolean imp) {
         super(MedSavantFrame.getInstance(), "Region List Wizard", true);
@@ -82,7 +84,8 @@ public class RegionWizard extends WizardDialog {
             model.append(getCompletionPage());
         } else {
             model.append(getNamePage());
-            model.append(getSelectionPage());
+            model.append(getStandardGeneSetsPage());
+            model.append(getGenesPage());
             model.append(getCreationPage());
             model.append(getCompletionPage());
         }
@@ -95,11 +98,17 @@ public class RegionWizard extends WizardDialog {
                 String pageName = getCurrentPage().getTitle();
                 if (pageName.equals(PAGENAME_NAME) && validateListName()) {
                     if (importing) {
-                        setCurrentPage(PAGENAME_CHOOSE);
+                        setCurrentPage(PAGENAME_FILE);
                     } else {
-                        setCurrentPage(PAGENAME_SELECT);
+                        if (standardGenes.size() > 1) {
+                            setCurrentPage(PAGENAME_STANDARD_GENES);
+                        } else {
+                            setCurrentPage(PAGENAME_GENES);                            
+                        }
                     }
-                } else if (pageName.equals(PAGENAME_CHOOSE) || pageName.equals(PAGENAME_SELECT)) {
+                } else if (pageName.equals(PAGENAME_STANDARD_GENES)) {
+                    setCurrentPage(PAGENAME_GENES);
+                } else if (pageName.equals(PAGENAME_FILE) || pageName.equals(PAGENAME_GENES)) {
                     setCurrentPage(PAGENAME_CREATE);
                 } else if (pageName.equals(PAGENAME_CREATE)) {
                     setCurrentPage(PAGENAME_COMPLETE);
@@ -151,7 +160,7 @@ public class RegionWizard extends WizardDialog {
     private AbstractWizardPage getFilePage() {
 
         //setup page
-        return new DefaultWizardPage(PAGENAME_CHOOSE) {
+        return new DefaultWizardPage(PAGENAME_FILE) {
             {
                 ImportFilePanel importPanel = new ImportFilePanel() {          
                     @Override
@@ -185,19 +194,32 @@ public class RegionWizard extends WizardDialog {
         };
     }
     
-    private AbstractWizardPage getSelectionPage() {
-        return new DefaultWizardPage(PAGENAME_SELECT) {
+    private AbstractWizardPage getStandardGeneSetsPage() {
+        return new DefaultWizardPage(PAGENAME_STANDARD_GENES) {
             {
                 try {
-                    List<GeneSet> sets = MedSavantClient.GeneSetAdapter.getGeneSets(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceName());
+                    standardGenes = MedSavantClient.GeneSetAdapter.getGeneSets(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceName());
                     JComboBox geneSetCombo = new JComboBox();
-                    for (GeneSet s: sets) {
+                    for (GeneSet s: standardGenes) {
                         geneSetCombo.addItem(s);
                     }
                     addComponent(geneSetCombo);
                 } catch (Exception ex) {
                     addText("Unable to fetch gene sets: " + MiscUtils.getMessage(ex));
                 }
+            }
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
+            }            
+        };
+    }
+
+    private AbstractWizardPage getGenesPage() {
+        return new DefaultWizardPage(PAGENAME_GENES) {
+            {
             }
             @Override
             public void setupWizardButtons() {
