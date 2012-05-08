@@ -8,6 +8,7 @@ import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -53,7 +54,7 @@ public class InfoPanel extends CollapsiblePane {
         container.add(Box.createVerticalStrut(10));
 
         if (ipan.showHeader()) {
-            container.add(ViewUtil.center(ViewUtil.getWhiteLabel(ipan.getName())));
+            container.add(ViewUtil.center(new JLabel(ipan.getName())));
         }
         JPanel p = ipan.getInfoPanel();
 

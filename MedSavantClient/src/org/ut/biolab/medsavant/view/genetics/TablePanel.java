@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.GridBagConstraints;
@@ -34,6 +33,10 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
 
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.pathvisio.view.SelectionBox.SelectionEvent;
+import org.pathvisio.view.SelectionBox.SelectionListener;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -44,17 +47,22 @@ import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.controller.ThreadController;
+import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.model.StarredVariant;
 import org.ut.biolab.medsavant.db.Settings;
+import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.SQLUtils;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
+import org.ut.biolab.medsavant.view.list.RowSelectionGrabber;
+import org.ut.biolab.medsavant.view.util.TableUtils;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
@@ -65,15 +73,14 @@ class TablePanel extends JLayeredPane {
 
     private SearchableTablePanel tablePanel;
     private WaitPanel waitPanel;
-
     private boolean init = false;
     private boolean updateRequired = true;
     private final Object updateLock = new Object();
     private String pageName;
-
     private GridBagConstraints c;
-
     private Map<Integer, List<StarredVariant>> starMap = new HashMap<Integer, List<StarredVariant>>();
+    private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
+
 
     public TablePanel(final String pageName) {
 
@@ -97,6 +104,7 @@ class TablePanel extends JLayeredPane {
         showWaitCard();
 
         MedSavantWorker worker = new MedSavantWorker(pageName) {
+
             @Override
             protected Object doInBackground() {
 
@@ -108,7 +116,7 @@ class TablePanel extends JLayeredPane {
                 for (AnnotationFormat af : afs) {
                     for (CustomField field : af.getCustomFields()) {
                         fieldNames.add(field.getAlias());
-                        switch(field.getColumnType()) {
+                        switch (field.getColumnType()) {
                             case INTEGER:
                             case BOOLEAN:
                                 fieldClasses.add(Integer.class);
@@ -124,12 +132,12 @@ class TablePanel extends JLayeredPane {
                         }
 
                         //only show vcf fields (except custom info)
-                        if (!(af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_DEFAULT) &&
-                                    !(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID) ||
-                                    field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID) ||
-                                    field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID) ||
-                                    field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO)))) {
-                                //|| af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_CUSTOM_VCF))) {
+                        if (!(af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_DEFAULT)
+                                && !(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID)
+                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID)
+                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID)
+                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO)))) {
+                            //|| af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_CUSTOM_VCF))) {
                             hiddenColumns.add(fieldNames.size() - 1);
                         }
                     }
@@ -138,7 +146,8 @@ class TablePanel extends JLayeredPane {
                     return null;
                 }
 
-                DataRetriever retriever = new DataRetriever() {
+                final DataRetriever retriever = new DataRetriever() {
+
                     @Override
                     public List<Object[]> retrieve(int start, int limit) {
                         showWaitCard();
@@ -175,7 +184,8 @@ class TablePanel extends JLayeredPane {
                     }
                 };
 
-                SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames.toArray(new String[0]), fieldClasses.toArray(new Class[0]), MiscUtils.toIntArray(hiddenColumns), 1000, retriever) {
+                final SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames.toArray(new String[0]), fieldClasses.toArray(new Class[0]), MiscUtils.toIntArray(hiddenColumns), 1000, retriever) {
+
                     @Override
                     public String getToolTip(int actualRow) {
                         if (starMap.get(actualRow) != null && !starMap.get(actualRow).isEmpty()) {
@@ -185,7 +195,7 @@ class TablePanel extends JLayeredPane {
                                 StarredVariant current = starred.get(i);
                                 s += "\"" + ClientMiscUtils.addBreaksToString(current.getDescription(), 100) + "\"<BR>";
                                 s += "- " + current.getUser() + ", " + current.getTimestamp().toString();
-                                if (i != starred.size()-1) {
+                                if (i != starred.size() - 1) {
                                     s += "<BR>----------<BR>";
                                 }
                             }
@@ -196,20 +206,64 @@ class TablePanel extends JLayeredPane {
                     }
                 };
 
+                stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+                    @Override
+                    public void valueChanged(ListSelectionEvent e) {
+
+                        if (e.getValueIsAdjusting()) {
+                            return;
+                        }
+
+                        int rowNum = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRows()[0]);//TableModelWrapperUtils.getActualRowAt(stp.getTable().getModel(), stp.getTable().getSelectedRows()[0]);
+                        List<Object[]> rows = retriever.retrieve(rowNum, 1);
+
+                        Object[] row = rows.get(0);
+
+                        DefaultVariantTableSchema s = MedSavantDatabase.DefaultvariantTableSchema;
+
+                        VariantRecord r = new VariantRecord(
+                                (Integer)   row[s.INDEX_OF_VARIANT_ID],
+                                (Integer)   ReferenceController.getInstance().getCurrentReferenceId(),
+                                (Integer)   0, // pipeline ID
+                                (String)    row[s.INDEX_OF_DNA_ID],
+                                (String)    row[s.INDEX_OF_CHROM],
+                                (Integer)   row[s.INDEX_OF_POSITION], // TODO: this should be a long
+                                (String)    row[s.INDEX_OF_DBSNP_ID],
+                                (String)    row[s.INDEX_OF_REF],
+                                (String)    row[s.INDEX_OF_ALT],
+                                (Float)     row[s.INDEX_OF_QUAL],
+                                (String)    row[s.INDEX_OF_FILTER],
+                                (String)    row[s.INDEX_OF_CUSTOM_INFO],
+                                new Object[]{});
+
+                        //System.out.println(r.toString());
+
+                        for (VariantSelectionChangedListener l : listeners) {
+                            l.variantSelectionChanged(r);
+                        }
+                    }
+                });
+
                 stp.setExportButtonVisible(false);
 
                 stp.getTable().addMouseListener(new MouseAdapter() {
+
                     @Override
                     public void mouseReleased(MouseEvent e) {
 
                         //check for right click
-                        if (!SwingUtilities.isRightMouseButton(e)) return;
+                        if (!SwingUtilities.isRightMouseButton(e)) {
+                            return;
+                        }
 
                         SortableTable table = tablePanel.getTable();
                         int numSelected = table.getSelectedRows().length;
                         if (numSelected == 1) {
                             int r = table.rowAtPoint(e.getPoint());
-                            if (r < 0 || r >= table.getRowCount()) return;
+                            if (r < 0 || r >= table.getRowCount()) {
+                                return;
+                            }
                             JPopupMenu popup = createPopupSingle(table, r);
                             popup.show(e.getComponent(), e.getX(), e.getY());
                         } else if (numSelected > 1) {
@@ -229,14 +283,13 @@ class TablePanel extends JLayeredPane {
 
             @Override
             protected void showSuccess(Object result) {
-                tablePanel = (SearchableTablePanel)result;
+                tablePanel = (SearchableTablePanel) result;
                 remove(tablePanel);
                 add(tablePanel, c, JLayeredPane.DEFAULT_LAYER);
                 showShowCard();
                 updateIfRequired();
                 init = true;
             }
-
         };
         worker.execute();
 
@@ -260,8 +313,14 @@ class TablePanel extends JLayeredPane {
         updateRequired = b;
     }
 
+    public static void addVariantSelectionChangedListener(VariantSelectionChangedListener l) {
+        listeners.add(l);
+    }
+
     public void updateIfRequired() {
-        if (tablePanel == null) return;
+        if (tablePanel == null) {
+            return;
+        }
         synchronized (updateLock) {
             if (updateRequired) {
                 tablePanel.forceRefreshData();
@@ -274,9 +333,9 @@ class TablePanel extends JLayeredPane {
         table.setRowSelectionInterval(r, r);
         int row = TableModelWrapperUtils.getActualRowAt(table.getModel(), r);
 
-        final String chrom = (String)table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
-        final int position = (Integer)table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
-        final String alt = (String)table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_ALT);
+        final String chrom = (String) table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
+        final int position = (Integer) table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
+        final String alt = (String) table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_ALT);
 
 
         JPopupMenu menu = new JPopupMenu();
@@ -359,10 +418,14 @@ class TablePanel extends JLayeredPane {
             public void actionPerformed(ActionEvent e) {
 
                 String description = "";
-                while(true) {
+                while (true) {
                     description = JOptionPane.showInputDialog("Add a description (500 char limit):", description.substring(0, Math.min(description.length(), 500)));
-                    if (description == null) return;
-                    if (description.length() <= 500) break;
+                    if (description == null) {
+                        return;
+                    }
+                    if (description.length() <= 500) {
+                        break;
+                    }
                 }
 
                 List<StarredVariant> list = new ArrayList<StarredVariant>();
@@ -370,9 +433,9 @@ class TablePanel extends JLayeredPane {
                     int row = selected[i];
                     int actualRow = finalActualSelected[i];
                     StarredVariant sv = new StarredVariant(
-                            (Integer)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID),
-                            (Integer)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_FILE_ID),
-                            (Integer)table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_VARIANT_ID),
+                            (Integer) table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID),
+                            (Integer) table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_FILE_ID),
+                            (Integer) table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_VARIANT_ID),
                             LoginController.getUsername(),
                             description,
                             SQLUtils.getCurrentTimestamp());
@@ -467,9 +530,9 @@ class TablePanel extends JLayeredPane {
             for (int i = 0; i < variants.size(); i++) {
                 Object[] row = variants.get(i);
                 StarredVariant current = new StarredVariant(
-                        (Integer)row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID],
-                        (Integer)row[DefaultVariantTableSchema.INDEX_OF_FILE_ID],
-                        (Integer)row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID],
+                        (Integer) row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID],
+                        (Integer) row[DefaultVariantTableSchema.INDEX_OF_FILE_ID],
+                        (Integer) row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID],
                         null,
                         null,
                         null);
@@ -482,7 +545,7 @@ class TablePanel extends JLayeredPane {
 
                     Object[] arr = starred.toArray();
                     for (Object a : arr) {
-                        StarredVariant sv = (StarredVariant)a;
+                        StarredVariant sv = (StarredVariant) a;
                         if (sv.getUploadId() == current.getUploadId() && sv.getFileId() == current.getFileId() && sv.getVariantId() == current.getVariantId()) {
                             starMap.get(i).add(sv);
                         }
@@ -499,7 +562,9 @@ class TablePanel extends JLayeredPane {
     }
 
     private boolean isStarredByUser(int row) {
-        if (!starMap.containsKey(row)) return false;
+        if (!starMap.containsKey(row)) {
+            return false;
+        }
         List<StarredVariant> starred = starMap.get(row);
         for (StarredVariant current : starred) {
             if (current.getUser().equals(LoginController.getUsername())) {

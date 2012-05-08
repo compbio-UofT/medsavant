@@ -83,6 +83,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
 
         public VariantInfoPanel() {
             super("Variant Inspector");
+            this.addSubInfoPanel(new BasicVariantInfoSubPanel());
         }
     }
 

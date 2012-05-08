@@ -13,6 +13,5 @@ public abstract class InfoSubPanel {
     public abstract JPanel getInfoPanel();
     public boolean showHeader() { return true; }
     public boolean canDisplayFor(VariantRecord r) { return true; }
-    public abstract void setInfoFor(VariantRecord r);
 
 }

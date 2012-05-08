@@ -19,6 +19,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -27,7 +28,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class SearchInfoSubPanel extends InfoSubPanel {
+public class SearchInfoSubPanel extends InfoSubPanel implements VariantSelectionChangedListener {
 
     private final String name;
     private ButtonGroup bg;
@@ -102,15 +103,6 @@ public class SearchInfoSubPanel extends InfoSubPanel {
         return p;
     }
 
-    @Override
-    public void setInfoFor(VariantRecord r) {
-        if (r.getDbSNPID() == null || r.getDbSNPID().equals("")) {
-            field.setText(r.getChrom() + " " + r.getPosition());
-        } else {
-            field.setText(r.getDbSNPID());
-        }
-    }
-
     private JRadioButton makeWhite(String string) {
         JRadioButton b = new JRadioButton(string);
         //b.setForeground(Color.white);
@@ -131,6 +123,15 @@ public class SearchInfoSubPanel extends InfoSubPanel {
         } catch (Exception ex) {
             DialogUtils.displayErrorMessage("Problem searching", ex);
             Logger.getLogger(SearchInfoSubPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void variantSelectionChanged(VariantRecord r) {
+        if (r.getDbSNPID() == null || r.getDbSNPID().equals("")) {
+            field.setText(r.getChrom() + " " + r.getPosition());
+        } else {
+            field.setText(r.getDbSNPID());
         }
     }
 }

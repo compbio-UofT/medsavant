@@ -45,14 +45,13 @@ public class RowSelectionGrabber {
             length--;
         }
         List<Object[]> selected = new ArrayList<Object[]>();
-        
+
         for (int i = 0; i < length; i++) {
             int currentRow = getActualRowAt(allRows[i]);
             if (currentRow >= 0 && data.length > 0 && currentRow < data.length) {
                 selected.add(data[currentRow]);
             }
         }
-        
 
         return selected;
     }

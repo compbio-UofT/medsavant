@@ -616,7 +616,12 @@ public class SearchableTablePanel extends JPanel {
     }
 
     public int getActualRowAt(int row) {
+
         return TableModelWrapperUtils.getActualRowAt(table.getModel(), row);
+    }
+
+    public int getActualRowAcrossAllPages(int row) {
+        return row+((this.getPageNumber()-1)*ROWSPERPAGE_X);
     }
 
     public void setSelectedRows(List<Integer> rows) {

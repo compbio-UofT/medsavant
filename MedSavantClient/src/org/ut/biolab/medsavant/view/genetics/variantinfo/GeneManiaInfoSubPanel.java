@@ -36,13 +36,4 @@ public class GeneManiaInfoSubPanel extends InfoSubPanel {
          JPanel p = new JPanel();
          return p;
      }
-
-     @Override
-    public void setInfoFor(VariantRecord r) {
-        if (r.getDbSNPID() == null || r.getDbSNPID().equals("")) {
-            //field.setText(r.getChrom() + " " + r.getPosition());
-        } else {
-            //field.setText(r.getDbSNPID());
-        }
-    }
 }
