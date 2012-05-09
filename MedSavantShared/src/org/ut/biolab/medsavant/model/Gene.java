@@ -24,20 +24,22 @@ import java.io.Serializable;
  * @author tarkvara
  */
 public class Gene implements Serializable {
-    private String name;
-    private String chrom;
-    private int start;
-    private int end;
-    private int codingStart;
-    private int codingEnd;
+    private final String name;
+    private final String chrom;
+    private final int start;
+    private final int end;
+    private final int codingStart;
+    private final int codingEnd;
+    private final String transcript;
 
-    public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd) {
+    public Gene(String name, String chrom, int start, int end, int codingStart, int codingEnd, String transcript) {
         this.name = name;
         this.chrom = chrom;
         this.start = start;
         this.end = end;
         this.codingStart = codingStart;
         this.codingEnd = codingEnd;
+        this.transcript = transcript;
     }
     
     public String getName() {
@@ -62,5 +64,9 @@ public class Gene implements Serializable {
     
     public int getCodingEnd() {
         return codingEnd;
+    }
+    
+    public String getTranscript() {
+        return transcript;
     }
 }

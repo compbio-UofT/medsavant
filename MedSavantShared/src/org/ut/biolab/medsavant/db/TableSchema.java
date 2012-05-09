@@ -17,15 +17,19 @@
 package org.ut.biolab.medsavant.db;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.CreateTableQuery;
+import com.healthmarketscience.sqlbuilder.CustomSql;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 
@@ -35,6 +39,7 @@ import org.ut.biolab.medsavant.util.BinaryConditionMS;
  * @author mfiume
  */
 public class TableSchema implements Serializable {
+    private static final Log LOG = LogFactory.getLog(TableSchema.class);
 
     private final LinkedHashMap<String,String> dbNameToAlias;
     private final LinkedHashMap<Integer,String> indexToDBName;
@@ -73,6 +78,34 @@ public class TableSchema implements Serializable {
             }
             if (col.primaryKey) {
                 dbc.primaryKey();
+            }
+        }
+    }
+
+    /**
+     * Define a table-scheme using an interface class which provides all the column defs as members.
+     * @param s the database schema
+     * @param name name for the new table
+     * @param columnsClass an interface which defines the column defs as static members
+     */
+    public TableSchema(DbSchema s, String name, Class columnsClass) {
+        this(s.addTable(name));
+        Field[] fields = columnsClass.getDeclaredFields();
+        for (Field f: fields) {
+            try {
+                ColumnDef col = (ColumnDef)f.get(null);
+                DbColumn dbc = addColumn(col.name, col.name, col.type, col.length);
+                if (col.defaultValue != null) {
+                    dbc.setDefaultValue(col.defaultValue);
+                }
+                if (col.notNull) {
+                    dbc.notNull();
+                }
+                if (col.primaryKey) {
+                    dbc.primaryKey();
+                }
+            } catch (Exception ex) {
+                LOG.error("Unable to get column definition for " + f, ex);
             }
         }
     }
@@ -178,13 +211,17 @@ public class TableSchema implements Serializable {
      * @param cols list of columns whose values are to be fetched
      * @return a selection query
      */
-    public synchronized SelectQuery select(ColumnDef... cols) {
+    public synchronized SelectQuery select(Object... cols) {
         if (selectQuery == null) {
             selectQuery = new SelectQuery(false);
             selectQuery.addFromTable(table);
         }
-        for (ColumnDef col: cols) {
-            selectQuery.addColumns(table.findColumn(col.name));
+        for (Object o: cols) {
+            if (o instanceof ColumnDef) {
+                selectQuery.addColumns(table.findColumn(((ColumnDef)o).name));
+            } else {
+                selectQuery.addCustomColumns(new CustomSql(o));
+            }
         }
         SelectQuery result = selectQuery;
         selectQuery = null;
@@ -217,6 +254,20 @@ public class TableSchema implements Serializable {
         } else {
             selectQuery = new SelectQuery(true);
             selectQuery.addFromTable(table);
+        }
+        return this;
+    }
+    
+    /**
+     * Add a GROUP BY clause to the query
+     */
+    public synchronized TableSchema groupBy(ColumnDef... groupCols) {
+        if (selectQuery == null) {
+            selectQuery = new SelectQuery(false);
+            selectQuery.addFromTable(table);
+        }
+        for (ColumnDef col: groupCols) {
+            selectQuery.addGroupings(table.findColumn(col.name));
         }
         return this;
     }

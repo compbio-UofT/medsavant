@@ -15,9 +15,9 @@
  */
 package org.ut.biolab.medsavant.db;
 
-import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
+
 
 public class MedSavantDatabase {
 
@@ -524,6 +524,7 @@ public class MedSavantDatabase {
         static final ColumnDef CODING_END = new ColumnDef.Integer("codingEnd");
         static final ColumnDef EXON_STARTS = new ColumnDef("exonStarts", ColumnType.VARCHAR, 9000);
         static final ColumnDef EXON_ENDS = new ColumnDef("exonEnds", ColumnType.VARCHAR, 9000);
+        static final ColumnDef TRANSCRIPT = new ColumnDef("transcript", ColumnType.VARCHAR, 30, null, true, false);
     }
     
     public static class PatientFormatTableSchema extends TableSchema {
@@ -1169,9 +1170,7 @@ public class MedSavantDatabase {
     //DefaultvariantTableSchema
     public static final DefaultVariantTableSchema DefaultvariantTableSchema = new DefaultVariantTableSchema(schema);
     
-    public static final TableSchema GeneSetTableSchema = new TableSchema(schema, "genes",
-            GeneSetColumns.GENOME, GeneSetColumns.TYPE, GeneSetColumns.NAME, GeneSetColumns.CHROM, GeneSetColumns.START,
-            GeneSetColumns.END, GeneSetColumns.CODING_START, GeneSetColumns.CODING_END, GeneSetColumns.EXON_STARTS, GeneSetColumns.EXON_ENDS);
+    public static final TableSchema GeneSetTableSchema = new TableSchema(schema, "genes", GeneSetColumns.class);
             
     //PatientformatTableSchema
     public static final PatientFormatTableSchema PatientformatTableSchema = new PatientFormatTableSchema(schema);

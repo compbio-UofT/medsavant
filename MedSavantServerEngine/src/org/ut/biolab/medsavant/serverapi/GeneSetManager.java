@@ -101,13 +101,28 @@ public class GeneSetManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<Gene> getGenes(String sessID, GeneSet geneSet) throws SQLException {
 
-        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getGenome(), TYPE, geneSet.getType()).select(NAME, CHROM, START, END, CODING_START, CODING_END);
-        LOG.info("getGenes: " + query);
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getGenome(), TYPE, geneSet.getType()).groupBy(NAME).select(NAME, CHROM, "MIN(start)", "MAX(end)", "MIN(codingStart)", "MAX(codingEnd)");
+        LOG.debug(query);
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         List<Gene> result = new ArrayList<Gene>();
         while (rs.next()) {
-            result.add(new Gene(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), rs.getInt(6)));
+            result.add(new Gene(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), rs.getInt(6), null));
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Gene> getTranscripts(String sessID, GeneSet geneSet) throws SQLException {
+
+        SelectQuery query = MedSavantDatabase.GeneSetTableSchema.where(GENOME, geneSet.getGenome(), TYPE, geneSet.getType()).select(NAME, CHROM, START, END, CODING_START, CODING_END, TRANSCRIPT);
+        LOG.debug(query);
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
+
+        List<Gene> result = new ArrayList<Gene>();
+        while (rs.next()) {
+            result.add(new Gene(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), rs.getInt(6), rs.getString(7)));
         }
 
         return result;

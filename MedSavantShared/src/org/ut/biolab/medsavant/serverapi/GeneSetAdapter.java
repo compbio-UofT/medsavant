@@ -47,6 +47,11 @@ public interface GeneSetAdapter extends Remote {
     public List<Gene> getGenes(String sessID, GeneSet geneSet) throws SQLException, RemoteException;
     
     /**
+     * Get a list of all transcripts for the given set.
+     */
+    public List<Gene> getTranscripts(String sessID, GeneSet geneSet) throws SQLException, RemoteException;
+    
+    /**
      * Get all blocks associated with the given gene.  Not currently presented to the user in any fashion.
      */
     public List<Block> getBlocks(String sessID, Gene gene) throws SQLException, RemoteException;
