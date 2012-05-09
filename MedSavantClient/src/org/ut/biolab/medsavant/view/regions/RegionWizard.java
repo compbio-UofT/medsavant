@@ -15,10 +15,13 @@
  */
 package org.ut.biolab.medsavant.view.regions;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import javax.swing.*;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
@@ -31,7 +34,6 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,9 +45,12 @@ import org.ut.biolab.medsavant.importing.BEDFormat;
 import org.ut.biolab.medsavant.importing.FileFormat;
 import org.ut.biolab.medsavant.importing.ImportFilePanel;
 import org.ut.biolab.medsavant.model.GeneSet;
+import org.ut.biolab.medsavant.util.GeneFetcher;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
+import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
+import org.ut.biolab.medsavant.view.component.PartSelectorPanel;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -61,7 +66,9 @@ public class RegionWizard extends WizardDialog {
     private static final String PAGENAME_GENES = "Select Genes";
     private static final String PAGENAME_CREATE = "Create";
     private static final String PAGENAME_COMPLETE = "Complete";
-    
+    private static final String[] COLUMN_NAMES = new String[] { "Name", "Chromosome", "Start", "End" };
+    private static final Class[] COLUMN_CLASSES = new Class[] { String.class, String.class, Integer.class, Integer.class };
+
     private String listName;
     private String path;
     private char delim;
@@ -69,6 +76,9 @@ public class RegionWizard extends WizardDialog {
     private int numHeaderLines;
     private final boolean importing;
     private List<GeneSet> standardGenes;
+    
+    private ListViewTablePanel sourceGenesPanel;
+    private ListViewTablePanel selectedGenesPanel;
     
     public RegionWizard(boolean imp) {
         super(MedSavantFrame.getInstance(), "Region List Wizard", true);
@@ -84,8 +94,12 @@ public class RegionWizard extends WizardDialog {
             model.append(getCompletionPage());
         } else {
             model.append(getNamePage());
-            model.append(getStandardGeneSetsPage());
+            AbstractWizardPage page = getStandardGeneSetsPage();
+            if (standardGenes.size() > 1) {
+                model.append(page);
+            }
             model.append(getGenesPage());
+            fetchGenes(standardGenes.get(0));
             model.append(getCreationPage());
             model.append(getCompletionPage());
         }
@@ -119,6 +133,11 @@ public class RegionWizard extends WizardDialog {
         pack();
         setResizable(false);
         setLocationRelativeTo(MedSavantFrame.getInstance());
+    }
+    
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(960, 600);
     }
     
     private AbstractWizardPage getNamePage() {
@@ -196,18 +215,29 @@ public class RegionWizard extends WizardDialog {
     
     private AbstractWizardPage getStandardGeneSetsPage() {
         return new DefaultWizardPage(PAGENAME_STANDARD_GENES) {
+            private JComboBox geneSetCombo;
+
             {
                 try {
                     standardGenes = MedSavantClient.GeneSetAdapter.getGeneSets(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceName());
-                    JComboBox geneSetCombo = new JComboBox();
+                    geneSetCombo = new JComboBox();
                     for (GeneSet s: standardGenes) {
                         geneSetCombo.addItem(s);
                     }
                     addComponent(geneSetCombo);
+                    
+                    // When current gene-set changes, reload the genes page.
+                    geneSetCombo.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            fetchGenes((GeneSet)geneSetCombo.getSelectedItem());
+                        }
+                    });
                 } catch (Exception ex) {
                     addText("Unable to fetch gene sets: " + MiscUtils.getMessage(ex));
                 }
             }
+
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -220,7 +250,16 @@ public class RegionWizard extends WizardDialog {
     private AbstractWizardPage getGenesPage() {
         return new DefaultWizardPage(PAGENAME_GENES) {
             {
+                sourceGenesPanel = new ListViewTablePanel(new Object[0][0], COLUMN_NAMES, COLUMN_CLASSES, new int[0]);
+                sourceGenesPanel.setFontSize(10);
+                selectedGenesPanel = new ListViewTablePanel(new Object[0][0], COLUMN_NAMES, COLUMN_CLASSES, new int[0]);
+                selectedGenesPanel.setFontSize(10);
+                
+                PartSelectorPanel selector = new PartSelectorPanel(sourceGenesPanel, selectedGenesPanel);
+                selector.setBackground(Color.WHITE);
+                addComponent(selector);
             }
+
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -319,8 +358,28 @@ public class RegionWizard extends WizardDialog {
     }
     
     private void createList() throws SQLException, NonFatalDatabaseException, IOException {
-        RemoteInputStream stream = (new SimpleRemoteInputStream(new FileInputStream(path))).export();
-        MedSavantClient.RegionQueryUtilAdapter.addRegionList(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceId(), stream, delim, fileFormat, numHeaderLines);
+        if (importing) {
+            RemoteInputStream stream = (new SimpleRemoteInputStream(new FileInputStream(path))).export();
+            MedSavantClient.RegionQueryUtilAdapter.addRegionList(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceId(), stream, delim, fileFormat, numHeaderLines);
+        } else {
+            
+        }
     }
-       
+
+    private void fetchGenes(GeneSet geneSet) {
+        new GeneFetcher(geneSet, "RegionWizard") {
+            @Override
+            public void setData(Object[][] data) {
+                sourceGenesPanel.updateData(data);
+                sourceGenesPanel.updateView();
+            }
+                            
+            /**
+             * Don't have progress bar handy, so we don't do anything to show progress.
+             */
+            @Override
+            public void showProgress(double prog) {
+            }
+        }.execute();
+    }
 }

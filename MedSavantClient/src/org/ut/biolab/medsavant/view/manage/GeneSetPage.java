@@ -17,7 +17,6 @@
 package org.ut.biolab.medsavant.view.manage;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 
@@ -27,8 +26,8 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.GeneSet;
+import org.ut.biolab.medsavant.util.GeneFetcher;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedTableView;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
@@ -107,29 +106,17 @@ public class GeneSetPage extends SubSectionView {
 
         @Override
         public SwingWorker createWorker() {
-            return new SwingWorker<List<Gene>, Void>() {
-
+            return new GeneFetcher(selectedSet, getName()) {
                 @Override
-                protected List<Gene> doInBackground() throws Exception {
-                    return MedSavantClient.GeneSetAdapter.getGenes(LoginController.sessionId, selectedSet);
+                public void setData(Object[][] data) {
+                    GenesDetailedView.this.setData(data);
                 }
-
+                
+                /**
+                 * Don't have progress bar handy, so we don't do anything to show progress.
+                 */
                 @Override
-                protected void done() {
-                    //List<Object[]> list = new ArrayList<Object[]>();
-                    Object[][] data = null;
-                    try {
-                        List<Gene> result = get();
-                        data = new Object[result.size()][];
-                        for (int i = 0; i < result.size(); i++) {
-                            Gene g = result.get(i);
-                            data[i] = new Object[] { g.getName(), g.getChrom(), g.getStart(), g.getEnd(), g.getCodingStart(), g.getCodingEnd() };
-                        }
-                    } catch (InterruptedException ex) {
-                    } catch (ExecutionException ex) {
-                        LOG.error("Error loading gene sets.", ex);
-                    }
-                    setData(data);
+                public void showProgress(double prog) {
                 }
             };
         }

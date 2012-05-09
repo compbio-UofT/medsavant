@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.Arrays;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -34,9 +35,10 @@ import com.jidesoft.grid.QuickTableFilterField;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableColumnChooserPopupMenuCustomizer;
 import com.jidesoft.grid.TableHeaderPopupMenuInstaller;
+import com.jidesoft.grid.TableModelWrapperUtils;
 
-import java.util.Arrays;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+
 
 /**
  *
@@ -53,18 +55,19 @@ public class ListViewTablePanel extends JPanel {
     private ColumnChooser columnChooser;
     private int[] hiddenColumns;
     private final JPanel fieldPanel;
-    private int fontSize = 14;
+    private float fontSize = 14.0f;
 
     public SortableTable getTable() {
         return table;
     }
 
-    public synchronized void updateData(Object[][] newData) {
+    public final synchronized void updateData(Object[][] newData) {
         data = newData;
         model.fireTableDataChanged();
         table.repaint();
     }
 
+    @SuppressWarnings("UseOfObsoleteCollectionType")
     public void updateView() {
 
         if (data == null) {
@@ -76,11 +79,12 @@ public class ListViewTablePanel extends JPanel {
             model = new GenericTableModel(data, columnNames, columnClasses);
             first = true;
         } else {
-            
-            model.getDataVector().removeAllElements();
-            model.getDataVector().addAll(Arrays.asList(data));
+            java.util.Vector dataVec = model.getDataVector();
+            dataVec.removeAllElements();
+            for (Object[] row: data) {
+                dataVec.add(new java.util.Vector(Arrays.asList(row)));
+            }
         }
-
 
         if (first) {
             int[] columns = new int[columnNames.length];
@@ -149,7 +153,7 @@ public class ListViewTablePanel extends JPanel {
                 }
                 comp.setForeground(ViewUtil.detailForeground);
 
-                comp.setFont(new Font((comp.getFont().getFamily()),Font.PLAIN,fontSize));
+                comp.setFont(comp.getFont().deriveFont(fontSize));
 
                 return comp;
             }
@@ -230,16 +234,37 @@ public class ListViewTablePanel extends JPanel {
         table.setSelectionMode(selectionMode);
     }
 
-    public void forceRefreshData(){
+    public void forceRefreshData() {
         //override this in parent
     }
 
-    public void setFontSize(int newSize){
+    public void setFontSize(float newSize) {
         fontSize = newSize;
+
+        Font newFont = table.getFont().deriveFont(newSize);
+        table.setFont(newFont);
     }
 
-    public void scrollToIndex(int index){
+    public void scrollToIndex(int index) {
         table.scrollRectToVisible(table.getCellRect(index, 0, true));
+    }
+
+    public int[] getSelectedRows() {
+        int[] selected = table.getSelectedRows();
+        return TableModelWrapperUtils.getActualRowsAt(table.getModel(), selected, true);
+    }
+
+    public void addRow(Object[] rowData) {
+        model.addRow(rowData);
+    }
+
+    public void removeRow(int i) {
+        model.removeRow(i);
+    }
+
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    public Object[] getRowData(int i) {
+        return ((java.util.Vector)model.getDataVector().elementAt(i)).toArray();
     }
 
     private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {

@@ -51,7 +51,7 @@ public class SplitScreenView extends JPanel {
     private final DetailedListModel detailedListModel;
     private final DetailedView detailedView;
     private final DetailedListEditor detailedEditor;
-    private ListView listView;
+    private final ListView listView;
     //TODO: handle limits better!
     private static final int limit = 10000;
 
@@ -63,10 +63,7 @@ public class SplitScreenView extends JPanel {
         detailedListModel = model;
         detailedView = view;
         detailedEditor = editor;
-        initGUI();
-    }
 
-    private void initGUI() {
         setLayout(new BorderLayout());
 
         listView = new ListView();
