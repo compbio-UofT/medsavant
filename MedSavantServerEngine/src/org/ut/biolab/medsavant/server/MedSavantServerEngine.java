@@ -168,7 +168,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         registry.rebind(Registry_ProjectQueryUtilAdapter, ProjectQueryUtil.getInstance());
         registry.rebind(Registry_QueryUtilAdapter, QueryUtil.getInstance());
         registry.rebind(Registry_ReferenceQueryUtilAdapter, ReferenceQueryUtil.getInstance());
-        registry.rebind(Registry_RegionQueryUtilAdapter, RegionQueryUtil.getInstance());
+        registry.rebind(Registry_RegionSetAdapter, RegionSetManager.getInstance());
         registry.rebind(Registry_ServerLogQueryUtilAdapter, ServerLogQueryUtil.getInstance());
         registry.rebind(Registry_SettingsQueryUtilAdapter, SettingsQueryUtil.getInstance());
         registry.rebind(Registry_UserQueryUtilAdapter, UserQueryUtil.getInstance());

@@ -18,7 +18,9 @@ package org.ut.biolab.medsavant.view.regions;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.*;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -345,7 +347,7 @@ public class RegionWizard extends WizardDialog {
     
     private boolean validateListName() {
         try {
-            boolean valid = !MedSavantClient.RegionQueryUtilAdapter.listNameExists(LoginController.sessionId, listName);
+            boolean valid = !MedSavantClient.RegionSetAdapter.isNameInUse(LoginController.sessionId, listName);
             if (!valid) {
                 DialogUtils.displayError("Error", "List name already in use.");
             }
@@ -358,12 +360,19 @@ public class RegionWizard extends WizardDialog {
     }
     
     private void createList() throws SQLException, NonFatalDatabaseException, IOException {
-        if (importing) {
-            RemoteInputStream stream = (new SimpleRemoteInputStream(new FileInputStream(path))).export();
-            MedSavantClient.RegionQueryUtilAdapter.addRegionList(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceId(), stream, delim, fileFormat, numHeaderLines);
-        } else {
-            
+        if (!importing) {
+            File tempFile = File.createTempFile("genes", "bed");
+            FileWriter output = new FileWriter(tempFile);
+            for (int i = 0; i < selectedGenesPanel.getTable().getRowCount(); i++) {
+                Object[] rowData = selectedGenesPanel.getRowData(i);
+                output.write(rowData[0] + "\t" + rowData[1] + "\t" + rowData[2] + "\t" + rowData[3] + "\n");
+            }
+            delim = '\t';
+            numHeaderLines = 0;
+            path = tempFile.getAbsolutePath();
         }
+        RemoteInputStream stream = (new SimpleRemoteInputStream(new FileInputStream(path))).export();
+        MedSavantClient.RegionSetAdapter.addRegionSet(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceId(), stream, delim, fileFormat, numHeaderLines);
     }
 
     private void fetchGenes(GeneSet geneSet) {

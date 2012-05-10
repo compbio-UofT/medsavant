@@ -91,7 +91,7 @@ class GeneListFilterView extends FilterView {
 
     private List<RegionSet> getDefaultValues() {
         try {
-            return MedSavantClient.RegionQueryUtilAdapter.getRegionSets(LoginController.sessionId);
+            return MedSavantClient.RegionSetAdapter.getRegionSets(LoginController.sessionId);
         } catch (Exception ex){
             Logger.getLogger(GeneListFilterView.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -136,9 +136,7 @@ class GeneListFilterView extends FilterView {
 
                         try {
 
-                            List<GenomicRegion> regions = MedSavantClient.RegionQueryUtilAdapter.getRegionsInRegionSet(
-                                    LoginController.sessionId,
-                                    regionSet.getID());
+                            List<GenomicRegion> regions = MedSavantClient.RegionSetAdapter.getRegionsInSet(LoginController.sessionId, regionSet.getID(), Integer.MAX_VALUE);
                             Map<String, List<Range>> rangeMap = GenomicRegion.mergeGenomicRegions(regions);
                             Condition[] results = new Condition[rangeMap.size()];
                             int i = 0;

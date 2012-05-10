@@ -36,7 +36,7 @@ public interface MedSavantServerRegistry {
     public static final String Registry_ProjectQueryUtilAdapter = "ProjectQueryUtilAdapter";
     public static final String Registry_QueryUtilAdapter = "QueryUtilAdapter";
     public static final String Registry_ReferenceQueryUtilAdapter = "ReferenceQueryUtilAdapter";
-    public static final String Registry_RegionQueryUtilAdapter = "RegionQueryUtilAdapter";
+    public static final String Registry_RegionSetAdapter = "RegionSetAdapter";
     public static final String Registry_ServerLogQueryUtilAdapter = "ServerLogQueryUtilAdapter";
     public static final String Registry_SettingsQueryUtilAdapter = "SettingsQueryUtilAdapter";
     public static final String Registry_UserQueryUtilAdapter = "UserQueryUtilAdapter";

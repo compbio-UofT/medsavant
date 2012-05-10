@@ -105,32 +105,42 @@ public class DialogUtils {
                 JideOptionPane optionPane = new JideOptionPane(msg, JOptionPane.ERROR_MESSAGE, JideOptionPane.CLOSE_OPTION);
                 optionPane.setTitle(title);
                 optionPane.setOptions(new String[] {});
+
+                JButton cancelButton = new JButton("Cancel");
+                ((JComponent) optionPane.getComponent(optionPane.getComponentCount()-1)).add(cancelButton);
+
                 JButton reportButton = new JButton("Report Issue");
                 ((JComponent) optionPane.getComponent(optionPane.getComponentCount()-1)).add(reportButton);
+
                 final JDialog dialog = optionPane.createDialog(KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow(), "Error encountered");
+                cancelButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        dialog.setVisible(false);
+                    }
+                });
+
+                reportButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e2) {
+                        String issue = "Hey MedSavant Developers,\n\n";
+                        issue += "I am encountering an error in MedSavant. I have provided additional diagnostic information below.\n\n";
+
+                        issue += "=== DESCRIBE THE ISSUE BELOW ===\n\n\n";
+
+
+                        issue += "=== ERROR DETAILS ===\n";
+                        issue += ClientMiscUtils.getStackTrace(t);
+
+                        dialog.dispose();
+                        (new BugReportDialog(issue, null)).setVisible(true);
+                    }
+                });
+
                 dialog.setResizable(true);
                 String details = t.getMessage() + "\r\n" + ClientMiscUtils.getStackTrace(t);
                 optionPane.setDetails(details);
                 dialog.pack();
-
-                reportButton.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e2) {
-                    String issue = "Hey MedSavant Developers,\n\n";
-                    issue += "I am encountering an error in MedSavant. I have provided additional diagnostic information below.\n\n";
-
-                    issue += "=== DESCRIBE THE ISSUE BELOW ===\n\n\n";
-
-
-                    issue += "=== ERROR DETAILS ===\n";
-                    issue += ClientMiscUtils.getStackTrace(t);
-
-                    dialog.dispose();
-                    (new BugReportDialog(issue, null)).setVisible(true);
-                }
-
-                });
 
                 dialog.setVisible(true);
             }
@@ -144,15 +154,6 @@ public class DialogUtils {
      */
     public static void displayMessage(String message) {
         displayMessage("MedSavant", message);
-    }
-
-    /**
-     * Display a Savant message dialog with the given message and the title "MedSavant".
-     *
-     * @param message the message to be displayed
-     */
-    public static void displayMessage(String message, Object... params) {
-        displayMessage(String.format(message, params));
     }
 
     /**

@@ -514,17 +514,17 @@ public class MedSavantDatabase {
     }
 
     public interface GeneSetColumns {
-        static final ColumnDef GENOME = new ColumnDef("genome", ColumnType.VARCHAR, 30, null, true, false);
-        static final ColumnDef TYPE = new ColumnDef("type", ColumnType.VARCHAR, 30, null, true, false);
-        static final ColumnDef NAME = new ColumnDef("name", ColumnType.VARCHAR, 30, null, true, false);
-        static final ColumnDef CHROM = new ColumnDef("chrom", ColumnType.VARCHAR, 30, null, true, false);
+        static final ColumnDef GENOME = new ColumnDef("genome", ColumnType.VARCHAR, 30);
+        static final ColumnDef TYPE = new ColumnDef("type", ColumnType.VARCHAR, 30);
+        static final ColumnDef NAME = new ColumnDef("name", ColumnType.VARCHAR, 30);
+        static final ColumnDef CHROM = new ColumnDef("chrom", ColumnType.VARCHAR, 30);
         static final ColumnDef START = new ColumnDef.Integer("start");
         static final ColumnDef END = new ColumnDef.Integer("end");
         static final ColumnDef CODING_START = new ColumnDef.Integer("codingStart");
         static final ColumnDef CODING_END = new ColumnDef.Integer("codingEnd");
         static final ColumnDef EXON_STARTS = new ColumnDef("exonStarts", ColumnType.VARCHAR, 9000);
         static final ColumnDef EXON_ENDS = new ColumnDef("exonEnds", ColumnType.VARCHAR, 9000);
-        static final ColumnDef TRANSCRIPT = new ColumnDef("transcript", ColumnType.VARCHAR, 30, null, true, false);
+        static final ColumnDef TRANSCRIPT = new ColumnDef("transcript", ColumnType.VARCHAR, 30);
     }
     
     public static class PatientFormatTableSchema extends TableSchema {
@@ -663,80 +663,20 @@ public class MedSavantDatabase {
         }
     }
 
-    public static class RegionSetTableSchema extends TableSchema {
-
-        public static final String TABLE_NAME = "region_set";
-
-        public RegionSetTableSchema(DbSchema s) {
-            super(s.addTable(TABLE_NAME));
-            addColumns();
-        }
-        // region_set.region_set_id
-        public static final int INDEX_OF_REGION_SET_ID = 0;
-        public static final ColumnType TYPE_OF_REGION_SET_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_REGION_SET_ID = 11;
-        public static final String COLUMNNAME_OF_REGION_SET_ID = "region_set_id";
-        // region_set.name
-        public static final int INDEX_OF_NAME = 1;
-        public static final ColumnType TYPE_OF_NAME = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_NAME = 255;
-        public static final String COLUMNNAME_OF_NAME = "name";
-
-        private void addColumns() {
-            addColumn(COLUMNNAME_OF_REGION_SET_ID, COLUMNNAME_OF_REGION_SET_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_NAME, COLUMNNAME_OF_NAME, ColumnType.VARCHAR, 255);
-        }
+    public interface RegionSetColumns {
+        static final ColumnDef REGION_SET_ID = new ColumnDef("region_set_id", ColumnType.INTEGER, 11, null, true, true, true);
+        static final ColumnDef NAME = new ColumnDef("name", ColumnType.VARCHAR, 255);
     }
 
-    public static class RegionSetMembershipTableSchema extends TableSchema {
-
-        public static final String TABLE_NAME = "region_set_membership";
-
-        public RegionSetMembershipTableSchema(DbSchema s) {
-            super(s.addTable(TABLE_NAME));
-            addColumns();
-        }
-        // region_set_membership.region_set_id
-        public static final int INDEX_OF_REGION_SET_ID = 0;
-        public static final ColumnType TYPE_OF_REGION_SET_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_REGION_SET_ID = 11;
-        public static final String COLUMNNAME_OF_REGION_SET_ID = "region_set_id";
-        // region_set_membership.genome_id
-        public static final int INDEX_OF_GENOME_ID = 1;
-        public static final ColumnType TYPE_OF_GENOME_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_GENOME_ID = 11;
-        public static final String COLUMNNAME_OF_GENOME_ID = "genome_id";
-        // region_set_membership.chrom
-        public static final int INDEX_OF_CHROM = 2;
-        public static final ColumnType TYPE_OF_CHROM = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_CHROM = 255;
-        public static final String COLUMNNAME_OF_CHROM = "chrom";
-        // region_set_membership.start
-        public static final int INDEX_OF_START = 3;
-        public static final ColumnType TYPE_OF_START = ColumnType.INTEGER;
-        public static final int LENGTH_OF_START = 11;
-        public static final String COLUMNNAME_OF_START = "start";
-        // region_set_membership.end
-        public static final int INDEX_OF_END = 4;
-        public static final ColumnType TYPE_OF_END = ColumnType.INTEGER;
-        public static final int LENGTH_OF_END = 11;
-        public static final String COLUMNNAME_OF_END = "end";
-        // region_set_membership.description
-        public static final int INDEX_OF_DESCRIPTION = 5;
-        public static final ColumnType TYPE_OF_DESCRIPTION = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_DESCRIPTION = 255;
-        public static final String COLUMNNAME_OF_DESCRIPTION = "description";
-
-        private void addColumns() {
-            addColumn(COLUMNNAME_OF_REGION_SET_ID, COLUMNNAME_OF_REGION_SET_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_GENOME_ID, COLUMNNAME_OF_GENOME_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_CHROM, COLUMNNAME_OF_CHROM, ColumnType.VARCHAR, 255);
-            addColumn(COLUMNNAME_OF_START, COLUMNNAME_OF_START, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_END, COLUMNNAME_OF_END, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, 255);
-        }
+    public interface RegionSetMembershipColumns {
+        static final ColumnDef REGION_SET_ID = new ColumnDef.Integer("region_set_id");
+        static final ColumnDef GENOME_ID = new ColumnDef.Integer("genome_id");
+        static final ColumnDef CHROM = new ColumnDef("chrom", ColumnType.VARCHAR, 30, null, false, true, false);
+        static final ColumnDef START = new ColumnDef.Integer("start");
+        static final ColumnDef END = new ColumnDef.Integer("end");
+        static final ColumnDef DESCRIPTION = new ColumnDef("description", ColumnType.VARCHAR, 255);
     }
-
+    
     public static class ServerLogTableSchema extends TableSchema {
 
         public static final String TABLE_NAME = "server_log";
@@ -1180,10 +1120,10 @@ public class MedSavantDatabase {
     public static final ProjectTableSchema ProjectTableSchema = new ProjectTableSchema(schema);
     //ReferenceTableSchema
     public static final ReferenceTableSchema ReferenceTableSchema = new ReferenceTableSchema(schema);
-    //RegionsetTableSchema
-    public static final RegionSetTableSchema RegionsetTableSchema = new RegionSetTableSchema(schema);
-    //RegionsetmembershipTableSchema
-    public static final RegionSetMembershipTableSchema RegionsetmembershipTableSchema = new RegionSetMembershipTableSchema(schema);
+
+    public static final TableSchema RegionSetTableSchema = new TableSchema(schema, "region_set", RegionSetColumns.class);
+
+    public static final TableSchema RegionSetMembershipTableSchema = new TableSchema(schema, "region_set_membership", RegionSetMembershipColumns.class);
     //ServerlogTableSchema
     public static final ServerLogTableSchema ServerlogTableSchema = new ServerLogTableSchema(schema);
     //VariantpendingupdateTableSchema

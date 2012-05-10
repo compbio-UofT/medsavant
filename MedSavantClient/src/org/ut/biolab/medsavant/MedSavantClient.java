@@ -19,11 +19,8 @@ package org.ut.biolab.medsavant;
 import java.rmi.*;
 import java.rmi.registry.*;
 import java.awt.Insets;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.ColorUIResource;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
@@ -54,7 +51,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static UserQueryUtilAdapter UserQueryUtilAdapter;
     public static SettingsQueryUtilAdapter SettingsQueryUtilAdapter;
     public static ServerLogQueryUtilAdapter ServerLogQueryUtilAdapter;
-    public static RegionQueryUtilAdapter RegionQueryUtilAdapter;
+    public static RegionSetAdapter RegionSetAdapter;
     public static ReferenceQueryUtilAdapter ReferenceQueryUtilAdapter;
     public static QueryUtilAdapter QueryUtilAdapter;
     public static DBUtilAdapter DBUtilAdapter;
@@ -149,7 +146,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
         QueryUtilAdapter = (QueryUtilAdapter)registry.lookup(Registry_QueryUtilAdapter);
         GeneSetAdapter = (GeneSetAdapter)registry.lookup(Registry_GeneSetAdapter);
         ReferenceQueryUtilAdapter = (ReferenceQueryUtilAdapter)registry.lookup(Registry_ReferenceQueryUtilAdapter);
-        RegionQueryUtilAdapter = (RegionQueryUtilAdapter)registry.lookup(Registry_RegionQueryUtilAdapter);
+        RegionSetAdapter = (RegionSetAdapter)registry.lookup(Registry_RegionSetAdapter);
         ServerLogQueryUtilAdapter = (ServerLogQueryUtilAdapter)registry.lookup(Registry_ServerLogQueryUtilAdapter);
         SettingsQueryUtilAdapter = (SettingsQueryUtilAdapter)registry.lookup(Registry_SettingsQueryUtilAdapter);
         UserQueryUtilAdapter = (UserQueryUtilAdapter)registry.lookup(Registry_UserQueryUtilAdapter);

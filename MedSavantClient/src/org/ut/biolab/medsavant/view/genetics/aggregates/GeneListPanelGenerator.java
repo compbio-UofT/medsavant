@@ -24,18 +24,19 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.logging.Logger;
 import javax.swing.*;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.grid.SortableTable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.*;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.model.BEDRecord;
+import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -51,7 +52,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class GeneListPanelGenerator implements AggregatePanelGenerator {
-    private static final Logger LOG = Logger.getLogger(GeneListPanelGenerator.class.getName());
+    private static final Log LOG = LogFactory.getLog(GeneListPanelGenerator.class);
 
     private GeneListPanel panel;
     private final String pageName;
@@ -94,11 +95,11 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
         private final JPanel tablePanel;
         private GeneAggregator aggregator;
         //private final JPanel content;
-        private final TreeMap<BEDRecord, Integer> regionToVariantCountMap;
+        private final TreeMap<GenomicRegion, Integer> regionToVariantCountMap;
         private SearchableTablePanel stp;
         //private GeneVariantIntersectionWorker gviw;
-        private List<BEDRecord> currentGenes;
-        private final TreeMap<BEDRecord, Integer> regionToIndividualCountMap;
+        private List<GenomicRegion> currentGenes;
+        private final TreeMap<GenomicRegion, Integer> regionToIndividualCountMap;
         //private GenePatientIntersectionWorker gpiw;
         private final JProgressBar progress;
         private int numbersRetrieved;
@@ -111,8 +112,8 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             this.setLayout(new BorderLayout());
             banner = ViewUtil.getSubBannerPanel("Gene List");
 
-            regionToVariantCountMap = new TreeMap<BEDRecord, Integer>();
-            regionToIndividualCountMap = new TreeMap<BEDRecord, Integer>();
+            regionToVariantCountMap = new TreeMap<GenomicRegion, Integer>();
+            regionToIndividualCountMap = new TreeMap<GenomicRegion, Integer>();
 
             geneLister = new JComboBox();
 
@@ -167,7 +168,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                     //compute variant field
                     for(int i = 0; i < Math.min(currentGenes.size(), limit); i++) {
                         try {
-                            BEDRecord r = currentGenes.get(i);
+                            GenomicRegion r = currentGenes.get(i);
                             int recordsInRegion = MedSavantClient.VariantQueryUtilAdapter.getNumVariantsInRange(
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectId(),
@@ -191,7 +192,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                     //compute patient field
                     for(int i = 0; i < Math.min(currentGenes.size(), limit); i++) {
                         try {
-                            BEDRecord r = currentGenes.get(i);
+                            GenomicRegion r = currentGenes.get(i);
                             int recordsInRegion = MedSavantClient.VariantQueryUtilAdapter.getNumPatientsWithVariantsInRange(
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectId(),
@@ -312,7 +313,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             numbersRetrieved = 0;
             updateProgess();
 
-            for (BEDRecord r : this.currentGenes) {
+            for (GenomicRegion r : this.currentGenes) {
                 regionToVariantCountMap.put(r, null);
                 regionToIndividualCountMap.put(r, null);
             }
@@ -325,7 +326,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
         }
 
-        private void initGeneTable(List<BEDRecord> genes) {
+        private void initGeneTable(List<GenomicRegion> genes) {
             this.currentGenes = genes;
             updateGeneTable();
         }
@@ -335,7 +336,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             List<Object[]> data = new ArrayList<Object[]>();
 
             int i = 0;
-            for (BEDRecord r : regionToVariantCountMap.keySet()) {
+            for (GenomicRegion r : regionToVariantCountMap.keySet()) {
                 if (i >= limit) break;
                 data.add(BEDToVector(r, regionToVariantCountMap.get(r), regionToIndividualCountMap.get(r)));
                 i++;
@@ -350,13 +351,13 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             }
         }
 
-        public synchronized void updateBEDRecordVariantValue(BEDRecord br, int value) {
+        public synchronized void updateBEDRecordVariantValue(GenomicRegion br, int value) {
             regionToVariantCountMap.put(br, value);
             updateData();
             incrementProgress();
         }
 
-        public synchronized void updateBEDRecordPatientValue(BEDRecord br, int value) {
+        public synchronized void updateBEDRecordPatientValue(GenomicRegion br, int value) {
             regionToIndividualCountMap.put(br, value);
             updateData();
             incrementProgress();
@@ -384,7 +385,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             aggregator.execute();
         }
 
-        private Object[] BEDToVector(BEDRecord r, Integer numVariants, Integer numIndividuals) {
+        private Object[] BEDToVector(GenomicRegion r, Integer numVariants, Integer numIndividuals) {
             return new Object[] { r.getName(), r.getChrom(), r.getStart(), r.getEnd(), numVariants, numIndividuals };
         }
 
@@ -412,7 +413,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             progress.setString("stopped");
         }
 
-        private class GeneAggregator extends MedSavantWorker<List<BEDRecord>> {
+        private class GeneAggregator extends MedSavantWorker<List<GenomicRegion>> {
 
             private final RegionSet geneList;
 
@@ -422,15 +423,15 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             }
 
             @Override
-            protected List<BEDRecord> doInBackground() throws Exception {
-                return MedSavantClient.RegionQueryUtilAdapter.getBedRegionsInRegionSet(LoginController.sessionId, geneList.getID(), limit);
+            protected List<GenomicRegion> doInBackground() throws Exception {
+                return MedSavantClient.RegionSetAdapter.getRegionsInSet(LoginController.sessionId, geneList.getID(), limit);
             }
 
             @Override
             protected void showProgress(double fraction) {}
 
             @Override
-            protected void showSuccess(List<BEDRecord> result) {
+            protected void showSuccess(List<GenomicRegion> result) {
                 initGeneTable(result);
             }
         }
@@ -443,7 +444,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             
             @Override
             protected List<RegionSet> doInBackground() throws Exception {
-                return MedSavantClient.RegionQueryUtilAdapter.getRegionSets(LoginController.sessionId);
+                return MedSavantClient.RegionSetAdapter.getRegionSets(LoginController.sessionId);
             }
             
             @Override

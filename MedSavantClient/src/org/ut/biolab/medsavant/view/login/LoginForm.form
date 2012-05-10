@@ -42,7 +42,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="label_versioninformation" alignment="0" pref="388" max="32767" attributes="1"/>
+              <Component id="versionLabel" alignment="0" pref="388" max="32767" attributes="1"/>
               <Component id="spiralPanel" alignment="0" pref="388" max="32767" attributes="1"/>
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace min="-2" pref="100" max="-2" attributes="0"/>
@@ -55,7 +55,7 @@
                       </Group>
                   </Group>
               </Group>
-              <Component id="panel_details" alignment="1" max="32767" attributes="0"/>
+              <Component id="detailsPanel" alignment="1" max="32767" attributes="0"/>
               <Group type="102" alignment="0" attributes="0">
                   <Group type="103" groupAlignment="1" max="-2" attributes="0">
                       <Component id="jLabel1" alignment="0" max="32767" attributes="1"/>
@@ -74,7 +74,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="spiralPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="label_versioninformation" min="-2" max="-2" attributes="0"/>
+                  <Component id="versionLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -93,7 +93,7 @@
                   <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
                   <Component id="label_status" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="panel_details" min="-2" max="-2" attributes="0"/>
+                  <Component id="detailsPanel" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -143,7 +143,7 @@
             </DimensionLayout>
           </Layout>
         </Container>
-        <Component class="javax.swing.JLabel" name="label_versioninformation">
+        <Component class="javax.swing.JLabel" name="versionLabel">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Tahoma" size="14" style="0"/>
@@ -160,6 +160,10 @@
             <Property name="horizontalAlignment" type="int" value="0"/>
             <Property name="text" type="java.lang.String" value="USERNAME"/>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel2">
           <Properties>
@@ -169,6 +173,10 @@
             <Property name="horizontalAlignment" type="int" value="0"/>
             <Property name="text" type="java.lang.String" value="PASSWORD"/>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JToggleButton" name="jToggleButton1">
           <Properties>
@@ -178,7 +186,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jToggleButton1ActionPerformed"/>
           </Events>
         </Component>
-        <Container class="javax.swing.JPanel" name="panel_details">
+        <Container class="javax.swing.JPanel" name="detailsPanel">
           <Properties>
             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="cc" green="cc" red="cc" type="rgb"/>
@@ -213,7 +221,11 @@
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="button_create_db" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="dbRemoveButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="dbCreateButton" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <Component id="field_database" alignment="1" pref="336" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -235,7 +247,10 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="field_database" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
-                      <Component id="button_create_db" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="dbCreateButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="dbRemoveButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -246,6 +261,10 @@
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="SERVER ADDRESS"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JTextField" name="field_hostname">
               <Properties>
@@ -263,6 +282,10 @@
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="SERVER PORT"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JTextField" name="field_port">
               <Properties>
@@ -275,13 +298,17 @@
                 <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="field_portKeyPressed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JButton" name="button_create_db">
+            <Component class="javax.swing.JButton" name="dbCreateButton">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Create Database"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="button_create_dbActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dbCreateButtonActionPerformed"/>
               </Events>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JTextField" name="field_database">
               <Properties>
@@ -299,6 +326,22 @@
                 <Property name="horizontalAlignment" type="int" value="0"/>
                 <Property name="text" type="java.lang.String" value="DATABASE NAME"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JButton" name="dbRemoveButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Remove Database"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dbRemoveButtonActionPerformed"/>
+              </Events>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+              </AuxValues>
             </Component>
           </SubComponents>
         </Container>

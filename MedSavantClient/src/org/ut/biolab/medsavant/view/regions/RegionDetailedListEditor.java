@@ -83,7 +83,7 @@ class RegionDetailedListEditor extends DetailedListEditor {
                         String listName = ((RegionSet) v[0]).getName();
                         int listID = ((RegionSet) v[0]).getID();
                         try {
-                            MedSavantClient.RegionQueryUtilAdapter.removeRegionList(LoginController.sessionId, listID);
+                            MedSavantClient.RegionSetAdapter.removeRegionSet(LoginController.sessionId, listID);
                         } catch (Exception ex) {
                             numCouldntRemove++;
                             DialogUtils.displayErrorMessage("Could not remove " + listName + ".", ex);
@@ -91,7 +91,7 @@ class RegionDetailedListEditor extends DetailedListEditor {
                     }
                     dialog.close();
                     if (numCouldntRemove != items.size()) {
-                        DialogUtils.displayMessage("Successfully removed %d list(s)", items.size());
+                        DialogUtils.displayMessage(String.format("Successfully removed %d list(s)", items.size()));
                     }
                 }
             };

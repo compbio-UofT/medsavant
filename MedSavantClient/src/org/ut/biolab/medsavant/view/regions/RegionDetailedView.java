@@ -77,7 +77,7 @@ public class RegionDetailedView extends DetailedTableView {
             protected List<GenomicRegion> doInBackground() throws Exception {
                 //numRegionsInRegionList = QueryUtil.getNumRegionsInRegionSet(regionName);
                 //List<Vector> regionList = QueryUtil.getRegionNamesInRegionSet(regionName,limit);
-                return MedSavantClient.RegionQueryUtilAdapter.getRegionsInRegionSet(LoginController.sessionId, selectedRegion.getID());
+                return MedSavantClient.RegionSetAdapter.getRegionsInSet(LoginController.sessionId, selectedRegion.getID(), Integer.MAX_VALUE);
             }
             
             @Override
@@ -132,7 +132,7 @@ public class RegionDetailedView extends DetailedTableView {
                 public void actionPerformed(ActionEvent e) {
 
                     try {
-                        List<GenomicRegion> regions = MedSavantClient.RegionQueryUtilAdapter.getRegionsInRegionSet(LoginController.sessionId, set.getID());
+                        List<GenomicRegion> regions = MedSavantClient.RegionSetAdapter.getRegionsInSet(LoginController.sessionId, set.getID(), Integer.MAX_VALUE);
                         Map<String, List<Range>> rangeMap = GenomicRegion.mergeGenomicRegions(regions);
                         Condition[] results = new Condition[rangeMap.size()];
                         int i = 0;

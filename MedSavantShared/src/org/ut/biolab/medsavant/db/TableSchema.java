@@ -24,6 +24,8 @@ import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.CreateTableQuery;
 import com.healthmarketscience.sqlbuilder.CustomSql;
+import com.healthmarketscience.sqlbuilder.DeleteQuery;
+import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
@@ -270,5 +272,41 @@ public class TableSchema implements Serializable {
             selectQuery.addGroupings(table.findColumn(col.name));
         }
         return this;
+    }
+
+    /**
+     * Create a query object for inserting the given data.
+     * 
+     * @param insertions pairs consisting of column def followed by value
+     * @return an insert query
+     */
+    public synchronized InsertQuery insert(Object... insertions) {
+        InsertQuery query = new InsertQuery(table);
+        for (int i = 0; i < insertions.length; i += 2) {
+            query.addColumn(table.findColumn(((ColumnDef)insertions[i]).name), insertions[i + 1]);
+        }
+        return query;
+    }
+
+    /**
+     * Create a query object for inserting the given data.
+     * 
+     * @param insertions pairs consisting of column def followed by value
+     * @return an insert query
+     */
+    public synchronized InsertQuery preparedInsert(ColumnDef... cols) {
+        InsertQuery query = new InsertQuery(table);
+        for (int i = 0; i < cols.length; i++) {
+            query.addPreparedColumns(table.findColumn(cols[i].name));
+        }
+        return query;
+    }
+    
+    public synchronized DeleteQuery delete(Object... wheres) {
+        DeleteQuery query = new DeleteQuery(table);
+        for (int i = 0; i < wheres.length; i += 2) {
+            query.addCondition(BinaryConditionMS.equalTo(table.findColumn(((ColumnDef)wheres[i]).name), wheres[i + 1]));
+        }
+        return query;
     }
 }

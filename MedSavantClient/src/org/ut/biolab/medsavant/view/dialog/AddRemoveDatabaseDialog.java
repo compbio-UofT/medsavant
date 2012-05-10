@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,37 +16,31 @@
 
 package org.ut.biolab.medsavant.view.dialog;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.serverapi.SessionAdapter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.settings.VersionSettings;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
+ * Dialog for adding and removing databases.  Actually, the real purpose of this dialog is just to retrieve the admin username and
+ * password.
  *
  * @author mfiume
  */
-public class AddDatabaseDialog extends javax.swing.JDialog {
+public class AddRemoveDatabaseDialog extends javax.swing.JDialog {
+    private static final Log LOG = LogFactory.getLog(AddRemoveDatabaseDialog.class);
+    private final boolean removing;
 
-    /** A return status code - returned if Cancel button has been pressed */
-    public static final int RET_CANCEL = 0;
-    /** A return status code - returned if OK button has been pressed */
-    public static final int RET_OK = 1;
-
-    public AddDatabaseDialog(String hostname, String port, String dbname) {
+    public AddRemoveDatabaseDialog(String hostname, String port, String dbname, boolean removing) {
         super(MedSavantFrame.getInstance(), true);
+        this.removing = removing;
         initComponents();
 
-        this.setResizable(false);
+        setResizable(false);
 
         setLocationRelativeTo(MedSavantFrame.getInstance());
         this.field_hostname.setText(hostname);
@@ -57,22 +51,11 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         //this.field_database.setSelectionEnd(999);
         this.field_database.requestFocus();
 
-        // Close the dialog when Esc is pressed
-        String cancelName = "cancel";
-        InputMap inputMap = getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), cancelName);
-        ActionMap actionMap = getRootPane().getActionMap();
-        actionMap.put(cancelName, new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                doClose(RET_CANCEL);
-            }
-        });
-    }
-
-    /** @return the return status of this dialog - one of RET_OK or RET_CANCEL */
-    public int getReturnStatus() {
-        return returnStatus;
+        if (removing) {
+            okButton.setText("Remove");
+            setTitle("Remove Database");
+        }
+        MiscUtils.registerCancelButton(cancelButton);
     }
 
     /** This method is called from within the constructor to
@@ -99,13 +82,9 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         field_user = new javax.swing.JTextField();
 
         setTitle("Create Database");
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
-                closeDialog(evt);
-            }
-        });
+        setBackground(new java.awt.Color(217, 222, 229));
 
-        okButton.setText("OK");
+        okButton.setText("Create");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -119,57 +98,38 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
             }
         });
 
+        detailsPanel.setBackground(getBackground());
         detailsPanel.setOpaque(false);
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel3.setText("hostname");
+        jLabel3.setText("SERVER ADDRESS");
 
         field_hostname.setFont(new java.awt.Font("Lucida Grande", 0, 15)); // NOI18N
         field_hostname.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        field_hostname.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                field_hostnameKeyPressed(evt);
-            }
-        });
 
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel4.setText("port");
+        jLabel4.setText("SERVER PORT");
 
-        field_port.setFont(new java.awt.Font("Lucida Grande", 0, 15)); // NOI18N
+        field_port.setFont(new java.awt.Font("Lucida Grande", 0, 15));
         field_port.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        field_port.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                field_portKeyPressed(evt);
-            }
-        });
 
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel5.setText("database");
+        jLabel5.setText("DATABASE NAME");
 
-        field_database.setFont(new java.awt.Font("Lucida Grande", 0, 15)); // NOI18N
+        field_database.setFont(new java.awt.Font("Lucida Grande", 0, 15));
         field_database.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        field_database.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                field_databaseKeyPressed(evt);
-            }
-        });
 
         jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel6.setText("admin username");
+        jLabel6.setText("ADMIN USERNAME");
 
-        field_password.setFont(new java.awt.Font("Lucida Grande", 0, 15)); // NOI18N
+        field_password.setFont(new java.awt.Font("Lucida Grande", 0, 15));
         field_password.setHorizontalAlignment(javax.swing.JTextField.CENTER);
 
         jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel7.setText("password");
+        jLabel7.setText("ADMIN_PASSWORD");
 
-        field_user.setFont(new java.awt.Font("Lucida Grande", 0, 15)); // NOI18N
+        field_user.setFont(new java.awt.Font("Lucida Grande", 0, 15));
         field_user.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        field_user.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                field_userKeyPressed(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout detailsPanelLayout = new org.jdesktop.layout.GroupLayout(detailsPanel);
         detailsPanel.setLayout(detailsPanelLayout);
@@ -178,16 +138,16 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
             .add(detailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, field_hostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, field_port, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                    .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                    .add(field_database, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                    .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                    .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                    .add(field_password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, field_user, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, field_hostname, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, field_port, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(field_database, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(field_password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, field_user, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE))
                 .addContainerGap())
         );
         detailsPanelLayout.setVerticalGroup(
@@ -221,7 +181,7 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(260, Short.MAX_VALUE)
+                .addContainerGap(285, Short.MAX_VALUE)
                 .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cancelButton)
@@ -248,67 +208,46 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-
-        final IndeterminateProgressDialog progress = new IndeterminateProgressDialog("Creating Database", "Creating database " + field_database.getText() + ". Please wait...", true, this);
-        Thread t = new Thread(){
-            @Override
-            public void run(){
+        String dbName = field_database.getText();
+        if (removing) {
+            if (DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s?</i><br>This operation cannot be undone.", dbName) == DialogUtils.YES) {
                 try {
                     MedSavantClient.initializeRegistry(field_hostname.getText(), field_port.getText());
-                    MedSavantClient.SetupAdapter.createDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword(), VersionSettings.getVersionString());
-                    progress.setVisible(false);
-                    DialogUtils.displayMessage("Database \"" + field_database.getText() + "\" created successfuly");
-                    doClose(RET_OK);
-                } catch (Exception x) {
-                    progress.setVisible(false);
-                    x.printStackTrace();
-                    DialogUtils.displayException("Sorry", "Database could not be created:\n" + x.getMessage() + "\nPlease check the settings and try again.", x);
+                    MedSavantClient.SetupAdapter.removeDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword());
+                    setVisible(false);
+                    DialogUtils.displayMessage("Database Removed", String.format("<html>Database <i>%s</i> successfully removed.</html>", field_database.getText()));
+                } catch (Exception ex) {
+                    LOG.error("Unable to remove database.", ex);
+                    DialogUtils.displayException("Sorry", "Database could not be created:\n" + ex.getMessage() + "\nPlease check the settings and try again.", ex);
                 }
             }
-        };
-        t.start();
-        progress.setVisible(true);
+        } else {
+            final IndeterminateProgressDialog progress = new IndeterminateProgressDialog("Creating Database", "Creating database " + dbName + ". Please wait...", true);
+            Thread t = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        MedSavantClient.initializeRegistry(field_hostname.getText(), field_port.getText());
+                        MedSavantClient.SetupAdapter.createDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword(), VersionSettings.getVersionString());
+                        progress.setVisible(false);
+                        setVisible(false);
+                        DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", field_database.getText()));
+                    } catch (Exception ex) {
+                        LOG.error("Unable to " + (removing ? "create" : "remove") + " database.", ex);
+                        progress.setVisible(false);
+                        DialogUtils.displayException("Sorry", "Database could not be created:\n" + ex.getMessage() + "\nPlease check the settings and try again.", ex);
+                    }
+                }
+            };
+            t.start();
+            progress.setVisible(true);            
+        }
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        doClose(RET_CANCEL);
+        setVisible(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
-    /** Closes the dialog */
-    private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
-        doClose(RET_CANCEL);
-    }//GEN-LAST:event_closeDialog
-
-    private void field_hostnameKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_field_hostnameKeyPressed
-        int key = evt.getKeyCode();
-        if (key == KeyEvent.VK_ENTER) {
-            //loginUsingEnteredUsernameAndPassword();
-        }
-}//GEN-LAST:event_field_hostnameKeyPressed
-
-    private void field_portKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_field_portKeyPressed
-        int key = evt.getKeyCode();
-        if (key == KeyEvent.VK_ENTER) {
-            //loginUsingEnteredUsernameAndPassword();
-        }
-}//GEN-LAST:event_field_portKeyPressed
-
-    private void field_databaseKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_field_databaseKeyPressed
-        int key = evt.getKeyCode();
-        if (key == KeyEvent.VK_ENTER) {
-            //loginUsingEnteredUsernameAndPassword();
-        }
-}//GEN-LAST:event_field_databaseKeyPressed
-
-    private void field_userKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_field_userKeyPressed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_field_userKeyPressed
-
-    private void doClose(int retStatus) {
-        returnStatus = retStatus;
-        setVisible(false);
-        dispose();
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JTextField field_database;
@@ -318,5 +257,4 @@ public class AddDatabaseDialog extends javax.swing.JDialog {
     private javax.swing.JTextField field_user;
     private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
-    private int returnStatus = RET_CANCEL;
 }

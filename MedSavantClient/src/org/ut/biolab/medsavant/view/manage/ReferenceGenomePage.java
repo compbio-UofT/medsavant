@@ -204,7 +204,7 @@ public class ReferenceGenomePage extends SubSectionView implements ReferenceList
                 }
 
                 if (items.size() != numCouldntRemove) {
-                    DialogUtils.displayMessage("Successfully removed %d reference(s)", items.size() - numCouldntRemove);
+                    DialogUtils.displayMessage(String.format("Successfully removed %d reference(s)", items.size() - numCouldntRemove));
                 }
             }
         }

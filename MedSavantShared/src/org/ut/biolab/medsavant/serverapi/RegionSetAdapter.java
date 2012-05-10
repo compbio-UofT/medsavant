@@ -23,23 +23,21 @@ import java.util.List;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.importing.FileFormat;
-import org.ut.biolab.medsavant.model.BEDRecord;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
+
 
 /**
  *
  * @author mfiume
  */
-public interface RegionQueryUtilAdapter extends Remote {
+public interface RegionSetAdapter extends Remote {
 
-    public void addRegionList(String sid,String geneListName, int genomeId, RemoteInputStream fileStream, char delim, FileFormat fileFormat, int numHeaderLines) throws IOException, SQLException, RemoteException;
-    public void removeRegionList(String sid,int regionSetId) throws SQLException, RemoteException;
-    public List<RegionSet> getRegionSets(String sid) throws SQLException, RemoteException;
-    public int getNumberRegions(String sid, int regionSetId) throws SQLException, RemoteException;
-    public List<GenomicRegion> getRegionsInRegionSet(String sid, int regionSetId) throws SQLException, RemoteException;
-    public List<BEDRecord> getBedRegionsInRegionSet(String sid, int regionSetId, int limit) throws NonFatalDatabaseException, SQLException, RemoteException;
-    public boolean listNameExists(String sid, String name) throws SQLException, RemoteException;
+    public void addRegionSet(String sessID, String regionSetName, int genomeID, RemoteInputStream fileStream, char delim, FileFormat fileFormat, int numHeaderLines) throws IOException, SQLException, RemoteException;
+    public void removeRegionSet(String sessID, int regionSetID) throws SQLException, RemoteException;
+    public List<RegionSet> getRegionSets(String sessID) throws SQLException, RemoteException;
+    public int getNumberRegions(String sessID, int regionSetID) throws SQLException, RemoteException;
+    public List<GenomicRegion> getRegionsInSet(String sessID, int regionSetID, int limit) throws SQLException, RemoteException;
+    public boolean isNameInUse(String sessID, String name) throws SQLException, RemoteException;
 }

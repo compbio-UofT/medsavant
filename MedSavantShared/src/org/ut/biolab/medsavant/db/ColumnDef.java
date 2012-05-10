@@ -27,19 +27,21 @@ public class ColumnDef {
     final ColumnType type;
     final int length;
     final String defaultValue;
+    final boolean autoIncrement;
     final boolean notNull;
     final boolean primaryKey;
     
     
     public ColumnDef(String n, ColumnType t, int l) {
-        this(n, t, l, null, false, false);
+        this(n, t, l, null, false, true, false);
     }
     
-    public ColumnDef(String n, ColumnType t, int l, String dflt, boolean notNull, boolean indexed) {
+    public ColumnDef(String n, ColumnType t, int l, String dflt, boolean autoInc, boolean notNull, boolean indexed) {
         name = n;
         type = t;
         length = l;
         defaultValue = dflt;
+        autoIncrement = autoInc;
         this.notNull = notNull;
         primaryKey = indexed;
     }
