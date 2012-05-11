@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,10 +20,11 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.ut.biolab.medsavant.MedSavantClient;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 
@@ -32,7 +33,7 @@ import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
  * @author mfiume
  */
 public class UserController {
-    private static final Logger LOG = Logger.getLogger(UserController.class.getName());
+    private static final Log LOG = LogFactory.getLog(UserController.class);
     private final ArrayList<UserListener> listeners;
 
     private static UserController instance;
@@ -59,10 +60,10 @@ public class UserController {
                 try {
                     MedSavantClient.UserQueryUtilAdapter.removeUser(LoginController.sessionId, name);
                     fireUserRemovedEvent(name);
-                } catch (SQLException x) {
-                    LOG.log(Level.SEVERE, null, x);
-                } catch (RemoteException x) {
-                    LOG.log(Level.SEVERE, null, x);
+                } catch (SQLException ex) {
+                    LOG.error("Error removing user.", ex);
+                } catch (RemoteException ex) {
+                    LOG.error("Error removing user.", ex);
                 }
                 dialog.close();  
             }
@@ -83,10 +84,10 @@ public class UserController {
             MedSavantClient.UserQueryUtilAdapter.addUser(LoginController.sessionId, name, pass, level);
             UserController.getInstance().fireUserAddedEvent(name);
             return true;
-        } catch (SQLException x) {
-            LOG.log(Level.SEVERE, null, x);
-        } catch (RemoteException x) {
-            LOG.log(Level.SEVERE, null, x);
+        } catch (SQLException ex) {
+            LOG.error("Error adding user.", ex);
+        } catch (RemoteException ex) {
+            LOG.error("Error adding user.", ex);
         }
         return false;
     }

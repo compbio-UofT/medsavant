@@ -19,11 +19,11 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.TableSchema;
@@ -41,7 +41,7 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author mfiume
  */
 public class ProjectController implements ReferenceListener {
-
+    private static final Log LOG = LogFactory.getLog(ProjectController.class);
     private String currentProjectName;
     private int currentProjectId;
 
@@ -137,7 +137,7 @@ public class ProjectController implements ReferenceListener {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error setting project.", ex);
             return false;
         }
         return true;
@@ -204,9 +204,9 @@ public class ProjectController implements ReferenceListener {
         try {
             return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectId, ReferenceController.getInstance().getCurrentReferenceId(), true);
         } catch (SQLException ex) {
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting variant table name.", ex);
         } catch (RemoteException ex) {
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting variant table name.", ex);
         }
         return null;
     }
@@ -215,9 +215,9 @@ public class ProjectController implements ReferenceListener {
         try {
             return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectId, ReferenceController.getInstance().getCurrentReferenceId(), true, true);
         } catch (SQLException ex) {
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting current variant sub-table name.", ex);
         } catch (RemoteException ex) {
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting current variant sub-table name.", ex);
         }
         return null;
     }
@@ -232,12 +232,11 @@ public class ProjectController implements ReferenceListener {
 
     private void setCurrentVariantTable() {
         try {
-            //this.currentTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentTableName());
-            this.currentVariantTableSchema =  MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, getCurrentVariantTableName());
+            currentVariantTableSchema =  MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, getCurrentVariantTableName());
         } catch (SQLException ex) {
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error setting current variant table.", ex);
         } catch (RemoteException ex) {
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error setting current variant table.", ex);
         }
     }
 
@@ -246,9 +245,9 @@ public class ProjectController implements ReferenceListener {
             return MedSavantClient.PatientQueryUtilAdapter.getPatientTablename(LoginController.sessionId, currentProjectId);
         } catch (SQLException ex) {
             ClientMiscUtils.checkSQLException(ex);
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting current patient table name.", ex);
         } catch (RemoteException ex) {
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting current patient table name.", ex);
         }
         return null;
     }
@@ -265,12 +264,11 @@ public class ProjectController implements ReferenceListener {
         try {
 
             DbColumn dbc = new DbColumn(null, "A", "B", 1);
-            //this.currentPatientTable = MedSavantClient.DBUtilAdapter.importTable(LoginController.sessionId, getCurrentPatientTableName());
-            this.currentPatientTableSchema =  MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, getCurrentPatientTableName());
+            currentPatientTableSchema =  MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, getCurrentPatientTableName());
         } catch (SQLException ex) {
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error setting current patient table.", ex);
         } catch (RemoteException ex) {
-            Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error setting current patient table.", ex);
         }
     }
 
@@ -309,9 +307,9 @@ public class ProjectController implements ReferenceListener {
                 currentPatientFormat = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, currentProjectId);
             } catch (SQLException ex) {
                 ClientMiscUtils.checkSQLException(ex);
-                Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.error("Error getting current patient format.", ex);
             } catch (RemoteException ex) {
-                Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.error("Error getting current patient format.", ex);
             }
         }
         return currentPatientFormat;

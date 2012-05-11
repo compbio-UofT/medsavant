@@ -19,8 +19,6 @@ import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
@@ -40,7 +38,6 @@ import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
  * @author Andrew
  */
 public class SettingsQueryUtil extends MedSavantServerUnicastRemoteObject implements SettingsQueryUtilAdapter {
-
     private static SettingsQueryUtil instance;
     private static boolean lockReleased = false;
 
@@ -119,13 +116,12 @@ public class SettingsQueryUtil extends MedSavantServerUnicastRemoteObject implem
         return true;
     }
 
-    public synchronized void releaseDbLock(Connection c) {
+    public synchronized void releaseDbLock(Connection c) throws SQLException {
         System.out.println("Server releasing lock");
         try {
             updateSetting(c, Settings.KEY_DB_LOCK, Boolean.toString(false));
-        } catch (SQLException ex) {
+        } finally {
             lockReleased = true;
-            Logger.getLogger(SettingsQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

@@ -17,12 +17,12 @@ package org.ut.biolab.medsavant.model;
 
 import java.rmi.RemoteException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -35,6 +35,7 @@ import org.ut.biolab.medsavant.util.BinaryConditionMS;
  * @author AndrewBrook
  */
 public abstract class RangeFilter extends QueryFilter {
+    private static final Log LOG = LogFactory.getLog(RangeFilter.class);
 
     private RangeSet ranges;
 
@@ -69,7 +70,7 @@ public abstract class RangeFilter extends QueryFilter {
                     conditions[pos] = ComboCondition.and(posCondition, chrCondition);
                     pos++;
                 } catch (RemoteException ex) {
-                    Logger.getLogger(RangeFilter.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error getting range condition.", ex);
                 }
 
             }

@@ -19,10 +19,11 @@ package org.ut.biolab.medsavant.controller;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.FatalDatabaseException;
@@ -30,11 +31,12 @@ import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 
+
 /**
  * @author Andrew
  */
 public class ResultController implements FiltersChangedListener {
-
+    private static final Log LOG = LogFactory.getLog(ResultController.class);
     private List<Object[]> filteredVariants;
     
     private static final int DEFAULT_LIMIT = 1000;
@@ -120,9 +122,9 @@ public class ResultController implements FiltersChangedListener {
                     order);
         } catch (SQLException ex) {
             ClientMiscUtils.checkSQLException(ex);
-            Logger.getLogger(ResultController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting variants.", ex);
         } catch (RemoteException ex) {
-            ex.printStackTrace();
+            LOG.error("Error getting variants.", ex);
         }
     }
     

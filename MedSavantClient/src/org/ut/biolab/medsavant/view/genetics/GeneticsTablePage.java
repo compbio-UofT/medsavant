@@ -15,29 +15,24 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
-import com.jidesoft.pane.CollapsiblePane;
-import com.jidesoft.pane.CollapsiblePanes;
-import com.jidesoft.pane.FloorTabbedPane;
-import com.jidesoft.plaf.UIDefaultsLookup;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractButton;
-import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-
 import javax.swing.UIManager;
+
+import com.jidesoft.pane.CollapsiblePane;
+import com.jidesoft.pane.CollapsiblePanes;
+import com.jidesoft.plaf.UIDefaultsLookup;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -45,8 +40,8 @@ import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
+import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.GeneManiaInfoSubPanel;
@@ -62,37 +57,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 public class GeneticsTablePage extends SubSectionView implements FiltersChangedListener, ReferenceListener {
-
-    private static class GeneInfoPanel extends InfoPanel {
-
-        public GeneInfoPanel() {
-            super("Gene Inspector");
-            this.addSubInfoPanel(new GeneManiaInfoSubPanel());
-        }
-    }
-
-    private static class SearchInfoPanel extends InfoPanel {
-
-        public SearchInfoPanel() {
-            super("Search");
-            this.addSubInfoPanel(new SearchInfoSubPanel());
-        }
-    }
-
-    private static class VariantInfoPanel extends InfoPanel {
-
-        public VariantInfoPanel() {
-            super("Variant Inspector");
-            this.addSubInfoPanel(new BasicVariantInfoSubPanel());
-        }
-    }
-
-    private static class AnalyticsInfoPanel extends InfoPanel {
-
-        public AnalyticsInfoPanel() {
-            super("Analytics");
-        }
-    }
+    
+    private static final Log LOG = LogFactory.getLog(GeneticsTablePage.class);
 
     private JPanel panel;
     private TablePanel tablePanel;
@@ -147,9 +113,9 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         try {
             chrs = MedSavantClient.ChromosomeQueryUtilAdapter.getContigs(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceId());
         } catch (SQLException ex) {
-            Logger.getLogger(GeneticsTablePage.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting contigs.", ex);
         } catch (RemoteException ex) {
-            Logger.getLogger(GeneticsTablePage.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting contigs.", ex);
         }
         Genome g = new Genome(chrs);
         gp = new GenomeContainer(getName(), g);
@@ -166,8 +132,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         VariantInfoPanel vpanel = new VariantInfoPanel();
         try {
             vpanel.setCollapsed(false);
-        } catch (PropertyVetoException ex) {
-            Logger.getLogger(GeneticsTablePage.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (PropertyVetoException ignored) {
         }
         SearchInfoPanel spanel = new SearchInfoPanel();
         GeneInfoPanel gpanel = new GeneInfoPanel();
@@ -291,5 +256,36 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
 
     private TabPanel createTabPanel(String title, Icon icon, JComponent component) {
         return new TabPanel(title, icon, component);
+    }
+
+    private static class GeneInfoPanel extends InfoPanel {
+
+        public GeneInfoPanel() {
+            super("Gene Inspector");
+            this.addSubInfoPanel(new GeneManiaInfoSubPanel());
+        }
+    }
+
+    private static class SearchInfoPanel extends InfoPanel {
+
+        public SearchInfoPanel() {
+            super("Search");
+            this.addSubInfoPanel(new SearchInfoSubPanel());
+        }
+    }
+
+    private static class VariantInfoPanel extends InfoPanel {
+
+        public VariantInfoPanel() {
+            super("Variant Inspector");
+            this.addSubInfoPanel(new BasicVariantInfoSubPanel());
+        }
+    }
+
+    private static class AnalyticsInfoPanel extends InfoPanel {
+
+        public AnalyticsInfoPanel() {
+            super("Analytics");
+        }
     }
 }

@@ -23,8 +23,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 
 import com.jidesoft.dialog.ButtonEvent;
@@ -35,6 +33,8 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -50,7 +50,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Andrew
  */
 public class RemoveVariantsWizard extends WizardDialog {
-    
+    private static final Log LOG = LogFactory.getLog(RemoveVariantsWizard.class);
     private int projectId;
     private int referenceId;
     private List<SimpleVariantFile> files;
@@ -115,7 +115,7 @@ public class RemoveVariantsWizard extends WizardDialog {
                 try {
                     MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
                 } catch (Exception ex) {
-                    Logger.getLogger(RemoveVariantsWizard.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error releasing DB lock.", ex);
                 }
             }
         });
@@ -234,7 +234,7 @@ public class RemoveVariantsWizard extends WizardDialog {
                                 publishStartButton.setVisible(false);
                                 publishCancelButton.setVisible(false);
                             }
-                            Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex);
+                            LOG.error("Error publishing variants.", ex);
                         }
                     }
                 };
@@ -306,7 +306,7 @@ public class RemoveVariantsWizard extends WizardDialog {
                             try {
                                 MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
                             } catch (Exception ex1) {
-                                Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex1);
+                                LOG.error("Error releasing database lock.", ex);
                             }
 
                             //cancellation
@@ -332,10 +332,8 @@ public class RemoveVariantsWizard extends WizardDialog {
                                 startButton.setVisible(false);
                                 cancelButton.setVisible(false);
                             }
-                            Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex);
+                            LOG.error("Error publishing variants.", ex);
                         }
-
-
 
                         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     }

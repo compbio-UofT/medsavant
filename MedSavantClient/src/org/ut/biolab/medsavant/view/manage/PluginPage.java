@@ -18,10 +18,11 @@ package org.ut.biolab.medsavant.view.manage;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.api.MedSavantSectionPlugin;
@@ -40,7 +41,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author tarkvara
  */
 public class PluginPage extends SubSectionView {
-    private static final Logger LOG = Logger.getLogger(PluginPage.class.getName());
+    private static final Log LOG = LogFactory.getLog(PluginPage.class);
     private static PluginController controller = PluginController.getInstance();
     private final PluginDescriptor descriptor;
     private MedSavantSectionPlugin p;
@@ -65,8 +66,9 @@ public class PluginPage extends SubSectionView {
 
             // Not yet loaded.  We need to wait for PluginController to fire event.
             controller.addListener(new Listener<PluginEvent>() {
+                @Override
                 public void handleEvent(PluginEvent event) {
-                    LOG.log(Level.FINE, "PluginPage.handleEvent({0})", event.getType());
+                    LOG.debug(String.format("PluginPage.handleEvent(%s)", event.getType()));
                     switch (event.getType()) {
                         case LOADED:
                             panel.removeAll();

@@ -26,13 +26,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -52,6 +53,8 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class SavantExportForm extends javax.swing.JDialog {
     
+    private static final Log LOG = LogFactory.getLog(SavantExportForm.class);
+
     private JPanel checkBoxPane;
     private List<String> dnaIds;
     private File outputFile;
@@ -96,9 +99,9 @@ public class SavantExportForm extends javax.swing.JDialog {
             }
         } catch (SQLException ex) {
             ClientMiscUtils.checkSQLException(ex);
-            Logger.getLogger(SavantExportForm.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting distinct values for column.", ex);
         } catch (RemoteException ex) {
-            Logger.getLogger(SavantExportForm.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting distinct values for column.", ex);
         }
         
         this.pack();

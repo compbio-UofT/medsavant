@@ -25,11 +25,12 @@ import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
@@ -46,6 +47,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author AndrewBrook
  */
 public class FilterHistoryPanel extends JPanel implements ReferenceListener, FiltersChangedListener {
+
+    private static final Log LOG = LogFactory.getLog(FilterHistoryPanel.class);
 
     private int maxRecords = 0;
     private JTable table;
@@ -84,7 +87,7 @@ public class FilterHistoryPanel extends JPanel implements ReferenceListener, Fil
                     addFilterSet(filter, action, numLeft);
                     //addFilterSet(numLeft);
                 } catch (NonFatalDatabaseException ex) {
-                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error getting filter variant count.", ex);
                 }
                 //dialog.close();
             }
@@ -171,7 +174,7 @@ public class FilterHistoryPanel extends JPanel implements ReferenceListener, Fil
                 try {
                     maxRecords = ResultController.getInstance().getNumFilteredVariants();
                 } catch (Exception ex) {
-                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error getting num filtered variants.", ex);
                 }
                 if (maxRecords != -1) {
                     model.addRow("Total", "", maxRecords);

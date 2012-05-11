@@ -1,15 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.manage;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
-import com.jidesoft.dialog.ButtonEvent;
-import com.jidesoft.dialog.ButtonNames;
-import com.jidesoft.dialog.PageList;
-import com.jidesoft.wizard.*;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -22,24 +27,21 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.WindowConstants;
+import javax.swing.*;
+
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import com.jidesoft.dialog.ButtonEvent;
+import com.jidesoft.dialog.ButtonNames;
+import com.jidesoft.dialog.PageList;
+import com.jidesoft.wizard.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -56,6 +58,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Andrew
  */
 public class ImportVariantsWizard extends WizardDialog {
+
+    private static final Log LOG = LogFactory.getLog(ImportVariantsWizard.class);
 
     private int projectId;
     private int referenceId;
@@ -121,11 +125,12 @@ public class ImportVariantsWizard extends WizardDialog {
 
     private void catchClosing(){
         this.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosed(WindowEvent e){
                 try {
                     MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
                 } catch (Exception ex) {
-                    Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error releasing database lock.", ex);
                 }
             }
         });
@@ -181,6 +186,7 @@ public class ImportVariantsWizard extends WizardDialog {
         JButton chooseFileButton = new JButton("...");
         chooseFileButton.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 variantFiles = DialogUtils.chooseFilesForOpen("Import Variants", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz"}), null);
                 if (variantFiles == null || variantFiles.length == 0) {
@@ -335,6 +341,7 @@ public class ImportVariantsWizard extends WizardDialog {
         JButton clear = new JButton("Clear");
         clear.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 variantTags.clear();
                 ta.setText("");
@@ -415,6 +422,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
         publishStartButton.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent ae) {
 
                 publishProgressBar.setIndeterminate(true);
@@ -464,7 +472,7 @@ public class ImportVariantsWizard extends WizardDialog {
                                 publishStartButton.setVisible(false);
                                 publishCancelButton.setVisible(false);
                             }
-                            Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex);
+                            LOG.error("Error publishing variants.", ex);
                         }
                     }
                 };
@@ -543,7 +551,7 @@ public class ImportVariantsWizard extends WizardDialog {
                             try {
                                 MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
                             } catch (Exception ex1) {
-                                Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex1);
+                                LOG.error("Error releasing database lock.", ex1);
                             }
 
                             //cancellation
@@ -569,10 +577,8 @@ public class ImportVariantsWizard extends WizardDialog {
                                 startButton.setVisible(false);
                                 cancelButton.setVisible(false);
                             }
-                            Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex);
+                            LOG.error("Error publishing variants.", ex);
                         }
-
-
 
                         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     }
@@ -586,6 +592,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
         cancelButton.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 cancelButton.setText("Cancelling...");
                 cancelButton.setEnabled(false);
@@ -595,6 +602,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
         publishCancelButton.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 publishCancelButton.setText("Cancelling...");
                 publishCancelButton.setEnabled(false);

@@ -33,7 +33,6 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.logging.Logger;
 import javax.swing.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -61,8 +60,6 @@ public class MiscUtils {
 
     /** OS-specific constant for determining menu-options. Either CTRL_MASK or META_MASK. */
     public static final int MENU_MASK;
-
-    private static final Logger LOG = Logger.getLogger(MiscUtils.class.getName());
 
     static {
         String os = System.getProperty("os.name").toLowerCase();
@@ -94,20 +91,6 @@ public class MiscUtils {
 
         DecimalFormat df = new DecimalFormat(formatString);
         return df.format(num);
-    }
-
-    /**
-     * Get an integer from a string
-     * @param str The string representing an integer (possibly with commas)
-     * @return An integer
-     */
-    public static int stringToInt(String str) {
-        try {
-            return Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-            LOG.info(e.getLocalizedMessage());
-            return -1;
-        }
     }
 
     /**

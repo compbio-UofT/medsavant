@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ package org.ut.biolab.medsavant.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.api.Listener;
 
@@ -31,7 +32,7 @@ import org.ut.biolab.medsavant.api.Listener;
  * @author tarkvara
  */
 public abstract class Controller<E> {
-    private static final Logger LOG = Logger.getLogger(Controller.class.getName());
+    private static final Log LOG = LogFactory.getLog(Controller.class);
 
     protected List<Listener<E>> listeners = new ArrayList<Listener<E>>();
     private List<Listener<E>> listenersToAdd;
@@ -46,8 +47,8 @@ public abstract class Controller<E> {
         for (final Listener l: listeners) {
             try {
                 l.handleEvent(event);
-            } catch (Throwable x) {
-                LOG.log(Level.WARNING, l + " threw exception while handling event.", x);
+            } catch (Throwable ex) {
+                LOG.warn(String.format("%s threw exception while handling event.", l), ex);
             }
         }
         for (Listener<E> l: listenersToAdd) {

@@ -21,8 +21,6 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -38,6 +36,8 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
@@ -53,8 +53,10 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author Andrew
  */
 public class ExportVcfWizard extends WizardDialog {
-    
-    private static int NUM_WARNING = 1000000;
+
+    private static final Log LOG = LogFactory.getLog(ExportVcfWizard.class);
+    private static final int NUM_WARNING = 1000000;
+
     private File variantFile = null;
     private boolean running = false;
     private boolean cancelled = false;
@@ -102,7 +104,7 @@ public class ExportVcfWizard extends WizardDialog {
                         + "This may take a long time and produce a very large file!");
             }
         } catch (NonFatalDatabaseException ex) {
-            Logger.getLogger(ExportVcfWizard.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting filtered variant count.", ex);
         }
         
         return page;
@@ -195,7 +197,7 @@ public class ExportVcfWizard extends WizardDialog {
                             try {
                                 ExportVCF.exportVCF(variantFile);
                             } catch (Exception ex) {
-                                Logger.getLogger(ExportVcfWizard.class.getName()).log(Level.SEVERE, null, ex);
+                                LOG.error("Error exporting VCF.", ex);
                             }
                             progress.setIndeterminate(false);
                             progress.setValue(100);

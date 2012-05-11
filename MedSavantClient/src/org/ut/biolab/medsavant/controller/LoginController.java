@@ -20,9 +20,10 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
@@ -38,12 +39,14 @@ import org.ut.biolab.medsavant.view.MedSavantFrame;
  */
 public class LoginController {
 
+    private static final Log LOG = LogFactory.getLog(LoginController.class);
+    private final static Object EVENT_LOCK = new Object();
+
     private static String username;
     private static String password;
     private static boolean isAdmin;
     private static boolean loggedIn = false;
     private static ArrayList<LoginListener> loginListeners = new ArrayList<LoginListener>();
-    private final static Object eventLock = new Object();
     public static String sessionId;
     public static SessionAdapter SessionAdapter;
 
@@ -51,7 +54,7 @@ public class LoginController {
         Thread t = new Thread() {
             @Override
             public void run() {
-                synchronized(eventLock) {
+                synchronized(EVENT_LOCK) {
                     LoginController.loggedIn = loggedIn;
 
                     if (loggedIn) {
@@ -79,7 +82,7 @@ public class LoginController {
             try {
                 MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, message);
             } catch (RemoteException ex) {
-                Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.error("Error adding server log entry.", ex);
             }
         }
     }
@@ -224,7 +227,7 @@ public class LoginController {
         try {
             SessionAdapter.unregisterSession(LoginController.sessionId);
         } catch (Exception ex) {
-            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error unregistering session.", ex);
         }
     }
 

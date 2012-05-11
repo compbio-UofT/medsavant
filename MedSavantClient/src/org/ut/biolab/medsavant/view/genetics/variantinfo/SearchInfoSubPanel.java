@@ -1,35 +1,45 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.Box;
 import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+
 
 /**
  *
  * @author mfiume
  */
 public class SearchInfoSubPanel extends InfoSubPanel implements VariantSelectionChangedListener {
-
+    private static final Log LOG = LogFactory.getLog(SearchInfoSubPanel.class);
     private final String name;
     private ButtonGroup bg;
     private JRadioButton pmButton;
@@ -121,8 +131,8 @@ public class SearchInfoSubPanel extends InfoSubPanel implements VariantSelection
                 Searcher.searchPubmed(field.getText());
             }
         } catch (Exception ex) {
+            LOG.error("Error searching.", ex);
             DialogUtils.displayErrorMessage("Problem searching", ex);
-            Logger.getLogger(SearchInfoSubPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

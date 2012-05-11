@@ -23,9 +23,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -44,7 +45,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class ServerLogPage extends SubSectionView {
-
+    private static final Log LOG = LogFactory.getLog(ServerLogPage.class);
     private static final String CARDNAME_WAIT = "0";
     private static final String CARDNAME_CLIENT = "1";
     private static final String CARDNAME_ANNOTATION = "2";
@@ -329,11 +330,11 @@ public class ServerLogPage extends SubSectionView {
                 v.add(r);
             }
 
-        } catch (Exception e) {
+        } catch (Exception ex) {
             waitPanel.setComplete();
             waitPanel.setStatus("Problem getting log");
             showWaitPanel();
-            Logger.getLogger(ServerLogPage.class.getName()).log(Level.SEVERE, null, e);
+            LOG.error("Error retrieving annotation log.", ex);
         }
 
         hideWaitPanel();
@@ -386,11 +387,11 @@ public class ServerLogPage extends SubSectionView {
             if (Thread.currentThread().isInterrupted()) {
                 return null;
             }
-        } catch (Exception e){
+        } catch (Exception ex){
             waitPanel.setComplete();
             waitPanel.setStatus("Problem getting log");
             showWaitPanel();
-            Logger.getLogger(ServerLogPage.class.getName()).log(Level.SEVERE, null, e);
+            LOG.error("Error retrieving client log.", ex);
         }
         hideWaitPanel();
         return v;

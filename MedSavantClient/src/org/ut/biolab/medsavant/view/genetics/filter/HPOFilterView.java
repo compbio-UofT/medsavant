@@ -23,13 +23,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -40,6 +36,8 @@ import javax.swing.event.ListSelectionListener;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -60,51 +58,40 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 class HPOFilterView extends FilterView {
 
+    private static final Log LOG = LogFactory.getLog(HPOFilterView.class);
+    private static final Object LOCK = new Object();
     public static final String FILTER_NAME = "Human Phenotype Ontology";
     public static final String FILTER_ID = "hpo";
-    //private static final String COHORT_ALL = "All Individuals";
-    private final Object lock = new Object();
+    private static final String STEM = "Filter individuals with HPO ID: ";
+
+    private Integer appliedId;
+    private ActionListener al;
+    private String selectedID = "";
+    private String lastAppliedID = "";
+    private OntologyRetriever retriever;
+
+    private JButton applyButton;
+    private JLabel labelSelected;
 
     static FilterView getHPOFilterView(int queryId) {
         return new HPOFilterView(queryId, new JPanel());
     }
-    private JButton applyButton;
-    private JLabel labelSelected;
 
-    public HPOFilterView(FilterState state, int queryId) throws SQLException {
+    private HPOFilterView(FilterState state, int queryId) throws SQLException {
         this(queryId, new JPanel());
         if (state.getValues().get("value") != null) {
             applyFilter(state.getValues().get("value"));
         }
-    }
-    private Integer appliedId;
-    private ActionListener al;
-
-    public final void applyFilter(String selectedID) {
-
-        applyID(selectedID);
-
-
-
-        /*
-        for (int i = 0; i < b.getItemCount(); i++) {
-        if (b.getItemAt(i) instanceof Cohort && ((Cohort) b.getItemAt(i)).getId() == cohortId) {
-        b.setSelectedIndex(i);
-        al.actionPerformed(new ActionEvent(this, 0, null));
-        return;
-        }
-        }
-         *
-         */
     }
 
     private HPOFilterView(int queryId, JPanel container) {
         super(FILTER_NAME, container, queryId);
         createContentPanel(container);
     }
-    private String selectedID = "";
-    private String lastAppliedID = "";
-    private OntologyRetriever retriever;
+
+    public final void applyFilter(String selectedID) {
+        applyID(selectedID);
+    }
 
     private void setSelectedID(String id) {
         if (id == null) {
@@ -120,11 +107,9 @@ class HPOFilterView extends FilterView {
         if (id.equals("")) {
             this.labelSelected.setText("Select a row to filter by HPO ID");
         } else {
-            this.labelSelected.setText(stem + id);
+            this.labelSelected.setText(STEM + id);
         }
     }
-
-    private String stem = "Filter individuals with HPO ID: ";
 
     private void applyID(final String id) {
         if (id == null) {
@@ -160,9 +145,9 @@ class HPOFilterView extends FilterView {
 
                     return cs;
                 } catch (SQLException ex) {
-                    Logger.getLogger(HPOFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error getting DNA IDs for HPO ID.", ex);
                 } catch (RemoteException ex) {
-                    Logger.getLogger(HPOFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error getting DNA IDs for HPO ID.", ex);
                 }
 
                 return new Condition[0];
@@ -185,8 +170,7 @@ class HPOFilterView extends FilterView {
         if (stp.getTable().getSelectedRow() == -1) {
             return null;
         }
-        String selectedID = (String) retriever.getTerms().get(stp.getActualRowAt(stp.getTable().getSelectedRow()))[0];
-        return selectedID;
+        return (String) retriever.getTerms().get(stp.getActualRowAt(stp.getTable().getSelectedRow()))[0];
     }
 
     private void createContentPanel(JPanel p) {
@@ -251,7 +235,7 @@ class HPOFilterView extends FilterView {
             JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
 
             selectNone.addActionListener(new ActionListener() {
-
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     setSelectedID("");
                     stp.getTable().getSelectionModel().clearSelection();

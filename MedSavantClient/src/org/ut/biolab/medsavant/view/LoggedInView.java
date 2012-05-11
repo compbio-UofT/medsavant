@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,28 +21,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.Box;
-import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.manage.ManageSection;
-import org.ut.biolab.medsavant.view.manage.ProjectWizard;
-import org.ut.biolab.medsavant.view.manage.OtherSection;
-import org.ut.biolab.medsavant.view.manage.PluginsSection;
 import org.ut.biolab.medsavant.view.patients.ListsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;
-import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 
 /**
@@ -50,7 +35,6 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author mfiume
  */
 public class LoggedInView extends JPanel {
-    private static final Logger LOG = Logger.getLogger(LoggedInView.class.getName());
     private ViewController viewController;
     //private JComboBox projectDropDown;
 

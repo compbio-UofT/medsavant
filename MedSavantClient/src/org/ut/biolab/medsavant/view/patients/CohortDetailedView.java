@@ -23,14 +23,14 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.utils.SwingWorker;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -55,18 +55,18 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class CohortDetailedView extends DetailedView {
 
-    //private List<Object> fieldValues;
-    private CohortDetailsSW sw;
-    //private final JPanel content;
-    private final JPanel details;
-    private final JPanel menu;
-    //private String[] cohortNames;
-    private JTable list;
+    private static final Log LOG = LogFactory.getLog(CohortDetailedView.class);
+
     private Cohort cohort;
     private Cohort[] cohorts;
-    private final CollapsiblePanel membersPane;
     private boolean multipleSelected = false;
     private static List<FilterPanelSubItem> filterPanels;
+    
+    private CohortDetailsSW sw;
+    private final JPanel details;
+    private final JPanel menu;
+    private JTable list;
+    private final CollapsiblePanel membersPane;
     
     public CohortDetailedView() {
 
@@ -89,7 +89,7 @@ public class CohortDetailedView extends DetailedView {
         menu.add(removeIndividualsButton());
         menu.setVisible(false);
 
-        this.addBottomComponent(menu);
+        addBottomComponent(menu);
     }
 
     private class CohortDetailsSW extends SwingWorker {
@@ -239,9 +239,9 @@ public class CohortDetailedView extends DetailedView {
                     try {
                         MedSavantClient.CohortQueryUtilAdapter.removePatientsFromCohort(LoginController.sessionId, patientIds, cohort.getId());
                     } catch (SQLException ex) {
-                        Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.error("Error removing patients from cohort.", ex);
                     } catch (RemoteException ex) {
-                        Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.error("Error removing patients from cohort.", ex);
                     }
 
                     sw = new CohortDetailsSW(cohort);
@@ -278,9 +278,9 @@ public class CohortDetailedView extends DetailedView {
                             }
                         } catch (SQLException ex) {
                             ClientMiscUtils.checkSQLException(ex);
-                            Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                            LOG.error("Error getting DNA IDs for cohort.", ex);
                         } catch (RemoteException ex) {
-                            Logger.getLogger(CohortDetailedView.class.getName()).log(Level.SEVERE, null, ex);
+                            LOG.error("Error getting DNA IDs for cohort.", ex);
                         }
                     }
 

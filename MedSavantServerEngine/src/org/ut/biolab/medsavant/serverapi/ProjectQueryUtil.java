@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
@@ -59,7 +59,7 @@ import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
  * @author mfiume
  */
 public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject implements ProjectQueryUtilAdapter {
-
+    private static final Log LOG = LogFactory.getLog(ProjectQueryUtil.class);
     private static ProjectQueryUtil instance;
 
     public static synchronized ProjectQueryUtil getInstance() throws RemoteException {
@@ -271,7 +271,7 @@ public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject impleme
             String variantTableName = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectid, refid, true);
             return DBUtil.getNumRecordsInTable(sid, variantTableName);
         } catch (RemoteException ex) {
-            Logger.getLogger(ProjectQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting number of records in variant table.", ex);
             return -1;
         }
     }

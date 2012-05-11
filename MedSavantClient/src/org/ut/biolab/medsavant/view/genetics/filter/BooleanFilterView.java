@@ -21,13 +21,13 @@ import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.healthmarketscience.sqlbuilder.Condition;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -48,7 +48,16 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Andrew
  */
-public class BooleanFilterView extends FilterView{
+public class BooleanFilterView extends FilterView {
+
+    private static final Log LOG = LogFactory.getLog(BooleanFilterView.class);
+
+    private ActionListener al;
+    private List<JCheckBox> boxes;
+    private String columnname;
+    private String alias;
+    private Table whichTable;
+    private List<String> appliedValues;
 
     public static FilterView createVariantFilterView(String columnname, int queryId, String alias) throws SQLException, NonFatalDatabaseException {
         return new BooleanFilterView(new JPanel(), columnname, queryId, alias, Table.VARIANT);
@@ -67,13 +76,6 @@ public class BooleanFilterView extends FilterView{
             applyFilter(l);
         }
     }
-
-    private ActionListener al;
-    private List<JCheckBox> boxes;
-    private String columnname;
-    private String alias;
-    private Table whichTable;
-    private List<String> appliedValues;
 
     public void applyFilter(List<String> list) {
         for (JCheckBox box : boxes) {
@@ -147,12 +149,12 @@ public class BooleanFilterView extends FilterView{
                                 return results;
 
                             } catch (NonFatalDatabaseException ex) {
-                                Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                                LOG.error("Error getting DNA IDs.", ex);
                             } catch (SQLException ex) {
                                 ClientMiscUtils.checkSQLException(ex);
-                                Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                                LOG.error("Error getting DNA IDs.", ex);
                             } catch (RemoteException ex) {
-                                Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                                LOG.error("Error getting DNA IDs.", ex);
                             }
                         }
                         return new Condition[0];

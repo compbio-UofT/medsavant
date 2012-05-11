@@ -19,13 +19,13 @@ import java.io.File;
 import java.rmi.RemoteException;
 import java.sql.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
@@ -59,7 +59,7 @@ import org.ut.biolab.medsavant.util.ChromosomeComparator;
  * @author Andrew
  */
 public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject implements VariantQueryUtilAdapter {
-
+    private static final Log LOG = LogFactory.getLog(VariantQueryUtil.class);
     private static final int COUNT_ESTIMATE_THRESHOLD = 1000;
     private static final int BIN_TOTAL_THRESHOLD = 10000;
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
@@ -148,7 +148,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
                 double[] result = DistinctValuesCache.getCachedRange(dbName, tablename, columnname);
                 if (result != null) return result;
             } catch (Exception ex) {
-                Logger.getLogger(VariantQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tablename + "/" + columnname, ex);
             }
         }
 
@@ -191,7 +191,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
                 List<String> result = DistinctValuesCache.getCachedStringList(dbName, tablename, columnname);
                 return result;
             } catch (Exception ex) {
-                Logger.getLogger(VariantQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tablename + "/" + columnname, ex);
             }
         }
 
@@ -754,10 +754,8 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
             //drop staging table
             DBUtil.dropTable(sid,tableName);
 
-        } catch (RemoteException ex) {
-            Logger.getLogger(VariantQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(VariantQueryUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            LOG.warn("Error cancelling upload " + uploadId + " for " + tableName, ex);
         }
     }
 

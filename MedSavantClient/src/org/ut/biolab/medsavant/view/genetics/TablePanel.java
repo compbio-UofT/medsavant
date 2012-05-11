@@ -24,19 +24,17 @@ import java.awt.event.MouseAdapter;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import org.pathvisio.view.SelectionBox.SelectionEvent;
-import org.pathvisio.view.SelectionBox.SelectionListener;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -61,8 +59,6 @@ import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
-import org.ut.biolab.medsavant.view.list.RowSelectionGrabber;
-import org.ut.biolab.medsavant.view.util.TableUtils;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
@@ -70,7 +66,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 class TablePanel extends JLayeredPane {
-
+    private static final Log LOG = LogFactory.getLog(TablePanel.class);
     private SearchableTablePanel tablePanel;
     private WaitPanel waitPanel;
     private boolean init = false;
@@ -157,7 +153,7 @@ class TablePanel extends JLayeredPane {
                             showShowCard();
                             return result;
                         } catch (NonFatalDatabaseException ex) {
-                            Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                            LOG.error("Error retrieving data.", ex);
                             showShowCard();
                             return null;
                         }
@@ -170,7 +166,7 @@ class TablePanel extends JLayeredPane {
                         try {
                             result = ResultController.getInstance().getNumFilteredVariants();
                         } catch (NonFatalDatabaseException ex) {
-                            Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                            LOG.error("Error getting total number.", ex);
                         }
                         showShowCard();
                         return result;
@@ -460,9 +456,9 @@ class TablePanel extends JLayeredPane {
                                 JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (SQLException ex) {
-                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error adding star.", ex);
                 } catch (RemoteException ex) {
-                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error adding star.", ex);
                 }
 
                 //add to view
@@ -501,9 +497,9 @@ class TablePanel extends JLayeredPane {
                             sv.getVariantId(),
                             LoginController.getUsername());
                 } catch (SQLException ex) {
-                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error removing star.", ex);
                 } catch (RemoteException ex) {
-                    Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error removing star.", ex);
                 }
 
                 //remove from view
@@ -555,7 +551,7 @@ class TablePanel extends JLayeredPane {
             }
 
         } catch (Exception ex) {
-            Logger.getLogger(TablePanel.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error checking stars.", ex);
         }
 
         tablePanel.setSelectedRows(selected);

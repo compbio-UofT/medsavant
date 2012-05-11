@@ -1,19 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
-import com.jidesoft.converter.ConverterContext;
-import com.jidesoft.converter.PercentConverter;
-import com.jidesoft.grid.CellStyle;
-import com.jidesoft.grid.DefaultExpandableRow;
-import com.jidesoft.grid.ExpandableRow;
-import com.jidesoft.grid.Row;
-import com.jidesoft.grid.SortableTreeTableModel;
-import com.jidesoft.grid.StyleModel;
-import com.jidesoft.grid.TreeTable;
-import com.jidesoft.grid.TreeTableModel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -30,15 +32,18 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
-import javax.swing.SwingWorker;
+
+import com.jidesoft.converter.ConverterContext;
+import com.jidesoft.converter.PercentConverter;
+import com.jidesoft.grid.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -58,6 +63,8 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class CohortPanelGenerator implements AggregatePanelGenerator {
     
+    private static final Log LOG = LogFactory.getLog(CohortPanelGenerator.class);
+
     private CohortPanel panel;
     private final String pageName;
     private boolean updateRequired = false;
@@ -68,16 +75,18 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         this.pageName = pageName;
     }
     
+    @Override
     public String getName() {
         return "Cohort";
     }
 
+    @Override
     public JPanel getPanel() {
         if (panel == null) {
             try {
                 panel = new CohortPanel();
             } catch (SQLException ex) {
-                Logger.getLogger(CohortPanelGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.error("Error generating cohort panel.", ex);
             }
         } else {
             panel.finish();
@@ -85,12 +94,13 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         return panel;
     }
 
+    @Override
     public void run(boolean reset) {
-        if(reset){
+        if (reset){
             panel.init();
         } else if (!init){
             return;
-        } else if(updateRequired) {
+        } else if (updateRequired) {
             panel.update();
             updateRequired = false;
         } else {
@@ -190,9 +200,9 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                     try {
                         tableModel = new CohortTreeTableModel((List)get());
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(CohortPanelGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.warn("Creating cohort tree model interrupted.", ex);
                     } catch (ExecutionException ex) {
-                        Logger.getLogger(CohortPanelGenerator.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.error("Error creating cohort tree model.", ex);
                     }
 
                     sortableTreeTableModel = new StripeSortableTreeTableModel(tableModel);
@@ -234,7 +244,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         }
         
         public void finish(){
-            if(updateRequired){
+            if (updateRequired){
                 update();
             } else {
                 //resetProgress();
@@ -278,7 +288,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         }
         
         public synchronized void updateProgress(){
-            if(numWorking == 0){
+            if (numWorking == 0){
                 numCompleted = 0;
                 progress.setValue(100);
                 exportButton.setEnabled(true);
@@ -304,9 +314,10 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             this.cohort = c;
             this.patients = p;
             this.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if(evt.getPropertyName().equals(DefaultExpandableRow.PROPERTY_EXPANDED)){
-                        if(isExpanded()){
+                    if (evt.getPropertyName().equals(DefaultExpandableRow.PROPERTY_EXPANDED)){
+                        if (isExpanded()){
                             expand();
                         } else {
                             //collapse();
@@ -317,6 +328,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             run();
         }
 
+        @Override
         public Object getValueAt(int columnIndex) {
             switch (columnIndex) {
                 case 0:
@@ -324,7 +336,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 case 1:
                     return "";
                 case 2:
-                    if(value == -1){
+                    if (value == -1){
                         return "Loading...";
                     } else {
                         return Integer.toString(value);
@@ -341,7 +353,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 
                 @Override
                 protected Object doInBackground() throws Exception {
-                    if(this.isThreadCancelled()){
+                    if (this.isThreadCancelled()){
                         return -1;
                     }
                     try {
@@ -375,13 +387,13 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         }
         
         public void finish(){
-            if(value == -1){
+            if (value == -1){
                 reset();
             }
         }
         
         private void expand(){
-            if(!this.hasChildren() || this.getChildAt(0) instanceof PatientNode) return; //already computed
+            if (!this.hasChildren() || this.getChildAt(0) instanceof PatientNode) return; //already computed
             MedSavantWorker worker = new MedSavantWorker(pageName) {
 
                 @Override
@@ -480,7 +492,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         
         @Override
         public Comparator getComparator(int column){
-            if(column == 0){
+            if (column == 0){
                 return super.getComparator(column);
             } else {
                 return valueComparator;
@@ -489,13 +501,14 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
     }
     
     static Comparator valueComparator = new Comparator() {
+        @Override
         public int compare(Object o1, Object o2) {
             try {
                 Integer i1 = Integer.parseInt((String)o1);
                 Integer i2 = Integer.parseInt((String)o2);
                 return i1.compareTo(i2);
             } catch (NumberFormatException e){
-                if(((String)o1).startsWith("?")){
+                if (((String)o1).startsWith("?")){
                     return -1;
                 } else {
                     return 1;
@@ -514,6 +527,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             super(rows);
         }
 
+        @Override
         public int getColumnCount() {
             return 3;
         }
@@ -568,6 +582,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             BOLD.setForeground(Color.white);
         }
 
+        @Override
         public CellStyle getCellStyleAt(int rowIndex, int columnIndex) {
             Row row = getRowAt(rowIndex);
             if (row.getParent() == getRoot() || (row instanceof ExpandableRow && ((ExpandableRow) row).hasChildren())) {
@@ -576,6 +591,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             return null;
         }
 
+        @Override
         public boolean isCellStyleOn() {
             return true;
         }

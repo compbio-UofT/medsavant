@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package org.ut.biolab.medsavant.view.dialog;
 
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
-
 import org.ut.biolab.medsavant.controller.UserController;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -33,7 +33,8 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author mfiume
  */
 public class NewUserDialog extends javax.swing.JDialog {
-    private static final Logger LOG = Logger.getLogger(NewUserDialog.class.getName());
+
+    private static final Log LOG = LogFactory.getLog(NewUserDialog.class);
 
     /** Creates new form NewProjectDialog */
     public NewUserDialog(java.awt.Frame parent, boolean modal) {
@@ -201,9 +202,9 @@ public class NewUserDialog extends javax.swing.JDialog {
                     JOptionPane.showMessageDialog(this, "Problem adding user.");
                 }
             }
-        } catch (Exception x) {
-            LOG.log(Level.SEVERE, "Error adding user.", x);
-            DialogUtils.displayErrorMessage("Problem adding user.", x);
+        } catch (Exception ex) {
+            LOG.error("Error adding user.", ex);
+            DialogUtils.displayErrorMessage("Problem adding user.", ex);
         }
     }//GEN-LAST:event_okButtonActionPerformed
 

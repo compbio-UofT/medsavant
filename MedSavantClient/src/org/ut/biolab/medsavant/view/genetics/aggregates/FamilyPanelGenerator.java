@@ -1,10 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
-import au.com.bytecode.opencsv.CSVWriter;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D.Float;
@@ -23,8 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -32,18 +40,10 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.pedigree.Pedigree;
-import org.ut.biolab.medsavant.view.pedigree.PedigreeBasicRule;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
-import org.ut.biolab.medsavant.view.util.WaitPanel;
+
+import au.com.bytecode.opencsv.CSVWriter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import pedviz.algorithms.Sugiyama;
 import pedviz.graph.Graph;
 import pedviz.graph.Node;
@@ -59,13 +59,27 @@ import pedviz.view.symbols.SymbolSexFemale;
 import pedviz.view.symbols.SymbolSexMale;
 import pedviz.view.symbols.SymbolSexUndesignated;
 
+import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.settings.DirectorySettings;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.view.pedigree.Pedigree;
+import org.ut.biolab.medsavant.view.pedigree.PedigreeBasicRule;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.view.util.WaitPanel;
+
 /**
  *
  * @author mfiume
  */
 public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
-    private static final Logger LOG = Logger.getLogger(GeneListPanelGenerator.class.getName());
+    private static final Log LOG = LogFactory.getLog(FamilyPanelGenerator.class);
+
     private FamilyPanel panel;
     private boolean updateRequired = false;
     private final String pageName;
@@ -74,10 +88,12 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
         this.pageName = pageName;
     }
 
+    @Override
     public String getName() {
         return "Family";
     }
 
+    @Override
     public JPanel getPanel() {
         if (panel == null) {
             panel = new FamilyPanel();
@@ -87,8 +103,9 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
         return panel;
     }
 
+    @Override
     public void run(boolean update) {
-        if(update || updateRequired){
+        if (update || updateRequired) {
             panel.run();
         }
     }
@@ -116,7 +133,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
         public FamilyPanel() {
 
-            this.setLayout(new BorderLayout());
+            setLayout(new BorderLayout());
             banner = ViewUtil.getSubBannerPanel("Family");
 
             familyLister = new JComboBox();
@@ -136,11 +153,11 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
             banner.add(progress);
 
-            this.add(banner, BorderLayout.NORTH);
-            this.add(pedigreePanel, BorderLayout.CENTER);
+            add(banner, BorderLayout.NORTH);
+            add(pedigreePanel, BorderLayout.CENTER);
 
             familyLister.addActionListener(new ActionListener() {
-
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     showFamilyAggregates((String) familyLister.getSelectedItem());
                 }
@@ -176,7 +193,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
         private class FamilyListGetter extends MedSavantWorker<List<String>> {
             
-            public FamilyListGetter(){
+            public FamilyListGetter() {
                 super(pageName);
             }
 
@@ -197,9 +214,9 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
             protected void showSuccess(List<String> result) {
                 try {
                     updateFamilyDropDown(result);
-                } catch (Exception x) {
+                } catch (Exception ex) {
                     // TODO: #90
-                    LOG.log(Level.SEVERE, null, x);
+                    LOG.error("Error updating family drop-down.", ex);
                 }
             }
         }
@@ -339,11 +356,12 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
             
             //add ability to click
             view.addNodeListener(new NodeListener() {
+                @Override
                 public void onNodeEvent(NodeEvent ne) {
-                    if(ne.getType() == NodeEvent.MOUSE_ENTER){
+                    if (ne.getType() == NodeEvent.MOUSE_ENTER) {
                         overNode = ne.getNode();
                         overNodeView = ne.getNodeView();
-                    } else if (ne.getType() == NodeEvent.MOUSE_LEAVE){
+                    } else if (ne.getType() == NodeEvent.MOUSE_LEAVE) {
                         overNode = null;
                         overNodeView = null;
                     }
@@ -351,15 +369,16 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
             });
 
             view.getComponent().addMouseListener(new MouseAdapter() {
+                @Override
                 public void mouseClicked(MouseEvent e) {
-                    if(overNode != null){
+                    if (overNode != null) {
                         String hospitalId = (String)overNode.getId();
                         Integer patientId = Integer.parseInt((String)overNode.getUserData(Pedigree.FIELD_PATIENTID));
-                        if(SwingUtilities.isRightMouseButton(e)){
+                        if (SwingUtilities.isRightMouseButton(e)) {
                             int[] patientIds;
-                            if(selectedNodes != null && !selectedNodes.isEmpty()){
+                            if (selectedNodes != null && !selectedNodes.isEmpty()) {
                                 patientIds = new int[selectedNodes.size()];
-                                for(int i = 0; i < selectedNodes.size(); i++){
+                                for(int i = 0; i < selectedNodes.size(); i++) {
                                     patientIds[i] = selectedNodes.get(i);
                                 }  
                             } else {
@@ -367,8 +386,8 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
                             }
                             JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(patientIds);
                             popup.show(e.getComponent(), e.getX(), e.getY());
-                        } else if (SwingUtilities.isLeftMouseButton(e)){ 
-                            if(!selectedNodes.contains(patientId)){
+                        } else if (SwingUtilities.isLeftMouseButton(e)) { 
+                            if (!selectedNodes.contains(patientId)) {
                                 selectedNodes.add(patientId);
                                 overNodeView.setBorderColor(ViewUtil.detailSelectedBackground);
                             } else {
@@ -377,7 +396,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
                             }
                         } 
                     } else {
-                        if(SwingUtilities.isRightMouseButton(e) && familyId != null){
+                        if (SwingUtilities.isRightMouseButton(e) && familyId != null) {
                             JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(familyId);
                             popup.show(e.getComponent(), e.getX(), e.getY());
 

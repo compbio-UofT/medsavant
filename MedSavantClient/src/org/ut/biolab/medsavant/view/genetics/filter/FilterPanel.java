@@ -28,8 +28,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,6 +36,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.FilterController.FilterAction;
@@ -53,16 +54,15 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Andrew
  */
-public class FilterPanel extends javax.swing.JPanel {
+public class FilterPanel extends JPanel {
 
-    private javax.swing.JPanel container;
-    //private List<FilterPanelSub> subs = new ArrayList<FilterPanelSub>();
+    private static final Log LOG = LogFactory.getLog(FilterPanel.class);
+
+    private JPanel container;
     private List<FilterPanelSub> subs2 = new ArrayList<FilterPanelSub>();
     private int subNum = 1;
     private JPanel filterContainerContent;
-    //private JPanel filterContainer;
     private JComboBox filterList;
-    private ActionListener comboBoxListener;
     private boolean addingItems = false;
     private FilterHistoryPanel historyPanel;
     private HoverButton deleteButton;
@@ -253,7 +253,7 @@ public class FilterPanel extends javax.swing.JPanel {
                     FilterUtils.loadFilterView(state, fps);
                 } catch (SQLException ex) {
                     ClientMiscUtils.checkSQLException(ex);
-                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error loading filters.", ex);
                 }
             }
         }
@@ -312,7 +312,7 @@ public class FilterPanel extends javax.swing.JPanel {
                 try {
                     saveFilters();
                 } catch (IOException ex) {
-                    Logger.getLogger(FilterPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error saving filters.", ex);
                 }
             }
         });

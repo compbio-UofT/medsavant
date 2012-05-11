@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,19 +16,22 @@
 
 package org.ut.biolab.medsavant.controller;
 
-import org.ut.biolab.medsavant.MedSavantProgramInformation;
 import java.io.*;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.ut.biolab.medsavant.MedSavantProgramInformation;
+
 
 /**
  *
  * @author mfiume
  */
 public class SettingsController {
-
+    private static final Log LOG = LogFactory.getLog(SettingsController.class);
 
     /**
      * INSTRUCTIONS: To add a new setting to the map...
@@ -190,12 +193,11 @@ public class SettingsController {
             } catch (IOException ex) {
                 resetPersistenceMap();
             } finally {
-            try {
-                br.close();
-            } catch (IOException ex) {
-                Logger.getLogger(SettingsController.class.getName()).log(Level.SEVERE, null, ex);
+                try {
+                    br.close();
+                } catch (IOException ignored) {
+                }
             }
-        }
         }
 
     }
@@ -244,13 +246,11 @@ public class SettingsController {
                 bw.write(key + DELIM + persistenceMap.get(key) + "\n");
             }
         } catch (Exception ex) {
-            Logger.getLogger(SettingsController.class.getName()).log(Level.SEVERE, null, ex);
-            //ex.printStackTrace();
+            LOG.error("Error writing " + PERSISTENCE_FILE_PATH + ".", ex);
         } finally {
             try {
                 bw.close();
-            } catch (IOException ex) {
-                Logger.getLogger(SettingsController.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ignored) {
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,14 +22,17 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 /**
  *
  * @author mfiume
  */
 public class Range implements Comparable<Range>, Serializable {
+    private static final Log LOG = LogFactory.getLog(Range.class);
     
     private double min;
     private double max;
@@ -192,7 +195,7 @@ public class Range implements Comparable<Range>, Serializable {
         return NumberFormat.getInstance().format(min) + RANGE_STRING + NumberFormat.getInstance().format(max);
     }
     
-    public static Range rangeFromString(String range){
+    public static Range rangeFromString(String range) {
         String[] values = range.split(RANGE_STRING);
         double minValue = 0;
         double maxValue = 0;
@@ -200,7 +203,7 @@ public class Range implements Comparable<Range>, Serializable {
             minValue = NumberFormat.getInstance().parse(values[0]).doubleValue();
             maxValue = NumberFormat.getInstance().parse(values[1]).doubleValue();
         } catch (ParseException ex) {
-            Logger.getLogger(Range.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Unable to parse " + range + " as a range.", ex);
         }       
         return new Range(minValue, maxValue);      
     }

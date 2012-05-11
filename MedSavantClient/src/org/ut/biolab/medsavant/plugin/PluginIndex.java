@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.util.ClientNetworkUtils;
 
@@ -35,7 +36,7 @@ import org.ut.biolab.medsavant.util.ClientNetworkUtils;
  * @author tarkvara
  */
 public class PluginIndex {
-    private static final Logger LOG = Logger.getLogger(PluginIndex.class.getName());
+    private static final Log LOG = LogFactory.getLog(PluginIndex.class);
     private Map<String, URL> urls;
 
     public PluginIndex(URL url) throws IOException {
@@ -55,7 +56,7 @@ public class PluginIndex {
                                 try {
                                     urls.put(id, new URL(reader.getElementText()));
                                 } catch (MalformedURLException x) {
-                                    LOG.log(Level.INFO, "Unable to parse \"%s\" as a plugin URL.", reader.getElementText());
+                                    LOG.warn(String.format("Unable to parse \"%s\" as a plugin URL.", reader.getElementText()));
                                 }
                                 id = null;
                             }

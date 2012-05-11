@@ -17,7 +17,6 @@ package org.ut.biolab.medsavant.db.connection;
 
 import java.sql.*;
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * Based on JDC Connection Pool example.
@@ -25,7 +24,6 @@ import java.util.logging.Logger;
  * @author Andrew
  */
 public class ConnectionPool {
-    private static final Logger LOG = Logger.getLogger(ConnectionPool.class.getName());
     private static final long TIMEOUT = 60000;
 
     private final List<PooledConnection> connections;

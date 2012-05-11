@@ -20,9 +20,9 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -31,10 +31,10 @@ import javax.swing.JPanel;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import java.util.HashMap;
-import java.util.Map;
-import org.ut.biolab.medsavant.MedSavantClient;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -53,7 +53,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
  * @author mfiume
  */
 class GeneListFilterView extends FilterView {
-    private static final Logger LOG = Logger.getLogger(GeneListFilterView.class.getName());
+    private static final Log LOG = LogFactory.getLog(GeneListFilterView.class);
 
     public static final String FILTER_NAME = "Gene List";
     public static final String FILTER_ID = "gene_list";
@@ -93,7 +93,7 @@ class GeneListFilterView extends FilterView {
         try {
             return MedSavantClient.RegionSetAdapter.getRegionSets(LoginController.sessionId);
         } catch (Exception ex){
-            Logger.getLogger(GeneListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting region sets.", ex);
             return null;
         }
     }
@@ -186,7 +186,7 @@ class GeneListFilterView extends FilterView {
                         return FILTER_ID;
                     }
                 };
-                LOG.log(Level.INFO, "Adding filter: {0}.", f.getName());
+                LOG.info(String.format("Adding filter: %s.", f.getName()));
                 FilterController.addFilter(f, getQueryId());
             }
         };

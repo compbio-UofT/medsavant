@@ -22,25 +22,25 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.healthmarketscience.sqlbuilder.Condition;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RangeCondition;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
@@ -53,6 +53,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class NumericFilterView extends FilterView{
 
+    private static final Log LOG = LogFactory.getLog(NumericFilterView.class);
 
     /* Convenience Functions */
 
@@ -131,9 +132,9 @@ public class NumericFilterView extends FilterView{
                         initHelper(container, new Range(MedSavantClient.VariantQueryUtilAdapter.getExtremeValuesForColumn(LoginController.sessionId, tablename, columnname)));
                         dialog.close();
                     } catch (SQLException ex) {
-                        Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.error(String.format("Error getting extreme values for %s.%s.", tablename, columnname), ex);
                     } catch (RemoteException ex) {
-                        Logger.getLogger(StringListFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.error(String.format("Error getting extreme values for %s.%s.", tablename, columnname), ex);
                     }
                 }
             };
@@ -305,12 +306,12 @@ public class NumericFilterView extends FilterView{
                                 return results;
 
                             } catch (NonFatalDatabaseException ex) {
-                                Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                                LOG.error("Error getting DNA IDs with values in range.", ex);
                             } catch (SQLException ex) {
                                 ClientMiscUtils.checkSQLException(ex);
-                                Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                                LOG.error("Error getting DNA IDs with values in range.", ex);
                             } catch (RemoteException ex) {
-                                Logger.getLogger(NumericFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                                LOG.error("Error getting DNA IDs with values in range.", ex);
                             }
                         }
                         return new Condition[0];

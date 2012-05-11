@@ -28,8 +28,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -37,6 +36,9 @@ import javax.swing.table.DefaultTableModel;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -54,7 +56,9 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  *
  * @author AndrewBrook
  */
-public class AddPatientsForm extends javax.swing.JDialog {
+public class AddPatientsForm extends JDialog {
+
+    private static final Log LOG = LogFactory.getLog(AddPatientsForm.class);
 
     /** Creates new form AddPatientsForm */
     public AddPatientsForm() {
@@ -64,8 +68,8 @@ public class AddPatientsForm extends javax.swing.JDialog {
         
         createTable();
         
-        this.setLocationRelativeTo(null);
-        this.setVisible(true);          
+        setLocationRelativeTo(null);
+        setVisible(true);          
     }
     
     private void createTable() {       
@@ -88,9 +92,9 @@ public class AddPatientsForm extends javax.swing.JDialog {
             }
         } catch (SQLException ex) {
             ClientMiscUtils.checkSQLException(ex);
-            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting patient fields.", ex);
         } catch (RemoteException ex) {
-            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting patient fields.", ex);
         }
 
         
@@ -464,9 +468,9 @@ public class AddPatientsForm extends javax.swing.JDialog {
             addPatient();
         } catch (SQLException ex) {
             ClientMiscUtils.checkSQLException(ex);
-            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error adding patient.", ex);
         } catch (RemoteException ex) {
-            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error adding patient.", ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -475,9 +479,9 @@ public class AddPatientsForm extends javax.swing.JDialog {
             generateTemplate();
         } catch (SQLException ex) {
             ClientMiscUtils.checkSQLException(ex);
-            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error generating template.", ex);
         } catch (RemoteException ex) {
-            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error adding patient.", ex);
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -486,9 +490,9 @@ public class AddPatientsForm extends javax.swing.JDialog {
             importFile();
         } catch (SQLException ex) {
             ClientMiscUtils.checkSQLException(ex);
-            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error importing file.", ex);
         } catch (RemoteException ex) {
-            Logger.getLogger(AddPatientsForm.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error importing file.", ex);
         }
     }//GEN-LAST:event_jButton3ActionPerformed
 

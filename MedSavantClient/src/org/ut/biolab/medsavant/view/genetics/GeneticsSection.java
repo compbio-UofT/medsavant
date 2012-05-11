@@ -1,10 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.ut.biolab.medsavant.view.genetics;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -12,13 +22,14 @@ import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
@@ -30,17 +41,18 @@ import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.view.dialog.ExportVcfWizard;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.manage.PluginPage;
-import org.ut.biolab.medsavant.view.manage.VariantFilesPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionViewCollection;
-import org.ut.biolab.medsavant.view.util.PeekingPanel;
+
 
 /**
  *
  * @author mfiume
  */
 public class GeneticsSection extends SectionView implements ProjectListener {
+
+    private static final Log LOG = LogFactory.getLog(GeneticsSection.class);
 
     private JPanel[] panels;
     private JComboBox referenceDropDown;
@@ -94,6 +106,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         JButton exportButton = new JButton("Export Variants");
         exportButton.setOpaque(false);
         exportButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 new ExportVcfWizard();
             }
@@ -102,7 +115,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     }
 
     @Override
-    public Component[] getSectionMenuComponents() {
+    public final Component[] getSectionMenuComponents() {
 
         Component[] result = new Component[1];
 
@@ -121,7 +134,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         try {
             refreshReferenceDropDown();
         } catch (RemoteException ex) {
-            Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error refreshing reference drop-down.", ex);
         }
 
         ProjectController.getInstance().addProjectListener(this);
@@ -155,6 +168,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
             } else {
                 referenceDropDown.setEnabled(true);
                 referenceDropDown.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         String currentName = ReferenceController.getInstance().getCurrentReferenceName();
                         if (!ReferenceController.getInstance().setReference((String) referenceDropDown.getSelectedItem(), true)) {
@@ -170,35 +184,39 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
     }
 
+    @Override
     public void projectAdded(String projectName) {
         try {
             refreshReferenceDropDown();
         } catch (RemoteException ex) {
-            Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error refreshing reference drop-down.", ex);
         }
     }
 
+    @Override
     public void projectRemoved(String projectName) {
         try {
             refreshReferenceDropDown();
         } catch (RemoteException ex) {
-            Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error refreshing reference drop-down.", ex);
         }
     }
 
+    @Override
     public void projectChanged(String projectName) {
         try {
             refreshReferenceDropDown();
         } catch (RemoteException ex) {
-            Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error refreshing reference drop-down.", ex);
         }
     }
 
+    @Override
     public void projectTableRemoved(int projid, int refid) {
         try {
             refreshReferenceDropDown();
         } catch (RemoteException ex) {
-            Logger.getLogger(GeneticsSection.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error refreshing reference drop-down.", ex);
         }
     }
 }

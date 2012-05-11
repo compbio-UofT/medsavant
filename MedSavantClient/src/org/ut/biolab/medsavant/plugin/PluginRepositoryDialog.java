@@ -1,5 +1,5 @@
 /*
- *    Copyright 2010-2011 University of Toronto
+ *    Copyright 2010-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -35,6 +33,8 @@ import javax.swing.table.TableCellRenderer;
 
 import com.jidesoft.grid.TreeTable;
 import com.jidesoft.swing.TableSearchable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -53,7 +53,7 @@ import org.ut.biolab.medsavant.view.util.TreeBrowserModel;
  * @author mfiume
  */
 public class PluginRepositoryDialog extends JDialog {
-    private static final Logger LOG = Logger.getLogger(PluginRepositoryDialog.class.getName());
+    private static final Log LOG = LogFactory.getLog(PluginRepositoryDialog.class);
     private static final TableCellRenderer FILE_RENDERER = new FileRowCellRenderer();
 
     private TreeTable table;
@@ -139,7 +139,7 @@ public class PluginRepositoryDialog extends JDialog {
             try {
                 return new TreeBrowserEntry(root.getAttributeValue("name"), root.getChildText("type"), root.getChildText("description"), new URL(root.getChildText("url")), root.getChildText("size"));
             } catch (MalformedURLException ex) {
-                LOG.log(Level.SEVERE, null, ex);
+                LOG.error("Error parsing plugin index.", ex);
             }
         }
         return null;

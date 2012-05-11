@@ -21,11 +21,12 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
@@ -43,8 +44,9 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class FilterEffectivenessPanel extends JLayeredPane implements FiltersChangedListener, ReferenceListener {
+    
+    private static final Log LOG = LogFactory.getLog(FilterEffectivenessPanel.class);
 
-    Color bg = new Color(139, 149, 164);
     private final ProgressPanel pp;
     private final JLabel labelVariantsRemaining;
     //private final FilterHistoryPanel historyPanel;
@@ -128,7 +130,7 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
                     setNumLeft(numLeft);
                 } catch (NonFatalDatabaseException ex) {
                     showShowCard();
-                    Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error getting filtered variant count.", ex);
                 }
 
             }
@@ -161,7 +163,7 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
         try {
             maxRecords = ResultController.getInstance().getNumTotalVariants();
         } catch (Exception ex) {
-            Logger.getLogger(FilterHistoryPanel.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting variant count.", ex);
         }
 
         numTotal = maxRecords;

@@ -18,14 +18,14 @@ package org.ut.biolab.medsavant.view.genetics;
 import java.awt.BorderLayout;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -45,6 +45,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 public class GeneticsFilterPage extends SubSectionView implements ReferenceListener {
+
+    private static final Log LOG = LogFactory.getLog(GeneticsFilterPage.class);
 
     private JPanel view;
     private static FilterPanel fp;
@@ -119,8 +121,8 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
             this.setBorder(ViewUtil.getBigBorder());
             content = new JTextArea();
             content.setEditable(false);
-            this.setLayout(new BorderLayout());
-            this.add(new JScrollPane(content));
+            setLayout(new BorderLayout());
+            add(new JScrollPane(content));
             updateSQL();
             FilterController.addFilterListener(this);
         }
@@ -137,12 +139,12 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
             try {
                 MedSavantClient.VariantQueryUtilAdapter.addConditionsToQuery(q, conditions);
             } catch (RemoteException ex) {
-                Logger.getLogger(GeneticsFilterPage.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.error("Error adding conditions to query.", ex);
             }
 
             String s = q.toString();
-            Logger.getLogger(GeneticsFilterPage.class.getName()).log(Level.WARNING, s);
-            this.content.setText(s);
+            LOG.info(s);
+            content.setText(s);
         }
     }
 

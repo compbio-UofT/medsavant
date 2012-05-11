@@ -25,8 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -38,6 +36,8 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -52,7 +52,6 @@ import org.ut.biolab.medsavant.model.Annotation;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.model.Reference;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.dialog.NewReferenceDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -63,12 +62,14 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class ProjectWizard extends WizardDialog {
 
-    private final String PAGENAME_NAME = "Project Name";
-    private final String PAGENAME_PATIENTS = "Patients";
-    private final String PAGENAME_VCF = "Custom VCF Fields";
-    private final String PAGENAME_REF = "Reference";
-    private String PAGENAME_CREATE = "Create";
-    private final String PAGENAME_COMPLETE = "Complete";
+    private static final Log LOG = LogFactory.getLog(ProjectWizard.class);
+    private static final String PAGENAME_NAME = "Project Name";
+    private static final String PAGENAME_PATIENTS = "Patients";
+    private static final String PAGENAME_VCF = "Custom VCF Fields";
+    private static final String PAGENAME_REF = "Reference";
+    private static final String PAGENAME_COMPLETE = "Complete";
+
+    private static String PAGENAME_CREATE = "Create";
 
     private boolean modify = false;
     private boolean isModified = false;
@@ -94,7 +95,7 @@ public class ProjectWizard extends WizardDialog {
         this.projectName = projectName;
         this.patientFields = fields;
         this.projectDetails = projectDetails;
-        this.PAGENAME_CREATE = "Modify";
+        PAGENAME_CREATE = "Modify";
 
         //check for existing unpublished changes to this project
         try {
@@ -134,7 +135,7 @@ public class ProjectWizard extends WizardDialog {
                 try {
                     MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
                 } catch (Exception ex) {
-                    Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error releasing database lock.", ex);
                 }
             }
         });
@@ -354,9 +355,9 @@ public class ProjectWizard extends WizardDialog {
                     variantFormatModel.addRow(new Object[]{f.getColumnName().toUpperCase(), f.getColumnTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.error("Error getting reference IDs for project.", ex);
             } catch (RemoteException ex) {
-                Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.error("Error getting reference IDs for project.", ex);
             }
         } else {
             variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AA.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AA + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AA), true, VariantFormat.ALIAS_OF_AA, ""});
@@ -484,9 +485,9 @@ public class ProjectWizard extends WizardDialog {
             references = MedSavantClient.ReferenceQueryUtilAdapter.getReferences(LoginController.sessionId);
             annotations = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotations(LoginController.sessionId);
         } catch(SQLException ex) {
-            Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting references and annotations.", ex);
         } catch(RemoteException ex) {
-            Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error getting references and annotations.", ex);
         }
 
         p.removeAll();
@@ -586,7 +587,7 @@ public class ProjectWizard extends WizardDialog {
                                 publishStartButton.setVisible(false);
                                 publishCancelButton.setVisible(false);
                             }
-                            Logger.getLogger(ImportVariantsWizard.class.getName()).log(Level.SEVERE, null, ex);
+                            LOG.error("Error publishing variants.", ex);
                         }
                     }
                 };
@@ -657,14 +658,15 @@ public class ProjectWizard extends WizardDialog {
 
                             try {
                                 MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
-                            } catch (Exception e) {
-                                Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, e);
+                            } catch (Exception ex1) {
+                                LOG.error("Error releasing database lock.", ex1);
                             }
 
-                            if (ex instanceof SQLException)
+                            if (ex instanceof SQLException) {
                                 ClientMiscUtils.checkSQLException((SQLException)ex);
+                            }
+                            LOG.error("Error creating project.", ex);
                             DialogUtils.displayException("Error", "There was an error while trying to create your project. ", ex);
-                            Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
                             setVisible(false);
                             dispose();
                         }
@@ -742,7 +744,7 @@ public class ProjectWizard extends WizardDialog {
                 return true;
             }
         } catch (Exception ex) {
-            Logger.getLogger(ProjectWizard.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.error("Error checking for existence of project.", ex);
             DialogUtils.displayException("Error", "Error trying to create project", ex);
         }
         return false;

@@ -23,8 +23,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -33,6 +31,9 @@ import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
@@ -51,7 +52,7 @@ import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
  * @author Andrew
  */
 public class StarredFilterView extends FilterView {
-
+    private static final Log LOG = LogFactory.getLog(StarredFilterView.class);
     public static final String FILTER_NAME = "Marked as Important";
     public static final String FILTER_ID = "starred_filter";
     
@@ -119,9 +120,9 @@ public class StarredFilterView extends FilterView {
                     return conditions;
                     
                 } catch (SQLException ex) {
-                    Logger.getLogger(StarredFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error getting starred variants.", ex);
                 } catch (RemoteException ex) {
-                    Logger.getLogger(StarredFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error getting starred variants.", ex);
                 }
                 return new Condition[0]; 
             }

@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
@@ -55,6 +53,9 @@ import net.ericaro.surfaceplotter.JSurfacePanel;
 import net.ericaro.surfaceplotter.Mapper;
 import net.ericaro.surfaceplotter.ProgressiveSurfaceModel;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.*;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
@@ -78,6 +79,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class SummaryChart extends JLayeredPane {
+    private static final Log LOG = LogFactory.getLog(SummaryChart.class);
 
     public boolean doesCompareToOriginal() {
         return this.showComparedToOriginal;
@@ -808,7 +810,7 @@ public class SummaryChart extends JLayeredPane {
                         } catch (SQLException ex) {
                             ClientMiscUtils.checkSQLException(ex);
                         } catch (Exception ex) {
-                            Logger.getLogger(SummaryChart.class.getName()).log(Level.SEVERE, null, ex);
+                            LOG.error("Error filtering chart.", ex);
                         }
                     }
 
@@ -851,7 +853,7 @@ public class SummaryChart extends JLayeredPane {
                         } catch (SQLException ex) {
                             ClientMiscUtils.checkSQLException(ex);
                         } catch (Exception ex) {
-                            Logger.getLogger(SummaryChart.class.getName()).log(Level.SEVERE, null, ex);
+                            LOG.error("Error filtering chart.", ex);
                         }
                     }
                 }

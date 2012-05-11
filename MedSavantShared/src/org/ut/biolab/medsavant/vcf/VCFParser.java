@@ -1,7 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.vcf;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -16,10 +28,10 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
+
 import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
+
 
 /**
  *
@@ -259,20 +271,5 @@ public class VCFParser {
         } catch (NumberFormatException e){
             return null;
         }
-    }
-    
-    /*
-     * Useful for testing
-     */
-    static public void main(String args[]) {
-        File input = new File(args[0]);
-        try {
-            parseVariants(input, new File(input.getName() + "_parsed"), 0, 0);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(VCFParser.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(VCFParser.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
     }
 }

@@ -15,11 +15,7 @@
  */
 package org.ut.biolab.medsavant.db.util;
 
-import org.ut.biolab.medsavant.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
-import org.ut.biolab.medsavant.util.MiscUtils;
 import java.rmi.RemoteException;
-import java.util.logging.Logger;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -28,17 +24,22 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import com.mysql.jdbc.CommunicationsException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.serverapi.DBUtilAdapter;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.util.MiscUtils;
 
 /**
  *
  * @author mfiume
  */
 public class DBUtil extends MedSavantServerUnicastRemoteObject implements DBUtilAdapter {
-    private static final Logger LOG = Logger.getLogger(DBUtil.class.getName());
+    private static final Log LOG = LogFactory.getLog(DBUtil.class);
     private static DBUtil instance;
 
     public static synchronized DBUtil getInstance() throws RemoteException {

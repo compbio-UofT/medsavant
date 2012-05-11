@@ -30,13 +30,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -58,7 +58,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 public class TagFilterView extends FilterView {
-
+    private static final Log LOG = LogFactory.getLog(TagFilterView.class);
     public static final String FILTER_NAME = "Tag Filter";
     public static final String FILTER_ID = "tag_filter";
     //private static final String COHORT_ALL = "All Individuals";
@@ -276,9 +276,9 @@ public class TagFilterView extends FilterView {
                 }
             } catch (SQLException ex) {
                 ClientMiscUtils.checkSQLException(ex);
-                Logger.getLogger(TagFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.error("Error updating tag values.", ex);
             } catch (RemoteException ex) {
-                Logger.getLogger(TagFilterView.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.error("Error updating tag values.", ex);
             }
         }
 

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -25,8 +25,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.clientapi.ClientCallbackAdapter;
 
@@ -36,7 +37,7 @@ import org.ut.biolab.medsavant.clientapi.ClientCallbackAdapter;
  */
 public class ConnectionController {
 
-    private static final Logger LOG = Logger.getLogger(ConnectionController.class.getName());
+    private static final Log LOG = LogFactory.getLog(ConnectionController.class);
     private static final String DRIVER = "com.mysql.jdbc.Driver";
     private static final String PROPS = "enableQueryTimeouts=false";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
     private static final Map<String, ConnectionPool> sessionPoolMap = new HashMap<String, ConnectionPool>();
@@ -177,7 +178,7 @@ public class ConnectionController {
         for (int i = 0; i < args.length; i++) {
             st.setObject(i + 1, args[i]);
         }
-        LOG.log(Level.INFO, query);
+        LOG.debug(query);
         st.executeUpdate();
     }
 
@@ -185,18 +186,15 @@ public class ConnectionController {
      * Register credentials for the given session.
      */
     public static void registerCredentials(String sessID, String user, String pass, String db) throws SQLException {
-        LOG.log(Level.INFO, String.format("ConnectionController.registerCredentials(%s, %s, %s, %s)", sessID, user, pass, db));
+        LOG.debug(String.format("ConnectionController.registerCredentials(%s, %s, %s, %s)", sessID, user, pass, db));
         ConnectionPool pool = new ConnectionPool(db, user, pass);
-        LOG.log(Level.INFO, String.format("sc=%s", pool));
+        LOG.debug(String.format("sc=%s", pool));
         synchronized (sessionPoolMap) {
             sessionPoolMap.put(sessID, pool);
 
             Connection c = null;
             try {
-                LOG.log(Level.INFO, "Calling sc.connectPooled()");
                 c = pool.getConnection();
-            } catch (Exception e) {
-                LOG.log(Level.SEVERE, "Caught exception.", e);
             } finally {
                 if (c != null) {
                     c.close();

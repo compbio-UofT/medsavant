@@ -21,8 +21,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.clientapi.ClientCallbackAdapter;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
@@ -36,9 +37,10 @@ import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
  * @author mfiume
  */
 public class SessionController extends MedSavantServerUnicastRemoteObject implements SessionAdapter {
+    private static final Log LOG = LogFactory.getLog(SessionController.class);
+    private static SessionController instance;
 
     int lastSessionId = 0;
-    private static SessionController instance;
 
     public static synchronized SessionController getInstance() throws RemoteException {
         if (instance == null) {
@@ -113,7 +115,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
                     // terminate session for this client
                 }
             } catch (Exception ex) {
-                Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.warn("Unable to get session ID for " + dbname + ".", ex);
             }
         }
 
@@ -132,7 +134,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
                         System.out.println("Complete");
                     } catch (Exception ex) {
                         System.out.println("Failed");
-                        Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
+                        LOG.error("Unable to terminate session for " + sid + ".", ex);
                     }
                 }
             };

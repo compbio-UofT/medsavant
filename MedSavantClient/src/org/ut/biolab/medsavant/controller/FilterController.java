@@ -20,11 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
@@ -43,7 +43,8 @@ import org.ut.biolab.medsavant.model.event.LoginListener;
  * @author mfiume
  */
 public class FilterController {
-    private static final Logger LOG = Logger.getLogger(FilterController.class.getName());
+    
+    private static final Log LOG = LogFactory.getLog(FilterController.class);
     private static final ProjectListener projectListener;
     private static final ReferenceListener referenceListener;
     private static final LoginListener logoutListener;
@@ -212,7 +213,7 @@ public class FilterController {
                 try {
                     ResultController.getInstance().getNumFilteredVariants();
                 } catch (NonFatalDatabaseException ex) {
-                    Logger.getLogger(FilterController.class.getName()).log(Level.SEVERE, null, ex);
+                    LOG.error("Error getting filtered variant count.", ex);
                 }
             }
         };
@@ -223,8 +224,8 @@ public class FilterController {
         for (FiltersChangedListener l : activeListeners) {
             try {
                 l.filtersChanged();
-            } catch (Exception e) {
-                LOG.log(Level.SEVERE, null, e);
+            } catch (Exception ex) {
+                LOG.error("Error while sending first filtersChanged() notification.", ex);
             }
         }
         activeListeners.clear();
@@ -233,8 +234,8 @@ public class FilterController {
         for (FiltersChangedListener l : listeners) {
             try {
                 l.filtersChanged();
-            } catch (Exception e) {
-                LOG.log(Level.SEVERE, null, e);
+            } catch (Exception ex) {
+                LOG.error("Error while sending second filtersChanged() notification.", ex);
             }
         }
         
