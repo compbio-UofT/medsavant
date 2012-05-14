@@ -366,17 +366,19 @@ public class RegionWizard extends WizardDialog {
     
     private void createList() throws SQLException, NonFatalDatabaseException, IOException {
         if (!importing) {
-            File tempFile = File.createTempFile("genes", "bed");
+            File tempFile = File.createTempFile("genes", ".bed");
             FileWriter output = new FileWriter(tempFile);
             for (int i = 0; i < selectedGenesPanel.getTable().getRowCount(); i++) {
                 Object[] rowData = selectedGenesPanel.getRowData(i);
-                output.write(rowData[0] + "\t" + rowData[1] + "\t" + rowData[2] + "\t" + rowData[3] + "\n");
+                output.write(rowData[1] + "\t" + rowData[2] + "\t" + rowData[3] + "\t" + rowData[0] + "\n");
             }
+            output.close();
             delim = '\t';
             numHeaderLines = 0;
+            fileFormat = new BEDFormat();
             path = tempFile.getAbsolutePath();
         }
-        RemoteInputStream stream = (new SimpleRemoteInputStream(new FileInputStream(path))).export();
+        RemoteInputStream stream = new SimpleRemoteInputStream(new FileInputStream(path)).export();
         MedSavantClient.RegionSetAdapter.addRegionSet(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceId(), stream, delim, fileFormat, numHeaderLines);
     }
 

@@ -36,6 +36,7 @@ public class ImportDelimitedFile {
 
             private String[] nextLine;
 
+            @Override
             public boolean hasNext() {
                 if (nextLine == null) {
                     try {
@@ -65,6 +66,7 @@ public class ImportDelimitedFile {
                 return hasNext;
             }
 
+            @Override
             public String[] next() {
                 if (nextLine != null) {
                     String[] result = nextLine;
@@ -83,6 +85,7 @@ public class ImportDelimitedFile {
                 }
             }
 
+            @Override
             public void remove() {
                 try {
                     reader.readNext();

@@ -20,6 +20,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -47,6 +49,14 @@ public class PartSelectorPanel extends JPanel {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         add(left, gbc);
+        left.getTable().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                if (me.getClickCount() == 2) {
+                    moveSelectedItems(leftList, rightList);
+                }
+            }
+        });
 
         JButton addButton = new JButton("Add →");
         addButton.addActionListener(new ActionListener() {
@@ -79,6 +89,14 @@ public class PartSelectorPanel extends JPanel {
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         add(right, gbc);
+        right.getTable().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                if (me.getClickCount() == 2) {
+                    moveSelectedItems(rightList, leftList);
+                }
+            }
+        });
     }
     
     private void moveSelectedItems(ListViewTablePanel fromList, ListViewTablePanel toList) {

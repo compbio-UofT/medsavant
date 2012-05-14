@@ -63,9 +63,9 @@ class RegionDetailedListEditor extends DetailedListEditor {
 
         if (items.size() == 1) {
             String name = ((RegionSet)items.get(0)[0]).getName();
-            result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove %s?\nThis cannot be undone.", name);
+            result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This cannot be undone.</html>", name);
         } else {
-            result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove these %d lists?\nThis cannot be undone.", items.size());
+            result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove these %d lists?<br>This cannot be undone.</html>", items.size());
         }
 
         if (result == DialogUtils.YES) {
