@@ -32,7 +32,7 @@ public interface AnnotationQueryUtilAdapter extends Remote {
     public List<Annotation> getAnnotations(String sid) throws SQLException, RemoteException;
     public Annotation getAnnotation(String sid,int annotation_id) throws SQLException, RemoteException;
     public int[] getAnnotationIds(String sid,int projectId, int referenceId) throws SQLException, RemoteException;
-    public AnnotationFormat getAnnotationFormat(String sid,int annotationId) throws SQLException;
+    public AnnotationFormat getAnnotationFormat(String sid,int annotationId) throws SQLException, RemoteException;
     public int addAnnotation(String sid,String program, String version, int referenceid, String path, boolean hasRef, boolean hasAlt, int type) throws SQLException, RemoteException;
     public void addAnnotationFormat(String sid,int annotationId, int position, String columnName, String columnType, boolean isFilterable, String alias, String description) throws SQLException, RemoteException;
 }
