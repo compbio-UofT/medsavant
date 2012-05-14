@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 import javax.swing.*;
@@ -107,121 +108,124 @@ public class FilterPanelSub extends JPanel {
             @Override
             public void actionPerformed(ActionEvent ae) {
 
-                Map<Category, List<FilterPlaceholder>> map = getRemainingFilters();
+                try {
+                    Map<Category, List<FilterPlaceholder>> map = getRemainingFilters();
 
-                final JPopupMenu p = new JPopupMenu();
-                //p.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.lightGray), BorderFactory.createLineBorder(Color.white, 5)));
-                //p.setBackground(Color.white);
+                    final JPopupMenu p = new JPopupMenu();
+                    //p.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.lightGray), BorderFactory.createLineBorder(Color.white, 5)));
+                    //p.setBackground(Color.white);
 
-                Category[] cats = new Category[map.size()];
-                cats = map.keySet().toArray(cats);
-                Arrays.sort(cats, new CategoryComparator());
+                    Category[] cats = new Category[map.size()];
+                    cats = map.keySet().toArray(cats);
+                    Arrays.sort(cats, new CategoryComparator());
 
-                final Map<JPanel, List<Component>> menuMap = new HashMap<JPanel, List<Component>>();
+                    final Map<JPanel, List<Component>> menuMap = new HashMap<JPanel, List<Component>>();
 
-                for (Category c : cats) {
+                    for (Category c : cats) {
 
-                    final JPanel header = new JPanel();
-                    //header.setBackground(Color.white);
-                    header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
-                    JLabel label = new JLabel(" " + CustomField.categoryToString(c));
-                    header.add(label);
-                    header.add(Box.createHorizontalGlue());
-                    header.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    //label.setFont(ViewUtil.getMediumTitleFont());
-                    header.setPreferredSize(new Dimension(260, 20));
-                    header.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseReleased(MouseEvent e) {
-                            for (Object key : menuMap.keySet()) {
-                                for (Component comp : menuMap.get(key)) {
-                                    comp.setVisible(false);
-
-                                }
-                            }
-                            for (Component comp : menuMap.get(header)) {
-                                comp.setVisible(true);
-                            }
-                            p.validate();
-                            p.pack();
-                            p.repaint();
-                        }
-
-                        @Override
-                        public void mouseEntered(MouseEvent e) {
-                            header.setBackground(new Color(90,168,234));
-                        }
-
-                        @Override
-                        public void mouseExited(MouseEvent e) {
-                            header.setBackground(Color.white);
-                        }
-                    });
-                    menuMap.put(header, new ArrayList<Component>());
-                    p.add(header);
-
-                    FilterPlaceholder[] filters = new FilterPlaceholder[map.get(c).size()];
-                    filters = map.get(c).toArray(filters);
-                    Arrays.sort(filters, new FilterComparator());
-
-                    for (final FilterPlaceholder filter : filters) {
-
-                        final JPanel item = new JPanel();
-                        item.setPreferredSize(new Dimension(260, 20));
-                        //item.setBackground(Color.white);
-                        item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
-                        JLabel itemLabel = new JLabel("     " + filter.getFilterName());
-                        item.add(itemLabel);
-                        item.add(Box.createHorizontalGlue());
-                        item.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                        item.addMouseListener(new MouseAdapter() {
-
+                        final JPanel header = new JPanel();
+                        //header.setBackground(Color.white);
+                        header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
+                        JLabel label = new JLabel(" " + CustomField.categoryToString(c));
+                        header.add(label);
+                        header.add(Box.createHorizontalGlue());
+                        header.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                        //label.setFont(ViewUtil.getMediumTitleFont());
+                        header.setPreferredSize(new Dimension(260, 20));
+                        header.addMouseListener(new MouseAdapter() {
                             @Override
                             public void mouseReleased(MouseEvent e) {
-                                subItems.add(new FilterPanelSubItem(filter.getFilterView(), FilterPanelSub.this, filter.getFilterID()));
-                                refreshSubItems();
-                                p.setVisible(false);
+                                for (Object key : menuMap.keySet()) {
+                                    for (Component comp : menuMap.get(key)) {
+                                        comp.setVisible(false);
+
+                                    }
+                                }
+                                for (Component comp : menuMap.get(header)) {
+                                    comp.setVisible(true);
+                                }
+                                p.validate();
+                                p.pack();
+                                p.repaint();
                             }
 
                             @Override
                             public void mouseEntered(MouseEvent e) {
-                                item.setBackground(new Color(90,168,234));
+                                header.setBackground(new Color(90,168,234));
                             }
 
                             @Override
                             public void mouseExited(MouseEvent e) {
-                                item.setBackground(Color.white);
+                                header.setBackground(Color.white);
                             }
                         });
-                        menuMap.get(header).add(item);
-                        item.setVisible(false);
-                        p.add(item);
+                        menuMap.put(header, new ArrayList<Component>());
+                        p.add(header);
+
+                        FilterPlaceholder[] filters = new FilterPlaceholder[map.get(c).size()];
+                        filters = map.get(c).toArray(filters);
+                        Arrays.sort(filters, new FilterComparator());
+
+                        for (final FilterPlaceholder filter : filters) {
+
+                            final JPanel item = new JPanel();
+                            item.setPreferredSize(new Dimension(260, 20));
+                            //item.setBackground(Color.white);
+                            item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
+                            JLabel itemLabel = new JLabel("     " + filter.getFilterName());
+                            item.add(itemLabel);
+                            item.add(Box.createHorizontalGlue());
+                            item.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                            item.addMouseListener(new MouseAdapter() {
+
+                                @Override
+                                public void mouseReleased(MouseEvent e) {
+                                    subItems.add(new FilterPanelSubItem(filter.getFilterView(), FilterPanelSub.this, filter.getFilterID()));
+                                    refreshSubItems();
+                                    p.setVisible(false);
+                                }
+
+                                @Override
+                                public void mouseEntered(MouseEvent e) {
+                                    item.setBackground(new Color(90,168,234));
+                                }
+
+                                @Override
+                                public void mouseExited(MouseEvent e) {
+                                    item.setBackground(Color.white);
+                                }
+                            });
+                            menuMap.get(header).add(item);
+                            item.setVisible(false);
+                            p.add(item);
+                        }
+
+                        if (filters.length == 0) {
+                            JPanel item = new JPanel();
+                            item.setPreferredSize(new Dimension(150, 20));
+                            //item.setBackground(Color.white);
+                            item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
+                            JLabel empty = new JLabel("     (No filters)");
+                            empty.setFont(ViewUtil.getSmallTitleFont());
+                            item.setVisible(false);
+                            item.add(empty);
+                            item.add(Box.createHorizontalGlue());
+                            p.add(item);
+                            menuMap.get(header).add(item);
+                        }
                     }
 
-                    if (filters.length == 0) {
-                        JPanel item = new JPanel();
-                        item.setPreferredSize(new Dimension(150, 20));
-                        //item.setBackground(Color.white);
-                        item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
-                        JLabel empty = new JLabel("     (No filters)");
-                        empty.setFont(ViewUtil.getSmallTitleFont());
-                        item.setVisible(false);
-                        item.add(empty);
-                        item.add(Box.createHorizontalGlue());
-                        p.add(item);
-                        menuMap.get(header).add(item);
-                    }
+                    JPanel ppp = new JPanel();
+                    //ppp.setBackground(Color.white);
+                    ppp.setPreferredSize(new Dimension(1, 1));
+                    p.add(ppp);
+
+                    p.show(addButton, 0, 25);
+
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Error adding search condition.", ex);
                 }
-
-                JPanel ppp = new JPanel();
-                //ppp.setBackground(Color.white);
-                ppp.setPreferredSize(new Dimension(1, 1));
-                p.add(ppp);
-
-                p.show(addButton, 0, 25);
-
             }
-
         });
 
         JButton removeButton = new JButton("Remove filter set");
@@ -305,7 +309,7 @@ public class FilterPanelSub extends JPanel {
         }
     }
 
-    private Map<Category, List<FilterPlaceholder>> getRemainingFilters() {
+    private Map<Category, List<FilterPlaceholder>> getRemainingFilters() throws RemoteException, SQLException, Exception {
 
         Map<Category, List<FilterPlaceholder>> map = new EnumMap<Category, List<FilterPlaceholder>>(Category.class);
 
@@ -358,30 +362,26 @@ public class FilterPanelSub extends JPanel {
         }
 
         //HPO filter
-        try {
-            if (MedSavantClient.PatientQueryUtilAdapter.hasOptionalField(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO)) {
-                if (!hasSubItem(HPOFilterView.FILTER_ID)) {
-                    map.get(Category.PATIENT).add(new FilterPlaceholder() {
+        if (MedSavantClient.PatientQueryUtilAdapter.hasOptionalField(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO)) {
+            if (!hasSubItem(HPOFilterView.FILTER_ID)) {
+                map.get(Category.PATIENT).add(new FilterPlaceholder() {
 
-                        @Override
-                        public FilterView getFilterView() {
-                            return HPOFilterView.getHPOFilterView(id);
-                        }
+                    @Override
+                    public FilterView getFilterView() {
+                        return HPOFilterView.getHPOFilterView(id);
+                    }
 
-                        @Override
-                        public String getFilterID() {
-                            return HPOFilterView.FILTER_ID;
-                        }
+                    @Override
+                    public String getFilterID() {
+                        return HPOFilterView.FILTER_ID;
+                    }
 
-                        @Override
-                        public String getFilterName() {
-                            return HPOFilterView.FILTER_NAME;
-                        }
-                    });
-                }
+                    @Override
+                    public String getFilterName() {
+                        return HPOFilterView.FILTER_NAME;
+                    }
+                });
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
         //gene list filter
@@ -453,10 +453,8 @@ public class FilterPanelSub extends JPanel {
                                     default:
                                         return StringListFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentVariantTableName(), field.getColumnName(), id, field.getAlias());
                                 }
-                            } catch (SQLException e) {
-                                ClientMiscUtils.checkSQLException(e);
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                            } catch (Exception ex) {
+                                ClientMiscUtils.reportError("Error creating variant filter view.", ex);
                             }
                             return null;
                         }
@@ -501,10 +499,8 @@ public class FilterPanelSub extends JPanel {
                                 default:
                                     return StringListFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias());
                             }
-                        } catch (SQLException e) {
-                            ClientMiscUtils.checkSQLException(e);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        } catch (Exception ex) {
+                            ClientMiscUtils.reportError("Error creating patient filter view.", ex);
                         }
                         return null;
                     }

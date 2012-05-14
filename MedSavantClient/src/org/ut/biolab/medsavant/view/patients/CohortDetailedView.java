@@ -266,35 +266,32 @@ public class CohortDetailedView extends DetailedView {
                 @Override
                 public void actionPerformed(ActionEvent e) {
 
-                    List<String> dnaIds = new ArrayList<String>();
+                    try {
+                        List<String> dnaIds = new ArrayList<String>();
 
-                    for (Cohort c : cohorts) {
-                        try {
+                        for (Cohort c : cohorts) {
                             List<String> current = MedSavantClient.CohortQueryUtilAdapter.getDNAIdsInCohort(LoginController.sessionId, c.getId());
                             for (String s : current) {
                                 if (!dnaIds.contains(s)) {
                                     dnaIds.add(s);
                                 }
                             }
-                        } catch (SQLException ex) {
-                            ClientMiscUtils.checkSQLException(ex);
-                            LOG.error("Error getting DNA IDs for cohort.", ex);
-                        } catch (RemoteException ex) {
-                            LOG.error("Error getting DNA IDs for cohort.", ex);
                         }
-                    }
 
 
-                    DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
-                    Condition[] conditions = new Condition[dnaIds.size()];
-                    for (int i = 0; i < dnaIds.size(); i++) {
-                        conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
+                        DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
+                        Condition[] conditions = new Condition[dnaIds.size()];
+                        for (int i = 0; i < dnaIds.size(); i++) {
+                            conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
+                        }
+                        removeExistingFilters();
+                        filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
+                                "Cohorts - Filter by Cohort(s)",
+                                cohorts.length + " Cohort(s) (" + dnaIds.size() + " DNA Id(s))",
+                                ComboCondition.or(conditions));
+                    } catch (Exception ex) {
+                        ClientMiscUtils.reportError("Error filtering by cohorts.", ex);
                     }
-                    removeExistingFilters();
-                    filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                            "Cohorts - Filter by Cohort(s)",
-                            cohorts.length + " Cohort(s) (" + dnaIds.size() + " DNA Id(s))",
-                            ComboCondition.or(conditions));
 
                 }
             });

@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
@@ -78,23 +80,24 @@ public class FilterHistoryPanel extends JPanel implements ReferenceListener, Fil
         final Filter filter = FilterController.getLastFilter();
         final String action = FilterController.getLastActionString();
 
-        Thread thread = new Thread() {
+        new MedSavantWorker<Void>("FilterHistoryPanel") {
+
             @Override
-            public void run() {
-
-                try {
-                    int numLeft = ResultController.getInstance().getNumFilteredVariants();
-                    addFilterSet(filter, action, numLeft);
-                    //addFilterSet(numLeft);
-                } catch (NonFatalDatabaseException ex) {
-                    LOG.error("Error getting filter variant count.", ex);
-                }
-                //dialog.close();
+            protected void showProgress(double fraction) {
             }
-        };
 
-        thread.start();
-        //dialog.setVisible(true);
+            @Override
+            protected void showSuccess(Void result) {
+            }
+
+            @Override
+            protected Void doInBackground() throws RemoteException, SQLException {
+                int numLeft = ResultController.getInstance().getNumFilteredVariants();
+                addFilterSet(filter, action, numLeft);
+                return null;
+            }
+            
+        }.execute();
     }
     private enum Mode {GLOBAL, RELATIVE};
 
@@ -241,6 +244,7 @@ public class FilterHistoryPanel extends JPanel implements ReferenceListener, Fil
             }
         }
 
+        @Override
         public int getRowCount() {
             return names.size();
         }

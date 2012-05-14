@@ -341,7 +341,7 @@ public class DialogUtils {
         return result == JOptionPane.YES_OPTION;
     }
 
-    public static void displayErrorMessage(String msg, Exception ex) {
+    public static void displayErrorMessage(String msg, Throwable t) {
         JOptionPane.showMessageDialog(null, msg, "Database Error", JOptionPane.ERROR_MESSAGE);
     }
 

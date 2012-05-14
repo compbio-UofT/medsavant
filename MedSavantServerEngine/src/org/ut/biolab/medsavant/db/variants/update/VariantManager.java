@@ -140,7 +140,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * in the creation of a new, unpublished, up-to-date variant table.
      */
     @Override
-    public int updateTable(String sid, int projectId, int referenceId, int[] annotationIds, List<CustomField> variantFields) throws RemoteException, IOException, InterruptedException, SQLException, Exception {
+    public int updateTable(String sid, int projectId, int referenceId, int[] annotationIds, List<CustomField> variantFields) throws Exception {
 
         ServerLogger.log(VariantManager.class, "Beginning new variant update");
 

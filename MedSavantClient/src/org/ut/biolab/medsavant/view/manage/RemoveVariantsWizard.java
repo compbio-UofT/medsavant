@@ -224,9 +224,7 @@ public class RemoveVariantsWizard extends WizardDialog {
 
                                 //failure
                             } else {
-                                if (ex instanceof SQLException) {
-                                    ClientMiscUtils.checkSQLException((SQLException) ex);
-                                }
+                                ClientMiscUtils.checkSQLException(ex);
                                 publishProgressBar.setIndeterminate(false);
                                 publishProgressBar.setValue(0);
                                 publishProgressLabel.setForeground(Color.red);
@@ -322,9 +320,7 @@ public class RemoveVariantsWizard extends WizardDialog {
 
                                 //failure
                             } else {
-                                if (ex instanceof SQLException) {
-                                    ClientMiscUtils.checkSQLException((SQLException) ex);
-                                }
+                                ClientMiscUtils.checkSQLException(ex);
                                 progressBar.setIndeterminate(false);
                                 progressBar.setValue(0);
                                 progressLabel.setForeground(Color.red);

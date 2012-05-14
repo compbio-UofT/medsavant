@@ -21,7 +21,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.*;
@@ -261,11 +260,11 @@ public class ViewController extends JPanel {
         }
 
         private void refreshProjectDropDown() {
+            projectDropDown.removeAllItems();
+
+            List<String> projects = null;
+
             try {
-                projectDropDown.removeAllItems();
-
-                List<String> projects = null;
-
                 while (projects == null || projects.isEmpty()) {
                     projects = ProjectController.getInstance().getProjectNames();
 
@@ -286,35 +285,47 @@ public class ViewController extends JPanel {
                                 MedSavantFrame.getInstance().requestClose();
                                 // don't break, the user chose not to quit
                             } else {
-                                ProjectWizard npd = new ProjectWizard();
+                                new ProjectWizard().setVisible(true);
                                 break;
                             }
                         }
                     }
                 }
 
-                for (String s : projects) {
-                    projectDropDown.addItem(s);
-                }
                 if (projects.isEmpty()) {
                     projectDropDown.addItem("No Projects");
                     projectDropDown.setEnabled(false);
                 } else {
+                    for (String s: projects) {
+                        projectDropDown.addItem(s);
+                    }
                     projectDropDown.setEnabled(true);
                     projectDropDown.addActionListener(new ActionListener() {
-
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            String currentName = ProjectController.getInstance().getCurrentProjectName();
-                            if (!ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem())) {
-                                projectDropDown.setSelectedItem(currentName);
-                            }
+                            setProjectSelected();
                         }
                     });
-                    ProjectController.getInstance().setProject((String) projectDropDown.getSelectedItem());
+
+                    setProjectSelected();
                 }
-            } catch (SQLException ex) {
-            } catch (RemoteException ex) {
+            } catch (Exception ex) {
+                LOG.error("Error getting project names.", ex);
+                DialogUtils.displayException("Error", "Error getting project names.", ex);
+            }
+        }
+
+        /**
+         * Set the project based on the project drop-down.
+         */
+        private void setProjectSelected() {
+            try {
+                ProjectController pc = ProjectController.getInstance();
+                pc.setProject((String)projectDropDown.getSelectedItem());
+                pc.setDefaultReference();
+            } catch (Exception ex) {
+                LOG.error("Unable to display project list.", ex);
+                DialogUtils.displayError("Unable to display project list.");
             }
         }
 

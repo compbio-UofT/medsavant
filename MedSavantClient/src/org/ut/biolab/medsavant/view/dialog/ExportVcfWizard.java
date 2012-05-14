@@ -21,6 +21,8 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -40,7 +42,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.ExportVCF;
@@ -62,7 +63,7 @@ public class ExportVcfWizard extends WizardDialog {
     private boolean cancelled = false;
     private Thread exportThread;
     
-    public ExportVcfWizard() {
+    public ExportVcfWizard() throws RemoteException, SQLException {
         setTitle("Export VCF Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
@@ -77,10 +78,9 @@ public class ExportVcfWizard extends WizardDialog {
         pack();
         setResizable(false);
         setLocationRelativeTo(null);
-        setVisible(true);
     }
 
-    private AbstractDialogPage getWelcomePage() {
+    private AbstractDialogPage getWelcomePage() throws RemoteException, SQLException {
         
         DefaultWizardPage page = new DefaultWizardPage("Begin") {
             @Override
@@ -93,18 +93,14 @@ public class ExportVcfWizard extends WizardDialog {
         page.addText(
                 "This wizard will allow you to export all filtered variants to a \n"
                 + "VCF file. ");
-        try {
-            if (ResultController.getInstance().getNumFilteredVariants() > NUM_WARNING) {
-                JLabel l = new JLabel("WARNING:");
-                l.setForeground(Color.red);
-                l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, l.getFont().getSize()));
-                page.addComponent(l);
-                page.addText(
-                        "There are currenly more than " + ClientMiscUtils.numToString(NUM_WARNING) + " records to be exported. \n"
-                        + "This may take a long time and produce a very large file!");
-            }
-        } catch (NonFatalDatabaseException ex) {
-            LOG.error("Error getting filtered variant count.", ex);
+        if (ResultController.getInstance().getNumFilteredVariants() > NUM_WARNING) {
+            JLabel l = new JLabel("WARNING:");
+            l.setForeground(Color.red);
+            l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, l.getFont().getSize()));
+            page.addComponent(l);
+            page.addText(
+                    "There are currenly more than " + ClientMiscUtils.numToString(NUM_WARNING) + " records to be exported. \n"
+                    + "This may take a long time and produce a very large file!");
         }
         
         return page;

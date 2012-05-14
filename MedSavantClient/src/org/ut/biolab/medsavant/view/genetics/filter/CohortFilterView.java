@@ -149,11 +149,8 @@ class CohortFilterView extends FilterView {
 
                             return resultsCombined;
 
-                        } catch (SQLException x) {
-                            ClientMiscUtils.checkSQLException(x);
-                            LOG.error("Error getting DNA IDs.", x);
-                        } catch (Exception x) {
-                            LOG.error("Error getting DNA IDs.", x);
+                        } catch (Exception ex) {
+                            ClientMiscUtils.reportError("Error getting DNA IDs for cohort.", ex);
                         }
                         return null;
                     }

@@ -16,7 +16,6 @@
 
 package org.ut.biolab.medsavant.serverapi;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,8 +24,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.parsers.ParserConfigurationException;
-import org.xml.sax.SAXException;
 
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
@@ -171,7 +168,7 @@ public class AnnotationQueryUtil extends MedSavantServerUnicastRemoteObject impl
     }
 
     @Override
-    public AnnotationFormat getAnnotationFormat(String sid, int annotationId) throws SQLException, IOException, ParserConfigurationException, SAXException {
+    public AnnotationFormat getAnnotationFormat(String sid, int annotationId) throws SQLException {
 
         TableSchema annTable = MedSavantDatabase.AnnotationTableSchema;
         SelectQuery query1 = new SelectQuery();

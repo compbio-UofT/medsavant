@@ -203,40 +203,33 @@ public class GenomeContainer extends JLayeredPane {
 
         @Override
         protected Object doInBackground() throws InterruptedException, SQLException, RemoteException {
+            long start = System.currentTimeMillis();
+            final Map<String, Map<Range, Integer>> map = MedSavantClient.VariantQueryUtilAdapter.getChromosomeHeatMap(
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentProjectId(),
+                    ReferenceController.getInstance().getCurrentReferenceId(),
+                    FilterController.getQueryFilterConditions(),
+                    3000000);
+            long time = System.currentTimeMillis() - start;
 
-            try {
-
-                long start = System.currentTimeMillis();
-                final Map<String, Map<Range, Integer>> map = MedSavantClient.VariantQueryUtilAdapter.getChromosomeHeatMap(
-                        LoginController.sessionId,
-                        ProjectController.getInstance().getCurrentProjectId(),
-                        ReferenceController.getInstance().getCurrentReferenceId(),
-                        FilterController.getQueryFilterConditions(),
-                        3000000);
-                long time = System.currentTimeMillis() - start;
-
-                int mmax = 0;
-                for (String s : map.keySet()) {
-                    for (Range r : map.get(s).keySet()) {
-                        int val = map.get(s).get(r);
-                        mmax = (val > mmax) ? val : mmax;
-                    }
+            int mmax = 0;
+            for (String s : map.keySet()) {
+                for (Range r : map.get(s).keySet()) {
+                    int val = map.get(s).get(r);
+                    mmax = (val > mmax) ? val : mmax;
                 }
-
-                final int max = mmax;
-
-                for(ChromosomePanel p : chrViews) {
-                    Map<Range, Integer> m = map.get(p.getChrName());
-                    if(m == null) m = map.get(p.getShortChrName());
-                    p.updateFrequencyCounts(m, max);
-                }
-
-                showShowCard();
-                return true;
-            } catch (SQLException ex) {
-                ClientMiscUtils.checkSQLException(ex);
-                throw ex;
             }
+
+            final int max = mmax;
+
+            for(ChromosomePanel p : chrViews) {
+                Map<Range, Integer> m = map.get(p.getChrName());
+                if(m == null) m = map.get(p.getShortChrName());
+                p.updateFrequencyCounts(m, max);
+            }
+
+            showShowCard();
+            return true;
         }
 
         /*@Override

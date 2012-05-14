@@ -210,15 +210,15 @@ public class AddRemoveDatabaseDialog extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         String dbName = field_database.getText();
         if (removing) {
-            if (DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s?</i><br>This operation cannot be undone.", dbName) == DialogUtils.YES) {
+            if (DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This operation cannot be undone.", dbName) == DialogUtils.YES) {
                 try {
                     MedSavantClient.initializeRegistry(field_hostname.getText(), field_port.getText());
                     MedSavantClient.SetupAdapter.removeDatabase(field_hostname.getText(), Integer.parseInt(field_port.getText()), field_database.getText(), field_user.getText(), field_password.getPassword());
                     setVisible(false);
                     DialogUtils.displayMessage("Database Removed", String.format("<html>Database <i>%s</i> successfully removed.</html>", field_database.getText()));
                 } catch (Exception ex) {
-                    LOG.error("Unable to remove database.", ex);
-                    DialogUtils.displayException("Sorry", "Database could not be created:\n" + ex.getMessage() + "\nPlease check the settings and try again.", ex);
+                    LOG.error("Error removing database.", ex);
+                    DialogUtils.displayException("Sorry", String.format("<html>Database could not be removed:<br>%s<br></html>", MiscUtils.getMessage(ex)), ex);
                 }
             }
         } else {
@@ -233,9 +233,9 @@ public class AddRemoveDatabaseDialog extends javax.swing.JDialog {
                         setVisible(false);
                         DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", field_database.getText()));
                     } catch (Exception ex) {
-                        LOG.error("Unable to " + (removing ? "create" : "remove") + " database.", ex);
+                        LOG.error("Error creating database.", ex);
                         progress.setVisible(false);
-                        DialogUtils.displayException("Sorry", "Database could not be created:\n" + ex.getMessage() + "\nPlease check the settings and try again.", ex);
+                        DialogUtils.displayException("Sorry", String.format("<html>Database could not be created:<br>%s<br>Please check the settings and try again.</html>", MiscUtils.getMessage(ex)), ex);
                     }
                 }
             };

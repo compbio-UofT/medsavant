@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Filter;
@@ -110,7 +109,7 @@ public class FilterController {
         LoginController.addLoginListener(logoutListener);
     }
 
-    public static void init(){};
+    public static void init() {};
 
     public static enum FilterAction {ADDED, REMOVED, MODIFIED, REPLACED};
 
@@ -207,13 +206,14 @@ public class FilterController {
         filterSetID++;
         //filterMapHistory.put(filterSetID,filterMap);
         
-        Thread t = new Thread(){
+        Thread t = new Thread() {
             @Override
-            public void run(){
+            public void run() {
                 try {
                     ResultController.getInstance().getNumFilteredVariants();
-                } catch (NonFatalDatabaseException ex) {
+                } catch (Exception ex) {
                     LOG.error("Error getting filtered variant count.", ex);
+                    
                 }
             }
         };
@@ -287,7 +287,7 @@ public class FilterController {
 
     public static List<List<QueryFilter>> getQueryFilters() {
         List<List<QueryFilter>> qfs = new ArrayList<List<QueryFilter>>();
-        for(Object key : filterMap.keySet().toArray()) {
+        for (Object key : filterMap.keySet().toArray()) {
             qfs.add(getQueryFilters((Integer)key));
         }
         return qfs;
@@ -296,26 +296,26 @@ public class FilterController {
     public static Condition[] getQueryFilterConditions(int queryId) {
         List<QueryFilter> filters = prioritizeFilters(getQueryFilters(queryId));
         Condition[] conditions = new Condition[filters.size()];
-        for(int i = 0; i < filters.size(); i++) {
+        for (int i = 0; i < filters.size(); i++) {
             conditions[i] = ComboCondition.or(filters.get(i).getConditions());
         }
         return conditions;
     }
     
-    private static List<QueryFilter> prioritizeFilters(List<QueryFilter> filters){
+    private static List<QueryFilter> prioritizeFilters(List<QueryFilter> filters) {
         
         List<QueryFilter> result = new ArrayList<QueryFilter>();
         addFiltersToList(filters, result, DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
         addFiltersToList(filters, result, DefaultVariantTableSchema.COLUMNNAME_OF_POSITION);
-        for(QueryFilter f : filters) result.add(f); //remaining
+        for (QueryFilter f : filters) result.add(f); //remaining
         
         return result;
     }
     
     //add anything from filters with filterId to list
-    private static void addFiltersToList(List<QueryFilter> filters, List<QueryFilter> list, String filterId){
-        for(int i = filters.size()-1; i >= 0; i--){
-            if (filters.get(i).getId().equals(filterId)){
+    private static void addFiltersToList(List<QueryFilter> filters, List<QueryFilter> list, String filterId) {
+        for (int i = filters.size()-1; i >= 0; i--) {
+            if (filters.get(i).getId().equals(filterId)) {
                 list.add(filters.remove(i));
             }
         }
@@ -324,7 +324,7 @@ public class FilterController {
     public static Condition[][] getQueryFilterConditions() {
         Object[] keys = filterMap.keySet().toArray();
         Condition[][] conditions = new Condition[keys.length][];
-        for(int i = 0; i < keys.length; i++) {
+        for (int i = 0; i < keys.length; i++) {
             conditions[i] = getQueryFilterConditions((Integer)keys[i]);
         }
         return conditions;
@@ -359,7 +359,7 @@ public class FilterController {
     }
 
     public static boolean hasFiltersApplied() {
-        for(Integer key : filterMap.keySet()) {
+        for (Integer key : filterMap.keySet()) {
             Map<String, Filter> current = filterMap.get(key);
             if (current != null && !current.isEmpty()) {
                 return true;
@@ -372,11 +372,11 @@ public class FilterController {
         return filterMap.containsKey(queryId) && filterMap.get(queryId).containsKey(filterId);
     }
     
-    public static void setAutoCommit(boolean auto){
+    public static void setAutoCommit(boolean auto) {
         autoCommit = auto;
     }
     
-    public static void commit(final String filterName, FilterAction action){ 
+    public static void commit(final String filterName, FilterAction action) { 
         
         Filter f = new QueryFilter() {
             @Override

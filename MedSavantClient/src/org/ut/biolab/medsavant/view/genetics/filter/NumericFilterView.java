@@ -305,13 +305,8 @@ public class NumericFilterView extends FilterView{
                                 }
                                 return results;
 
-                            } catch (NonFatalDatabaseException ex) {
-                                LOG.error("Error getting DNA IDs with values in range.", ex);
-                            } catch (SQLException ex) {
-                                ClientMiscUtils.checkSQLException(ex);
-                                LOG.error("Error getting DNA IDs with values in range.", ex);
-                            } catch (RemoteException ex) {
-                                LOG.error("Error getting DNA IDs with values in range.", ex);
+                            } catch (Exception ex) {
+                                ClientMiscUtils.reportError("Error getting DNA IDs with values in range.", ex);
                             }
                         }
                         return new Condition[0];

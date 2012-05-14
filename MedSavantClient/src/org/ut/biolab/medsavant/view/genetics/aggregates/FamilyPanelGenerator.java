@@ -199,12 +199,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected List<String> doInBackground() throws Exception {
-                try {
-                    return MedSavantClient.PatientQueryUtilAdapter.getFamilyIds(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
-                } catch (SQLException ex) {
-                    ClientMiscUtils.checkSQLException(ex);
-                    throw ex;
-                }
+                return MedSavantClient.PatientQueryUtilAdapter.getFamilyIds(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
             }
 
             @Override
@@ -253,16 +248,11 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected Map<String, Integer> doInBackground() throws Exception {
-                try {
-                    return MedSavantClient.VariantQueryUtilAdapter.getNumVariantsInFamily(
-                            LoginController.sessionId, 
-                            ProjectController.getInstance().getCurrentProjectId(),
-                            ReferenceController.getInstance().getCurrentReferenceId(),
-                            familyId, FilterController.getQueryFilterConditions());
-                } catch (SQLException ex) {
-                    ClientMiscUtils.checkSQLException(ex);
-                    throw ex;
-                }
+                return MedSavantClient.VariantQueryUtilAdapter.getNumVariantsInFamily(
+                        LoginController.sessionId, 
+                        ProjectController.getInstance().getCurrentProjectId(),
+                        ReferenceController.getInstance().getCurrentReferenceId(),
+                        familyId, FilterController.getQueryFilterConditions());
             }
 
             @Override
@@ -286,13 +276,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
             @Override
             protected File doInBackground() throws Exception {
 
-                List<Object[]> results;
-                try {
-                    results = MedSavantClient.PatientQueryUtilAdapter.getFamily(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), familyId);
-                } catch (SQLException ex) {
-                    ClientMiscUtils.checkSQLException(ex);
-                    throw ex;
-                }
+                List<Object[]> results = MedSavantClient.PatientQueryUtilAdapter.getFamily(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), familyId);
 
                 File outfile = new File(DirectorySettings.getTmpDirectory(), "pedigree" + familyId + ".csv");
 

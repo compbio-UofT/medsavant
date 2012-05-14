@@ -505,7 +505,7 @@ public class VariantQueryUtil extends MedSavantServerUnicastRemoteObject impleme
      * Convenience method
      */
     @Override
-    public int getNumVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, long start, long end) throws SQLException, NonFatalDatabaseException, RemoteException {
+    public int getNumVariantsInRange(String sid, int projectId, int referenceId, Condition[][] conditions, String chrom, long start, long end) throws SQLException, RemoteException {
 
         String name = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectId, referenceId, true);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, name);

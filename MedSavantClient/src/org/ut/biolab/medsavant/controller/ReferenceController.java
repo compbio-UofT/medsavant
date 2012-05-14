@@ -44,59 +44,6 @@ public class ReferenceController {
 
     private final ArrayList<ReferenceListener> referenceListeners;
 
-    /*
-    public void removeReference(String referenceName) {
-    try {
-    org.ut.biolab.medsavant.db.Manage.removeReference(referenceName);
-    fireReferenceRemovedEvent(referenceName);
-    } catch (SQLException e) {
-    e.printStackTrace();
-    }
-    }
-     *
-     */
-
-    /*
-    private void fireReferenceRemovedEvent(String referenceName) {
-    ReferenceController pc = getInstance();
-    for (ReferenceListener l : pc.referenceListeners) {
-    l.referenceRemoved(referenceName);
-    }
-    }
-     *
-     */
-    public void addReference(String name, List<Chromosome> contigs, String url) {
-        try {
-            MedSavantClient.ReferenceQueryUtilAdapter.addReference(LoginController.sessionId, name, contigs, url);
-            fireReferenceAddedEvent(name);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } catch (RemoteException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void removeReference(final String refName) {
-        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                "Removing Reference",
-                "Reference " + refName + " is being removed. Please wait.",
-                true);
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    MedSavantClient.ReferenceQueryUtilAdapter.removeReference(LoginController.sessionId, MedSavantClient.ReferenceQueryUtilAdapter.getReferenceId(LoginController.sessionId, refName));
-                    fireReferenceRemovedEvent(refName);
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(MedSavantFrame.getInstance(), "Cannot remove this reference because projects\nor annotations still refer to it.", "", JOptionPane.ERROR_MESSAGE);
-                }
-                dialog.close();
-            }
-        };
-        thread.start();
-        dialog.setVisible(true);
-    }
-
     private static ReferenceController instance;
 
     private ReferenceController() {
@@ -135,10 +82,6 @@ public class ReferenceController {
      public boolean setReference(String refName){
         return setReference(refName, false);
     }
-
-
-
-
 
     public boolean setReference(String refName, boolean getConfirmation) {
         try {
@@ -196,6 +139,38 @@ public class ReferenceController {
 
     public boolean isReferenceSet(){
         return referenceSet;
+    }
+
+    public void addReference(String name, List<Chromosome> contigs, String url) {
+        try {
+            MedSavantClient.ReferenceQueryUtilAdapter.addReference(LoginController.sessionId, name, contigs, url);
+            fireReferenceAddedEvent(name);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } catch (RemoteException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void removeReference(final String refName) {
+        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
+                "Removing Reference",
+                "Reference " + refName + " is being removed. Please wait.",
+                true);
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    MedSavantClient.ReferenceQueryUtilAdapter.removeReference(LoginController.sessionId, MedSavantClient.ReferenceQueryUtilAdapter.getReferenceId(LoginController.sessionId, refName));
+                    fireReferenceRemovedEvent(refName);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(MedSavantFrame.getInstance(), "Cannot remove this reference because projects\nor annotations still refer to it.", "", JOptionPane.ERROR_MESSAGE);
+                }
+                dialog.close();
+            }
+        };
+        thread.start();
+        dialog.setVisible(true);
     }
 
 }

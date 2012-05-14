@@ -47,7 +47,6 @@ import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.variants.update.VariantManagerUtils;
-import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.CustomField.Category;
 import org.ut.biolab.medsavant.model.ProjectDetails;
@@ -175,11 +174,11 @@ public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
 
     @Override
-    public String createVariantTable(String sid, int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging) throws SQLException {
+    public String createVariantTable(String sid, int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging) throws RemoteException, SQLException {
         return createVariantTable(sid, projectid, referenceid, updateid, annotationIds, isStaging, false);
     }
 
-    public String createVariantTable(String sid, int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging, boolean isSub) throws SQLException {
+    public String createVariantTable(String sid, int projectid, int referenceid, int updateid, int[] annotationIds, boolean isStaging, boolean isSub) throws RemoteException, SQLException {
 
         String variantTableName = DBSettings.getVariantTableName(projectid, referenceid, updateid);
         if (isSub) {
@@ -253,27 +252,14 @@ public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ConnectionController.execute(sid, query.toString());
     }
 
-    private static String getAnnotationSchema(String sid, int annotationId) {
-
-        AnnotationFormat format = null;
-        try {
-            format = AnnotationQueryUtil.getInstance().getAnnotationFormat(sid, annotationId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return format.generateSchema();
+    private static String getAnnotationSchema(String sessID, int annotationID) throws RemoteException, SQLException {
+        return AnnotationQueryUtil.getInstance().getAnnotationFormat(sessID, annotationID).generateSchema();
     }
 
     @Override
-    public int getNumberOfRecordsInVariantTable(String sid, int projectid, int refid) throws SQLException {
-        try {
-            String variantTableName = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectid, refid, true);
-            return DBUtil.getNumRecordsInTable(sid, variantTableName);
-        } catch (RemoteException ex) {
-            LOG.error("Error getting number of records in variant table.", ex);
-            return -1;
-        }
+    public int getNumberOfRecordsInVariantTable(String sid, int projectid, int refid) throws RemoteException, SQLException {
+        String variantTableName = ProjectQueryUtil.getInstance().getVariantTablename(sid, projectid, refid, true);
+        return DBUtil.getNumRecordsInTable(sid, variantTableName);
     }
 
     /*
@@ -392,6 +378,7 @@ public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         }
     }
 
+    @Override
     public void removeProject(String sid, int projectid) throws SQLException, RemoteException {
 
 

@@ -97,7 +97,12 @@ public class RegionWizard extends WizardDialog {
         } else {
             model.append(getNamePage());
             AbstractWizardPage page = getStandardGeneSetsPage();
-            if (standardGenes.size() > 1) {
+            if (standardGenes.isEmpty()) {
+                // That's odd.  We have no standard genes for this genome.
+                DialogUtils.displayMessage(String.format("No standard genes to choose from for %s.", ReferenceController.getInstance().getCurrentReferenceName()));
+                return;
+            } else if (standardGenes.size() > 1) {
+                // More than one set, so we provide a page to let the user choose one.
                 model.append(page);
             }
             model.append(getGenesPage());

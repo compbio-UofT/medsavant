@@ -54,6 +54,7 @@ public class TableSchema implements Serializable {
 
     private final DbTable table;
     protected SelectQuery selectQuery;
+    private List<DbColumn> autoIncrements;
 
     public TableSchema(DbTable t) {
         this.table = t;
@@ -68,22 +69,6 @@ public class TableSchema implements Serializable {
         aliasToDBName = new LinkedHashMap<String,String>();
     }
 
-    public TableSchema(DbSchema s, String name, ColumnDef... cols) {
-        this(s.addTable(name));
-        for (ColumnDef col: cols) {
-            DbColumn dbc = addColumn(col.name, col.name, col.type, col.length);
-            if (col.defaultValue != null) {
-                dbc.setDefaultValue(col.defaultValue);
-            }
-            if (col.notNull) {
-                dbc.notNull();
-            }
-            if (col.primaryKey) {
-                dbc.primaryKey();
-            }
-        }
-    }
-
     /**
      * Define a table-scheme using an interface class which provides all the column defs as members.
      * @param s the database schema
@@ -92,6 +77,7 @@ public class TableSchema implements Serializable {
      */
     public TableSchema(DbSchema s, String name, Class columnsClass) {
         this(s.addTable(name));
+        autoIncrements = new ArrayList<DbColumn>();
         Field[] fields = columnsClass.getDeclaredFields();
         for (Field f: fields) {
             try {
@@ -99,6 +85,9 @@ public class TableSchema implements Serializable {
                 DbColumn dbc = addColumn(col.name, col.name, col.type, col.length);
                 if (col.defaultValue != null) {
                     dbc.setDefaultValue(col.defaultValue);
+                }
+                if (col.autoIncrement) {
+                    autoIncrements.add(dbc);
                 }
                 if (col.notNull) {
                     dbc.notNull();
@@ -204,7 +193,11 @@ public class TableSchema implements Serializable {
     }
     
     public CreateTableQuery getCreateQuery() {
-        return new CreateTableQuery(table, true);
+        CreateTableQuery query = new CreateTableQuery(table, true);
+        for (DbColumn col: autoIncrements) {
+            query.addColumnConstraint(col, "AUTO_INCREMENT");
+        }
+        return query;
     }
  
     /**

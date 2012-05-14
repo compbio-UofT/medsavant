@@ -218,13 +218,10 @@ public class TagFilterView extends FilterView {
                                 }
 
                                 return new Condition[] {ComboCondition.or(uploadIDConditions) };
-                            } catch (SQLException ex) {
-                                ClientMiscUtils.checkSQLException(ex);
-                                return new Condition[0];
-                            } catch (RemoteException ex) {
-                                return new Condition[0];
+                            } catch (Exception ex) {
+                                ClientMiscUtils.reportError("Error getting upload IDs.", ex);
                             }
-
+                            return new Condition[0];
                         }
 
                         @Override
@@ -251,10 +248,8 @@ public class TagFilterView extends FilterView {
             p.add(ViewUtil.getClearBorderedJSP(ta), BorderLayout.CENTER);
             p.add(bottomContainer,BorderLayout.SOUTH);
 
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ClientMiscUtils.checkSQLException(ex);
-            content.add(new JLabel("Problem getting tag information"));
-        } catch (RemoteException ex) {
             content.add(new JLabel("Problem getting tag information"));
         }
 
@@ -274,11 +269,8 @@ public class TagFilterView extends FilterView {
                 for (String val : values) {
                     tagValueCB.addItem(val);
                 }
-            } catch (SQLException ex) {
-                ClientMiscUtils.checkSQLException(ex);
-                LOG.error("Error updating tag values.", ex);
-            } catch (RemoteException ex) {
-                LOG.error("Error updating tag values.", ex);
+            } catch (Exception ex) {
+                ClientMiscUtils.reportError("Error updating tag values.", ex);
             }
         }
 

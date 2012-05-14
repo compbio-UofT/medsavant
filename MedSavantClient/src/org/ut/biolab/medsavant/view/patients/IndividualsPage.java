@@ -20,6 +20,7 @@ import java.awt.Component;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.controller.ThreadController;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -40,10 +41,14 @@ public class IndividualsPage extends SubSectionView {
 
     @Override
     public JPanel getView(boolean update) {
-        view = new SplitScreenView(
-                new IndividualListModel(),
-                new IndividualDetailedView(),
-                new IndividualDetailEditor());
+        try {
+            view = new SplitScreenView(
+                    new IndividualListModel(),
+                    new IndividualDetailedView(),
+                    new IndividualDetailEditor());
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Unable to create individuals page.", ex);
+        }
         return view;
     }
 

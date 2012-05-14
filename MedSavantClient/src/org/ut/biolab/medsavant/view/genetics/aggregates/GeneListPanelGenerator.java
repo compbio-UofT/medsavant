@@ -165,9 +165,9 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                         //Do nothing. This ensures that no data is being written from previous worker.
                     }
 
-                    //compute variant field
-                    for(int i = 0; i < Math.min(currentGenes.size(), limit); i++) {
-                        try {
+                    try {
+                        //compute variant field
+                        for (int i = 0; i < Math.min(currentGenes.size(), limit); i++) {
                             GenomicRegion r = currentGenes.get(i);
                             int recordsInRegion = MedSavantClient.VariantQueryUtilAdapter.getNumVariantsInRange(
                                     LoginController.sessionId,
@@ -184,14 +184,14 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                             } else {
                                 return new ArrayList<Object[]>();
                             }
-                        } catch (SQLException ex) {
-                            ClientMiscUtils.checkSQLException(ex);
-                        } catch (Exception e) {}
+                        }
+                    } catch (Exception ex) {
+                        ClientMiscUtils.reportError("Error getting variant count.", ex);
                     }
 
                     //compute patient field
-                    for(int i = 0; i < Math.min(currentGenes.size(), limit); i++) {
-                        try {
+                    try {
+                        for (int i = 0; i < Math.min(currentGenes.size(), limit); i++) {
                             GenomicRegion r = currentGenes.get(i);
                             int recordsInRegion = MedSavantClient.VariantQueryUtilAdapter.getNumPatientsWithVariantsInRange(
                                     LoginController.sessionId,
@@ -208,9 +208,9 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                             } else {
                                 return new ArrayList<Object[]>();
                             }
-                        } catch (SQLException ex) {
-                            ClientMiscUtils.checkSQLException(ex);
-                        } catch (Exception e) {}
+                        }
+                    } catch (Exception ex) {
+                        ClientMiscUtils.reportError("Error getting patient count.", ex);
                     }
 
                     return currentData;

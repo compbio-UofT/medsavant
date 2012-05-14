@@ -25,6 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -386,7 +387,7 @@ public class VariantAnnotator {
     private int numLinesWrittenForChromosome;
     private int totalNumWarnings;
 
-    private void annotate(String sid, File inFile, Annotation annot, File outFile) throws Exception {
+    private void annotate(String sid, File inFile, Annotation annot, File outFile) throws IOException, SQLException {
         ServerLogger.log(VariantAnnotator.class,"Record file: " + inFile.getAbsolutePath());
         ServerLogger.log(VariantAnnotator.class,"Annotation file: " + annot.getDataPath());
         ServerLogger.log(VariantAnnotator.class,"Output file: " + outFile.getAbsolutePath());
@@ -436,7 +437,6 @@ public class VariantAnnotator {
 
                 // an exception is thrown when we hit the end of the input file
             } catch (Exception e) {
-                e.printStackTrace();
                 eof = true;
                 break;
             }

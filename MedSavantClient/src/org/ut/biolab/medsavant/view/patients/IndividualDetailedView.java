@@ -100,13 +100,8 @@ public class IndividualDetailedView extends DetailedView {
         }
 
         @Override
-        protected Object doInBackground() throws Exception {
-            try {
-                return MedSavantClient.PatientQueryUtilAdapter.getPatientRecord(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
-            } catch (SQLException ex) {
-                ClientMiscUtils.checkSQLException(ex);
-                throw ex;
-            }
+        protected Object doInBackground() throws RemoteException, SQLException {
+            return MedSavantClient.PatientQueryUtilAdapter.getPatientRecord(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
         }
 
         @Override
@@ -133,14 +128,8 @@ public class IndividualDetailedView extends DetailedView {
         @Override
         protected Object doInBackground() throws Exception {
 
-            List<Object[]> results;
-            try {
-                results = MedSavantClient.PatientQueryUtilAdapter.getFamilyOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
-                familyId = MedSavantClient.PatientQueryUtilAdapter.getFamilyIdOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
-            } catch (SQLException ex) {
-                ClientMiscUtils.checkSQLException(ex);
-                throw ex;
-            }
+            List<Object[]> results = MedSavantClient.PatientQueryUtilAdapter.getFamilyOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
+            familyId = MedSavantClient.PatientQueryUtilAdapter.getFamilyIdOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
 
             File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + pid + ".csv");
 
@@ -334,16 +323,9 @@ public class IndividualDetailedView extends DetailedView {
         infoDetails.updateUI();
     }
 
-    public IndividualDetailedView() {
+    public IndividualDetailedView() throws RemoteException, SQLException {
 
-        try {
-            fieldNames = MedSavantClient.PatientQueryUtilAdapter.getPatientFieldAliases(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
-        } catch (SQLException x) {
-            ClientMiscUtils.checkSQLException(x);
-            LOG.error("Error getting patient field aliases.", x);
-        } catch (RemoteException x) {
-            LOG.error("Error getting patient field aliases.", x);
-        }
+        fieldNames = MedSavantClient.PatientQueryUtilAdapter.getPatientFieldAliases(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
 
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());

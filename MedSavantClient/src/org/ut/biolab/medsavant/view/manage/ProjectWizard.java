@@ -79,7 +79,6 @@ public class ProjectWizard extends WizardDialog {
     private String projectName;
     private DefaultTableModel patientFormatModel;
     private DefaultTableModel variantFormatModel;
-    //private String validationError = "";
     private List<CustomField> patientFields;
     private List<CustomField> variantFields;
     private List<ProjectDetails> projectDetails = new ArrayList<ProjectDetails>();
@@ -149,7 +148,7 @@ public class ProjectWizard extends WizardDialog {
         PageList model = new PageList();
         model.append(getNamePage());
         model.append(getPatientFieldsPage());
-        model.append(getVcfFieldsPage());
+        model.append(getVCFFieldsPage());
         model.append(getReferencePage());
         model.append(getCreatePage());
         model.append(getCompletionPage());
@@ -177,7 +176,6 @@ public class ProjectWizard extends WizardDialog {
         pack();
         setResizable(false);
         setLocationRelativeTo(null);
-        setVisible(true);
     }
 
     private AbstractWizardPage getNamePage() {
@@ -307,7 +305,7 @@ public class ProjectWizard extends WizardDialog {
         return page;
     }
 
-    private AbstractWizardPage getVcfFieldsPage() {
+    private AbstractWizardPage getVCFFieldsPage() {
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_VCF) {
@@ -577,9 +575,7 @@ public class ProjectWizard extends WizardDialog {
 
                                 //failure
                             } else {
-                                if (ex instanceof SQLException) {
-                                    ClientMiscUtils.checkSQLException((SQLException) ex);
-                                }
+                                ClientMiscUtils.checkSQLException(ex);
                                 publishProgressBar.setIndeterminate(false);
                                 publishProgressBar.setValue(0);
                                 publishProgressLabel.setForeground(Color.red);
@@ -662,11 +658,7 @@ public class ProjectWizard extends WizardDialog {
                                 LOG.error("Error releasing database lock.", ex1);
                             }
 
-                            if (ex instanceof SQLException) {
-                                ClientMiscUtils.checkSQLException((SQLException)ex);
-                            }
-                            LOG.error("Error creating project.", ex);
-                            DialogUtils.displayException("Error", "There was an error while trying to create your project. ", ex);
+                            ClientMiscUtils.reportError("There was an error while trying to create your project.", ex);
                             setVisible(false);
                             dispose();
                         }
@@ -676,15 +668,6 @@ public class ProjectWizard extends WizardDialog {
             }
 
         });
-
-        /*cancelButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                cancelButton.setText("Cancelling...");
-                cancelButton.setEnabled(false);
-                uploadThread.interrupt();
-            }
-        });*/
 
         publishCancelButton.addActionListener(new ActionListener() {
 
@@ -820,7 +803,7 @@ public class ProjectWizard extends WizardDialog {
         return true;
     }
 
-    private void createProject() throws SQLException, RemoteException, Exception {
+    private void createProject() throws Exception {
         if (modify) {
 
             //change project name
@@ -887,7 +870,6 @@ public class ProjectWizard extends WizardDialog {
                     }
                     String tablename = MedSavantClient.ProjectQueryUtilAdapter.createVariantTable(LoginController.sessionId, projectid, cli.getReference().getId(), 0, (annotationIds.isEmpty() ? null : annIds), false);
                     MedSavantClient.ProjectQueryUtilAdapter.addTableToMap(LoginController.sessionId, projectid, cli.getReference().getId(), 0, true, tablename, null);
-
                 }
             }
         }

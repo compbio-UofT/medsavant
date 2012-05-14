@@ -20,6 +20,7 @@ import java.awt.Dimension;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 
@@ -56,13 +57,13 @@ public class SavantExportForm extends javax.swing.JDialog {
     private static final Log LOG = LogFactory.getLog(SavantExportForm.class);
 
     private JPanel checkBoxPane;
-    private List<String> dnaIds;
+    private List<String> dnaIDs;
     private File outputFile;
     private List<JCheckBox> checkBoxes = new ArrayList<JCheckBox>();
     private JDialog progressDialog;
 
     /** Creates new form SavantExportForm */
-    public SavantExportForm() {
+    public SavantExportForm() throws RemoteException, SQLException {
         
         
         //System.err.println("NOT IMPLEMENTED YET");
@@ -80,42 +81,34 @@ public class SavantExportForm extends javax.swing.JDialog {
         exportButton.setEnabled(false);   
 
         //populate individuals
-        try {
-            List<String> temp = MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
-                    LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentPatientTableName(), 
-                    DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, 
-                    false);
-            dnaIds = new ArrayList<String>();
-            for (String s : temp) {
-                for (String s1 : s.split(",")) {
-                    if (s1 != null && !s1.equals("") && !dnaIds.contains(s1)) {
-                        dnaIds.add(s1);
-                    }
+        List<String> temp = MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
+                LoginController.sessionId, 
+                ProjectController.getInstance().getCurrentPatientTableName(), 
+                DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, 
+                false);
+        dnaIDs = new ArrayList<String>();
+        for (String s : temp) {
+            for (String s1 : s.split(",")) {
+                if (s1 != null && !s1.equals("") && !dnaIDs.contains(s1)) {
+                    dnaIDs.add(s1);
                 }
             }
-            for (String id : dnaIds) {
-                addId(id);
-            }
-        } catch (SQLException ex) {
-            ClientMiscUtils.checkSQLException(ex);
-            LOG.error("Error getting distinct values for column.", ex);
-        } catch (RemoteException ex) {
-            LOG.error("Error getting distinct values for column.", ex);
+        }
+        for (String id : dnaIDs) {
+            addID(id);
         }
         
-        this.pack();
-        this.setLocationRelativeTo(null);
-        this.setVisible(true);  
+        pack();
+        setLocationRelativeTo(null);
     }
     
-    private void addId(String id) {
+    private void addID(String id) {
         JCheckBox box = new JCheckBox(id);
         checkBoxPane.add(box);       
         checkBoxes.add(box);
     }
     
-    private void export() {
+    private void export() throws RemoteException, SQLException, IOException {
         //get selected DNA IDs
         List<String> selectedIds = new ArrayList<String>();
         for (JCheckBox box : checkBoxes) {
@@ -133,80 +126,61 @@ public class SavantExportForm extends javax.swing.JDialog {
         
         //get bookmarks
         Map<String, List<String>> map = new HashMap<String, List<String>>();
-        try {
-            map = MedSavantClient.VariantQueryUtilAdapter.getSavantBookmarkPositionsForDNAIds(
-                    LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentProjectId(), 
-                    ReferenceController.getInstance().getCurrentReferenceId(), 
-                    FilterController.getQueryFilterConditions(),
-                    selectedIds, 
-                    -1);
-        } catch (SQLException ex) {
-            ClientMiscUtils.checkSQLException(ex);
-            ex.printStackTrace();
-        } catch (RemoteException ex) {
-            ex.printStackTrace();
-        }
-        
+        map = MedSavantClient.VariantQueryUtilAdapter.getSavantBookmarkPositionsForDNAIds(
+                LoginController.sessionId, 
+                ProjectController.getInstance().getCurrentProjectId(), 
+                ReferenceController.getInstance().getCurrentReferenceId(), 
+                FilterController.getQueryFilterConditions(),
+                selectedIds, 
+                -1);
         
         //get BAM files
         List<String> bamFiles = new ArrayList<String>();
-        try {
-            bamFiles = MedSavantClient.PatientQueryUtilAdapter.getValuesFromDNAIds(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, selectedIds);
-        } catch (SQLException ex) {
-            ClientMiscUtils.checkSQLException(ex);
-            ex.printStackTrace();
-        } catch (RemoteException ex) {
-            ex.printStackTrace();
-        }
+        bamFiles = MedSavantClient.PatientQueryUtilAdapter.getValuesFromDNAIds(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, selectedIds);
         
         //genome version
         String genomeName = ReferenceController.getInstance().getCurrentReferenceName();
         String genomeUrl = ReferenceController.getInstance().getCurrentReferenceUrl();
         
         //create file
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
-        
-            out.write("<?xml version=\"1.0\" ?>\n"
-                    + "<savant version=\"1\" range=\"chr1:1-1000\">\n");
-            
-            if (genomeUrl != null) {
-                out.write(" <genome name=\"" + genomeName + "\" uri=\"" + genomeUrl + "\" />\n");
-            } else {
-                out.write(" <genome name=\"" + genomeName + "\" >\n");               
-                for (Chromosome c : ReferenceController.getInstance().getChromosomes()) {
-                    out.write("   <reference name=\"" + c.getName() + "\" length=\"" + c.getLength() + "\" />\n");
-                }  
-                out.write(" </genome>\n");          
-            }
+        BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
 
-            for (String path : bamFiles) {
-                out.write("  <track uri=\"" + path + "\"/>\n");
+        out.write("<?xml version=\"1.0\" ?>\n"
+                + "<savant version=\"1\" range=\"chr1:1-1000\">\n");
+
+        if (genomeUrl != null) {
+            out.write(" <genome name=\"" + genomeName + "\" uri=\"" + genomeUrl + "\" />\n");
+        } else {
+            out.write(" <genome name=\"" + genomeName + "\" >\n");               
+            for (Chromosome c : ReferenceController.getInstance().getChromosomes()) {
+                out.write("   <reference name=\"" + c.getName() + "\" length=\"" + c.getLength() + "\" />\n");
             }  
-
-            Object[] keys = map.keySet().toArray();
-            for (Object keyObject : keys) {
-                String key = (String) keyObject;
-                List<String> positions = map.get(key);
-                for (String p : positions) {
-                    out.write("  <bookmark range=\"" + p + "\">" + key + "</bookmark>\n");
-                }           
-            }
-
-            out.write("</savant>\n");
-
-        
-            //out.write(s);
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+            out.write(" </genome>\n");          
         }
+
+        for (String path : bamFiles) {
+            out.write("  <track uri=\"" + path + "\"/>\n");
+        }  
+
+        Object[] keys = map.keySet().toArray();
+        for (Object keyObject : keys) {
+            String key = (String) keyObject;
+            List<String> positions = map.get(key);
+            for (String p : positions) {
+                out.write("  <bookmark range=\"" + p + "\">" + key + "</bookmark>\n");
+            }           
+        }
+
+        out.write("</savant>\n");
+
+
+        //out.write(s);
+        out.close();
                 
         progressDialog.setVisible(false);
-        this.setVisible(false);
+        setVisible(false);
         progressDialog.dispose();
-        this.dispose();
+        dispose();
     }
 
     /** This method is called from within the constructor to
@@ -324,14 +298,25 @@ public class SavantExportForm extends javax.swing.JDialog {
         this.setVisible(false);
         progressDialog.setVisible(true);
         
-        Thread thread = new Thread() {
+        new MedSavantWorker<Void>("SavantExportForm") {
+
             @Override
-            public void run() {
-                export();
+            protected void showProgress(double fraction) {
+                throw new UnsupportedOperationException("Not supported yet.");
             }
-        };
-        thread.start();
-        
+
+            @Override
+            protected void showSuccess(Void result) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                export();
+                return null;
+            }
+        }.execute();
+      
 }//GEN-LAST:event_exportButtonActionPerformed
 
     private void chooseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseFileButtonActionPerformed
@@ -355,18 +340,6 @@ public class SavantExportForm extends javax.swing.JDialog {
     private void outputFileFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputFileFieldActionPerformed
         // TODO add your handling code here:
 }//GEN-LAST:event_outputFileFieldActionPerformed
-
-    /**
-    * @param args the command line arguments
-    */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new SavantExportForm().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooseFileButton;

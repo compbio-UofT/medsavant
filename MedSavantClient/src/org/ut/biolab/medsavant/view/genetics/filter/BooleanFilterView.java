@@ -148,13 +148,8 @@ public class BooleanFilterView extends FilterView {
                                 }
                                 return results;
 
-                            } catch (NonFatalDatabaseException ex) {
-                                LOG.error("Error getting DNA IDs.", ex);
-                            } catch (SQLException ex) {
-                                ClientMiscUtils.checkSQLException(ex);
-                                LOG.error("Error getting DNA IDs.", ex);
-                            } catch (RemoteException ex) {
-                                LOG.error("Error getting DNA IDs.", ex);
+                            } catch (Exception ex) {
+                                ClientMiscUtils.reportError("Error getting DNA IDs.", ex);
                             }
                         }
                         return new Condition[0];

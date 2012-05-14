@@ -21,6 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -29,25 +32,13 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author Andrew
  */
 public class ClientMiscUtils extends MiscUtils {
+    private static final Log LOG = LogFactory.getLog(ClientMiscUtils.class);
+    public static final String GENDER_MALE = "Male";
+    public static final String GENDER_FEMALE = "Female";
+    public static final String GENDER_UNKNOWN = "Undesignated";
 
-    public static String GENDER_MALE = "Male";
-    public static String GENDER_FEMALE = "Female";
-    public static String GENDER_UNKNOWN = "Undesignated";
-
-    /*
-    public static void setFrameVisibility(String frameKey, boolean isVisible, DockingManager m) {
-        DockableFrame f = m.getFrame(frameKey);
-        if (isVisible) {
-            m.showFrame(frameKey);
-        } else {
-            m.hideFrame(frameKey);
-        }
-    }
-     *
-     */
-
-    public static String genderToString(int gender){
-        switch(gender){
+    public static String genderToString(int gender) {
+        switch(gender) {
             case 1:
                 return GENDER_MALE;
             case 2:
@@ -57,10 +48,10 @@ public class ClientMiscUtils extends MiscUtils {
         }
     }
 
-    public static int stringToGender(String gender){
-        if(gender.equals(GENDER_MALE)){
+    public static int stringToGender(String gender) {
+        if(gender.equals(GENDER_MALE)) {
             return 1;
-        } else if (gender.equals(GENDER_FEMALE)){
+        } else if (gender.equals(GENDER_FEMALE)) {
             return 2;
         } else {
             return 0;
@@ -75,25 +66,39 @@ public class ClientMiscUtils extends MiscUtils {
         return (int) l;
     }
 
-    public static double getDouble(Object o){
-        if(o instanceof Double){
+    public static double getDouble(Object o) {
+        if(o instanceof Double) {
             return (Double)o;
-        } else if (o instanceof Integer){
+        } else if (o instanceof Integer) {
             return ((Integer)o).doubleValue();
-        } else if (o instanceof Long){
+        } else if (o instanceof Long) {
             return ((Long)o).doubleValue();
-        } else if (o instanceof Float){
+        } else if (o instanceof Float) {
             return ((Float)o).doubleValue();
         } else {
             return -1;
         }
     }
 
-    public static void checkSQLException(SQLException e){
-        if (e.getMessage().contains("Unknown column") || e.getMessage().contains("doesn't exist")){
-            DialogUtils.displayErrorMessage("<HTML>It appears that the database structure has been modified. <BR>Please log back in for the changes to take effect.</HTML>", e);
-            LoginController.logout();
+    /**
+     * Displays an error message to the user appropriately.
+     *
+     * @param ex 
+     */
+    public static void reportError(String message, Throwable t) {
+        LOG.error(message, t);
+        if (!checkSQLException(t)) {
+            DialogUtils.displayException("MedSavant", message, t);
         }
+    }
+
+    public static boolean checkSQLException(Throwable t) {
+        if ((t instanceof SQLException) && t.getMessage().contains("Unknown column") || t.getMessage().contains("doesn't exist")) {
+            DialogUtils.displayErrorMessage("<html>It appears that the database structure has been modified.<br>Please log back in for the changes to take effect.</html>", t);
+            LoginController.logout();
+            return true;
+        }
+        return false;
     }
 
     public static Map<Object, List<String>> modifyGenderMap(Map<Object, List<String>> original) {

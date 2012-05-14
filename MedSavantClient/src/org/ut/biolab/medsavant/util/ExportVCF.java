@@ -16,8 +16,6 @@
 package org.ut.biolab.medsavant.util;
 
 import java.io.*;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -30,7 +28,6 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.CustomField;
@@ -54,7 +51,7 @@ public class ExportVCF {
     private static int INTERMEDIATE_INDEX_FILTER = 8;
     private static int INTERMEDIATE_INDEX_CUSTOM = 9; //and on
 
-    public static void exportVCF(File file) throws IOException, NonFatalDatabaseException, SQLException, RemoteException, InterruptedException {        
+    public static void exportVCF(File file) throws Exception {        
         
         RemoteInputStream ris = MedSavantClient.VariantManagerAdapter.exportVariants(
                 LoginController.sessionId, 
@@ -140,7 +137,7 @@ public class ExportVCF {
         }
         
         //merge vcf to remove duplicates
-        mergeVcf(temp1, file, dnaIds, customColumnNames);
+        mergeVCF(temp1, file, dnaIds, customColumnNames);
     }
     
     private static String parseMandatoryField(String s) {
@@ -174,7 +171,7 @@ public class ExportVCF {
     /*
      * Assumes rows in inFile are INTERMEDIATE format
      */
-    private static void mergeVcf(File inFile, File outFile, Set<String> dnaIdsSet, String[] customColumnNames) throws IOException {
+    private static void mergeVCF(File inFile, File outFile, Set<String> dnaIdsSet, String[] customColumnNames) throws Exception {
         
         BufferedReader in = new BufferedReader(new FileReader(inFile));
         BufferedWriter out = new BufferedWriter(new FileWriter(outFile, false));
@@ -331,7 +328,7 @@ public class ExportVCF {
         }
     }
     
-    private static String createHeader(Object[] dnaIds) {
+    private static String createHeader(Object[] dnaIds) throws Exception {
         String header = "";
         
         //file format

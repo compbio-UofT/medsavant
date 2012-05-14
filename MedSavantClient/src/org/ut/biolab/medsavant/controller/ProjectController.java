@@ -69,10 +69,8 @@ public class ProjectController implements ReferenceListener {
                 try {
                     MedSavantClient.ProjectQueryUtilAdapter.removeProject(LoginController.sessionId, projectName);
                     fireProjectRemovedEvent(projectName);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                } catch (RemoteException e) {
-                    e.printStackTrace();
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Error removing project.", ex);
                 }
                 dialog.close();
             }
@@ -103,44 +101,26 @@ public class ProjectController implements ReferenceListener {
         return MedSavantClient.ProjectQueryUtilAdapter.getProjectId(LoginController.sessionId, projectName);
     }
 
-    public void removeVariantTable(int project_id, int ref_id) {
-        try {
-            MedSavantClient.ProjectQueryUtilAdapter.removeReferenceForProject(LoginController.sessionId, project_id,ref_id);
-            fireProjectTableRemovedEvent(project_id,ref_id);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } catch (RemoteException ex) {
-            ex.printStackTrace();
-        }
-    }
-
     public String getProjectName(int projectid) throws SQLException, RemoteException {
         return MedSavantClient.ProjectQueryUtilAdapter.getProjectName(LoginController.sessionId, projectid);
     }
 
-    public boolean setProject(String projectName) {
-        try {
-            if (MedSavantClient.ProjectQueryUtilAdapter.containsProject(LoginController.sessionId, projectName)) {
+    public void setProject(String projectName) throws RemoteException, SQLException {
+        if (MedSavantClient.ProjectQueryUtilAdapter.containsProject(LoginController.sessionId, projectName)) {
 
-                if (MedSavantClient.ProjectQueryUtilAdapter.containsProject(LoginController.sessionId, this.currentProjectName) &&
-                        FilterController.hasFiltersApplied()) {
-                    if (!DialogUtils.confirmChangeReference(true)) {
-                        return false;
-                    }
+            if (MedSavantClient.ProjectQueryUtilAdapter.containsProject(LoginController.sessionId, this.currentProjectName) &&
+                    FilterController.hasFiltersApplied()) {
+                if (!DialogUtils.confirmChangeReference(true)) {
+                    return;
                 }
-
-                this.currentProjectId = this.getProjectId(projectName);
-                this.currentProjectName = projectName;
-                this.setCurrentPatientTable();
-                ResultController.getInstance().setUpdateTotalNumRequired(true);
-                this.fireProjectChangedEvent(projectName);
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            LOG.error("Error setting project.", ex);
-            return false;
+
+            this.currentProjectId = this.getProjectId(projectName);
+            this.currentProjectName = projectName;
+            this.setCurrentPatientTable();
+            ResultController.getInstance().setUpdateTotalNumRequired(true);
+            this.fireProjectChangedEvent(projectName);
         }
-        return true;
     }
 
     public int getCurrentProjectId() {
@@ -157,13 +137,12 @@ public class ProjectController implements ReferenceListener {
 
     private ProjectController() {
         projectListeners = new ArrayList<ProjectListener>();
-
-        ReferenceController.getInstance().addReferenceListener(this);
     }
 
     public static ProjectController getInstance() {
         if (instance == null) {
             instance = new ProjectController();
+            ReferenceController.getInstance().addReferenceListener(instance);
         }
         return instance;
     }
@@ -240,16 +219,8 @@ public class ProjectController implements ReferenceListener {
         }
     }
 
-    public String getCurrentPatientTableName() {
-        try {
-            return MedSavantClient.PatientQueryUtilAdapter.getPatientTablename(LoginController.sessionId, currentProjectId);
-        } catch (SQLException ex) {
-            ClientMiscUtils.checkSQLException(ex);
-            LOG.error("Error getting current patient table name.", ex);
-        } catch (RemoteException ex) {
-            LOG.error("Error getting current patient table name.", ex);
-        }
-        return null;
+    public String getCurrentPatientTableName() throws RemoteException, SQLException {
+        return MedSavantClient.PatientQueryUtilAdapter.getPatientTablename(LoginController.sessionId, currentProjectId);
     }
 
     public DbTable getCurrentPatientTable() {
@@ -272,45 +243,32 @@ public class ProjectController implements ReferenceListener {
         }
     }
 
-    public AnnotationFormat[] getCurrentAnnotationFormats() {
+    public AnnotationFormat[] getCurrentAnnotationFormats() throws RemoteException, SQLException {
         if (currentAnnotationFormats == null) {
-            try {
-                int[] annotationIds = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationIds(LoginController.sessionId, this.currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
-                AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+2];
-                af[0] = VariantFormat.getDefaultAnnotationFormat();
-                af[1] = VariantFormat.getCustomFieldAnnotationFormat(
-                        MedSavantClient.ProjectQueryUtilAdapter.getCustomVariantFields(
+            int[] annotationIds = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationIds(LoginController.sessionId, this.currentProjectId, ReferenceController.getInstance().getCurrentReferenceId());
+            AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+2];
+            af[0] = VariantFormat.getDefaultAnnotationFormat();
+            af[1] = VariantFormat.getCustomFieldAnnotationFormat(
+                    MedSavantClient.ProjectQueryUtilAdapter.getCustomVariantFields(
+                        LoginController.sessionId,
+                        currentProjectId,
+                        ReferenceController.getInstance().getCurrentReferenceId(),
+                        MedSavantClient.ProjectQueryUtilAdapter.getNewestUpdateId(
                             LoginController.sessionId,
                             currentProjectId,
                             ReferenceController.getInstance().getCurrentReferenceId(),
-                            MedSavantClient.ProjectQueryUtilAdapter.getNewestUpdateId(
-                                LoginController.sessionId,
-                                currentProjectId,
-                                ReferenceController.getInstance().getCurrentReferenceId(),
-                                true)));
-                for(int i = 0; i < annotationIds.length; i++) {
-                    af[i+2] = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationFormat(LoginController.sessionId, annotationIds[i]);
-                }
-                currentAnnotationFormats = af;
-            } catch (Exception ex) {
-                currentAnnotationFormats = new AnnotationFormat[0];
-                ex.printStackTrace();
-                //Logger.getLogger(ProjectController.class.getName()).log(Level.SEVERE, null, ex);
+                            true)));
+            for (int i = 0; i < annotationIds.length; i++) {
+                af[i+2] = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationFormat(LoginController.sessionId, annotationIds[i]);
             }
+            currentAnnotationFormats = af;
         }
         return currentAnnotationFormats;
     }
 
-    public List<CustomField> getCurrentPatientFormat() {
+    public List<CustomField> getCurrentPatientFormat() throws RemoteException, SQLException {
         if (currentPatientFormat == null) {
-            try {
-                currentPatientFormat = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, currentProjectId);
-            } catch (SQLException ex) {
-                ClientMiscUtils.checkSQLException(ex);
-                LOG.error("Error getting current patient format.", ex);
-            } catch (RemoteException ex) {
-                LOG.error("Error getting current patient format.", ex);
-            }
+            currentPatientFormat = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, currentProjectId);
         }
         return currentPatientFormat;
     }
@@ -333,4 +291,11 @@ public class ProjectController implements ReferenceListener {
     public void referenceRemoved(String name) {
     }
 
+    /**
+     * For the current project, set the best reference.
+     */
+    public void setDefaultReference() throws RemoteException, SQLException {
+        List<String> references = MedSavantClient.ReferenceQueryUtilAdapter.getReferencesForProject(LoginController.sessionId, currentProjectId);
+        ReferenceController.getInstance().setReference(references.get(references.size()-1));
+    }
 }

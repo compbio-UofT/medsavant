@@ -71,9 +71,9 @@ public class Utils {
                             }
                         }
                     }
-                } catch (SQLException ex) {
-                    ClientMiscUtils.checkSQLException(ex);
-                } catch (RemoteException ex) {}
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Error getting DNA IDs for family.", ex);
+                }
 
                 DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
                 Condition[] conditions = new Condition[dnaIds.size()];
@@ -103,33 +103,31 @@ public class Utils {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                List<Object> values = new ArrayList<Object>();
-                for (int i = 0; i < patientIds.length; i++) {
-                    values.add(patientIds[i]);
-                }
-
-                List<String> dnaIds = null;
                 try {
-                    dnaIds = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsFromField(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectId(),
-                            DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID,
-                            values);
-                } catch (SQLException ex) {
-                    ClientMiscUtils.checkSQLException(ex);
-                } catch (RemoteException ex) {}
+                    List<Object> values = new ArrayList<Object>();
+                    for (int i = 0; i < patientIds.length; i++) {
+                        values.add(patientIds[i]);
+                    }
 
-                DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
-                Condition[] conditions = new Condition[dnaIds.size()];
-                for (int i = 0; i < dnaIds.size(); i++) {
-                    conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
+                    List<String> dnaIds = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsFromField(
+                        LoginController.sessionId,
+                        ProjectController.getInstance().getCurrentProjectId(),
+                        DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID,
+                        values);
+
+                    DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
+                    Condition[] conditions = new Condition[dnaIds.size()];
+                    for (int i = 0; i < dnaIds.size(); i++) {
+                        conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
+                    }
+                    removeExistingFilters();
+                    filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
+                            "Individuals - Filter by Selected Patient(s)",
+                            patientIds.length + " Patient(s) (" + dnaIds.size() + " DNA Id(s))",
+                            ComboCondition.or(conditions));
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Error applying patient filters.", ex);
                 }
-                removeExistingFilters();
-                filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                        "Individuals - Filter by Selected Patient(s)",
-                        patientIds.length + " Patient(s) (" + dnaIds.size() + " DNA Id(s))",
-                        ComboCondition.or(conditions));
-
             }
         });
         popupMenu.add(filter1Item);

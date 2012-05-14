@@ -554,25 +554,19 @@ public class SummaryChart extends JLayeredPane {
             if (this.isThreadCancelled()) {
                 return null;
             }
-            try {
+            ChartFrequencyMap[] result;
 
-                ChartFrequencyMap[] result;
+            if (showComparedToOriginal) {
+                result = new ChartFrequencyMap[2];
+                result[1] = mapGenerator.generateChartMap(false, isLogScaleX && mapGenerator.isNumeric());
+            } else {
+                result = new ChartFrequencyMap[1];
+            }
 
-                if (showComparedToOriginal) {
-                    result = new ChartFrequencyMap[2];
-                    result[1] = mapGenerator.generateChartMap(false, isLogScaleX && mapGenerator.isNumeric());
-                } else {
-                    result = new ChartFrequencyMap[1];
-                }
+            result[0] = mapGenerator.generateChartMap(true, isLogScaleX && mapGenerator.isNumeric());
 
-                result[0] = mapGenerator.generateChartMap(true, isLogScaleX && mapGenerator.isNumeric());
 
-                
-                return result;
-            } catch (SQLException ex) {
-                ClientMiscUtils.checkSQLException(ex);
-                throw ex;
-            }             
+            return result;
         }
 
         @Override
@@ -657,46 +651,40 @@ public class SummaryChart extends JLayeredPane {
             if (this.isThreadCancelled()) {
                 return null;
             }
-            try {
                 
-                //get column names
-                String columnX = mapGenerator.getFilterId();
-                String columnY = mapGeneratorScatter.getFilterId();
-                if (mapGenerator.getTable() == Table.PATIENT) {
-                    columnX = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
-                }
-                if (mapGeneratorScatter.getTable() == Table.PATIENT) {
-                    columnY = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
-                }
-                                
-                ScatterChartMap scatterMap =  MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForScatter(
-                        LoginController.sessionId, 
-                        ProjectController.getInstance().getCurrentProjectId(), 
-                        ReferenceController.getInstance().getCurrentReferenceId(), 
-                        FilterController.getQueryFilterConditions(), 
-                        columnX, 
-                        columnY, 
-                        !mapGenerator.isNumeric() || mapGenerator.getTable() == Table.PATIENT, 
-                        !mapGeneratorScatter.isNumeric() || mapGeneratorScatter.getTable() == Table.PATIENT,
-                        isSortedKaryotypically());
-
-                //TODO: re-mapping below works only for categorical patient fields. Generalize for numeric/categorical.
-                
-                //map for patient field
-                if (mapGenerator.getTable() == Table.PATIENT) {
-                    scatterMap = mapPatientField(scatterMap, mapGenerator, true);
-                }
-                
-                if (mapGeneratorScatter.getTable() == Table.PATIENT) {
-                    scatterMap = mapPatientField(scatterMap, mapGeneratorScatter, false);
-                }
-                
-                return scatterMap;
-                
-            } catch (SQLException ex) {
-                ClientMiscUtils.checkSQLException(ex);
-                throw ex;
+            //get column names
+            String columnX = mapGenerator.getFilterId();
+            String columnY = mapGeneratorScatter.getFilterId();
+            if (mapGenerator.getTable() == Table.PATIENT) {
+                columnX = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
             }
+            if (mapGeneratorScatter.getTable() == Table.PATIENT) {
+                columnY = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
+            }
+
+            ScatterChartMap scatterMap =  MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForScatter(
+                    LoginController.sessionId, 
+                    ProjectController.getInstance().getCurrentProjectId(), 
+                    ReferenceController.getInstance().getCurrentReferenceId(), 
+                    FilterController.getQueryFilterConditions(), 
+                    columnX, 
+                    columnY, 
+                    !mapGenerator.isNumeric() || mapGenerator.getTable() == Table.PATIENT, 
+                    !mapGeneratorScatter.isNumeric() || mapGeneratorScatter.getTable() == Table.PATIENT,
+                    isSortedKaryotypically());
+
+            //TODO: re-mapping below works only for categorical patient fields. Generalize for numeric/categorical.
+
+            //map for patient field
+            if (mapGenerator.getTable() == Table.PATIENT) {
+                scatterMap = mapPatientField(scatterMap, mapGenerator, true);
+            }
+
+            if (mapGeneratorScatter.getTable() == Table.PATIENT) {
+                scatterMap = mapPatientField(scatterMap, mapGeneratorScatter, false);
+            }
+
+            return scatterMap;
         }
 
         @Override
@@ -768,32 +756,32 @@ public class SummaryChart extends JLayeredPane {
 
                 ThreadController.getInstance().cancelWorkers(pageName);
 
-                List<String> values = new ArrayList<String>();
-                ListSelectionModel selectionModel = chart.getSelectionsForModel(chart.getModel(0));
+                try {
+                    List<String> values = new ArrayList<String>();
+                    ListSelectionModel selectionModel = chart.getSelectionsForModel(chart.getModel(0));
 
-                for (int i = selectionModel.getMinSelectionIndex(); i <= selectionModel.getMaxSelectionIndex(); i++) {
-                    if (selectionModel.isSelectedIndex(i)) {
-                        values.add(((ChartPoint) chart.getModel().getPoint(i)).getHighlight().name());
+                    for (int i = selectionModel.getMinSelectionIndex(); i <= selectionModel.getMaxSelectionIndex(); i++) {
+                        if (selectionModel.isSelectedIndex(i)) {
+                            values.add(((ChartPoint) chart.getModel().getPoint(i)).getHighlight().name());
+                        }
                     }
-                }
-                if (values.isEmpty()) {
-                    return;
-                }
+                    if (values.isEmpty()) {
+                        return;
+                    }
 
-                TableSchema variantTable = ProjectController.getInstance().getCurrentVariantTableSchema();
-                TableSchema patientTable = ProjectController.getInstance().getCurrentPatientTableSchema();
-                if (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
+                    TableSchema variantTable = ProjectController.getInstance().getCurrentVariantTableSchema();
+                    TableSchema patientTable = ProjectController.getInstance().getCurrentPatientTableSchema();
+                    if (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
 
-                    Range r = Range.rangeFromString(values.get(0));
+                        Range r = Range.rangeFromString(values.get(0));
 
-                    if (mapGenerator.getTable() == Table.VARIANT) {
-                        RangeCondition condition = new RangeCondition(variantTable.getDBColumn(mapGenerator.getFilterId()), r.getMin(), r.getMax());
-                        FilterUtils.createAndApplyGenericFixedFilter(
-                                "Charts - Filter by Selection",
-                                mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
-                                ComboCondition.and(condition));
-                    } else {
-                        try {
+                        if (mapGenerator.getTable() == Table.VARIANT) {
+                            RangeCondition condition = new RangeCondition(variantTable.getDBColumn(mapGenerator.getFilterId()), r.getMin(), r.getMax());
+                            FilterUtils.createAndApplyGenericFixedFilter(
+                                    "Charts - Filter by Selection",
+                                    mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
+                                    ComboCondition.and(condition));
+                        } else {
                             List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsWithValuesInRange(
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectId(),
@@ -807,27 +795,20 @@ public class SummaryChart extends JLayeredPane {
                                     "Charts - Filter by Selection",
                                     mapGenerator.getName() + ": " + r.getMin() + " - " + r.getMax(),
                                     ComboCondition.or(conditions));
-                        } catch (SQLException ex) {
-                            ClientMiscUtils.checkSQLException(ex);
-                        } catch (Exception ex) {
-                            LOG.error("Error filtering chart.", ex);
                         }
-                    }
 
-                } else {
-
-                    if (mapGenerator.getTable() == Table.VARIANT) {
-                        Condition[] conditions = new Condition[values.size()];
-                        for (int i = 0; i < conditions.length; i++) {
-                            conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(mapGenerator.getFilterId()), values.get(i));
-                        }
-                        FilterUtils.createAndApplyGenericFixedFilter(
-                                "Charts - Filter by Selection",
-                                mapGenerator.getName() + ": " + values.size() + " selection(s)",
-                                ComboCondition.or(conditions));
                     } else {
-                        try {
 
+                        if (mapGenerator.getTable() == Table.VARIANT) {
+                            Condition[] conditions = new Condition[values.size()];
+                            for (int i = 0; i < conditions.length; i++) {
+                                conditions[i] = BinaryConditionMS.equalTo(variantTable.getDBColumn(mapGenerator.getFilterId()), values.get(i));
+                            }
+                            FilterUtils.createAndApplyGenericFixedFilter(
+                                    "Charts - Filter by Selection",
+                                    mapGenerator.getName() + ": " + values.size() + " selection(s)",
+                                    ComboCondition.or(conditions));
+                        } else {
                             //special case for gender
                             if (mapGenerator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
                                 List<String> values1 = new ArrayList<String>();
@@ -850,15 +831,11 @@ public class SummaryChart extends JLayeredPane {
                                     "Charts - Filter by Selection",
                                     mapGenerator.getName() + ": " + values.size() + " selection(s)",
                                     ComboCondition.or(conditions));
-                        } catch (SQLException ex) {
-                            ClientMiscUtils.checkSQLException(ex);
-                        } catch (Exception ex) {
-                            LOG.error("Error filtering chart.", ex);
                         }
                     }
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Error filtering by selection.", ex);
                 }
-
-                //updateDataAndDrawChart();
             }
         });
         menu.add(filter1Item);

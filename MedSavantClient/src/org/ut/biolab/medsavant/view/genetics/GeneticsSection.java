@@ -16,7 +16,6 @@
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
@@ -38,6 +37,7 @@ import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.dialog.ExportVcfWizard;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.manage.PluginPage;
@@ -102,13 +102,17 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         return panels;
     }
 
-    private JButton exportVcfButton(){
+    private JButton createExportVCFButton(){
         JButton exportButton = new JButton("Export Variants");
         exportButton.setOpaque(false);
         exportButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new ExportVcfWizard();
+                try {
+                    new ExportVcfWizard().setVisible(true);
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Unable to launch Variant Export wizard.", ex);
+                }
             }
         });
         return exportButton;
@@ -116,80 +120,53 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
     @Override
     public final Component[] getSectionMenuComponents() {
-
-        Component[] result = new Component[1];
-
-        result[0] = exportVcfButton();
-
         isInitialized = true;
-        return result;
+        return new Component[] { createExportVCFButton() };
     }
 
-    private Component getReferenceDropDown() {
-        referenceDropDown = new JComboBox();
+    private void refreshReferenceDropDown() throws RemoteException, SQLException {
+        for (ActionListener l : referenceDropDown.getActionListeners()) {
+            referenceDropDown.removeActionListener(l);
+        }
+        referenceDropDown.removeAllItems();
 
-        referenceDropDown.setMinimumSize(new Dimension(200, 23));
-        referenceDropDown.setPreferredSize(new Dimension(200, 23));
-        referenceDropDown.setMaximumSize(new Dimension(200, 23));
-        try {
-            refreshReferenceDropDown();
-        } catch (RemoteException ex) {
-            LOG.error("Error refreshing reference drop-down.", ex);
+        List<String> references = MedSavantClient.ReferenceQueryUtilAdapter.getReferencesForProject(
+                LoginController.sessionId,
+                ProjectController.getInstance().getCurrentProjectId());
+
+        for (String refname : references) {
+
+            int refid = ReferenceController.getInstance().getReferenceId(refname);
+
+            int numVariantsInTable = ProjectController.getInstance().getNumVariantsInTable(ProjectController.getInstance().getCurrentProjectId(), refid);
+
+            referenceDropDown.addItem(refname); // + " (" + numVariantsInTable + " variants)");
         }
 
-        ProjectController.getInstance().addProjectListener(this);
-
-        return referenceDropDown;
-    }
-
-    private void refreshReferenceDropDown() throws RemoteException {
-        try {
-            for (ActionListener l : referenceDropDown.getActionListeners()) {
-                referenceDropDown.removeActionListener(l);
-            }
-            referenceDropDown.removeAllItems();
-
-            List<String> references = MedSavantClient.ReferenceQueryUtilAdapter.getReferencesForProject(
-                    LoginController.sessionId,
-                    ProjectController.getInstance().getCurrentProjectId());
-
-            for (String refname : references) {
-
-                int refid = ReferenceController.getInstance().getReferenceId(refname);
-
-                int numVariantsInTable = ProjectController.getInstance().getNumVariantsInTable(ProjectController.getInstance().getCurrentProjectId(), refid);
-
-                referenceDropDown.addItem(refname); // + " (" + numVariantsInTable + " variants)");
-            }
-
-            if (references.isEmpty()) {
-                referenceDropDown.addItem("No References");
-                referenceDropDown.setEnabled(false);
-            } else {
-                referenceDropDown.setEnabled(true);
-                referenceDropDown.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        String currentName = ReferenceController.getInstance().getCurrentReferenceName();
-                        if (!ReferenceController.getInstance().setReference((String) referenceDropDown.getSelectedItem(), true)) {
-                            referenceDropDown.setSelectedItem(currentName);
-                        }
+        if (references.isEmpty()) {
+            referenceDropDown.addItem("No References");
+            referenceDropDown.setEnabled(false);
+        } else {
+            referenceDropDown.setEnabled(true);
+            referenceDropDown.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String currentName = ReferenceController.getInstance().getCurrentReferenceName();
+                    if (!ReferenceController.getInstance().setReference((String) referenceDropDown.getSelectedItem(), true)) {
+                        referenceDropDown.setSelectedItem(currentName);
                     }
-                });
-                ReferenceController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+                }
+            });
+            ReferenceController.getInstance().setReference((String) referenceDropDown.getSelectedItem());
         }
-
     }
 
     @Override
     public void projectAdded(String projectName) {
         try {
             refreshReferenceDropDown();
-        } catch (RemoteException ex) {
-            LOG.error("Error refreshing reference drop-down.", ex);
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Error refreshing reference drop-down.", ex);
         }
     }
 
@@ -197,8 +174,8 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     public void projectRemoved(String projectName) {
         try {
             refreshReferenceDropDown();
-        } catch (RemoteException ex) {
-            LOG.error("Error refreshing reference drop-down.", ex);
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Error refreshing reference drop-down.", ex);
         }
     }
 
@@ -206,8 +183,8 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     public void projectChanged(String projectName) {
         try {
             refreshReferenceDropDown();
-        } catch (RemoteException ex) {
-            LOG.error("Error refreshing reference drop-down.", ex);
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Error refreshing reference drop-down.", ex);
         }
     }
 
@@ -215,8 +192,8 @@ public class GeneticsSection extends SectionView implements ProjectListener {
     public void projectTableRemoved(int projid, int refid) {
         try {
             refreshReferenceDropDown();
-        } catch (RemoteException ex) {
-            LOG.error("Error refreshing reference drop-down.", ex);
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Error refreshing reference drop-down.", ex);
         }
     }
 }

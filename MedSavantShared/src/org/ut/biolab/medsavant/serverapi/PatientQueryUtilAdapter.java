@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.model.Range;
  */
 public interface PatientQueryUtilAdapter extends Remote {
 
-    public List<Object[]> getBasicPatientInfo(String sessID, int projectId, int limit) throws SQLException, NonFatalDatabaseException, RemoteException;
+    public List<Object[]> getBasicPatientInfo(String sessID, int projectId, int limit) throws SQLException, RemoteException;
     public List<Object[]> getPatients(String sessID, int projectId) throws SQLException, RemoteException;
     public Object[] getPatientRecord(String sessID, int projectId, int patientId) throws SQLException, RemoteException;
     public List<String> getPatientFieldAliases(String sessID, int projectId) throws SQLException, RemoteException;

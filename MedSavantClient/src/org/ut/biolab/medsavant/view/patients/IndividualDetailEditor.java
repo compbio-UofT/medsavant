@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.view.patients;
 
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -45,7 +46,11 @@ class IndividualDetailEditor extends DetailedListEditor {
 
     @Override
     public void addItems() {
-        new AddPatientsForm();
+        try {
+            new AddPatientsForm().setVisible(true);
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Unable to present Add Patient form.", ex);
+        }
     }
 
     @Override
@@ -86,10 +91,8 @@ class IndividualDetailEditor extends DetailedListEditor {
                         dialog.close();
                         DialogUtils.displayMessage("Successfully removed " + (items.size()) + " patient(s)");
                     } catch (Exception ex) {
-                        if(ex instanceof SQLException)
-                            ClientMiscUtils.checkSQLException((SQLException)ex);
+                        ClientMiscUtils.reportError("Couldn't remove patient(s)", ex);
                         dialog.close();
-                        DialogUtils.displayErrorMessage("Couldn't remove patient(s)", ex);
                     }
 
                 }

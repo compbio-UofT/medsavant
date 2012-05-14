@@ -70,7 +70,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
 
     @Override
-    public List<Object[]> getBasicPatientInfo(String sid, int projectId, int limit) throws SQLException, NonFatalDatabaseException, RemoteException {
+    public List<Object[]> getBasicPatientInfo(String sid, int projectId, int limit) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
 

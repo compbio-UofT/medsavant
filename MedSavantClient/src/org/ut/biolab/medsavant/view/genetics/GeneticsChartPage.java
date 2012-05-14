@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -27,6 +28,7 @@ import org.ut.biolab.medsavant.db.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.charts.ChartView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -55,17 +57,18 @@ public class GeneticsChartPage extends SubSectionView implements FiltersChangedL
 
     @Override
     public JPanel getView(boolean update) {
-        if (panel == null || update) {
-            try {
+        try {
+            if (panel == null || update) {
                 setPanel();
-            } catch (NonFatalDatabaseException ex) {
             }
+            cc.updateIfRequired();
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Error creating chart view.", ex);
         }
-        cc.updateIfRequired();
         return panel;
     }
 
-    private void setPanel() throws NonFatalDatabaseException {
+    private void setPanel() throws RemoteException, SQLException {
 
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -77,6 +80,7 @@ public class GeneticsChartPage extends SubSectionView implements FiltersChangedL
         panel.add(cc, BorderLayout.CENTER);
     }
 
+    @Override
     public Component[] getSubSectionMenuComponents() {
         /*
         Component[] cs = new Component[1];

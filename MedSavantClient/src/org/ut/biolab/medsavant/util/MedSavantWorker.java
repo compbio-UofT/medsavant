@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,9 +20,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import javax.swing.SwingWorker;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -33,15 +30,13 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  */
 public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
     
-    private static final Log LOG = LogFactory.getLog(MedSavantWorker.class);
-
     private String pageName;
     
     /**
      * 
      * @param pageName which view created this worker
      */   
-    public MedSavantWorker(String pageName){
+    public MedSavantWorker(String pageName) {
         super();
         this.pageName = pageName;
         ThreadController.getInstance().addWorker(pageName, this);
@@ -85,23 +80,22 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
         } else if (t instanceof InterruptedException) {
             DialogUtils.displayMessage("Background task interrupted.");
         } else {
-            LOG.error("Exception thrown by background task.", t);
-            DialogUtils.displayException("MedSavant", String.format("<html>Exception thrown by background task:<br><br><i>%s</i></html>", ClientMiscUtils.getMessage(t)), t);
+            ClientMiscUtils.reportError("Exception thrown by background task.", t);
         }
     }
     
     /**
      * Must be called after worker finishes. 
      */
-    public void cleanup(){
+    public void cleanup() {
         ThreadController.getInstance().removeWorker(pageName, this);
     }
     
     /**
      * Use this instead of isCancelled();
      */
-    public boolean isThreadCancelled(){
-        if(super.isCancelled()){
+    public boolean isThreadCancelled() {
+        if(super.isCancelled()) {
             cleanup();
         }
         return super.isCancelled();

@@ -75,7 +75,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
         @Override
         public void addItems() {
-            new ProjectWizard();
+            new ProjectWizard().setVisible(true);
         }
 
         @Override
@@ -84,22 +84,20 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
                 String projectName = (String) items[0];
 
-                        int projectId = MedSavantClient.ProjectQueryUtilAdapter.getProjectId(LoginController.sessionId, projectName);
-                        ProjectWizard wiz = new ProjectWizard(
-                                projectId,
-                                projectName,
-                                MedSavantClient.PatientQueryUtilAdapter.getCustomPatientFields(LoginController.sessionId, projectId),
-                                MedSavantClient.ProjectQueryUtilAdapter.getProjectDetails(LoginController.sessionId, projectId));
-                        if (wiz.isModified()) {
-                            ProjectController.getInstance().fireProjectRemovedEvent(projectName);
-                            ProjectController.getInstance().fireProjectAddedEvent(MedSavantClient.ProjectQueryUtilAdapter.getProjectName(LoginController.sessionId, projectId));
-                        }
-                    } catch (SQLException ex) {
-                        ClientMiscUtils.checkSQLException(ex);
-                        LOG.error("Error fetching projects.", ex);
-                    } catch (RemoteException ex) {
-                        LOG.error("Error fetching projects.", ex);
-                    }
+                int projectId = MedSavantClient.ProjectQueryUtilAdapter.getProjectId(LoginController.sessionId, projectName);
+                ProjectWizard wiz = new ProjectWizard(
+                        projectId,
+                        projectName,
+                        MedSavantClient.PatientQueryUtilAdapter.getCustomPatientFields(LoginController.sessionId, projectId),
+                        MedSavantClient.ProjectQueryUtilAdapter.getProjectDetails(LoginController.sessionId, projectId));
+                wiz.setVisible(true);
+                if (wiz.isModified()) {
+                    ProjectController.getInstance().fireProjectRemovedEvent(projectName);
+                    ProjectController.getInstance().fireProjectAddedEvent(MedSavantClient.ProjectQueryUtilAdapter.getProjectName(LoginController.sessionId, projectId));
+                }
+            } catch (Exception ex) {
+                ClientMiscUtils.reportError("Error fetching projects.", ex);
+            }
         }
 
         @Override

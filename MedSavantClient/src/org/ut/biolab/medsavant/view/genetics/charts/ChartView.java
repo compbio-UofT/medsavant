@@ -19,6 +19,8 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
@@ -53,15 +55,11 @@ public class ChartView extends JPanel {
     private JCheckBox bOriginal;
     private JPanel bottomToolbar;
 
-    public ChartView(String pageName) {
+    public ChartView(String pageName) throws RemoteException, SQLException {
         this.pageName = pageName;
         mapGenerators = new HashMap<String, ChartMapGenerator>();
-        initGUI();
-        //this.chartChooser1.setSelectedItem(MedSavantDatabase.DefaultvariantTableSchema.getFieldAlias(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
-    }
 
-    private void initGUI() {
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
         initToolBar();
         initCards();
         initBottomBar();
@@ -98,6 +96,7 @@ public class ChartView extends JPanel {
 
         chartChooser1.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (!init) return;
                 String alias = (String) chartChooser1.getSelectedItem();
@@ -209,7 +208,7 @@ public class ChartView extends JPanel {
         this.add(toolbar, BorderLayout.NORTH);
     }
 
-    private void initCards() {
+    private void initCards() throws RemoteException, SQLException {
         initAllCard();
         addCMGs();
     }
@@ -223,7 +222,7 @@ public class ChartView extends JPanel {
 
         h1.add(sc, BorderLayout.CENTER);
 
-        this.add(h1, BorderLayout.CENTER);
+        add(h1, BorderLayout.CENTER);
     }
 
     private void addCMG(ChartMapGenerator cmg) {
@@ -232,7 +231,7 @@ public class ChartView extends JPanel {
         chartChooser2.addItem(cmg.getName());
     }
 
-    private void addCMGs() {
+    private void addCMGs() throws RemoteException, SQLException {
 
         AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
         for (AnnotationFormat af : afs) {

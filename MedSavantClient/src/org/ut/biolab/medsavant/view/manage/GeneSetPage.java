@@ -95,7 +95,7 @@ public class GeneSetPage extends SubSectionView {
         private GeneSet selectedSet = null;
         
         public GenesDetailedView() {
-            super("Gene Sets", "Multiple gene sets (%d)", new String[] { "Name", "Chromosome", "Start", "End", "Coding Start", "Coding End", "Transcript" });
+            super("Gene Sets", "Multiple gene sets (%d)", new String[] { "Name", "Chromosome", "Start", "End", "Coding Start", "Coding End" });
         }
 
         @Override

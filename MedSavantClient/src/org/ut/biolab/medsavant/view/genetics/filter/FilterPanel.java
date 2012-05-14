@@ -192,7 +192,7 @@ public class FilterPanel extends JPanel {
 
     }
 
-    private void loadFiltersFromFile(File file) throws ParserConfigurationException, SAXException, IOException {
+    private void loadFiltersFromFile(File file) throws ParserConfigurationException, SAXException, IOException, SQLException {
 
         //warn of overwrite
         if (FilterController.hasFiltersApplied() && DialogUtils.askYesNo("Confirm Load", "<html>Loading filters clears all existing filters. <br>Are you sure you want to continue?</html>") == JOptionPane.NO_OPTION) {
@@ -249,12 +249,7 @@ public class FilterPanel extends JPanel {
             FilterPanelSub fps = createNewSubPanel();
             List<FilterState> filters = states.get(i);
             for (FilterState state : filters) {
-                try {
-                    FilterUtils.loadFilterView(state, fps);
-                } catch (SQLException ex) {
-                    ClientMiscUtils.checkSQLException(ex);
-                    LOG.error("Error loading filters.", ex);
-                }
+                FilterUtils.loadFilterView(state, fps);
             }
         }
         FilterController.commit(file.getName(), FilterAction.REPLACED);

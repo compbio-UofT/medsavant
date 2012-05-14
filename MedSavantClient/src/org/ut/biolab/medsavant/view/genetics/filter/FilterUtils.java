@@ -104,7 +104,7 @@ public class FilterUtils {
         removeFiltersById(getFilterPanel(), id);
     }
 
-    public static void loadFilterView(FilterState state, FilterPanelSub fps) throws SQLException, RemoteException{
+    public static void loadFilterView(FilterState state, FilterPanelSub fps) throws SQLException, RemoteException {
         switch(state.getType()) {
             case NUMERIC:
                 fps.addNewSubItem(new NumericFilterView(state, fps.getId()), state.getId());
@@ -182,7 +182,7 @@ public class FilterUtils {
         }
     }
 
-    public static String getTableName(Table whichTable) {
+    public static String getTableName(Table whichTable) throws RemoteException, SQLException {
         if (whichTable == Table.VARIANT) {
             return ProjectController.getInstance().getCurrentVariantTableName();
         } else {

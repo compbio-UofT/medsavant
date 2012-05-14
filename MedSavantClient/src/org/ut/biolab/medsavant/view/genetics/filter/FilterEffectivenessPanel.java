@@ -128,7 +128,7 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
                     showShowCard();
                     //dialog.close();
                     setNumLeft(numLeft);
-                } catch (NonFatalDatabaseException ex) {
+                } catch (Exception ex) {
                     showShowCard();
                     LOG.error("Error getting filtered variant count.", ex);
                 }

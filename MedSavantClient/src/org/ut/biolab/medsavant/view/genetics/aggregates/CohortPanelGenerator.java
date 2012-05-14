@@ -71,7 +71,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
     private boolean init = false;
     
     
-    public CohortPanelGenerator(String pageName){
+    public CohortPanelGenerator(String pageName) {
         this.pageName = pageName;
     }
     
@@ -96,9 +96,9 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
 
     @Override
     public void run(boolean reset) {
-        if (reset){
+        if (reset) {
             panel.init();
-        } else if (!init){
+        } else if (!init) {
             return;
         } else if (updateRequired) {
             panel.update();
@@ -133,7 +133,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             init();
         }
         
-        private void init(){
+        private void init() {
             
             this.removeAll();
             this.setLayout(new BorderLayout());
@@ -144,12 +144,13 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             exportButton = new JButton("Export Page");
             exportButton.setEnabled(false);
             exportButton.addMouseListener(new MouseAdapter() {
+                @Override
                 public void mouseReleased(MouseEvent e) {
                     try {
                         ExportTable.exportTable(table);
                     } catch (Exception ex) {
-                        DialogUtils.displayException("MedSavant", "<HTML>A problem occurred while exporting.<BR>Make sure the output file is not being used. </HTML>", ex);
-                        ex.printStackTrace();
+                        LOG.error("Error exporting table.", ex);
+                        DialogUtils.displayException("MedSavant", "<html>A problem occurred while exporting.<br>Make sure the output file is not in use.</html>", ex);
                     }
                 }
             });
@@ -175,12 +176,12 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                     List rows = new ArrayList();
                     List<Cohort> cohorts = MedSavantClient.CohortQueryUtilAdapter.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
                     //addToWorking(cohorts.size());
-                    for(Cohort c : cohorts){
+                    for(Cohort c : cohorts) {
                         List<SimplePatient> simplePatients = MedSavantClient.CohortQueryUtilAdapter.getIndividualsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), c.getId());           
                         CohortNode n = new CohortNode(c, simplePatients);      
                         nodes.add(n);
                         n.addChild(new LoadingNode()); 
-                        /*for(SimplePatient sp : simplePatients){
+                        /*for(SimplePatient sp : simplePatients) {
                             n.addChild(new PatientNode(sp));
                         }*/
                         rows.add(n);
@@ -220,46 +221,46 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             initWorker.execute();
         }
         
-        private void showWaitCard(){
+        private void showWaitCard() {
             removeAll();
             add(new WaitPanel("Getting aggregate information"), BorderLayout.CENTER);
             updateUI();
         }
 
-        private void showShowCard(){
+        private void showShowCard() {
             removeAll();     
             add(progressPanel, BorderLayout.NORTH);
             add(container, BorderLayout.CENTER);
             updateUI();
         }
         
-        public void update(){
+        public void update() {
             //resetProgress();
             //addToWorking(nodes.size());
             table.collapseAll();
-            for(CohortNode n : nodes){               
+            for(CohortNode n : nodes) {               
                 n.reset();
             }
             //startResortWorker();
         }
         
-        public void finish(){
-            if (updateRequired){
+        public void finish() {
+            if (updateRequired) {
                 update();
             } else {
                 //resetProgress();
-                for(CohortNode n : nodes){
+                for(CohortNode n : nodes) {
                     n.finish();
                 }
             }
             //startResortWorker();
         }
 
-        public void addThread(MedSavantWorker worker){
+        public void addThread(MedSavantWorker worker) {
             threadPool.submit(worker);
         }
         
-        public synchronized void refresh(){
+        public synchronized void refresh() {
             sortableTreeTableModel.resort();
             table.repaint();
             //resortPending = false;
@@ -267,32 +268,32 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         
         /* Progress */
         
-        /*public synchronized void resetProgress(){
+        /*public synchronized void resetProgress() {
             numCompleted = 0;
             numWorking = 0;
         }
         
-        public synchronized void incrementCompleted(){
+        public synchronized void incrementCompleted() {
             numCompleted++;
             updateProgress();
         }
         
-        public synchronized void decrementWorking(){
+        public synchronized void decrementWorking() {
             numWorking--;
             updateProgress();
         }
         
-        public synchronized void addToWorking(int num){
+        public synchronized void addToWorking(int num) {
             numWorking += num;
             updateProgress();
         }
         
-        public synchronized void updateProgress(){
-            if (numWorking == 0){
+        public synchronized void updateProgress() {
+            if (numWorking == 0) {
                 numCompleted = 0;
                 progress.setValue(100);
                 exportButton.setEnabled(true);
-            } else if (numWorking <= numCompleted){
+            } else if (numWorking <= numCompleted) {
                 numWorking = 0;
                 numCompleted = 0;
                 progress.setValue(100);
@@ -316,8 +317,8 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             this.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals(DefaultExpandableRow.PROPERTY_EXPANDED)){
-                        if (isExpanded()){
+                    if (evt.getPropertyName().equals(DefaultExpandableRow.PROPERTY_EXPANDED)) {
+                        if (isExpanded()) {
                             expand();
                         } else {
                             //collapse();
@@ -336,7 +337,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 case 1:
                     return "";
                 case 2:
-                    if (value == -1){
+                    if (value == -1) {
                         return "Loading...";
                     } else {
                         return Integer.toString(value);
@@ -345,7 +346,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             return null;
         }
         
-        public void run(){           
+        public void run() {           
             MedSavantWorker worker = new MedSavantWorker(pageName) {
 
                 @Override
@@ -353,15 +354,10 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 
                 @Override
                 protected Object doInBackground() throws Exception {
-                    if (this.isThreadCancelled()){
+                    if (this.isThreadCancelled()) {
                         return -1;
                     }
-                    try {
-                        return MedSavantClient.CohortQueryUtilAdapter.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), cohort.getId(), FilterController.getQueryFilterConditions());
-                    } catch (SQLException ex) {
-                        ClientMiscUtils.checkSQLException(ex);
-                        return -1;
-                    }
+                    return MedSavantClient.CohortQueryUtilAdapter.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), cohort.getId(), FilterController.getQueryFilterConditions());
                 }
 
                 @Override
@@ -378,7 +374,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             worker.execute();
         }
         
-        public void reset(){
+        public void reset() {
             value = -1;
             this.removeAllChildren();
             setExpanded(false);
@@ -386,13 +382,13 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
             run();
         }
         
-        public void finish(){
-            if (value == -1){
+        public void finish() {
+            if (value == -1) {
                 reset();
             }
         }
         
-        private void expand(){
+        private void expand() {
             if (!this.hasChildren() || this.getChildAt(0) instanceof PatientNode) return; //already computed
             MedSavantWorker worker = new MedSavantWorker(pageName) {
 
@@ -401,20 +397,14 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 
                 @Override
                 protected Object doInBackground() throws Exception {
-                    try {
-                        return MedSavantClient.VariantQueryUtilAdapter.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), FilterController.getQueryFilterConditions(), patients);
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                        ClientMiscUtils.checkSQLException(ex);
-                        return null;
-                    }
+                    return MedSavantClient.VariantQueryUtilAdapter.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), FilterController.getQueryFilterConditions(), patients);
                 }
 
                 @Override
                 protected void showSuccess(Object result) {
                     Map<SimplePatient, Integer> map = (Map<SimplePatient, Integer>)result;
                     removeAllChildren();
-                    for(SimplePatient key : map.keySet()){
+                    for(SimplePatient key : map.keySet()) {
                         addChild(new PatientNode(key, map.get(key)));
                     }
                     panel.refresh();
@@ -432,7 +422,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         private SimplePatient patient;
         private int value;
         
-        public PatientNode(SimplePatient p, Integer count){
+        public PatientNode(SimplePatient p, Integer count) {
             this.patient = p;
             this.value = count;
         }
@@ -491,8 +481,8 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
         }
         
         @Override
-        public Comparator getComparator(int column){
-            if (column == 0){
+        public Comparator getComparator(int column) {
+            if (column == 0) {
                 return super.getComparator(column);
             } else {
                 return valueComparator;
@@ -507,8 +497,8 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 Integer i1 = Integer.parseInt((String)o1);
                 Integer i2 = Integer.parseInt((String)o2);
                 return i1.compareTo(i2);
-            } catch (NumberFormatException e){
-                if (((String)o1).startsWith("?")){
+            } catch (NumberFormatException e) {
+                if (((String)o1).startsWith("?")) {
                     return -1;
                 } else {
                     return 1;

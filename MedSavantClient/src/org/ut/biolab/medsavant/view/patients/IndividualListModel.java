@@ -16,14 +16,13 @@
 
 package org.ut.biolab.medsavant.view.patients;
 
+import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.Vector;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.format.PatientFormat;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
 
 /**
@@ -42,13 +41,8 @@ public class IndividualListModel implements DetailedListModel {
     private static final int[] HIDDEN_COLUMNS = new int[] { 0, 1, 3, 4, 5, 6 };
 
     @Override
-    public Object[][] getList(int limit) throws Exception {
-        try {
-            return MedSavantClient.PatientQueryUtilAdapter.getBasicPatientInfo(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), limit).toArray(new Object[0][0]);
-        } catch (SQLException ex) {
-            ClientMiscUtils.checkSQLException(ex);
-            throw ex;
-        }
+    public Object[][] getList(int limit) throws RemoteException, SQLException {
+        return MedSavantClient.PatientQueryUtilAdapter.getBasicPatientInfo(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), limit).toArray(new Object[0][0]);
     }
 
     @Override
@@ -64,9 +58,5 @@ public class IndividualListModel implements DetailedListModel {
     @Override
     public int[] getHiddenColumns() {
         return HIDDEN_COLUMNS;
-    }
-    
-    public static String getIndividualID(Vector r) {
-        return (String)r.get(0);
     }
 }

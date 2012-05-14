@@ -28,7 +28,8 @@ import org.ut.biolab.medsavant.model.GeneSet;
 
 
 /**
- * Swing worker which fetches genes for a given gene set.  Used by both GenesDetailedView and RegionWizard.
+ * Swing worker which fetches genes for a given gene set.  Used by both GenesDetailedView and RegionWizard.  Note that this
+ * implementation fetches genes, not transcripts.
  *
  * @author tarkvara
  */

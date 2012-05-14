@@ -236,13 +236,7 @@ public class LoginController {
         List<String> projNames = pc.getProjectNames();
         if (projNames.size() > 0) {
             pc.setProject(projNames.get(0));
-
-            List<String> references = MedSavantClient.ReferenceQueryUtilAdapter.getReferencesForProject(
-                        LoginController.sessionId,
-                        pc.getCurrentProjectId());
-
-
-            ReferenceController.getInstance().setReference(references.get(references.size()-1));
+            pc.setDefaultReference();
 
             System.out.println("Setting project to " + pc.getCurrentProjectName());
             System.out.println("Setting reference to " + ReferenceController.getInstance().getCurrentReferenceName());

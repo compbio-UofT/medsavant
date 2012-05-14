@@ -61,7 +61,7 @@ public class AddPatientsForm extends JDialog {
     private static final Log LOG = LogFactory.getLog(AddPatientsForm.class);
 
     /** Creates new form AddPatientsForm */
-    public AddPatientsForm() {
+    public AddPatientsForm() throws RemoteException, SQLException {
         this.setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);      
@@ -69,10 +69,9 @@ public class AddPatientsForm extends JDialog {
         createTable();
         
         setLocationRelativeTo(null);
-        setVisible(true);          
     }
     
-    private void createTable() {       
+    private void createTable() throws RemoteException, SQLException {       
         scrollPane.getViewport().setBackground(Color.white);
         
         DefaultTableModel model = new DefaultTableModel() {
@@ -85,16 +84,9 @@ public class AddPatientsForm extends JDialog {
         model.addColumn("Short Name");
         model.addColumn("Value");
         
-        try {
-            List<CustomField> fields = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
-            for (int i = 1; i < fields.size(); i++) { //skip patient id
-                model.addRow(new Object[]{fields.get(i), ""});
-            }
-        } catch (SQLException ex) {
-            ClientMiscUtils.checkSQLException(ex);
-            LOG.error("Error getting patient fields.", ex);
-        } catch (RemoteException ex) {
-            LOG.error("Error getting patient fields.", ex);
+        List<CustomField> fields = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
+        for (int i = 1; i < fields.size(); i++) { //skip patient id
+            model.addRow(new Object[]{fields.get(i), ""});
         }
 
         
@@ -286,10 +278,9 @@ public class AddPatientsForm extends JDialog {
                     in.close();
                     bufferedReader.close();
                     progressMessage.setText("Import successful");
-                } catch (SQLException ex) {
+                } catch (Exception ex) {
                     ClientMiscUtils.checkSQLException(ex);
-                } catch (Exception ex) {           
-                    ex.printStackTrace();
+                    LOG.error("Error importing patients.", ex);
                     progressMessage.setText("Error importing patients");
                 } finally {
                     setButtonsEnabled(true);
@@ -466,33 +457,24 @@ public class AddPatientsForm extends JDialog {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
             addPatient();
-        } catch (SQLException ex) {
-            ClientMiscUtils.checkSQLException(ex);
-            LOG.error("Error adding patient.", ex);
-        } catch (RemoteException ex) {
-            LOG.error("Error adding patient.", ex);
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Error adding patient.", ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         try {
             generateTemplate();
-        } catch (SQLException ex) {
-            ClientMiscUtils.checkSQLException(ex);
-            LOG.error("Error generating template.", ex);
-        } catch (RemoteException ex) {
-            LOG.error("Error adding patient.", ex);
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Error generating template.", ex);
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         try {
             importFile();
-        } catch (SQLException ex) {
-            ClientMiscUtils.checkSQLException(ex);
-            LOG.error("Error importing file.", ex);
-        } catch (RemoteException ex) {
-            LOG.error("Error importing file.", ex);
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Error importing file.", ex);
         }
     }//GEN-LAST:event_jButton3ActionPerformed
 

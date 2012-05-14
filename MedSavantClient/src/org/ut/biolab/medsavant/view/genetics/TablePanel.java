@@ -41,7 +41,6 @@ import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.controller.ThreadController;
@@ -101,7 +100,7 @@ public class TablePanel extends JLayeredPane {
         MedSavantWorker worker = new MedSavantWorker(pageName) {
 
             @Override
-            protected Object doInBackground() {
+            protected Object doInBackground() throws RemoteException, SQLException {
 
                 List<String> fieldNames = new ArrayList<String>();
                 final List<Class> fieldClasses = new ArrayList<Class>();
@@ -155,7 +154,7 @@ public class TablePanel extends JLayeredPane {
                             checkStarring(result);
                             showShowCard();
                             return result;
-                        } catch (NonFatalDatabaseException ex) {
+                        } catch (Exception ex) {
                             LOG.error("Error retrieving data.", ex);
                             showShowCard();
                             return null;
@@ -168,7 +167,7 @@ public class TablePanel extends JLayeredPane {
                         int result = 0;
                         try {
                             result = ResultController.getInstance().getNumFilteredVariants();
-                        } catch (NonFatalDatabaseException ex) {
+                        } catch (Exception ex) {
                             LOG.error("Error getting total number.", ex);
                         }
                         showShowCard();
