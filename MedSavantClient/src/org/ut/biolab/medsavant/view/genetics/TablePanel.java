@@ -65,7 +65,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-class TablePanel extends JLayeredPane {
+public class TablePanel extends JLayeredPane {
     private static final Log LOG = LogFactory.getLog(TablePanel.class);
     private SearchableTablePanel tablePanel;
     private WaitPanel waitPanel;
@@ -81,7 +81,6 @@ class TablePanel extends JLayeredPane {
     public TablePanel(final String pageName) {
 
         this.pageName = pageName;
-        //this.setLayout(new BorderLayout());
         this.setLayout(new GridBagLayout());
 
         c = new GridBagConstraints();
@@ -127,11 +126,15 @@ class TablePanel extends JLayeredPane {
                                 break;
                         }
 
-                        //only show vcf fields (except custom info)
+                        //only show some vcf fields
                         if (!(af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_DEFAULT)
                                 && !(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID)
                                 || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID)
                                 || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID)
+                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILTER)
+                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_QUAL)
+                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_GT)
+                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID)
                                 || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO)))) {
                             //|| af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_CUSTOM_VCF))) {
                             hiddenColumns.add(fieldNames.size() - 1);

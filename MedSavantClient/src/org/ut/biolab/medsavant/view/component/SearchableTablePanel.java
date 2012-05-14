@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -184,10 +185,10 @@ public class SearchableTablePanel extends JPanel {
         }
 
         pageText.setText(Integer.toString(getPageNumber()));
-        pageLabel2.setText(" of " + getTotalNumPages());
+        pageLabel2.setText(" of " + ViewUtil.numToString(getTotalNumPages()));
         int start = getTotalNumPages() == 0 ? 0 : (getPageNumber() - 1) * getRowsPerPage() + 1;
         int end = getTotalNumPages() == 0 ? 0 : Math.min(start + getRowsPerPage() - 1, getTotalRowCount());
-        amountLabel.setText("  Showing " + start + " - " + end + " of " + getTotalRowCount() + " records");
+        amountLabel.setText("  Showing " + ViewUtil.numToString(start) + " - " + ViewUtil.numToString(end) + " of " + ViewUtil.numToString(getTotalRowCount()) + " records");
 
         if (first) {
             int[] columns = new int[columnNames.length];
@@ -336,10 +337,15 @@ public class SearchableTablePanel extends JPanel {
         table.setTableHeader(header);
 
         filterField = new QuickTableFilterField(model);
-        filterField.setHintText("Type to search");
+
+        if (allowPages) {
+            filterField.setHintText("Type to search page");
+        } else {
+            filterField.setHintText("Type to search");
+        }
 
         this.setLayout(new BorderLayout(3, 3));
-        fieldPanel = new JPanel();
+        fieldPanel = ViewUtil.getClearPanel();
 
         if (allowSearch) {
             fieldPanel.add(filterField);
@@ -368,7 +374,7 @@ public class SearchableTablePanel extends JPanel {
         });
         fieldPanel.add(exportButton);
 
-        bottomPanel = new JPanel();
+        bottomPanel = ViewUtil.getClearPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 
         gotoFirst = niceButton();
@@ -490,6 +496,8 @@ public class SearchableTablePanel extends JPanel {
         JScrollPane jsp = new JScrollPane(table);
         jsp.setBorder(null);
         tablePanel.add(jsp);
+
+        //this.setBackground(Color.white);
 
         if (allowSort) {
             this.add(fieldPanel, BorderLayout.NORTH);

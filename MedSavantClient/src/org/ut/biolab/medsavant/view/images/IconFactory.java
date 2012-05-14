@@ -13,11 +13,9 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.images;
 
 import javax.swing.ImageIcon;
-
 
 /**
  *
@@ -42,6 +40,7 @@ public class IconFactory {
     }
 
     public enum StandardIcon {
+
         GOOGLE_LOGO,
         SECTION_ADMIN,
         SECTION_OTHER,
@@ -73,14 +72,22 @@ public class IconFactory {
         GREEN,
         ORANGE,
         RED,
-        WHITE
+        WHITE,
+        LINKOUT,
+        COPY
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/view/images/icon/";
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case COPY:
+                return getIcon(iconroot + "cpy.png");
             case GOOGLE_LOGO:
                 return getIcon(iconroot + "googleLog.png");
+            case LINKOUT:
+                return getIcon(iconroot + "linkout.png");
+            case FILTER:
+                return getIcon(iconroot + "filter.png");
             case SECTION_ADMIN:
                 return getIcon(iconroot + "section_admin.png");
             case SECTION_OTHER:
@@ -119,8 +126,6 @@ public class IconFactory {
                 return getIcon(iconroot + "mac_edit.png");
             case IMPORT:
                 return getIcon(iconroot + "import.png");
-            case FILTER:
-                return getIcon(iconroot + "filter.gif");
             case RESULTS:
                 return getIcon(iconroot + "results.png");
             case CHART:

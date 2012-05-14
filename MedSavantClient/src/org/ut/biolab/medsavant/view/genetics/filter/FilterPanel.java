@@ -342,6 +342,7 @@ public class FilterPanel extends JPanel {
 
         JToolBar saveContainer = new JToolBar();// ViewUtil.getClearPanel();
         saveContainer.setBackground(ViewUtil.getTertiaryMenuColor());
+        saveContainer.setFloatable(false);
         //ViewUtil.applyMenuStyleInset(saveContainer);
 
 

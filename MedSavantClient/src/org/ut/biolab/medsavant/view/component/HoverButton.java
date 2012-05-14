@@ -83,7 +83,6 @@ public class HoverButton extends JButton {
 
 
         g2d.drawString(title, 8, (getHeight() + height) / 2 - 2);
-        //g2d.drawString(title, (getWidth() - width) / 2, (getHeight() + height) / 2 - 2);
 
     }
 

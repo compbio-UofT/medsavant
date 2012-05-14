@@ -15,6 +15,14 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
+import com.jidesoft.pane.event.CollapsiblePaneEvent;
+import org.ut.biolab.medsavant.vcf.VariantRecord;
+import org.ut.biolab.medsavant.view.genetics.variantinfo.BasicVariantInfoSubPanel;
+import com.jidesoft.pane.CollapsiblePane;
+import com.jidesoft.pane.CollapsiblePanes;
+import com.jidesoft.pane.FloorTabbedPane;
+import com.jidesoft.pane.event.CollapsiblePaneListener;
+import com.jidesoft.plaf.UIDefaultsLookup;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyVetoException;
@@ -43,6 +51,7 @@ import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.GeneManiaInfoSubPanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.InfoPanel;
@@ -57,8 +66,62 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 public class GeneticsTablePage extends SubSectionView implements FiltersChangedListener, ReferenceListener {
-    
-    private static final Log LOG = LogFactory.getLog(GeneticsTablePage.class);
+
+    private static final Log log = LogFactory.getLog(GeneticsTablePage.class);
+
+
+    public static class VariantInfoPanel extends InfoPanel implements VariantSelectionChangedListener, CollapsiblePaneListener {
+
+        private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
+        private boolean isShown;
+
+        public VariantInfoPanel() {
+            super("Variant Inspector");
+            this.addSubInfoPanel(new BasicVariantInfoSubPanel());
+            TablePanel.addVariantSelectionChangedListener(this);
+            this.addCollapsiblePaneListener(this);
+        }
+
+        public static void addVariantSelectionChangedListener(BasicVariantInfoSubPanel l) {
+            listeners.add(l);
+        }
+
+        VariantRecord record;
+
+        @Override
+        public void variantSelectionChanged(VariantRecord r) {
+            for (VariantSelectionChangedListener l : listeners) {
+                l.variantSelectionChanged(r);
+            }
+            record = r;
+        }
+
+        @Override
+        public void paneExpanding(CollapsiblePaneEvent cpe) {
+            variantSelectionChanged(record);
+        }
+
+        @Override
+        public void paneExpanded(CollapsiblePaneEvent cpe) {
+            isShown = true;
+        }
+
+        @Override
+        public void paneCollapsing(CollapsiblePaneEvent cpe) {
+        }
+
+        @Override
+        public void paneCollapsed(CollapsiblePaneEvent cpe) {
+            isShown = false;
+        }
+    }
+
+    private static class AnalyticsInfoPanel extends InfoPanel {
+
+        public AnalyticsInfoPanel() {
+            super("Analytics");
+        }
+    }
 
     private JPanel panel;
     private TablePanel tablePanel;
@@ -113,9 +176,9 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         try {
             chrs = MedSavantClient.ChromosomeQueryUtilAdapter.getContigs(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceId());
         } catch (SQLException ex) {
-            LOG.error("Error getting contigs.", ex);
+            log.error("Error getting contigs.", ex);
         } catch (RemoteException ex) {
-            LOG.error("Error getting contigs.", ex);
+            log.error("Error getting contigs.", ex);
         }
         Genome g = new Genome(chrs);
         gp = new GenomeContainer(getName(), g);
@@ -126,13 +189,15 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
 
         _container = new CollapsiblePanes();
         _container.setGap(UIDefaultsLookup.getInt("CollapsiblePanes.gap"));
-        _container.setBackground(UIManager.getColor("Panel.background"));
+        _container.setBackground(UIManager.getColor((new JPanel()).getBackground()));
+
+        //_container.setBackground(UIManager.getColor("Panel.background"));
         _container.setBorder(UIDefaultsLookup.getBorder("CollapsiblePanes.border"));
 
         VariantInfoPanel vpanel = new VariantInfoPanel();
         try {
             vpanel.setCollapsed(false);
-        } catch (PropertyVetoException ignored) {
+        } catch (PropertyVetoException ex) {
         }
         SearchInfoPanel spanel = new SearchInfoPanel();
         GeneInfoPanel gpanel = new GeneInfoPanel();
@@ -271,21 +336,6 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         public SearchInfoPanel() {
             super("Search");
             this.addSubInfoPanel(new SearchInfoSubPanel());
-        }
-    }
-
-    private static class VariantInfoPanel extends InfoPanel {
-
-        public VariantInfoPanel() {
-            super("Variant Inspector");
-            this.addSubInfoPanel(new BasicVariantInfoSubPanel());
-        }
-    }
-
-    private static class AnalyticsInfoPanel extends InfoPanel {
-
-        public AnalyticsInfoPanel() {
-            super("Analytics");
         }
     }
 }
