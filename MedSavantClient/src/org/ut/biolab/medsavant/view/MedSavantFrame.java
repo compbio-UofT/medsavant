@@ -200,6 +200,7 @@ public class MedSavantFrame extends JFrame implements LoginListener {
         }
     }
 
+    @Override
     public void loginEvent(LoginEvent evt) {
         switch (evt.getType()) {
             case LOGGED_IN:

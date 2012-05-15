@@ -49,8 +49,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
         return instance;
     }
 
-    public SessionController() throws RemoteException {
-        super();
+    private SessionController() throws RemoteException {
     }
 
     @Override
@@ -68,13 +67,14 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
     }
 
     @Override
-    public boolean testConnection(String sessionId) throws RemoteException, SQLException {
-        Connection c = ConnectionController.connectPooled(sessionId);
-        if (c == null) {
-            return false;
-        } else {
-            c.close();
-            return true;
+    public void testConnection(String sessID) throws RemoteException, SQLException {
+        Connection conn = null;
+        try {
+            conn = ConnectionController.connectPooled(sessID);
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
         }
     }
 

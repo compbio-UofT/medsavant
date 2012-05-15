@@ -32,6 +32,7 @@ import org.ut.biolab.medsavant.serverapi.ServerLogQueryUtilAdapter.LogType;
 import org.ut.biolab.medsavant.serverapi.SessionAdapter;
 import org.ut.biolab.medsavant.settings.VersionSettings;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
  *
@@ -111,17 +112,11 @@ public class LoginController {
             //register session
             username = un;
             password = pw;
-            System.out.print("Starting session...");
-            System.out.flush();
+            LOG.info("Starting session...");
             sessionId = SessionAdapter.registerNewSession(un, pw, dbname);
-            System.out.println("Done");
-            System.out.println("My session ID is: " + sessionId);
-        } catch (Exception x) {
-            setLoginException(x);
-        }
-
-        if (sessionId == null) {
-            fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
+            LOG.info("Done\nMy session ID is: " + sessionId);
+        } catch (Exception ex) {
+            fireLoginEvent(new LoginEvent(ex));
             return;
         }
 
@@ -143,12 +138,9 @@ public class LoginController {
 
         //test connection
         try {
-            if (!SessionAdapter.testConnection(sessionId)) {
-                fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
-                return;
-            }
+            SessionAdapter.testConnection(sessionId);
         } catch (Exception ex) {
-            setLoginException(ex);
+            fireLoginEvent(new LoginEvent(ex));
             return;
         }
 
@@ -165,36 +157,18 @@ public class LoginController {
                 return;
             }
         } catch (SQLException ex) {
-            fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED));
+            fireLoginEvent(new LoginEvent(ex));
             return;
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(
-                    null,
-                    "<html>We could not determine compatibility between MedSavant and your database. <br>Please ensure that your versions are compatible before continuing.</html>" ,
-                    "Error Comparing Versions",
-                    JOptionPane.WARNING_MESSAGE);
-            ex.printStackTrace();
+            LOG.error("Error comparing versions.", ex);
+            DialogUtils.displayError("Error Comparing Versions", "<html>We could not determine compatibility between MedSavant and your database.<br>Please ensure that your versions are compatible before continuing.</html>");
         }
         try {
             setDefaultIDs();
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(
-                    null,
-                    "<html>There was a problem choosing a project</html>",
-                    "Error logging in",
-                    JOptionPane.WARNING_MESSAGE);
-            ex.printStackTrace();
+            LOG.error("Error logging in.", ex);
+            DialogUtils.displayError("Error Logging In", "<html>There was a problem choosing a project.</html>");
         }
-
-
-        //register for callback
-        /*
-        try {
-            SessionAdapter.registerCallback(sessionId, CallbackController.getInstance());
-        } catch (RemoteException ex) {
-            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-        }
-         */
 
         setLoggedIn(true);
     }
@@ -218,16 +192,13 @@ public class LoginController {
         setLoggedIn(false);
     }
 
-    private static void setLoginException(Exception ex) {
-        fireLoginEvent(new LoginEvent(LoginEvent.EventType.LOGIN_FAILED,ex));
-    }
-
     public static void unregister() {
-        if (!loggedIn) return;
-        try {
-            SessionAdapter.unregisterSession(LoginController.sessionId);
-        } catch (Exception ex) {
-            LOG.error("Error unregistering session.", ex);
+        if (loggedIn) {
+            try {
+                SessionAdapter.unregisterSession(LoginController.sessionId);
+            } catch (Exception ex) {
+                LOG.error("Error unregistering session.", ex);
+            }
         }
     }
 
@@ -238,8 +209,8 @@ public class LoginController {
             pc.setProject(projNames.get(0));
             pc.setDefaultReference();
 
-            System.out.println("Setting project to " + pc.getCurrentProjectName());
-            System.out.println("Setting reference to " + ReferenceController.getInstance().getCurrentReferenceName());
+            LOG.info("Setting project to " + pc.getCurrentProjectName());
+            LOG.info("Setting reference to " + ReferenceController.getInstance().getCurrentReferenceName());
         }
     }
 }
