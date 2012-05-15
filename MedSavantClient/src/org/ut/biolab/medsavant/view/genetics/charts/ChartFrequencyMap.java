@@ -1,18 +1,31 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.charts;
 
-import com.jidesoft.chart.model.ChartCategory;
-import com.jidesoft.range.CategoryRange;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+
+import com.jidesoft.chart.model.ChartCategory;
+
+import org.ut.biolab.medsavant.util.ChromosomeComparator;
+
 
 /**
  *
@@ -20,7 +33,70 @@ import java.util.TreeMap;
  */
 public class ChartFrequencyMap {
 
-    /*
+    private List<FrequencyEntry> entries;
+    private List<FrequencyEntry> originalEntries;
+
+    public ChartFrequencyMap() {
+        this.entries = new ArrayList<FrequencyEntry>();
+    }
+
+    public void addEntry(String key, long value) {
+        this.entries.add(new FrequencyEntry(key, value));
+    }
+
+    public List<FrequencyEntry> getEntries() {
+        return entries;
+    }
+
+    public void addAll(Map<String, Integer> map) {
+        for (String s : map.keySet()) {
+            addEntry(s, map.get(s));
+        }
+    }
+
+    public void sort() {
+        Collections.sort(entries);
+    }
+
+    public void sortNumerically() {
+        if (originalEntries == null) {
+            originalEntries = new ArrayList<FrequencyEntry>();
+            originalEntries.addAll(entries);
+        }
+        Collections.sort(entries, new Comparator<FrequencyEntry>() {
+            @Override
+            public int compare(FrequencyEntry t, FrequencyEntry t1) {
+                long diff = t.getFrequency() - t1.getFrequency();
+                if (diff < 0) {
+                    return -1;
+                } else if (diff > 0) {
+                    return 1;
+                }
+                return 0;
+            }
+        });
+        Collections.reverse(entries);
+    }
+    
+    public void undoSortNumerically() {
+        if (originalEntries != null) {
+            entries = originalEntries;
+            originalEntries = null;
+        }
+    }
+
+    public void sortKaryotypically() {
+        Collections.sort(entries, new Comparator<FrequencyEntry>() {
+            private ChromosomeComparator comparator = new ChromosomeComparator();
+
+            @Override
+            public int compare(FrequencyEntry t, FrequencyEntry t1) {
+                return comparator.compare(t.getKey(), t1.getKey());
+            }
+        });
+    }
+
+    /**
      * LogY flag indicates that the log of each value will later be taken. This
      * should be used for "show original frequencies" in order to get an accurate
      * difference (as it is stacked on top of current frequencies). Do not use 
@@ -68,147 +144,5 @@ public class ChartFrequencyMap {
             }
         }
         return null;
-    }
-
-    private static class NumericComparator implements Comparator {
-
-        public int compare(Object o1, Object o2) {
-
-            if (o1 instanceof FrequencyEntry && o2 instanceof FrequencyEntry) {
-                long f1 = ((FrequencyEntry) o1).getFrequency();
-                long f2 = ((FrequencyEntry) o2).getFrequency();
-
-                if (f1 > f2) {
-                    return 1;
-                } else if (f1 < f2) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            } else {
-                return -1;
-            }
-        }
-    }
-
-    private static class ChromosomeComparator implements Comparator {
-
-        /**
-         * @param chr1
-         * @param chr2
-         * @return
-         */
-        public int compare(Object o1, Object o2) {
-
-            String chr1 = ((FrequencyEntry) o1).getKey();
-            String chr2 = ((FrequencyEntry) o2).getKey();
-
-            try {
-
-                // Special rule -- put the mitochondria at the end
-                if (chr1.equals("chrM") || chr1.equals("MT")) {
-                    return 1;
-                } else if (chr2.equals("chrM") || chr2.equals("MT")) {
-                    return -1;
-                }
-
-                // Find the first digit
-                int idx1 = findDigitIndex(chr1);
-                int idx2 = findDigitIndex(chr2);
-                if (idx1 == idx2) {
-                    String alpha1 = idx1 == -1 ? chr1 : chr1.substring(0, idx1);
-                    String alpha2 = idx2 == -1 ? chr2 : chr2.substring(0, idx2);
-                    int alphaCmp = alpha1.compareTo(alpha2);
-                    if (alphaCmp != 0) {
-                        return alphaCmp;
-                    } else {
-                        int dig1 = Integer.parseInt(chr1.substring(idx1));
-                        int dig2 = Integer.parseInt(chr2.substring(idx2));
-                        return dig1 - dig2;
-                    }
-                } else if (idx1 == -1) {
-                    return 1;
-
-                } else if (idx2 == -1) {
-                    return -1;
-                }
-                return idx1 - idx2;
-            } catch (Exception numberFormatException) {
-                return 0;
-            }
-
-        }
-
-        int findDigitIndex(String chr) {
-
-            int n = chr.length() - 1;
-            if (!Character.isDigit(chr.charAt(n))) {
-                return -1;
-            }
-
-            for (int i = n - 1; i > 0; i--) {
-                if (!Character.isDigit(chr.charAt(i))) {
-                    return i + 1;
-                }
-            }
-            return 0;
-        }
-    }
-    private List<FrequencyEntry> entries;
-    private List<FrequencyEntry> originalEntries;
-
-    public ChartFrequencyMap() {
-        this.entries = new ArrayList<FrequencyEntry>();
-    }
-
-    public void addEntry(String key, long value) {
-        this.entries.add(new FrequencyEntry(key, value));
-    }
-
-    /*
-    public void removeEntry(String key) {
-    FrequencyEntry toremove = null;
-    for (FrequencyEntry fe : this.entries) {
-    if (fe.getKey().equals(key)) {
-    toremove = fe;
-    break;
-    }
-    }
-    this.entries.remove(toremove);
-    }
-     *
-     */
-    public List<FrequencyEntry> getEntries() {
-        return entries;
-    }
-
-    public void addAll(Map<String, Integer> map) {
-        for (String s : map.keySet()) {
-            addEntry(s, map.get(s));
-        }
-    }
-
-    public void sort() {
-        Collections.sort(entries);
-    }
-
-    public void sortNumerically() {
-        if(originalEntries == null){
-            originalEntries = new ArrayList<FrequencyEntry>();
-            originalEntries.addAll(entries);
-        }
-        Collections.sort(entries, new NumericComparator());
-        Collections.reverse(entries);
-    }
-    
-    public void undoSortNumerically() {
-        if(originalEntries != null){
-            entries = originalEntries;
-            originalEntries = null;
-        }
-    }
-
-    public void sortKaryotypically() {
-        Collections.sort(entries, new ChromosomeComparator());
     }
 }

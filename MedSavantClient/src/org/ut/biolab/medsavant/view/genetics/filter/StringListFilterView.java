@@ -169,7 +169,7 @@ public class StringListFilterView extends FilterView {
                 @Override
                 public void run() {
                     try {
-                        initHelper(container, MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(LoginController.sessionId, tablename, columnname));
+                        initHelper(container, MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(LoginController.sessionId, tablename, columnname, true));
                         dialog.close();
                     } catch (SQLException ex) {
                         LOG.error("Error getting distinct values for " + tablename + "." + columnname, ex);

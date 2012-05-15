@@ -59,15 +59,15 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
     private static PatientQueryUtil instance;
 
+    private PatientQueryUtil() throws RemoteException {
+    }
+
     public static synchronized PatientQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new PatientQueryUtil();
         }
         return instance;
     }
-
-    public PatientQueryUtil() throws RemoteException { super(); }
-
 
     @Override
     public List<Object[]> getBasicPatientInfo(String sid, int projectId, int limit) throws SQLException, RemoteException {
@@ -89,7 +89,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Object[]> result = new ArrayList<Object[]>();
-        while (rs.next()){
+        while (rs.next()) {
             result.add(new Object[] {
                 rs.getInt(DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID),
                 rs.getString(DefaultpatientTableSchema.COLUMNNAME_OF_FAMILY_ID),
@@ -115,12 +115,12 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Object[]> result = new ArrayList<Object[]>();
-        while (rs.next()){
+        while (rs.next()) {
             Object[] o = new Object[rs.getMetaData().getColumnCount()];
-            for(int i = 0; i < rs.getMetaData().getColumnCount(); i++){
+            for (int i = 0; i < rs.getMetaData().getColumnCount(); i++) {
                 try {
                     o[i] = rs.getObject(i+1);
-                } catch (SQLException e){
+                } catch (SQLException e) {
                     //ignore...probably invalid input (ie. date 0000-00-00)
                 }
             }
@@ -144,10 +144,10 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
         rs.next();
         Object[] v = new Object[rs.getMetaData().getColumnCount()];
-        for(int i = 1; i <= rs.getMetaData().getColumnCount(); i++){
+        for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
             try {
                 v[i - 1] = rs.getObject(i);
-            } catch (SQLException e){
+            } catch (SQLException e) {
                 //ignore...probably invalid input (ie. date 0000-00-00)
             }
         }
@@ -172,7 +172,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
             result.add(af.getAlias());
         }
 
-        while(rs.next()){
+        while (rs.next()) {
             result.add(rs.getString(1));
         }
         return result;
@@ -204,7 +204,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<CustomField> result = new ArrayList<CustomField>();
-        while(rs.next()){
+        while (rs.next()) {
             result.add(new CustomField(
                     rs.getString(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME),
                     rs.getString(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE),
@@ -252,7 +252,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
                 + "`" + DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS + "` varchar(1000) COLLATE latin1_bin DEFAULT NULL,"
                 + "`" + DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL + "` varchar(5000) COLLATE latin1_bin DEFAULT NULL,";
 
-        for(CustomField field : fields){
+        for (CustomField field : fields) {
             query += field.generateSchema();
         }
 
@@ -272,7 +272,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         //populate format patientFormatTable
         TableSchema patientFormatTable = MedSavantDatabase.PatientformatTableSchema;
         c.setAutoCommit(false);
-        for(int i = 0; i < fields.size(); i++){
+        for (int i = 0; i < fields.size(); i++) {
             CustomField a = fields.get(i);
             InsertQuery query2 = new InsertQuery(patientFormatTable.getTable());
             query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid);
@@ -298,7 +298,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
         Connection c = ConnectionController.connectPooled(sid);
         c.setAutoCommit(false);
-        for(int id : patientIds){
+        for (int id : patientIds) {
             //remove all references
             CohortQueryUtil.getInstance().removePatientReferences(sid,projectId, id);
 
@@ -319,7 +319,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
         InsertQuery query = new InsertQuery(table.getTable());
-        for(int i = 0; i < Math.min(cols.size(), values.size()); i++){
+        for (int i = 0; i < Math.min(cols.size(), values.size()); i++) {
             query.addColumn(new DbColumn(table.getTable(), cols.get(i).getColumnName(), cols.get(i).getColumnTypeString(), 100), values.get(i));
         }
 
@@ -327,7 +327,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public Map<Object, List<String>> getDNAIdsForValues(String sid, int projectId, String columnName) throws NonFatalDatabaseException, SQLException, RemoteException {
+    public Map<Object, List<String>> getDNAIdsForValues(String sid, int projectId, String columnName) throws SQLException, RemoteException {
 
         String tablename = getPatientTablename(sid,projectId);
 
@@ -344,15 +344,15 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         Map<Object, List<String>> map = new HashMap<Object, List<String>>();
-        while(rs.next()){
+        while (rs.next()) {
             Object o = rs.getObject(columnName);
             if(o == null) o = "";
             if(map.get(o) == null) map.put(o, new ArrayList<String>());
             String dnaIdsString = rs.getString(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS);
             if(dnaIdsString == null) continue;
             String[] dnaIds = dnaIdsString.split(",");
-            for(String id : dnaIds){
-                if(!map.get(o).contains(id)){
+            for (String id : dnaIds) {
+                if(!map.get(o).contains(id)) {
                     map.get(o).add(id);
                 }
             }
@@ -380,16 +380,16 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<String> result = new ArrayList<String>();
-        while(rs.next()){
+        while (rs.next()) {
             String s = rs.getString(1);
             String[] dnaIds;
-            if(s == null){
+            if(s == null) {
                 dnaIds = new String[]{"null"};
             } else {
                 dnaIds = s.split(",");
             }
-            for(String id : dnaIds){
-                if(!result.contains(id)){
+            for (String id : dnaIds) {
+                if(!result.contains(id)) {
                     result.add(id);
                 }
             }
@@ -409,7 +409,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         q.addColumns(currentDNAId);
 
         Condition[] conditions = new Condition[list.size()];
-        for(int i = 0; i < list.size(); i++){
+        for (int i = 0; i < list.size(); i++) {
             conditions[i] = BinaryConditionMS.equalTo(testColumn, list.get(i));
         }
         q.addCondition(ComboCondition.or(conditions));
@@ -417,12 +417,12 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<String> result = new ArrayList<String>();
-        while(rs.next()){
+        while (rs.next()) {
             String current = rs.getString(1);
             if(current == null) continue;
             String[] dnaIds = current.split(",");
-            for(String id : dnaIds){
-                if(!result.contains(id)){
+            for (String id : dnaIds) {
+                if(!result.contains(id)) {
                     result.add(id);
                 }
             }
@@ -441,7 +441,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         q.addColumns(currentDNAId);
 
         Condition[] conditions = new Condition[list.size()];
-        for(int i = 0; i < list.size(); i++){
+        for (int i = 0; i < list.size(); i++) {
             conditions[i] = BinaryConditionMS.equalTo(testColumn, list.get(i));
         }
         q.addCondition(ComboCondition.or(conditions));
@@ -450,10 +450,10 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = s.executeQuery(q.toString());
 
         List<String> result = new ArrayList<String>();
-        while(rs.next()){
+        while (rs.next()) {
             String[] dnaIds = rs.getString(1).split(",");
-            for(String id : dnaIds){
-                if(!result.contains(id)){
+            for (String id : dnaIds) {
+                if(!result.contains(id)) {
                     result.add(id);
                 }
             }
@@ -474,8 +474,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         c.setAutoCommit(false);
 
         //remove unused fields
-        for(CustomField f : currentFields){
-            if(!fields.contains(f)){
+        for (CustomField f : currentFields) {
+            if(!fields.contains(f)) {
                 DeleteQuery q = new DeleteQuery(patientFormatTable.getTable());
                 q.addCondition(BinaryConditionMS.equalTo(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
                 q.addCondition(BinaryConditionMS.equalTo(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), f.getColumnName()));
@@ -488,8 +488,8 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
         //modify old fields, add new fields
         int tempPos = 5002;
-        for(CustomField f : fields){
-            if(currentFields.contains(f)){
+        for (CustomField f : fields) {
+            if(currentFields.contains(f)) {
                 UpdateQuery q = new UpdateQuery(patientFormatTable.getTable());
                 q.addSetClause(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS), f.getAlias());
                 q.addSetClause(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), f.getDescription());
@@ -521,10 +521,10 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         List<DbColumn> defaultColumns = MedSavantDatabase.DefaultpatientTableSchema.getColumns();
         c.setAutoCommit(false);
         int i = 0;
-        for(DbColumn col : columns){
+        for (DbColumn col : columns) {
             boolean isDefault = false;
-            for(DbColumn a : defaultColumns){
-                if(col.getColumnNameSQL().equals(a.getColumnNameSQL())){
+            for (DbColumn a : defaultColumns) {
+                if(col.getColumnNameSQL().equals(a.getColumnNameSQL())) {
                     isDefault = true;
                 }
             }
@@ -555,7 +555,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         query.addFromTable(table.getTable());
         query.addColumns(table.getDBColumn(columnNameB));
         Condition[] conditions = new Condition[values.size()];
-        for(int i = 0; i < values.size(); i++){
+        for (int i = 0; i < values.size(); i++) {
             conditions[i] = BinaryConditionMS.equalTo(table.getDBColumn(columnNameA), values.get(i));
         }
         query.addCondition(ComboCondition.or(conditions));
@@ -563,7 +563,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Object> result = new ArrayList<Object>();
-        while(rs.next()){
+        while (rs.next()) {
             result.add(rs.getObject(1));
         }
 
@@ -575,10 +575,10 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
 
         List<Object> l1 = getValuesFromField(sid,projectId, columnNameA, DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, values);
         List<String> result = new ArrayList<String>();
-        for(Object o : l1){
+        for (Object o : l1) {
             String[] dnaIds = ((String) o).split(",");
-            for(String id : dnaIds){
-                if(!result.contains(id)){
+            for (String id : dnaIds) {
+                if(!result.contains(id)) {
                     result.add(id);
                 }
             }
@@ -595,7 +595,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         query.addFromTable(table.getTable());
         query.addColumns(table.getDBColumn(columnNameB));
         Condition[] conditions = new Condition[ids.size()];
-        for(int i = 0; i < ids.size(); i++){
+        for (int i = 0; i < ids.size(); i++) {
             conditions[i] = BinaryCondition.like(table.getDBColumn(DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS), "%" + ids.get(i) + "%");
         }
         query.addCondition(ComboCondition.or(conditions));
@@ -605,7 +605,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<String> result = new ArrayList<String>();
-        while(rs.next()){
+        while (rs.next()) {
             result.add(rs.getString(1));
         }
 
@@ -636,7 +636,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Object[]> result = new ArrayList<Object[]>();
-        while(rs.next()){
+        while (rs.next()) {
             Object[] r = new Object[6];
             r[0] = rs.getString(1);
             r[1] = rs.getString(2);
@@ -655,7 +655,7 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     public List<Object[]> getFamilyOfPatient(String sid, int projectId, int pid) throws SQLException, RemoteException {
 
         String family_id = getFamilyIdOfPatient(sid,projectId, pid);
-        if(family_id == null){
+        if(family_id == null) {
             return new ArrayList<Object[]>();
         }
 
@@ -749,12 +749,12 @@ public class PatientQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public List<String> parseDnaIds(String s){
+    public List<String> parseDnaIds(String s) {
         List<String> result = new ArrayList<String>();
         if(s == null) return result;
         String[] dnaIds = s.split(",");
-        for(String id : dnaIds){
-            if(!result.contains(id)){
+        for (String id : dnaIds) {
+            if(!result.contains(id)) {
                 result.add(id);
             }
         }

@@ -27,7 +27,6 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.Range;
@@ -48,7 +47,6 @@ public interface VariantQueryUtilAdapter extends Remote {
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order) throws SQLException, RemoteException;
     public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order, Column[] columns) throws SQLException, RemoteException;
     public double[] getExtremeValuesForColumn(String sid,String tablename, String columnname) throws SQLException, RemoteException;
-    public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException;
     public List<String> getDistinctValuesForColumn(String sid, String tablename, String columnname, boolean cache) throws SQLException, RemoteException;
     public int getNumFilteredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException;
     public int getNumFilteredVariants(String sid,int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException;

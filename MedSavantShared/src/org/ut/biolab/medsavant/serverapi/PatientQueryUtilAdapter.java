@@ -45,7 +45,7 @@ public interface PatientQueryUtilAdapter extends Remote {
     public void createPatientTable(String sessID, int projectid, List<CustomField> fields) throws SQLException, ParserConfigurationException, SAXException, IOException, RemoteException;
     public void removePatient(String sessID, int projectId, int[] patientIds) throws SQLException, RemoteException;
     public void addPatient(String sessID, int projectId, List<CustomField> cols, List<String> values) throws SQLException, RemoteException;
-    public Map<Object, List<String>> getDNAIdsForValues(String sessID, int projectId, String columnName) throws NonFatalDatabaseException, SQLException, RemoteException;
+    public Map<Object, List<String>> getDNAIdsForValues(String sessID, int projectId, String columnName) throws SQLException, RemoteException;
     public List<String> getDNAIdsWithValuesInRange(String sessID, int projectId, String columnName, Range r) throws NonFatalDatabaseException, SQLException, RemoteException;
     public List<String> getDNAIdsForStringList(String sessID, TableSchema table, List<String> list, String columnname) throws NonFatalDatabaseException, SQLException, RemoteException;
     public void updateFields(String sessID, int projectId, List<CustomField> fields) throws SQLException, RemoteException;
