@@ -41,32 +41,39 @@ public class Gene implements Serializable {
         this.codingEnd = codingEnd;
         this.transcript = transcript;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public String getChrom() {
         return chrom;
     }
-    
+
     public int getStart() {
         return start;
     }
-    
+
     public int getEnd() {
         return end;
     }
-    
+
     public int getCodingStart() {
         return codingStart;
     }
-    
+
     public int getCodingEnd() {
         return codingEnd;
     }
-    
+
     public String getTranscript() {
         return transcript;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+
+
 }
