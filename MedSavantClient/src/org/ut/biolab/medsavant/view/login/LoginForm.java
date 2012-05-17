@@ -455,6 +455,7 @@ public class LoginForm extends JPanel implements LoginListener {
     private void notifyOfUnsuccessfulLogin(Exception ex) {
 
         statusLabel.setText("login error");
+        statusLabel.setForeground(Color.RED);
         userField.requestFocus();
         loginButton.setEnabled(true);
 
