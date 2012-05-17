@@ -1,10 +1,23 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.util.Map;
+
 
 /**
  *
@@ -12,29 +25,29 @@ import java.util.Map;
  */
 public class FilterState {
     
-    private String name;
-    private String id;
-    private Map<String, String> values;
-    private FilterType type;
+    private final String name;
+    private final String id;
+    private final Map<String, String> values;
+    private final FilterType type;
     
-    public static enum FilterType {NUMERIC, STRING, BOOLEAN, COHORT, GENELIST, GENERIC, TAG, PLUGIN, STARRED};
+    public static enum FilterType { NUMERIC, STRING, BOOLEAN, COHORT, REGION_LIST, GENERIC, TAG, PLUGIN, STARRED };
     
-    public FilterState(FilterType type, String name, String id, Map<String, String> values){
+    public FilterState(FilterType type, String name, String id, Map<String, String> values) {
         this.name = name;
         this.id = id;
         this.values = values;
         this.type = type;
     }
     
-    public String getName(){
+    public String getName() {
         return name;
     }
     
-    public String getId(){
+    public String getId() {
         return id;
     }
     
-    public Map<String, String> getValues(){
+    public Map<String, String> getValues() {
         return values;
     }
     
@@ -42,9 +55,9 @@ public class FilterState {
         return type;
     }
     
-    public String generateXML(){
+    public String generateXML() {
         String s = "\t\t<filter name=\"" + name + "\" id=\"" + id + "\" type=\"" + type + "\" >\n";
-        for(String key : values.keySet()){
+        for(String key : values.keySet()) {
             s += "\t\t\t<param key=\"" + key + "\" value=\"" + values.get(key) + "\" />\n";
         }
         s += "\t\t</filter>";

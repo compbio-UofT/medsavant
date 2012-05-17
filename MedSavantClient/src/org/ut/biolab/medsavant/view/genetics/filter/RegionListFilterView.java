@@ -52,20 +52,20 @@ import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
  *
  * @author mfiume
  */
-class GeneListFilterView extends FilterView {
-    private static final Log LOG = LogFactory.getLog(GeneListFilterView.class);
+class RegionListFilterView extends FilterView {
+    private static final Log LOG = LogFactory.getLog(RegionListFilterView.class);
 
-    public static final String FILTER_NAME = "Gene List";
-    public static final String FILTER_ID = "gene_list";
-    private static final String GENELIST_NONE = "None";
+    public static final String FILTER_NAME = "Region List";
+    public static final String FILTER_ID = "region_list";
+    private static final String REGION_LIST_NONE = "None";
 
     static FilterView getFilterView(int queryId) {
-        return new GeneListFilterView(queryId, new JPanel());
+        return new RegionListFilterView(queryId, new JPanel());
     }
 
-    public GeneListFilterView(FilterState state, int queryId) {
+    public RegionListFilterView(FilterState state, int queryId) {
         this(queryId, new JPanel());
-        if (state.getValues().get("value") != null){
+        if (state.getValues().get("value") != null) {
             applyFilter(Integer.parseInt(state.getValues().get("value")));
         }
     }
@@ -74,9 +74,9 @@ class GeneListFilterView extends FilterView {
     private ActionListener al;
     private JComboBox b;
 
-    public final void applyFilter(int geneListId){
-        for (int i = 0; i < b.getItemCount(); i++){
-            if (b.getItemAt(i) instanceof RegionSet && ((RegionSet)b.getItemAt(i)).getID() == geneListId){
+    public final void applyFilter(int geneListId) {
+        for (int i = 0; i < b.getItemCount(); i++) {
+            if (b.getItemAt(i) instanceof RegionSet && ((RegionSet)b.getItemAt(i)).getID() == geneListId) {
                 b.setSelectedIndex(i);
                 al.actionPerformed(new ActionEvent(this, 0, null));
                 return;
@@ -84,7 +84,7 @@ class GeneListFilterView extends FilterView {
         }
     }
 
-    private GeneListFilterView(int queryId, JPanel container){
+    private RegionListFilterView(int queryId, JPanel container) {
         super(FILTER_NAME, container, queryId);
         createContentPanel(container);
     }
@@ -92,8 +92,8 @@ class GeneListFilterView extends FilterView {
     private List<RegionSet> getDefaultValues() {
         try {
             return MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId);
-        } catch (Exception ex){
-            LOG.error("Error getting region sets.", ex);
+        } catch (Exception ex) {
+            LOG.error("Error getting region lists.", ex);
             return null;
         }
     }
@@ -106,7 +106,7 @@ class GeneListFilterView extends FilterView {
         b = new JComboBox();
         b.setMaximumSize(new Dimension(1000,30));
 
-        b.addItem(GENELIST_NONE);
+        b.addItem(REGION_LIST_NONE);
         List<RegionSet> geneLists = getDefaultValues();
         for (RegionSet set : geneLists) {
             b.addItem(set);
@@ -127,7 +127,7 @@ class GeneListFilterView extends FilterView {
                     @Override
                     public Condition[] getConditions() {
 
-                        if (b.getSelectedItem().equals(GENELIST_NONE)){
+                        if (b.getSelectedItem().equals(REGION_LIST_NONE)) {
                             return new Condition[0];
                         }
 
@@ -140,7 +140,7 @@ class GeneListFilterView extends FilterView {
                             Map<String, List<Range>> rangeMap = GenomicRegion.mergeGenomicRegions(regions);
                             Condition[] results = new Condition[rangeMap.size()];
                             int i = 0;
-                            for (String chrom : rangeMap.keySet()){
+                            for (String chrom : rangeMap.keySet()) {
 
                                 Condition[] tmp = new Condition[2];
 
@@ -152,7 +152,7 @@ class GeneListFilterView extends FilterView {
                                 //create range conditions
                                 List<Range> ranges = rangeMap.get(chrom);
                                 Condition[] rangeConditions = new Condition[ranges.size()];
-                                for (int j = 0; j < ranges.size(); j++){
+                                for (int j = 0; j < ranges.size(); j++) {
                                     rangeConditions[j] = new RangeCondition(
                                             ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION),
                                             (long)ranges.get(j).getMin(),
@@ -219,6 +219,6 @@ class GeneListFilterView extends FilterView {
     public FilterState saveState() {
         Map<String, String> map = new HashMap<String, String>();
         if (appliedId != null) map.put("value", Integer.toString(appliedId));
-        return new FilterState(FilterType.GENELIST, FILTER_NAME, FILTER_ID, map);
+        return new FilterState(FilterType.REGION_LIST, FILTER_NAME, FILTER_ID, map);
     }
 }

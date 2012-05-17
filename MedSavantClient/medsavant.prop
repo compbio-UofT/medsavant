@@ -1,11 +1,11 @@
 db.driver=com.mysql.jdbc.Driver
 db.host=localhost
-db.name=asd
+db.name=asd_zig
 db.port=5029
 general.autologin=false
 medsavant.version=1.0
-server.address=medsavant.cs.toronto.edu
-server.port=36800
+server.address=combine-130
+server.port=46800
 user.name=root
 user.password=
 user.rememberpass=false

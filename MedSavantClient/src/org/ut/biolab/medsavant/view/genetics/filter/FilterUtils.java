@@ -13,6 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.rmi.RemoteException;
@@ -37,7 +38,7 @@ import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
  */
 public class FilterUtils {
 
-    public enum Table {PATIENT, VARIANT};
+    public enum Table { PATIENT, VARIANT };
 
     /*
      * This should generally be used for any filter applications external
@@ -115,8 +116,8 @@ public class FilterUtils {
             case BOOLEAN:
                 fps.addNewSubItem(new BooleanFilterView(state, fps.getId()), state.getId());
                 break;
-            case GENELIST:
-                fps.addNewSubItem(new GeneListFilterView(state, fps.getId()), state.getId());
+            case REGION_LIST:
+                fps.addNewSubItem(new RegionListFilterView(state, fps.getId()), state.getId());
                 break;
             case COHORT:
                 fps.addNewSubItem(new CohortFilterView(state, fps.getId()), state.getId());
@@ -203,5 +204,4 @@ public class FilterUtils {
         FilterPanel fp = getFilterPanel();
         fp.clearAll();
     }
-
 }

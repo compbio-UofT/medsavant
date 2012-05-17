@@ -385,22 +385,22 @@ public class FilterPanelSub extends JPanel {
         }
 
         //gene list filter
-        if (!hasSubItem(GeneListFilterView.FILTER_ID)) {
+        if (!hasSubItem(RegionListFilterView.FILTER_ID)) {
             map.get(Category.GENOME_COORDS).add(new FilterPlaceholder() {
 
                 @Override
                 public FilterView getFilterView() {
-                    return GeneListFilterView.getFilterView(id);
+                    return RegionListFilterView.getFilterView(id);
                 }
 
                 @Override
                 public String getFilterID() {
-                    return GeneListFilterView.FILTER_ID;
+                    return RegionListFilterView.FILTER_ID;
                 }
 
                 @Override
                 public String getFilterName() {
-                    return GeneListFilterView.FILTER_NAME;
+                    return RegionListFilterView.FILTER_NAME;
                 }
             });
         }
