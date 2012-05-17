@@ -28,7 +28,7 @@ import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.serverapi.*;
-import org.ut.biolab.medsavant.db.variants.update.VariantManager;
+import org.ut.biolab.medsavant.db.variants.VariantManager;
 import org.ut.biolab.medsavant.serverapi.MedSavantServerRegistry;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 
@@ -153,8 +153,6 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         System.out.print("Initializing server registry ... ");
         System.out.flush();
 
-        registry.rebind(Registry_UploadVariantsAdapter, VariantManager.getInstance());
-
         registry.rebind(Registry_SessionAdapter, SessionController.getInstance());
         registry.rebind(Registry_CustomTablesAdapter, CustomTables.getInstance());
 
@@ -162,17 +160,17 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         registry.rebind(Registry_AnnotationQueryUtilAdapter, AnnotationQueryUtil.getInstance());
         registry.rebind(Registry_ChromosomeQueryUtilAdapter, ChromosomeQueryUtil.getInstance());
         registry.rebind(Registry_CohortQueryUtilAdapter, CohortQueryUtil.getInstance());
-        registry.rebind(Registry_GeneSetAdapter, GeneSetManager.getInstance());
+        registry.rebind(Registry_GeneSetManager, GeneSetManager.getInstance());
         registry.rebind(Registry_LogQueryUtilAdapter, LogQueryUtil.getInstance());
         registry.rebind(Registry_PatientQueryUtilAdapter, PatientQueryUtil.getInstance());
         registry.rebind(Registry_ProjectQueryUtilAdapter, ProjectQueryUtil.getInstance());
         registry.rebind(Registry_QueryUtilAdapter, QueryUtil.getInstance());
         registry.rebind(Registry_ReferenceQueryUtilAdapter, ReferenceQueryUtil.getInstance());
-        registry.rebind(Registry_RegionSetAdapter, RegionSetManager.getInstance());
+        registry.rebind(Registry_RegionSetManager, RegionSetManager.getInstance());
         registry.rebind(Registry_ServerLogQueryUtilAdapter, ServerLogQueryUtil.getInstance());
         registry.rebind(Registry_SettingsQueryUtilAdapter, SettingsQueryUtil.getInstance());
         registry.rebind(Registry_UserQueryUtilAdapter, UserQueryUtil.getInstance());
-        registry.rebind(Registry_VariantQueryUtilAdapter, VariantQueryUtil.getInstance());
+        registry.rebind(Registry_VariantManager, VariantManager.getInstance());
         registry.rebind(Registry_DBUtilAdapter, DBUtil.getInstance());
         registry.rebind(Registry_SetupAdapter, SetupMedSavantDatabase.getInstance());
         registry.rebind(Registry_CustomTablesAdapter, CustomTables.getInstance());

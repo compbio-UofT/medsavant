@@ -248,7 +248,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected Map<String, Integer> doInBackground() throws Exception {
-                return MedSavantClient.VariantQueryUtilAdapter.getNumVariantsInFamily(
+                return MedSavantClient.VariantManager.getNumVariantsInFamily(
                         LoginController.sessionId, 
                         ProjectController.getInstance().getCurrentProjectId(),
                         ReferenceController.getInstance().getCurrentReferenceId(),

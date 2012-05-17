@@ -137,7 +137,7 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
 
             SelectQuery q = new SelectQuery();
             try {
-                MedSavantClient.VariantQueryUtilAdapter.addConditionsToQuery(q, conditions);
+                MedSavantClient.VariantManager.addConditionsToQuery(q, conditions);
             } catch (RemoteException ex) {
                 LOG.error("Error adding conditions to query.", ex);
             }

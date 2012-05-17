@@ -272,13 +272,13 @@ public class NotificationPanel extends JPanel implements LoginListener {
                             ProjectDetails event = (ProjectDetails)n.getData();
                             if (option == JOptionPane.NO_OPTION) {
                                 try {
-                                    MedSavantClient.VariantManagerAdapter.cancelPublish(LoginController.sessionId, event.getProjectId(), event.getReferenceId(), event.getUpdateId());
+                                    MedSavantClient.VariantManager.cancelPublish(LoginController.sessionId, event.getProjectId(), event.getReferenceId(), event.getUpdateId());
                                 } catch (Exception ex) {
                                     LOG.error("Error cancelling publication of variants.", ex);
                                 }
                             } else if (option == JOptionPane.YES_OPTION) {                          
                                 try {
-                                    MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, event.getProjectId(), event.getReferenceId(), event.getUpdateId());
+                                    MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, event.getProjectId(), event.getReferenceId(), event.getUpdateId());
                                 } catch (Exception ex) {
                                     LOG.error("Error publishing of variants.", ex);
                                 }

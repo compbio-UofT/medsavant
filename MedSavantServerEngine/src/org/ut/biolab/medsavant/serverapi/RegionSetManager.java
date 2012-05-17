@@ -50,7 +50,7 @@ import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
  *
  * @author Andrew
  */
-public class RegionSetManager extends MedSavantServerUnicastRemoteObject implements RegionSetAdapter, RegionSetMembershipColumns {
+public class RegionSetManager extends MedSavantServerUnicastRemoteObject implements RegionSetManagerAdapter, RegionSetMembershipColumns {
     private static final Log LOG = LogFactory.getLog(RegionSetManager.class);
 
     private static RegionSetManager instance;

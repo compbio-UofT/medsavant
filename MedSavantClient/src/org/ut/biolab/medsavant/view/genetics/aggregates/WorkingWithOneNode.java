@@ -105,7 +105,7 @@ public class WorkingWithOneNode extends MedSavantWorker {
             String key = chrom + "_" + start + "_" + end;
             Integer numCurr = OntologyStatsWorker.mapLocToFreq.get(key);
             if (numCurr == null) {
-                numCurr = MedSavantClient.VariantQueryUtilAdapter.getNumVariantsInRange(
+                numCurr = MedSavantClient.VariantManager.getNumVariantsInRange(
                         LoginController.sessionId, 
                         ProjectController.getInstance().getCurrentProjectId(), 
                         ReferenceController.getInstance().getCurrentReferenceId(), 

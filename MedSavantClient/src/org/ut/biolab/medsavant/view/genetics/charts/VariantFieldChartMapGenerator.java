@@ -84,7 +84,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         
         if (whichTable == Table.VARIANT) {
 
-            chartMap.addAll(MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForCategoricalColumn(
+            chartMap.addAll(MedSavantClient.VariantManager.getFilteredFrequencyValuesForCategoricalColumn(
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectId(),
                     ReferenceController.getInstance().getCurrentReferenceId(),
@@ -107,7 +107,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             
             //get a count for each dna id
             List<String> dnaIds = getDnaIds();
-            Map<String, Integer> dnaIdToCount = MedSavantClient.VariantQueryUtilAdapter.getDnaIdHeatMap(
+            Map<String, Integer> dnaIdToCount = MedSavantClient.VariantManager.getDnaIdHeatMap(
                     LoginController.sessionId, 
                     ProjectController.getInstance().getCurrentProjectId(), 
                     ReferenceController.getInstance().getCurrentReferenceId(), 
@@ -161,7 +161,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         
         if (whichTable == Table.VARIANT) {
                 
-                Map<Range,Long> resultMap = MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForNumericColumn(
+                Map<Range,Long> resultMap = MedSavantClient.VariantManager.getFilteredFrequencyValuesForNumericColumn(
                         LoginController.sessionId,
                         ProjectController.getInstance().getCurrentProjectId(),
                         ReferenceController.getInstance().getCurrentReferenceId(),
@@ -196,7 +196,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             } else if (whichTable == Table.PATIENT) {
                 tablename = ProjectController.getInstance().getCurrentPatientTableName();
             }
-            Range r = new Range(MedSavantClient.VariantQueryUtilAdapter.getExtremeValuesForColumn(
+            Range r = new Range(MedSavantClient.VariantManager.getExtremeValuesForColumn(
                     LoginController.sessionId,
                     tablename,
                     field.getColumnName()));
@@ -220,7 +220,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             
             List<String> dnaIds = getDnaIds();
             //get a count for each dna id
-            Map<String, Integer> dnaIdToCount = MedSavantClient.VariantQueryUtilAdapter.getDnaIdHeatMap(
+            Map<String, Integer> dnaIdToCount = MedSavantClient.VariantManager.getDnaIdHeatMap(
                     LoginController.sessionId, 
                     ProjectController.getInstance().getCurrentProjectId(), 
                     ReferenceController.getInstance().getCurrentReferenceId(), 
@@ -349,12 +349,12 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
     }
     
     private List<String> getDnaIds() throws SQLException, RemoteException{
-        List<String> dnaIds = MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
+        List<String> dnaIds = MedSavantClient.VariantManager.getDistinctValuesForColumn(
                     LoginController.sessionId, 
                     ProjectController.getInstance().getCurrentVariantTableName(), 
                     DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID, true);
         if (dnaIds == null) {
-            dnaIds = MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
+            dnaIds = MedSavantClient.VariantManager.getDistinctValuesForColumn(
                     LoginController.sessionId, 
                     ProjectController.getInstance().getCurrentVariantSubTableName(), 
                     DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID,

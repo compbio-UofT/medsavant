@@ -15,16 +15,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
-import com.jidesoft.pane.event.CollapsiblePaneEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.ut.biolab.medsavant.vcf.VariantRecord;
-import org.ut.biolab.medsavant.view.genetics.variantinfo.BasicVariantInfoSubPanel;
-import com.jidesoft.pane.CollapsiblePane;
-import com.jidesoft.pane.CollapsiblePanes;
-import com.jidesoft.pane.FloorTabbedPane;
-import com.jidesoft.pane.event.CollapsiblePaneListener;
-import com.jidesoft.plaf.UIDefaultsLookup;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyVetoException;
@@ -39,8 +29,9 @@ import javax.swing.UIManager;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import com.jidesoft.pane.event.CollapsiblePaneEvent;
+import com.jidesoft.pane.event.CollapsiblePaneListener;
 import com.jidesoft.plaf.UIDefaultsLookup;
-import javax.swing.JComboBox;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -53,12 +44,11 @@ import org.ut.biolab.medsavant.db.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Chromosome;
-import org.ut.biolab.medsavant.model.Gene;
-import org.ut.biolab.medsavant.model.GeneSet;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
-import org.ut.biolab.medsavant.serverapi.GeneSetAdapter;
+import org.ut.biolab.medsavant.vcf.VariantRecord;
+import org.ut.biolab.medsavant.view.genetics.variantinfo.BasicVariantInfoSubPanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.BasicGeneInfoSubPanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.GeneManiaInfoSubPanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.InfoPanel;

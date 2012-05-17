@@ -101,7 +101,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
                 new SimpleDetailedListModel("Variant File") {
                     @Override
                     public List getData() throws Exception {
-                        return MedSavantClient.VariantQueryUtilAdapter.getUploadedFiles(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId());
+                        return MedSavantClient.VariantManager.getUploadedFiles(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId());
                     }
                 },
                 new VariantFilesDetailedView(),
@@ -211,7 +211,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
             @Override
             protected Object doInBackground() throws Exception {
                 try {
-                    return MedSavantClient.VariantQueryUtilAdapter.getTagsForUpload(LoginController.sessionId, file.getUploadId());
+                    return MedSavantClient.VariantManager.getTagsForUpload(LoginController.sessionId, file.getUploadId());
                 } catch (SQLException ex) {
                     return null;
                 }

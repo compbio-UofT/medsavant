@@ -66,7 +66,7 @@ public class ServerDirectorySettings {
     public static File generateDateStampDirectory(File parent) {
         Calendar today = new GregorianCalendar();
         String dateStamp = today.get(Calendar.YEAR) + "-" + today.get(Calendar.MONTH) + "-" + today.get(Calendar.DAY_OF_MONTH) + "-" + today.get(Calendar.HOUR_OF_DAY) + "-" + today.get(Calendar.MINUTE);
-        File dir = new File(parent,dateStamp);
+        File dir = new File(parent, dateStamp);
         dir.mkdirs();
         return dir;
     }

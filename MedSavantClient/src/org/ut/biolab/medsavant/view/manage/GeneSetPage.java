@@ -76,7 +76,7 @@ public class GeneSetPage extends SubSectionView {
                 new SimpleDetailedListModel("Gene Sets") {
                     @Override
                     public List getData() throws Exception {
-                        return MedSavantClient.GeneSetAdapter.getGeneSets(LoginController.sessionId);
+                        return MedSavantClient.GeneSetManager.getGeneSets(LoginController.sessionId);
                     }
                     
                 },

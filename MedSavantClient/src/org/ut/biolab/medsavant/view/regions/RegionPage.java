@@ -52,7 +52,7 @@ public class RegionPage extends SubSectionView {
                 new SimpleDetailedListModel("Region List") {
                     @Override
                     public List getData() throws Exception {
-                        return MedSavantClient.RegionSetAdapter.getRegionSets(LoginController.sessionId);
+                        return MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId);
                     }
                 },
                 new RegionDetailedView(),

@@ -30,7 +30,7 @@ import org.ut.biolab.medsavant.model.GeneSet;
  *
  * @author tarkvara
  */
-public interface GeneSetAdapter extends Remote {
+public interface GeneSetManagerAdapter extends Remote {
     /**
      * Get a list of all available gene sets.
      */

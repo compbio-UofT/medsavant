@@ -102,7 +102,7 @@ public class ResultController implements FiltersChangedListener {
         
         filterSetId_records = FilterController.getCurrentFilterSetID();
         
-        filteredVariants = MedSavantClient.VariantQueryUtilAdapter.getVariants(
+        filteredVariants = MedSavantClient.VariantManager.getVariants(
                 LoginController.sessionId, 
                 ProjectController.getInstance().getCurrentProjectId(), 
                 ReferenceController.getInstance().getCurrentReferenceId(), 
@@ -124,7 +124,7 @@ public class ResultController implements FiltersChangedListener {
                 referenceId_remaining = ReferenceController.getInstance().getCurrentReferenceId();
                 dbName_remaining = SettingsController.getInstance().getDBName();
                 int tempFilterId = FilterController.getCurrentFilterSetID();
-                totalNumVariantsRemaining =  MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
+                totalNumVariantsRemaining =  MedSavantClient.VariantManager.getNumFilteredVariants(
                         LoginController.sessionId, 
                         ProjectController.getInstance().getCurrentProjectId(), 
                         ReferenceController.getInstance().getCurrentReferenceId(), 
@@ -141,7 +141,7 @@ public class ResultController implements FiltersChangedListener {
                     ProjectController.getInstance().getCurrentProjectId() != projectId_total ||
                     ReferenceController.getInstance().getCurrentReferenceId() != referenceId_total || 
                     !SettingsController.getInstance().getDBName().equals(dbName_total)) {
-                totalNumVariants =  MedSavantClient.VariantQueryUtilAdapter.getNumFilteredVariants(
+                totalNumVariants =  MedSavantClient.VariantManager.getNumFilteredVariants(
                         LoginController.sessionId, 
                         ProjectController.getInstance().getCurrentProjectId(), 
                         ReferenceController.getInstance().getCurrentReferenceId());

@@ -397,7 +397,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 
                 @Override
                 protected Object doInBackground() throws Exception {
-                    return MedSavantClient.VariantQueryUtilAdapter.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), FilterController.getQueryFilterConditions(), patients);
+                    return MedSavantClient.VariantManager.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId(), FilterController.getQueryFilterConditions(), patients);
                 }
 
                 @Override

@@ -43,20 +43,19 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static AnnotationQueryUtilAdapter AnnotationQueryUtilAdapter;
     public static ChromosomeQueryUtilAdapter ChromosomeQueryUtilAdapter;
     public static CohortQueryUtilAdapter CohortQueryUtilAdapter;
-    public static GeneSetAdapter GeneSetAdapter;
+    public static GeneSetManagerAdapter GeneSetManager;
     public static LogQueryUtilAdapter LogQueryUtilAdapter;
     public static PatientQueryUtilAdapter PatientQueryUtilAdapter;
     public static ProjectQueryUtilAdapter ProjectQueryUtilAdapter;
-    public static VariantQueryUtilAdapter VariantQueryUtilAdapter;
     public static UserQueryUtilAdapter UserQueryUtilAdapter;
     public static SettingsQueryUtilAdapter SettingsQueryUtilAdapter;
     public static ServerLogQueryUtilAdapter ServerLogQueryUtilAdapter;
-    public static RegionSetAdapter RegionSetAdapter;
+    public static RegionSetManagerAdapter RegionSetManager;
     public static ReferenceQueryUtilAdapter ReferenceQueryUtilAdapter;
     public static QueryUtilAdapter QueryUtilAdapter;
     public static DBUtilAdapter DBUtilAdapter;
     public static SetupAdapter SetupAdapter;
-    public static VariantManagerAdapter VariantManagerAdapter;
+    public static VariantManagerAdapter VariantManager;
     public static NotificationQueryUtilAdapter NotificationQueryUtilAdapter;
 
     public static boolean initialized = false;
@@ -132,8 +131,6 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
     private static void setAdaptersFromRegistry(Registry registry) throws RemoteException, NotBoundException {
 
-        VariantManagerAdapter = (VariantManagerAdapter)registry.lookup(Registry_UploadVariantsAdapter);
-
         LoginController.SessionAdapter = (SessionAdapter)registry.lookup(Registry_SessionAdapter);
 
         AnnotationLogQueryUtilAdapter = (AnnotationLogQueryUtilAdapter)registry.lookup(Registry_AnnotationLogQueryUtilAdapter);
@@ -144,13 +141,13 @@ public class MedSavantClient implements MedSavantServerRegistry {
         PatientQueryUtilAdapter = (PatientQueryUtilAdapter)registry.lookup(Registry_PatientQueryUtilAdapter);
         ProjectQueryUtilAdapter = (ProjectQueryUtilAdapter)registry.lookup(Registry_ProjectQueryUtilAdapter);
         QueryUtilAdapter = (QueryUtilAdapter)registry.lookup(Registry_QueryUtilAdapter);
-        GeneSetAdapter = (GeneSetAdapter)registry.lookup(Registry_GeneSetAdapter);
+        GeneSetManager = (GeneSetManagerAdapter)registry.lookup(Registry_GeneSetManager);
         ReferenceQueryUtilAdapter = (ReferenceQueryUtilAdapter)registry.lookup(Registry_ReferenceQueryUtilAdapter);
-        RegionSetAdapter = (RegionSetAdapter)registry.lookup(Registry_RegionSetAdapter);
+        RegionSetManager = (RegionSetManagerAdapter)registry.lookup(Registry_RegionSetManager);
         ServerLogQueryUtilAdapter = (ServerLogQueryUtilAdapter)registry.lookup(Registry_ServerLogQueryUtilAdapter);
         SettingsQueryUtilAdapter = (SettingsQueryUtilAdapter)registry.lookup(Registry_SettingsQueryUtilAdapter);
         UserQueryUtilAdapter = (UserQueryUtilAdapter)registry.lookup(Registry_UserQueryUtilAdapter);
-        VariantQueryUtilAdapter = (VariantQueryUtilAdapter)registry.lookup(Registry_VariantQueryUtilAdapter);
+        VariantManager = (VariantManagerAdapter)registry.lookup(Registry_VariantManager);
         DBUtilAdapter = (DBUtilAdapter)registry.lookup(Registry_DBUtilAdapter);
         SetupAdapter = (SetupAdapter)registry.lookup(Registry_SetupAdapter);
         CustomTablesAdapter = (CustomTablesAdapter)registry.lookup(Registry_CustomTablesAdapter);

@@ -83,7 +83,7 @@ class RegionDetailedListEditor extends DetailedListEditor {
                         String listName = ((RegionSet) v[0]).getName();
                         int listID = ((RegionSet) v[0]).getID();
                         try {
-                            MedSavantClient.RegionSetAdapter.removeRegionSet(LoginController.sessionId, listID);
+                            MedSavantClient.RegionSetManager.removeRegionSet(LoginController.sessionId, listID);
                         } catch (Exception ex) {
                             numCouldntRemove++;
                             DialogUtils.displayErrorMessage("Could not remove " + listName + ".", ex);

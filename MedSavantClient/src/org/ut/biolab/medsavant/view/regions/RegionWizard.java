@@ -226,7 +226,7 @@ public class RegionWizard extends WizardDialog {
 
             {
                 try {
-                    standardGenes = MedSavantClient.GeneSetAdapter.getGeneSets(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceName());
+                    standardGenes = MedSavantClient.GeneSetManager.getGeneSets(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceName());
                     geneSetCombo = new JComboBox();
                     for (GeneSet s: standardGenes) {
                         geneSetCombo.addItem(s);
@@ -352,7 +352,7 @@ public class RegionWizard extends WizardDialog {
     
     private boolean validateListName() {
         try {
-            boolean valid = !MedSavantClient.RegionSetAdapter.isNameInUse(LoginController.sessionId, listName);
+            boolean valid = !MedSavantClient.RegionSetManager.isNameInUse(LoginController.sessionId, listName);
             if (!valid) {
                 DialogUtils.displayError("Error", "List name already in use.");
             }
@@ -379,7 +379,7 @@ public class RegionWizard extends WizardDialog {
             path = tempFile.getAbsolutePath();
         }
         RemoteInputStream stream = new SimpleRemoteInputStream(new FileInputStream(path)).export();
-        MedSavantClient.RegionSetAdapter.addRegionSet(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceId(), stream, delim, fileFormat, numHeaderLines);
+        MedSavantClient.RegionSetManager.addRegionSet(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceId(), stream, delim, fileFormat, numHeaderLines);
     }
 
     private void fetchGenes(GeneSet geneSet) {

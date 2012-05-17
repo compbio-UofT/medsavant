@@ -662,7 +662,7 @@ public class SummaryChart extends JLayeredPane {
                 columnY = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
             }
 
-            ScatterChartMap scatterMap =  MedSavantClient.VariantQueryUtilAdapter.getFilteredFrequencyValuesForScatter(
+            ScatterChartMap scatterMap =  MedSavantClient.VariantManager.getFilteredFrequencyValuesForScatter(
                     LoginController.sessionId, 
                     ProjectController.getInstance().getCurrentProjectId(), 
                     ReferenceController.getInstance().getCurrentReferenceId(), 

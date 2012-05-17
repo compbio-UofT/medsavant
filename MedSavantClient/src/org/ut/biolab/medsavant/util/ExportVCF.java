@@ -53,7 +53,7 @@ public class ExportVCF {
 
     public static void exportVCF(File file) throws Exception {        
         
-        RemoteInputStream ris = MedSavantClient.VariantManagerAdapter.exportVariants(
+        RemoteInputStream ris = MedSavantClient.VariantManager.exportVariants(
                 LoginController.sessionId, 
                 ProjectController.getInstance().getCurrentProjectId(), 
                 ReferenceController.getInstance().getCurrentReferenceId(), 

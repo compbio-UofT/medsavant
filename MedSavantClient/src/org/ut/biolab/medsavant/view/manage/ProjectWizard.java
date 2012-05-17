@@ -359,7 +359,7 @@ public class ProjectWizard extends WizardDialog {
             }
         } else {
             variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AA.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AA + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AA), true, VariantFormat.ALIAS_OF_AA, ""});
-            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AC.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AC + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AA), true, VariantFormat.ALIAS_OF_AC, ""});
+            variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AC.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AC + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AC), true, VariantFormat.ALIAS_OF_AC, ""});
             variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AF.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AF + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AF), true, VariantFormat.ALIAS_OF_AF, ""});
             variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_AN.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_AN + getLengthString(DefaultVariantTableSchema.LENGTH_OF_AN), true, VariantFormat.ALIAS_OF_AN, ""});
             variantFormatModel.addRow(new Object[]{DefaultVariantTableSchema.COLUMNNAME_OF_BQ.toUpperCase(), DefaultVariantTableSchema.TYPE_OF_BQ + getLengthString(DefaultVariantTableSchema.LENGTH_OF_BQ), true, VariantFormat.ALIAS_OF_BQ, ""});
@@ -549,7 +549,7 @@ public class ProjectWizard extends WizardDialog {
                         try {
                             //instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
                             // do stuff
-                            MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, projectId);
+                            MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId);
 
                             //success
                             publishProgressBar.setIndeterminate(false);
@@ -632,7 +632,7 @@ public class ProjectWizard extends WizardDialog {
                                     publishProgressLabel.setText("Publishing variants...");
 
                                     // publish
-                                    MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, projectId);
+                                    MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId);
 
                                     //success
                                     publishProgressBar.setIndeterminate(false);
@@ -843,7 +843,7 @@ public class ProjectWizard extends WizardDialog {
                 }
 
                 //make modifications
-                MedSavantClient.VariantManagerAdapter.updateTable(LoginController.sessionId, projectId, cli.getReference().getId(), annotationIds, variantFields);
+                MedSavantClient.VariantManager.updateTable(LoginController.sessionId, projectId, cli.getReference().getId(), annotationIds, variantFields);
 
             }
 

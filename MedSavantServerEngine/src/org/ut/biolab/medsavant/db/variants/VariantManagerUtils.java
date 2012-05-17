@@ -1,35 +1,40 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
-package org.ut.biolab.medsavant.db.variants.update;
+
+package org.ut.biolab.medsavant.db.variants;
 
 import au.com.bytecode.opencsv.CSVReader;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.rmi.RemoteException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.serverapi.VariantQueryUtil;
-import org.ut.biolab.medsavant.server.log.ServerLogger;
 import org.ut.biolab.medsavant.vcf.VCFHeader;
 import org.ut.biolab.medsavant.vcf.VCFParser;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
+
 
 /**
  *
@@ -37,7 +42,8 @@ import org.ut.biolab.medsavant.vcf.VariantRecord;
  */
 public class VariantManagerUtils {
     
-    private static final int outputLinesLimit = 1000000;
+    private static final Log LOG = LogFactory.getLog(VariantManagerUtils.class);
+    private static final int OUTPUT_LINES_LIMIT = 1000000;
     //private static final int MAX_SUBSET_SIZE = 100000000; //bytes = 100MB
     private static final int MIN_SUBSET_SIZE = 100000000; //bytes = 100MB
     private static final int SUBSET_COMPRESSION = 1000; // times
@@ -145,7 +151,7 @@ public class VariantManagerUtils {
 
             line = "";
 
-            ServerLogger.log(VariantManager.class, "Merging " + inFile.getAbsolutePath() + " with to the result file " + (new File(outputPath)).getAbsolutePath());
+            LOG.info("Merging " + inFile.getAbsolutePath() + " with to the result file " + (new File(outputPath)).getAbsolutePath());
             BufferedReader br = new BufferedReader(new FileReader(inFile));
             while ((line = br.readLine()) != null) {
                 bw.write(line + "\n");
@@ -160,17 +166,17 @@ public class VariantManagerUtils {
     public static void sortFileByPosition(String inFile, String outfile) throws IOException, InterruptedException {
         String sortCommand = "sort -t , -k 5,5 -k 6,6n -k 7 " + ((new File(inFile)).getAbsolutePath());
 
-        ServerLogger.log(VariantManager.class, "Sorting file: " + ((new File(inFile)).getAbsolutePath()));
+        LOG.info("Sorting file: " + (new File(inFile).getAbsolutePath()));
 
         if (!(new File(inFile)).exists()) {
-            throw new IOException("File not found " + ((new File(inFile)).getAbsolutePath()));
+            throw new IOException("File not found " + (new File(inFile).getAbsolutePath()));
         }
 
         Process p = Runtime.getRuntime().exec(sortCommand);
 
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-        ServerLogger.log(VariantManager.class, "Writing results to file: " + ((new File(outfile)).getAbsolutePath()));
+        LOG.info("Writing results to file: " + (new File(outfile).getAbsolutePath()));
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(outfile));
         String s = null;
@@ -186,12 +192,12 @@ public class VariantManagerUtils {
             throw new IOException("Problem sorting file; no output");
         }
 
-        ServerLogger.log(VariantManager.class, "Done sorting");
+        LOG.info("Done sorting");
 
     }
 
     public static void logFileSize(String fn) {
-        ServerLogger.log(VariantManager.class, "Size of " + fn + ": " + ((new File(fn)).length()));
+        LOG.info("Size of " + fn + ": " + ((new File(fn)).length()));
     }
 
     public static void addCustomVcfFields(String infile, String outfile, List<CustomField> customFields, int customInfoIndex) throws FileNotFoundException, IOException {
@@ -217,7 +223,7 @@ public class VariantManagerUtils {
     
     public static void addTagsToUpload(String sid, int uploadID, String[][] variantTags) throws SQLException, RemoteException {
         try {
-            VariantQueryUtil.getInstance().addTagsToUpload(sid, uploadID, variantTags);
+            VariantManager.getInstance().addTagsToUpload(sid, uploadID, variantTags);
         } catch (SQLException e) {
             throw new SQLException("Error adding tags", e);
         }
@@ -264,14 +270,14 @@ public class VariantManagerUtils {
             //get header
             VCFHeader header = VCFParser.parseVCFHeader(r);
 
-            while (iteration == 0 || lastChunkWritten >= outputLinesLimit) {
+            while (iteration == 0 || lastChunkWritten >= OUTPUT_LINES_LIMIT) {
 
                 iteration++;
 
                 //parse vcf file
                 VariantManagerUtils.checkInterrupt();
                 System.out.println("Current file: " + vcfFiles[i].getName());
-                lastChunkWritten = VCFParser.parseVariantsFromReader(r, header, outputLinesLimit, outfile, updateId, i, includeHomoRef);
+                lastChunkWritten = VCFParser.parseVariantsFromReader(r, header, OUTPUT_LINES_LIMIT, outfile, updateId, i, includeHomoRef);
                 if (lastChunkWritten > 0) {
                     variantFound = true;
                 }

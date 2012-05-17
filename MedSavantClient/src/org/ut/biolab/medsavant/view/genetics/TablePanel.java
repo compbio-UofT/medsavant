@@ -445,7 +445,7 @@ public class TablePanel extends JLayeredPane {
                     starMap.get(actualRow).add(sv);
                 }
                 try {
-                    int numStarred = MedSavantClient.VariantQueryUtilAdapter.addStarredVariants(
+                    int numStarred = MedSavantClient.VariantManager.addStarredVariants(
                             LoginController.sessionId,
                             ProjectController.getInstance().getCurrentProjectId(),
                             ReferenceController.getInstance().getCurrentReferenceId(),
@@ -490,7 +490,7 @@ public class TablePanel extends JLayeredPane {
                 }
 
                 try {
-                    MedSavantClient.VariantQueryUtilAdapter.unstarVariant(
+                    MedSavantClient.VariantManager.unstarVariant(
                             LoginController.sessionId,
                             ProjectController.getInstance().getCurrentProjectId(),
                             ReferenceController.getInstance().getCurrentReferenceId(),
@@ -523,7 +523,7 @@ public class TablePanel extends JLayeredPane {
         starMap.clear();
 
         try {
-            Set<StarredVariant> starred = MedSavantClient.VariantQueryUtilAdapter.getStarredVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId());
+            Set<StarredVariant> starred = MedSavantClient.VariantManager.getStarredVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId());
 
             for (int i = 0; i < variants.size(); i++) {
                 Object[] row = variants.get(i);

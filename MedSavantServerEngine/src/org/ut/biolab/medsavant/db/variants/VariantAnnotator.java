@@ -13,23 +13,17 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.db.variants.update;
 
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+package org.ut.biolab.medsavant.db.variants;
+
+import java.io.*;
 import java.sql.SQLException;
 import java.util.Arrays;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.broad.tabix.TabixReader;
 import org.broad.tabix.TabixReader.Iterator;
@@ -43,6 +37,7 @@ import org.ut.biolab.medsavant.server.log.ServerLogger;
  */
 public class VariantAnnotator {
 
+    private static final Log LOG = LogFactory.getLog(VariantAnnotator.class);
     private static final int POS_ANNOT_INDEX_OF_CHR = 0;
     private static final int POS_ANNOT_INDEX_OF_POS = 1;
     private static final int POS_ANNOT_INDEX_OF_REF = 2;
@@ -106,7 +101,7 @@ public class VariantAnnotator {
 
                 // happens when there are no more annotations for this chrom
                 if (nextannot == null) {
-                    ServerLogger.log(VariantAnnotator.class,"No more annotations for this chromosome");
+                    LOG.info("No more annotations for this chromosome");
                     annotationHitEnd = true;
                     break;
                 }
@@ -155,7 +150,7 @@ public class VariantAnnotator {
 
                         // happens when there are no more annotations for this chrom
                         if (nextannot == null) {
-                            ServerLogger.log(VariantAnnotator.class,"Annotation hit end; skipping chrom");
+                            LOG.info("Annotation hit end; skipping chrom");
                             annotationHitEnd1 = true;
                             break;
                         }
@@ -254,8 +249,7 @@ public class VariantAnnotator {
     }
 
     public void annotate(String sid) throws Exception {
-
-        ServerLogger.logByEmail(VariantAnnotator.class,"Annotation started", "Annotation of " + this.tdfFilename + " was started. " + annotationIds.length + " annotation(s) will be performed.\n\nYou will be notified again upon completion.");
+        ServerLogger.logByEmail("Annotation started", "Annotation of " + tdfFilename + " was started. " + annotationIds.length + " annotation(s) will be performed.\n\nYou will be notified again upon completion.");
 
         // if no annotations to perform, copy input to output
         if (annotationIds.length == 0) {
@@ -302,7 +296,7 @@ public class VariantAnnotator {
         }
          */
 
-        ServerLogger.logByEmail(VariantAnnotator.class,"Annotation complete", "Annotation of " + this.tdfFilename + " completed. " + annotationIds.length + " annotations were performed.");
+        ServerLogger.logByEmail("Annotation complete", "Annotation of " + tdfFilename + " completed. " + annotationIds.length + " annotations were performed.");
     }
 
     /*
@@ -324,7 +318,7 @@ public class VariantAnnotator {
         String currentChr = currentPos.chrom;
         String nextLineChr = currentPos.chrom;
 
-        ServerLogger.log(VariantAnnotator.class,"Flushing remaining variants in " + currentPos.chrom);
+        LOG.info("Flushing remaining variants in " + currentPos.chrom);
 
         String[] recordLine = null;
 
@@ -359,9 +353,10 @@ public class VariantAnnotator {
 
         //log("Last variant: { chr=" + lastLine[VARIANT_INDEX_OF_CHR] + " pos=" + lastLine[VARIANT_INDEX_OF_POS] + "}");
 
-        ServerLogger.log(VariantAnnotator.class,"Next variant: " + new VariantRecord(recordLine));
+        VariantRecord rec = new VariantRecord(recordLine);
+        LOG.info("Next variant: " + rec);
 
-        return new VariantRecord(recordLine);
+        return rec;
     }
 
     private static boolean isChrAnnotatable(String chr, TabixReader annotationReader) {
@@ -388,14 +383,14 @@ public class VariantAnnotator {
     private int totalNumWarnings;
 
     private void annotate(String sid, File inFile, Annotation annot, File outFile) throws IOException, SQLException {
-        ServerLogger.log(VariantAnnotator.class,"Record file: " + inFile.getAbsolutePath());
-        ServerLogger.log(VariantAnnotator.class,"Annotation file: " + annot.getDataPath());
-        ServerLogger.log(VariantAnnotator.class,"Output file: " + outFile.getAbsolutePath());
+        LOG.info("Record file: " + inFile.getAbsolutePath());
+        LOG.info("Annotation file: " + annot.getDataPath());
+        LOG.info("Output file: " + outFile.getAbsolutePath());
 
         int numFieldsInInputFile = getNumFieldsInTDF(inFile);
         if(numFieldsInInputFile == 0){
             outFile.createNewFile();
-            ServerLogger.log(VariantAnnotator.class,"Done annotating file. Nothing to annotate.");
+            LOG.info("Done annotating file. Nothing to annotate.");
             return;
         }
         int numFieldsInOutputFile = numFieldsInInputFile + AnnotationQueryUtil.getInstance().getAnnotationFormat(sid, annot.getId()).getNumNonDefaultFields();
@@ -419,8 +414,8 @@ public class VariantAnnotator {
 
         while (true) {
             try {
-                ServerLogger.log(VariantAnnotator.class,"Annotating variants in " + nextPosition.chrom);
-                ServerLogger.log(VariantAnnotator.class,"First variant for chrom: " + nextPosition.toString());
+                LOG.info("Annotating variants in " + nextPosition.chrom);
+                LOG.info("First variant for chrom: " + nextPosition.toString());
                 numMatchesForChromosome = 0;
                 numLinesWrittenForChromosome = 0;
 
@@ -428,8 +423,8 @@ public class VariantAnnotator {
 
                 totalLinesWritten += numLinesWrittenForChromosome;
 
-                ServerLogger.log(VariantAnnotator.class,"DONE THIS CHR:" + numMatchesForChromosome + " matches found, " + numLinesWrittenForChromosome + " written for chr");
-                ServerLogger.log(VariantAnnotator.class,"IN TOTAL: " + (totalNumLinesRead-1) + " read, " + totalLinesWritten + " written, " + totalNumWarnings + " warnings in total");
+                LOG.info("DONE THIS CHR:" + numMatchesForChromosome + " matches found, " + numLinesWrittenForChromosome + " written for chr");
+                LOG.info("IN TOTAL: " + (totalNumLinesRead-1) + " read, " + totalLinesWritten + " written, " + totalNumWarnings + " warnings in total");
 
                 if (totalLinesWritten + 1 + totalNumWarnings != totalNumLinesRead) {
                     throw new Exception("error: missed some lines");
@@ -450,7 +445,7 @@ public class VariantAnnotator {
         recordReader.close();
         writer.close();
 
-        ServerLogger.log(VariantAnnotator.class,"Done annotating file, " + totalNumLinesRead + " read " + totalLinesWritten + " written with " + totalNumWarnings + " warnings");
+        LOG.info("Done annotating file, " + totalNumLinesRead + " read " + totalLinesWritten + " written with " + totalNumWarnings + " warnings");
     }
 
     /**

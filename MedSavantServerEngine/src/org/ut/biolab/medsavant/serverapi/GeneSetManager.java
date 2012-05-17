@@ -40,7 +40,7 @@ import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
  *
  * @author tarkvara
  */
-public class GeneSetManager extends MedSavantServerUnicastRemoteObject implements GeneSetAdapter, GeneSetColumns {
+public class GeneSetManager extends MedSavantServerUnicastRemoteObject implements GeneSetManagerAdapter, GeneSetColumns {
     private static final Log LOG = LogFactory.getLog(GeneSetManager.class);
 
     private static GeneSetManager instance;

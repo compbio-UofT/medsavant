@@ -24,8 +24,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -121,7 +119,7 @@ public class TagFilterView extends FilterView {
             JPanel bottomContainer = new JPanel();
             ViewUtil.applyHorizontalBoxLayout(bottomContainer);
 
-            List<String> tagNames = MedSavantClient.VariantQueryUtilAdapter.getDistinctTagNames(LoginController.sessionId);
+            List<String> tagNames = MedSavantClient.VariantManager.getDistinctTagNames(LoginController.sessionId);
 
             for (String tag : tagNames) {
                 tagNameCB.addItem(tag);
@@ -203,7 +201,7 @@ public class TagFilterView extends FilterView {
                         @Override
                         public Condition[] getConditions() {
                             try {
-                                List<Integer> uploadIDs = MedSavantClient.VariantQueryUtilAdapter.getUploadIDsMatchingVariantTags(LoginController.sessionId, TagFilterView.tagsToStringArray(variantTags));
+                                List<Integer> uploadIDs = MedSavantClient.VariantManager.getUploadIDsMatchingVariantTags(LoginController.sessionId, TagFilterView.tagsToStringArray(variantTags));
 
                                 Condition[] uploadIDConditions = new Condition[uploadIDs.size()];
 
@@ -265,7 +263,7 @@ public class TagFilterView extends FilterView {
         if (tagName != null) {
             List<String> values;
             try {
-                values = MedSavantClient.VariantQueryUtilAdapter.getValuesForTagName(LoginController.sessionId, tagName);
+                values = MedSavantClient.VariantManager.getValuesForTagName(LoginController.sessionId, tagName);
                 for (String val : values) {
                     tagValueCB.addItem(val);
                 }

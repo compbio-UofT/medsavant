@@ -53,8 +53,8 @@ public class GeneIntersectionGenerator implements VariantSelectionChangedListene
 
             if (genes == null) {
                 String session = LoginController.sessionId;
-                GeneSet geneSet = MedSavantClient.GeneSetAdapter.getGeneSets(session).get(0);
-                genes = MedSavantClient.GeneSetAdapter.getGenes(session, geneSet);
+                GeneSet geneSet = MedSavantClient.GeneSetManager.getGeneSets(session).get(0);
+                genes = MedSavantClient.GeneSetManager.getGenes(session, geneSet);
             }
 
             b.removeAllItems();

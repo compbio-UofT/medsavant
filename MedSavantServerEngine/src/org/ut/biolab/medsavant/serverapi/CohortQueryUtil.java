@@ -37,6 +37,7 @@ import org.ut.biolab.medsavant.db.MedSavantDatabase.PatientTablemapTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
+import org.ut.biolab.medsavant.db.variants.VariantManager;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.model.SimplePatient;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
@@ -342,6 +343,6 @@ public class CohortQueryUtil extends MedSavantServerUnicastRemoteObject implemen
     @Override
     public int getNumVariantsInCohort(String sid, int projectId, int referenceId, int cohortId, Condition[][] conditions) throws SQLException, InterruptedException, RemoteException {
         List<String> dnaIds = getDNAIdsInCohort(sid,cohortId);
-        return VariantQueryUtil.getInstance().getNumVariantsForDnaIds(sid,projectId, referenceId, conditions, dnaIds);
+        return VariantManager.getInstance().getNumVariantsForDnaIds(sid,projectId, referenceId, conditions, dnaIds);
     }
 }

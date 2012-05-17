@@ -198,7 +198,7 @@ public class RemoveVariantsWizard extends WizardDialog {
                         try {
                             setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
                             // do stuff
-                            MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, projectId, referenceId, updateId);
+                            MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateId);
                             
                             //success
                             publishProgressBar.setIndeterminate(false);
@@ -263,7 +263,7 @@ public class RemoveVariantsWizard extends WizardDialog {
 
                             //remove variants
                             progressLabel.setText("Removing variant files...");
-                            updateId = MedSavantClient.VariantManagerAdapter.removeVariants(LoginController.sessionId, projectId, referenceId, files);
+                            updateId = MedSavantClient.VariantManager.removeVariants(LoginController.sessionId, projectId, referenceId, files);
                             MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
 
                             //success
@@ -283,7 +283,7 @@ public class RemoveVariantsWizard extends WizardDialog {
                                 publishProgressLabel.setText("Publishing variants...");
 
                                 // publish
-                                MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, projectId, referenceId, updateId);
+                                MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateId);
 
                                 //success
                                 publishProgressBar.setIndeterminate(false);

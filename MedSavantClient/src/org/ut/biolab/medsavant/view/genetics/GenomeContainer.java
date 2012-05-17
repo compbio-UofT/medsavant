@@ -204,7 +204,7 @@ public class GenomeContainer extends JLayeredPane {
         @Override
         protected Object doInBackground() throws InterruptedException, SQLException, RemoteException {
             long start = System.currentTimeMillis();
-            final Map<String, Map<Range, Integer>> map = MedSavantClient.VariantQueryUtilAdapter.getChromosomeHeatMap(
+            final Map<String, Map<Range, Integer>> map = MedSavantClient.VariantManager.getChromosomeHeatMap(
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectId(),
                     ReferenceController.getInstance().getCurrentReferenceId(),

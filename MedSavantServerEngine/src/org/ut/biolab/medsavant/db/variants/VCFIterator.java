@@ -1,10 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
-package org.ut.biolab.medsavant.db.variants.update;
 
-import au.com.bytecode.opencsv.CSVReader;
+package org.ut.biolab.medsavant.db.variants;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,17 +24,24 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.zip.GZIPInputStream;
-import org.ut.biolab.medsavant.server.log.ServerLogger;
+
+import au.com.bytecode.opencsv.CSVReader;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.vcf.VCFHeader;
 import org.ut.biolab.medsavant.vcf.VCFParser;
+
 
 /**
  *
  * @author Andrew
  */
 public class VCFIterator {
- 
+    
+    private static final Log LOG = LogFactory.getLog(VCFIterator.class);
     private static final int LINES_PER_IMPORT = 1000000000; // 1 billion output lines
+
     private File[] files;
     private File baseDir;
     private int updateId;
@@ -34,7 +52,7 @@ public class VCFIterator {
     private File outfile;
     private int variantIdOffset;
     
-    public VCFIterator(File[] files, File baseDir, int updateId, boolean includeHomoRef) throws FileNotFoundException, IOException{
+    public VCFIterator(File[] files, File baseDir, int updateId, boolean includeHomoRef) throws FileNotFoundException, IOException {
         this.files = files;
         this.baseDir = baseDir;
         this.updateId = updateId;
@@ -44,7 +62,7 @@ public class VCFIterator {
     }
     
     private void createReader() throws FileNotFoundException, IOException {
-        ServerLogger.log(VCFIterator.class, "Parsing file " + files[fileIndex].getName());
+        LOG.info(String.format("Parsing file %s", files[fileIndex].getName()));
         Reader reader;
         if (files[fileIndex].getAbsolutePath().endsWith(".gz") || files[fileIndex].getAbsolutePath().endsWith(".zip")) {
             FileInputStream fin = new FileInputStream(files[fileIndex].getAbsolutePath());
@@ -57,9 +75,9 @@ public class VCFIterator {
         variantIdOffset = 0;
     }
     
-    public File next() throws IOException{
+    public File next() throws IOException {
         
-        ServerLogger.log(VCFIterator.class, "Next " + LINES_PER_IMPORT);
+        LOG.info(String.format("Next %d", LINES_PER_IMPORT));
         
         outfile = new File(baseDir, "tmp_" + System.nanoTime() + ".tdf");
         int numWritten = 0;
@@ -68,9 +86,9 @@ public class VCFIterator {
             int num = VCFParser.parseVariantsFromReader(r, header, LINES_PER_IMPORT - numWritten, outfile, updateId, fileIndex, includeHomoRef, variantIdOffset);
             numWritten += num;
             variantIdOffset += num;
-            if(num == 0){
+            if (num == 0) {
                 fileIndex++;
-                if(fileIndex >= files.length){
+                if (fileIndex >= files.length) {
                     break;
                 } else {
                     createReader();
@@ -80,5 +98,4 @@ public class VCFIterator {
         
         return numWritten > 0 ? outfile : null;
     }
-    
 }

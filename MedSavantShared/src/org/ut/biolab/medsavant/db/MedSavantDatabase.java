@@ -403,13 +403,13 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_AA = "aa";
         // default_variant.ac
         public static final int INDEX_OF_AC = 16;
-        public static final ColumnType TYPE_OF_AC = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_AC = 500;
+        public static final ColumnType TYPE_OF_AC = ColumnType.INTEGER;
+        public static final int LENGTH_OF_AC = 11;
         public static final String COLUMNNAME_OF_AC = "ac";
         // default_variant.af
         public static final int INDEX_OF_AF = 17;
-        public static final ColumnType TYPE_OF_AF = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_AF = 500;
+        public static final ColumnType TYPE_OF_AF = ColumnType.FLOAT;
+        public static final int LENGTH_OF_AF = -1;
         public static final String COLUMNNAME_OF_AF = "af";
         // default_variant.an
         public static final int INDEX_OF_AN = 18;
@@ -438,8 +438,8 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_DP = "dp";
         // default_variant.end
         public static final int INDEX_OF_END = 23;
-        public static final ColumnType TYPE_OF_END = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_END = 500;
+        public static final ColumnType TYPE_OF_END = ColumnType.INTEGER;
+        public static final int LENGTH_OF_END = 11;
         public static final String COLUMNNAME_OF_END = "end";
         // default_variant.h2
         public static final int INDEX_OF_H2 = 24;
@@ -448,13 +448,13 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_H2 = "h2";
         // default_variant.mq
         public static final int INDEX_OF_MQ = 25;
-        public static final ColumnType TYPE_OF_MQ = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_MQ = 500;
+        public static final ColumnType TYPE_OF_MQ = ColumnType.FLOAT;
+        public static final int LENGTH_OF_MQ = -1;
         public static final String COLUMNNAME_OF_MQ = "mq";
         // default_variant.mq0
         public static final int INDEX_OF_MQ0 = 26;
-        public static final ColumnType TYPE_OF_MQ0 = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_MQ0 = 500;
+        public static final ColumnType TYPE_OF_MQ0 = ColumnType.INTEGER;
+        public static final int LENGTH_OF_MQ0 = 11;
         public static final String COLUMNNAME_OF_MQ0 = "mq0";
         // default_variant.ns
         public static final int INDEX_OF_NS = 27;
@@ -463,8 +463,8 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_NS = "ns";
         // default_variant.sb
         public static final int INDEX_OF_SB = 28;
-        public static final ColumnType TYPE_OF_SB = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_SB = 500;
+        public static final ColumnType TYPE_OF_SB = ColumnType.FLOAT;
+        public static final int LENGTH_OF_SB = -1;
         public static final String COLUMNNAME_OF_SB = "sb";
         // default_variant.somatic
         public static final int INDEX_OF_SOMATIC = 29;

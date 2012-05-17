@@ -229,9 +229,9 @@ public class DialogUtils {
             fd.setDialogType(JFileChooser.OPEN_DIALOG);
             if (filter != null) {
                 fd.setFileFilter(filter);
-                }
+            }
             fd.setMultiSelectionEnabled(true);
-            int result = fd.showOpenDialog(MedSavantFrame.getInstance());
+            int result = fd.showOpenDialog(null);
             if (result == JFileChooser.APPROVE_OPTION) {
                 return fd.getSelectedFiles();
             }

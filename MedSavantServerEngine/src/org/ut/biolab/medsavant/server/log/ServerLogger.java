@@ -1,89 +1,83 @@
+/*
+ *    Copyright 2010-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package org.ut.biolab.medsavant.server.log;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.spi.LoggingEvent;
+
 import org.ut.biolab.medsavant.db.util.ServerDirectorySettings;
 import org.ut.biolab.medsavant.server.mail.Mail;
 
+
 /**
+ * Log4J appender which writes to the server log.
  *
- * @author mfiume
+ * @author mfiume, tarkvara
  */
-public class ServerLogger {
+public class ServerLogger extends AppenderSkeleton {
+    private static final Log LOG = LogFactory.getLog(ServerLogger.class);
+    private static final String LOG_PATH = new File(ServerDirectorySettings.getTmpDirectory(), "server.log").getAbsolutePath();
+    private static String eMailAddress;
+    private BufferedWriter writer;
 
-    private static String logPath = (new File(ServerDirectorySettings.getTmpDirectory(),"server.log")).getAbsolutePath();
-    private static String emailaddress;
-    private static BufferedWriter writer;
-    private static Logger logger;
-    private static boolean logOpen;
-    private static FileHandler handler;
-
-    public static void log(Class c, String string) {
-        log(c, string, Level.INFO);
-    }
-
-    private static void openLogFile() throws IOException {
-        handler = new FileHandler(logPath, true);
-        handler.setFormatter(new BriefLogFormatter());
-        logger = Logger.getLogger("org.ut.biolab.medsavant.server");
-        logger.addHandler(handler);
-        logOpen = true;
-    }
-
-    public static void setMailRecipient(String eaddress) {
-        emailaddress = eaddress;
-    }
-
-    public static void logByEmail(Class c, String subject, String message) {
-        logByEmail(c, subject, message, Level.INFO);
-    }
-
-    public static void logByEmail(Class c, String subject, String message, Level l) {
-        message += "\n\nMedSavant Server Utility";
-        if (emailaddress != null) {
-            Mail.sendEmail(emailaddress, "[" + l + "] " + subject, message);
-            log(c, "(Also emailed to " + emailaddress + "): \"" + message.replace("\n", "") + "\"", l);
-        } else {
-            log(c, "(No email address configured to sent to): \"" + message.replace("\n", "") + "\"", l);
-        }
-    }
-
-    public static void logError(Class c, Throwable t) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        t.printStackTrace(pw);
-        log(c, sw.toString(), Level.SEVERE);
-    }
-
-    public static void log(Class c, String msg, Level level) {
+    @Override
+    public synchronized void close() {
         try {
-            if (!logOpen) {
-                System.out.println("Opening log file...");
-                openLogFile();
+            writer.close();
+        } catch (IOException ignored) {
+        }
+        writer = null;
+    }
+
+    @Override
+    protected synchronized void append(LoggingEvent le) {
+        try {
+            if (writer == null) {
+                writer = new BufferedWriter(new FileWriter(LOG_PATH));
             }
-            logger.log(level, "{" + c.toString() + "} " + msg);
-            for (Handler h : logger.getHandlers()) {
-                h.flush();
-            }
-        } catch (IOException ex) {
+            writer.write(layout.format(le));
+            writer.flush();
+        } catch (IOException ignored) {
         }
     }
 
-    public static void setLogStatus(boolean b) {
-        if (b) {
+    @Override
+    public boolean requiresLayout() {
+        return true;
+    }
+
+    public static void setMailRecipient(String address) {
+        eMailAddress = address;
+    }
+
+    public static void logByEmail(String subject, String message) {
+        message += "\n\nMedSavant Server Utility";
+        if (eMailAddress != null) {
+            Mail.sendEmail(eMailAddress, subject, message);
+            LOG.info("(Also emailed to " + eMailAddress + "): \"" + message.replace("\n", "") + "\"");
         } else {
-            try {
-                writer.close();
-            } catch (IOException ex) {
-            }
-            writer = null;
+            LOG.warn("(No email recipient configured): \"" + message.replace("\n", "") + "\"");
         }
     }
 }

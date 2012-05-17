@@ -32,7 +32,7 @@ import org.ut.biolab.medsavant.model.RegionSet;
  *
  * @author mfiume
  */
-public interface RegionSetAdapter extends Remote {
+public interface RegionSetManagerAdapter extends Remote {
 
     public void addRegionSet(String sessID, String regionSetName, int genomeID, RemoteInputStream fileStream, char delim, FileFormat fileFormat, int numHeaderLines) throws IOException, SQLException, RemoteException;
     public void removeRegionSet(String sessID, int regionSetID) throws SQLException, RemoteException;

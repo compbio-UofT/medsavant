@@ -15,7 +15,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
-import java.sql.SQLException;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -169,7 +168,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                         //compute variant field
                         for (int i = 0; i < Math.min(currentGenes.size(), limit); i++) {
                             GenomicRegion r = currentGenes.get(i);
-                            int recordsInRegion = MedSavantClient.VariantQueryUtilAdapter.getNumVariantsInRange(
+                            int recordsInRegion = MedSavantClient.VariantManager.getNumVariantsInRange(
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectId(),
                                     ReferenceController.getInstance().getCurrentReferenceId(),
@@ -193,7 +192,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                     try {
                         for (int i = 0; i < Math.min(currentGenes.size(), limit); i++) {
                             GenomicRegion r = currentGenes.get(i);
-                            int recordsInRegion = MedSavantClient.VariantQueryUtilAdapter.getNumPatientsWithVariantsInRange(
+                            int recordsInRegion = MedSavantClient.VariantManager.getNumPatientsWithVariantsInRange(
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectId(),
                                     ReferenceController.getInstance().getCurrentReferenceId(),
@@ -424,7 +423,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected List<GenomicRegion> doInBackground() throws Exception {
-                return MedSavantClient.RegionSetAdapter.getRegionsInSet(LoginController.sessionId, geneList.getID(), limit);
+                return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, geneList.getID(), limit);
             }
 
             @Override
@@ -444,7 +443,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
             
             @Override
             protected List<RegionSet> doInBackground() throws Exception {
-                return MedSavantClient.RegionSetAdapter.getRegionSets(LoginController.sessionId);
+                return MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId);
             }
             
             @Override

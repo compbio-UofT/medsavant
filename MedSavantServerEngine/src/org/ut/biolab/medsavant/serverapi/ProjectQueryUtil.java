@@ -46,7 +46,8 @@ import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
-import org.ut.biolab.medsavant.db.variants.update.VariantManagerUtils;
+import org.ut.biolab.medsavant.db.variants.VariantManager;
+import org.ut.biolab.medsavant.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.CustomField.Category;
 import org.ut.biolab.medsavant.model.ProjectDetails;
@@ -61,15 +62,15 @@ public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     private static final Log LOG = LogFactory.getLog(ProjectQueryUtil.class);
     private static ProjectQueryUtil instance;
 
+    private ProjectQueryUtil() throws RemoteException {
+        super();
+    }
+
     public static synchronized ProjectQueryUtil getInstance() throws RemoteException {
         if (instance == null) {
             instance = new ProjectQueryUtil();
         }
         return instance;
-    }
-
-    public ProjectQueryUtil() throws RemoteException {
-        super();
     }
 
     @Override
@@ -333,8 +334,8 @@ public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject impleme
     }
 
     public float getMultiplier(String sid, String table, String subTable) throws SQLException, RemoteException{
-        int numerator = VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, table, new Condition[0][]);
-        int denominator = VariantQueryUtil.getInstance().getNumFilteredVariantsHelper(sid, subTable, new Condition[0][]);
+        int numerator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, table, new Condition[0][]);
+        int denominator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, subTable, new Condition[0][]);
         if (denominator == 0) denominator = 1;
         return (float)numerator / (float)denominator;
     }

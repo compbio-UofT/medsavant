@@ -27,7 +27,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -436,7 +435,7 @@ public class ImportVariantsWizard extends WizardDialog {
                         try {
                             setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
                             // do stuff
-                            MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
+                            MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
 
                             //success
                             publishProgressBar.setIndeterminate(false);
@@ -508,7 +507,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
                             //upload variants
                             progressLabel.setText("Uploading variant files...");
-                            updateID = MedSavantClient.VariantManagerAdapter.uploadVariants(LoginController.sessionId, streams, fileNames, projectId, referenceId, tagsToStringArray(variantTags), includeHomoRef);
+                            updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, streams, fileNames, projectId, referenceId, tagsToStringArray(variantTags), includeHomoRef);
                             MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
 
                             //success
@@ -528,7 +527,7 @@ public class ImportVariantsWizard extends WizardDialog {
                                 publishProgressLabel.setText("Publishing variants...");
 
                                 // publish
-                                MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
+                                MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
 
                                 //success
                                 publishProgressBar.setIndeterminate(false);
@@ -685,7 +684,7 @@ public class ImportVariantsWizard extends WizardDialog {
                             progressLabel.setText("Publishing variants...");
 
                             // do stuff
-                            MedSavantClient.VariantManagerAdapter.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
+                            MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
 
                             //success
                             progressBar.setIndeterminate(false);

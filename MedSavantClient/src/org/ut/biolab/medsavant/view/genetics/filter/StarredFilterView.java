@@ -84,7 +84,7 @@ public class StarredFilterView extends FilterView {
             @Override
             public Condition[] getConditions() {
                 try {
-                    Set<StarredVariant> starred = MedSavantClient.VariantQueryUtilAdapter.getStarredVariants(
+                    Set<StarredVariant> starred = MedSavantClient.VariantManager.getStarredVariants(
                             LoginController.sessionId, 
                             ProjectController.getInstance().getCurrentProjectId(), 
                             ReferenceController.getInstance().getCurrentReferenceId());

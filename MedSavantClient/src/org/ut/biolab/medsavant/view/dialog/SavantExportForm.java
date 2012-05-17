@@ -81,7 +81,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         exportButton.setEnabled(false);   
 
         //populate individuals
-        List<String> temp = MedSavantClient.VariantQueryUtilAdapter.getDistinctValuesForColumn(
+        List<String> temp = MedSavantClient.VariantManager.getDistinctValuesForColumn(
                 LoginController.sessionId, 
                 ProjectController.getInstance().getCurrentPatientTableName(), 
                 DefaultpatientTableSchema.COLUMNNAME_OF_DNA_IDS, 
@@ -126,7 +126,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         
         //get bookmarks
         Map<String, List<String>> map = new HashMap<String, List<String>>();
-        map = MedSavantClient.VariantQueryUtilAdapter.getSavantBookmarkPositionsForDNAIds(
+        map = MedSavantClient.VariantManager.getSavantBookmarkPositionsForDNAIds(
                 LoginController.sessionId, 
                 ProjectController.getInstance().getCurrentProjectId(), 
                 ReferenceController.getInstance().getCurrentReferenceId(), 
