@@ -82,7 +82,7 @@ public class LoginController {
         if (loggedIn) {
             try {
                 MedSavantClient.ServerLogQueryUtilAdapter.addLog(LoginController.sessionId, LoginController.username, LogType.INFO, message);
-            } catch (RemoteException ex) {
+            } catch (Exception ex) {
                 LOG.error("Error adding server log entry.", ex);
             }
         }

@@ -385,257 +385,184 @@ public class ImportVariantsWizard extends WizardDialog {
     private int updateID;
 
     private AbstractWizardPage getQueuePage() {
-        //setup page
-        final DefaultWizardPage page = new DefaultWizardPage("Upload, Annotate, & Publish Variants") {
+        DefaultWizardPage page = new DefaultWizardPage("Upload, Annotate, & Publish Variants") {
+            private final JLabel progressLabel = new JLabel("Ready to upload and annotate variant files.");
+            private final JProgressBar progressBar = new JProgressBar();
+            private final JButton startButton = new JButton("Upload & Annotate");
+            private final JButton publishStartButton = new JButton("Publish Variants");
+            private final JButton cancelButton = new JButton("Cancel");
+            private final JButton publishCancelButton = new JButton("Cancel");
+            private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after upload");
+            private final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
+            private final JProgressBar publishProgressBar = new JProgressBar();
+            
+            {
+                addText("You are now ready to upload variants.");
 
-            @Override
-            public void setupWizardButtons() {
-                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
-                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
-                fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
-            }
-        };
+                addComponent(progressLabel);
+                addComponent(progressBar);
 
-        page.addText("You are now ready to upload variants.");
+                autoPublishVariants.setOpaque(false);
 
-        final JLabel progressLabel = new JLabel("Ready to upload and annotate variant files.");
-        final JProgressBar progressBar = new JProgressBar();
+                startButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
+                        progressBar.setIndeterminate(true);
+                        startButton.setEnabled(false);
+                        startButton.setVisible(false);
 
-        page.addComponent(progressLabel);
-        page.addComponent(progressBar);
+                        uploadThread = new Thread() {
 
+                            @Override
+                            public void run() {
+                                setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-        //final JButton cancelButton = new JButton("Cancel");
-        final JButton startButton = new JButton("Upload & Annotate");
-        final JButton publishStartButton = new JButton("Publish Variants");
+                                try {
+                                    int i = 0;
+                                    RemoteInputStream[] streams = new RemoteInputStream[variantFiles.length];
+                                    String[] fileNames = new String[variantFiles.length];
+                                    for (File file : variantFiles) {
+                                        streams[i] = new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath())).export();
+                                        fileNames[i] = file.getName();
+                                        i++;
+                                    }
 
-        final JButton cancelButton = new JButton("Cancel");
-        final JButton publishCancelButton = new JButton("Cancel");
+                                    //upload variants
+                                    progressLabel.setText("Uploading variant files...");
+                                    updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, streams, fileNames, projectId, referenceId, tagsToStringArray(variantTags), includeHomoRef);
+                                    MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
 
-        final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after upload");
-        autoPublishVariants.setOpaque(false);
+                                    //success
+                                    progressBar.setIndeterminate(false);
+                                    cancelButton.setEnabled(false);
+                                    cancelButton.setVisible(false);
+                                    progressBar.setValue(100);
+                                    progressLabel.setText("Upload complete.");
 
-        final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
-        final JProgressBar publishProgressBar = new JProgressBar();
+                                    publishProgressLabel.setVisible(true);
+                                    publishProgressBar.setVisible(true);
 
+                                    autoPublishVariants.setVisible(false);
 
-        publishStartButton.addActionListener(new ActionListener() {
+                                    if (autoPublishVariants.isSelected()) {
+                                        publishVariants();
+                                    } else {
+                                        publishStartButton.setVisible(true);
+                                        fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                                    }
 
-            @Override
-            public void actionPerformed(ActionEvent ae) {
+                                } catch (Exception ex) {
 
-                publishProgressBar.setIndeterminate(true);
-                publishProgressLabel.setText("Publishing variants...");
+                                    //release lock always
+                                    try {
+                                        MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
+                                    } catch (Exception ex1) {
+                                        LOG.error("Error releasing database lock.", ex1);
+                                    }
 
-                publishThread = new Thread() {
+                                    progressBar.setIndeterminate(false);
+                                    progressBar.setValue(0);
+
+                                    //cancellation
+                                    if (ex instanceof InterruptedException) {
+                                        progressLabel.setText("Upload cancelled.");
+                                        startButton.setVisible(true);
+                                        startButton.setEnabled(true);
+                                        cancelButton.setText("Cancel");
+                                        cancelButton.setEnabled(true);
+                                        cancelButton.setVisible(false);
+
+                                        //failure
+                                    } else {
+                                        ClientMiscUtils.checkSQLException(ex);
+                                        progressLabel.setForeground(Color.red);
+                                        progressLabel.setText(ex.getMessage());
+                                        startButton.setVisible(false);
+                                        cancelButton.setVisible(false);
+                                    }
+                                    LOG.error("Error publishing variants.", ex);
+                                } finally {
+                                    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                                }
+                            }
+
+                        };
+                        cancelButton.setVisible(true);
+                        startButton.setVisible(false);
+                        uploadThread.start();
+                    }
+                });
+
+                cancelButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        cancelButton.setText("Cancelling...");
+                        cancelButton.setEnabled(false);
+                        uploadThread.interrupt();
+                    }
+                });
+
+                publishStartButton.addActionListener(new ActionListener() {
 
                     @Override
-                    public void run() {
+                    public void actionPerformed(ActionEvent ae) {
 
-                        try {
-                            setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-                            // do stuff
-                            MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
+                        publishProgressBar.setIndeterminate(true);
+                        publishProgressLabel.setText("Publishing variants...");
 
-                            //success
-                            publishProgressBar.setIndeterminate(false);
-                            publishCancelButton.setVisible(false);
-                            publishProgressBar.setValue(100);
-                            publishProgressLabel.setText("Publish complete.");
+                        publishThread = new Thread() {
 
-                            page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                            @Override
+                            public void run() {
 
+                                try {
+                                    setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+                                    publishVariants();
 
-                        } catch (Exception ex) {
-
-                            //cancellation
-                            if (ex instanceof InterruptedException) {
-                                publishProgressBar.setIndeterminate(false);
-                                publishProgressBar.setValue(0);
-                                publishProgressLabel.setText("Publish cancelled.");
-                                publishStartButton.setVisible(true);
-                                publishStartButton.setEnabled(true);
-                                publishCancelButton.setText("Cancel");
-                                publishCancelButton.setEnabled(true);
-                                publishCancelButton.setVisible(false);
-
-                                //failure
-                            } else {
-                                ClientMiscUtils.checkSQLException(ex);
-                                publishProgressBar.setIndeterminate(false);
-                                publishProgressBar.setValue(0);
-                                publishProgressLabel.setForeground(Color.red);
-                                publishProgressLabel.setText(ex.getMessage());
-                                publishStartButton.setVisible(false);
-                                publishCancelButton.setVisible(false);
+                                } finally {
+                                    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                                }
                             }
-                            LOG.error("Error publishing variants.", ex);
-                        }
-                    }
-                };
+                        };
 
-                publishCancelButton.setVisible(true);
+                        publishCancelButton.setVisible(true);
+                        publishStartButton.setVisible(false);
+                        publishThread.start();
+                    }
+                });
+
+                publishCancelButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        publishCancelButton.setText("Cancelling...");
+                        publishCancelButton.setEnabled(false);
+                        publishThread.interrupt();
+                    }
+                });
+
+                addComponent(ViewUtil.alignRight(startButton));
+                cancelButton.setVisible(false);
+                addComponent(ViewUtil.alignRight(cancelButton));
+
+                addComponent(autoPublishVariants);
+                JLabel l = new JLabel("WARNING:");
+                l.setForeground(Color.red);
+                l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, l.getFont().getSize()));
+                addComponent(l);
+                addText("All users logged into the system will be logged out\nat the time of publishing.");
+
+                addComponent(publishProgressLabel);
+                addComponent(publishProgressBar);
+                addComponent(ViewUtil.alignRight(publishStartButton));
+                addComponent(ViewUtil.alignRight(publishCancelButton));
+
                 publishStartButton.setVisible(false);
-                publishThread.start();
+                publishProgressLabel.setVisible(false);
+                publishProgressBar.setVisible(false);
+                publishCancelButton.setVisible(false);
+                
             }
-        });
-
-
-        startButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
-                progressBar.setIndeterminate(true);
-                startButton.setEnabled(false);
-                startButton.setVisible(false);
-
-                uploadThread = new Thread() {
-
-                    @Override
-                    public void run() {
-                        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
-                        try {
-                            int i = 0;
-                            RemoteInputStream[] streams = new RemoteInputStream[variantFiles.length];
-                            String[] fileNames = new String[variantFiles.length];
-                            for (File file : variantFiles) {
-                                streams[i] = (new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath()))).export();
-                                fileNames[i] = file.getName();
-                                i++;
-                            }
-
-                            //upload variants
-                            progressLabel.setText("Uploading variant files...");
-                            updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, streams, fileNames, projectId, referenceId, tagsToStringArray(variantTags), includeHomoRef);
-                            MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
-
-                            //success
-                            progressBar.setIndeterminate(false);
-                            cancelButton.setEnabled(false);
-                            cancelButton.setVisible(false);
-                            progressBar.setValue(100);
-                            progressLabel.setText("Upload complete.");
-
-                            publishProgressLabel.setVisible(true);
-                            publishProgressBar.setVisible(true);
-
-                            autoPublishVariants.setVisible(false);
-
-                            if (autoPublishVariants.isSelected()) {
-
-                                publishProgressLabel.setText("Publishing variants...");
-
-                                // publish
-                                MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
-
-                                //success
-                                publishProgressBar.setIndeterminate(false);
-                                publishCancelButton.setVisible(false);
-                                publishProgressBar.setValue(100);
-                                publishProgressLabel.setText("Publish complete.");
-
-                                page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-
-                            } else {
-                                publishStartButton.setVisible(true);
-                                page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                            }
-
-                        } catch (Exception ex) {
-
-                            //release lock always
-                            try {
-                                MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
-                            } catch (Exception ex1) {
-                                LOG.error("Error releasing database lock.", ex1);
-                            }
-
-                            //cancellation
-                            if (ex instanceof InterruptedException) {
-                                progressBar.setIndeterminate(false);
-                                progressBar.setValue(0);
-                                progressLabel.setText("Upload cancelled.");
-                                startButton.setVisible(true);
-                                startButton.setEnabled(true);
-                                cancelButton.setText("Cancel");
-                                cancelButton.setEnabled(true);
-                                cancelButton.setVisible(false);
-
-                                //failure
-                            } else {
-                                ClientMiscUtils.checkSQLException(ex);
-                                progressBar.setIndeterminate(false);
-                                progressBar.setValue(0);
-                                progressLabel.setForeground(Color.red);
-                                progressLabel.setText(ex.getMessage());
-                                startButton.setVisible(false);
-                                cancelButton.setVisible(false);
-                            }
-                            LOG.error("Error publishing variants.", ex);
-                        }
-
-                        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-                    }
-
-                };
-                cancelButton.setVisible(true);
-                startButton.setVisible(false);
-                uploadThread.start();
-            }
-        });
-
-        cancelButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cancelButton.setText("Cancelling...");
-                cancelButton.setEnabled(false);
-                uploadThread.interrupt();
-            }
-        });
-
-        publishCancelButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                publishCancelButton.setText("Cancelling...");
-                publishCancelButton.setEnabled(false);
-                publishThread.interrupt();
-            }
-        });
-
-        page.addComponent(ViewUtil.alignRight(startButton));
-        cancelButton.setVisible(false);
-        page.addComponent(ViewUtil.alignRight(cancelButton));
-
-        page.addComponent(autoPublishVariants);
-        JLabel l = new JLabel("WARNING:");
-        l.setForeground(Color.red);
-        l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, l.getFont().getSize()));
-        page.addComponent(l);
-        page.addText("All users logged into the system will be "
-                + "logged out\nat the time of publishing.");
-
-
-        page.addComponent(publishProgressLabel);
-        page.addComponent(publishProgressBar);
-        page.addComponent(ViewUtil.alignRight(publishStartButton));
-        page.addComponent(ViewUtil.alignRight(publishCancelButton));
-
-        publishStartButton.setVisible(false);
-        publishProgressLabel.setVisible(false);
-        publishProgressBar.setVisible(false);
-        publishCancelButton.setVisible(false);
-
-
-        return page;
-    }
-
-    private AbstractWizardPage getSetLivePage() {
-
-        //setup page
-        final DefaultWizardPage page = new DefaultWizardPage("Publish variants") {
 
             @Override
             public void setupWizardButtons() {
@@ -643,87 +570,50 @@ public class ImportVariantsWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
                 fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
             }
-        };
+            
+            private void publishVariants() {
+                try {
+                    publishProgressLabel.setText("Publishing variants...");
 
-        page.addText("New variants have been uploaded and annotated, but\n"
-                + "are not yet available to users. To make them available,\n"
-                + "you must Publish Variants.");
+                    // publish
+                    MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
 
-        JLabel l = new JLabel("WARNING:");
-        l.setForeground(Color.red);
-        l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, l.getFont().getSize()));
-        page.addComponent(l);
-        page.addText("All users currently logged into the system will be\n"
-                + "logged out upon publishing variants.");
+                    LoginController.logout();
 
-        final JLabel progressLabel = new JLabel("Ready to publish variants.");
-        final JProgressBar progressBar = new JProgressBar();
+                    //success
+                    publishProgressBar.setIndeterminate(false);
+                    publishCancelButton.setVisible(false);
+                    publishProgressBar.setValue(100);
+                    publishProgressLabel.setText("Publish complete.");
 
-        page.addComponent(progressLabel);
-        page.addComponent(progressBar);
+                    fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
 
-        final JButton cancelButton = new JButton("Cancel");
-        final JButton startButton = new JButton("Publish Variants");
+                } catch (Exception ex) {
 
-        startButton.addActionListener(new ActionListener() {
+                    publishProgressBar.setIndeterminate(false);
+                    publishProgressBar.setValue(0);
 
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
-                progressBar.setIndeterminate(true);
-                startButton.setEnabled(false);
+                    //cancellation
+                    if (ex instanceof InterruptedException) {
+                        publishProgressLabel.setText("Publish cancelled.");
+                        publishStartButton.setVisible(true);
+                        publishStartButton.setEnabled(true);
+                        publishCancelButton.setText("Cancel");
+                        publishCancelButton.setEnabled(true);
+                        publishCancelButton.setVisible(false);
 
-
-                uploadThread = new Thread() {
-
-                    @Override
-                    public void run() {
-                        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-                        try {
-
-                            progressLabel.setText("Publishing variants...");
-
-                            // do stuff
-                            MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
-
-                            //success
-                            progressBar.setIndeterminate(false);
-                            cancelButton.setEnabled(false);
-                            progressBar.setValue(100);
-                            progressLabel.setText("Variants published.");
-
-
-                            page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-
-                            setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
-                        } catch (Exception ex) {
-                            progressBar.setIndeterminate(false);
-                            progressBar.setValue(0);
-                            progressLabel.setText("Problem publishing variants.");
-                        }
+                        //failure
+                    } else {
+                        ClientMiscUtils.checkSQLException(ex);
+                        publishProgressLabel.setForeground(Color.red);
+                        publishProgressLabel.setText(ex.getMessage());
+                        publishStartButton.setVisible(false);
+                        publishCancelButton.setVisible(false);
                     }
-
-                };
-                cancelButton.setVisible(true);
-                startButton.setVisible(false);
-                uploadThread.start();
+                    LOG.error("Error publishing variants.", ex);
+                }
             }
-        });
-
-        cancelButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cancelButton.setText("Cancelling...");
-                cancelButton.setEnabled(false);
-                uploadThread.interrupt();
-            }
-        });
-
-        page.addComponent(ViewUtil.alignRight(startButton));
-        cancelButton.setVisible(false);
-        page.addComponent(ViewUtil.alignRight(cancelButton));
+        };
 
         return page;
     }
