@@ -1,13 +1,11 @@
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
-
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
-import org.ut.biolab.medsavant.view.component.LinkButton;
 import org.ut.biolab.medsavant.view.genetics.GeneIntersectionGenerator;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -15,14 +13,12 @@ import org.ut.biolab.medsavant.view.genetics.GeneIntersectionGenerator;
  */
 public class BasicGeneInfoSubPanel extends InfoSubPanel implements GeneSelectionChangedListener {
 
-    private JLabel chromLabel;
-    private JLabel positionLabel;
-    private JLabel dnaLabel;
-    private JLabel refLabel;
-    private JLabel altLabel;
-    private JLabel qualityLabel;
-    private JLabel dbsnpLabel;
-    private LinkButton ncbiButton;
+    private static String KEY_NAME = "Name";
+    private static String KEY_CHROM = "Chromosome";
+    private static String KEY_START = "Start";
+    private static String KEY_END = "End";
+
+
     private KeyValuePairPanel p;
 
     public BasicGeneInfoSubPanel() {
@@ -34,18 +30,30 @@ public class BasicGeneInfoSubPanel extends InfoSubPanel implements GeneSelection
         return "Gene Details";
     }
 
-    private static String KEY_NAME = "Name";
 
     @Override
     public JPanel getInfoPanel() {
-        p = new KeyValuePairPanel();
-        p.addKey(KEY_NAME);
+        if (p == null) {
+            p = new KeyValuePairPanel();
+            p.addKey(KEY_NAME);
+            p.addKey(KEY_CHROM);
+             p.addKey(KEY_START);
+            p.addKey(KEY_END);
+        }
         return p;
     }
 
     @Override
     public void geneSelectionChanged(Gene g) {
+        if (p == null) { return; }
+        if (g == null) {
+            // TODO show other card
+            return;
+        }
         p.setValue(KEY_NAME, g.getName());
+        p.setValue(KEY_CHROM, g.getChrom());
+        p.setValue(KEY_START, ViewUtil.numToString(g.getStart()));
+        p.setValue(KEY_END, ViewUtil.numToString(g.getEnd()));
     }
 
 }

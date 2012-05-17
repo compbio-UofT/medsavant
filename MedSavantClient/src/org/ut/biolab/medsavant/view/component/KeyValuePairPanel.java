@@ -1,8 +1,10 @@
 package org.ut.biolab.medsavant.view.component;
 
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +29,17 @@ public class KeyValuePairPanel extends JPanel {
         this(0);
     }
 
+    private static final Font keyFont = new Font("Arial",Font.BOLD,11);
+
+    public static JLabel getKeyLabel(String s) {
+        JLabel l = new JLabel(s.toUpperCase());
+        l.setFont(keyFont);
+        return l;
+    }
+
     public KeyValuePairPanel(int additionalColumns) {
+
+        this.setOpaque(false);
 
         this.additionalColumns = additionalColumns;
         keyValueMap = new HashMap<String, JLabel>();
@@ -36,14 +48,15 @@ public class KeyValuePairPanel extends JPanel {
         columnConstraints = new ArrayList<GridBagConstraints>();
 
         GridBagConstraints keyConstraints = new GridBagConstraints();
-        keyConstraints.anchor = GridBagConstraints.EAST;
+        keyConstraints.anchor = GridBagConstraints.SOUTHEAST;
         keyConstraints.weightx = 0;
         keyConstraints.gridx = 0;
         keyConstraints.gridy = 0;
 
 
         GridBagConstraints valueConstraints = new GridBagConstraints();
-        valueConstraints.anchor = GridBagConstraints.WEST;
+        valueConstraints.anchor = GridBagConstraints.SOUTHWEST;
+        valueConstraints.insets = new Insets(1, 5, 1, 2);
         valueConstraints.weightx = 1;
         valueConstraints.gridx = 1;
         valueConstraints.gridy = 0;
@@ -68,7 +81,7 @@ public class KeyValuePairPanel extends JPanel {
 
         int i = 0;
 
-        this.add(new JLabel(key), incrementConstraintRow(i++));
+        this.add(getKeyLabel(key), incrementConstraintRow(i++));
         this.add(valueLabel, incrementConstraintRow(i++));
 
         for (int j = 0; j < this.additionalColumns; j++) {

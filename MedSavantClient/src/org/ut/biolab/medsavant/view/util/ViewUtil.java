@@ -629,6 +629,7 @@ public class ViewUtil {
         return l;
     }
 
+
     public static JPanel getKeyValuePairPanel(String key, String val) {
         JLabel keyl = new JLabel(key + ": ");
             keyl.setFont(new Font(keyl.getFont().getFamily(),Font.BOLD,keyl.getFont().getSize()));
