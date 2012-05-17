@@ -25,6 +25,7 @@ import javax.swing.JPanel;
 
 import com.jidesoft.pane.CollapsiblePane;
 
+import javax.swing.JComponent;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
@@ -61,7 +62,12 @@ public class InfoPanel extends CollapsiblePane {
 
         glue = Box.createVerticalGlue();
         container.add(glue);
+    }
 
+    public Component addTop(Component ipan) {
+        container.add(Box.createVerticalStrut(10));
+        container.add(ipan);
+        return ipan;
     }
 
     protected void addSubInfoPanel(InfoSubPanel ipan) {

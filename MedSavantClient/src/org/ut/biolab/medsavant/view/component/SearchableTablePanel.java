@@ -188,7 +188,7 @@ public class SearchableTablePanel extends JPanel {
         pageLabel2.setText(" of " + ViewUtil.numToString(getTotalNumPages()));
         int start = getTotalNumPages() == 0 ? 0 : (getPageNumber() - 1) * getRowsPerPage() + 1;
         int end = getTotalNumPages() == 0 ? 0 : Math.min(start + getRowsPerPage() - 1, getTotalRowCount());
-        amountLabel.setText("  Showing " + ViewUtil.numToString(start) + " - " + ViewUtil.numToString(end) + " of " + ViewUtil.numToString(getTotalRowCount()) + " records");
+        amountLabel.setText("  Showing " + ViewUtil.numToString(start) + " - " + ViewUtil.numToString(end) + " of " + ViewUtil.numToString(getTotalRowCount()));
 
         if (first) {
             int[] columns = new int[columnNames.length];
@@ -296,18 +296,6 @@ public class SearchableTablePanel extends JPanel {
             }
         };
 
-        /*
-        for (int i = 0; i < columnClasses.size(); i++) {
-            Class c = columnClasses.get(i);
-            if (c == JCheckBox.class) {
-                System.out.println("Column " + i + " name " + columnNames.get(i) + " class " + c);
-                table.getColumn(table.getColumnName(i)).setCellRenderer(new JTableCBRenderer());
-            }
-        }
-         *
-         */
-
-
         table.setToolTipText(""); //necessary to force check for tooltip text
 
         table.setClearSelectionOnTableDataChanges(true);
@@ -412,7 +400,7 @@ public class SearchableTablePanel extends JPanel {
             }
         });
 
-        pageText = new JTextField();
+        pageText = new JTextField(); ViewUtil.makeSmall(pageText);
         pageText.setColumns(5);
         pageText.setMaximumSize(new Dimension(50,20));
         pageText.addKeyListener(new KeyAdapter() {
@@ -430,10 +418,11 @@ public class SearchableTablePanel extends JPanel {
         });
 
         amountLabel = new JLabel();
+        ViewUtil.makeSmall(amountLabel);
         bottomPanel.add(amountLabel);
 
-        pageLabel1 = new JLabel("Page ");
-        pageLabel2 = new JLabel();
+        pageLabel1 = new JLabel("Page "); ViewUtil.makeSmall(pageLabel1);
+        pageLabel2 = new JLabel(); ViewUtil.makeSmall(pageLabel2);
 
         bottomPanel.add(Box.createHorizontalGlue());
         bottomPanel.add(gotoFirst);
@@ -449,7 +438,9 @@ public class SearchableTablePanel extends JPanel {
 
         strut(bottomPanel);
 
-        bottomPanel.add(new JLabel("Results per page:"));
+        JLabel perpageL = new JLabel("Per page:");
+        ViewUtil.makeSmall(perpageL);
+        bottomPanel.add(perpageL);
 
 
         strut(bottomPanel);
@@ -470,7 +461,7 @@ public class SearchableTablePanel extends JPanel {
         }
         finalList = rowsList.toArray(finalList);
 
-        rowsPerPageDropdown = new JComboBox(finalList);
+        rowsPerPageDropdown = new JComboBox(finalList); ViewUtil.makeSmall(rowsPerPageDropdown);
         rowsPerPageDropdown.setPrototypeDisplayValue(ROWSPERPAGE_3);
         if (hasDefaultRowsPerPage) {
             rowsPerPageDropdown.setSelectedIndex(rowsList.indexOf(ROWSPERPAGE_X));

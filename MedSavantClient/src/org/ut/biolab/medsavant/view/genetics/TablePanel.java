@@ -213,7 +213,7 @@ public class TablePanel extends JLayeredPane {
                             return;
                         }
 
-                        int rowNum = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRows()[0]);//TableModelWrapperUtils.getActualRowAt(stp.getTable().getModel(), stp.getTable().getSelectedRows()[0]);
+                        int rowNum = stp.getActualRowAcrossAllPages(stp.getTable().getSelectedRows()[0]);
                         List<Object[]> rows = retriever.retrieve(rowNum, 1);
 
                         Object[] row = rows.get(0);

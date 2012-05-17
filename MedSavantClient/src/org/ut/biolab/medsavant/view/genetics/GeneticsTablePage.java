@@ -16,6 +16,8 @@
 package org.ut.biolab.medsavant.view.genetics;
 
 import com.jidesoft.pane.event.CollapsiblePaneEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.BasicVariantInfoSubPanel;
 import com.jidesoft.pane.CollapsiblePane;
@@ -38,6 +40,7 @@ import javax.swing.UIManager;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.plaf.UIDefaultsLookup;
+import javax.swing.JComboBox;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -50,9 +53,13 @@ import org.ut.biolab.medsavant.db.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Chromosome;
+import org.ut.biolab.medsavant.model.Gene;
+import org.ut.biolab.medsavant.model.GeneSet;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.model.record.Genome;
+import org.ut.biolab.medsavant.serverapi.GeneSetAdapter;
+import org.ut.biolab.medsavant.view.genetics.variantinfo.BasicGeneInfoSubPanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.GeneManiaInfoSubPanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.InfoPanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.SearchInfoSubPanel;
@@ -82,7 +89,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
             this.addCollapsiblePaneListener(this);
         }
 
-        public static void addVariantSelectionChangedListener(BasicVariantInfoSubPanel l) {
+        public static void addVariantSelectionChangedListener(VariantSelectionChangedListener l) {
             listeners.add(l);
         }
 
@@ -90,8 +97,10 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
 
         @Override
         public void variantSelectionChanged(VariantRecord r) {
-            for (VariantSelectionChangedListener l : listeners) {
-                l.variantSelectionChanged(r);
+            if (isShown) {
+                for (VariantSelectionChangedListener l : listeners) {
+                    l.variantSelectionChanged(r);
+                }
             }
             record = r;
         }
@@ -325,10 +334,15 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
 
     private static class GeneInfoPanel extends InfoPanel {
 
+
         public GeneInfoPanel() {
             super("Gene Inspector");
+            this.addCollapsiblePaneListener(GeneIntersectionGenerator.getInstance());
+            this.addTop(GeneIntersectionGenerator.getInstance().getGeneDropDown());
+            this.addSubInfoPanel(new BasicGeneInfoSubPanel());
             this.addSubInfoPanel(new GeneManiaInfoSubPanel());
         }
+
     }
 
     private static class SearchInfoPanel extends InfoPanel {
