@@ -74,12 +74,18 @@ public class IconFactory {
         RED,
         WHITE,
         LINKOUT,
-        COPY
+        COPY,
+        MORE,
+        CHART_SMALL
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/view/images/icon/";
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case CHART_SMALL:
+                return getIcon(iconroot + "chart_1.png");
+            case MORE:
+                return getIcon(iconroot + "more2.png");
             case COPY:
                 return getIcon(iconroot + "cpy.png");
             case GOOGLE_LOGO:

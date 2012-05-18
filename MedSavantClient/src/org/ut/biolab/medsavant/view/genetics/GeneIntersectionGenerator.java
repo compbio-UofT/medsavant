@@ -23,7 +23,7 @@ public class GeneIntersectionGenerator implements VariantSelectionChangedListene
 
     private static GeneIntersectionGenerator instance;
 
-    static GeneIntersectionGenerator getInstance() {
+    public static GeneIntersectionGenerator getInstance() {
         if (instance == null) {
             instance = new GeneIntersectionGenerator();
         }

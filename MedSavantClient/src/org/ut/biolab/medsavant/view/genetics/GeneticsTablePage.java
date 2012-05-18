@@ -328,7 +328,6 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         public GeneInfoPanel() {
             super("Gene Inspector");
             this.addCollapsiblePaneListener(GeneIntersectionGenerator.getInstance());
-            this.addTop(GeneIntersectionGenerator.getInstance().getGeneDropDown());
             this.addSubInfoPanel(new BasicGeneInfoSubPanel());
             this.addSubInfoPanel(new GeneManiaInfoSubPanel());
         }

@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.util.PaintUtil;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 public class LinkButton extends JButton {
@@ -47,6 +48,7 @@ public class LinkButton extends JButton {
     public LinkButton(Image i) {
         this.image = i;
         this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        resize();
     }
 
     public LinkButton(String s) {
@@ -75,10 +77,9 @@ public class LinkButton extends JButton {
         });
         this.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
-
     Color textColorUnselected = Color.white;
     Color textColor = textColorUnselected;
-    Color bgColor = new Color(120, 120, 120);
+    //Color bgColor = new Color(50, 50, 50);
     Color disabledBGColor = new Color(210, 210, 210);
     int sidePadding = 3;
     int topPadding = 2;
@@ -92,20 +93,20 @@ public class LinkButton extends JButton {
             totalWidth = iconWidth + sidePadding * 2;
             totalHeight = iconWidth + topPadding * 2;
 
-            this.setPreferredSize(new Dimension(totalWidth, totalHeight));
 
         } else {
             String title = this.getText();
 
             Graphics2D g2d = (Graphics2D) this.getGraphics();
-            if (g2d == null) { return; }
+            if (g2d == null) {
+                return;
+            }
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             g2d.setFont(f);
 
             int width = g2d.getFontMetrics().stringWidth(title);
             int height = g2d.getFontMetrics().getAscent();
-
 
             totalWidth = width + sidePadding * 2;
             totalHeight = height + topPadding * 2;
@@ -114,32 +115,39 @@ public class LinkButton extends JButton {
                 totalWidth += iconWidth + sidePadding;
             }
 
-            this.setPreferredSize(new Dimension(totalWidth, totalHeight));
+            System.out.println(title + " linkb " + totalWidth + " x " + totalHeight);
         }
+
+        this.setPreferredSize(new Dimension(totalWidth, totalHeight));
+        this.setMinimumSize(new Dimension(totalWidth, totalHeight));
+        this.setMaximumSize(new Dimension(totalWidth, totalHeight));
+
+        invalidate();
     }
 
     @Override
     public void paintComponent(Graphics g) {
 
-        if (totalWidth == 0) { this.resize(); }
+        if (totalWidth == 0) {
+            this.resize();
+        }
 
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         if (!this.isEnabled()) {
             g2d.setColor(disabledBGColor);
+            g2d.fillRoundRect(0, 0, totalWidth, totalHeight, 5, 5);
         } else {
-            g2d.setColor(bgColor);
+            PaintUtil.paintDarkMenu(g, this);
         }
-
-        g2d.fillRoundRect(0, 0, totalWidth, totalHeight, 5, 5);
 
         if (isImage()) {
             g2d.drawImage(
-                        image,
-                        sidePadding,
-                        topPadding,
-                        null);
+                    image,
+                    sidePadding,
+                    topPadding,
+                    null);
         } else {
             String title = this.getText();
 

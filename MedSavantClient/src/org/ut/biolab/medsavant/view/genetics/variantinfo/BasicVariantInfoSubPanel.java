@@ -1,5 +1,6 @@
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
+import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -12,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
+import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.view.component.LinkButton;
 import org.ut.biolab.medsavant.view.genetics.GeneticsTablePage.VariantInfoPanel;
 import org.ut.biolab.medsavant.view.genetics.TablePanel;
@@ -26,14 +28,15 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSelectionChangedListener {
 
-    private JLabel chromLabel;
-    private JLabel positionLabel;
-    private JLabel dnaLabel;
-    private JLabel refLabel;
-    private JLabel altLabel;
-    private JLabel qualityLabel;
-    private JLabel dbsnpLabel;
-    private LinkButton ncbiButton;
+    private static String KEY_DNAID = "DNA ID";
+    private static String KEY_CHROM = "Chromosome";
+    private static String KEY_POSITION = "Position";
+    private static String KEY_REF = "Reference";
+    private static String KEY_ALT = "Alternate";
+    private static String KEY_QUAL = "Quality";
+    private static String KEY_DBSNP = "dbSNP ID";
+
+    private KeyValuePairPanel p;
 
     public BasicVariantInfoSubPanel() {
         VariantInfoPanel.addVariantSelectionChangedListener(this);
@@ -43,107 +46,73 @@ public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSel
     public String getName() {
         return "Variant Details";
     }
-    int indexOfPairLabel = 2;
-
-    @Override
-    public JPanel getInfoPanel() {
-
-        JPanel p = new JPanel();
-        ViewUtil.applyVerticalBoxLayout(p);
-
-        int i = 1;
-
-        JPanel dnaPanel = ViewUtil.getKeyValuePairPanelListItem("DNA ID", "", i++ % 2 == 0);
-        dnaLabel = (JLabel) dnaPanel.getComponent(indexOfPairLabel);
-        p.add(dnaPanel);
-
-        addFilterToKVPPanel(dnaPanel);
-        addCopyToKVPPanel(dnaPanel, dnaLabel);
-
-        JPanel chromPanel = ViewUtil.getKeyValuePairPanelListItem("Chromosome", "", i++ % 2 == 0);
-        chromLabel = (JLabel) chromPanel.getComponent(indexOfPairLabel);
-        p.add(chromPanel);
-
-        addFilterToKVPPanel(chromPanel);
-
-        JPanel posPanel = ViewUtil.getKeyValuePairPanelListItem("Position", "", i++ % 2 == 0);
-        positionLabel = (JLabel) posPanel.getComponent(indexOfPairLabel);
-        p.add(posPanel);
-
-        JPanel refPanel = ViewUtil.getKeyValuePairPanelListItem("Reference", "", i++ % 2 == 0);
-        refLabel = (JLabel) refPanel.getComponent(indexOfPairLabel);
-        p.add(refPanel);
-
-        JPanel altPanel = ViewUtil.getKeyValuePairPanelListItem("Alternate", "", i++ % 2 == 0);
-        altLabel = (JLabel) altPanel.getComponent(indexOfPairLabel);
-        p.add(altPanel);
-
-        JPanel dbSNPPanel = ViewUtil.getKeyValuePairPanelListItem("dbSNP", "", i++ % 2 == 0);
-        dbsnpLabel = (JLabel) dbSNPPanel.getComponent(indexOfPairLabel);
-        p.add(dbSNPPanel);
-
-        ncbiButton = new LinkButton("NCBI");
-        ncbiButton.addActionListener(new ActionListener() {
-
-            String baseUrl = "http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?searchType=adhoc_search&rs=";
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                try {
-                    URL url = new URL(baseUrl + URLEncoder.encode(dbsnpLabel.getText(), charset));
-                    java.awt.Desktop.getDesktop().browse(url.toURI());
-                } catch (Exception ex) {
-                    DialogUtils.displayError("Problem launching website.");
-                }
-            }
-
-        });
-        addToKVPPanel(ncbiButton, dbSNPPanel);
-
-        addFilterToKVPPanel(dbSNPPanel);
-        addCopyToKVPPanel(dbSNPPanel,dbsnpLabel);
-
-        JPanel qualPanel = ViewUtil.getKeyValuePairPanelListItem("Quality", "", i++ % 2 == 0);
-        qualityLabel = (JLabel) qualPanel.getComponent(indexOfPairLabel);
-        p.add(qualPanel);
-
-
-        return p;
-    }
 
     static String charset = "UTF-8";
 
     @Override
+    public JPanel getInfoPanel() {
+        if (p == null) {
+            p = new KeyValuePairPanel(4);
+            p.addKey(KEY_DNAID);
+            p.addKey(KEY_CHROM);
+            p.addKey(KEY_POSITION);
+            p.addMoreRow();
+            p.addKey(KEY_REF);
+            p.addKey(KEY_ALT);
+            p.addKey(KEY_QUAL);
+            p.addKey(KEY_DBSNP);
+
+            JLabel l = new JLabel("This will eventually show a chart");
+            p.setDetailComponent(KEY_QUAL,l);
+
+            int col = 0;
+
+            p.setAdditionalColumn(KEY_DNAID, col, getFilterButton(KEY_DNAID));
+            p.setAdditionalColumn(KEY_DBSNP, col, getFilterButton(KEY_DBSNP));
+            p.setAdditionalColumn(KEY_QUAL, col, getFilterButton(KEY_QUAL));
+
+            col++;
+            p.setAdditionalColumn(KEY_DNAID, col, getCopyButton(KEY_DNAID));
+            p.setAdditionalColumn(KEY_DBSNP, col, getCopyButton(KEY_DBSNP));
+            p.setAdditionalColumn(KEY_QUAL, col, getChartButton(KEY_QUAL));
+
+            col++;
+            p.setAdditionalColumn(KEY_DBSNP, col, getNCBIButton(KEY_DBSNP));
+
+        }
+        return p;
+    }
+
+    public boolean showHeader() {
+        return false;
+    }
+
+    @Override
     public void variantSelectionChanged(VariantRecord r) {
-        dnaLabel.setText(r.getDnaID());
-        chromLabel.setText(r.getChrom());
-        positionLabel.setText(ViewUtil.numToString(r.getPosition()));
-        refLabel.setText(r.getRef());
-        altLabel.setText(r.getAlt());
-        qualityLabel.setText(ViewUtil.numToString(r.getQual()));
-        dbsnpLabel.setText(r.getDbSNPID());
+        if (p == null) { return; }
+        if (r == null) {
+            // TODO show other card
+            return;
+        }
 
-        ncbiButton.setEnabled(!dbsnpLabel.getText().equals(""));
+        p.setValue(KEY_DNAID, r.getDnaID());
+        p.setValue(KEY_CHROM, r.getChrom());
+        p.setValue(KEY_POSITION, ViewUtil.numToString(r.getPosition()));
+        p.setValue(KEY_REF, r.getRef());
+        p.setValue(KEY_ALT, r.getAlt());
+
+        p.setValue(KEY_QUAL, ViewUtil.numToString(r.getQual()));
+        p.setValue(KEY_DBSNP, r.getDbSNPID());
     }
 
-    private void addToKVPPanel(LinkButton component, JPanel kvpPanel) {
-        kvpPanel.add(component, kvpPanel.getComponentCount() - 1);
-        kvpPanel.add(Box.createHorizontalStrut(3), kvpPanel.getComponentCount() - 1);
-    }
-
-    private void addFilterToKVPPanel(JPanel kvpPanel) {
-        LinkButton filterButton = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FILTER).getImage());
-        filterButton.setToolTipText("Add filter condition");
-        addToKVPPanel(filterButton, kvpPanel);
-    }
-
-    private void addCopyToKVPPanel(JPanel kvpPanel, final JLabel label) {
+    private Component getCopyButton(final String key) {
         LinkButton button = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.COPY).getImage());
-        button.setToolTipText("Copy");
+        button.setToolTipText("Copy " + key);
         button.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent ae) {
-                String selection = label.getText();
+                String selection = p.getValue(key);
                 StringSelection data = new StringSelection(selection);
                 Clipboard clipboard =
                         Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -151,6 +120,50 @@ public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSel
                 DialogUtils.displayMessage("Copied \"" + selection + "\" to clipboard.");
             }
         });
-        addToKVPPanel(button, kvpPanel);
+        return button;
+    }
+
+    private Component getFilterButton(final String key) {
+        LinkButton button = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FILTER).getImage());
+        button.setToolTipText("Filter " + key);
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+            }
+        });
+        return button;
+    }
+
+    private Component getChartButton(final String key) {
+        LinkButton button = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART_SMALL).getImage());
+        button.setToolTipText("Chart " + key);
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                p.toggleDetailVisibility(key);
+            }
+        });
+        return button;
+    }
+
+    private Component getNCBIButton(final String key) {
+        LinkButton ncbiButton = new LinkButton("NCBI");
+        ncbiButton.setToolTipText("Lookup " + key + " at NCBI");
+        ncbiButton.addActionListener(new ActionListener() {
+
+            String baseUrl = "http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?searchType=adhoc_search&rs=";
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    URL url = new URL(baseUrl + URLEncoder.encode(p.getValue(key), charset));
+                    java.awt.Desktop.getDesktop().browse(url.toURI());
+                } catch (Exception ex) {
+                    DialogUtils.displayError("Problem launching website.");
+                }
+            }
+
+        });
+
+        return ncbiButton;
     }
 }
