@@ -16,6 +16,7 @@ package org.ut.biolab.medsavant.db.util;
  *    limitations under the License.
  */
 
+import java.io.IOException;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import java.io.File;
 import java.util.Calendar;
@@ -63,10 +64,15 @@ public class ServerDirectorySettings {
         return getDirectory(getMedSavantDirectory().getAbsolutePath(), "cache");
     }
 
-    public static File generateDateStampDirectory(File parent) {
+    /**
+     * Create a directory whose name is a date-stamp.
+     *
+     * @param parent the parent directory, typically <code>new File(".")</code>
+     */
+    public static File generateDateStampDirectory(File parent) throws IOException {
         Calendar today = new GregorianCalendar();
         String dateStamp = today.get(Calendar.YEAR) + "-" + today.get(Calendar.MONTH) + "-" + today.get(Calendar.DAY_OF_MONTH) + "-" + today.get(Calendar.HOUR_OF_DAY) + "-" + today.get(Calendar.MINUTE);
-        File dir = new File(parent, dateStamp);
+        File dir = new File(parent.getCanonicalFile(), dateStamp);
         dir.mkdirs();
         return dir;
     }

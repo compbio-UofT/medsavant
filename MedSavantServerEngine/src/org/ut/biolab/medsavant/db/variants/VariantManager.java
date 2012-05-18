@@ -67,6 +67,7 @@ import org.ut.biolab.medsavant.serverapi.ReferenceQueryUtil;
 import org.ut.biolab.medsavant.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ChromosomeComparator;
+import org.ut.biolab.medsavant.util.IOUtils;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.MiscUtils;
 
@@ -102,7 +103,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         LOG.info("Beginning publish of all tables for project " + projectID);
 
-        Connection c = (ConnectionController.connectPooled(sid));
+        Connection c = ConnectionController.connectPooled(sid);
 
         //get update ids and references
         LOG.info("Getting map of update ids");
@@ -306,6 +307,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //dump existing table
             String existingTableName = projMgr.getVariantTablename(sessID, projID, refID, false);
+            IOUtils.checkForWorldExecute(baseDir);
             File existingVariantsFile = new File(baseDir, "temp_proj" + projID + "_ref" + refID + "_update" + updateID);
             
             LOG.info("Dumping variants to file");

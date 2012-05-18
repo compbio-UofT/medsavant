@@ -16,11 +16,13 @@
 
 package org.ut.biolab.medsavant.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 
@@ -82,11 +84,11 @@ public class IOUtils {
     /**
      * Recursively delete a directory.
      */
-    static public boolean deleteDirectory(File path) {
+    public static boolean deleteDirectory(File path) {
         if (path.exists()) {
             File[] files = path.listFiles();
-            for(int i=0; i<files.length; i++) {
-                if(files[i].isDirectory()) {
+            for (int i=0; i<files.length; i++) {
+                if (files[i].isDirectory()) {
                     deleteDirectory(files[i]);
                 } else {
                     files[i].delete();
@@ -94,5 +96,56 @@ public class IOUtils {
             }
         }
         return path.delete();
+    }
+    
+    /**
+     * Make sure this directory and all its parents have world execute permissions.
+     * This is necessary to ensure that MySQL can write files to the given directory.
+     *
+     * @param base
+     * @return 
+     */
+    public static void checkForWorldExecute(File base) throws IOException {
+        File f = base.isDirectory() ? base : base.getParentFile();
+        while (hasWorldExecute(f)) {
+            f = f.getParentFile();
+            if (f == null) {
+                // Reached /
+                return;
+            }
+        }
+        throw new IOException(f + " did not have execute permissions.");
+    }
+    
+    /**
+     * Retrieve the permission string (e.g. "rwxrwxrwx") for the given file.
+     * TODO: implement this in a less Unix-specific manner.
+     * @param f the file or directory whose permissions we are checking
+     */
+    private static String getPermissionString(File f) throws IOException {
+        Process proc = Runtime.getRuntime().exec("ls -ld " + f);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+        String line = null;
+        String result = null;
+        while ((line = reader.readLine()) != null) {
+            int spacePos = line.indexOf(' ');
+            if (spacePos > 0) {
+                result = line.substring(1, spacePos);
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Does the given directory have world-execute permissions?
+     * TODO: implement this in a less Unix-specific manner.
+     * @param dir the directory to be checked
+     */
+    private static boolean hasWorldExecute(File f) throws IOException {
+        String perm = getPermissionString(f);
+        if (perm != null && perm.length() >= 9) {
+            return perm.charAt(8) == 'x';
+        }
+        return false;
     }
 }

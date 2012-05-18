@@ -100,6 +100,12 @@ public class ImportVariantsWizard extends WizardDialog {
         setupWizard();
     }
 
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(720, 600);
+    }
+    
+
     private void setupWizard() {
         setTitle("Import Variants Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
