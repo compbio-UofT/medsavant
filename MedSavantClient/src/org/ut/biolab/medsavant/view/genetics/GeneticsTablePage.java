@@ -32,6 +32,7 @@ import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.pane.event.CollapsiblePaneEvent;
 import com.jidesoft.pane.event.CollapsiblePaneListener;
 import com.jidesoft.plaf.UIDefaultsLookup;
+import java.awt.Color;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -192,6 +193,8 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
 
         //_container.setBackground(UIManager.getColor("Panel.background"));
         _container.setBorder(UIDefaultsLookup.getBorder("CollapsiblePanes.border"));
+
+        _container.setBackground(new Color(237,237,237));
 
         VariantInfoPanel vpanel = new VariantInfoPanel();
         try {

@@ -27,12 +27,6 @@ public class GeneManiaInfoSubPanel extends InfoSubPanel implements GeneSelection
         return this.name;
     }
 
-    @Override
-    //What's the point of this??
-    public boolean showHeader() {
-        return true;
-    }
-
      @Override
      public JPanel getInfoPanel() {
          JPanel p = new JPanel();

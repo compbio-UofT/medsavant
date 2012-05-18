@@ -25,7 +25,10 @@ import javax.swing.JPanel;
 
 import com.jidesoft.pane.CollapsiblePane;
 
+import com.jidesoft.pane.CollapsiblePanes;
+import com.jidesoft.plaf.UIDefaultsLookup;
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
@@ -35,13 +38,25 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class InfoPanel extends CollapsiblePane {
 
-    private final JPanel container;
-    private final Component glue;
+
+    private final CollapsiblePanes _container;
+    //private final JPanel container;
+    //private final Component glue;
 
     public InfoPanel(String panelName) {
         super(panelName);
 
-        this.setStyle(CollapsiblePane.PLAIN_STYLE);
+        _container = new CollapsiblePanes();
+        _container.setGap(UIDefaultsLookup.getInt("CollapsiblePanes.gap"));
+        _container.setBackground(UIManager.getColor((new JPanel()).getBackground()));
+
+        //_container.setBackground(UIManager.getColor("Panel.background"));
+        //_container.setBorder(UIDefaultsLookup.getBorder("CollapsiblePanes.border"));
+
+        _container.setBorder(ViewUtil.getMediumBorder());
+
+
+        this.setStyle(CollapsiblePane.DROPDOWN_STYLE);
 
         try {
             this.setCollapsed(true);
@@ -53,35 +68,30 @@ public class InfoPanel extends CollapsiblePane {
         //this.setBackground(ViewUtil.getTertiaryMenuColor());
         this.setLayout(new BorderLayout());
 
-        container = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(container);
+        //container = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(_container);
 
         //this.add(ViewUtil.getClearBorderlessJSP(container),BorderLayout.CENTER);
         this.add(Box.createHorizontalGlue());
-        this.add(container);
+        this.add(_container);
 
-        glue = Box.createVerticalGlue();
-        container.add(glue);
+        //glue = Box.createVerticalGlue();
+        //container.add(glue);
     }
 
     public Component addTop(Component ipan) {
-        container.add(Box.createVerticalStrut(10));
-        container.add(ipan);
+        //container.add(Box.createVerticalStrut(10));
+        _container.add(ipan);
         return ipan;
     }
 
     protected void addSubInfoPanel(InfoSubPanel ipan) {
-        container.remove(glue);
 
-        container.add(Box.createVerticalStrut(10));
+        CollapsiblePane p = new CollapsiblePane(ipan.getName());
+        p.setStyle(CollapsiblePane.PLAIN_STYLE);
+        p.setLayout(new BorderLayout());
+        p.add(ipan.getInfoPanel(),BorderLayout.CENTER);
+        _container.add(p);
 
-        if (ipan.showHeader()) {
-            container.add(ViewUtil.center(new JLabel(ipan.getName())));
-        }
-        JPanel p = ipan.getInfoPanel();
-
-        container.add(p);
-
-        container.add(glue);
     }
 }
