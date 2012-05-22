@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.settings.VersionSettings;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -223,25 +224,19 @@ public class AddRemoveDatabaseDialog extends JDialog {
                 }
             }
         } else {
-            final IndeterminateProgressDialog progress = new IndeterminateProgressDialog("Creating Database", "Creating database " + dbName + ". Please wait...", true);
-            Thread t = new Thread() {
+            new IndeterminateProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. Please wait.</html>", dbName)) {
                 @Override
                 public void run() {
                     try {
                         MedSavantClient.initializeRegistry(hostField.getText(), portField.getText());
                         MedSavantClient.SetupAdapter.createDatabase(hostField.getText(), Integer.parseInt(portField.getText()), databaseField.getText(), userField.getText(), passwordField.getPassword(), VersionSettings.getVersionString());
-                        progress.setVisible(false);
-                        setVisible(false);
+                        AddRemoveDatabaseDialog.this.setVisible(false);
                         DialogUtils.displayMessage("Database Created", String.format("<html>Database <i>%s</i> successfully created.</html>", databaseField.getText()));
-                    } catch (Exception ex) {
-                        LOG.error("Error creating database.", ex);
-                        progress.setVisible(false);
-                        DialogUtils.displayException("Sorry", String.format("<html>Database could not be created:<br>%s<br>Please check the settings and try again.</html>", MiscUtils.getMessage(ex)), ex);
+                    } catch (Throwable ex) {
+                        ClientMiscUtils.reportError(String.format("Database could not be created: %s\nPlease check the settings and try again.", MiscUtils.getMessage(ex)), ex);
                     }
                 }
-            };
-            t.start();
-            progress.setVisible(true);            
+            }.setVisible(true);            
         }
     }//GEN-LAST:event_okButtonActionPerformed
 

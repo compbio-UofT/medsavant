@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -59,24 +60,17 @@ public class ProjectController implements ReferenceListener {
 
     public void removeProject(final String projectName) {
 
-        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                "Removing Project",
-                projectName + " project is being removed. Please wait.",
-                true);
-        Thread thread = new Thread() {
+        new IndeterminateProgressDialog("Removing Project", projectName + " project is being removed.  Please wait.") {
             @Override
             public void run() {
                 try {
                     MedSavantClient.ProjectQueryUtilAdapter.removeProject(LoginController.sessionId, projectName);
                     fireProjectRemovedEvent(projectName);
-                } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Error removing project.", ex);
+                } catch (Throwable ex) {
+                    ClientMiscUtils.reportError("Error removing project: " + MiscUtils.getMessage(ex), ex);
                 }
-                dialog.close();
             }
-        };
-        thread.start();
-        dialog.setVisible(true);
+        }.setVisible(true);
     }
 
     public void fireProjectRemovedEvent(String projectName) {
@@ -86,14 +80,9 @@ public class ProjectController implements ReferenceListener {
         }
     }
 
-    public int addProject(String projectName, List<CustomField> fields) {
-        int projectid = -1;
-        try {
-            projectid = MedSavantClient.ProjectQueryUtilAdapter.addProject(LoginController.sessionId, projectName, fields);
-            ProjectController.getInstance().fireProjectAddedEvent(projectName);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    public int addProject(String projectName, List<CustomField> fields) throws Exception {
+        int projectid = MedSavantClient.ProjectQueryUtilAdapter.addProject(LoginController.sessionId, projectName, fields);
+        ProjectController.getInstance().fireProjectAddedEvent(projectName);
         return projectid;
     }
 

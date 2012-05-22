@@ -63,7 +63,6 @@ public class CohortWizard extends WizardDialog {
         pack();
         setResizable(false);
         setLocationRelativeTo(null);
-        setVisible(true);
     }
     
     private AbstractWizardPage getNamePage() {

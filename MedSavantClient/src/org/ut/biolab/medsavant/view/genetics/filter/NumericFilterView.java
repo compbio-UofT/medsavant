@@ -42,6 +42,7 @@ import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RangeCondition;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
@@ -121,25 +122,16 @@ public class NumericFilterView extends FilterView{
         } else if (columnname.equals("sb")) {
             extremeValues = new Range(-100,100);
         } else {
-            final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                    "Generating List",
-                    "<HTML>Determining extreme values for field. <BR>This may take a few minutes the first time.</HTML>",
-                    true);
-            Thread t = new Thread() {
+            new IndeterminateProgressDialog("Generating List", "<html>Determining extreme values for field.<br>This may take a few minutes the first time.</html>") {
                 @Override
                 public void run() {
                     try {
                         initHelper(container, new Range(MedSavantClient.VariantManager.getExtremeValuesForColumn(LoginController.sessionId, tablename, columnname)));
-                        dialog.close();
-                    } catch (SQLException ex) {
-                        LOG.error(String.format("Error getting extreme values for %s.%s.", tablename, columnname), ex);
-                    } catch (RemoteException ex) {
-                        LOG.error(String.format("Error getting extreme values for %s.%s.", tablename, columnname), ex);
+                    } catch (Throwable ex) {
+                        ClientMiscUtils.reportError(String.format("Error getting extreme values for %s.%s: %s", tablename, columnname, MiscUtils.getMessage(ex)), ex);
                     }
                 }
-            };
-            t.start();
-            dialog.setVisible(true);
+            }.setVisible(true);
             return;
         }
 

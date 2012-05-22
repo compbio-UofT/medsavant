@@ -160,26 +160,16 @@ public class StringListFilterView extends FilterView {
                         ClientMiscUtils.GENDER_MALE, ClientMiscUtils.GENDER_FEMALE, ClientMiscUtils.GENDER_UNKNOWN
                     }));
         } else {
-            final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                    "Generating List",
-                    "<HTML>Determining distinct values for field. <BR>This may take a few minutes the first time.</HTML>",
-                    true);
-            Thread t = new Thread() {
-
+            new IndeterminateProgressDialog("Generating List", "<html>Determining distinct values for field.<br>This may take a few minutes the first time.</html>") {
                 @Override
                 public void run() {
                     try {
                         initHelper(container, MedSavantClient.VariantManager.getDistinctValuesForColumn(LoginController.sessionId, tablename, columnname, true));
-                        dialog.close();
-                    } catch (SQLException ex) {
-                        LOG.error("Error getting distinct values for " + tablename + "." + columnname, ex);
-                    } catch (RemoteException ex) {
-                        LOG.error("Error getting distinct values for " + tablename + "." + columnname, ex);
+                    } catch (Throwable ex) {
+                        ClientMiscUtils.reportError(String.format("Error getting distinct values for %s.%s: %s", tablename, columnname, ClientMiscUtils.getMessage(ex)), ex);
                     }
                 }
-            };
-            t.start();
-            dialog.setVisible(true);
+            }.setVisible(true);
             return;
 
         }

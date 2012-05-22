@@ -21,6 +21,8 @@ import java.util.List;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.RegionSet;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -70,11 +72,7 @@ class RegionDetailedListEditor extends DetailedListEditor {
 
         if (result == DialogUtils.YES) {
 
-            final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                    "Removing Region List(s)",
-                    "Removing region list(s). Please wait.",
-                    true);
-            Thread thread = new Thread() {
+            new IndeterminateProgressDialog("Removing Region List(s)", "Removing region list(s). Please wait.") {
                 @Override
                 public void run() {
                     int numCouldntRemove = 0;
@@ -84,19 +82,16 @@ class RegionDetailedListEditor extends DetailedListEditor {
                         int listID = ((RegionSet) v[0]).getID();
                         try {
                             MedSavantClient.RegionSetManager.removeRegionSet(LoginController.sessionId, listID);
-                        } catch (Exception ex) {
+                        } catch (Throwable ex) {
                             numCouldntRemove++;
-                            DialogUtils.displayErrorMessage("Could not remove " + listName + ".", ex);
+                            ClientMiscUtils.reportError("Could not remove " + listName + ": " + MiscUtils.getMessage(ex), ex);
                         }
                     }
-                    dialog.close();
                     if (numCouldntRemove != items.size()) {
                         DialogUtils.displayMessage(String.format("Successfully removed %d list(s)", items.size()));
                     }
                 }
-            };
-            thread.start();
-            dialog.setVisible(true);
+            }.setVisible(true);
         }
     }
 }

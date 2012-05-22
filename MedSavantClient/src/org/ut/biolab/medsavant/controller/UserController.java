@@ -26,7 +26,10 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.model.UserLevel;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+
 
 /**
  *
@@ -50,26 +53,17 @@ public class UserController {
     }
     
     public void removeUser(final String name) {
-        final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                "Removing User", 
-                name + " is being removed. Please wait.", 
-                true);
-        Thread thread = new Thread() {
+        new IndeterminateProgressDialog("Removing User", name + " is being removed. Please wait.") {
             @Override
             public void run() {
                 try {
                     MedSavantClient.UserQueryUtilAdapter.removeUser(LoginController.sessionId, name);
                     fireUserRemovedEvent(name);
-                } catch (SQLException ex) {
-                    LOG.error("Error removing user.", ex);
-                } catch (RemoteException ex) {
-                    LOG.error("Error removing user.", ex);
+                } catch (Throwable ex) {
+                    ClientMiscUtils.reportError("Error removing user: " + MiscUtils.getMessage(ex), ex);
                 }
-                dialog.close();  
             }
-        };
-        thread.start(); 
-        dialog.setVisible(true);
+        }.setVisible(true);
     }
 
     private void fireUserRemovedEvent(String name) {

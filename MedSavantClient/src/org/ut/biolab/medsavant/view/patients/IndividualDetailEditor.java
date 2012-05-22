@@ -16,14 +16,13 @@
 
 package org.ut.biolab.medsavant.view.patients;
 
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.List;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -76,11 +75,7 @@ class IndividualDetailEditor extends DetailedListEditor {
                 patients[index++] = id;
             }
 
-            final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-                    "Removing Patient(s)",
-                    patients.length + " patient(s) being removed. Please wait.",
-                    true);
-            Thread thread = new Thread() {
+            new IndeterminateProgressDialog("Removing Patient(s)", patients.length + " patient(s) being removed. Please wait.") {
                 @Override
                 public void run() {
                     try {
@@ -88,17 +83,13 @@ class IndividualDetailEditor extends DetailedListEditor {
                                 LoginController.sessionId,
                                 ProjectController.getInstance().getCurrentProjectId(),
                                 patients);
-                        dialog.close();
                         DialogUtils.displayMessage("Successfully removed " + (items.size()) + " patient(s)");
                     } catch (Exception ex) {
-                        ClientMiscUtils.reportError("Couldn't remove patient(s)", ex);
-                        dialog.close();
+                        ClientMiscUtils.reportError("Couldn't remove patient(s): " + MiscUtils.getMessage(ex), ex);
                     }
 
                 }
-            };
-            thread.start();
-            dialog.setVisible(true);
+            }.setVisible(true);
         }
     }
 }
