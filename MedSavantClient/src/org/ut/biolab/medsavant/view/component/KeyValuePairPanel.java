@@ -134,10 +134,11 @@ public class KeyValuePairPanel extends JPanel {
 
         addKey(KEY_MORE);
         newRowsGoIntoMoreSection = true;
-        LinkButton b = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MORE).getImage());
-        b.setToolTipText("Show more");
-        ViewUtil.makeSmall(b);
-        b.addActionListener(new ActionListener() {
+        HoverButton hb = new HoverButton("▾");
+        //LinkButton b = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.MORE).getImage());
+        hb.setToolTipText("Show more");
+        ViewUtil.makeSmall(hb);
+        hb.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -145,7 +146,7 @@ public class KeyValuePairPanel extends JPanel {
             }
 
         });
-        this.setValue(KEY_MORE, b);
+        this.setValue(KEY_MORE, hb);
     }
 
     public void toggleMoreVisibility() {
