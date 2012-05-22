@@ -1,10 +1,5 @@
 /*
- * PluginManagerDialog.java
- *
- * Created on Mar 9, 2010, 10:11:36 AM
- *
- *
- *    Copyright 2010 University of Toronto
+ *    Copyright 2010-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,7 +18,6 @@ package org.ut.biolab.medsavant.plugin;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.Window;
 import java.io.File;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -49,18 +43,18 @@ public class PluginManagerDialog extends JDialog {
 
     public static PluginManagerDialog getInstance() {
         if (instance == null) {
-            instance = new PluginManagerDialog(DialogUtils.getMainWindow());
+            instance = new PluginManagerDialog();
         }
         return instance;
     }
 
     /** Creates new form PluginManager */
-    private PluginManagerDialog(Window parent) {
-        super(parent, "Plugin Manager", Dialog.ModalityType.APPLICATION_MODAL);
+    private PluginManagerDialog() {
+        super(DialogUtils.getFrontWindow(), "Plugin Manager", Dialog.ModalityType.APPLICATION_MODAL);
         initComponents();
         ClientMiscUtils.registerCancelButton(closeButton);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(parent);
+        setLocationRelativeTo(getParent());
         setResizable(false);
         browser = new PluginBrowser();
         browserPanel.add(new JScrollPane(browser), BorderLayout.CENTER);

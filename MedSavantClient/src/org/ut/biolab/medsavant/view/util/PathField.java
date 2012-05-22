@@ -37,9 +37,9 @@ public class PathField extends JPanel {
     boolean saving;
     boolean directoriesOnly;
 
-     public PathField(int chooserType) {
-         this(chooserType, false);
-     }
+    public PathField(int chooserType) {
+        this(chooserType, false);
+    }
 
     public PathField(int type, boolean directoriesOnly) {
         field = new JTextField();
@@ -75,6 +75,10 @@ public class PathField extends JPanel {
                 setPath(f.getAbsolutePath());
             }
         });
+    }
+
+    public File getFile() {
+        return new File(field.getText());
     }
 
     public String getPath() {

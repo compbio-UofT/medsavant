@@ -41,12 +41,12 @@ public class NewReferenceDialog extends javax.swing.JDialog {
 
     /** Creates new form NewProjectDialog */
     public NewReferenceDialog() {
-        super(DialogUtils.getMainWindow(), Dialog.ModalityType.APPLICATION_MODAL);
-        setTitle("Create a reference");
+        super(DialogUtils.getFrontWindow(), Dialog.ModalityType.APPLICATION_MODAL);
+        setTitle("Create a Reference");
         initComponents();
+        setLocationRelativeTo(getParent());
         getRootPane().setDefaultButton(okButton);
         MiscUtils.registerCancelButton(cancelButton);
-        setLocationRelativeTo(getParent());
         
         //setup table
         model = new DefaultTableModel(){

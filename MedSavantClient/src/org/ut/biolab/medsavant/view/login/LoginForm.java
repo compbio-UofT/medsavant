@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.dialog.AddRemoveDatabaseDialog;
+import org.ut.biolab.medsavant.view.manage.AddRemoveDatabaseDialog;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -399,7 +399,11 @@ public class LoginForm extends JPanel implements LoginListener {
     }//GEN-LAST:event_databaseFieldKeyPressed
 
     private void dbCreateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dbCreateButtonActionPerformed
-        new AddRemoveDatabaseDialog(hostField.getText(), portField.getText(), databaseField.getText(), false).setVisible(true);
+        AddRemoveDatabaseDialog dlg = new AddRemoveDatabaseDialog(hostField.getText(), portField.getText(), databaseField.getText(), false);
+        dlg.setVisible(true);
+        hostField.setText(dlg.getHost());
+        portField.setText(Integer.toString(dlg.getPort()));
+        databaseField.setText(dlg.getDatabase());
     }//GEN-LAST:event_dbCreateButtonActionPerformed
 
     private void dbRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dbRemoveButtonActionPerformed

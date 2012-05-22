@@ -1,5 +1,5 @@
 /*
- *    Copyright 2010-2011 University of Toronto
+ *    Copyright 2010-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -29,21 +29,21 @@ import org.ut.biolab.medsavant.settings.VersionSettings;
  * @author mfiume
  */
 public class BugReportDialog extends JDialog {
-    private final PathField pf;
+    private final PathField pathField;
 
     public BugReportDialog(String description, String path) {
-        super(DialogUtils.getMainWindow(), Dialog.ModalityType.APPLICATION_MODAL);
+        super(DialogUtils.getFrontWindow(), Dialog.ModalityType.APPLICATION_MODAL);
         initComponents();
         setLocationRelativeTo(getParent());
-        attachment_panel.setLayout(new BorderLayout());
-        pf = new PathField(JFileChooser.OPEN_DIALOG);
-        this.attachment_panel.add(pf, BorderLayout.CENTER);
+        attachmentPanel.setLayout(new BorderLayout());
+        pathField = new PathField(JFileChooser.OPEN_DIALOG);
+        attachmentPanel.add(pathField, BorderLayout.CENTER);
         if (path != null) {
-            pf.setPath(path);
+            pathField.setPath(path);
         }
         if(description != null) {
-            field_description.setText(description);
-            field_description.setCaretPosition(0);
+            descriptionField.setText(description);
+            descriptionField.setCaretPosition(0);
         }
     }
 
@@ -56,26 +56,26 @@ public class BugReportDialog extends JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        field_description = new javax.swing.JTextArea();
-        jLabel3 = new javax.swing.JLabel();
-        button_cancel = new javax.swing.JButton();
-        button_send = new javax.swing.JButton();
-        field_name = new javax.swing.JTextField();
-        field_email = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
-        field_institution = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
-        field_requesttype = new javax.swing.JComboBox();
+        descriptionField = new javax.swing.JTextArea();
+        javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
+        cancelButton = new javax.swing.JButton();
+        sendButton = new javax.swing.JButton();
+        nameField = new javax.swing.JTextField();
+        emailField = new javax.swing.JTextField();
+        javax.swing.JLabel jLabel4 = new javax.swing.JLabel();
+        institutionField = new javax.swing.JTextField();
+        javax.swing.JLabel jLabel5 = new javax.swing.JLabel();
+        typeCombo = new javax.swing.JComboBox();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTextArea3 = new javax.swing.JTextArea();
-        jSeparator1 = new javax.swing.JSeparator();
-        jLabel6 = new javax.swing.JLabel();
-        attachment_panel = new javax.swing.JPanel();
+        javax.swing.JTextArea jTextArea3 = new javax.swing.JTextArea();
+        javax.swing.JSeparator jSeparator1 = new javax.swing.JSeparator();
+        javax.swing.JLabel jLabel6 = new javax.swing.JLabel();
+        attachmentPanel = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
-        jTextArea4 = new javax.swing.JTextArea();
+        javax.swing.JTextArea jTextArea4 = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Report an Issue");
@@ -87,32 +87,26 @@ public class BugReportDialog extends JDialog {
         jLabel2.setFont(new java.awt.Font("Tahoma", 1, 13));
         jLabel2.setText("Email address *");
 
-        field_description.setColumns(20);
-        field_description.setLineWrap(true);
-        field_description.setRows(5);
-        field_description.setWrapStyleWord(true);
-        jScrollPane1.setViewportView(field_description);
+        descriptionField.setColumns(20);
+        descriptionField.setLineWrap(true);
+        descriptionField.setRows(5);
+        descriptionField.setWrapStyleWord(true);
+        jScrollPane1.setViewportView(descriptionField);
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 1, 13));
         jLabel3.setText("Description of issue *");
 
-        button_cancel.setText("Cancel");
-        button_cancel.addActionListener(new java.awt.event.ActionListener() {
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                button_cancelActionPerformed(evt);
+                cancelButtonActionPerformed(evt);
             }
         });
 
-        button_send.setText("Send Request");
-        button_send.addActionListener(new java.awt.event.ActionListener() {
+        sendButton.setText("Send Report");
+        sendButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                button_sendActionPerformed(evt);
-            }
-        });
-
-        field_email.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                field_emailActionPerformed(evt);
+                sendButtonActionPerformed(evt);
             }
         });
 
@@ -122,7 +116,7 @@ public class BugReportDialog extends JDialog {
         jLabel5.setFont(new java.awt.Font("Tahoma", 1, 13));
         jLabel5.setText("Issue Type *");
 
-        field_requesttype.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "File Formatting", "Navigation", "Visualization", "Other" }));
+        typeCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Database", "Importing", "Visualizing", "Other" }));
 
         jScrollPane3.setBorder(null);
         jScrollPane3.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -144,16 +138,16 @@ public class BugReportDialog extends JDialog {
         jLabel6.setFont(new java.awt.Font("Tahoma", 1, 13));
         jLabel6.setText("Attachment   ");
 
-        attachment_panel.setBackground(new java.awt.Color(255, 51, 51));
+        attachmentPanel.setBackground(new java.awt.Color(255, 51, 51));
 
-        javax.swing.GroupLayout attachment_panelLayout = new javax.swing.GroupLayout(attachment_panel);
-        attachment_panel.setLayout(attachment_panelLayout);
-        attachment_panelLayout.setHorizontalGroup(
-            attachment_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 532, Short.MAX_VALUE)
+        javax.swing.GroupLayout attachmentPanelLayout = new javax.swing.GroupLayout(attachmentPanel);
+        attachmentPanel.setLayout(attachmentPanelLayout);
+        attachmentPanelLayout.setHorizontalGroup(
+            attachmentPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 543, Short.MAX_VALUE)
         );
-        attachment_panelLayout.setVerticalGroup(
-            attachment_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        attachmentPanelLayout.setVerticalGroup(
+            attachmentPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 29, Short.MAX_VALUE)
         );
 
@@ -166,7 +160,7 @@ public class BugReportDialog extends JDialog {
         jTextArea4.setBackground(java.awt.SystemColor.control);
         jTextArea4.setColumns(20);
         jTextArea4.setEditable(false);
-        jTextArea4.setFont(new java.awt.Font("Tahoma", 0, 13));
+        jTextArea4.setFont(new java.awt.Font("Tahoma", 0, 13)); // NOI18N
         jTextArea4.setLineWrap(true);
         jTextArea4.setRows(5);
         jTextArea4.setText("10MB maximum. You may attach (1) a screenshot demonstrating the issue or (2) a file, if you are having trouble formatting it. Please ensure that you have permission before attaching private data.");
@@ -179,35 +173,29 @@ public class BugReportDialog extends JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(27, 27, 27)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(171, 171, 171)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel5)
-                            .addComponent(jLabel6)
-                            .addComponent(jLabel3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
-                            .addComponent(attachment_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(button_send)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(button_cancel))
-                            .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
-                            .addComponent(field_email, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
-                            .addComponent(field_name, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
-                            .addComponent(field_institution, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
-                            .addComponent(field_requesttype, 0, 532, Short.MAX_VALUE)))
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
+                    .addComponent(attachmentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(171, 171, 171)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)))
+                        .addComponent(sendButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cancelButton))
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
+                    .addComponent(emailField, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
+                    .addComponent(nameField, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
+                    .addComponent(institutionField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
+                    .addComponent(typeCombo, 0, 543, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -220,26 +208,26 @@ public class BugReportDialog extends JDialog {
                 .addGap(1, 1, 1)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(field_name, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(nameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(11, 11, 11)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(field_email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(emailField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(field_institution, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(institutionField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
-                    .addComponent(field_requesttype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(typeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(11, 11, 11)
                         .addComponent(jLabel6))
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(attachment_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(attachmentPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -248,8 +236,8 @@ public class BugReportDialog extends JDialog {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(button_cancel)
-                            .addComponent(button_send)))
+                            .addComponent(cancelButton)
+                            .addComponent(sendButton)))
                     .addComponent(jLabel3))
                 .addContainerGap())
         );
@@ -257,25 +245,21 @@ public class BugReportDialog extends JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void field_emailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_field_emailActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_field_emailActionPerformed
-
-    private void button_cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_cancelActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         this.dispose();
-    }//GEN-LAST:event_button_cancelActionPerformed
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void button_sendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_sendActionPerformed
+    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         if (validateForm()) {
 
-            String name = getPersonsName();
-            String email = getEmail();
-            String type = getType();
-            String institution = getInstitution();
-            String description = getDescription();
-            String savantVersion = getSavantVersion();
-            String jdk = getJDKVersion();
-            String os = getOS();
+            String name = nameField.getText();
+            String email = emailField.getText();
+            String type = typeCombo.getSelectedItem().toString();
+            String institution = institutionField.getText();
+            String description = descriptionField.getText();
+            String version = VersionSettings.getVersionString();
+            String jdk = getProperty("java.version");
+            String os = getProperty("os.name") + " " + getProperty("os.arch") + " " + getProperty("os.version");
 
             String subject = "[MedSavant Bug Report] from " + name;
             String message = ""
@@ -283,20 +267,20 @@ public class BugReportDialog extends JDialog {
                 + "Email: " + email + "\n\n"
                 + "Type: " + type + "\n\n"
                 + "Institution: " + institution + "\n\n"
-                + "MedSavant Version: " + savantVersion + "\n\n"
+                + "MedSavant Version: " + version + "\n\n"
                 + "JDK Version: " + jdk + "\n\n"
                 + "OS Version: " + os + "\n\n"
                 + "Description:\n" + description + "\n";
 
-            this.button_send.setText("Sending...");
-            this.button_send.setEnabled(false);
-            this.button_cancel.setEnabled(false);
+            sendButton.setText("Sending...");
+            sendButton.setEnabled(false);
+            cancelButton.setEnabled(false);
 
             boolean result;
-            if (this.pf.getPath().equals("")) {
+            if (this.pathField.getPath().equals("")) {
                 result = Mail.sendEmailToDevelopers(subject, message,null);
             } else {
-                result = Mail.sendEmail(name, subject, message, new File(this.pf.getPath()));
+                result = Mail.sendEmail(name, subject, message, pathField.getFile());
             }
 
             if (result) {
@@ -307,62 +291,21 @@ public class BugReportDialog extends JDialog {
 
             this.dispose();
         }
-    }//GEN-LAST:event_button_sendActionPerformed
+    }//GEN-LAST:event_sendButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel attachment_panel;
-    private javax.swing.JButton button_cancel;
-    private javax.swing.JButton button_send;
-    private javax.swing.JTextArea field_description;
-    private javax.swing.JTextField field_email;
-    private javax.swing.JTextField field_institution;
-    private javax.swing.JTextField field_name;
-    private javax.swing.JComboBox field_requesttype;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
+    private javax.swing.JPanel attachmentPanel;
+    private javax.swing.JButton cancelButton;
+    private javax.swing.JTextArea descriptionField;
+    private javax.swing.JTextField emailField;
+    private javax.swing.JTextField institutionField;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTextArea jTextArea3;
-    private javax.swing.JTextArea jTextArea4;
+    private javax.swing.JTextField nameField;
+    private javax.swing.JButton sendButton;
+    private javax.swing.JComboBox typeCombo;
     // End of variables declaration//GEN-END:variables
-
-    private String getPersonsName() {
-        return this.field_name.getText();
-    }
-
-    private String getEmail() {
-        return this.field_email.getText();
-    }
-
-    private String getType() {
-        return (String) this.field_requesttype.getSelectedItem();
-    }
-
-    private String getInstitution() {
-        return this.field_institution.getText();
-    }
-
-    private String getDescription() {
-        return this.field_description.getText();
-    }
-
-    private String getSavantVersion(){
-        return VersionSettings.getVersionString();
-    }
-
-    private String getJDKVersion(){
-        return getProperty("java.version");
-    }
-
-    private String getOS(){
-        return getProperty("os.name") + " " + getProperty("os.arch") + " " + getProperty("os.version");
-    }
 
     private String getProperty(String propertyName){
         try {
@@ -375,33 +318,27 @@ public class BugReportDialog extends JDialog {
     }
 
     private boolean validateForm() {
-        if (this.getPersonsName().equals("")){
+        if (nameField.getText().equals("")){
             DialogUtils.displayMessage("Enter your name.");
-            this.field_name.requestFocus();
+            nameField.requestFocus();
             return false;
-        } else if (!this.getEmail().contains("@")) {
+        } else if (!emailField.getText().contains("@")) {
             DialogUtils.displayMessage("Enter a valid email address.");
-            this.field_email.requestFocus();
+            emailField.requestFocus();
             return false;
-        } else if (!this.pf.getPath().equals("") && !(new File(this.pf.getPath()).exists())) {
+        } else if (!pathField.getPath().equals("") && !pathField.getFile().exists()) {
             DialogUtils.displayMessage("The attachment does not exist at that path.");
-            this.pf.requestFocus();
+            this.pathField.requestFocus();
             return false;
-        } else if (fileSize(new File(this.pf.getPath())) > 10000000) {
-            DialogUtils.displayMessage("The attachment is too large.\nIf you are having issues formatting this file,\nyou could attach a file that contains the first few lines (e.g. 30 lines). That is often enough to diagnose the problem.");
-            this.pf.requestFocus();
+        } else if (pathField.getFile().length() > 10000000) {
+            DialogUtils.displayMessage("The attachment is too large.\nIf you are having issues working with this file,\nyou could attach a file that contains the first few lines (e.g. 30 lines). That is often enough to diagnose the problem.");
+            this.pathField.requestFocus();
             return false;
-        }
-        else if (this.getDescription().equals("")) {
-            DialogUtils.displayMessage("Enter a description of the feature.");
-            this.field_description.requestFocus();
+        } else if (descriptionField.getText().equals("")) {
+            DialogUtils.displayMessage("Enter a description of the problems.");
+            descriptionField.requestFocus();
             return false;
         }
         return true;
     }
-
-    private long fileSize(File file) {
-        return file.length();
-    }
-
 }

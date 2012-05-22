@@ -88,15 +88,15 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="jLabel3" alignment="1" pref="440" max="32767" attributes="0"/>
-                      <Component id="field_hostname" alignment="1" pref="440" max="32767" attributes="0"/>
+                      <Component id="hostField" alignment="1" pref="440" max="32767" attributes="0"/>
                       <Component id="jLabel4" alignment="0" pref="440" max="32767" attributes="0"/>
-                      <Component id="field_port" alignment="1" pref="440" max="32767" attributes="0"/>
+                      <Component id="portField" alignment="1" pref="440" max="32767" attributes="0"/>
                       <Component id="jLabel5" alignment="0" pref="440" max="32767" attributes="0"/>
-                      <Component id="field_database" alignment="0" pref="440" max="32767" attributes="0"/>
+                      <Component id="databaseField" alignment="0" pref="440" max="32767" attributes="0"/>
                       <Component id="jLabel6" alignment="0" pref="440" max="32767" attributes="0"/>
                       <Component id="jLabel7" alignment="0" pref="440" max="32767" attributes="0"/>
-                      <Component id="field_password" alignment="0" pref="440" max="32767" attributes="0"/>
-                      <Component id="field_user" alignment="1" pref="440" max="32767" attributes="0"/>
+                      <Component id="passwordField" alignment="0" pref="440" max="32767" attributes="0"/>
+                      <Component id="userField" alignment="1" pref="440" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -108,23 +108,23 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="field_hostname" min="-2" max="-2" attributes="0"/>
+                  <Component id="hostField" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="field_port" min="-2" max="-2" attributes="0"/>
+                  <Component id="portField" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="field_database" min="-2" max="-2" attributes="0"/>
+                  <Component id="databaseField" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="field_user" min="-2" max="-2" attributes="0"/>
+                  <Component id="userField" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="field_password" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordField" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
@@ -141,7 +141,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JTextField" name="field_hostname">
+        <Component class="javax.swing.JTextField" name="hostField">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Lucida Grande" size="15" style="0"/>
@@ -159,7 +159,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JTextField" name="field_port">
+        <Component class="javax.swing.JTextField" name="portField">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Lucida Grande" size="15" style="0"/>
@@ -177,7 +177,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JTextField" name="field_database">
+        <Component class="javax.swing.JTextField" name="databaseField">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Lucida Grande" size="15" style="0"/>
@@ -195,7 +195,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JPasswordField" name="field_password">
+        <Component class="javax.swing.JPasswordField" name="passwordField">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Lucida Grande" size="15" style="0"/>
@@ -213,7 +213,7 @@
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JTextField" name="field_user">
+        <Component class="javax.swing.JTextField" name="userField">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Lucida Grande" size="15" style="0"/>

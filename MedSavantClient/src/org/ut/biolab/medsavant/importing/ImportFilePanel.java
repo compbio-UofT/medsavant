@@ -166,8 +166,8 @@ public class ImportFilePanel extends JPanel {
     }
 
     private void setDelimiter(char delim) {
-        this.delimiter = delim;
-        this.updatePreview();
+        delimiter = delim;
+        updatePreview();
     }
 
     public char getDelimiter() {
@@ -179,13 +179,7 @@ public class ImportFilePanel extends JPanel {
     }
 
     public boolean validateForm() {
-
-        File f = new File(pathField.getPath());
-        if (!f.exists()) {
-            return false;
-        }
-
-        return true;
+        return pathField.getFile().exists();
     }
 
     //private addFormat(FileFormat ff) {
@@ -201,7 +195,7 @@ public class ImportFilePanel extends JPanel {
 
         if (pathField == null) { return; }
 
-        String path = this.pathField.getPath();
+        String path = pathField.getPath();
         File file = new File(path);
 
         previewPanel.removeAll();

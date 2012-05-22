@@ -1,5 +1,5 @@
 /*
- *    Copyright 2010-2011 University of Toronto
+ *    Copyright 2010-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -33,10 +33,9 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
 import com.jidesoft.dialog.JideOptionPane;
-import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.MedSavantFrame;
+import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 
 
 /**
@@ -67,27 +66,27 @@ public class DialogUtils {
 
 
     public static int askYesNo(String title, String prompt) {
-        return JOptionPane.showConfirmDialog(getMainWindow(), prompt, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        return JOptionPane.showConfirmDialog(getFrontWindow(), prompt, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
 
     public static int askYesNo(String title, String prompt, Object... args) {
-        return JOptionPane.showConfirmDialog(getMainWindow(), String.format(prompt, args), title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        return JOptionPane.showConfirmDialog(getFrontWindow(), String.format(prompt, args), title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
 
     public static int askYesNoCancel(String title, String prompt) {
-        return JOptionPane.showConfirmDialog(getMainWindow(), prompt, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        return JOptionPane.showConfirmDialog(getFrontWindow(), prompt, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
 
     public static void displayError(String title, String message) {
-        JOptionPane.showMessageDialog(getMainWindow(), message, title, JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(getFrontWindow(), message, title, JOptionPane.ERROR_MESSAGE);
     }
 
     public static void displayMessage(String title, String message) {
-        JOptionPane.showMessageDialog(getMainWindow(), message, title, JOptionPane.PLAIN_MESSAGE);
+        JOptionPane.showMessageDialog(getFrontWindow(), message, title, JOptionPane.PLAIN_MESSAGE);
     }
 
     public static String displayInputMessage(String title, String message, String defaultInput) {
-        String result = JOptionPane.showInputDialog(getMainWindow(), message, title, JOptionPane.QUESTION_MESSAGE);
+        String result = JOptionPane.showInputDialog(getFrontWindow(), message, title, JOptionPane.QUESTION_MESSAGE);
         if (result != null && result.length() > 0) {
             return result;
         }
@@ -190,7 +189,7 @@ public class DialogUtils {
             if (initialDir != null) {
                 fd.setCurrentDirectory(initialDir);
             }
-            int result = fd.showOpenDialog(getMainWindow());
+            int result = fd.showOpenDialog(getFrontWindow());
             if (result == JFileChooser.APPROVE_OPTION) {
                 return fd.getSelectedFile();
             }
@@ -333,7 +332,7 @@ public class DialogUtils {
 
         public static boolean confirmChangeReference(boolean isChangingProject){
         int result = JOptionPane.showConfirmDialog(
-                null,
+                getFrontWindow(),
                 "<HTML>Changing the " + (isChangingProject ? "project" : "reference") + " will remove current filters.<BR>Are you sure you want to do this?</HTML>",
                 "Confirm",
                 JOptionPane.YES_NO_OPTION,
@@ -342,14 +341,14 @@ public class DialogUtils {
     }
 
     public static void displayErrorMessage(String msg, Throwable t) {
-        JOptionPane.showMessageDialog(null, msg, "Database Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(getFrontWindow(), msg, "Database Error", JOptionPane.ERROR_MESSAGE);
     }
 
     /**
      * For purposes of parenting dialogs, here's frontmost window.  Generally, it's the
      * MedSavant main window, but in some cases it could be a dialog.
      */
-    public static Window getMainWindow() {
+    public static Window getFrontWindow() {
         return KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
     }
 
@@ -358,7 +357,7 @@ public class DialogUtils {
      * depending on whether the parent is a Frame or a Dialog.
      */
     private static FileDialog getFileDialog(String title, int type) {
-        Window w = getMainWindow();
+        Window w = getFrontWindow();
         if (w instanceof Frame) {
             return new FileDialog((Frame)w, title, type);
         } else {
