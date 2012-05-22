@@ -16,9 +16,9 @@
 
 package org.ut.biolab.medsavant.model.event;
 
+import java.rmi.RemoteException;
 import java.sql.SQLException;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.db.FatalDatabaseException;
+
 
 /**
  *
@@ -26,6 +26,6 @@ import org.ut.biolab.medsavant.db.FatalDatabaseException;
  */
 public interface FiltersChangedListener {
 
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException;
+    public void filtersChanged() throws SQLException, RemoteException;
 
 }

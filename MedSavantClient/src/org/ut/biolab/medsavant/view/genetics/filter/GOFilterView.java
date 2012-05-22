@@ -1,37 +1,37 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
-import org.ut.biolab.medsavant.view.component.Util.DataRetriever;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.ont.OntologyRetriever;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -47,24 +47,27 @@ class GOFilterView extends FilterView {
     //private static final String COHORT_ALL = "All Individuals";
     private final Object lock = new Object();
 
-    static FilterView getGOFilterView(int queryId) {
-        return new GOFilterView(queryId, new JPanel());
-    }
+    private Integer appliedID;
+    private ActionListener al;
+
 
     private JButton applyButton;
     private JLabel labelSelected;
 
 
-    public GOFilterView(FilterState state, int queryId) throws SQLException {
-        this(queryId, new JPanel());
+    private GOFilterView(FilterState state, int queryID) throws IOException {
+        this(queryID, new JPanel());
         if (state.getValues().get("value") != null) {
             applyFilter(Integer.parseInt(state.getValues().get("value")));
         }
     }
-    private Integer appliedId;
-    private ActionListener al;
+    
+    public GOFilterView(int queryID, JPanel container) throws IOException {
+        super(FILTER_NAME, container, queryID);
+        createContentPanel(container);
+    }
 
-    public void applyFilter(int cohortId) {
+    public final void applyFilter(int cohortId) {
 
         /*
         for (int i = 0; i < b.getItemCount(); i++) {
@@ -76,11 +79,6 @@ class GOFilterView extends FilterView {
         }
          *
          */
-    }
-
-    private GOFilterView(int queryId, JPanel container) {
-        super(FILTER_NAME, container, queryId);
-        createContentPanel(container);
     }
 
     private String selectedID = "";
@@ -113,11 +111,10 @@ class GOFilterView extends FilterView {
 
     private String getSelectedID(SearchableTablePanel stp) {
         if (stp.getTable().getSelectedRow() == -1) { return null; }
-        String selectedID = (String) retriever.getTerms().get(stp.getActualRowAt(stp.getTable().getSelectedRow()))[0];
-        return selectedID;
+        return (String)retriever.getTerms().get(stp.getActualRowAt(stp.getTable().getSelectedRow()))[0];
     }
 
-    private void createContentPanel(JPanel p) {
+    private void createContentPanel(JPanel p) throws IOException {
 
         JPanel t = new JPanel();
         t.setBackground(Color.yellow);
@@ -129,94 +126,88 @@ class GOFilterView extends FilterView {
         p.setBorder(ViewUtil.getMediumBorder());
         p.setMaximumSize(new Dimension(360, 250));
 
-        try {
+        retriever = new OntologyRetriever("/org/ut/biolab/medsavant/data/hpo/gene_ontology.1_2.obo");
 
-            retriever = new OntologyRetriever("/org/ut/biolab/medsavant/data/hpo/gene_ontology.1_2.obo");
+        final SearchableTablePanel stp = new SearchableTablePanel("***GO***",
+                                                                  new String[] { "ID", "Name" },
+                                                                  new Class[] { String.class, String.class },
+                                                                  new int[0], 10000, retriever);
+        stp.setBottomBarVisible(false);
+        stp.setChooseColumnsButtonVisible(false);
+        stp.setExportButtonVisible(false);
 
-            final SearchableTablePanel stp = new SearchableTablePanel("***GO***",
-                                                                      new String[] { "ID", "Name" },
-                                                                      new Class[] { String.class, String.class },
-                                                                      new int[0], 10000, retriever);
-            stp.setBottomBarVisible(false);
-            stp.setChooseColumnsButtonVisible(false);
-            stp.setExportButtonVisible(false);
+        Dimension d = new Dimension(340, 190);
+        Dimension d2 = new Dimension(d.width, d.height - 50);
 
-            Dimension d = new Dimension(340, 190);
-            Dimension d2 = new Dimension(d.width, d.height - 50);
+        stp.setMinimumSize(d);
+        stp.setPreferredSize(d);
+        stp.setMaximumSize(d);
 
-            stp.setMinimumSize(d);
-            stp.setPreferredSize(d);
-            stp.setMaximumSize(d);
+        /**
+        stp.getTable().setMinimumSize(d2);
+        stp.getTable().setPreferredSize(d2);
+        stp.getTable().setMaximumSize(d2);
+         */
+        stp.forceRefreshData();
+        stp.setNumRowsPerPage(99999);
 
-            /**
-            stp.getTable().setMinimumSize(d2);
-            stp.getTable().setPreferredSize(d2);
-            stp.getTable().setMaximumSize(d2);
-             */
-            stp.forceRefreshData();
-            stp.setNumRowsPerPage(99999);
+        t.add(stp);
 
-            t.add(stp);
+        stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
-            stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent lse) {
+               setSelectedID(getSelectedID(stp));
+              // applyButton.setEnabled(true);
+            }
 
-                @Override
-                public void valueChanged(ListSelectionEvent lse) {
-                   setSelectedID(getSelectedID(stp));
-                  // applyButton.setEnabled(true);
-                }
+        });
 
-            });
+        JPanel topBar = new JPanel();
+        labelSelected = new JLabel("");
+        topBar.add(ViewUtil.center(labelSelected));
 
-            JPanel topBar = new JPanel();
-            labelSelected = new JLabel("");
-            topBar.add(ViewUtil.center(labelSelected));
+        t.add(topBar);
 
-            t.add(topBar);
+        JPanel bottomBar = new JPanel();
+        ViewUtil.applyHorizontalBoxLayout(bottomBar);
 
-            JPanel bottomBar = new JPanel();
-            ViewUtil.applyHorizontalBoxLayout(bottomBar);
+        JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
 
-            JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
+        selectNone.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setSelectedID("");
+                stp.getTable().getSelectionModel().clearSelection();
+            }
+        });
+        bottomBar.add(selectNone);
 
-            selectNone.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setSelectedID("");
-                    stp.getTable().getSelectionModel().clearSelection();
-                }
-            });
-            bottomBar.add(selectNone);
+        bottomBar.add(Box.createHorizontalGlue());
+        applyButton = new JButton("Apply");
+        applyButton.addActionListener(new ActionListener() {
 
-            bottomBar.add(Box.createHorizontalGlue());
-            applyButton = new JButton("Apply");
-            applyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                applyID(getSelectedID(stp));
+            }
 
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    applyID(getSelectedID(stp));
-                }
+        });
 
-            });
+        bottomBar.add(applyButton);
 
-            bottomBar.add(applyButton);
+        t.add(bottomBar);
 
-            t.add(bottomBar);
+        applyButton.setEnabled(false);
 
-            applyButton.setEnabled(false);
-
-            setSelectedID(this.lastAppliedID);
-
-        } catch (Exception ex) {
-            t.add(new JLabel("Problem parsing ontology"));
-        }
+        setSelectedID(this.lastAppliedID);
     }
 
     @Override
     public FilterState saveState() {
         Map<String, String> map = new HashMap<String, String>();
-        if (appliedId != null) {
-            map.put("value", Integer.toString(appliedId));
+        if (appliedID != null) {
+            map.put("value", Integer.toString(appliedID));
         }
         return new FilterState(FilterType.STRING, FILTER_NAME, FILTER_ID, map);
     }

@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
@@ -43,6 +44,7 @@ import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -135,7 +137,7 @@ public class FilterPanelSub extends JPanel {
                         header.addMouseListener(new MouseAdapter() {
                             @Override
                             public void mouseReleased(MouseEvent e) {
-                                for (Object key : menuMap.keySet()) {
+                                for (JPanel key : menuMap.keySet()) {
                                     for (Component comp : menuMap.get(key)) {
                                         comp.setVisible(false);
 
@@ -180,9 +182,13 @@ public class FilterPanelSub extends JPanel {
 
                                 @Override
                                 public void mouseReleased(MouseEvent e) {
-                                    subItems.add(new FilterPanelSubItem(filter.getFilterView(), FilterPanelSub.this, filter.getFilterID()));
-                                    refreshSubItems();
-                                    p.setVisible(false);
+                                    try {
+                                        subItems.add(new FilterPanelSubItem(filter.getFilterView(), FilterPanelSub.this, filter.getFilterID()));
+                                        refreshSubItems();
+                                        p.setVisible(false);
+                                    } catch (Exception ex) {
+                                        DialogUtils.displayException("Error", String.format("Error creating filter for %s.", filter.getFilterName()), ex);
+                                    }
                                 }
 
                                 @Override
@@ -324,8 +330,8 @@ public class FilterPanelSub extends JPanel {
             map.get(Category.PATIENT).add(new FilterPlaceholder() {
 
                 @Override
-                public FilterView getFilterView() {
-                    return CohortFilterView.getCohortFilterView(id);
+                public FilterView getFilterView() throws SQLException, RemoteException {
+                    return new CohortFilterView(id, new JPanel());
                 }
 
                 @Override
@@ -345,8 +351,8 @@ public class FilterPanelSub extends JPanel {
             map.get(Category.GENOME_COORDS).add(new FilterPlaceholder() {
 
                 @Override
-                public FilterView getFilterView() {
-                    return GOFilterView.getGOFilterView(id);
+                public FilterView getFilterView() throws IOException {
+                    return new GOFilterView(id, new JPanel());
                 }
 
                 @Override
@@ -367,8 +373,8 @@ public class FilterPanelSub extends JPanel {
                 map.get(Category.PATIENT).add(new FilterPlaceholder() {
 
                     @Override
-                    public FilterView getFilterView() {
-                        return HPOFilterView.getHPOFilterView(id);
+                    public FilterView getFilterView() throws IOException {
+                        return new HPOFilterView(id, new JPanel());
                     }
 
                     @Override
@@ -385,22 +391,22 @@ public class FilterPanelSub extends JPanel {
         }
 
         //gene list filter
-        if (!hasSubItem(RegionListFilterView.FILTER_ID)) {
+        if (!hasSubItem(RegionSetFilterView.FILTER_ID)) {
             map.get(Category.GENOME_COORDS).add(new FilterPlaceholder() {
 
                 @Override
-                public FilterView getFilterView() {
-                    return RegionListFilterView.getFilterView(id);
+                public FilterView getFilterView() throws SQLException, RemoteException {
+                    return new RegionSetFilterView(id, new JPanel());
                 }
 
                 @Override
                 public String getFilterID() {
-                    return RegionListFilterView.FILTER_ID;
+                    return RegionSetFilterView.FILTER_ID;
                 }
 
                 @Override
                 public String getFilterName() {
-                    return RegionListFilterView.FILTER_NAME;
+                    return RegionSetFilterView.FILTER_NAME;
                 }
             });
         }
@@ -581,7 +587,7 @@ public class FilterPanelSub extends JPanel {
      */
     abstract class FilterPlaceholder {
 
-        public abstract FilterView getFilterView();
+        public abstract FilterView getFilterView() throws SQLException, RemoteException, IOException;
 
         public abstract String getFilterID();
 

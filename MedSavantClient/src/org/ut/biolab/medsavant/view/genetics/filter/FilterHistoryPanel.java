@@ -13,6 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.awt.BorderLayout;
@@ -36,8 +37,6 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.db.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -71,7 +70,7 @@ public class FilterHistoryPanel extends JPanel implements ReferenceListener, Fil
     }
 
     @Override
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+    public void filtersChanged() {
         //final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
         //        "Applying Filter",
         //        "Filter is being applied. Please wait.",

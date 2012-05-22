@@ -20,7 +20,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.sql.SQLException;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -31,8 +30,6 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.db.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.component.ProgressPanel;
@@ -47,24 +44,25 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
     
     private static final Log LOG = LogFactory.getLog(FilterEffectivenessPanel.class);
 
+    long numLeft = 1;
+    long numTotal = 1;
+    private int waitCounter = 0;
+
     private final ProgressPanel pp;
     private final JLabel labelVariantsRemaining;
-    //private final FilterHistoryPanel historyPanel;
-    private GridBagConstraints c;
     private WaitPanel waitPanel;
-    private int waitCounter = 0;
     private JPanel panel;
 
     public FilterEffectivenessPanel() {
 
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = 1;
-        c.gridheight = 1;
-        c.fill = GridBagConstraints.BOTH;
-        c.weightx = 1.0;
-        c.weighty = 1.0;
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
 
         this.setBorder(ViewUtil.getMediumBorder());
 
@@ -74,11 +72,11 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
         //panel.setBackground(bg);
         //panel.setBorder(BorderFactory.createCompoundBorder(ViewUtil.getTopLineBorder(),ViewUtil.getBigBorder()));
         panel.setLayout(new BorderLayout());
-        this.add(panel, c, JLayeredPane.DEFAULT_LAYER);
+        this.add(panel, gbc, JLayeredPane.DEFAULT_LAYER);
 
         waitPanel = new WaitPanel("Applying Filters");
         waitPanel.setVisible(false);
-        this.add(waitPanel, c, JLayeredPane.DRAG_LAYER);
+        this.add(waitPanel, gbc, JLayeredPane.DRAG_LAYER);
 
         labelVariantsRemaining = ViewUtil.getDetailTitleLabel("");
         labelVariantsRemaining.setForeground(Color.white);
@@ -111,7 +109,7 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
     }
 
     @Override
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+    public void filtersChanged() {
 
         //final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
         //        "Applying Filter",
@@ -142,9 +140,6 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
         //dialog.setVisible(true);
 
     }
-
-    long numLeft = 1;
-    long numTotal = 1;
 
     private void setNumLeft(int num) {
         numLeft = num;
@@ -191,13 +186,13 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
     public synchronized void showWaitCard() {
         waitCounter++;
         waitPanel.setVisible(true);
-        this.setLayer(waitPanel, JLayeredPane.DRAG_LAYER);
+        setLayer(waitPanel, JLayeredPane.DRAG_LAYER);
         waitPanel.repaint();
     }
 
     public synchronized void showShowCard() {
         waitCounter--;
-        if(waitCounter <= 0){
+        if (waitCounter <= 0) {
             waitPanel.setVisible(false);
             waitCounter = 0;
         }

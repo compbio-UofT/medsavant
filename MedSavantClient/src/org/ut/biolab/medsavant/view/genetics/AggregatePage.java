@@ -17,14 +17,11 @@ package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.sql.SQLException;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -55,23 +52,16 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
     @Override
     public JPanel getView(boolean update) {
         if (panel == null) {
-            try {
-                setPanel();
-            } catch (NonFatalDatabaseException ex) {
-            }
+            panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+
+            asp = new AggregatesStatsPanel(getName());
+            panel.add(asp, BorderLayout.CENTER);
         }
-        if (asp != null)
+        if (asp != null) {
             asp.update(update, isLoaded);
+        }
         return panel;
-    }
-
-    private void setPanel() throws NonFatalDatabaseException{
-
-        panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        asp = new AggregatesStatsPanel(getName());
-        panel.add(asp, BorderLayout.CENTER);
     }
 
     public Component[] getSubSectionMenuComponents() {
@@ -91,8 +81,9 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
     @Override
     public void viewDidLoad() {
         isLoaded = true;
-        if (asp != null)
+        if (asp != null) {
             asp.update(false, isLoaded);
+        }
     }
 
     @Override
@@ -102,7 +93,7 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
     }
 
     @Override
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+    public void filtersChanged() {
         ThreadController.getInstance().cancelWorkers(getName());
         if (asp != null) {
             asp.update(true, isLoaded);
@@ -110,10 +101,12 @@ public class AggregatePage extends SubSectionView implements FiltersChangedListe
     }
 
     @Override
-    public void referenceAdded(String name) {}
+    public void referenceAdded(String name) {
+    }
 
     @Override
-    public void referenceRemoved(String name) {}
+    public void referenceRemoved(String name) {
+    }
 
     @Override
     public void referenceChanged(String name) {

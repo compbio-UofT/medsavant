@@ -16,6 +16,8 @@
 
 package org.ut.biolab.medsavant.controller;
 
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -293,7 +295,7 @@ public class FilterController {
         return qfs;
     }
 
-    public static Condition[] getQueryFilterConditions(int queryId) {
+    public static Condition[] getQueryFilterConditions(int queryId) throws SQLException, RemoteException {
         List<QueryFilter> filters = prioritizeFilters(getQueryFilters(queryId));
         Condition[] conditions = new Condition[filters.size()];
         for (int i = 0; i < filters.size(); i++) {
@@ -321,7 +323,7 @@ public class FilterController {
         }
     }
     
-    public static Condition[][] getQueryFilterConditions() {
+    public static Condition[][] getQueryFilterConditions() throws SQLException, RemoteException {
         Object[] keys = filterMap.keySet().toArray();
         Condition[][] conditions = new Condition[keys.length][];
         for (int i = 0; i < keys.length; i++) {

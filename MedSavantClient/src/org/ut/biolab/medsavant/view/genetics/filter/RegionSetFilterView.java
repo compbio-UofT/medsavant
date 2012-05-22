@@ -20,6 +20,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,64 +54,55 @@ import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
  *
  * @author mfiume
  */
-class RegionListFilterView extends FilterView {
-    private static final Log LOG = LogFactory.getLog(RegionListFilterView.class);
+class RegionSetFilterView extends FilterView {
+    private static final Log LOG = LogFactory.getLog(RegionSetFilterView.class);
 
-    public static final String FILTER_NAME = "Region List";
-    public static final String FILTER_ID = "region_list";
-    private static final String REGION_LIST_NONE = "None";
+    public static final String FILTER_NAME = "Region Set";
+    public static final String FILTER_ID = "region_set";
+    private static final String REGION_SET_NONE = "None";
 
-    static FilterView getFilterView(int queryId) {
-        return new RegionListFilterView(queryId, new JPanel());
-    }
+    private Integer appliedID;
+    private ActionListener al;
+    private JComboBox regionsCombo;
 
-    public RegionListFilterView(FilterState state, int queryId) {
-        this(queryId, new JPanel());
+    public RegionSetFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
+        this(queryID, new JPanel());
         if (state.getValues().get("value") != null) {
             applyFilter(Integer.parseInt(state.getValues().get("value")));
         }
     }
 
-    private Integer appliedId;
-    private ActionListener al;
-    private JComboBox b;
+    public RegionSetFilterView(int queryID, JPanel container) throws SQLException, RemoteException {
+        super(FILTER_NAME, container, queryID);
+        createContentPanel(container);
+    }
 
-    public final void applyFilter(int geneListId) {
-        for (int i = 0; i < b.getItemCount(); i++) {
-            if (b.getItemAt(i) instanceof RegionSet && ((RegionSet)b.getItemAt(i)).getID() == geneListId) {
-                b.setSelectedIndex(i);
+    public final void applyFilter(int regionSetID) {
+        for (int i = 0; i < regionsCombo.getItemCount(); i++) {
+            if (regionsCombo.getItemAt(i) instanceof RegionSet && ((RegionSet)regionsCombo.getItemAt(i)).getID() == regionSetID) {
+                regionsCombo.setSelectedIndex(i);
                 al.actionPerformed(new ActionEvent(this, 0, null));
                 return;
             }
         }
     }
 
-    private RegionListFilterView(int queryId, JPanel container) {
-        super(FILTER_NAME, container, queryId);
-        createContentPanel(container);
+    private List<RegionSet> getDefaultValues() throws SQLException, RemoteException {
+        return MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId);
     }
 
-    private List<RegionSet> getDefaultValues() {
-        try {
-            return MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId);
-        } catch (Exception ex) {
-            LOG.error("Error getting region lists.", ex);
-            return null;
-        }
-    }
-
-    private void createContentPanel(JPanel p) {
+    private void createContentPanel(JPanel p) throws SQLException, RemoteException {
 
         p.setLayout(new BorderLayout());
         p.setMaximumSize(new Dimension(1000,80));
 
-        b = new JComboBox();
-        b.setMaximumSize(new Dimension(1000,30));
+        regionsCombo = new JComboBox();
+        regionsCombo.setMaximumSize(new Dimension(1000,30));
 
-        b.addItem(REGION_LIST_NONE);
+        regionsCombo.addItem(REGION_SET_NONE);
         List<RegionSet> geneLists = getDefaultValues();
         for (RegionSet set : geneLists) {
-            b.addItem(set);
+            regionsCombo.addItem(set);
         }
 
         final JButton applyButton = new JButton("Apply");
@@ -125,54 +118,47 @@ class RegionListFilterView extends FilterView {
                 Filter f = new QueryFilter() {
 
                     @Override
-                    public Condition[] getConditions() {
+                    public Condition[] getConditions() throws SQLException, RemoteException {
 
-                        if (b.getSelectedItem().equals(REGION_LIST_NONE)) {
+                        if (regionsCombo.getSelectedItem().equals(REGION_SET_NONE)) {
                             return new Condition[0];
                         }
 
-                        RegionSet regionSet = (RegionSet) b.getSelectedItem();
-                        appliedId = regionSet.getID();
+                        RegionSet regionSet = (RegionSet) regionsCombo.getSelectedItem();
+                        appliedID = regionSet.getID();
 
-                        try {
+                        List<GenomicRegion> regions = MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, regionSet.getID(), Integer.MAX_VALUE);
+                        Map<String, List<Range>> rangeMap = GenomicRegion.mergeGenomicRegions(regions);
+                        Condition[] results = new Condition[rangeMap.size()];
+                        int i = 0;
+                        for (String chrom : rangeMap.keySet()) {
 
-                            List<GenomicRegion> regions = MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, regionSet.getID(), Integer.MAX_VALUE);
-                            Map<String, List<Range>> rangeMap = GenomicRegion.mergeGenomicRegions(regions);
-                            Condition[] results = new Condition[rangeMap.size()];
-                            int i = 0;
-                            for (String chrom : rangeMap.keySet()) {
+                            Condition[] tmp = new Condition[2];
 
-                                Condition[] tmp = new Condition[2];
+                            //add chrom condition
+                            tmp[0] = BinaryConditionMS.equalTo(
+                                    ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM),
+                                    chrom);
 
-                                //add chrom condition
-                                tmp[0] = BinaryConditionMS.equalTo(
-                                        ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM),
-                                        chrom);
-
-                                //create range conditions
-                                List<Range> ranges = rangeMap.get(chrom);
-                                Condition[] rangeConditions = new Condition[ranges.size()];
-                                for (int j = 0; j < ranges.size(); j++) {
-                                    rangeConditions[j] = new RangeCondition(
-                                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION),
-                                            (long)ranges.get(j).getMin(),
-                                            (long)ranges.get(j).getMax());
-                                }
-
-                                //add range conditions
-                                tmp[1] = ComboCondition.or(rangeConditions);
-
-                                results[i] = ComboCondition.and(tmp);
-
-                                i++;
+                            //create range conditions
+                            List<Range> ranges = rangeMap.get(chrom);
+                            Condition[] rangeConditions = new Condition[ranges.size()];
+                            for (int j = 0; j < ranges.size(); j++) {
+                                rangeConditions[j] = new RangeCondition(
+                                        ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION),
+                                        (long)ranges.get(j).getMin(),
+                                        (long)ranges.get(j).getMax());
                             }
 
-                            return results;
+                            //add range conditions
+                            tmp[1] = ComboCondition.or(rangeConditions);
 
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            return null;
+                            results[i] = ComboCondition.and(tmp);
+
+                            i++;
                         }
+
+                        return results;
                     }
 
                     @Override
@@ -192,7 +178,7 @@ class RegionListFilterView extends FilterView {
         };
         applyButton.addActionListener(al);
 
-        b.addActionListener(new ActionListener() {
+        regionsCombo.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -210,7 +196,7 @@ class RegionListFilterView extends FilterView {
         bottomContainer.add(applyButton);
 
 
-        p.add(b, BorderLayout.CENTER);
+        p.add(regionsCombo, BorderLayout.CENTER);
         p.add(bottomContainer, BorderLayout.SOUTH);
 
     }
@@ -218,7 +204,7 @@ class RegionListFilterView extends FilterView {
     @Override
     public FilterState saveState() {
         Map<String, String> map = new HashMap<String, String>();
-        if (appliedId != null) map.put("value", Integer.toString(appliedId));
+        if (appliedID != null) map.put("value", Integer.toString(appliedID));
         return new FilterState(FilterType.REGION_LIST, FILTER_NAME, FILTER_ID, map);
     }
 }

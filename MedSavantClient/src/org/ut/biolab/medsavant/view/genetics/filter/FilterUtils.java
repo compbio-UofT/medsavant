@@ -117,7 +117,7 @@ public class FilterUtils {
                 fps.addNewSubItem(new BooleanFilterView(state, fps.getId()), state.getId());
                 break;
             case REGION_LIST:
-                fps.addNewSubItem(new RegionListFilterView(state, fps.getId()), state.getId());
+                fps.addNewSubItem(new RegionSetFilterView(state, fps.getId()), state.getId());
                 break;
             case COHORT:
                 fps.addNewSubItem(new CohortFilterView(state, fps.getId()), state.getId());

@@ -13,16 +13,14 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import java.awt.BorderLayout;
-import java.sql.SQLException;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.db.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.OntologyPanelGenerator;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
@@ -85,8 +83,7 @@ public abstract class OntologySubPanel extends JPanel implements
     protected abstract JTree getJTree();
 
     @Override
-    public void filtersChanged() throws SQLException, FatalDatabaseException, 
-            NonFatalDatabaseException {
+    public void filtersChanged() {
         //if (updatePanelUponFilterChanges) {
         //    this.update();
         //}

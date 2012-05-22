@@ -13,6 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.awt.Color;
@@ -73,18 +74,14 @@ class HPOFilterView extends FilterView {
     private JButton applyButton;
     private JLabel labelSelected;
 
-    static FilterView getHPOFilterView(int queryId) {
-        return new HPOFilterView(queryId, new JPanel());
-    }
-
-    private HPOFilterView(FilterState state, int queryId) throws SQLException {
+    private HPOFilterView(FilterState state, int queryId) throws IOException {
         this(queryId, new JPanel());
         if (state.getValues().get("value") != null) {
             applyFilter(state.getValues().get("value"));
         }
     }
 
-    private HPOFilterView(int queryId, JPanel container) {
+    public HPOFilterView(int queryId, JPanel container) throws IOException {
         super(FILTER_NAME, container, queryId);
         createContentPanel(container);
     }
@@ -173,7 +170,7 @@ class HPOFilterView extends FilterView {
         return (String) retriever.getTerms().get(stp.getActualRowAt(stp.getTable().getSelectedRow()))[0];
     }
 
-    private void createContentPanel(JPanel p) {
+    private void createContentPanel(JPanel p) throws IOException {
 
         JPanel t = new JPanel();
         t.setBackground(Color.yellow);
@@ -185,85 +182,79 @@ class HPOFilterView extends FilterView {
         p.setBorder(ViewUtil.getMediumBorder());
         p.setMaximumSize(new Dimension(360, 250));
 
-        try {
+        retriever = new OntologyRetriever("/org/ut/biolab/medsavant/data/hpo/human-phenotype-ontology.obo");
 
-            retriever = new OntologyRetriever("/org/ut/biolab/medsavant/data/hpo/human-phenotype-ontology.obo");
+        final SearchableTablePanel stp = new SearchableTablePanel("***HPO***",
+                                                                  new String[] { "ID", "Name" },
+                                                                  new Class[] { String.class, String.class },
+                                                                  new int[0], 10000, retriever);
+        stp.setBottomBarVisible(false);
+        stp.setChooseColumnsButtonVisible(false);
+        stp.setExportButtonVisible(false);
 
-            final SearchableTablePanel stp = new SearchableTablePanel("***HPO***",
-                                                                      new String[] { "ID", "Name" },
-                                                                      new Class[] { String.class, String.class },
-                                                                      new int[0], 10000, retriever);
-            stp.setBottomBarVisible(false);
-            stp.setChooseColumnsButtonVisible(false);
-            stp.setExportButtonVisible(false);
+        Dimension d = new Dimension(340, 190);
+        Dimension d2 = new Dimension(d.width, d.height - 50);
 
-            Dimension d = new Dimension(340, 190);
-            Dimension d2 = new Dimension(d.width, d.height - 50);
+        stp.setMinimumSize(d);
+        stp.setPreferredSize(d);
+        stp.setMaximumSize(d);
 
-            stp.setMinimumSize(d);
-            stp.setPreferredSize(d);
-            stp.setMaximumSize(d);
+        /**
+        stp.getTable().setMinimumSize(d2);
+        stp.getTable().setPreferredSize(d2);
+        stp.getTable().setMaximumSize(d2);
+         */
+        stp.forceRefreshData();
+        stp.setNumRowsPerPage(99999);
 
-            /**
-            stp.getTable().setMinimumSize(d2);
-            stp.getTable().setPreferredSize(d2);
-            stp.getTable().setMaximumSize(d2);
-             */
-            stp.forceRefreshData();
-            stp.setNumRowsPerPage(99999);
+        t.add(stp);
 
-            t.add(stp);
+        stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
-            stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent lse) {
+                setSelectedID(getSelectedID(stp));
+                // applyButton.setEnabled(true);
+            }
+        });
 
-                @Override
-                public void valueChanged(ListSelectionEvent lse) {
-                    setSelectedID(getSelectedID(stp));
-                    // applyButton.setEnabled(true);
-                }
-            });
+        JPanel topBar = new JPanel();
+        labelSelected = new JLabel("");
+        topBar.add(ViewUtil.center(labelSelected));
 
-            JPanel topBar = new JPanel();
-            labelSelected = new JLabel("");
-            topBar.add(ViewUtil.center(labelSelected));
+        t.add(topBar);
 
-            t.add(topBar);
+        JPanel bottomBar = new JPanel();
+        ViewUtil.applyHorizontalBoxLayout(bottomBar);
 
-            JPanel bottomBar = new JPanel();
-            ViewUtil.applyHorizontalBoxLayout(bottomBar);
+        JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
 
-            JButton selectNone = ViewUtil.createHyperLinkButton("Select None");
+        selectNone.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setSelectedID("");
+                stp.getTable().getSelectionModel().clearSelection();
+            }
+        });
+        bottomBar.add(selectNone);
 
-            selectNone.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setSelectedID("");
-                    stp.getTable().getSelectionModel().clearSelection();
-                }
-            });
-            bottomBar.add(selectNone);
+        bottomBar.add(Box.createHorizontalGlue());
+        applyButton = new JButton("Apply");
+        applyButton.addActionListener(new ActionListener() {
 
-            bottomBar.add(Box.createHorizontalGlue());
-            applyButton = new JButton("Apply");
-            applyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                applyID(getSelectedID(stp));
+            }
+        });
 
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    applyID(getSelectedID(stp));
-                }
-            });
+        bottomBar.add(applyButton);
 
-            bottomBar.add(applyButton);
+        t.add(bottomBar);
 
-            t.add(bottomBar);
+        applyButton.setEnabled(false);
 
-            applyButton.setEnabled(false);
-
-            setSelectedID(this.lastAppliedID);
-
-        } catch (Exception ex) {
-            t.add(new JLabel("Problem parsing ontology"));
-        }
+        setSelectedID(this.lastAppliedID);
     }
 
     @Override

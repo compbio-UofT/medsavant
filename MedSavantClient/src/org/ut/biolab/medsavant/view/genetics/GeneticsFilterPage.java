@@ -16,25 +16,14 @@
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
-import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanel;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -112,41 +101,4 @@ public class GeneticsFilterPage extends SubSectionView implements ReferenceListe
             fp.refreshSubPanels();
         }
     }
-
-
-    private static class FilterSQLPanel extends JPanel implements FiltersChangedListener {
-        private final JTextArea content;
-
-        public FilterSQLPanel() {
-            this.setBorder(ViewUtil.getBigBorder());
-            content = new JTextArea();
-            content.setEditable(false);
-            setLayout(new BorderLayout());
-            add(new JScrollPane(content));
-            updateSQL();
-            FilterController.addFilterListener(this);
-        }
-
-        @Override
-        public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
-            updateSQL();
-        }
-
-        private void updateSQL() {
-            Condition[][] conditions = FilterController.getQueryFilterConditions();
-
-            SelectQuery q = new SelectQuery();
-            try {
-                MedSavantClient.VariantManager.addConditionsToQuery(q, conditions);
-            } catch (RemoteException ex) {
-                LOG.error("Error adding conditions to query.", ex);
-            }
-
-            String s = q.toString();
-            LOG.info(s);
-            content.setText(s);
-        }
-    }
-
-
 }

@@ -16,6 +16,7 @@
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyVetoException;
 import java.rmi.RemoteException;
@@ -32,7 +33,6 @@ import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.pane.event.CollapsiblePaneEvent;
 import com.jidesoft.pane.event.CollapsiblePaneListener;
 import com.jidesoft.plaf.UIDefaultsLookup;
-import java.awt.Color;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -41,8 +41,6 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.db.FatalDatabaseException;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -65,63 +63,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class GeneticsTablePage extends SubSectionView implements FiltersChangedListener, ReferenceListener {
 
-    private static final Log log = LogFactory.getLog(GeneticsTablePage.class);
-
-
-    public static class VariantInfoPanel extends InfoPanel implements VariantSelectionChangedListener, CollapsiblePaneListener {
-
-        private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
-        private boolean isShown;
-
-        public VariantInfoPanel() {
-            super("Variant Inspector");
-            this.addSubInfoPanel(new BasicVariantInfoSubPanel());
-            TablePanel.addVariantSelectionChangedListener(this);
-            this.addCollapsiblePaneListener(this);
-        }
-
-        public static void addVariantSelectionChangedListener(VariantSelectionChangedListener l) {
-            listeners.add(l);
-        }
-
-        VariantRecord record;
-
-        @Override
-        public void variantSelectionChanged(VariantRecord r) {
-            if (isShown) {
-                for (VariantSelectionChangedListener l : listeners) {
-                    l.variantSelectionChanged(r);
-                }
-            }
-            record = r;
-        }
-
-        @Override
-        public void paneExpanding(CollapsiblePaneEvent cpe) {
-            variantSelectionChanged(record);
-        }
-
-        @Override
-        public void paneExpanded(CollapsiblePaneEvent cpe) {
-            isShown = true;
-        }
-
-        @Override
-        public void paneCollapsing(CollapsiblePaneEvent cpe) {
-        }
-
-        @Override
-        public void paneCollapsed(CollapsiblePaneEvent cpe) {
-            isShown = false;
-        }
-    }
-
-    private static class AnalyticsInfoPanel extends InfoPanel {
-
-        public AnalyticsInfoPanel() {
-            super("Analytics");
-        }
-    }
+    private static final Log LOG = LogFactory.getLog(GeneticsTablePage.class);
 
     private JPanel panel;
     private TablePanel tablePanel;
@@ -176,9 +118,9 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         try {
             chrs = MedSavantClient.ChromosomeQueryUtilAdapter.getContigs(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceId());
         } catch (SQLException ex) {
-            log.error("Error getting contigs.", ex);
+            LOG.error("Error getting contigs.", ex);
         } catch (RemoteException ex) {
-            log.error("Error getting contigs.", ex);
+            LOG.error("Error getting contigs.", ex);
         }
         Genome g = new Genome(chrs);
         gp = new GenomeContainer(getName(), g);
@@ -260,7 +202,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
     }
 
     @Override
-    public void filtersChanged() throws SQLException, FatalDatabaseException, NonFatalDatabaseException {
+    public void filtersChanged() {
         updateContents();
     }
 
@@ -282,6 +224,61 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         //_tabbedPane.setToolTipTextAt(_tabbedPane.getTabCount() - 1, null);
 
         _container.add(tabPanel);
+    }
+
+    public static class VariantInfoPanel extends InfoPanel implements VariantSelectionChangedListener, CollapsiblePaneListener {
+
+        private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
+
+        private boolean isShown;
+        VariantRecord record;
+
+        public VariantInfoPanel() {
+            super("Variant Inspector");
+            this.addSubInfoPanel(new BasicVariantInfoSubPanel());
+            TablePanel.addVariantSelectionChangedListener(this);
+            this.addCollapsiblePaneListener(this);
+        }
+
+        public static void addVariantSelectionChangedListener(VariantSelectionChangedListener l) {
+            listeners.add(l);
+        }
+
+        @Override
+        public void variantSelectionChanged(VariantRecord r) {
+            if (isShown) {
+                for (VariantSelectionChangedListener l : listeners) {
+                    l.variantSelectionChanged(r);
+                }
+            }
+            record = r;
+        }
+
+        @Override
+        public void paneExpanding(CollapsiblePaneEvent cpe) {
+            variantSelectionChanged(record);
+        }
+
+        @Override
+        public void paneExpanded(CollapsiblePaneEvent cpe) {
+            isShown = true;
+        }
+
+        @Override
+        public void paneCollapsing(CollapsiblePaneEvent cpe) {
+        }
+
+        @Override
+        public void paneCollapsed(CollapsiblePaneEvent cpe) {
+            isShown = false;
+        }
+    }
+
+    private static class AnalyticsInfoPanel extends InfoPanel {
+
+        public AnalyticsInfoPanel() {
+            super("Analytics");
+        }
     }
 
     private class TabPanel extends JPanel {

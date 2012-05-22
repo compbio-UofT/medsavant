@@ -1,10 +1,23 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
 import javax.swing.JTree;
+
 import org.ut.biolab.medsavant.view.genetics.OntologyPanelGenerator;
 import org.ut.biolab.medsavant.view.genetics.filter.GOFilter;
 import org.ut.biolab.medsavant.view.genetics.filter.geneontology.CreateMappingsFile;
@@ -17,37 +30,38 @@ import org.ut.biolab.medsavant.view.genetics.storer.FilterObjectStorer;
  *
  * @author Nirvana Nursimulu
  */
-public class GOsubPanel extends OntologySubPanel{
+public class GOsubPanel extends OntologySubPanel {
     
     private JTree jTree;
     OntologyPanelGenerator.OntologyPanel panel;
 
-    public GOsubPanel(OntologyPanelGenerator.OntologyPanel panel, String pageName){
+    public GOsubPanel(OntologyPanelGenerator.OntologyPanel panel, String pageName) {
         super(panel, pageName, 1, 2, 3);
         this.panel = super.panel;
     }
 
     
     @Override
-    public String getName(){
+    public String getName() {
         return "Gene Ontology";
     }
     
-    public boolean treeIsReadyToBeFetched(){
+    @Override
+    public boolean treeIsReadyToBeFetched() {
         return FilterObjectStorer.containsObjectWithName(GOFilter.NAME_TREE);
     }
     
-    public JTree getJTree(){
-        if (jTree != null){
+    @Override
+    public JTree getJTree() {
+        if (jTree != null) {
             return jTree;
-        }
-        else{
+        } else {
             try {
                 String destination = CreateMappingsFile.getMappings();
                 Tree tree = XMLontology.makeTree(destination);
                 //Tree tree = (Tree)FilterObjectStorer.getObject(GOFilter.NAME_TREE);
                 jTree = ConstructJTree.getTree(tree, true, true, false);
-            } catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return jTree;

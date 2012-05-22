@@ -13,14 +13,15 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,20 +54,21 @@ class CohortFilterView extends FilterView {
     public static final String FILTER_ID = "cohort";
     private static final String COHORT_ALL = "All Individuals";
 
-    static FilterView getCohortFilterView(int queryId) {
-        return new CohortFilterView(queryId, new JPanel());
-    }
+    private Integer appliedId;
+    private ActionListener al;
+    private JComboBox b;
 
-    public CohortFilterView(FilterState state, int queryId) throws SQLException {
+    public CohortFilterView(FilterState state, int queryId) throws SQLException, RemoteException {
         this(queryId, new JPanel());
         if (state.getValues().get("value") != null) {
             applyFilter(Integer.parseInt(state.getValues().get("value")));
         }
     }
 
-    private Integer appliedId;
-    private ActionListener al;
-    private JComboBox b;
+    public CohortFilterView(int queryId, JPanel container) throws SQLException, RemoteException {
+        super(FILTER_NAME, container, queryId);
+        createContentPanel(container);
+    }
 
     public final void applyFilter(int cohortId) {
         for (int i = 0; i < b.getItemCount(); i++) {
@@ -78,23 +80,13 @@ class CohortFilterView extends FilterView {
         }
     }
 
-    private CohortFilterView(int queryId, JPanel container) {
-        super(FILTER_NAME, container, queryId);
-        createContentPanel(container);
+    private List<Cohort> getDefaultValues() throws SQLException, RemoteException {
+        return MedSavantClient.CohortQueryUtilAdapter.getCohorts(
+                LoginController.sessionId,
+                ProjectController.getInstance().getCurrentProjectId());
     }
 
-    private List<Cohort> getDefaultValues() {
-        try {
-            return MedSavantClient.CohortQueryUtilAdapter.getCohorts(
-                    LoginController.sessionId,
-                    ProjectController.getInstance().getCurrentProjectId());
-        } catch (Exception x) {
-            LOG.error("Unable to fetch cohort list.", x);
-        }
-        return new ArrayList<Cohort>();
-    }
-
-    private void createContentPanel(JPanel p) {
+    private void createContentPanel(JPanel p) throws SQLException, RemoteException {
 
         p.setLayout(new BorderLayout());
         p.setMaximumSize(new Dimension(1000,80));
