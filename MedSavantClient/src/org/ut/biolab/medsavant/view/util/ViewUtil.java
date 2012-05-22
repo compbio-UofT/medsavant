@@ -20,21 +20,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
 import java.text.NumberFormat;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
-import javax.swing.ListCellRenderer;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -505,6 +491,22 @@ public class ViewUtil {
         b.putClientProperty( "JButton.buttonType", "segmentedRoundRect" );
         b.putClientProperty( "JButton.segmentPosition", "only" );
         return b;
+    }
+
+    public static JButton getTexturedButton(ImageIcon icon) {
+        JButton button = new JButton(icon);
+        ViewUtil.makeSmall(button);
+        button.putClientProperty("JButton.buttonType", "textured");
+        return button;
+    }
+
+    public static JButton getTexturedButton(String s, ImageIcon icon) {
+        JButton button = new JButton(s,icon);
+        ViewUtil.makeSmall(button);
+        button.setVerticalTextPosition(SwingConstants.CENTER);
+        button.setHorizontalTextPosition(SwingConstants.LEFT);
+        button.putClientProperty("JButton.buttonType", "textured");
+        return button;
     }
 
     /*public static void applyMenuStyleInset(JPanel p) {

@@ -47,11 +47,11 @@ public class BasicGeneInfoSubPanel extends InfoSubPanel implements GeneSelection
             p = new KeyValuePairPanel(2);
             p.addKey(KEY_NAME);
 
-            LinkButton filterButton = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FILTER).getImage());
+            JButton filterButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FILTER));
             filterButton.setToolTipText("Add filter condition");
             p.setAdditionalColumn(KEY_NAME, 0, filterButton);
 
-            LinkButton filterButton2 = new LinkButton("Card");
+            JButton filterButton2 = ViewUtil.getTexturedButton("Card",IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
             filterButton2.setToolTipText("Lookup Gene Card");
             p.setAdditionalColumn(KEY_NAME, 1, filterButton2);
 

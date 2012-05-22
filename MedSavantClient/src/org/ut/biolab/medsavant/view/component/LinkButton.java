@@ -77,7 +77,8 @@ public class LinkButton extends JButton {
         });
         this.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
-    Color textColorUnselected = Color.white;
+    Color bgcolor = Color.lightGray;
+    Color textColorUnselected = Color.black;
     Color textColor = textColorUnselected;
     //Color bgColor = new Color(50, 50, 50);
     Color disabledBGColor = new Color(210, 210, 210);
@@ -101,7 +102,7 @@ public class LinkButton extends JButton {
             if (g2d == null) {
                 return;
             }
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            //g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             g2d.setFont(f);
 
@@ -139,7 +140,9 @@ public class LinkButton extends JButton {
             g2d.setColor(disabledBGColor);
             g2d.fillRoundRect(0, 0, totalWidth, totalHeight, 5, 5);
         } else {
-            PaintUtil.paintDarkMenu(g, this);
+            g2d.setColor(bgcolor);
+            g2d.fillRoundRect(0, 0, totalWidth, totalHeight, 5, 5);
+            //PaintUtil.paintDarkMenu(g, this);
         }
 
         if (isImage()) {

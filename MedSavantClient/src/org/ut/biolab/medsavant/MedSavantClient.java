@@ -163,6 +163,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
                 LookAndFeelFactory.installJideExtension(LookAndFeelFactory.XERTO_STYLE_WITHOUT_MENU);
             }
             UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
+
             //tooltips
             UIManager.put("ToolTip.background", new ColorUIResource(255,255,255));
             ToolTipManager.sharedInstance().setDismissDelay(8000);

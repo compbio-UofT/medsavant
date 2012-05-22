@@ -8,9 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.net.URLEncoder;
-import javax.swing.Box;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
@@ -106,7 +104,10 @@ public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSel
     }
 
     private Component getCopyButton(final String key) {
-        LinkButton button = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.COPY).getImage());
+        JButton button = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.COPY));
+
+
+        //LinkButton button = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.COPY).getImage());
         button.setToolTipText("Copy " + key);
         button.addActionListener(new ActionListener() {
 
@@ -124,7 +125,8 @@ public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSel
     }
 
     private Component getFilterButton(final String key) {
-        LinkButton button = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FILTER).getImage());
+
+        JButton button = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FILTER));
         button.setToolTipText("Filter " + key);
         button.addActionListener(new ActionListener() {
             @Override
@@ -135,7 +137,7 @@ public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSel
     }
 
     private Component getChartButton(final String key) {
-        LinkButton button = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART_SMALL).getImage());
+        JButton button = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART_SMALL));
         button.setToolTipText("Chart " + key);
         button.addActionListener(new ActionListener() {
             @Override
@@ -147,7 +149,9 @@ public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSel
     }
 
     private Component getNCBIButton(final String key) {
-        LinkButton ncbiButton = new LinkButton("NCBI");
+        JButton ncbiButton = ViewUtil.getTexturedButton("NCBI", IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
+        
+        //LinkButton ncbiButton = new LinkButton("NCBI");
         ncbiButton.setToolTipText("Lookup " + key + " at NCBI");
         ncbiButton.addActionListener(new ActionListener() {
 
