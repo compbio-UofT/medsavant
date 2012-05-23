@@ -57,13 +57,6 @@ public class KeyValuePairPanel extends JPanel {
         columnConstraints = new ArrayList<GridBagConstraints>();
         keysInMoreSection = new ArrayList<String>();
 
-        // Contstraints of value components
-        /*withinValueConstraints = new GridBagConstraints();
-        withinValueConstraints.anchor = GridBagConstraints.SOUTHWEST;
-        withinValueConstraints.weightx = 0;
-        withinValueConstraints.gridx = 0;
-        withinValueConstraints.gridy = 0;*/
-
         // Full-width detail component
         keyDetailConstraints = new GridBagConstraints();
         keyDetailConstraints.anchor = GridBagConstraints.SOUTHWEST;
@@ -74,7 +67,7 @@ public class KeyValuePairPanel extends JPanel {
 
         // Constraints for keys
         GridBagConstraints keyConstraints = new GridBagConstraints();
-        keyConstraints.anchor = GridBagConstraints.WEST;
+        keyConstraints.anchor = GridBagConstraints.SOUTHWEST;
         keyConstraints.fill = GridBagConstraints.BOTH;
         keyConstraints.weightx = 0;
         keyConstraints.gridx = 0;
@@ -82,7 +75,7 @@ public class KeyValuePairPanel extends JPanel {
 
         // Constraints for values
         GridBagConstraints valueConstraints = new GridBagConstraints();
-        valueConstraints.anchor = GridBagConstraints.WEST;
+        valueConstraints.anchor = GridBagConstraints.SOUTHWEST;
         valueConstraints.fill = GridBagConstraints.BOTH;
         valueConstraints.weightx = 1;
         valueConstraints.gridx = 1;
@@ -164,7 +157,7 @@ public class KeyValuePairPanel extends JPanel {
 
         JPanel valuePanel = new JPanel();
         valuePanel.setBackground(rowColor);
-        valuePanel.setLayout(new GridBagLayout());
+        ViewUtil.applyHorizontalBoxLayout(valuePanel);
 
         JComponent[] extraComponents = new JComponent[additionalColumns];
 
@@ -175,6 +168,7 @@ public class KeyValuePairPanel extends JPanel {
         keyPanel.setBackground(rowColor);
 
         final JLabel keyLabel = getKeyLabel(key);
+        keyLabel.setBorder(ViewUtil.getMediumBorder());
         keyKeyComponentMap.put(key, keyLabel);
 
         if (showExpand) {
@@ -254,14 +248,16 @@ public class KeyValuePairPanel extends JPanel {
     }
 
     public void setValue(String key, JComponent value) {
-        keyValueComponentMap.get(key).removeAll();
-        keyValueComponentMap.get(key).add(value);
-        keyValueComponentMap.get(key).repaint();
-        keyValueComponentMap.get(key).getParent().repaint();
+        JPanel p = keyValueComponentMap.get(key);
+        p.removeAll();
+        p.add(value);
+        p.add(Box.createHorizontalGlue());
+        p.repaint();
+        p.getParent().repaint();
     }
 
     public void setValue(String key, String value) {
-        JLabel c = new JLabel(value);
+        JLabel c = new JLabel(value); // horizontal padding
         setValue(key, c);
     }
 

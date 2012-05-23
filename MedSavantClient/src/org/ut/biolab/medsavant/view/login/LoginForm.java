@@ -26,6 +26,7 @@ import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import javax.swing.Box;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.logging.Log;
@@ -67,6 +68,8 @@ public class LoginForm extends JPanel implements LoginListener {
     public LoginForm() {
 
         LoginController.addLoginListener(this);
+
+
 
         initComponents();
 
@@ -117,7 +120,7 @@ public class LoginForm extends JPanel implements LoginListener {
         versionLabel = new javax.swing.JLabel();
         javax.swing.JLabel userLabel = new javax.swing.JLabel();
         javax.swing.JLabel passwordLabel = new javax.swing.JLabel();
-        javax.swing.JToggleButton settingsButton = new javax.swing.JToggleButton();
+        javax.swing.JToggleButton button_settings = new javax.swing.JToggleButton();
         detailsPanel = new javax.swing.JPanel();
         javax.swing.JLabel hostLabel = new javax.swing.JLabel();
         hostField = new javax.swing.JTextField();
@@ -147,7 +150,7 @@ public class LoginForm extends JPanel implements LoginListener {
         });
 
         passwordField.setColumns(25);
-        passwordField.setFont(new java.awt.Font("Arial", 0, 18));
+        passwordField.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
         passwordField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         passwordField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -168,22 +171,23 @@ public class LoginForm extends JPanel implements LoginListener {
             .addGap(0, 150, Short.MAX_VALUE)
         );
 
-        versionLabel.setFont(new java.awt.Font("Tahoma", 0, 14));
+        versionLabel.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         versionLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         versionLabel.setText("version information");
 
-        userLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
+        userLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         userLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         userLabel.setText("USERNAME");
 
-        passwordLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
+        passwordLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         passwordLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         passwordLabel.setText("PASSWORD");
 
-        settingsButton.setText("Settings");
-        settingsButton.addActionListener(new java.awt.event.ActionListener() {
+        button_settings.setText("Settings");
+        button_settings.putClientProperty("JButton.buttonType", "textured");
+        button_settings.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                settingsButtonActionPerformed(evt);
+                button_settingsActionPerformed(evt);
             }
         });
 
@@ -195,7 +199,7 @@ public class LoginForm extends JPanel implements LoginListener {
         hostLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         hostLabel.setText("SERVER ADDRESS");
 
-        hostField.setFont(new java.awt.Font("Arial", 1, 18));
+        hostField.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         hostField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         hostField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -206,7 +210,7 @@ public class LoginForm extends JPanel implements LoginListener {
         portLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         portLabel.setText("SERVER PORT");
 
-        portField.setFont(new java.awt.Font("Arial", 1, 18));
+        portField.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         portField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         portField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -221,7 +225,7 @@ public class LoginForm extends JPanel implements LoginListener {
             }
         });
 
-        databaseField.setFont(new java.awt.Font("Arial", 1, 18));
+        databaseField.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         databaseField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         databaseField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -246,23 +250,16 @@ public class LoginForm extends JPanel implements LoginListener {
             .addComponent(databaseLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
             .addGroup(detailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(hostLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(detailsPanelLayout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(hostLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
                     .addComponent(hostField, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
                     .addComponent(portField, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
-                    .addComponent(portLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
-                .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, detailsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(detailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(detailsPanelLayout.createSequentialGroup()
+                    .addComponent(portLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, detailsPanelLayout.createSequentialGroup()
                         .addComponent(dbRemoveButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(dbCreateButton))
-                    .addComponent(databaseField, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
+                    .addComponent(databaseField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
                 .addContainerGap())
         );
         detailsPanelLayout.setVerticalGroup(
@@ -287,6 +284,7 @@ public class LoginForm extends JPanel implements LoginListener {
 
         loginButton.setBackground(new java.awt.Color(0, 0, 0));
         loginButton.setText("Login");
+        loginButton.putClientProperty("JButton.buttonType", "textured");
         loginButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loginButtonActionPerformed(evt);
@@ -308,7 +306,7 @@ public class LoginForm extends JPanel implements LoginListener {
                 .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(statusLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, titlePanelLayout.createSequentialGroup()
-                        .addComponent(settingsButton)
+                        .addComponent(button_settings)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(loginButton))))
             .addComponent(detailsPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -338,7 +336,7 @@ public class LoginForm extends JPanel implements LoginListener {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(titlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(loginButton)
-                    .addComponent(settingsButton))
+                    .addComponent(button_settings))
                 .addGap(3, 3, 3)
                 .addComponent(statusLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -373,9 +371,9 @@ public class LoginForm extends JPanel implements LoginListener {
         }
 }//GEN-LAST:event_userFieldKeyPressed
 
-    private void settingsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsButtonActionPerformed
+    private void button_settingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_settingsActionPerformed
         detailsPanel.setVisible(!detailsPanel.isVisible());
-    }//GEN-LAST:event_settingsButtonActionPerformed
+    }//GEN-LAST:event_button_settingsActionPerformed
 
     private void hostFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_hostFieldKeyPressed
         int key = evt.getKeyCode();

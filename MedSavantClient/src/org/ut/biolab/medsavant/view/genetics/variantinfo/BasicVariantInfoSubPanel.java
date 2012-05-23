@@ -137,7 +137,7 @@ public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSel
     }
 
     private Component getChartButton(final String key) {
-        JButton button = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART_SMALL));
+        final JToggleButton button = ViewUtil.getTexturedToggleButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART_SMALL));
         button.setToolTipText("Chart " + key);
         button.addActionListener(new ActionListener() {
             @Override
@@ -150,7 +150,7 @@ public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSel
 
     private Component getNCBIButton(final String key) {
         JButton ncbiButton = ViewUtil.getTexturedButton("NCBI", IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
-        
+
         //LinkButton ncbiButton = new LinkButton("NCBI");
         ncbiButton.setToolTipText("Lookup " + key + " at NCBI");
         ncbiButton.addActionListener(new ActionListener() {

@@ -500,6 +500,13 @@ public class ViewUtil {
         return button;
     }
 
+     public static JToggleButton getTexturedToggleButton(ImageIcon icon) {
+        JToggleButton button = new JToggleButton(icon);
+        ViewUtil.makeSmall(button);
+        button.putClientProperty("JButton.buttonType", "textured");
+        return button;
+    }
+
     public static JButton getTexturedButton(String s, ImageIcon icon) {
         JButton button = new JButton(s,icon);
         ViewUtil.makeSmall(button);
