@@ -33,7 +33,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.db.Settings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.ClientNetworkUtils;

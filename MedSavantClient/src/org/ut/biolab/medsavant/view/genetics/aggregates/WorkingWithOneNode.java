@@ -26,9 +26,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.ClassifiedPositionInfo;
 import org.ut.biolab.medsavant.view.genetics.filter.ontology.Node;
@@ -107,7 +107,7 @@ public class WorkingWithOneNode extends MedSavantWorker {
             if (numCurr == null) {
                 numCurr = MedSavantClient.VariantManager.getNumVariantsInRange(
                         LoginController.sessionId, 
-                        ProjectController.getInstance().getCurrentProjectId(), 
+                        ProjectController.getInstance().getCurrentProjectID(), 
                         ReferenceController.getInstance().getCurrentReferenceId(), 
                         FilterController.getQueryFilterConditions(), 
                         chrom, 

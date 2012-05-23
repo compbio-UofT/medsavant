@@ -25,7 +25,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.plugin.PluginController;

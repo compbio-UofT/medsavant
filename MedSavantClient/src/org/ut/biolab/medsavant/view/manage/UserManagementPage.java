@@ -32,7 +32,7 @@ import javax.swing.JPanel;
 import com.jidesoft.utils.SwingWorker;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.controller.UserController;
 import org.ut.biolab.medsavant.controller.UserController.UserListener;

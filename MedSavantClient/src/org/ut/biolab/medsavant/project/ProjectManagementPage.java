@@ -13,14 +13,12 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.manage;
+package org.ut.biolab.medsavant.project;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
 import javax.swing.Box;
@@ -31,8 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.listener.ProjectListener;
@@ -254,7 +251,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
             @Override
             protected Object doInBackground() throws Exception {
-                int projectId = ProjectController.getInstance().getProjectId(projectName);
+                int projectId = ProjectController.getInstance().getProjectID(projectName);
                 return MedSavantClient.ProjectQueryUtilAdapter.getProjectDetails(LoginController.sessionId, projectId);
             }
 

@@ -29,10 +29,10 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -204,7 +204,7 @@ public class GenomeContainer extends JLayeredPane {
             long start = System.currentTimeMillis();
             final Map<String, Map<Range, Integer>> map = MedSavantClient.VariantManager.getChromosomeHeatMap(
                     LoginController.sessionId,
-                    ProjectController.getInstance().getCurrentProjectId(),
+                    ProjectController.getInstance().getCurrentProjectID(),
                     ReferenceController.getInstance().getCurrentReferenceId(),
                     FilterController.getQueryFilterConditions(),
                     3000000);

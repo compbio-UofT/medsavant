@@ -14,18 +14,14 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.patients;
+package org.ut.biolab.medsavant.region;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
@@ -36,50 +32,38 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  *
  * @author mfiume
  */
-public class CohortsPage extends SubSectionView {
+public class RegionPage extends SubSectionView {
 
-    public CohortsPage(SectionView parent) { super(parent); }
-    private SplitScreenView view;
+    int importID = 0;
+    SplitScreenView view;
+
+    public RegionPage(SectionView parent) {
+        super(parent);
+    }
 
     @Override
     public String getName() {
-        return "Cohorts";
+        return "Region Lists";
     }
 
     @Override
     public JPanel getView(boolean update) {
-        view =  new SplitScreenView(
-                new SimpleDetailedListModel("Cohort") {
+        view = new SplitScreenView(
+                new SimpleDetailedListModel("Region List") {
                     @Override
                     public List getData() throws Exception {
-                        return MedSavantClient.CohortQueryUtilAdapter.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+                        return MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId);
                     }
                 },
-                new CohortDetailedView(),
-                new CohortDetailedListEditor());
+                new RegionDetailedView(),
+                new RegionDetailedListEditor());
 
         return view;
     }
 
+    @Override
     public Component[] getSubSectionMenuComponents() {
-        /*
-        Component[] result = new Component[1];
-        result[0] = getAddCohortButton();
-        return result;
-         *
-         */
-        return null;
-    }
-
-    private JButton getAddCohortButton(){
-        JButton button = new JButton("Add cohort");
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new CohortWizard();
-                if(view != null) view.refresh();
-            }
-        });
-        return button;
+        return new Component[0];
     }
 
     @Override

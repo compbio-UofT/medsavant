@@ -35,7 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.Filter;

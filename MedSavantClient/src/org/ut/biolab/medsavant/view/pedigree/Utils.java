@@ -30,8 +30,8 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
@@ -60,7 +60,7 @@ public class Utils {
                 List<String> dnaIds = new ArrayList<String>();
                 int numPatients = 0;
                 try {
-                    Map<String, String> patientIDToDNAIDMap = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForFamily(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), familyId);
+                    Map<String, String> patientIDToDNAIDMap = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForFamily(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), familyId);
                     numPatients = patientIDToDNAIDMap.size();
                     Object[] values = patientIDToDNAIDMap.values().toArray();
                     for (Object o : values) {
@@ -111,7 +111,7 @@ public class Utils {
 
                     List<String> dnaIds = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsFromField(
                         LoginController.sessionId,
-                        ProjectController.getInstance().getCurrentProjectId(),
+                        ProjectController.getInstance().getCurrentProjectID(),
                         DefaultpatientTableSchema.COLUMNNAME_OF_PATIENT_ID,
                         values);
 

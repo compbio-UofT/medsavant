@@ -28,7 +28,7 @@ import gnu.getopt.Getopt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.serverapi.*;
 import org.ut.biolab.medsavant.util.MiscUtils;

@@ -61,9 +61,9 @@ import pedviz.view.symbols.SymbolSexUndesignated;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -199,7 +199,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
 
             @Override
             protected List<String> doInBackground() throws Exception {
-                return MedSavantClient.PatientQueryUtilAdapter.getFamilyIds(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
+                return MedSavantClient.PatientQueryUtilAdapter.getFamilyIds(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
             }
 
             @Override
@@ -250,7 +250,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
             protected Map<String, Integer> doInBackground() throws Exception {
                 return MedSavantClient.VariantManager.getNumVariantsInFamily(
                         LoginController.sessionId, 
-                        ProjectController.getInstance().getCurrentProjectId(),
+                        ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceId(),
                         familyId, FilterController.getQueryFilterConditions());
             }
@@ -276,7 +276,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
             @Override
             protected File doInBackground() throws Exception {
 
-                List<Object[]> results = MedSavantClient.PatientQueryUtilAdapter.getFamily(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), familyId);
+                List<Object[]> results = MedSavantClient.PatientQueryUtilAdapter.getFamily(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), familyId);
 
                 File outfile = new File(DirectorySettings.getTmpDirectory(), "pedigree" + familyId + ".csv");
 

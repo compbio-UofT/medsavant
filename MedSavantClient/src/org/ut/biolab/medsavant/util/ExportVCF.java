@@ -23,9 +23,9 @@ import com.healthmarketscience.rmiio.RemoteInputStream;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
@@ -55,7 +55,7 @@ public class ExportVCF {
         
         RemoteInputStream ris = MedSavantClient.VariantManager.exportVariants(
                 LoginController.sessionId, 
-                ProjectController.getInstance().getCurrentProjectId(), 
+                ProjectController.getInstance().getCurrentProjectID(), 
                 ReferenceController.getInstance().getCurrentReferenceId(), 
                 FilterController.getQueryFilterConditions());
         

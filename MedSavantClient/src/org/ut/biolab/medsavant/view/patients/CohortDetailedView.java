@@ -33,8 +33,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
@@ -104,7 +104,7 @@ public class CohortDetailedView extends DetailedView {
         protected Object doInBackground() throws Exception {
             List<SimplePatient> patientList = MedSavantClient.CohortQueryUtilAdapter.getIndividualsInCohort(
                     LoginController.sessionId,
-                    ProjectController.getInstance().getCurrentProjectId(),
+                    ProjectController.getInstance().getCurrentProjectID(),
                     cohort.getId());
             return patientList;
         }

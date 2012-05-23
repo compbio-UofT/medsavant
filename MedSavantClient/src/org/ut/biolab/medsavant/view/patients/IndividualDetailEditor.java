@@ -19,8 +19,8 @@ package org.ut.biolab.medsavant.view.patients;
 import java.util.List;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
@@ -81,7 +81,7 @@ class IndividualDetailEditor extends DetailedListEditor {
                     try {
                         MedSavantClient.PatientQueryUtilAdapter.removePatient(
                                 LoginController.sessionId,
-                                ProjectController.getInstance().getCurrentProjectId(),
+                                ProjectController.getInstance().getCurrentProjectID(),
                                 patients);
                         DialogUtils.displayMessage("Successfully removed " + (items.size()) + " patient(s)");
                     } catch (Exception ex) {

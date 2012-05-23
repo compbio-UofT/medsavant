@@ -14,7 +14,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 
 /**
  *

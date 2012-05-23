@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.GeneSet;
 import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;

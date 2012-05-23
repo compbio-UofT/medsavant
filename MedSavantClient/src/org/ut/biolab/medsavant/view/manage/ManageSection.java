@@ -16,6 +16,9 @@
 
 package org.ut.biolab.medsavant.view.manage;
 
+import org.ut.biolab.medsavant.reference.ReferenceGenomePage;
+import org.ut.biolab.medsavant.geneset.GeneSetPage;
+import org.ut.biolab.medsavant.project.ProjectManagementPage;
 import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.JPanel;

@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.controller;
+package org.ut.biolab.medsavant.reference;
 
+import org.ut.biolab.medsavant.login.LoginController;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;

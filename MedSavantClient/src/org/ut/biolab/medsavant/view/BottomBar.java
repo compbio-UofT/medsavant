@@ -18,7 +18,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.images.ImagePanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;

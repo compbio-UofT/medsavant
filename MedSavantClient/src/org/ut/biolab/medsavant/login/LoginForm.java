@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.login;
+package org.ut.biolab.medsavant.login;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -33,7 +33,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantProgramInformation;
-import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
@@ -141,7 +140,7 @@ public class LoginForm extends JPanel implements LoginListener {
         titlePanel.setMinimumSize(new java.awt.Dimension(400, 800));
 
         userField.setColumns(25);
-        userField.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        userField.setFont(new java.awt.Font("Arial", 1, 18));
         userField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         userField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -150,7 +149,7 @@ public class LoginForm extends JPanel implements LoginListener {
         });
 
         passwordField.setColumns(25);
-        passwordField.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
+        passwordField.setFont(new java.awt.Font("Arial", 0, 18));
         passwordField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         passwordField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -171,15 +170,15 @@ public class LoginForm extends JPanel implements LoginListener {
             .addGap(0, 150, Short.MAX_VALUE)
         );
 
-        versionLabel.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        versionLabel.setFont(new java.awt.Font("Tahoma", 0, 14));
         versionLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         versionLabel.setText("version information");
 
-        userLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        userLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         userLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         userLabel.setText("USERNAME");
 
-        passwordLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        passwordLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         passwordLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         passwordLabel.setText("PASSWORD");
 
@@ -199,7 +198,7 @@ public class LoginForm extends JPanel implements LoginListener {
         hostLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         hostLabel.setText("SERVER ADDRESS");
 
-        hostField.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        hostField.setFont(new java.awt.Font("Arial", 1, 18));
         hostField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         hostField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -210,7 +209,7 @@ public class LoginForm extends JPanel implements LoginListener {
         portLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         portLabel.setText("SERVER PORT");
 
-        portField.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        portField.setFont(new java.awt.Font("Arial", 1, 18));
         portField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         portField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -225,7 +224,7 @@ public class LoginForm extends JPanel implements LoginListener {
             }
         });
 
-        databaseField.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        databaseField.setFont(new java.awt.Font("Arial", 1, 18));
         databaseField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         databaseField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -291,7 +290,7 @@ public class LoginForm extends JPanel implements LoginListener {
             }
         });
 
-        statusLabel.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        statusLabel.setFont(new java.awt.Font("Tahoma", 0, 14));
         statusLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         statusLabel.setText("  ");
 

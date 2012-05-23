@@ -23,9 +23,9 @@ import com.healthmarketscience.sqlbuilder.Condition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
@@ -44,7 +44,7 @@ public class ProjectUtils {
      * @return an integer which uniquely identifies the current project
      */
     public static int getCurrentProjectID() {
-        return ProjectController.getInstance().getCurrentProjectId();
+        return ProjectController.getInstance().getCurrentProjectID();
     }
 
     /**

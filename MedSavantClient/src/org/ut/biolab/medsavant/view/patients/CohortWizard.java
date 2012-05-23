@@ -38,8 +38,8 @@ import java.awt.event.KeyAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 
 /**
  *
@@ -119,7 +119,7 @@ public class CohortWizard extends WizardDialog {
     public void finish() {
         if (cohortName == null || cohortName.equals("")) return;
         try {
-            MedSavantClient.CohortQueryUtilAdapter.addCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), cohortName);
+            MedSavantClient.CohortQueryUtilAdapter.addCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), cohortName);
         } catch (SQLException ex) {
             LOG.error("Error adding cohort.", ex);
         } catch (RemoteException ex) {

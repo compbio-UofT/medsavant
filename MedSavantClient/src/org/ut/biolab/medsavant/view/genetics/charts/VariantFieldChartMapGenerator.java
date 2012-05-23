@@ -25,10 +25,10 @@ import java.util.HashMap;
 import com.healthmarketscience.sqlbuilder.Condition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
@@ -86,7 +86,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
 
             chartMap.addAll(MedSavantClient.VariantManager.getFilteredFrequencyValuesForCategoricalColumn(
                     LoginController.sessionId,
-                    ProjectController.getInstance().getCurrentProjectId(),
+                    ProjectController.getInstance().getCurrentProjectID(),
                     ReferenceController.getInstance().getCurrentReferenceId(),
                     filterConditions,
                     field.getColumnName()));
@@ -96,7 +96,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             //get dna ids for each distinct value
             Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
                     LoginController.sessionId,
-                    ProjectController.getInstance().getCurrentProjectId(),
+                    ProjectController.getInstance().getCurrentProjectID(),
                     field.getColumnName());
 
             if (field.getColumnName().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
@@ -109,7 +109,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             List<String> dnaIds = getDnaIds();
             Map<String, Integer> dnaIdToCount = MedSavantClient.VariantManager.getDnaIdHeatMap(
                     LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentProjectId(), 
+                    ProjectController.getInstance().getCurrentProjectID(), 
                     ReferenceController.getInstance().getCurrentReferenceId(), 
                     filterConditions, 
                     dnaIds);
@@ -163,7 +163,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                 
                 Map<Range,Long> resultMap = MedSavantClient.VariantManager.getFilteredFrequencyValuesForNumericColumn(
                         LoginController.sessionId,
-                        ProjectController.getInstance().getCurrentProjectId(),
+                        ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceId(),
                         conditions,
                         field,
@@ -206,7 +206,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             //get dna ids for each distinct value
             Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
                     LoginController.sessionId,
-                    ProjectController.getInstance().getCurrentProjectId(),
+                    ProjectController.getInstance().getCurrentProjectID(),
                     field.getColumnName());
             int maxBin = 0;
             for (Object key : map.keySet()) {
@@ -222,7 +222,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
             //get a count for each dna id
             Map<String, Integer> dnaIdToCount = MedSavantClient.VariantManager.getDnaIdHeatMap(
                     LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentProjectId(), 
+                    ProjectController.getInstance().getCurrentProjectID(), 
                     ReferenceController.getInstance().getCurrentReferenceId(), 
                     conditions, 
                     dnaIds);
@@ -261,7 +261,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
     @Override
     public ChartFrequencyMap generateChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws SQLException, RemoteException {
 
-        String cacheKey = ProjectController.getInstance().getCurrentProjectId()
+        String cacheKey = ProjectController.getInstance().getCurrentProjectID()
                 + "_" + ReferenceController.getInstance().getCurrentReferenceId()
                 + "_" + field.getColumnName()
                 + "_" + isLogScaleX;

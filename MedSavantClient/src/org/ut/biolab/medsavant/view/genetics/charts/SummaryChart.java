@@ -15,6 +15,9 @@
  */
 package org.ut.biolab.medsavant.view.genetics.charts;
 
+import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -609,7 +612,7 @@ public class SummaryChart extends JLayeredPane {
         private ScatterChartMap mapPatientField(ScatterChartMap scatterMap, ChartMapGenerator generator, boolean isX) throws NonFatalDatabaseException, SQLException, RemoteException{
             Map<Object, List<String>> map = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForValues(
                     LoginController.sessionId,
-                    ProjectController.getInstance().getCurrentProjectId(),
+                    ProjectController.getInstance().getCurrentProjectID(),
                     generator.getFilterId());
             if (generator.getFilterId().equals(DefaultpatientTableSchema.COLUMNNAME_OF_GENDER)) {
                 map = ClientMiscUtils.modifyGenderMap(map);
@@ -664,7 +667,7 @@ public class SummaryChart extends JLayeredPane {
 
             ScatterChartMap scatterMap =  MedSavantClient.VariantManager.getFilteredFrequencyValuesForScatter(
                     LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentProjectId(), 
+                    ProjectController.getInstance().getCurrentProjectID(), 
                     ReferenceController.getInstance().getCurrentReferenceId(), 
                     FilterController.getQueryFilterConditions(), 
                     columnX, 
@@ -784,7 +787,7 @@ public class SummaryChart extends JLayeredPane {
                         } else {
                             List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsWithValuesInRange(
                                     LoginController.sessionId,
-                                    ProjectController.getInstance().getCurrentProjectId(),
+                                    ProjectController.getInstance().getCurrentProjectID(),
                                     mapGenerator.getFilterId(),
                                     r);
                             Condition[] conditions = new Condition[individuals.size()];

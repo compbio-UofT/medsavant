@@ -38,9 +38,9 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
@@ -128,7 +128,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         Map<String, List<String>> map = new HashMap<String, List<String>>();
         map = MedSavantClient.VariantManager.getSavantBookmarkPositionsForDNAIds(
                 LoginController.sessionId, 
-                ProjectController.getInstance().getCurrentProjectId(), 
+                ProjectController.getInstance().getCurrentProjectID(), 
                 ReferenceController.getInstance().getCurrentReferenceId(), 
                 FilterController.getQueryFilterConditions(),
                 selectedIds, 
@@ -136,7 +136,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         
         //get BAM files
         List<String> bamFiles = new ArrayList<String>();
-        bamFiles = MedSavantClient.PatientQueryUtilAdapter.getValuesFromDNAIds(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, selectedIds);
+        bamFiles = MedSavantClient.PatientQueryUtilAdapter.getValuesFromDNAIds(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), DefaultpatientTableSchema.COLUMNNAME_OF_BAM_URL, selectedIds);
         
         //genome version
         String genomeName = ReferenceController.getInstance().getCurrentReferenceName();

@@ -20,7 +20,7 @@ import javax.swing.Icon;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.view.images.IconFactory;
-import org.ut.biolab.medsavant.view.regions.RegionPage;
+import org.ut.biolab.medsavant.region.RegionPage;
 import org.ut.biolab.medsavant.view.manage.VariantFilesPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;

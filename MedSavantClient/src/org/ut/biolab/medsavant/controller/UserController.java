@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.controller;
 
+import org.ut.biolab.medsavant.login.LoginController;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;

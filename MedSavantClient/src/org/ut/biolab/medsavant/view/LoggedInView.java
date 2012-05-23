@@ -23,7 +23,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import javax.swing.JPanel;
 
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.manage.ManageSection;
 import org.ut.biolab.medsavant.view.patients.ListsSection;

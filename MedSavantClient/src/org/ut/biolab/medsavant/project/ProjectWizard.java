@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.manage;
+package org.ut.biolab.medsavant.project;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -40,8 +40,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;

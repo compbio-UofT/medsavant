@@ -30,9 +30,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
@@ -132,13 +132,13 @@ public class GeneticsSection extends SectionView implements ProjectListener {
 
         List<String> references = MedSavantClient.ReferenceQueryUtilAdapter.getReferencesForProject(
                 LoginController.sessionId,
-                ProjectController.getInstance().getCurrentProjectId());
+                ProjectController.getInstance().getCurrentProjectID());
 
         for (String refname : references) {
 
             int refid = ReferenceController.getInstance().getReferenceId(refname);
 
-            int numVariantsInTable = ProjectController.getInstance().getNumVariantsInTable(ProjectController.getInstance().getCurrentProjectId(), refid);
+            int numVariantsInTable = ProjectController.getInstance().getNumVariantsInTable(ProjectController.getInstance().getCurrentProjectID(), refid);
 
             referenceDropDown.addItem(refname); // + " (" + numVariantsInTable + " variants)");
         }

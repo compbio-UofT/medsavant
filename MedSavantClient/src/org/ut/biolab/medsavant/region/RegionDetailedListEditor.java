@@ -13,13 +13,14 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.patients;
+
+package org.ut.biolab.medsavant.region;
 
 import java.util.List;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.model.Cohort;
+import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
@@ -30,7 +31,7 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  *
  * @author mfiume
  */
-public class CohortDetailedListEditor extends DetailedListEditor {
+class RegionDetailedListEditor extends DetailedListEditor {
 
     @Override
     public boolean doesImplementAdding() {
@@ -43,8 +44,18 @@ public class CohortDetailedListEditor extends DetailedListEditor {
     }
 
     @Override
+    public boolean doesImplementImporting() {
+        return true;
+    }
+
+    @Override
     public void addItems() {
-        new CohortWizard().setVisible(true);
+        new RegionWizard(false).setVisible(true);
+    }
+
+    @Override
+    public void importItems() {
+        new RegionWizard(true).setVisible(true);
     }
 
     @Override
@@ -53,31 +64,31 @@ public class CohortDetailedListEditor extends DetailedListEditor {
         int result;
 
         if (items.size() == 1) {
-            String name = ((Cohort) items.get(0)[0]).getName();
-            result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove %s?\nThis cannot be undone.", name);
+            String name = ((RegionSet)items.get(0)[0]).getName();
+            result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This cannot be undone.</html>", name);
         } else {
-            result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove these %d cohorts?\nThis cannot be undone.", items.size());
+            result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove these %d lists?<br>This cannot be undone.</html>", items.size());
         }
-
 
         if (result == DialogUtils.YES) {
 
-            new IndeterminateProgressDialog("Removing Cohort(s)", items.size() + " cohort(s) being removed.  Please wait.") {
+            new IndeterminateProgressDialog("Removing Region List(s)", "Removing region list(s). Please wait.") {
                 @Override
                 public void run() {
                     int numCouldntRemove = 0;
+
                     for (Object[] v : items) {
-                        int id = ((Cohort) v[0]).getId();
+                        String listName = ((RegionSet) v[0]).getName();
+                        int listID = ((RegionSet) v[0]).getID();
                         try {
-                            MedSavantClient.CohortQueryUtilAdapter.removeCohort(LoginController.sessionId, id);
+                            MedSavantClient.RegionSetManager.removeRegionSet(LoginController.sessionId, listID);
                         } catch (Throwable ex) {
                             numCouldntRemove++;
-                            ClientMiscUtils.reportError("Error removing " + ((Cohort)v[0]).getName() + ": " + MiscUtils.getMessage(ex), ex);
+                            ClientMiscUtils.reportError("Could not remove " + listName + ": " + MiscUtils.getMessage(ex), ex);
                         }
                     }
-
                     if (numCouldntRemove != items.size()) {
-                        DialogUtils.displayMessage("Successfully removed " + (items.size() - numCouldntRemove) + " cohort(s)");
+                        DialogUtils.displayMessage(String.format("Successfully removed %d list(s)", items.size()));
                     }
                 }
             }.setVisible(true);

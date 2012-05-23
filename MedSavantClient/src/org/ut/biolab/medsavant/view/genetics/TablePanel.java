@@ -36,9 +36,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.format.CustomField;
@@ -447,7 +447,7 @@ public class TablePanel extends JLayeredPane {
                 try {
                     int numStarred = MedSavantClient.VariantManager.addStarredVariants(
                             LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectId(),
+                            ProjectController.getInstance().getCurrentProjectID(),
                             ReferenceController.getInstance().getCurrentReferenceId(),
                             list);
                     if (numStarred < list.size()) {
@@ -492,7 +492,7 @@ public class TablePanel extends JLayeredPane {
                 try {
                     MedSavantClient.VariantManager.unstarVariant(
                             LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectId(),
+                            ProjectController.getInstance().getCurrentProjectID(),
                             ReferenceController.getInstance().getCurrentReferenceId(),
                             sv.getUploadId(),
                             sv.getFileId(),
@@ -523,7 +523,7 @@ public class TablePanel extends JLayeredPane {
         starMap.clear();
 
         try {
-            Set<StarredVariant> starred = MedSavantClient.VariantManager.getStarredVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), ReferenceController.getInstance().getCurrentReferenceId());
+            Set<StarredVariant> starred = MedSavantClient.VariantManager.getStarredVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceId());
 
             for (int i = 0; i < variants.size(); i++) {
                 Object[] row = variants.get(i);

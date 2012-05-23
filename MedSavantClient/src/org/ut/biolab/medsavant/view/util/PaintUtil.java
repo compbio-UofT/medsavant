@@ -9,7 +9,7 @@ import java.awt.Component;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import org.ut.biolab.medsavant.view.login.LoginView;
+import org.ut.biolab.medsavant.login.LoginView;
 
 /**
  *

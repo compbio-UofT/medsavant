@@ -28,10 +28,10 @@ import javax.swing.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.listener.ProjectListener;
-import org.ut.biolab.medsavant.view.manage.ProjectWizard;
+import org.ut.biolab.medsavant.project.ProjectWizard;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.DialogUtils;

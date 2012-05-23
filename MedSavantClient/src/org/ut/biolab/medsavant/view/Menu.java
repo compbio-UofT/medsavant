@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.LoginEvent;

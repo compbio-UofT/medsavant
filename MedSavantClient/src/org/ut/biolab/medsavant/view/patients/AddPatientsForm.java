@@ -41,8 +41,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
@@ -84,7 +84,7 @@ public class AddPatientsForm extends JDialog {
         model.addColumn("Short Name");
         model.addColumn("Value");
         
-        List<CustomField> fields = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
+        List<CustomField> fields = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
         for (int i = 1; i < fields.size(); i++) { //skip patient id
             model.addRow(new Object[]{fields.get(i), ""});
         }
@@ -137,7 +137,7 @@ public class AddPatientsForm extends JDialog {
             values.set(i, values.get(i).equals("") ? null : values.get(i));
         }
         
-        MedSavantClient.PatientQueryUtilAdapter.addPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), cols, values);
+        MedSavantClient.PatientQueryUtilAdapter.addPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), cols, values);
         clearTable();    
     }
     
@@ -155,8 +155,8 @@ public class AddPatientsForm extends JDialog {
         progressBar.setIndeterminate(true);
         progressMessage.setText("Exporting Patients");
 
-        List<CustomField> fields = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
-        List<Object[]> patients = MedSavantClient.PatientQueryUtilAdapter.getPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
+        List<CustomField> fields = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+        List<Object[]> patients = MedSavantClient.PatientQueryUtilAdapter.getPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
         
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));      
@@ -207,7 +207,7 @@ public class AddPatientsForm extends JDialog {
                 JOptionPane.WARNING_MESSAGE)) return;
         
         //remove current data
-        MedSavantClient.PatientQueryUtilAdapter.clearPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
+        MedSavantClient.PatientQueryUtilAdapter.clearPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
                 
         final File file = DialogUtils.chooseFileForOpen("Import File", new ExtensionsFileFilter(new String[]{"csv"}), null);
         if (file == null) return;
@@ -222,7 +222,7 @@ public class AddPatientsForm extends JDialog {
 
                 try {
                     
-                    List<CustomField> fields = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
+                    List<CustomField> fields = MedSavantClient.PatientQueryUtilAdapter.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
                     
                     BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
                     CSVReader in = new CSVReader(bufferedReader);
@@ -272,7 +272,7 @@ public class AddPatientsForm extends JDialog {
                             }
                         }
 
-                        MedSavantClient.PatientQueryUtilAdapter.addPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), headerToField, values);
+                        MedSavantClient.PatientQueryUtilAdapter.addPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), headerToField, values);
                     }
 
                     in.close();

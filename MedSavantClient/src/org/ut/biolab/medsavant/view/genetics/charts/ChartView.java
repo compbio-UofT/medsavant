@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
 
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;

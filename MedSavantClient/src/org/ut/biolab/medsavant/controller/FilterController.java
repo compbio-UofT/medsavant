@@ -16,6 +16,9 @@
 
 package org.ut.biolab.medsavant.controller;
 
+import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;

@@ -58,8 +58,8 @@ import pedviz.view.symbols.SymbolSexMale;
 import pedviz.view.symbols.SymbolSexUndesignated;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.format.PatientFormat;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
@@ -101,7 +101,7 @@ public class IndividualDetailedView extends DetailedView {
 
         @Override
         protected Object doInBackground() throws RemoteException, SQLException {
-            return MedSavantClient.PatientQueryUtilAdapter.getPatientRecord(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
+            return MedSavantClient.PatientQueryUtilAdapter.getPatientRecord(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), pid);
         }
 
         @Override
@@ -128,8 +128,8 @@ public class IndividualDetailedView extends DetailedView {
         @Override
         protected Object doInBackground() throws Exception {
 
-            List<Object[]> results = MedSavantClient.PatientQueryUtilAdapter.getFamilyOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
-            familyId = MedSavantClient.PatientQueryUtilAdapter.getFamilyIdOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), pid);
+            List<Object[]> results = MedSavantClient.PatientQueryUtilAdapter.getFamilyOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), pid);
+            familyId = MedSavantClient.PatientQueryUtilAdapter.getFamilyIdOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), pid);
 
             File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + pid + ".csv");
 
@@ -325,7 +325,7 @@ public class IndividualDetailedView extends DetailedView {
 
     public IndividualDetailedView() throws RemoteException, SQLException {
 
-        fieldNames = MedSavantClient.PatientQueryUtilAdapter.getPatientFieldAliases(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
+        fieldNames = MedSavantClient.PatientQueryUtilAdapter.getPatientFieldAliases(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
 
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
@@ -438,7 +438,7 @@ public class IndividualDetailedView extends DetailedView {
             public void actionPerformed(ActionEvent e) {
                 if (patientIds != null && patientIds.length > 0) {
                     try {
-                        List<Cohort> cohorts = MedSavantClient.CohortQueryUtilAdapter.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId());
+                        List<Cohort> cohorts = MedSavantClient.CohortQueryUtilAdapter.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
                         ComboForm form = new ComboForm(cohorts.toArray(), "Select Cohort", "Select which cohort to add to:");
                         Cohort selected = (Cohort) form.getSelectedValue();
                         if (selected == null) {

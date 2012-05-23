@@ -4,13 +4,13 @@
  */
 package org.ut.biolab.medsavant.view.manage;
 
-import org.ut.biolab.medsavant.view.regions.RegionPage;
+import org.ut.biolab.medsavant.region.RegionPage;
 import org.ut.biolab.medsavant.view.genetics.*;
 
 import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.JPanel;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;

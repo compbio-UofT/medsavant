@@ -34,8 +34,8 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.model.Filter;
@@ -83,7 +83,7 @@ class CohortFilterView extends FilterView {
     private List<Cohort> getDefaultValues() throws SQLException, RemoteException {
         return MedSavantClient.CohortQueryUtilAdapter.getCohorts(
                 LoginController.sessionId,
-                ProjectController.getInstance().getCurrentProjectId());
+                ProjectController.getInstance().getCurrentProjectID());
     }
 
     private void createContentPanel(JPanel p) throws SQLException, RemoteException {

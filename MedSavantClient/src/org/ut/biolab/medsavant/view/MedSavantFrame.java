@@ -36,13 +36,13 @@ import com.apple.eawt.QuitResponse;
 
 import org.ut.biolab.medsavant.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.model.event.LoginEvent;
 import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.plugin.PluginManagerDialog;
-import org.ut.biolab.medsavant.view.login.LoginView;
+import org.ut.biolab.medsavant.login.LoginView;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;

@@ -15,6 +15,9 @@
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
+import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -170,7 +173,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                             GenomicRegion r = currentGenes.get(i);
                             int recordsInRegion = MedSavantClient.VariantManager.getNumVariantsInRange(
                                     LoginController.sessionId,
-                                    ProjectController.getInstance().getCurrentProjectId(),
+                                    ProjectController.getInstance().getCurrentProjectID(),
                                     ReferenceController.getInstance().getCurrentReferenceId(),
                                     FilterController.getQueryFilterConditions(),
                                     r.getChrom(),
@@ -194,7 +197,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                             GenomicRegion r = currentGenes.get(i);
                             int recordsInRegion = MedSavantClient.VariantManager.getNumPatientsWithVariantsInRange(
                                     LoginController.sessionId,
-                                    ProjectController.getInstance().getCurrentProjectId(),
+                                    ProjectController.getInstance().getCurrentProjectID(),
                                     ReferenceController.getInstance().getCurrentReferenceId(),
                                     FilterController.getQueryFilterConditions(),
                                     r.getChrom(),

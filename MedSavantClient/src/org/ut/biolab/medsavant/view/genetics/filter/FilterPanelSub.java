@@ -32,8 +32,8 @@ import javax.swing.*;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabaseExtras;
@@ -368,7 +368,7 @@ public class FilterPanelSub extends JPanel {
         }
 
         //HPO filter
-        if (MedSavantClient.PatientQueryUtilAdapter.hasOptionalField(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO)) {
+        if (MedSavantClient.PatientQueryUtilAdapter.hasOptionalField(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO)) {
             if (!hasSubItem(HPOFilterView.FILTER_ID)) {
                 map.get(Category.PATIENT).add(new FilterPlaceholder() {
 

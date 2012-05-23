@@ -42,8 +42,8 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.controller.ProjectController;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.model.Filter;
@@ -124,7 +124,7 @@ class HPOFilterView extends FilterView {
 
 
                 try {
-                    List<String> dnaIds = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForHPOID(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectId(), id);
+                    List<String> dnaIds = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForHPOID(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), id);
 
                     Condition[] conditions = new Condition[dnaIds.size()];
                     for (int i = 0; i < dnaIds.size(); i++) {
