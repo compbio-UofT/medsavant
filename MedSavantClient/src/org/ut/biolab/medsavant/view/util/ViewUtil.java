@@ -485,6 +485,10 @@ public class ViewUtil {
         c.putClientProperty("JComponent.sizeVariant", "small");
     }
 
+    public static void makeMini(JComponent c) {
+        c.putClientProperty("JComponent.sizeVariant", "mini");
+    }
+
 
     public static JToggleButton getSoftToggleButton(String string) {
         JToggleButton b = new JToggleButton(string);
@@ -514,6 +518,10 @@ public class ViewUtil {
         button.setHorizontalTextPosition(SwingConstants.LEFT);
         button.putClientProperty("JButton.buttonType", "textured");
         return button;
+    }
+
+    public static Color getAlternateRowColor() {
+        return new Color(242, 245, 249);
     }
 
     /*public static void applyMenuStyleInset(JPanel p) {

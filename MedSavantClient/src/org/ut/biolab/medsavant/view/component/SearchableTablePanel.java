@@ -84,7 +84,7 @@ public class SearchableTablePanel extends JPanel {
     private JButton exportButton;
     private List<Integer> selectedRows;
     private static Color SELECTED_COLOUR = new Color(244, 237, 147);
-    private static Color DARK_COLOUR = new Color(242, 245, 249);
+    private static Color DARK_COLOUR = ViewUtil.getAlternateRowColor();
     private final JPanel bottomPanel;
     private final JButton chooseColumnButton;
 

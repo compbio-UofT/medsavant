@@ -32,6 +32,8 @@ public class KeyValuePairPanel extends JPanel {
     private List<String> keysInMoreSection;
     private boolean newRowsGoIntoMoreSection;
     private final GridBagConstraints keyDetailConstraints;
+    private JPanel kvpPanel;
+    private JPanel toolbar;
 
     public KeyValuePairPanel() {
         this(0);
@@ -47,6 +49,14 @@ public class KeyValuePairPanel extends JPanel {
     public KeyValuePairPanel(int additionalColumns) {
 
         this.setOpaque(false);
+        this.setLayout(new BorderLayout());
+        kvpPanel = ViewUtil.getClearPanel();
+        toolbar = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(toolbar);
+
+        this.add(kvpPanel, BorderLayout.CENTER);
+        this.add(toolbar, BorderLayout.SOUTH);
+
 
         this.additionalColumns = additionalColumns;
         keyKeyComponentMap = new HashMap<String, JLabel>();
@@ -95,7 +105,7 @@ public class KeyValuePairPanel extends JPanel {
             columnConstraints.add(c);
         }
 
-        this.setLayout(new GridBagLayout());
+        kvpPanel.setLayout(new GridBagLayout());
     }
 
     public JComponent getComponent(String key) {
@@ -115,8 +125,47 @@ public class KeyValuePairPanel extends JPanel {
 
     public void addMoreRow() {
 
-        addKey(KEY_MORE, true);
-        setValue(KEY_MORE, " "); // required to keep vertical height
+
+        final JLabel keyLabel = new JLabel();
+        ViewUtil.makeMini(keyLabel);
+        keyLabel.setForeground(Color.darkGray);
+        keyLabel.setBorder(ViewUtil.getMediumBorder());
+
+        keyLabel.setText("▼ MORE ▼");
+
+        keyLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        keyLabel.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                toggleMoreVisibility();
+
+                if (keyLabel.getText().startsWith("▲")) {
+                    keyLabel.setText("▼ MORE ▼");
+                } else {
+                    keyLabel.setText("▲ LESS ▲");
+                }
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+            }
+        });
+
+        toolbar.add(ViewUtil.getCenterAlignedComponent(keyLabel));
         newRowsGoIntoMoreSection = true;
 
     }
@@ -148,7 +197,7 @@ public class KeyValuePairPanel extends JPanel {
 
         Color rowColor = Color.white;
         if (keyKeyComponentMap.size() % 2 == 0) {
-            rowColor = ViewUtil.getMenuColor();
+            rowColor = ViewUtil.getAlternateRowColor();
         }
 
         if (newRowsGoIntoMoreSection) {
@@ -211,8 +260,8 @@ public class KeyValuePairPanel extends JPanel {
         keyPanel.add(keyLabel);
         keyPanel.add(Box.createHorizontalGlue());
 
-        this.add(keyPanel, incrementConstraintRow(i++));
-        this.add(valuePanel, incrementConstraintRow(i++));
+        kvpPanel.add(keyPanel, incrementConstraintRow(i++));
+        kvpPanel.add(valuePanel, incrementConstraintRow(i++));
 
         for (int j = 0; j < this.additionalColumns; j++) {
             JPanel panel = new JPanel();
@@ -220,7 +269,7 @@ public class KeyValuePairPanel extends JPanel {
             ViewUtil.applyHorizontalBoxLayout(panel);
             panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             extraComponents[j] = panel;//ViewUtil.getClearPanel();
-            this.add(extraComponents[j], incrementConstraintRow(i++));
+            kvpPanel.add(extraComponents[j], incrementConstraintRow(i++));
         }
 
         /**
@@ -233,7 +282,7 @@ public class KeyValuePairPanel extends JPanel {
         detailPanel.setVisible(false);
         keyDetailComponentMap.put(key, detailPanel);
 
-        this.add(detailPanel, keyDetailConstraints);
+        kvpPanel.add(detailPanel, keyDetailConstraints);
 
 
         // update all constraints to skip a line
