@@ -31,11 +31,11 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.listener.ProjectListener;
+import org.ut.biolab.medsavant.project.ProjectListener;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.dialog.ExportVcfWizard;
@@ -111,7 +111,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
                 try {
                     new ExportVcfWizard().setVisible(true);
                 } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Unable to launch Variant Export wizard.", ex);
+                    ClientMiscUtils.reportError("Unable to launch Variant Export wizard: %s", ex);
                 }
             }
         });
@@ -166,7 +166,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         try {
             refreshReferenceDropDown();
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error refreshing reference drop-down.", ex);
+            ClientMiscUtils.reportError("Error refreshing reference drop-down: %s", ex);
         }
     }
 
@@ -175,7 +175,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         try {
             refreshReferenceDropDown();
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error refreshing reference drop-down.", ex);
+            ClientMiscUtils.reportError("Error refreshing reference drop-down: %s", ex);
         }
     }
 
@@ -184,7 +184,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         try {
             refreshReferenceDropDown();
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error refreshing reference drop-down.", ex);
+            ClientMiscUtils.reportError("Error refreshing reference drop-down: %s", ex);
         }
     }
 
@@ -193,7 +193,7 @@ public class GeneticsSection extends SectionView implements ProjectListener {
         try {
             refreshReferenceDropDown();
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error refreshing reference drop-down.", ex);
+            ClientMiscUtils.reportError("Error refreshing reference drop-down: %s", ex);
         }
     }
 }

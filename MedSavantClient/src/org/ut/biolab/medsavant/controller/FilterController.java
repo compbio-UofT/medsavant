@@ -16,9 +16,6 @@
 
 package org.ut.biolab.medsavant.controller;
 
-import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -32,14 +29,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.listener.ProjectListener;
-import org.ut.biolab.medsavant.listener.ReferenceListener;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.login.LoginEvent;
+import org.ut.biolab.medsavant.login.LoginListener;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.RangeFilter;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.model.event.LoginEvent;
-import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceListener;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.project.ProjectListener;
 
 
 /**

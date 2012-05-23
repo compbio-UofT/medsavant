@@ -14,33 +14,27 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.manage;
+package org.ut.biolab.medsavant.user;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.jidesoft.utils.SwingWorker;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.controller.UserController;
-import org.ut.biolab.medsavant.controller.UserController.UserListener;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.UserLevel;
+import org.ut.biolab.medsavant.user.UserController.UserListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
-import org.ut.biolab.medsavant.view.dialog.NewUserDialog;
+import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
@@ -56,6 +50,67 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class UserManagementPage extends SubSectionView implements UserListener {
 
+    @Override
+    public void userAdded(String name) {
+        panel.refresh();
+    }
+
+    @Override
+    public void userRemoved(String name) {
+        panel.refresh();
+    }
+
+    @Override
+    public void userChanged(String name) {
+        panel.refresh();
+    }
+
+    private SplitScreenView panel;
+
+    public UserManagementPage(SectionView parent) {
+        super(parent);
+        UserController.getInstance().addUserListener(this);
+    }
+
+    @Override
+    public String getName() {
+        return "Users";
+    }
+
+    @Override
+    public JPanel getView(boolean update) {
+        if (panel == null) {
+            setPanel();
+        }
+        return panel;
+    }
+
+    public void setPanel() {
+        panel = new SplitScreenView(
+                new SimpleDetailedListModel("User") {
+                    @Override
+                    public List getData() throws Exception {
+                        return UserController.getInstance().getUserNames();
+                    }
+                },
+                new UserDetailedView(),
+                new UserDetailedListEditor());
+    }
+
+    @Override
+    public Component[] getSubSectionMenuComponents() {
+        return new Component[0];
+    }
+
+    @Override
+    public void viewDidLoad() {
+    }
+
+    @Override
+    public void viewDidUnload() {
+        ThreadController.getInstance().cancelWorkers(getName());
+    }
+
     private static class UserDetailedListEditor extends DetailedListEditor {
 
         @Override
@@ -70,51 +125,50 @@ public class UserManagementPage extends SubSectionView implements UserListener {
 
         @Override
         public void addItems() {
-            NewUserDialog npd = new NewUserDialog(MedSavantFrame.getInstance(), true);
+            NewUserDialog npd = new NewUserDialog();
             npd.setVisible(true);
         }
 
         @Override
-        public void deleteItems(List<Object[]> results) {
-            int nameIndex = 0;
-
+        public void deleteItems(final List<Object[]> items) {
             int result;
 
-            if (results.size() == 1) {
-                String name = (String) results.get(0)[nameIndex];
-                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                        "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
-                        "Confirm", JOptionPane.YES_NO_OPTION);
+            String name = null;
+            if (items.size() == 1) {
+                name = (String)items.get(0)[0];
+                result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>" + name + "</i>?<br>This cannot be undone.</html>");
             } else {
-                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                        "Are you sure you want to remove these " + results.size() + " users?\nThis cannot be undone.",
-                        "Confirm", JOptionPane.YES_NO_OPTION);
+                result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove these " + items.size() + " users?\nThis cannot be undone.");
             }
 
-            if (result == JOptionPane.YES_OPTION) {
-                for (Object[] v : results) {
-                    String name = (String) v[nameIndex];
-                    UserController.getInstance().removeUser(name);
+            if (result == DialogUtils.YES) {
+                String title = "Removing Users";
+                String message = items.size() + " users being removed.  Please wait.";
+                if (name != null) {
+                    title = "Removing User";
+                    message = "<html>User <i>" + name + "</i> being removed.  Please wait.</html>";
                 }
-
-                DialogUtils.displayMessage("Successfully removed " + results.size() + " user(s)");
+                new IndeterminateProgressDialog(title, message) {
+                    @Override
+                    public void run() {
+                        int numCouldntRemove = 0;
+                        String name = null;
+                        try {
+                            for (Object[] v: items) {
+                                name = (String)v[0];
+                                UserController.getInstance().removeUser(name);
+                            }
+                        } catch (Throwable ex) {
+                            numCouldntRemove++;
+                            ClientMiscUtils.reportError("Error removing user \"" + name + "\": %s", ex);
+                        }
+                        if (numCouldntRemove != items.size()) {
+                            DialogUtils.displayMessage("Successfully removed " + (items.size() - numCouldntRemove) + " user(s)");
+                        }
+                    }
+                }.setVisible(true);
             }
         }
-    }
-
-    @Override
-    public void userAdded(String name) {
-        panel.refresh();
-    }
-
-    @Override
-    public void userRemoved(String name) {
-        panel.refresh();
-    }
-
-    @Override
-    public void userChanged(String name) {
-        panel.refresh();
     }
 
     private static class UserDetailedView extends DetailedView {
@@ -231,66 +285,5 @@ public class UserManagementPage extends SubSectionView implements UserListener {
             details.removeAll();
             details.updateUI();
         }
-    }
-
-    private SplitScreenView panel;
-
-    public UserManagementPage(SectionView parent) {
-        super(parent);
-        UserController.getInstance().addUserListener(this);
-    }
-
-    @Override
-    public String getName() {
-        return "Users";
-    }
-
-    @Override
-    public JPanel getView(boolean update) {
-        if (panel == null) {
-            setPanel();
-        }
-        return panel;
-    }
-
-    public void setPanel() {
-        panel = new SplitScreenView(
-                new SimpleDetailedListModel("User") {
-                    @Override
-                    public List getData() throws Exception {
-                        return UserController.getInstance().getUserNames();
-                    }
-                },
-                new UserDetailedView(),
-                new UserDetailedListEditor());
-    }
-
-    @Override
-    public Component[] getSubSectionMenuComponents() {
-        Component[] result = new Component[0];
-        //result[0] = getAddButton();
-        return result;
-    }
-
-    private JButton getAddButton() {
-        JButton button = new JButton("Add User");
-        button.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                NewUserDialog npd = new NewUserDialog(MedSavantFrame.getInstance(), true);
-                npd.setVisible(true);
-            }
-        });
-        return button;
-    }
-
-    @Override
-    public void viewDidLoad() {
-    }
-
-    @Override
-    public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
     }
 }

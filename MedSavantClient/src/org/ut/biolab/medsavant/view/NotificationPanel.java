@@ -34,8 +34,8 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Notification;
 import org.ut.biolab.medsavant.model.ProjectDetails;
-import org.ut.biolab.medsavant.model.event.LoginEvent;
-import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.login.LoginEvent;
+import org.ut.biolab.medsavant.login.LoginListener;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 

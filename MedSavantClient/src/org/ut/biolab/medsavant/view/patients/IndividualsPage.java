@@ -32,7 +32,9 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
 public class IndividualsPage extends SubSectionView {
     private SplitScreenView view;
 
-    public IndividualsPage(SectionView parent) { super(parent); }
+    public IndividualsPage(SectionView parent) {
+        super(parent);
+    }
 
     @Override
     public String getName() {
@@ -47,7 +49,7 @@ public class IndividualsPage extends SubSectionView {
                     new IndividualDetailedView(),
                     new IndividualDetailEditor());
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Unable to create individuals page.", ex);
+            ClientMiscUtils.reportError("Unable to create individuals page: %s", ex);
         }
         return view;
     }

@@ -22,7 +22,6 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -84,7 +83,7 @@ class RegionDetailedListEditor extends DetailedListEditor {
                             MedSavantClient.RegionSetManager.removeRegionSet(LoginController.sessionId, listID);
                         } catch (Throwable ex) {
                             numCouldntRemove++;
-                            ClientMiscUtils.reportError("Could not remove " + listName + ": " + MiscUtils.getMessage(ex), ex);
+                            ClientMiscUtils.reportError("Could not remove " + listName + ": %s", ex);
                         }
                     }
                     if (numCouldntRemove != items.size()) {

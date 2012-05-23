@@ -25,17 +25,15 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.VariantFormat;
-import org.ut.biolab.medsavant.listener.ProjectListener;
-import org.ut.biolab.medsavant.listener.ReferenceListener;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -79,7 +77,7 @@ public class ProjectController implements ReferenceListener {
                     MedSavantClient.ProjectQueryUtilAdapter.removeProject(LoginController.sessionId, projectName);
                     fireProjectRemovedEvent(projectName);
                 } catch (Throwable ex) {
-                    ClientMiscUtils.reportError("Error removing project: " + MiscUtils.getMessage(ex), ex);
+                    ClientMiscUtils.reportError("Error removing project: %s", ex);
                 }
             }
         }.setVisible(true);
@@ -235,7 +233,7 @@ public class ProjectController implements ReferenceListener {
             setCurrentVariantTable();
             setCurrentAnnotationFormats(null);
         } catch (Throwable ex) {
-            ClientMiscUtils.reportError("Error while switching reference: " + ClientMiscUtils.getMessage(ex), ex);
+            ClientMiscUtils.reportError("Error while switching reference: %s", ex);
         }
     }
 

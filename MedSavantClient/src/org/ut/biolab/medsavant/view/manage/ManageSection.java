@@ -16,13 +16,14 @@
 
 package org.ut.biolab.medsavant.view.manage;
 
-import org.ut.biolab.medsavant.reference.ReferenceGenomePage;
-import org.ut.biolab.medsavant.geneset.GeneSetPage;
-import org.ut.biolab.medsavant.project.ProjectManagementPage;
 import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 
+import org.ut.biolab.medsavant.geneset.GeneSetPage;
+import org.ut.biolab.medsavant.project.ProjectManagementPage;
+import org.ut.biolab.medsavant.reference.ReferenceGenomePage;
+import org.ut.biolab.medsavant.user.UserManagementPage;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;

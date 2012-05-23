@@ -38,14 +38,14 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord.VariantType;
@@ -166,7 +166,7 @@ public class StringListFilterView extends FilterView {
                     try {
                         initHelper(container, MedSavantClient.VariantManager.getDistinctValuesForColumn(LoginController.sessionId, tablename, columnname, true));
                     } catch (Throwable ex) {
-                        ClientMiscUtils.reportError(String.format("Error getting distinct values for %s.%s: %s", tablename, columnname, ClientMiscUtils.getMessage(ex)), ex);
+                        ClientMiscUtils.reportError(String.format("Error getting distinct values for %s.%s: %%s", tablename, columnname), ex);
                     }
                 }
             }.setVisible(true);
@@ -359,7 +359,7 @@ public class StringListFilterView extends FilterView {
                                     return results;
 
                                 } catch (Exception ex) {
-                                    ClientMiscUtils.reportError("Error getting DNA IDs.", ex);
+                                    ClientMiscUtils.reportError("Error getting DNA IDs: %s", ex);
                                 }
                             }
                             return new Condition[0];

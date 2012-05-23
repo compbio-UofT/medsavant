@@ -41,8 +41,8 @@
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="usernameField" pref="214" max="32767" attributes="0"/>
-                                  <Component id="passwordField" pref="214" max="32767" attributes="0"/>
+                                  <Component id="usernameField" pref="251" max="32767" attributes="0"/>
+                                  <Component id="passwordField" pref="251" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -50,7 +50,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="151" max="-2" attributes="0"/>
                       <Component id="okButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="26" max="32767" attributes="0"/>
+                      <EmptySpace pref="43" max="32767" attributes="0"/>
                       <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>

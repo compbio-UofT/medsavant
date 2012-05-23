@@ -15,9 +15,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.aggregates;
 
-import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -38,8 +35,11 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.*;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -188,7 +188,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                             }
                         }
                     } catch (Exception ex) {
-                        ClientMiscUtils.reportError("Error getting variant count.", ex);
+                        ClientMiscUtils.reportError("Error getting variant count: %s", ex);
                     }
 
                     //compute patient field
@@ -212,7 +212,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                             }
                         }
                     } catch (Exception ex) {
-                        ClientMiscUtils.reportError("Error getting patient count.", ex);
+                        ClientMiscUtils.reportError("Error getting patient count: %s", ex);
                     }
 
                     return currentData;

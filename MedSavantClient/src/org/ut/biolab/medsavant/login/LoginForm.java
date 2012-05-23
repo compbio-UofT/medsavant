@@ -26,7 +26,6 @@ import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import javax.swing.Box;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.logging.Log;
@@ -34,8 +33,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.model.event.LoginEvent;
-import org.ut.biolab.medsavant.model.event.LoginListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.manage.AddRemoveDatabaseDialog;
 import org.ut.biolab.medsavant.view.images.IconFactory;

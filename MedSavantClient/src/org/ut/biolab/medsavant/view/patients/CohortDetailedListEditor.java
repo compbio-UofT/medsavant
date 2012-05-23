@@ -21,7 +21,6 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -54,7 +53,7 @@ public class CohortDetailedListEditor extends DetailedListEditor {
 
         if (items.size() == 1) {
             String name = ((Cohort) items.get(0)[0]).getName();
-            result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove %s?\nThis cannot be undone.", name);
+            result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This cannot be undone.</html>", name);
         } else {
             result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove these %d cohorts?\nThis cannot be undone.", items.size());
         }
@@ -72,12 +71,12 @@ public class CohortDetailedListEditor extends DetailedListEditor {
                             MedSavantClient.CohortQueryUtilAdapter.removeCohort(LoginController.sessionId, id);
                         } catch (Throwable ex) {
                             numCouldntRemove++;
-                            ClientMiscUtils.reportError("Error removing " + ((Cohort)v[0]).getName() + ": " + MiscUtils.getMessage(ex), ex);
+                            ClientMiscUtils.reportError("Error removing " + ((Cohort)v[0]).getName() + ": %s", ex);
                         }
                     }
 
                     if (numCouldntRemove != items.size()) {
-                        DialogUtils.displayMessage("Successfully removed " + (items.size() - numCouldntRemove) + " cohort(s)");
+                        DialogUtils.displayMessage("Successfully removed " + (items.size() - numCouldntRemove) + " cohort(s).");
                     }
                 }
             }.setVisible(true);

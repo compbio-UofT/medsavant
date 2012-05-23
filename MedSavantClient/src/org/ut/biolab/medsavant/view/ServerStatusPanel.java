@@ -29,8 +29,8 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.model.event.LoginEvent;
-import org.ut.biolab.medsavant.model.event.LoginListener;
+import org.ut.biolab.medsavant.login.LoginEvent;
+import org.ut.biolab.medsavant.login.LoginListener;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.images.ImagePanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;

@@ -34,12 +34,12 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
@@ -142,7 +142,7 @@ class CohortFilterView extends FilterView {
                             return resultsCombined;
 
                         } catch (Exception ex) {
-                            ClientMiscUtils.reportError("Error getting DNA IDs for cohort.", ex);
+                            ClientMiscUtils.reportError("Error getting DNA IDs for cohort: %s", ex);
                         }
                         return null;
                     }

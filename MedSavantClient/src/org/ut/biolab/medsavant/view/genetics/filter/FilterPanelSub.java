@@ -32,17 +32,17 @@ import javax.swing.*;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabaseExtras;
 import org.ut.biolab.medsavant.format.CustomField.Category;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -229,7 +229,7 @@ public class FilterPanelSub extends JPanel {
                     p.show(addButton, 0, 25);
 
                 } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Error adding search condition.", ex);
+                    ClientMiscUtils.reportError("Error adding search condition: %s", ex);
                 }
             }
         });
@@ -460,7 +460,7 @@ public class FilterPanelSub extends JPanel {
                                         return StringListFilterView.createVariantFilterView(ProjectController.getInstance().getCurrentVariantTableName(), field.getColumnName(), id, field.getAlias());
                                 }
                             } catch (Exception ex) {
-                                ClientMiscUtils.reportError("Error creating variant filter view.", ex);
+                                ClientMiscUtils.reportError("Error creating variant filter view: %s", ex);
                             }
                             return null;
                         }
@@ -506,7 +506,7 @@ public class FilterPanelSub extends JPanel {
                                     return StringListFilterView.createPatientFilterView(ProjectController.getInstance().getCurrentPatientTableName(), field.getColumnName(), id, field.getAlias());
                             }
                         } catch (Exception ex) {
-                            ClientMiscUtils.reportError("Error creating patient filter view.", ex);
+                            ClientMiscUtils.reportError("Error creating patient filter view: %s", ex);
                         }
                         return null;
                     }

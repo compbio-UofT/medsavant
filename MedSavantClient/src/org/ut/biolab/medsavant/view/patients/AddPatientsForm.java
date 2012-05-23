@@ -36,15 +36,14 @@ import javax.swing.table.DefaultTableModel;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -458,7 +457,7 @@ public class AddPatientsForm extends JDialog {
         try {
             addPatient();
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error adding patient.", ex);
+            ClientMiscUtils.reportError("Error adding patient: %s", ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -466,7 +465,7 @@ public class AddPatientsForm extends JDialog {
         try {
             generateTemplate();
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error generating template.", ex);
+            ClientMiscUtils.reportError("Error generating template: %s", ex);
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -474,7 +473,7 @@ public class AddPatientsForm extends JDialog {
         try {
             importFile();
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error importing file.", ex);
+            ClientMiscUtils.reportError("Error importing file: %s", ex);
         }
     }//GEN-LAST:event_jButton3ActionPerformed
 

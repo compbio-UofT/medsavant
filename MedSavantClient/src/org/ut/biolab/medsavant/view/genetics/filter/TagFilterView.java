@@ -38,14 +38,14 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.VariantTag;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -217,7 +217,7 @@ public class TagFilterView extends FilterView {
 
                                 return new Condition[] {ComboCondition.or(uploadIDConditions) };
                             } catch (Exception ex) {
-                                ClientMiscUtils.reportError("Error getting upload IDs.", ex);
+                                ClientMiscUtils.reportError("Error getting upload IDs: %s", ex);
                             }
                             return new Condition[0];
                         }
@@ -268,7 +268,7 @@ public class TagFilterView extends FilterView {
                     tagValueCB.addItem(val);
                 }
             } catch (Exception ex) {
-                ClientMiscUtils.reportError("Error updating tag values.", ex);
+                ClientMiscUtils.reportError("Error updating tag values: %s", ex);
             }
         }
 

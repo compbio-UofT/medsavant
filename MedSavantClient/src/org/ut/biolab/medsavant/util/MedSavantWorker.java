@@ -80,7 +80,7 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
         } else if (t instanceof InterruptedException) {
             DialogUtils.displayMessage("Background task interrupted.");
         } else {
-            ClientMiscUtils.reportError("Exception thrown by background task.", t);
+            ClientMiscUtils.reportError("Exception thrown by background task: %s", t);
         }
     }
     

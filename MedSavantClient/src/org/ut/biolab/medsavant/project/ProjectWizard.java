@@ -40,18 +40,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.PatientFormat;
 import org.ut.biolab.medsavant.format.VariantFormat;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Annotation;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.model.Reference;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.reference.NewReferenceDialog;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.variant.PublicationWorker;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -594,7 +594,7 @@ public class ProjectWizard extends WizardDialog {
                                 LOG.error("Error releasing database lock.", ex1);
                             }
 
-                            ClientMiscUtils.reportError("There was an error while trying to create your project.", ex);
+                            ClientMiscUtils.reportError("There was an error while trying to create your project: %s", ex);
                             setVisible(false);
                             dispose();
                         }

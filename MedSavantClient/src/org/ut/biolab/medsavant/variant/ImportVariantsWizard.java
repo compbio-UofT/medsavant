@@ -388,7 +388,7 @@ public class ImportVariantsWizard extends WizardDialog {
     }
 
     private AbstractWizardPage getQueuePage() {
-        final DefaultWizardPage page = new DefaultWizardPage("Upload, Annotate, & Publish Variants") {
+        final DefaultWizardPage page = new DefaultWizardPage("Upload, Annotate, and Publish Variants") {
             private final JLabel progressLabel = new JLabel("Ready to upload and annotate variant files.");
             private final JProgressBar progressBar = new JProgressBar();
             private final JButton startButton = new JButton("Upload & Annotate");

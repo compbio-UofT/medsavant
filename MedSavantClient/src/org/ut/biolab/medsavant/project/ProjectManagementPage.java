@@ -29,10 +29,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.controller.ThreadController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.ProjectDetails;
-import org.ut.biolab.medsavant.listener.ProjectListener;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
@@ -93,7 +92,7 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
                     ProjectController.getInstance().fireProjectAddedEvent(MedSavantClient.ProjectQueryUtilAdapter.getProjectName(LoginController.sessionId, projectId));
                 }
             } catch (Exception ex) {
-                ClientMiscUtils.reportError("Error fetching projects.", ex);
+                ClientMiscUtils.reportError("Error fetching projects: %s", ex);
             }
         }
 

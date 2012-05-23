@@ -15,9 +15,6 @@
  */
 package org.ut.biolab.medsavant.view.genetics.charts;
 
-import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -60,15 +57,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.*;
+import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RangeCondition;
 import org.ut.biolab.medsavant.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.model.ScatterChartMap;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -837,7 +838,7 @@ public class SummaryChart extends JLayeredPane {
                         }
                     }
                 } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Error filtering by selection.", ex);
+                    ClientMiscUtils.reportError("Error filtering by selection: %s", ex);
                 }
             }
         });

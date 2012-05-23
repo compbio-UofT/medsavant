@@ -14,16 +14,13 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.dialog;
+package org.ut.biolab.medsavant.user;
 
-import javax.swing.JOptionPane;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.awt.Dialog;
+import javax.swing.JDialog;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.controller.UserController;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -32,18 +29,14 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  *
  * @author mfiume
  */
-public class NewUserDialog extends javax.swing.JDialog {
+public class NewUserDialog extends JDialog {
 
-    private static final Log LOG = LogFactory.getLog(NewUserDialog.class);
-
-    /** Creates new form NewProjectDialog */
-    public NewUserDialog(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
-        setTitle("Create user");
+    public NewUserDialog() {
+        super(DialogUtils.getFrontWindow(), "Create User", Dialog.ModalityType.APPLICATION_MODAL);
         initComponents();
         getRootPane().setDefaultButton(okButton);
         ClientMiscUtils.registerCancelButton(cancelButton);
-        setLocationRelativeTo(parent);
+        setLocationRelativeTo(getParent());
     }
 
     /** This method is called from within the constructor to
@@ -121,7 +114,7 @@ public class NewUserDialog extends javax.swing.JDialog {
                 .add(adminRadio)
                 .add(33, 33, 33)
                 .add(userRadio)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 36, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 73, Short.MAX_VALUE)
                 .add(guestRadio)
                 .addContainerGap())
         );
@@ -149,12 +142,12 @@ public class NewUserDialog extends javax.swing.JDialog {
                                     .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(usernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
-                                    .add(passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)))))
+                                    .add(usernameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                                    .add(passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)))))
                     .add(layout.createSequentialGroup()
                         .add(151, 151, 151)
                         .add(okButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 43, Short.MAX_VALUE)
                         .add(cancelButton)))
                 .addContainerGap())
         );
@@ -194,17 +187,13 @@ public class NewUserDialog extends javax.swing.JDialog {
             String username = usernameField.getText();
 
             if (MedSavantClient.UserQueryUtilAdapter.userExists(LoginController.sessionId, username)) {
-                JOptionPane.showMessageDialog(this, "User already exists.");
+                DialogUtils.displayMessage("User already exists.");
             } else {
-                if (UserController.getInstance().addUser(username, passwordField.getPassword(), UserLevel.valueOf(privilegeGroup.getSelection().getActionCommand()))) {
-                    setVisible(false);
-                } else {
-                    JOptionPane.showMessageDialog(this, "Problem adding user.");
-                }
+                UserController.getInstance().addUser(username, passwordField.getPassword(), UserLevel.valueOf(privilegeGroup.getSelection().getActionCommand()));
             }
+            cancelButton.setText("Dismiss");
         } catch (Exception ex) {
-            LOG.error("Error adding user.", ex);
-            DialogUtils.displayErrorMessage("Problem adding user.", ex);
+            ClientMiscUtils.reportError("Error adding user: %s", ex);
         }
     }//GEN-LAST:event_okButtonActionPerformed
 

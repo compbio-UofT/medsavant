@@ -17,8 +17,6 @@ package org.ut.biolab.medsavant.view.pedigree;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,10 +28,10 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultpatientTableSchema;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
@@ -72,7 +70,7 @@ public class Utils {
                         }
                     }
                 } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Error getting DNA IDs for family.", ex);
+                    ClientMiscUtils.reportError("Error getting DNA IDs for family: %s", ex);
                 }
 
                 DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
@@ -126,7 +124,7 @@ public class Utils {
                             patientIds.length + " Patient(s) (" + dnaIds.size() + " DNA Id(s))",
                             ComboCondition.or(conditions));
                 } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Error applying patient filters.", ex);
+                    ClientMiscUtils.reportError("Error applying patient filters: %s", ex);
                 }
             }
         });

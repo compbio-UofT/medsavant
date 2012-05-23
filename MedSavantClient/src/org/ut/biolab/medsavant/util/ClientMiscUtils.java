@@ -86,6 +86,7 @@ public class ClientMiscUtils extends MiscUtils {
      * @param ex 
      */
     public static void reportError(String message, Throwable t) {
+        message = String.format(message, getMessage(t));
         LOG.error(message, t);
         if (!checkSQLException(t)) {
             DialogUtils.displayException("MedSavant", message, t);

@@ -22,10 +22,10 @@ import java.awt.Component;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.controller.ThreadController;
-import org.ut.biolab.medsavant.listener.ReferenceListener;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.charts.ChartView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -62,7 +62,7 @@ public class GeneticsChartPage extends SubSectionView implements FiltersChangedL
             }
             cc.updateIfRequired();
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error creating chart view.", ex);
+            ClientMiscUtils.reportError("Error creating chart view: %s", ex);
         }
         return panel;
     }

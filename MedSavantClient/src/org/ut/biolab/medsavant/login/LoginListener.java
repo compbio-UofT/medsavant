@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.ut.biolab.medsavant.model.event;
+package org.ut.biolab.medsavant.login;
 
 /**
  *

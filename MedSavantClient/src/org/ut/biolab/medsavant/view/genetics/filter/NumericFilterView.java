@@ -32,17 +32,16 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RangeCondition;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
@@ -52,7 +51,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Andrew
  */
-public class NumericFilterView extends FilterView{
+public class NumericFilterView extends FilterView {
 
     private static final Log LOG = LogFactory.getLog(NumericFilterView.class);
 
@@ -128,7 +127,7 @@ public class NumericFilterView extends FilterView{
                     try {
                         initHelper(container, new Range(MedSavantClient.VariantManager.getExtremeValuesForColumn(LoginController.sessionId, tablename, columnname)));
                     } catch (Throwable ex) {
-                        ClientMiscUtils.reportError(String.format("Error getting extreme values for %s.%s: %s", tablename, columnname, MiscUtils.getMessage(ex)), ex);
+                        ClientMiscUtils.reportError(String.format("Error getting extreme values for %s.%s: %%s", tablename, columnname), ex);
                     }
                 }
             }.setVisible(true);
@@ -298,7 +297,7 @@ public class NumericFilterView extends FilterView{
                                 return results;
 
                             } catch (Exception ex) {
-                                ClientMiscUtils.reportError("Error getting DNA IDs with values in range.", ex);
+                                ClientMiscUtils.reportError("Error getting DNA IDs with values in range: %s", ex);
                             }
                         }
                         return new Condition[0];

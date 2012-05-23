@@ -18,7 +18,6 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 import javax.swing.*;
@@ -30,14 +29,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
+import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState.FilterType;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.Table;
@@ -149,7 +148,7 @@ public class BooleanFilterView extends FilterView {
                                 return results;
 
                             } catch (Exception ex) {
-                                ClientMiscUtils.reportError("Error getting DNA IDs.", ex);
+                                ClientMiscUtils.reportError("Error getting DNA IDs: %s", ex);
                             }
                         }
                         return new Condition[0];
