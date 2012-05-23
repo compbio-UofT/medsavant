@@ -159,11 +159,11 @@ public class ProjectController implements ReferenceListener {
     }
 
     public String getCurrentVariantTableName() throws SQLException, RemoteException {
-        return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectID, ReferenceController.getInstance().getCurrentReferenceId(), true);
+        return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectID, ReferenceController.getInstance().getCurrentReferenceID(), true);
     }
 
     public String getCurrentVariantSubTableName() throws SQLException, RemoteException {
-        return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectID, ReferenceController.getInstance().getCurrentReferenceId(), true, true);
+        return MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(LoginController.sessionId, currentProjectID, ReferenceController.getInstance().getCurrentReferenceID(), true, true);
     }
 
     public DbTable getCurrentVariantTable() {
@@ -197,18 +197,18 @@ public class ProjectController implements ReferenceListener {
 
     public AnnotationFormat[] getCurrentAnnotationFormats() throws SQLException, RemoteException {
         if (currentAnnotationFormats == null) {
-            int[] annotationIds = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationIds(LoginController.sessionId, this.currentProjectID, ReferenceController.getInstance().getCurrentReferenceId());
+            int[] annotationIds = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationIds(LoginController.sessionId, this.currentProjectID, ReferenceController.getInstance().getCurrentReferenceID());
             AnnotationFormat[] af = new AnnotationFormat[annotationIds.length+2];
             af[0] = VariantFormat.getDefaultAnnotationFormat();
             af[1] = VariantFormat.getCustomFieldAnnotationFormat(
                     MedSavantClient.ProjectQueryUtilAdapter.getCustomVariantFields(
                         LoginController.sessionId,
                         currentProjectID,
-                        ReferenceController.getInstance().getCurrentReferenceId(),
+                        ReferenceController.getInstance().getCurrentReferenceID(),
                         MedSavantClient.ProjectQueryUtilAdapter.getNewestUpdateId(
                             LoginController.sessionId,
                             currentProjectID,
-                            ReferenceController.getInstance().getCurrentReferenceId(),
+                            ReferenceController.getInstance().getCurrentReferenceID(),
                             true)));
             for (int i = 0; i < annotationIds.length; i++) {
                 af[i+2] = MedSavantClient.AnnotationQueryUtilAdapter.getAnnotationFormat(LoginController.sessionId, annotationIds[i]);

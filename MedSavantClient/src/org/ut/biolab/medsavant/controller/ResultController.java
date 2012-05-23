@@ -88,13 +88,13 @@ public class ResultController implements FiltersChangedListener {
         synchronized (lock_records) {
             if (filterSetId_records != FilterController.getCurrentFilterSetID() || this.limit != limit || this.start != start ||
                     ProjectController.getInstance().getCurrentProjectID() != projectId_records ||
-                    ReferenceController.getInstance().getCurrentReferenceId() != referenceId_records || 
+                    ReferenceController.getInstance().getCurrentReferenceID() != referenceId_records || 
                     !SettingsController.getInstance().getDBName().equals(dbName_records)) {
                 updateFilteredVariantDBResults(start, limit, order);
                 this.limit = limit;
                 this.start = start;
                 projectId_records = ProjectController.getInstance().getCurrentProjectID();
-                referenceId_records = ReferenceController.getInstance().getCurrentReferenceId();
+                referenceId_records = ReferenceController.getInstance().getCurrentReferenceID();
                 dbName_records = SettingsController.getInstance().getDBName();
             }   
             return filteredVariants;
@@ -108,7 +108,7 @@ public class ResultController implements FiltersChangedListener {
         filteredVariants = MedSavantClient.VariantManager.getVariants(
                 LoginController.sessionId, 
                 ProjectController.getInstance().getCurrentProjectID(), 
-                ReferenceController.getInstance().getCurrentReferenceId(), 
+                ReferenceController.getInstance().getCurrentReferenceID(), 
                 FilterController.getQueryFilterConditions(),
                 start, 
                 limit, 
@@ -120,17 +120,17 @@ public class ResultController implements FiltersChangedListener {
             if (filterSetId_remaining != FilterController.getCurrentFilterSetID() ||
                     updateTotalNumVariantsRemainingIsRequired ||
                     ProjectController.getInstance().getCurrentProjectID() != projectId_remaining ||
-                    ReferenceController.getInstance().getCurrentReferenceId() != referenceId_remaining || 
+                    ReferenceController.getInstance().getCurrentReferenceID() != referenceId_remaining || 
                     !SettingsController.getInstance().getDBName().equals(dbName_remaining)) {
                 updateTotalNumVariantsRemainingIsRequired = false;
                 projectId_remaining = ProjectController.getInstance().getCurrentProjectID();
-                referenceId_remaining = ReferenceController.getInstance().getCurrentReferenceId();
+                referenceId_remaining = ReferenceController.getInstance().getCurrentReferenceID();
                 dbName_remaining = SettingsController.getInstance().getDBName();
                 int tempFilterId = FilterController.getCurrentFilterSetID();
                 totalNumVariantsRemaining =  MedSavantClient.VariantManager.getNumFilteredVariants(
                         LoginController.sessionId, 
                         ProjectController.getInstance().getCurrentProjectID(), 
-                        ReferenceController.getInstance().getCurrentReferenceId(), 
+                        ReferenceController.getInstance().getCurrentReferenceID(), 
                         FilterController.getQueryFilterConditions());
                 filterSetId_remaining = tempFilterId; //temp not really necessary as this is synched...
             }
@@ -142,14 +142,14 @@ public class ResultController implements FiltersChangedListener {
         synchronized(lock_total) {
             if (totalNumVariants == -1 ||
                     ProjectController.getInstance().getCurrentProjectID() != projectId_total ||
-                    ReferenceController.getInstance().getCurrentReferenceId() != referenceId_total || 
+                    ReferenceController.getInstance().getCurrentReferenceID() != referenceId_total || 
                     !SettingsController.getInstance().getDBName().equals(dbName_total)) {
                 totalNumVariants =  MedSavantClient.VariantManager.getNumFilteredVariants(
                         LoginController.sessionId, 
                         ProjectController.getInstance().getCurrentProjectID(), 
-                        ReferenceController.getInstance().getCurrentReferenceId());
+                        ReferenceController.getInstance().getCurrentReferenceID());
                 projectId_total = ProjectController.getInstance().getCurrentProjectID();
-                referenceId_total = ReferenceController.getInstance().getCurrentReferenceId();
+                referenceId_total = ReferenceController.getInstance().getCurrentReferenceID();
                 dbName_total = SettingsController.getInstance().getDBName();
             }
             return totalNumVariants;

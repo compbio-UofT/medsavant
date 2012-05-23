@@ -52,6 +52,7 @@ import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.model.Reference;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.reference.NewReferenceDialog;
+import org.ut.biolab.medsavant.variant.PublicationWorker;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -73,7 +74,7 @@ public class ProjectWizard extends WizardDialog {
     private boolean modify = false;
     private boolean isModified = false;
 
-    private int projectId;
+    private int projectID;
     private String originalProjectName;
     private String projectName;
     private DefaultTableModel patientFormatModel;
@@ -83,11 +84,10 @@ public class ProjectWizard extends WizardDialog {
     private List<ProjectDetails> projectDetails = new ArrayList<ProjectDetails>();
     private List<CheckListItem> checkListItems = new ArrayList<CheckListItem>();
     private boolean variantFieldsChanged = false;
-    private Thread publishThread = null;
 
     /* modify existing project */
-    public ProjectWizard(int projectId, String projectName, List<CustomField> fields, List<ProjectDetails> projectDetails) {
-        this.projectId = projectId;
+    public ProjectWizard(int projectID, String projectName, List<CustomField> fields, List<ProjectDetails> projectDetails) {
+        this.projectID = projectID;
         this.modify = true;
         this.originalProjectName = projectName;
         this.projectName = projectName;
@@ -97,7 +97,7 @@ public class ProjectWizard extends WizardDialog {
 
         //check for existing unpublished changes to this project
         try {
-            if (MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, projectId)) {
+            if (MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, projectID)) {
                 DialogUtils.displayMessage("Cannot modify project", "There are unpublished changes to this project. Please publish and then try again.");
                 return;
             }
@@ -127,7 +127,7 @@ public class ProjectWizard extends WizardDialog {
     }
 
     private void catchClosing() {
-        this.addWindowListener(new WindowAdapter() {
+        addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
                 try {
@@ -344,10 +344,10 @@ public class ProjectWizard extends WizardDialog {
 
         if (modify) {
             try {
-                int firstRef = MedSavantClient.ReferenceQueryUtilAdapter.getReferenceIdsForProject(LoginController.sessionId, projectId).get(0);
+                int firstRef = MedSavantClient.ReferenceQueryUtilAdapter.getReferenceIdsForProject(LoginController.sessionId, projectID).get(0);
                 List<CustomField> fields = MedSavantClient.ProjectQueryUtilAdapter.getCustomVariantFields(
-                        LoginController.sessionId, projectId, firstRef,
-                        MedSavantClient.ProjectQueryUtilAdapter.getNewestUpdateId(LoginController.sessionId, projectId, firstRef, false));
+                        LoginController.sessionId, projectID, firstRef,
+                        MedSavantClient.ProjectQueryUtilAdapter.getNewestUpdateId(LoginController.sessionId, projectID, firstRef, false));
                 for (CustomField f : fields) {
                     variantFormatModel.addRow(new Object[]{f.getColumnName().toUpperCase(), f.getColumnTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
                 }
@@ -536,60 +536,10 @@ public class ProjectWizard extends WizardDialog {
 
             @Override
             public void actionPerformed(ActionEvent ae) {
-
-                publishProgressBar.setIndeterminate(true);
-                publishProgressLabel.setText("Publishing variants...");
-
-                publishThread = new Thread() {
-
-                    @Override
-                    public void run() {
-
-                        try {
-                            //instance.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-                            // do stuff
-                            MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId);
-
-                            //success
-                            publishProgressBar.setIndeterminate(false);
-                            publishCancelButton.setVisible(false);
-                            publishProgressBar.setValue(100);
-                            publishProgressLabel.setText("Publish complete.");
-
-                            //page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-
-
-                        } catch (Exception ex) {
-
-                            //cancellation
-                            if (ex instanceof InterruptedException) {
-                                publishProgressBar.setIndeterminate(false);
-                                publishProgressBar.setValue(0);
-                                publishProgressLabel.setText("Publish cancelled.");
-                                publishStartButton.setVisible(true);
-                                publishStartButton.setEnabled(true);
-                                publishCancelButton.setText("Cancel");
-                                publishCancelButton.setEnabled(true);
-                                publishCancelButton.setVisible(false);
-
-                                //failure
-                            } else {
-                                ClientMiscUtils.checkSQLException(ex);
-                                publishProgressBar.setIndeterminate(false);
-                                publishProgressBar.setValue(0);
-                                publishProgressLabel.setForeground(Color.red);
-                                publishProgressLabel.setText(ex.getMessage());
-                                publishStartButton.setVisible(false);
-                                publishCancelButton.setVisible(false);
-                            }
-                            LOG.error("Error publishing variants.", ex);
-                        }
-                    }
-                };
+                new PublicationWorker(-1, ProjectWizard.this, publishProgressLabel, publishProgressBar, publishCancelButton, publishStartButton).execute();
 
                 publishCancelButton.setVisible(true);
                 publishStartButton.setVisible(false);
-                publishThread.start();
             }
         });
 
@@ -627,20 +577,7 @@ public class ProjectWizard extends WizardDialog {
                                 autoPublishVariants.setVisible(false);
 
                                 if (autoPublishVariants.isSelected()) {
-
-                                    publishProgressLabel.setText("Publishing variants...");
-
-                                    // publish
-                                    MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId);
-
-                                    //success
-                                    publishProgressBar.setIndeterminate(false);
-                                    publishCancelButton.setVisible(false);
-                                    publishProgressBar.setValue(100);
-                                    publishProgressLabel.setText("Publish complete.");
-
-                                    //page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-
+                                    new PublicationWorker(-1, ProjectWizard.this, publishProgressLabel, publishProgressBar, publishCancelButton, publishStartButton).execute();
                                 } else {
                                     publishStartButton.setVisible(true);
                                     page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
@@ -668,16 +605,6 @@ public class ProjectWizard extends WizardDialog {
 
         });
 
-        publishCancelButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                publishCancelButton.setText("Cancelling...");
-                publishCancelButton.setEnabled(false);
-                publishThread.interrupt();
-            }
-        });
-
         page.addComponent(ViewUtil.alignRight(startButton));
         //cancelButton.setVisible(false);
        // page.addComponent(ViewUtil.alignRight(cancelButton));
@@ -689,8 +616,7 @@ public class ProjectWizard extends WizardDialog {
             l.setForeground(Color.red);
             l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, l.getFont().getSize()));
             page.addComponent(l);
-            page.addText("All users logged into the system will be "
-                    + "logged out\nat the time of publishing.");
+            page.addText("All users logged into the system will be logged out\nat the time of publishing.");
 
             page.addComponent(publishProgressLabel);
             page.addComponent(publishProgressBar);
@@ -807,11 +733,11 @@ public class ProjectWizard extends WizardDialog {
 
             //change project name
             if (!projectName.equals(originalProjectName)) {
-                MedSavantClient.ProjectQueryUtilAdapter.renameProject(LoginController.sessionId, projectId, projectName);
+                MedSavantClient.ProjectQueryUtilAdapter.renameProject(LoginController.sessionId, projectID, projectName);
             }
 
             //modify patientFields
-            MedSavantClient.PatientQueryUtilAdapter.updateFields(LoginController.sessionId, projectId, patientFields);
+            MedSavantClient.PatientQueryUtilAdapter.updateFields(LoginController.sessionId, projectID, patientFields);
 
             //edit references and annotations
             for (CheckListItem cli : checkListItems) {
@@ -831,18 +757,18 @@ public class ProjectWizard extends WizardDialog {
 
                 //add new ref
                 if (pd == null && cli.isSelected()) {
-                    String tablename = MedSavantClient.ProjectQueryUtilAdapter.createVariantTable(LoginController.sessionId, projectId, cli.getReference().getId(), 0, annotationIds, false);
-                    MedSavantClient.ProjectQueryUtilAdapter.setCustomVariantFields(LoginController.sessionId, projectId, cli.getReference().getId(), 0, variantFields);
-                    MedSavantClient.ProjectQueryUtilAdapter.addTableToMap(LoginController.sessionId, projectId, cli.getReference().getId(), 0, true, tablename, null);
+                    String tablename = MedSavantClient.ProjectQueryUtilAdapter.createVariantTable(LoginController.sessionId, projectID, cli.getReference().getId(), 0, annotationIds, false);
+                    MedSavantClient.ProjectQueryUtilAdapter.setCustomVariantFields(LoginController.sessionId, projectID, cli.getReference().getId(), 0, variantFields);
+                    MedSavantClient.ProjectQueryUtilAdapter.addTableToMap(LoginController.sessionId, projectID, cli.getReference().getId(), 0, true, tablename, null);
                     continue;
                 //remove existing ref
                 } else if (pd != null && !cli.isSelected()) {
-                    MedSavantClient.ProjectQueryUtilAdapter.removeReferenceForProject(LoginController.sessionId, projectId, cli.getReference().getId());
+                    MedSavantClient.ProjectQueryUtilAdapter.removeReferenceForProject(LoginController.sessionId, projectID, cli.getReference().getId());
                     continue;
                 }
 
                 //make modifications
-                MedSavantClient.VariantManager.updateTable(LoginController.sessionId, projectId, cli.getReference().getId(), annotationIds, variantFields);
+                MedSavantClient.VariantManager.updateTable(LoginController.sessionId, projectID, cli.getReference().getId(), annotationIds, variantFields);
 
             }
 

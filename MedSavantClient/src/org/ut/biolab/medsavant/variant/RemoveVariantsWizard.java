@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.manage;
+package org.ut.biolab.medsavant.variant;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -21,7 +21,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.sql.SQLException;
 import java.util.List;
 import javax.swing.*;
 
@@ -38,9 +37,9 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -51,23 +50,23 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class RemoveVariantsWizard extends WizardDialog {
     private static final Log LOG = LogFactory.getLog(RemoveVariantsWizard.class);
-    private int projectId;
-    private int referenceId;
-    private List<SimpleVariantFile> files;
+
+    private final int projectID;
+    private final int referenceID;
+    private final List<SimpleVariantFile> files;
     private Thread uploadThread = null;
-    private Thread publishThread = null;
-    private int updateId;
+    private int updateID;
     
     public RemoveVariantsWizard(List<SimpleVariantFile> files) {
-        this.projectId = ProjectController.getInstance().getCurrentProjectID();
-        this.referenceId = ReferenceController.getInstance().getCurrentReferenceId();
+        this.projectID = ProjectController.getInstance().getCurrentProjectID();
+        this.referenceID = ReferenceController.getInstance().getCurrentReferenceID();
         this.files = files;
         
         if (files.isEmpty()) return;
         
         //check for existing unpublished changes to this project + reference
         try {           
-            if (MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, projectId, referenceId)) {
+            if (MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, projectID, referenceID)) {
                 DialogUtils.displayMessage("Cannot perform removal", "There are unpublished changes to this table. Please publish and then try again.");
                 return;
             }
@@ -109,7 +108,7 @@ public class RemoveVariantsWizard extends WizardDialog {
     }
     
     private void catchClosing() {
-        this.addWindowListener(new WindowAdapter() {       
+        addWindowListener(new WindowAdapter() {       
             @Override
             public void windowClosed(WindowEvent e) {
                 try {
@@ -140,7 +139,7 @@ public class RemoveVariantsWizard extends WizardDialog {
         page.addText(
                 "This wizard will help you remove the following variant files from \nproject " + projectName + " and reference " + referenceName + ": ");
 
-        for(SimpleVariantFile f : files) {
+        for (SimpleVariantFile f : files) {
             JLabel nameLabel = new JLabel(f.getName());
             nameLabel.setFont(ViewUtil.getMediumTitleFont());
             page.addComponent(nameLabel);
@@ -186,60 +185,10 @@ public class RemoveVariantsWizard extends WizardDialog {
 
             @Override
             public void actionPerformed(ActionEvent ae) {
-
-                publishProgressBar.setIndeterminate(true);
-                publishProgressLabel.setText("Publishing variants...");
-
-                publishThread = new Thread() {
-
-                    @Override
-                    public void run() {
-
-                        try {
-                            setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-                            // do stuff
-                            MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateId);
-                            
-                            //success
-                            publishProgressBar.setIndeterminate(false);
-                            publishCancelButton.setVisible(false);
-                            publishProgressBar.setValue(100);
-                            publishProgressLabel.setText("Publish complete.");
-
-                            page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-
-
-                        } catch (Exception ex) {
-
-                            //cancellation
-                            if (ex instanceof InterruptedException) {
-                                publishProgressBar.setIndeterminate(false);
-                                publishProgressBar.setValue(0);
-                                publishProgressLabel.setText("Publish cancelled.");
-                                publishStartButton.setVisible(true);
-                                publishStartButton.setEnabled(true);
-                                publishCancelButton.setText("Cancel");
-                                publishCancelButton.setEnabled(true);
-                                publishCancelButton.setVisible(false);
-
-                                //failure
-                            } else {
-                                ClientMiscUtils.checkSQLException(ex);
-                                publishProgressBar.setIndeterminate(false);
-                                publishProgressBar.setValue(0);
-                                publishProgressLabel.setForeground(Color.red);
-                                publishProgressLabel.setText(ex.getMessage());
-                                publishStartButton.setVisible(false);
-                                publishCancelButton.setVisible(false);
-                            }
-                            LOG.error("Error publishing variants.", ex);
-                        }
-                    }
-                };
+                new PublicationWorker(updateID, RemoveVariantsWizard.this, publishProgressLabel, publishProgressBar, publishCancelButton, publishStartButton).execute();
 
                 publishCancelButton.setVisible(true);
                 publishStartButton.setVisible(false);
-                publishThread.start();
             }
         });
 
@@ -263,7 +212,7 @@ public class RemoveVariantsWizard extends WizardDialog {
 
                             //remove variants
                             progressLabel.setText("Removing variant files...");
-                            updateId = MedSavantClient.VariantManager.removeVariants(LoginController.sessionId, projectId, referenceId, files);
+                            updateID = MedSavantClient.VariantManager.removeVariants(LoginController.sessionId, projectID, referenceID, files);
                             MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
 
                             //success
@@ -279,20 +228,7 @@ public class RemoveVariantsWizard extends WizardDialog {
                             autoPublishVariants.setVisible(false);
 
                             if (autoPublishVariants.isSelected()) {
-
-                                publishProgressLabel.setText("Publishing variants...");
-
-                                // publish
-                                MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateId);
-
-                                //success
-                                publishProgressBar.setIndeterminate(false);
-                                publishCancelButton.setVisible(false);
-                                publishProgressBar.setValue(100);
-                                publishProgressLabel.setText("Publish complete.");
-
-                                page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-
+                                new PublicationWorker(updateID, RemoveVariantsWizard.this, publishProgressLabel, publishProgressBar, cancelButton, publishStartButton).execute();
                             } else {
                                 publishStartButton.setVisible(true);
                                 page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
@@ -351,16 +287,6 @@ public class RemoveVariantsWizard extends WizardDialog {
             }
         });
 
-        publishCancelButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                publishCancelButton.setText("Cancelling...");
-                publishCancelButton.setEnabled(false);
-                publishThread.interrupt();
-            }
-        });
-
         page.addComponent(ViewUtil.alignRight(startButton));
         cancelButton.setVisible(false);
         page.addComponent(ViewUtil.alignRight(cancelButton));
@@ -370,9 +296,7 @@ public class RemoveVariantsWizard extends WizardDialog {
         l.setForeground(Color.red);
         l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, l.getFont().getSize()));
         page.addComponent(l);
-        page.addText("All users logged into the system will be "
-                + "logged out\nat the time of publishing.");
-
+        page.addText("All users logged into the system will be logged out\nat the time of publishing.");
 
         page.addComponent(publishProgressLabel);
         page.addComponent(publishProgressBar);

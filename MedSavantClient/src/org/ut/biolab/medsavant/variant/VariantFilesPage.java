@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.manage;
+package org.ut.biolab.medsavant.variant;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -101,7 +101,7 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
                 new SimpleDetailedListModel("Variant File") {
                     @Override
                     public List getData() throws Exception {
-                        return MedSavantClient.VariantManager.getUploadedFiles(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceId());
+                        return MedSavantClient.VariantManager.getUploadedFiles(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID());
                     }
                 },
                 new VariantFilesDetailedView(),

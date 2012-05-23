@@ -129,7 +129,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         map = MedSavantClient.VariantManager.getSavantBookmarkPositionsForDNAIds(
                 LoginController.sessionId, 
                 ProjectController.getInstance().getCurrentProjectID(), 
-                ReferenceController.getInstance().getCurrentReferenceId(), 
+                ReferenceController.getInstance().getCurrentReferenceID(), 
                 FilterController.getQueryFilterConditions(),
                 selectedIds, 
                 -1);

@@ -668,7 +668,7 @@ public class SummaryChart extends JLayeredPane {
             ScatterChartMap scatterMap =  MedSavantClient.VariantManager.getFilteredFrequencyValuesForScatter(
                     LoginController.sessionId, 
                     ProjectController.getInstance().getCurrentProjectID(), 
-                    ReferenceController.getInstance().getCurrentReferenceId(), 
+                    ReferenceController.getInstance().getCurrentReferenceID(), 
                     FilterController.getQueryFilterConditions(), 
                     columnX, 
                     columnY, 

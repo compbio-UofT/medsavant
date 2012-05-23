@@ -108,7 +108,7 @@ public class WorkingWithOneNode extends MedSavantWorker {
                 numCurr = MedSavantClient.VariantManager.getNumVariantsInRange(
                         LoginController.sessionId, 
                         ProjectController.getInstance().getCurrentProjectID(), 
-                        ReferenceController.getInstance().getCurrentReferenceId(), 
+                        ReferenceController.getInstance().getCurrentReferenceID(), 
                         FilterController.getQueryFilterConditions(), 
                         chrom, 
                         start, 

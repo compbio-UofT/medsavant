@@ -51,7 +51,7 @@ public class ProjectUtils {
      * @return an integer which uniquely identifies the current reference
      */
     public static int getCurrentReferenceID() {
-        return ReferenceController.getInstance().getCurrentReferenceId();
+        return ReferenceController.getInstance().getCurrentReferenceID();
     }
 
     public static TableSchema getCustomVariantTableSchema(int projectID, int refID) throws SQLException, RemoteException {

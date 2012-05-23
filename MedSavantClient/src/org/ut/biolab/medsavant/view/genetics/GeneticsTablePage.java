@@ -116,7 +116,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
 
         List<Chromosome> chrs = new ArrayList<Chromosome>();
         try {
-            chrs = MedSavantClient.ChromosomeQueryUtilAdapter.getContigs(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceId());
+            chrs = MedSavantClient.ChromosomeQueryUtilAdapter.getContigs(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceID());
         } catch (SQLException ex) {
             LOG.error("Error getting contigs.", ex);
         } catch (RemoteException ex) {

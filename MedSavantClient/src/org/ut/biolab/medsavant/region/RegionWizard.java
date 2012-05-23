@@ -379,7 +379,7 @@ public class RegionWizard extends WizardDialog {
             path = tempFile.getAbsolutePath();
         }
         RemoteInputStream stream = new SimpleRemoteInputStream(new FileInputStream(path)).export();
-        MedSavantClient.RegionSetManager.addRegionSet(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceId(), stream, delim, fileFormat, numHeaderLines);
+        MedSavantClient.RegionSetManager.addRegionSet(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceID(), stream, delim, fileFormat, numHeaderLines);
     }
 
     private void fetchGenes(GeneSet geneSet) {

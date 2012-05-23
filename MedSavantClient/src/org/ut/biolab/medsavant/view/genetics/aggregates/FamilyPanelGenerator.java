@@ -251,7 +251,7 @@ public class FamilyPanelGenerator implements AggregatePanelGenerator {
                 return MedSavantClient.VariantManager.getNumVariantsInFamily(
                         LoginController.sessionId, 
                         ProjectController.getInstance().getCurrentProjectID(),
-                        ReferenceController.getInstance().getCurrentReferenceId(),
+                        ReferenceController.getInstance().getCurrentReferenceID(),
                         familyId, FilterController.getQueryFilterConditions());
             }
 

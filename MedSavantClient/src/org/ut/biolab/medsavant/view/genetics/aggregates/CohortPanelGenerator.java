@@ -357,7 +357,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                     if (this.isThreadCancelled()) {
                         return -1;
                     }
-                    return MedSavantClient.CohortQueryUtilAdapter.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceId(), cohort.getId(), FilterController.getQueryFilterConditions());
+                    return MedSavantClient.CohortQueryUtilAdapter.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), cohort.getId(), FilterController.getQueryFilterConditions());
                 }
 
                 @Override
@@ -397,7 +397,7 @@ public class CohortPanelGenerator implements AggregatePanelGenerator {
                 
                 @Override
                 protected Object doInBackground() throws Exception {
-                    return MedSavantClient.VariantManager.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceId(), FilterController.getQueryFilterConditions(), patients);
+                    return MedSavantClient.VariantManager.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), FilterController.getQueryFilterConditions(), patients);
                 }
 
                 @Override

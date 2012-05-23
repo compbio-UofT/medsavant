@@ -174,7 +174,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                             int recordsInRegion = MedSavantClient.VariantManager.getNumVariantsInRange(
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectID(),
-                                    ReferenceController.getInstance().getCurrentReferenceId(),
+                                    ReferenceController.getInstance().getCurrentReferenceID(),
                                     FilterController.getQueryFilterConditions(),
                                     r.getChrom(),
                                     r.getStart(),
@@ -198,7 +198,7 @@ public class GeneListPanelGenerator implements AggregatePanelGenerator {
                             int recordsInRegion = MedSavantClient.VariantManager.getNumPatientsWithVariantsInRange(
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectID(),
-                                    ReferenceController.getInstance().getCurrentReferenceId(),
+                                    ReferenceController.getInstance().getCurrentReferenceID(),
                                     FilterController.getQueryFilterConditions(),
                                     r.getChrom(),
                                     r.getStart(),

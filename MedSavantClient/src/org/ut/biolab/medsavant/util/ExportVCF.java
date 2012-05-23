@@ -56,7 +56,7 @@ public class ExportVCF {
         RemoteInputStream ris = MedSavantClient.VariantManager.exportVariants(
                 LoginController.sessionId, 
                 ProjectController.getInstance().getCurrentProjectID(), 
-                ReferenceController.getInstance().getCurrentReferenceId(), 
+                ReferenceController.getInstance().getCurrentReferenceID(), 
                 FilterController.getQueryFilterConditions());
         
         //copy stream to file

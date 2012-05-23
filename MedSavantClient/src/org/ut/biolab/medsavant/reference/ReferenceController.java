@@ -117,7 +117,7 @@ public class ReferenceController {
         return MedSavantClient.ReferenceQueryUtilAdapter.getReferenceId(LoginController.sessionId, refName);
     }
 
-    public int getCurrentReferenceId() {
+    public int getCurrentReferenceID() {
         return this.currentReferenceId;
     }
 

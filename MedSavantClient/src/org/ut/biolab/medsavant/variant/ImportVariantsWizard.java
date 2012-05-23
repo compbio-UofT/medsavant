@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.view.manage;
+package org.ut.biolab.medsavant.variant;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -43,9 +43,9 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -60,23 +60,24 @@ public class ImportVariantsWizard extends WizardDialog {
 
     private static final Log LOG = LogFactory.getLog(ImportVariantsWizard.class);
 
-    private int projectId;
-    private int referenceId;
-    private JComboBox locationField;
+    private final int projectID;
+    private final int referenceID;
+    private int updateID;
     private List<VariantTag> variantTags;
     private File[] variantFiles;
-    private Thread uploadThread = null;
-    private Thread publishThread = null;
     private boolean includeHomoRef = false;
+    private Thread uploadThread = null;
+
+    private JComboBox locationField;
 
     public ImportVariantsWizard() {
 
-        this.projectId = ProjectController.getInstance().getCurrentProjectID();
-        this.referenceId = ReferenceController.getInstance().getCurrentReferenceId();
+        projectID = ProjectController.getInstance().getCurrentProjectID();
+        referenceID = ReferenceController.getInstance().getCurrentReferenceID();
 
         //check for existing unpublished changes to this project + reference
         try {
-            if(MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, projectId, referenceId)){
+            if(MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, projectID, referenceID)){
                 DialogUtils.displayMessage("Cannot perform import", "There are unpublished changes to this table. Please publish and then try again.");
                 return;
             }
@@ -129,7 +130,7 @@ public class ImportVariantsWizard extends WizardDialog {
     }
 
     private void catchClosing(){
-        this.addWindowListener(new WindowAdapter() {
+        addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e){
                 try {
@@ -253,10 +254,7 @@ public class ImportVariantsWizard extends WizardDialog {
             }
         };
 
-        page.addText("Variants can be filtered by tag value "
-                + "in the Filter section.");
-
-
+        page.addText("Variants can be filtered by tag value in the Filter section.");
         page.addText("Add tags for this set of variants:");
 
         final String[] patternExamples = {
@@ -388,10 +386,9 @@ public class ImportVariantsWizard extends WizardDialog {
 
         return page;
     }
-    private int updateID;
 
     private AbstractWizardPage getQueuePage() {
-        DefaultWizardPage page = new DefaultWizardPage("Upload, Annotate, & Publish Variants") {
+        final DefaultWizardPage page = new DefaultWizardPage("Upload, Annotate, & Publish Variants") {
             private final JLabel progressLabel = new JLabel("Ready to upload and annotate variant files.");
             private final JProgressBar progressBar = new JProgressBar();
             private final JButton startButton = new JButton("Upload & Annotate");
@@ -436,7 +433,7 @@ public class ImportVariantsWizard extends WizardDialog {
 
                                     //upload variants
                                     progressLabel.setText("Uploading variant files...");
-                                    updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, streams, fileNames, projectId, referenceId, tagsToStringArray(variantTags), includeHomoRef);
+                                    updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, streams, fileNames, projectID, referenceID, tagsToStringArray(variantTags), includeHomoRef);
                                     MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
 
                                     //success
@@ -452,7 +449,7 @@ public class ImportVariantsWizard extends WizardDialog {
                                     autoPublishVariants.setVisible(false);
 
                                     if (autoPublishVariants.isSelected()) {
-                                        publishVariants();
+                                        new PublicationWorker(updateID, ImportVariantsWizard.this, publishProgressLabel, publishProgressBar, cancelButton, publishStartButton).execute();
                                     } else {
                                         publishStartButton.setVisible(true);
                                         fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
@@ -513,37 +510,9 @@ public class ImportVariantsWizard extends WizardDialog {
 
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-
-                        publishProgressBar.setIndeterminate(true);
-                        publishProgressLabel.setText("Publishing variants...");
-
-                        publishThread = new Thread() {
-
-                            @Override
-                            public void run() {
-
-                                try {
-                                    setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-                                    publishVariants();
-
-                                } finally {
-                                    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-                                }
-                            }
-                        };
-
+                        new PublicationWorker(updateID, ImportVariantsWizard.this, publishProgressLabel, publishProgressBar, publishCancelButton, publishStartButton).execute();
                         publishCancelButton.setVisible(true);
                         publishStartButton.setVisible(false);
-                        publishThread.start();
-                    }
-                });
-
-                publishCancelButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        publishCancelButton.setText("Cancelling...");
-                        publishCancelButton.setEnabled(false);
-                        publishThread.interrupt();
                     }
                 });
 
@@ -575,49 +544,6 @@ public class ImportVariantsWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
                 fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
-            }
-            
-            private void publishVariants() {
-                try {
-                    publishProgressLabel.setText("Publishing variants...");
-
-                    // publish
-                    MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, projectId, referenceId, updateID);
-
-                    LoginController.logout();
-
-                    //success
-                    publishProgressBar.setIndeterminate(false);
-                    publishCancelButton.setVisible(false);
-                    publishProgressBar.setValue(100);
-                    publishProgressLabel.setText("Publish complete.");
-
-                    fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-
-                } catch (Exception ex) {
-
-                    publishProgressBar.setIndeterminate(false);
-                    publishProgressBar.setValue(0);
-
-                    //cancellation
-                    if (ex instanceof InterruptedException) {
-                        publishProgressLabel.setText("Publish cancelled.");
-                        publishStartButton.setVisible(true);
-                        publishStartButton.setEnabled(true);
-                        publishCancelButton.setText("Cancel");
-                        publishCancelButton.setEnabled(true);
-                        publishCancelButton.setVisible(false);
-
-                        //failure
-                    } else {
-                        ClientMiscUtils.checkSQLException(ex);
-                        publishProgressLabel.setForeground(Color.red);
-                        publishProgressLabel.setText(ex.getMessage());
-                        publishStartButton.setVisible(false);
-                        publishCancelButton.setVisible(false);
-                    }
-                    LOG.error("Error publishing variants.", ex);
-                }
             }
         };
 

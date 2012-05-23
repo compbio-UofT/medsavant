@@ -87,7 +87,7 @@ public class StarredFilterView extends FilterView {
                     Set<StarredVariant> starred = MedSavantClient.VariantManager.getStarredVariants(
                             LoginController.sessionId, 
                             ProjectController.getInstance().getCurrentProjectID(), 
-                            ReferenceController.getInstance().getCurrentReferenceId());
+                            ReferenceController.getInstance().getCurrentReferenceID());
                     if (starred.isEmpty()) {
                         return new Condition[]{BinaryCondition.equalTo(0, 1)};
                     }
@@ -96,7 +96,7 @@ public class StarredFilterView extends FilterView {
                     TableSchema table = MedSavantClient.CustomTablesAdapter.getCustomTableSchema(LoginController.sessionId, MedSavantClient.ProjectQueryUtilAdapter.getVariantTablename(
                             LoginController.sessionId, 
                             ProjectController.getInstance().getCurrentProjectID(),
-                            ReferenceController.getInstance().getCurrentReferenceId(),
+                            ReferenceController.getInstance().getCurrentReferenceID(),
                             true));
                     DbColumn uploadColumn = table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID);
                     DbColumn fileColumn = table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID);
