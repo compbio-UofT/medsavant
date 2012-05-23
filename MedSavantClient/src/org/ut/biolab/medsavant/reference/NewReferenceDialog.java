@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.view.dialog;
+package org.ut.biolab.medsavant.reference;
 
 import java.awt.Cursor;
 import java.awt.Dialog;
