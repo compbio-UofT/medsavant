@@ -49,13 +49,13 @@ public class KeyValuePairPanel extends JPanel {
     public KeyValuePairPanel(int additionalColumns) {
 
         this.setOpaque(false);
-        this.setLayout(new BorderLayout());
+        ViewUtil.applyVerticalBoxLayout(this);
         kvpPanel = ViewUtil.getClearPanel();
         toolbar = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(toolbar);
 
-        this.add(kvpPanel, BorderLayout.CENTER);
-        this.add(toolbar, BorderLayout.SOUTH);
+        this.add(kvpPanel);
+        this.add(toolbar);
 
 
         this.additionalColumns = additionalColumns;
@@ -109,7 +109,7 @@ public class KeyValuePairPanel extends JPanel {
     }
 
     public JComponent getComponent(String key) {
-        return keyValueComponentMap.get(key);
+        return (JComponent) keyValueComponentMap.get(key).getComponent(0);
     }
 
     public String getValue(String key) {

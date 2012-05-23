@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSelectionChangedListener {
 
     private static String KEY_DNAID = "DNA ID";
-    private static String KEY_CHROM = "Chromosome";
+    private static String KEY_CHROM = "Chrom";
     private static String KEY_POSITION = "Position";
     private static String KEY_REF = "Reference";
     private static String KEY_ALT = "Alternate";
@@ -65,11 +65,13 @@ public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSel
 
             int col = 0;
 
+            /*
             p.setAdditionalColumn(KEY_DNAID, col, getFilterButton(KEY_DNAID));
             p.setAdditionalColumn(KEY_DBSNP, col, getFilterButton(KEY_DBSNP));
             p.setAdditionalColumn(KEY_QUAL, col, getFilterButton(KEY_QUAL));
-
             col++;
+            *
+            */
             p.setAdditionalColumn(KEY_DNAID, col, getCopyButton(KEY_DNAID));
             p.setAdditionalColumn(KEY_DBSNP, col, getCopyButton(KEY_DBSNP));
             p.setAdditionalColumn(KEY_QUAL, col, getChartButton(KEY_QUAL));
@@ -105,9 +107,6 @@ public class BasicVariantInfoSubPanel extends InfoSubPanel implements VariantSel
 
     private Component getCopyButton(final String key) {
         JButton button = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.COPY));
-
-
-        //LinkButton button = new LinkButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.COPY).getImage());
         button.setToolTipText("Copy " + key);
         button.addActionListener(new ActionListener() {
 

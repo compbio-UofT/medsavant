@@ -4,10 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.net.URLEncoder;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
@@ -24,10 +21,9 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class BasicGeneInfoSubPanel extends InfoSubPanel implements GeneSelectionChangedListener {
 
     private static String KEY_NAME = "Name";
-    private static String KEY_CHROM = "Chromosome";
+    private static String KEY_CHROM = "Chrom";
     private static String KEY_START = "Start";
     private static String KEY_END = "End";
-
     private KeyValuePairPanel p;
 
     public BasicGeneInfoSubPanel() {
@@ -38,7 +34,6 @@ public class BasicGeneInfoSubPanel extends InfoSubPanel implements GeneSelection
     public String getName() {
         return "Gene Details";
     }
-
     static String charset = "UTF-8";
 
     @Override
@@ -47,13 +42,28 @@ public class BasicGeneInfoSubPanel extends InfoSubPanel implements GeneSelection
             p = new KeyValuePairPanel(2);
             p.addKey(KEY_NAME);
 
-            JButton filterButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FILTER));
-            filterButton.setToolTipText("Add filter condition");
-            p.setAdditionalColumn(KEY_NAME, 0, filterButton);
-
-            JButton filterButton2 = ViewUtil.getTexturedButton("Card",IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
+            JButton filterButton2 = ViewUtil.getTexturedButton("Card", IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
             filterButton2.setToolTipText("Lookup Gene Card");
             p.setAdditionalColumn(KEY_NAME, 1, filterButton2);
+
+            filterButton2.addActionListener(new ActionListener() {
+
+                String baseUrl = "http://www.genecards.org/cgi-bin/carddisp.pl?gene=";
+
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    try {
+
+                        JComboBox jcb = (JComboBox) p.getComponent(KEY_NAME);
+                        URL url = new URL(baseUrl + URLEncoder.encode(jcb.getSelectedItem().toString(), charset));
+                        System.out.println(url.getPath());
+
+                        java.awt.Desktop.getDesktop().browse(url.toURI());
+                    } catch (Exception ex) {
+                        DialogUtils.displayError("Problem launching website.");
+                    }
+                }
+            });
 
             p.addKey(KEY_CHROM);
             p.addKey(KEY_START);
@@ -68,7 +78,9 @@ public class BasicGeneInfoSubPanel extends InfoSubPanel implements GeneSelection
 
     @Override
     public void geneSelectionChanged(Gene g) {
-        if (p == null) { return; }
+        if (p == null) {
+            return;
+        }
         if (g == null) {
             // TODO show other card
             return;
@@ -82,5 +94,4 @@ public class BasicGeneInfoSubPanel extends InfoSubPanel implements GeneSelection
         p.setValue(KEY_START, ViewUtil.numToString(g.getStart()));
         p.setValue(KEY_END, ViewUtil.numToString(g.getEnd()));
     }
-
 }
