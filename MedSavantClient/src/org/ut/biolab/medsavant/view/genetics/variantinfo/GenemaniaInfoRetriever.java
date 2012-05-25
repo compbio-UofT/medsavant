@@ -3,40 +3,32 @@
  * and open the template in the editor.
  */
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
-import java.util.Collections;
-import org.genemania.plugin.FileUtils;
-import org.genemania.plugin.apps.AbstractPluginApp;
-import org.genemania.plugin.cytoscape.NullCytoscapeUtils;
-import org.genemania.plugin.data.DataSetManager;
-import org.genemania.plugin.data.lucene.LuceneDataSetFactory;
+
 import java.io.File;
 import java.util.*;
+import org.apache.log4j.Logger;
 import org.genemania.domain.Gene;
 import org.genemania.domain.InteractionNetwork;
 import org.genemania.domain.InteractionNetworkGroup;
 import org.genemania.domain.Organism;
-import org.genemania.dto.EnrichmentEngineRequestDto;
-import org.genemania.dto.EnrichmentEngineResponseDto;
-import org.genemania.dto.RelatedGenesEngineRequestDto;
-import org.genemania.dto.RelatedGenesEngineResponseDto;
-import org.genemania.exception.ApplicationException;
-import org.genemania.plugin.data.DataSet;
-import org.genemania.exception.DataStoreException;
-import org.genemania.plugin.GeneMania;
-import org.xml.sax.SAXException;
-import org.genemania.plugin.model.SearchOptions;
-import org.genemania.plugin.parsers.Query;
-import org.genemania.type.CombiningMethod;
-import org.genemania.util.NullProgressReporter;
-import org.apache.log4j.Logger;
 import org.genemania.dto.*;
-import org.genemania.exception.ApplicationException;
 import org.genemania.engine.Mania2;
 import org.genemania.engine.cache.DataCache;
 import org.genemania.engine.cache.MemObjectCache;
 import org.genemania.engine.cache.SynchronizedObjectCache;
+import org.genemania.exception.ApplicationException;
+import org.genemania.exception.DataStoreException;
+import org.genemania.plugin.FileUtils;
+import org.genemania.plugin.GeneMania;
 import org.genemania.plugin.NetworkUtils;
-import org.genemania.plugin.apps.QueryRunner;
+import org.genemania.plugin.cytoscape.NullCytoscapeUtils;
+import org.genemania.plugin.data.DataSet;
+import org.genemania.plugin.data.DataSetManager;
+import org.genemania.plugin.data.lucene.LuceneDataSetFactory;
+import org.genemania.plugin.model.SearchOptions;
+import org.genemania.type.CombiningMethod;
+import org.genemania.util.NullProgressReporter;
+import org.xml.sax.SAXException;
 /**
  *
  * @author khushi
@@ -59,14 +51,16 @@ public class GenemaniaInfoRetriever {
         this.geneName=geneName;
     }
     
-    public List<Gene> reactToGene() throws SAXException, DataStoreException, ApplicationException{
-            if (validGene()){
-                return getRelatedGenesByScore();      
-            }
-            return null;
+   public List<String> getRelatedGeneNamesByScore() throws ApplicationException, DataStoreException{
+        List<String> geneNames = new ArrayList<String>();
+        Iterator<Gene> itr = getRelatedGenesByScore().iterator();
+        while (itr.hasNext()){
+            geneNames.add(itr.next().getSymbol());
+        }
+        return geneNames;
      }
     
-    private ArrayList<Gene> getRelatedGenesByScore() throws ApplicationException, DataStoreException{
+    public List<Gene> getRelatedGenesByScore() throws ApplicationException, DataStoreException{
         SearchOptions options =runGeneManiaAlgorithm();
         final Map<Gene, Double> scores = options.getScores();
 	ArrayList<Gene> relatedGenes = new ArrayList<Gene>(scores.keySet());
@@ -131,7 +125,6 @@ public class GenemaniaInfoRetriever {
                 request.setPositiveNodes(nodes);
 		request.setLimitResults(GENE_LIMIT);
 		request.setCombiningMethod(CombiningMethod.AUTOMATIC_SELECT);
-		//Do we want the option of z scores?
                 request.setScoringMethod(org.genemania.type.ScoringMethod.DISCRIMINANT);
 		return request;
 	}
@@ -149,7 +142,7 @@ public class GenemaniaInfoRetriever {
 			return null;
 		}
 	}
-    protected Collection<Collection<Long>> collapseNetworks(Map<InteractionNetworkGroup, Collection<InteractionNetwork>> networks) {
+    private Collection<Collection<Long>> collapseNetworks(Map<InteractionNetworkGroup, Collection<InteractionNetwork>> networks) {
 		Collection<Collection<Long>> result = new ArrayList<Collection<Long>>();
 		for (Map.Entry<InteractionNetworkGroup, Collection<InteractionNetwork>> entry : networks.entrySet()) {
 			Collection<Long> groupMembers = new HashSet<Long>();
@@ -189,7 +182,7 @@ public class GenemaniaInfoRetriever {
         return groupMembers;
     }
     
-    private boolean validGene() throws SAXException, DataStoreException, ApplicationException{
+    public boolean validGene() throws SAXException, DataStoreException, ApplicationException{
          initialize();
          gene = data.getCompletionProvider(human).getGene(geneName);
          if (gene==null)
@@ -212,13 +205,20 @@ public class GenemaniaInfoRetriever {
      }
      
      public static void main (String[] args){
-         //Some genes to test with: SHANK1, FOXP1, BRCA1
          GenemaniaInfoRetriever g= new GenemaniaInfoRetriever("BRCA1");
          try{
-             List<Gene> relatedGenes = g.reactToGene();
-             ListIterator<Gene> relatedGenesIterator = relatedGenes.listIterator();
-             while (relatedGenesIterator.hasNext())
-                 System.out.println(relatedGenesIterator.next().getSymbol());
+             if (g.validGene()){
+             ListIterator<String> itr = g.getRelatedGeneNamesByScore().listIterator();
+             while (itr.hasNext())
+                 System.out.println(itr.next());
+             System.out.println();
+             System.out.println();
+             GeneSetFetcher geneSetFetcher = new GeneSetFetcher();
+             ListIterator<org.ut.biolab.medsavant.model.Gene> litr= geneSetFetcher.getGenesByNumVariants(g.getRelatedGeneNamesByScore()).listIterator();
+             while (litr.hasNext())
+                 System.out.println(litr.next().getName());
+         
+             }
          }
          catch (Exception e){
              System.err.println(e.getMessage());
