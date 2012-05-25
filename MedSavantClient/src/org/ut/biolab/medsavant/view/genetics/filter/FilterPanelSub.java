@@ -15,6 +15,9 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
+import com.jidesoft.pane.CollapsiblePane;
+import com.jidesoft.pane.CollapsiblePanes;
+import com.jidesoft.plaf.UIDefaultsLookup;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -44,6 +47,8 @@ import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
+import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -60,6 +65,8 @@ public class FilterPanelSub extends JPanel {
     private boolean isRemoved = false;
     private static Color BAR_COLOUR = Color.black;
     private static Color BUTTON_OVER_COLOUR = Color.gray;
+    private KeyValuePairPanel kvp1;
+    private CollapsiblePane p1;
 
     public FilterPanelSub(final FilterPanel parent, int id) {
         init(parent, id);
@@ -76,21 +83,41 @@ public class FilterPanelSub extends JPanel {
         this.id = id;
         this.parent = parent;
 
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        ViewUtil.applyVerticalBoxLayout(this);
+        
+         final JButton addButton = getAddButton();
+        
+        JButton removeButton = getRemoveButton();
 
+        this.add(ViewUtil.alignLeft(addButton));
+        
         contentPanel = ViewUtil.getClearPanel();
         contentPanel.setOpaque(false);
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        ViewUtil.applyVerticalBoxLayout(contentPanel);
+        
+        this.add(contentPanel);
 
-        contentPanel.setBorder(BorderFactory.createCompoundBorder(
+        /*contentPanel.setBorder(BorderFactory.createCompoundBorder(
                 ViewUtil.getMediumBorder(),
                 ViewUtil.getMediumTopHeavyBorder()
                 ));
+         */
 
-        this.add(contentPanel);
+        CollapsiblePanes panes = new CollapsiblePanes();
+        panes.setGap(UIDefaultsLookup.getInt("CollapsiblePanes.gap"));
+        panes.setBorder(UIDefaultsLookup.getBorder("CollapsiblePanes.border"));
+        panes.setBackground(ViewUtil.getTertiaryMenuColor());
+        
+        contentPanel.add(ViewUtil.alignLeft(panes));
+        
+        p1 = new CollapsiblePane("Filter Set 1");
+        panes.add(p1);
+        
+        
+        
+        panes.addExpansion();
 
         refreshSubItems();
-
     }
 
     public List<FilterPanelSubItem> getSubItems() {
@@ -98,162 +125,14 @@ public class FilterPanelSub extends JPanel {
     }
 
     public void refreshSubItems() {
-        contentPanel.removeAll();
-
-
-        final JButton addButton = new JButton( /*ViewUtil.getSoftButton(*/"Add search condition   ▾");
-
-        ViewUtil.makeSmall(addButton);
-        addButton.setToolTipText("Add a filter");
-        addButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-
-                try {
-                    Map<Category, List<FilterPlaceholder>> map = getRemainingFilters();
-
-                    final JPopupMenu p = new JPopupMenu();
-                    //p.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.lightGray), BorderFactory.createLineBorder(Color.white, 5)));
-                    //p.setBackground(Color.white);
-
-                    Category[] cats = new Category[map.size()];
-                    cats = map.keySet().toArray(cats);
-                    Arrays.sort(cats, new CategoryComparator());
-
-                    final Map<JPanel, List<Component>> menuMap = new HashMap<JPanel, List<Component>>();
-
-                    for (Category c : cats) {
-
-                        final JPanel header = new JPanel();
-                        //header.setBackground(Color.white);
-                        header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
-                        JLabel label = new JLabel(" " + CustomField.categoryToString(c));
-                        header.add(label);
-                        header.add(Box.createHorizontalGlue());
-                        header.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                        //label.setFont(ViewUtil.getMediumTitleFont());
-                        header.setPreferredSize(new Dimension(260, 20));
-                        header.addMouseListener(new MouseAdapter() {
-                            @Override
-                            public void mouseReleased(MouseEvent e) {
-                                for (JPanel key : menuMap.keySet()) {
-                                    for (Component comp : menuMap.get(key)) {
-                                        comp.setVisible(false);
-
-                                    }
-                                }
-                                for (Component comp : menuMap.get(header)) {
-                                    comp.setVisible(true);
-                                }
-                                p.validate();
-                                p.pack();
-                                p.repaint();
-                            }
-
-                            @Override
-                            public void mouseEntered(MouseEvent e) {
-                                header.setBackground(new Color(90,168,234));
-                            }
-
-                            @Override
-                            public void mouseExited(MouseEvent e) {
-                                header.setBackground(Color.white);
-                            }
-                        });
-                        menuMap.put(header, new ArrayList<Component>());
-                        p.add(header);
-
-                        FilterPlaceholder[] filters = new FilterPlaceholder[map.get(c).size()];
-                        filters = map.get(c).toArray(filters);
-                        Arrays.sort(filters, new FilterComparator());
-
-                        for (final FilterPlaceholder filter : filters) {
-
-                            final JPanel item = new JPanel();
-                            item.setPreferredSize(new Dimension(260, 20));
-                            //item.setBackground(Color.white);
-                            item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
-                            JLabel itemLabel = new JLabel("     " + filter.getFilterName());
-                            item.add(itemLabel);
-                            item.add(Box.createHorizontalGlue());
-                            item.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                            item.addMouseListener(new MouseAdapter() {
-
-                                @Override
-                                public void mouseReleased(MouseEvent e) {
-                                    try {
-                                        subItems.add(new FilterPanelSubItem(filter.getFilterView(), FilterPanelSub.this, filter.getFilterID()));
-                                        refreshSubItems();
-                                        p.setVisible(false);
-                                    } catch (Exception ex) {
-                                        DialogUtils.displayException("Error", String.format("Error creating filter for %s.", filter.getFilterName()), ex);
-                                    }
-                                }
-
-                                @Override
-                                public void mouseEntered(MouseEvent e) {
-                                    item.setBackground(new Color(90,168,234));
-                                }
-
-                                @Override
-                                public void mouseExited(MouseEvent e) {
-                                    item.setBackground(Color.white);
-                                }
-                            });
-                            menuMap.get(header).add(item);
-                            item.setVisible(false);
-                            p.add(item);
-                        }
-
-                        if (filters.length == 0) {
-                            JPanel item = new JPanel();
-                            item.setPreferredSize(new Dimension(150, 20));
-                            //item.setBackground(Color.white);
-                            item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
-                            JLabel empty = new JLabel("     (No filters)");
-                            empty.setFont(ViewUtil.getSmallTitleFont());
-                            item.setVisible(false);
-                            item.add(empty);
-                            item.add(Box.createHorizontalGlue());
-                            p.add(item);
-                            menuMap.get(header).add(item);
-                        }
-                    }
-
-                    JPanel ppp = new JPanel();
-                    //ppp.setBackground(Color.white);
-                    ppp.setPreferredSize(new Dimension(1, 1));
-                    p.add(ppp);
-
-                    p.show(addButton, 0, 25);
-
-                } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Error adding search condition: %s", ex);
-                }
-            }
-        });
-
-        JButton removeButton = new JButton("Remove filter set");
-
-        removeButton.setToolTipText("Remove all filters in set");
-        removeButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                removeThis();
-            }
-        });
-
-        JPanel tmp1 = ViewUtil.getClearPanel();//ViewUtil.getSecondaryBannerPanel();//ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(tmp1);
-
-        tmp1.add(addButton);
-        tmp1.add(Box.createHorizontalGlue());
-
-        contentPanel.add(tmp1);
-        contentPanel.add(Box.createVerticalStrut(5));
-
+        
+        if (kvp1 != null) {
+            p1.remove(kvp1);
+        }
+        
+        kvp1 = new KeyValuePairPanel(1);
+        p1.add(kvp1);
+        
         //check for removed items
         for (int i = subItems.size() - 1; i >= 0; i--) {
             if (subItems.get(i).isRemoved()) {
@@ -263,12 +142,28 @@ public class FilterPanelSub extends JPanel {
 
         //refresh panel
         for (int i = 0; i < subItems.size(); i++) {
-            this.contentPanel.add(subItems.get(i));
-            contentPanel.add(Box.createRigidArea(new Dimension(5, 5)));
+            String key = subItems.get(i).getName();
+            kvp1.addKey(key);
+            kvp1.setAdditionalColumn(key, 0, getConfigButton(kvp1,key));
+            kvp1.setDetailComponent(key, ViewUtil.getClearBorderedJSP(subItems.get(i).getFilterView().getComponent()));
         }
-
+        
+        kvp1.repaint();
+        p1.repaint();
 
         this.updateUI();
+    }
+    
+     private Component getConfigButton(final KeyValuePairPanel kvp, final String key) {
+        final JToggleButton button = ViewUtil.getTexturedToggleButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART_SMALL));
+        button.setToolTipText("Configure " + key);
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                kvp.toggleDetailVisibility(key);
+            }
+        });
+        return button;
     }
 
     private void removeThis() {
@@ -580,6 +475,158 @@ public class FilterPanelSub extends JPanel {
             default:
                 return false;
         }
+    }
+
+    private JButton getAddButton() {
+        
+        final JButton addButton = new JButton( /*ViewUtil.getSoftButton(*/"Add search condition   ▾");
+
+        ViewUtil.makeSmall(addButton);
+        addButton.setToolTipText("Add a filter");
+        addButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+
+                try {
+                    Map<Category, List<FilterPlaceholder>> map = getRemainingFilters();
+
+                    final JPopupMenu p = new JPopupMenu();
+                    //p.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.lightGray), BorderFactory.createLineBorder(Color.white, 5)));
+                    //p.setBackground(Color.white);
+
+                    Category[] cats = new Category[map.size()];
+                    cats = map.keySet().toArray(cats);
+                    Arrays.sort(cats, new CategoryComparator());
+
+                    final Map<JPanel, List<Component>> menuMap = new HashMap<JPanel, List<Component>>();
+
+                    for (Category c : cats) {
+
+                        final JPanel header = new JPanel();
+                        //header.setBackground(Color.white);
+                        header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
+                        JLabel label = new JLabel(" " + CustomField.categoryToString(c));
+                        header.add(label);
+                        header.add(Box.createHorizontalGlue());
+                        header.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                        label.setFont(ViewUtil.getMediumTitleFont());
+                        header.setPreferredSize(new Dimension(260, 20));
+                        header.addMouseListener(new MouseAdapter() {
+                            @Override
+                            public void mouseReleased(MouseEvent e) {
+                                for (JPanel key : menuMap.keySet()) {
+                                    for (Component comp : menuMap.get(key)) {
+                                        comp.setVisible(false);
+
+                                    }
+                                }
+                                for (Component comp : menuMap.get(header)) {
+                                    comp.setVisible(true);
+                                }
+                                p.validate();
+                                p.pack();
+                                p.repaint();
+                            }
+
+                            @Override
+                            public void mouseEntered(MouseEvent e) {
+                                header.setBackground(new Color(90,168,234));
+                            }
+
+                            @Override
+                            public void mouseExited(MouseEvent e) {
+                                header.setBackground(Color.white);
+                            }
+                        });
+                        menuMap.put(header, new ArrayList<Component>());
+                        p.add(header);
+
+                        FilterPlaceholder[] filters = new FilterPlaceholder[map.get(c).size()];
+                        filters = map.get(c).toArray(filters);
+                        Arrays.sort(filters, new FilterComparator());
+
+                        for (final FilterPlaceholder filter : filters) {
+
+                            final JPanel item = new JPanel();
+                            item.setPreferredSize(new Dimension(260, 20));
+                            //item.setBackground(Color.white);
+                            item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
+                            JLabel itemLabel = new JLabel("     " + filter.getFilterName());
+                            item.add(itemLabel);
+                            item.add(Box.createHorizontalGlue());
+                            item.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                            item.addMouseListener(new MouseAdapter() {
+
+                                @Override
+                                public void mouseReleased(MouseEvent e) {
+                                    try {
+                                        subItems.add(new FilterPanelSubItem(filter.getFilterView(), FilterPanelSub.this, filter.getFilterID()));
+                                        refreshSubItems();
+                                        p.setVisible(false);
+                                    } catch (Exception ex) {
+                                        DialogUtils.displayException("Error", String.format("Error creating filter for %s.", filter.getFilterName()), ex);
+                                    }
+                                }
+
+                                @Override
+                                public void mouseEntered(MouseEvent e) {
+                                    item.setBackground(new Color(90,168,234));
+                                }
+
+                                @Override
+                                public void mouseExited(MouseEvent e) {
+                                    item.setBackground(Color.white);
+                                }
+                            });
+                            menuMap.get(header).add(item);
+                            item.setVisible(false);
+                            p.add(item);
+                        }
+
+                        if (filters.length == 0) {
+                            JPanel item = new JPanel();
+                            item.setPreferredSize(new Dimension(150, 20));
+                            //item.setBackground(Color.white);
+                            item.setLayout(new BoxLayout(item, BoxLayout.X_AXIS));
+                            JLabel empty = new JLabel("     (No filters)");
+                            empty.setFont(ViewUtil.getSmallTitleFont());
+                            item.setVisible(false);
+                            item.add(empty);
+                            item.add(Box.createHorizontalGlue());
+                            p.add(item);
+                            menuMap.get(header).add(item);
+                        }
+                    }
+
+                    JPanel ppp = new JPanel();
+                    //ppp.setBackground(Color.white);
+                    ppp.setPreferredSize(new Dimension(1, 1));
+                    p.add(ppp);
+
+                    p.show(addButton, 0, 25);
+
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Error adding search condition: %s", ex);
+                }
+            }
+        });
+        return addButton;
+    }
+
+    private JButton getRemoveButton() {
+        JButton removeButton = new JButton("Remove filter set");
+
+        removeButton.setToolTipText("Remove all filters in set");
+        removeButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                removeThis();
+            }
+        });
+        
+        return removeButton;
     }
 
     /*

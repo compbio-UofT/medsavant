@@ -35,7 +35,6 @@ public class FilterPanelSubItem extends JPanel {
     private static Color BUTTON_OVER_COLOUR = Color.gray;
 
 
-
     public FilterPanelSubItem(FilterView filterView, FilterPanelSub parent, String filterId) {
 
         this.parent = parent;
@@ -115,5 +114,10 @@ public class FilterPanelSubItem extends JPanel {
 
     public FilterView getFilterView() {
         return filterView;
+    }
+    
+    @Override
+    public String getName() {
+        return getFilterView().getTitle();
     }
 }
