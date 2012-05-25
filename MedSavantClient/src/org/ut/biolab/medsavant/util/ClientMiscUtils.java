@@ -94,7 +94,7 @@ public class ClientMiscUtils extends MiscUtils {
     }
 
     public static boolean checkSQLException(Throwable t) {
-        if ((t instanceof SQLException) && t.getMessage().contains("Unknown column") || t.getMessage().contains("doesn't exist")) {
+        if ((t instanceof SQLException) && (t.getMessage().contains("Unknown column") || t.getMessage().contains("doesn't exist"))) {
             DialogUtils.displayErrorMessage("<html>It appears that the database structure has been modified.<br>Please log back in for the changes to take effect.</html>", t);
             LoginController.logout();
             return true;
