@@ -35,6 +35,7 @@ import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.ut.biolab.medsavant.clientapi.ProgressCallbackAdapter;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantFileTableSchema;
@@ -84,6 +85,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
 
     private static VariantManager instance;
+
+    private Map<String, ProgressCallbackAdapter> callbacks = new HashMap<String, ProgressCallbackAdapter>();
 
     private VariantManager() throws RemoteException {
     }
@@ -265,27 +268,28 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
+    private double SEND_FILES_FRACTION = 0.2;
+    private double LOG_FRACTION = 0.05;
+    private double CREATE_TABLES_FRACTION = 0.05;
+    private double LOAD_INTO_TABLE_FRACTION = 0.2;  // Happens twice.
+    private double ANNOTATE_FRACTION = 0.1;
+    private double DUMP_FRACTION = 0.1;             // Done twice.
+
     /*
      * Start the upload process for new vcf files. Will result in the creation
      * of a new, unpublished, up-to-date variant table.
      */
     @Override
-    public int uploadVariants(String sid, RemoteInputStream[] fileStreams, String[] fileNames, int projectId, int referenceId, String[][] variantTags, boolean includeHomoRef) throws RemoteException, IOException, Exception {
+    public int uploadVariants(String sessID, RemoteInputStream[] fileStreams, String[] fileNames, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception {
         File[] vcfFiles = new File[fileStreams.length];
 
+        double frac = 0.0;
         for (int i = 0; i < fileStreams.length; i++) {
-            LOG.info("Sending " + fileNames[i]);
+            makeProgress(sessID, "Sending " + fileNames[i], frac);
             vcfFiles[i] = FileServer.getInstance().sendFile(fileStreams[i], fileNames[i]);
+            frac += SEND_FILES_FRACTION / fileStreams.length;
         }
 
-        return uploadVariants(sid, vcfFiles, fileNames, projectId, referenceId, variantTags, includeHomoRef);
-    }
-    
-    /*
-     * Helper that does all the actual work of uploading new vcf files.
-     */
-    private int uploadVariants(String sessID, File[] vcfFiles, String[] fileNames, int projID, int refID, String[][] variantTags, boolean includeHomoRef) throws Exception {
-        
         LOG.info("Beginning new vcf upload");
 
         String user = SessionController.getInstance().getUserForSession(sessID);
@@ -299,7 +303,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //add log
         LOG.info("Adding log and generating update id");
+        makeProgress(sessID, "Generating update ID", frac);
         int updateID = AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sessID, projID, refID, AnnotationLog.Action.ADD_VARIANTS, user);
+        frac += LOG_FRACTION;
         
         try {
             ProjectQueryUtil projMgr = ProjectQueryUtil.getInstance();
@@ -311,10 +317,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             File existingVariantsFile = new File(baseDir, "temp_proj" + projID + "_ref" + refID + "_update" + updateID);
             
             LOG.info("Dumping variants to file");
+            makeProgress(sessID, "Dumping variants to file", frac);
+            
             VariantManagerUtils.variantsToFile(sessID, existingTableName, existingVariantsFile, null, true, 0);
+            frac += DUMP_FRACTION;
 
             //create the staging table
             LOG.info("Creating new variant table for resulting variants");
+            
             projMgr.setCustomVariantFields(
                     sessID, projID, refID, updateID,
                     projMgr.getCustomVariantFields(sessID, projID, refID, projMgr.getNewestUpdateId(sessID, projID, refID, false)));
@@ -323,7 +333,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //upload dump to staging table
             LOG.info("Uploading variants to table: " + tableName);
+            makeProgress(sessID, "Uploading variants to table", frac);
             uploadFileToVariantTable(sessID, existingVariantsFile, tableName);
+            frac += LOAD_INTO_TABLE_FRACTION;
 
             VCFIterator parser = new VCFIterator(vcfFiles, baseDir, updateID, includeHomoRef);
             File f;
@@ -336,7 +348,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 String currentFilename = tempFilename;
 
                 //add custom fields
-                LOG.info("Adding custom vcf fields");
+                LOG.info("Adding custom VCF fields");
                 List<CustomField> customFields = projMgr.getCustomVariantFields(sessID, projID, refID, projMgr.getNewestUpdateId(sessID, projID, refID, false));
                 if (!customFields.isEmpty()) {
                     String customFieldFilename = currentFilename + "_vcf";
@@ -365,9 +377,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     VariantManagerUtils.annotateTDF(sessID, currentFilename, annotatedFilename, annotIDs);
                     VariantManagerUtils.logFileSize(annotatedFilename);
                     currentFilename = annotatedFilename;
-                }
-
-                if (annotIDs.length > 0) {
 
                     //split
                     File splitDir = new File(baseDir,"splitDir");
@@ -395,6 +404,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     boolean deleted = (new File(filename)).delete();
                     LOG.info("Deleting " + filename + " - " + (deleted ? "successful" : "failed"));
                 }
+                
 
             }
             
@@ -413,7 +423,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             
             //add tags to upload
             LOG.info("Adding upload tags");
-            VariantManagerUtils.addTagsToUpload(sessID, updateID, variantTags);
+            VariantManagerUtils.addTagsToUpload(sessID, updateID, tags);
 
             //add entries to file table
             LOG.info("Adding entries to file table");
@@ -1710,5 +1720,18 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 BinaryCondition.equalTo(column, "C"),
                 BinaryCondition.equalTo(column, "G"),
                 BinaryCondition.equalTo(column, "T"));
+    }
+    
+    @Override
+    public void registerProgressCallback(String sessID, ProgressCallbackAdapter callback) {
+        callbacks.put(sessID, callback);
+    }
+    
+    public void makeProgress(String sessID, String activity, double fraction) throws RemoteException {
+        ProgressCallbackAdapter callback = callbacks.get(sessID);
+        if (callback != null) {
+            LOG.info(String.format("%s: %.2f", activity, fraction * 100.0));
+            callback.progress(activity, fraction);
+        }
     }
 }

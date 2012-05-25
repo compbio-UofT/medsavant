@@ -50,6 +50,7 @@ import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -315,7 +316,35 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
 
         @Override
         public void addItems() {
-            new ImportVariantsWizard();
+            try {
+                // Check for existing unpublished changes to this project + reference.
+                if (!MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID())) {
+                    try {
+                        // Get lock.
+                        if (MedSavantClient.SettingsQueryUtilAdapter.getDbLock(LoginController.sessionId)) {
+                            try {
+                                new ImportVariantsWizard().setVisible(true);
+                            } finally {
+                                if (LoginController.isLoggedIn()) {
+                                    try {
+                                        MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
+                                    } catch (Exception ex1) {
+                                        LOG.error("Error releasing database lock.", ex1);
+                                    }
+                                }
+                            }
+                        } else {
+                            DialogUtils.displayMessage("Cannot perform import", "Another user is making changes to the database. You must wait until this user has finished. ");
+                        }
+                    } catch (Exception ex) {
+                        DialogUtils.displayErrorMessage("Error getting database lock", ex);
+                    }
+                } else {
+                    DialogUtils.displayMessage("Cannot perform import", "There are unpublished changes to this table. Please publish and then try again.");
+                }
+            } catch (Exception ex) {
+                DialogUtils.displayErrorMessage("Error checking for changes. ", ex);
+            }
         }
 
         @Override
@@ -324,8 +353,38 @@ public class VariantFilesPage extends SubSectionView implements ReferenceListene
             for (Object[] f : results) {
                 files.add((SimpleVariantFile)f[0]);
             }
-            new RemoveVariantsWizard(files);
+            
+            if (!files.isEmpty()) {
+                try {
+                    // Check for existing unpublished changes to this project + reference.
+                    if (!MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID())) {
+                        try {
+                            // Get lock.
+                            if (MedSavantClient.SettingsQueryUtilAdapter.getDbLock(LoginController.sessionId)) {
+                                try {
+                                    new RemoveVariantsWizard(files).setVisible(true);
+                                } finally {
+                                    if (LoginController.isLoggedIn()) {
+                                        try {
+                                            MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
+                                        } catch (Exception ex1) {
+                                            LOG.error("Error releasing database lock.", ex1);
+                                        }
+                                    }
+                                }
+                            } else {
+                                DialogUtils.displayMessage("Cannot remove variant files", "Another user is making changes to the database. You must wait until this user has finished. ");
+                            }
+                        } catch (Exception ex) {
+                            DialogUtils.displayErrorMessage("Error getting database lock", ex);
+                        }
+                    } else {
+                        DialogUtils.displayMessage("Cannot remove variant files", "There are unpublished changes to this table. Please publish and then try again.");
+                    }
+                } catch (Exception ex) {
+                    DialogUtils.displayErrorMessage("Error checking for changes. ", ex);
+                }
+            }
         }
-    }
-    
+    }    
 }

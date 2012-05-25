@@ -47,7 +47,6 @@ import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -60,54 +59,14 @@ public class ImportVariantsWizard extends WizardDialog {
 
     private static final Log LOG = LogFactory.getLog(ImportVariantsWizard.class);
 
-    private final int projectID;
-    private final int referenceID;
-    private int updateID;
     private List<VariantTag> variantTags;
     private File[] variantFiles;
     private boolean includeHomoRef = false;
-    private Thread uploadThread = null;
 
     private JComboBox locationField;
 
     public ImportVariantsWizard() {
 
-        projectID = ProjectController.getInstance().getCurrentProjectID();
-        referenceID = ReferenceController.getInstance().getCurrentReferenceID();
-
-        //check for existing unpublished changes to this project + reference
-        try {
-            if(MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, projectID, referenceID)){
-                DialogUtils.displayMessage("Cannot perform import", "There are unpublished changes to this table. Please publish and then try again.");
-                return;
-            }
-        } catch (Exception ex) {
-            DialogUtils.displayErrorMessage("Error checking for changes. ", ex);
-            return;
-        }
-
-        //get lock
-        try {
-            if(!MedSavantClient.SettingsQueryUtilAdapter.getDbLock(LoginController.sessionId)){
-                DialogUtils.displayMessage("Cannot perform import", "Another user is making changes to the database. You must wait until this user has finished. ");
-                return;
-            }
-        } catch (Exception ex) {
-            DialogUtils.displayErrorMessage("Error getting database lock", ex);
-            return;
-        }
-
-        catchClosing();
-        setupWizard();
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(720, 600);
-    }
-    
-
-    private void setupWizard() {
         setTitle("Import Variants Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
@@ -126,21 +85,13 @@ public class ImportVariantsWizard extends WizardDialog {
         pack();
         setResizable(false);
         setLocationRelativeTo(null);
-        setVisible(true);
     }
 
-    private void catchClosing(){
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e){
-                try {
-                    MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
-                } catch (Exception ex) {
-                    LOG.error("Error releasing database lock.", ex);
-                }
-            }
-        });
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(720, 600);
     }
+    
 
     private AbstractWizardPage getWelcomePage() {
 
@@ -158,8 +109,7 @@ public class ImportVariantsWizard extends WizardDialog {
         String projectName = ProjectController.getInstance().getCurrentProjectName();
         String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
 
-        page.addText(
-                "This wizard will help you import variants for:");
+        page.addText("This wizard will help you import variants for:");
 
         JLabel nameLabel = new JLabel(projectName + " (" + referenceName + ")");
         nameLabel.setFont(ViewUtil.getMediumTitleFont());
@@ -410,109 +360,22 @@ public class ImportVariantsWizard extends WizardDialog {
                 startButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
-                        progressBar.setIndeterminate(true);
-                        startButton.setEnabled(false);
-                        startButton.setVisible(false);
-
-                        uploadThread = new Thread() {
-
+                        new UpdateWorker("Uploading", ImportVariantsWizard.this, progressLabel, progressBar, cancelButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishCancelButton, publishStartButton) {
                             @Override
-                            public void run() {
-                                setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
-                                try {
-                                    int i = 0;
-                                    RemoteInputStream[] streams = new RemoteInputStream[variantFiles.length];
-                                    String[] fileNames = new String[variantFiles.length];
-                                    for (File file : variantFiles) {
-                                        streams[i] = new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath())).export();
-                                        fileNames[i] = file.getName();
-                                        i++;
-                                    }
-
-                                    //upload variants
-                                    progressLabel.setText("Uploading variant files...");
-                                    updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, streams, fileNames, projectID, referenceID, tagsToStringArray(variantTags), includeHomoRef);
-                                    MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
-
-                                    //success
-                                    progressBar.setIndeterminate(false);
-                                    cancelButton.setEnabled(false);
-                                    cancelButton.setVisible(false);
-                                    progressBar.setValue(100);
-                                    progressLabel.setText("Upload complete.");
-
-                                    publishProgressLabel.setVisible(true);
-                                    publishProgressBar.setVisible(true);
-
-                                    autoPublishVariants.setVisible(false);
-
-                                    if (autoPublishVariants.isSelected()) {
-                                        new PublicationWorker(updateID, ImportVariantsWizard.this, publishProgressLabel, publishProgressBar, cancelButton, publishStartButton).execute();
-                                    } else {
-                                        publishStartButton.setVisible(true);
-                                        fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                                    }
-
-                                } catch (Exception ex) {
-
-                                    //release lock always
-                                    try {
-                                        MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
-                                    } catch (Exception ex1) {
-                                        LOG.error("Error releasing database lock.", ex1);
-                                    }
-
-                                    progressBar.setIndeterminate(false);
-                                    progressBar.setValue(0);
-
-                                    //cancellation
-                                    if (ex instanceof InterruptedException) {
-                                        progressLabel.setText("Upload cancelled.");
-                                        startButton.setVisible(true);
-                                        startButton.setEnabled(true);
-                                        cancelButton.setText("Cancel");
-                                        cancelButton.setEnabled(true);
-                                        cancelButton.setVisible(false);
-
-                                        //failure
-                                    } else {
-                                        ClientMiscUtils.checkSQLException(ex);
-                                        progressLabel.setForeground(Color.red);
-                                        progressLabel.setText(ex.getMessage());
-                                        startButton.setVisible(false);
-                                        cancelButton.setVisible(false);
-                                    }
-                                    LOG.error("Error publishing variants.", ex);
-                                } finally {
-                                    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                            protected Void doInBackground() throws Exception {
+                                int i = 0;
+                                RemoteInputStream[] streams = new RemoteInputStream[variantFiles.length];
+                                String[] fileNames = new String[variantFiles.length];
+                                for (File file : variantFiles) {
+                                    streams[i] = new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath())).export();
+                                    fileNames[i] = file.getName();
+                                    i++;
                                 }
+
+                                updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, streams, fileNames, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
+                                return null;
                             }
-
-                        };
-                        cancelButton.setVisible(true);
-                        startButton.setVisible(false);
-                        uploadThread.start();
-                    }
-                });
-
-                cancelButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        cancelButton.setText("Cancelling...");
-                        cancelButton.setEnabled(false);
-                        uploadThread.interrupt();
-                    }
-                });
-
-                publishStartButton.addActionListener(new ActionListener() {
-
-                    @Override
-                    public void actionPerformed(ActionEvent ae) {
-                        new PublicationWorker(updateID, ImportVariantsWizard.this, publishProgressLabel, publishProgressBar, publishCancelButton, publishStartButton).execute();
-                        publishCancelButton.setVisible(true);
-                        publishStartButton.setVisible(false);
+                        }.execute();
                     }
                 });
 
@@ -536,7 +399,6 @@ public class ImportVariantsWizard extends WizardDialog {
                 publishProgressLabel.setVisible(false);
                 publishProgressBar.setVisible(false);
                 publishCancelButton.setVisible(false);
-                
             }
 
             @Override
