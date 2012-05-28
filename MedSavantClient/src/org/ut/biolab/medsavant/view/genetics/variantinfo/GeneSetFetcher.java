@@ -75,6 +75,7 @@ public class GeneSetFetcher {
         List<Gene> genes = new ArrayList<Gene>();
         Iterator<String> itr = geneNames.iterator();
         Gene currGene;
+        itr.next();//skip the first one which is the queried gene itself
         while (itr.hasNext()){
             String name = itr.next();
             currGene = geneDictionary.get(name);
