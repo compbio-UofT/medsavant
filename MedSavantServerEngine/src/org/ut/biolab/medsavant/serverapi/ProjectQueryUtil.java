@@ -631,7 +631,7 @@ public class ProjectQueryUtil extends MedSavantServerUnicastRemoteObject impleme
                 map.put(projectId, new HashMap<Integer, ProjectDetails>());
             }
 
-            if (!map.get(projectId).containsKey(referenceId) || map.get(projectId).get(referenceId).getUpdateId() < updateId) {
+            if (!map.get(projectId).containsKey(referenceId) || map.get(projectId).get(referenceId).getUpdateID() < updateId) {
                 map.get(projectId).put(referenceId, new ProjectDetails(projectId, referenceId, updateId, published, rs.getString("A"), rs.getString("B"), null));
             }
         }

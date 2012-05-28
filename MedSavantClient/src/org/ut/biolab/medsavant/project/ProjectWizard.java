@@ -51,8 +51,7 @@ import org.ut.biolab.medsavant.model.Annotation;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.model.Reference;
 import org.ut.biolab.medsavant.reference.NewReferenceDialog;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.variant.PublicationWorker;
+import org.ut.biolab.medsavant.variant.UpdateWorker;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -95,48 +94,12 @@ public class ProjectWizard extends WizardDialog {
         this.projectDetails = projectDetails;
         PAGENAME_CREATE = "Modify";
 
-        //check for existing unpublished changes to this project
-        try {
-            if (MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, projectID)) {
-                DialogUtils.displayMessage("Cannot modify project", "There are unpublished changes to this project. Please publish and then try again.");
-                return;
-            }
-        } catch (Exception ex) {
-            DialogUtils.displayErrorMessage("Error checking for changes. ", ex);
-            return;
-        }
-
-        //get lock
-        try {
-            if (!MedSavantClient.SettingsQueryUtilAdapter.getDbLock(LoginController.sessionId)) {
-                DialogUtils.displayMessage("Cannot modify project", "Another user is making changes to the database. You must wait until this user has finished. ");
-                return;
-            }
-        } catch (Exception ex) {
-            DialogUtils.displayErrorMessage("Error getting database lock", ex);
-            return;
-        }
-
-        catchClosing();
         setupWizard();
     }
 
     /* create new project */
     public ProjectWizard() {
         setupWizard();
-    }
-
-    private void catchClosing() {
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                try {
-                    MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
-                } catch (Exception ex) {
-                    LOG.error("Error releasing database lock.", ex);
-                }
-            }
-        });
     }
 
     private void setupWizard() {
@@ -519,93 +482,42 @@ public class ProjectWizard extends WizardDialog {
         page.addComponent(progressLabel);
         page.addComponent(progressBar);
 
-        final JButton startButton = new JButton((modify ? "Modify Project" : "Create Project"));
-        final JButton publishStartButton = new JButton("Publish Variants");
-
-        //final JButton cancelButton = new JButton("Cancel");
-        final JButton publishCancelButton = new JButton("Cancel");
+        final JButton workButton = new JButton((modify ? "Modify Project" : "Create Project"));
+        final JButton publishButton = new JButton("Publish Variants");
 
         final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after modify");
 
         final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
         final JProgressBar publishProgressBar = new JProgressBar();
 
-
-
-        publishStartButton.addActionListener(new ActionListener() {
+        workButton.addActionListener(new ActionListener() {
 
             @Override
-            public void actionPerformed(ActionEvent ae) {
-                new PublicationWorker(-1, ProjectWizard.this, publishProgressLabel, publishProgressBar, publishCancelButton, publishStartButton).execute();
-
-                publishCancelButton.setVisible(true);
-                publishStartButton.setVisible(false);
-            }
-        });
-
-
-
-
-        startButton.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                startButton.setEnabled(false);
-                page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
-                progressBar.setIndeterminate(true);
-                Thread t = new Thread() {
+            public void actionPerformed(ActionEvent e) {
+                new UpdateWorker(modify ? "Modifying project" : "Creating project", ProjectWizard.this, progressLabel, progressBar, workButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishButton) {
                     @Override
-                    public void run() {
-                        try {
-                            createProject();
-                            ((CompletionWizardPage)getPageByTitle(PAGENAME_COMPLETE)).addText(
-                                    "Project " + projectName + " has been " + (modify ? "modified." : "created."));
-                            //instance.setCurrentPage(PAGENAME_COMPLETE);
-                            MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
-
-                            //success
-                            if (modify) {
-                                progressBar.setIndeterminate(false);
-                                //cancelButton.setEnabled(false);
-                                //cancelButton.setVisible(false);
-                                progressBar.setValue(100);
-                                progressLabel.setText("Upload complete.");
-
-                                publishProgressLabel.setVisible(true);
-                                publishProgressBar.setVisible(true);
-
-                                autoPublishVariants.setVisible(false);
-
-                                if (autoPublishVariants.isSelected()) {
-                                    new PublicationWorker(-1, ProjectWizard.this, publishProgressLabel, publishProgressBar, publishCancelButton, publishStartButton).execute();
-                                } else {
-                                    publishStartButton.setVisible(true);
-                                    page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                                }
-                            } else {
-                                setCurrentPage(PAGENAME_COMPLETE);
-                            }
-
-                        } catch (Exception ex) {
-
-                            try {
-                                MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
-                            } catch (Exception ex1) {
-                                LOG.error("Error releasing database lock.", ex1);
-                            }
-
-                            ClientMiscUtils.reportError("There was an error while trying to create your project: %s", ex);
-                            setVisible(false);
-                            dispose();
+                    protected Void doInBackground() throws Exception {
+                        createProject();
+                        return null;
+                    }
+                    
+                    @Override
+                    protected void showSuccess(Void result) {
+                        if (modify) {
+                            ((CompletionWizardPage)getPageByTitle(PAGENAME_COMPLETE)).addText("Project " + projectName + " has been modified.");
+                            super.showSuccess(result);
+                        } else {
+                            ((CompletionWizardPage)getPageByTitle(PAGENAME_COMPLETE)).addText("Project " + projectName + " has been created.");
+                            setCurrentPage(PAGENAME_COMPLETE);
                         }
                     }
-                };
-                t.start();
+
+                }.execute();
             }
 
         });
 
-        page.addComponent(ViewUtil.alignRight(startButton));
+        page.addComponent(ViewUtil.alignRight(workButton));
         //cancelButton.setVisible(false);
        // page.addComponent(ViewUtil.alignRight(cancelButton));
 
@@ -620,13 +532,11 @@ public class ProjectWizard extends WizardDialog {
 
             page.addComponent(publishProgressLabel);
             page.addComponent(publishProgressBar);
-            page.addComponent(ViewUtil.alignRight(publishStartButton));
-            page.addComponent(ViewUtil.alignRight(publishCancelButton));
+            page.addComponent(ViewUtil.alignRight(publishButton));
 
-            publishStartButton.setVisible(false);
+            publishButton.setVisible(false);
             publishProgressLabel.setVisible(false);
             publishProgressBar.setVisible(false);
-            publishCancelButton.setVisible(false);
         }
 
         return page;
@@ -896,7 +806,7 @@ public class ProjectWizard extends WizardDialog {
 
     private ProjectDetails getProjectDetails(int referenceId) {
         for (ProjectDetails pd : projectDetails) {
-            if (pd.getReferenceId() == referenceId) {
+            if (pd.getReferenceID() == referenceId) {
                 return pd;
             }
         }

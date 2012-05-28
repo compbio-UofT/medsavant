@@ -21,7 +21,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
@@ -36,6 +35,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.clientapi.ProgressCallbackAdapter;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 
 
@@ -53,27 +53,25 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
     protected final WizardDialog wizard;
     private final JLabel progressLabel;
     private final JProgressBar progressBar;
-    private final JButton cancelButton;
-
-    VariantWorker(String activity, WizardDialog wizard, JLabel progressLabel, JProgressBar progressBar, JButton cancelButton) {
+    protected final JButton workButton;
+    
+    /**
+     * Initialise functionality shared by all UpdateWorkers and PublicationWorkers.
+     *
+     * @param activity "Importing", "Publishing", or "Removing"
+     * @param wizard the wizard which is providing the user interface
+     * @param progressLabel label which indicates progress activity
+     * @param progressBar provides quantitative display of progress
+     * @param workButton starts the process and cancels it
+     */
+    VariantWorker(String activity, WizardDialog wizard, JLabel progressLabel, JProgressBar progressBar, JButton workButton) {
         super(activity + "Variants");
         this.activity = activity;
         this.wizard = wizard;
         this.progressLabel = progressLabel;
         this.progressBar = progressBar;
-        this.cancelButton = cancelButton;
+        this.workButton = workButton;
         
-        if (cancelButton.getActionListeners().length == 0) {
-            cancelButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    VariantWorker.this.cancelButton.setText("Cancelling...");
-                    VariantWorker.this.cancelButton.setEnabled(false);
-                    cancel(true);
-                }
-            });
-        }
-
         progressLabel.setText(String.format("%s variants...", activity));
 
         try {
@@ -82,9 +80,22 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
             LOG.error("Unable to register progress callback.", ex);
         }
 
-        progressBar.setIndeterminate(true);
-        cancelButton.setVisible(true);
-        cancelButton.setEnabled(true);
+//        progressBar.setIndeterminate(true);
+        // Convert our start button into a cancel button.
+        workButton.setText("Cancel");
+        if (workButton.getActionListeners().length > 0) {
+            workButton.removeActionListener(workButton.getActionListeners()[0]);
+        }
+        workButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                VariantWorker.this.workButton.setText("Cancelling...");
+                VariantWorker.this.workButton.setEnabled(false);
+                cancel(true);
+            }
+        });
+
+        workButton.setEnabled(true);
         wizard.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     }
 
@@ -94,7 +105,6 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
 
     @Override
     protected void showSuccess(Void result) {
-        cancelButton.setVisible(false);
         progressBar.setIndeterminate(false);
         progressBar.setValue(100);
         progressLabel.setText(String.format("%s complete.", activity));
@@ -105,13 +115,12 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
     protected void showFailure(Throwable ex) {
         progressBar.setIndeterminate(false);
         progressBar.setValue(0);
-        cancelButton.setVisible(false);
         wizard.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         if (ex instanceof InterruptedException) {
             // Cancellation
             progressLabel.setText(String.format("%s cancelled.", activity));
-            cancelButton.setText("Cancel");
+            workButton.setText("Cancel");
         } else {
             // Failure
             ClientMiscUtils.checkSQLException(ex);
@@ -121,7 +130,7 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
         LOG.error(activity + " failed.", ex);
     }
 
-    private static class ProgressCallback extends UnicastRemoteObject implements ProgressCallbackAdapter, Serializable {
+    private static class ProgressCallback extends MedSavantServerUnicastRemoteObject implements ProgressCallbackAdapter, Serializable {
         private final JLabel label;
         private final JProgressBar bar;
 

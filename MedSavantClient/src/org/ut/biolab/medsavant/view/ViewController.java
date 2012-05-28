@@ -336,7 +336,10 @@ public class ViewController extends JPanel {
 
         @Override
         public void projectRemoved(String projectName) {
-            refreshProjectDropDown();
+            // May have been logged out as part of Modify Project republishing variants.
+            if (LoginController.isLoggedIn()) {
+                refreshProjectDropDown();
+            }
         }
 
         @Override

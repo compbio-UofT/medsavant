@@ -1,7 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.model;
 
 import java.io.Serializable;
@@ -14,28 +26,28 @@ import java.util.List;
  */
 public class ProjectDetails implements Serializable {
     
-    private int projectId;
-    private int updateId;
-    private int referenceId;
-    private String projectName;
-    private String referenceName;
-    private String annotationIds;
-    private boolean published;
+    private final int projectID;
+    private final int updateID;
+    private final int referenceID;
+    private final String projectName;
+    private final String referenceName;
+    private final String annotationIDs;
+    private final boolean published;
     
     public ProjectDetails(int projectId, int referenceId, int updateId, boolean published, String projectName, String referenceName, String annotationIds){
-        this.referenceId = referenceId;
+        this.referenceID = referenceId;
         this.referenceName = referenceName;
-        this.annotationIds = annotationIds;
-        this.projectId = projectId;
-        this.updateId = updateId;
+        this.annotationIDs = annotationIds;
+        this.projectID = projectId;
+        this.updateID = updateId;
         this.published = published;
         this.projectName = projectName;
     }
 
     public List<Integer> getAnnotationIds(){
         List<Integer> ids = new ArrayList<Integer>();
-        if(annotationIds != null){
-            for(String s : annotationIds.split(",")){
+        if(annotationIDs != null){
+            for(String s : annotationIDs.split(",")){
                 if (s.isEmpty()) { continue; }
                 ids.add(Integer.parseInt(s));
             }
@@ -43,16 +55,16 @@ public class ProjectDetails implements Serializable {
         return ids;
     }
     
-    public int getProjectId() {
-        return projectId;
+    public int getProjectID() {
+        return projectID;
     }
 
-    public int getReferenceId() {
-        return referenceId;
+    public int getReferenceID() {
+        return referenceID;
     }
     
-    public int getUpdateId() {
-        return updateId;
+    public int getUpdateID() {
+        return updateID;
     }
     
     public boolean isPublished(){
@@ -69,8 +81,8 @@ public class ProjectDetails implements Serializable {
     
     public int getNumAnnotations() {
         int numAnnotations = 0;
-        if (annotationIds != null && !annotationIds.isEmpty()) {
-            numAnnotations = annotationIds.length() - annotationIds.replaceAll(",", "").length() + 1;
+        if (annotationIDs != null && !annotationIDs.isEmpty()) {
+            numAnnotations = annotationIDs.length() - annotationIDs.replaceAll(",", "").length() + 1;
         }
         return numAnnotations;
     }

@@ -38,20 +38,19 @@ import org.ut.biolab.medsavant.reference.ReferenceController;
 public class PublicationWorker extends VariantWorker {
 
     private final int updateID;
-    private final JButton startButton;
+    private final String publishText;
 
-    public PublicationWorker(int updateID, WizardDialog wizard, JLabel progressLabel, JProgressBar progressBar, JButton cancelButton, JButton startButton) {
-        super("Publishing", wizard, progressLabel, progressBar, cancelButton);
+    public PublicationWorker(int updateID, WizardDialog wizard, JLabel progressLabel, JProgressBar progressBar, JButton publishButton) {
+        super("Publishing variants", wizard, progressLabel, progressBar, publishButton);
         this.updateID = updateID;
-        this.startButton = startButton;
+        publishText = publishButton.getText();
     }
 
 
     @Override
     protected Void doInBackground() throws Exception {
-        // publish
+        // Publish.
         MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), updateID);
-        MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
         LoginController.logout();
         return null;
     }
@@ -65,6 +64,8 @@ public class PublicationWorker extends VariantWorker {
     @Override
     protected void showFailure(Throwable ex) {
         super.showFailure(ex);
-        startButton.setVisible(ex instanceof InterruptedException);
+        if (ex instanceof InterruptedException) {
+            workButton.setText(publishText);
+        }
     }
 }

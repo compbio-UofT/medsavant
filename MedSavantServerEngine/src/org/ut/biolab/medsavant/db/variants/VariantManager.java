@@ -65,6 +65,7 @@ import org.ut.biolab.medsavant.serverapi.AnnotationQueryUtil;
 import org.ut.biolab.medsavant.serverapi.PatientQueryUtil;
 import org.ut.biolab.medsavant.serverapi.ProjectQueryUtil;
 import org.ut.biolab.medsavant.serverapi.ReferenceQueryUtil;
+import org.ut.biolab.medsavant.serverapi.SettingsQueryUtil;
 import org.ut.biolab.medsavant.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ChromosomeComparator;
@@ -98,33 +99,35 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return instance;
     }
 
-    /*
-     * Make all variant tables live for a project. All users accessing this db will be logged out.
+    /**
+     * Make all variant tables live for a project. All users accessing this database will be logged out.
      */
     @Override
-    public void publishVariants(String sid, int projectID) throws Exception {
+    public void publishVariants(String sessID, int projectID) throws Exception {
 
         LOG.info("Beginning publish of all tables for project " + projectID);
 
-        Connection c = ConnectionController.connectPooled(sid);
+        Connection c = ConnectionController.connectPooled(sessID);
 
         //get update ids and references
         LOG.info("Getting map of update ids");
-        List<Integer> refIds = ReferenceQueryUtil.getInstance().getReferenceIdsForProject(sid, projectID);
+        List<Integer> refIDs = ReferenceQueryUtil.getInstance().getReferenceIdsForProject(sessID, projectID);
         Map<Integer, Integer> ref2Update = new HashMap<Integer, Integer>();
-        for (Integer refId : refIds) {
-            ref2Update.put(refId, ProjectQueryUtil.getInstance().getNewestUpdateId(sid, projectID, refId, false));
+        for (Integer refID : refIDs) {
+            ref2Update.put(refID, ProjectQueryUtil.getInstance().getNewestUpdateId(sessID, projectID, refID, false));
         }
 
         //update annotation log table
         LOG.info("Setting log status to published");
         for (Integer refId : ref2Update.keySet()) {
-            AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, ref2Update.get(refId), Status.PUBLISHED);
+            AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sessID, ref2Update.get(refId), Status.PUBLISHED);
         }
 
         //publish
+        LOG.info("Releasing database lock.");
+        SettingsQueryUtil.getInstance().releaseDbLock(c);
         LOG.info("Terminating active sessions");
-        SessionController.getInstance().terminateSessionsForDatabase(SessionController.getInstance().getDatabaseForSession(sid), "Administrator (" + SessionController.getInstance().getUserForSession(sid) + ") published new variants");
+        SessionController.getInstance().terminateSessionsForDatabase(SessionController.getInstance().getDatabaseForSession(sessID), "Administrator (" + SessionController.getInstance().getUserForSession(sessID) + ") published new variants");
         LOG.info("Publishing tables");
         for (Integer refId : ref2Update.keySet()) {
             ProjectQueryUtil.getInstance().publishVariantTable(c, projectID, refId, ref2Update.get(refId));
@@ -135,8 +138,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
 
-    /*
-     * Make a variant table live. All users accessing this db will be logged out.
+    /**
+     * Make a variant table live. All users accessing this database will be logged out.
      */
     @Override
     public void publishVariants(String sid, int projectID, int referenceID, int updateID) throws Exception {
@@ -144,6 +147,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         Connection c = (ConnectionController.connectPooled(sid));
         LOG.info("Setting log status to published");
         AnnotationLogQueryUtil.getInstance().setAnnotationLogStatus(sid, updateID, Status.PUBLISHED);
+        LOG.info("Releasing database lock.");
+        SettingsQueryUtil.getInstance().releaseDbLock(c);
         LOG.info("Terminating active sessions");
         SessionController.getInstance().terminateSessionsForDatabase(SessionController.getInstance().getDatabaseForSession(sid), "Administrator (" + SessionController.getInstance().getUserForSession(sid) + ") published new variants");
         LOG.info("Publishing table");
@@ -285,7 +290,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         double frac = 0.0;
         for (int i = 0; i < fileStreams.length; i++) {
-            makeProgress(sessID, "Sending " + fileNames[i], frac);
+            makeProgress(sessID, "Sending " + fileNames[i] + "...", frac);
             vcfFiles[i] = FileServer.getInstance().sendFile(fileStreams[i], fileNames[i]);
             frac += SEND_FILES_FRACTION / fileStreams.length;
         }
@@ -303,7 +308,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //add log
         LOG.info("Adding log and generating update id");
-        makeProgress(sessID, "Generating update ID", frac);
+        makeProgress(sessID, "Generating update ID...", frac);
         int updateID = AnnotationLogQueryUtil.getInstance().addAnnotationLogEntry(sessID, projID, refID, AnnotationLog.Action.ADD_VARIANTS, user);
         frac += LOG_FRACTION;
         
@@ -317,7 +322,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             File existingVariantsFile = new File(baseDir, "temp_proj" + projID + "_ref" + refID + "_update" + updateID);
             
             LOG.info("Dumping variants to file");
-            makeProgress(sessID, "Dumping variants to file", frac);
+            makeProgress(sessID, "Dumping variants to file...", frac);
             
             VariantManagerUtils.variantsToFile(sessID, existingTableName, existingVariantsFile, null, true, 0);
             frac += DUMP_FRACTION;
@@ -333,7 +338,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //upload dump to staging table
             LOG.info("Uploading variants to table: " + tableName);
-            makeProgress(sessID, "Uploading variants to table", frac);
+            makeProgress(sessID, "Uploading variants to table...", frac);
             uploadFileToVariantTable(sessID, existingVariantsFile, tableName);
             frac += LOAD_INTO_TABLE_FRACTION;
 

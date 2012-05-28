@@ -22,7 +22,6 @@ import java.awt.event.MouseEvent;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
 import javax.swing.Box;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
@@ -33,15 +32,13 @@ import org.ut.biolab.medsavant.controller.ThreadController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.list.DetailedListEditor;
-import org.ut.biolab.medsavant.view.subview.SectionView;
-import org.ut.biolab.medsavant.view.subview.SubSectionView;
-import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
+import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
+import org.ut.biolab.medsavant.view.subview.SectionView;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -77,22 +74,43 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
         @Override
         public void editItems(Object[] items) {
             try {
+                String projName = (String)items[0];
+                int projID = MedSavantClient.ProjectQueryUtilAdapter.getProjectId(LoginController.sessionId, projName);
 
-                String projectName = (String) items[0];
-
-                int projectId = MedSavantClient.ProjectQueryUtilAdapter.getProjectId(LoginController.sessionId, projectName);
-                ProjectWizard wiz = new ProjectWizard(
-                        projectId,
-                        projectName,
-                        MedSavantClient.PatientQueryUtilAdapter.getCustomPatientFields(LoginController.sessionId, projectId),
-                        MedSavantClient.ProjectQueryUtilAdapter.getProjectDetails(LoginController.sessionId, projectId));
-                wiz.setVisible(true);
-                if (wiz.isModified()) {
-                    ProjectController.getInstance().fireProjectRemovedEvent(projectName);
-                    ProjectController.getInstance().fireProjectAddedEvent(MedSavantClient.ProjectQueryUtilAdapter.getProjectName(LoginController.sessionId, projectId));
+                // Check for existing unpublished changes to this project.
+                if (!MedSavantClient.ProjectQueryUtilAdapter.existsUnpublishedChanges(LoginController.sessionId, projID)) {
+                    try {
+                        // Get lock.
+                        if (MedSavantClient.SettingsQueryUtilAdapter.getDbLock(LoginController.sessionId)) {
+                            try {
+                                ProjectWizard wiz = new ProjectWizard(projID, projName,
+                                                                      MedSavantClient.PatientQueryUtilAdapter.getCustomPatientFields(LoginController.sessionId, projID),
+                                                                      MedSavantClient.ProjectQueryUtilAdapter.getProjectDetails(LoginController.sessionId, projID));
+                                wiz.setVisible(true);
+                                if (wiz.isModified()) {
+                                    ProjectController.getInstance().fireProjectRemovedEvent(projName);
+                                    ProjectController.getInstance().fireProjectAddedEvent(MedSavantClient.ProjectQueryUtilAdapter.getProjectName(LoginController.sessionId, projID));
+                                }
+                            } finally {
+                                if (LoginController.isLoggedIn()) {
+                                    try {
+                                        MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
+                                    } catch (Exception ex1) {
+                                        LOG.error("Error releasing database lock.", ex1);
+                                    }
+                                }
+                            }
+                        } else {
+                            DialogUtils.displayMessage("Cannot Modify Project", "Another user is making changes to the database. You must wait until this user has finished. ");
+                        }
+                    } catch (Exception ex) {
+                        DialogUtils.displayErrorMessage("Error getting database lock", ex);
+                    }
+                } else {
+                    DialogUtils.displayMessage("Cannot Modify Project", "There are unpublished changes to this table. Please publish and then try again.");
                 }
             } catch (Exception ex) {
-                ClientMiscUtils.reportError("Error fetching projects: %s", ex);
+                DialogUtils.displayErrorMessage("Error checking for changes. ", ex);
             }
         }
 
@@ -105,16 +123,12 @@ public class ProjectManagementPage extends SubSectionView implements ProjectList
 
             if (items.size() == 1) {
                 String name = (String) items.get(0)[nameIndex];
-                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                             "Are you sure you want to remove " + name + "?\nThis cannot be undone.",
-                             "Confirm", JOptionPane.YES_NO_OPTION);
+                result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This cannot be undone.</html>", name);
             } else {
-                result = JOptionPane.showConfirmDialog(MedSavantFrame.getInstance(),
-                             "Are you sure you want to remove these " + items.size() + " projects?\nThis cannot be undone.",
-                             "Confirm", JOptionPane.YES_NO_OPTION);
+                result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove these %d projects?<br>This cannot be undone.</html>", items.size());
             }
 
-            if (result == JOptionPane.YES_OPTION) {
+            if (result == DialogUtils.YES) {
                 for (Object[] v : items) {
                     String projectName = (String) v[keyIndex];
                     ProjectController.getInstance().removeProject(projectName);

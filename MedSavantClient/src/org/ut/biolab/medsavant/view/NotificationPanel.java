@@ -177,9 +177,10 @@ public class NotificationPanel extends JPanel implements LoginListener {
                
     }
     
-    /* 
+    /**
      * Start a new worker for a new user
      */
+    @Override
     public void loginEvent(LoginEvent evt) {
         if (evt.getType() == LoginEvent.EventType.LOGGED_IN) {           
             (worker = new NotificationChecker()).execute();            
@@ -272,24 +273,18 @@ public class NotificationPanel extends JPanel implements LoginListener {
                             ProjectDetails event = (ProjectDetails)n.getData();
                             if (option == JOptionPane.NO_OPTION) {
                                 try {
-                                    MedSavantClient.VariantManager.cancelPublish(LoginController.sessionId, event.getProjectId(), event.getReferenceId(), event.getUpdateId());
+                                    MedSavantClient.VariantManager.cancelPublish(LoginController.sessionId, event.getProjectID(), event.getReferenceID(), event.getUpdateID());
                                 } catch (Exception ex) {
                                     LOG.error("Error cancelling publication of variants.", ex);
                                 }
                             } else if (option == JOptionPane.YES_OPTION) {                          
                                 try {
-                                    MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, event.getProjectId(), event.getReferenceId(), event.getUpdateId());
+                                    MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, event.getProjectID(), event.getReferenceID(), event.getUpdateID());
+                                    LoginController.logout();
                                 } catch (Exception ex) {
                                     LOG.error("Error publishing of variants.", ex);
                                 }
                             }
-
-                            //release lock
-                            try {
-                                MedSavantClient.SettingsQueryUtilAdapter.releaseDbLock(LoginController.sessionId);
-                            } catch (Exception ex) {
-                                LOG.error("Error releasing database lock.", ex);
-                            } 
                         }
                     });                
             }

@@ -39,7 +39,6 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -103,23 +102,18 @@ public class RemoveVariantsWizard extends WizardDialog {
     private AbstractWizardPage getQueuePage() {
         //setup page
         return new DefaultWizardPage("Remove & Publish Variants") {
-            private final JLabel progressLabel = new JLabel("Ready to remove variant files.");
+            private final JLabel progressLabel = new JLabel("You are now ready to remove variants.");
             private final JProgressBar progressBar = new JProgressBar();
-            private final JButton startButton = new JButton("Remove Files");
-            private final JButton publishStartButton = new JButton("Publish Variants");
-            private final JButton cancelButton = new JButton("Cancel");
-            private final JButton publishCancelButton = new JButton("Cancel");
+            private final JButton workButton = new JButton("Remove Files");
+            private final JButton publishButton = new JButton("Publish Variants");
             private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after removal");
             private final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
             private final JProgressBar publishProgressBar = new JProgressBar();
             
             {
-                addText("You are now ready to remove variants.");
                 addComponent(progressLabel);
                 addComponent(progressBar);
-                addComponent(ViewUtil.alignRight(startButton));
-                cancelButton.setVisible(false);
-                addComponent(ViewUtil.alignRight(cancelButton));
+                addComponent(ViewUtil.alignRight(workButton));
 
                 addComponent(autoPublishVariants);
                 JLabel l = new JLabel("WARNING:");
@@ -130,21 +124,16 @@ public class RemoveVariantsWizard extends WizardDialog {
 
                 addComponent(publishProgressLabel);
                 addComponent(publishProgressBar);
-                addComponent(ViewUtil.alignRight(publishStartButton));
-                addComponent(ViewUtil.alignRight(publishCancelButton));
+                addComponent(ViewUtil.alignRight(publishButton));
 
-                publishStartButton.setVisible(false);
+                publishButton.setVisible(false);
                 publishProgressLabel.setVisible(false);
                 publishProgressBar.setVisible(false);
-                publishCancelButton.setVisible(false);
 
-                startButton.addActionListener(new ActionListener() {
+                workButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
-                        startButton.setVisible(false);
-
-                        new UpdateWorker("Removing", RemoveVariantsWizard.this, progressLabel, progressBar, cancelButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishCancelButton, publishStartButton) {
+                        new UpdateWorker("Removing variants", RemoveVariantsWizard.this, progressLabel, progressBar, workButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishButton) {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 updateID = MedSavantClient.VariantManager.removeVariants(LoginController.sessionId, projectID, referenceID, files);

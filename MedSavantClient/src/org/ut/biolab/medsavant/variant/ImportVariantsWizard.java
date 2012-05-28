@@ -23,8 +23,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -177,7 +175,7 @@ public class ImportVariantsWizard extends WizardDialog {
         page.addComponent(container);
         page.addText("Files can be in Variant Call Format (*.vcf) or BGZipped\nVCF (*.vcf.gz).\n\n");
 
-        final JCheckBox homoRefBox = new JCheckBox("Include HomoRef variants (strongly not recommended)");
+        final JCheckBox homoRefBox = new JCheckBox("Include HomoRef variants (strongly discouraged)");
         homoRefBox.setOpaque(false);
         homoRefBox.addActionListener(new ActionListener() {
             @Override
@@ -339,28 +337,24 @@ public class ImportVariantsWizard extends WizardDialog {
 
     private AbstractWizardPage getQueuePage() {
         final DefaultWizardPage page = new DefaultWizardPage("Upload, Annotate, and Publish Variants") {
-            private final JLabel progressLabel = new JLabel("Ready to upload and annotate variant files.");
+            private final JLabel progressLabel = new JLabel("You are now ready to upload variants.");
             private final JProgressBar progressBar = new JProgressBar();
-            private final JButton startButton = new JButton("Upload & Annotate");
-            private final JButton publishStartButton = new JButton("Publish Variants");
-            private final JButton cancelButton = new JButton("Cancel");
-            private final JButton publishCancelButton = new JButton("Cancel");
+            private final JButton workButton = new JButton("Upload & Annotate");
+            private final JButton publishButton = new JButton("Publish Variants");
             private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after upload");
             private final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
             private final JProgressBar publishProgressBar = new JProgressBar();
             
             {
-                addText("You are now ready to upload variants.");
-
                 addComponent(progressLabel);
                 addComponent(progressBar);
 
                 autoPublishVariants.setOpaque(false);
 
-                startButton.addActionListener(new ActionListener() {
+                workButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        new UpdateWorker("Uploading", ImportVariantsWizard.this, progressLabel, progressBar, cancelButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishCancelButton, publishStartButton) {
+                        new UpdateWorker("Uploading variants", ImportVariantsWizard.this, progressLabel, progressBar, workButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishButton) {
                             @Override
                             protected Void doInBackground() throws Exception {
                                 int i = 0;
@@ -379,9 +373,7 @@ public class ImportVariantsWizard extends WizardDialog {
                     }
                 });
 
-                addComponent(ViewUtil.alignRight(startButton));
-                cancelButton.setVisible(false);
-                addComponent(ViewUtil.alignRight(cancelButton));
+                addComponent(ViewUtil.alignRight(workButton));
 
                 addComponent(autoPublishVariants);
                 JLabel l = new JLabel("WARNING:");
@@ -392,13 +384,11 @@ public class ImportVariantsWizard extends WizardDialog {
 
                 addComponent(publishProgressLabel);
                 addComponent(publishProgressBar);
-                addComponent(ViewUtil.alignRight(publishStartButton));
-                addComponent(ViewUtil.alignRight(publishCancelButton));
+                addComponent(ViewUtil.alignRight(publishButton));
 
-                publishStartButton.setVisible(false);
+                publishButton.setVisible(false);
                 publishProgressLabel.setVisible(false);
                 publishProgressBar.setVisible(false);
-                publishCancelButton.setVisible(false);
             }
 
             @Override
