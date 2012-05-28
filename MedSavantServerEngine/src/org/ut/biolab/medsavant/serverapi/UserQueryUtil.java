@@ -99,6 +99,7 @@ public class UserQueryUtil extends MedSavantServerUnicastRemoteObject implements
                 ConnectionController.executePreparedUpdate(sid, String.format("GRANT ALL ON %s.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
                 ConnectionController.executePreparedUpdate(sid, String.format("GRANT GRANT OPTION ON *.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
                 ConnectionController.executePreparedUpdate(sid, String.format("GRANT CREATE USER ON *.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
+                ConnectionController.executePreparedUpdate(sid, String.format("GRANT FILE ON *.* TO ?@'localhost';", ConnectionController.getDBName(sid)), name);
                 ConnectionController.executePreparedUpdate(sid, "GRANT SELECT ON mysql.user TO ?@'localhost';", name);
                 break;
             case USER:
