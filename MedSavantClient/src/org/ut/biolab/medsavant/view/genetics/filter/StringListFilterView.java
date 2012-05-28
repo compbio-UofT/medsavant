@@ -211,11 +211,16 @@ public class StringListFilterView extends FilterView {
     }
 
     private void initHelper(JComponent container, final List<String> uniq) {
-        
+
+        int maxWidth = 200;
+        int maxHeight = 150;
+
+        ViewUtil.applyVerticalBoxLayout(container);
+
         if(uniq == null){
-            container.setLayout(new BorderLayout());
-            container.setMaximumSize(new Dimension(1000, 80));
-            container.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));     
+
+            container.setMaximumSize(new Dimension(maxWidth, 80));
+            container.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
             JTextArea label = new JTextArea("There are too many unique values to generate this list. You will not be able to filter on this column. ");
             label.setOpaque(false);
             label.setLineWrap(true);
@@ -228,8 +233,6 @@ public class StringListFilterView extends FilterView {
             Collections.sort(uniq, new ChromosomeComparator());
         }
 
-        ViewUtil.applyVerticalBoxLayout(container);
-
         JPanel bottomContainer = new JPanel();
         ViewUtil.applyHorizontalBoxLayout(bottomContainer);
         bottomContainer.setBorder(ViewUtil.getSmallBorder());
@@ -241,7 +244,6 @@ public class StringListFilterView extends FilterView {
         ViewUtil.applyVerticalBoxLayout(optionContainer);
         optionContainer.setBorder(ViewUtil.getSmallBorder());
 
-
         final DefaultListModel model = new DefaultListModel();
         for (String option : uniq) {
             model.addElement(option);
@@ -251,8 +253,8 @@ public class StringListFilterView extends FilterView {
         field.setHintText("Type here to filter options");
         optionContainer.add(field);
 
-        field.setPreferredSize(new Dimension(250, 22));
-        field.setMaximumSize(new Dimension(250, 22));
+        field.setPreferredSize(new Dimension(150, 22));
+        field.setMaximumSize(new Dimension(150, 22));
 
         filterableList = new FilterableCheckBoxList(field.getDisplayListModel()) {
 
@@ -280,7 +282,6 @@ public class StringListFilterView extends FilterView {
         });
 
         setAllSelected(true);
-
 
         al = new ActionListener() {
 
@@ -350,7 +351,7 @@ public class StringListFilterView extends FilterView {
                                     List<String> individuals = MedSavantClient.PatientQueryUtilAdapter.getDNAIdsForStringList(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableSchema(), acceptableValues, columnname);
 
                                     if(individuals.isEmpty()) return new Condition[] { BinaryCondition.equalTo(0, 1) };
-                                    
+
                                     Condition[] results = new Condition[individuals.size()];
                                     int i = 0;
                                     for (String ind : individuals) {
@@ -386,9 +387,17 @@ public class StringListFilterView extends FilterView {
 
         JScrollPane jsp = new JScrollPane(filterableList);
 
+        /*Dimension dscroll = new Dimension(maxWidth-5,maxHeight-5);
+        jsp.setMinimumSize(dscroll);
+        jsp.setMaximumSize(dscroll);
+        jsp.setPreferredSize(dscroll);
+        *
+        */
+
         optionContainer.add(jsp);
 
-        Dimension d = new Dimension(360, 200);
+        Dimension d = new Dimension(maxWidth, maxHeight);
+        optionContainer.setMinimumSize(d);
         optionContainer.setMaximumSize(d);
         optionContainer.setPreferredSize(d);
 

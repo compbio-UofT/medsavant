@@ -76,12 +76,15 @@ public class IconFactory {
         LINKOUT,
         COPY,
         MORE,
-        CHART_SMALL
+        CHART_SMALL,
+        CONFIGURE
     };
     private static final String iconroot = "/org/ut/biolab/medsavant/view/images/icon/";
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+             case CONFIGURE:
+                return getIcon(iconroot + "configure.png");
             case CHART_SMALL:
                 return getIcon(iconroot + "chart_1.png");
             case MORE:

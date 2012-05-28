@@ -14,7 +14,6 @@ import javax.swing.JFrame;
 public abstract class FilterView {
 
     private JComponent _component;
-    private JFrame _frame;
     private String _title;
     protected int queryId;
 

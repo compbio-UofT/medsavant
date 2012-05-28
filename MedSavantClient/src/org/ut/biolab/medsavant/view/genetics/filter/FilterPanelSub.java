@@ -18,10 +18,7 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.plaf.UIDefaultsLookup;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -30,6 +27,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -84,17 +82,17 @@ public class FilterPanelSub extends JPanel {
         this.parent = parent;
 
         ViewUtil.applyVerticalBoxLayout(this);
-        
+
          final JButton addButton = getAddButton();
-        
+
         JButton removeButton = getRemoveButton();
 
         this.add(ViewUtil.alignLeft(addButton));
-        
+
         contentPanel = ViewUtil.getClearPanel();
         contentPanel.setOpaque(false);
         ViewUtil.applyVerticalBoxLayout(contentPanel);
-        
+
         this.add(contentPanel);
 
         /*contentPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -107,14 +105,13 @@ public class FilterPanelSub extends JPanel {
         panes.setGap(UIDefaultsLookup.getInt("CollapsiblePanes.gap"));
         panes.setBorder(UIDefaultsLookup.getBorder("CollapsiblePanes.border"));
         panes.setBackground(ViewUtil.getTertiaryMenuColor());
-        
+
         contentPanel.add(ViewUtil.alignLeft(panes));
-        
+
         p1 = new CollapsiblePane("Filter Set 1");
+        p1.setLayout(new BorderLayout());
         panes.add(p1);
-        
-        
-        
+
         panes.addExpansion();
 
         refreshSubItems();
@@ -125,14 +122,14 @@ public class FilterPanelSub extends JPanel {
     }
 
     public void refreshSubItems() {
-        
+
         if (kvp1 != null) {
             p1.remove(kvp1);
         }
-        
+
         kvp1 = new KeyValuePairPanel(1);
-        p1.add(kvp1);
-        
+        p1.add(kvp1,BorderLayout.CENTER);
+
         //check for removed items
         for (int i = subItems.size() - 1; i >= 0; i--) {
             if (subItems.get(i).isRemoved()) {
@@ -144,19 +141,20 @@ public class FilterPanelSub extends JPanel {
         for (int i = 0; i < subItems.size(); i++) {
             String key = subItems.get(i).getName();
             kvp1.addKey(key);
+            kvp1.setValue(key, "description");
             kvp1.setAdditionalColumn(key, 0, getConfigButton(kvp1,key));
             kvp1.setDetailComponent(key, ViewUtil.getClearBorderedJSP(subItems.get(i).getFilterView().getComponent()));
         }
-        
+
         kvp1.repaint();
         p1.repaint();
 
         this.updateUI();
     }
-    
+
      private Component getConfigButton(final KeyValuePairPanel kvp, final String key) {
-        final JToggleButton button = ViewUtil.getTexturedToggleButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART_SMALL));
-        button.setToolTipText("Configure " + key);
+        final JToggleButton button = ViewUtil.getTexturedToggleButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CONFIGURE));
+        button.setToolTipText("Edit " + key + " conditions");
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -478,7 +476,7 @@ public class FilterPanelSub extends JPanel {
     }
 
     private JButton getAddButton() {
-        
+
         final JButton addButton = new JButton( /*ViewUtil.getSoftButton(*/"Add search condition   ▾");
 
         ViewUtil.makeSmall(addButton);
@@ -625,7 +623,7 @@ public class FilterPanelSub extends JPanel {
                 removeThis();
             }
         });
-        
+
         return removeButton;
     }
 
