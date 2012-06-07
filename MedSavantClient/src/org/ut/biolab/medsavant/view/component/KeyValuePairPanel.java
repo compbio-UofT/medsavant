@@ -34,6 +34,7 @@ public class KeyValuePairPanel extends JPanel {
     private final GridBagConstraints keyDetailConstraints;
     private JPanel kvpPanel;
     private JPanel toolbar;
+    private boolean isKeysVisible = true;
 
     public KeyValuePairPanel() {
         this(0);
@@ -169,6 +170,17 @@ public class KeyValuePairPanel extends JPanel {
         newRowsGoIntoMoreSection = true;
 
     }
+    
+    public void setKeysVisible(boolean b) {
+        this.isKeysVisible = b;
+        resetKeyVisibility();
+    }
+    
+    private void resetKeyVisibility() {
+        for (String key : this.keyKeyComponentMap.keySet()) {
+            this.keyKeyComponentMap.get(key).setVisible(isKeysVisible);
+        }
+    }
 
     public void toggleMoreVisibility() {
         setMoreVisibility(!isShowingMore);
@@ -177,7 +189,7 @@ public class KeyValuePairPanel extends JPanel {
     private void setMoreVisibility(boolean b) {
         isShowingMore = b;
         for (String key : this.keysInMoreSection) {
-            keyKeyComponentMap.get(key).setVisible(b);
+            keyKeyComponentMap.get(key).setVisible(b && this.isKeysVisible);
             keyValueComponentMap.get(key).setVisible(b);
             for (JComponent c : keySettingsMap.get(key)) {
                 c.setVisible(b);
@@ -236,7 +248,6 @@ public class KeyValuePairPanel extends JPanel {
                     } else {
                         keyLabel.setText("► " + key.toUpperCase());
                     }
-
                 }
 
                 @Override
@@ -259,6 +270,8 @@ public class KeyValuePairPanel extends JPanel {
 
         keyPanel.add(keyLabel);
         keyPanel.add(Box.createHorizontalGlue());
+        
+        keyLabel.setVisible(isKeysVisible);
 
         kvpPanel.add(keyPanel, incrementConstraintRow(i++));
         kvpPanel.add(valuePanel, incrementConstraintRow(i++));
@@ -333,4 +346,6 @@ public class KeyValuePairPanel extends JPanel {
         p.add(c, BorderLayout.CENTER);
 
     }
+
+   
 }
