@@ -214,7 +214,6 @@ public class TablePanel extends JLayeredPane {
                         int uploadID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID);
                         int fileID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_FILE_ID);
                         int variantID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_VARIANT_ID);
-                        System.out.println("UNIQUE ID " + uploadID + " " + fileID + " " + variantID);
 
                         DbColumn uIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID);
                         DbColumn fIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID);

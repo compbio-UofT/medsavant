@@ -25,12 +25,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Collection;
 import javax.swing.*;
+import org.ut.biolab.medsavant.geneset.GeneSetController;
+import org.ut.biolab.medsavant.model.Gene;
 
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
-import org.ut.biolab.medsavant.view.genetics.GeneIntersectionGenerator;
+import org.ut.biolab.medsavant.view.genetics.inspector.GeneInspector;
 import org.ut.biolab.medsavant.view.genetics.inspector.VariantInspector;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -55,32 +59,9 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
 
 
     private static String KEY_INFO = "Info";
-
-    // VCF 4.1 Info fields
-    /*
-    private static String KEY_AA = "Anc. Allele";
-    private static String KEY_AC = "Allele Count";
-    private static String KEY_AF = "Allele Freq.";
-    private static String KEY_AN = "Num. Alleles";
-    private static String KEY_BQ = "Base Quality";
-    private static String KEY_CIGAR = "CIGAR";
-    private static String KEY_DB = "In dbSNP";
-    private static String KEY_DP = "Coverage";
-    private static String KEY_END = "End Position";
-    private static String KEY_H2 = "In Hapmap2";
-    private static String KEY_H3 = "In Hapmap3";
-    private static String KEY_MQ = "Mapping Qual.";
-    private static String KEY_MQ0 = "Num. MQ0s";
-    private static String KEY_NS = "Num. Samples";
-    private static String KEY_SB = "Strand Bias";
-    private static String KEY_SOMATIC = "Somatic";
-    private static String KEY_VALIDATED = "Validated";
-    private static String KEY_1000G = "In 1K Genomes";
-    *
-    */
-
-
+    private Collection<Gene> genes;
     private KeyValuePairPanel p;
+    private JComboBox geneBox;
 
     public BasicVariantSubInspector() {
         VariantInspector.addVariantSelectionChangedListener(this);
@@ -109,9 +90,9 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
             p.addKey(KEY_GENES);
             p.addKey(KEY_INFO);
 
-            JComboBox geneBox = GeneIntersectionGenerator.getInstance().getGeneDropDown();
+            geneBox = new JComboBox();
             ViewUtil.makeSmall(geneBox);
-            int geneDropdownWidth = 110;
+            int geneDropdownWidth = 95;
             geneBox.setMinimumSize(new Dimension(geneDropdownWidth, 30));
             geneBox.setPreferredSize(new Dimension(geneDropdownWidth, 30));
             geneBox.setMaximumSize(new Dimension(geneDropdownWidth, 30));
@@ -188,29 +169,36 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
 
         p.setDetailComponent(KEY_INFO, getInfoKVPPanel(r.getCustomInfo()));
 
-        /*
+        generateGeneIntersections(r);
 
-        p.setValue(KEY_AA, checkNull(r.getAncestralAllele()));
-        p.setValue(KEY_AC, checkNull(r.getAlleleCount()));
-        p.setValue(KEY_AF, checkNull(r.getAlleleFrequency()));
-        p.setValue(KEY_AN, checkNull(r.getNumberOfAlleles()));
-        p.setValue(KEY_BQ, checkNull(r.getBaseQuality()));
-        p.setValue(KEY_CIGAR, checkNull(r.getCigar()));
-        p.setValue(KEY_DB, checkNull(r.getDbSNPMembership()));
-        p.setValue(KEY_DP, checkNull(r.getDepthOfCoverage()));
-        p.setValue(KEY_END, checkNull(r.getEndPosition()));
-        p.setValue(KEY_H2, checkNull(r.getHapmap2Membership()));
-        p.setValue(KEY_H3, checkNull(r.getHapmap3Membership()));
-        p.setValue(KEY_MQ, checkNull(r.getMappingQuality()));
-        p.setValue(KEY_MQ0, checkNull(r.getNumberOfZeroMQ()));
-        p.setValue(KEY_NS, checkNull(r.getNumberOfSamplesWithData()));
-        p.setValue(KEY_SB, checkNull(r.getStrandBias()));
-        p.setValue(KEY_SOMATIC, checkNull(r.getIsSomatic()));
-        p.setValue(KEY_VALIDATED, checkNull(r.getIsValidated()));
-        p.setValue(KEY_1000G, checkNull(r.getIsInThousandGenomes()));
-        *
-        */
+    }
 
+    private void generateGeneIntersections(VariantRecord r) {
+        try {
+
+            if (genes == null) {
+                genes = GeneSetController.getInstance().getCurrentGenes();
+            }
+
+            Gene g0 = null;
+            JComboBox b = geneBox;
+            b.removeAllItems();
+
+            for (Gene g : genes) {
+                if (g0 == null) {
+                    g0 = g;
+                }
+                if (g.getChrom().equals(r.getChrom()) && r.getPosition() > g.getStart() && r.getPosition() < g.getEnd()) {
+                    b.addItem(g);
+                }
+            }
+
+            if (g0 != null) {
+                GeneInspector.getInstance().setGene(g0);
+            }
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Error fetching genes: %s", ex);
+        }
     }
 
     private Component getCopyButton(final String key) {

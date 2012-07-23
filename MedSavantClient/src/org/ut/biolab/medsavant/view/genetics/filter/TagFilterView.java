@@ -147,8 +147,6 @@ public class TagFilterView extends FilterView {
                 }
             });
 
-            final TagFilterView instance = this;
-
             clear.addActionListener(new ActionListener() {
 
                 @Override
