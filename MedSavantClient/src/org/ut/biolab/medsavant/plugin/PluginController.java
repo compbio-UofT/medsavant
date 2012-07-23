@@ -187,6 +187,7 @@ public class PluginController extends Controller {
 
             @Override
             public void run() {
+                if (!(new File("gmdata")).exists()){
                 URL pathToGMData = NetworkUtils.getKnownGoodURL("http://genomesavant.com/serve/data/genemania/gmdata.zip");
                 try {
                     File data = RemoteFileCache.getCacheFile(pathToGMData);
@@ -206,6 +207,7 @@ public class PluginController extends Controller {
                     zipData.close();
                 } catch (IOException ex) {
                     Logger.getLogger(PluginController.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 }
             }
         };
