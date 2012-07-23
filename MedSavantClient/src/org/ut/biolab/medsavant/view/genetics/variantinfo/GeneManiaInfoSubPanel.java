@@ -105,8 +105,8 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
          kvpPanel = new JPanel();
          kvpPanel.setLayout(new BorderLayout());
          kvpPanel.add(kvp, BorderLayout.CENTER);
-         JPanel currGenePanel = new JPanel();
-         JPanel pMessagePanel = new JPanel();
+         JPanel currGenePanel = ViewUtil.getClearPanel();
+         JPanel pMessagePanel = ViewUtil.getClearPanel();
          settingsPanel = ViewUtil.getClearPanel();
          progressBar = new JProgressBar();
          progressBar.setVisible(false);
@@ -122,7 +122,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
             }
          });
          l = new JLabel("Selected gene: ");
-         currGenePanel.add(l);
+         //currGenePanel.add(l);
          pMessagePanel.add(progressMessage);
          settingsPanel.setLayout(new BorderLayout());
          settingsPanel.add(settingsButton, BorderLayout.EAST);

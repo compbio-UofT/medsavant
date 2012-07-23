@@ -31,7 +31,7 @@ public class EntrezButton extends JButton{
     static String charset = "UTF-8";
 
     public EntrezButton(final String geneName){
-        super("NCBI", IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
+        super(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
 
         ViewUtil.makeSmall(this);
         this.putClientProperty("JButton.buttonType", "textured");

@@ -204,9 +204,10 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
                 }
             }
 
-            if (g0 != null) {
+            /*if (g0 != null) {
                 GeneInspector.getInstance().setGene(g0);
             }
+            */
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error fetching genes: %s", ex);
         }

@@ -59,6 +59,7 @@ public class GeneInspector extends CollapsibleInspector {
     }
 
     public void setGene(Gene g) {
+        System.out.println("Setting gene to " + g.getName());
         selectedGene = g;
         geneSelectionChanged(g);
     }

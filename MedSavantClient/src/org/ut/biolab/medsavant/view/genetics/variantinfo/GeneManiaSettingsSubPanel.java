@@ -70,7 +70,7 @@ public class GeneManiaSettingsSubPanel extends javax.swing.JFrame {
             }
         });
 
-        relatedGenes.setText("related genes.");
+        relatedGenes.setText("related genes");
 
         rankBy.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         rankBy.setText("Rank by");
@@ -128,7 +128,9 @@ public class GeneManiaSettingsSubPanel extends javax.swing.JFrame {
         networkWeighting.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         networkWeighting.setText("Network weighting");
 
+        equal.setBackground(new java.awt.Color(255, 255, 255));
         equal.setBorder(javax.swing.BorderFactory.createTitledBorder("Equal weighting"));
+        equal.setOpaque(false);
 
         buttonGroup2.add(average);
         average.setText("Equal by network");
@@ -147,7 +149,9 @@ public class GeneManiaSettingsSubPanel extends javax.swing.JFrame {
             .addComponent(average)
         );
 
+        geneOntology.setBackground(new java.awt.Color(255, 255, 255));
         geneOntology.setBorder(javax.swing.BorderFactory.createTitledBorder("Gene Ontology (GO)- based weighting"));
+        geneOntology.setOpaque(false);
 
         buttonGroup2.add(bp);
         bp.setText("Biological process based");
@@ -190,7 +194,9 @@ public class GeneManiaSettingsSubPanel extends javax.swing.JFrame {
                 .addComponent(cc))
         );
 
+        queryDependent.setBackground(new java.awt.Color(255, 255, 255));
         queryDependent.setBorder(javax.swing.BorderFactory.createTitledBorder("Query-dependent weighting"));
+        queryDependent.setOpaque(false);
 
         buttonGroup2.add(automatic);
         automatic.setText("Automatically selected weighting method");
@@ -218,47 +224,41 @@ public class GeneManiaSettingsSubPanel extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jSeparator1)
-                            .addComponent(queryDependent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(equal, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jSeparator3, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(networkWeighting)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addComponent(limitTo)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(geneLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addComponent(rankBy))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(varFreq)
-                                        .addComponent(relatedGenes)
-                                        .addComponent(genemaniaScore)))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(coexp)
-                                        .addComponent(gi)
-                                        .addComponent(path)
-                                        .addComponent(pi))
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(predict))
-                                        .addComponent(coloc)
-                                        .addComponent(spd)
-                                        .addComponent(other)))
-                                .addComponent(networks))
-                            .addComponent(geneOntology, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jSeparator2))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(jSeparator1)
+                        .addComponent(queryDependent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(equal, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jSeparator3, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(networkWeighting)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(rankBy)
+                                    .addComponent(limitTo))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(geneLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(relatedGenes))
+                                    .addComponent(varFreq)
+                                    .addComponent(genemaniaScore)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(coexp)
+                                    .addComponent(gi)
+                                    .addComponent(path)
+                                    .addComponent(pi))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(coloc)
+                                    .addComponent(spd)
+                                    .addComponent(other)
+                                    .addComponent(predict)))
+                            .addComponent(networks))
+                        .addComponent(geneOntology, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jSeparator2))
+                    .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {genemaniaScore, varFreq});
@@ -352,7 +352,7 @@ public class GeneManiaSettingsSubPanel extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_mfActionPerformed
 
-   
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton automatic;
     private javax.swing.JRadioButton average;
