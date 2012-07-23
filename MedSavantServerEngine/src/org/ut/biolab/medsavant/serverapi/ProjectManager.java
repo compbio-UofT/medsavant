@@ -625,7 +625,6 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
             if (!map.get(projID).containsKey(refID) || map.get(projID).get(refID).getUpdateID() < updID) {
                 ProjectDetails pd = new ProjectDetails(projID, refID, updID, published, rs.getString("A"), rs.getString("B"), null);
-                LOG.info(String.format("Added %d:%d:%d to project map published=%s", projID, refID, updID, pd.isPublished()));
                 map.get(projID).put(refID, pd);
                 if (!pd.isPublished()) {
                     unpublished.add(pd);
