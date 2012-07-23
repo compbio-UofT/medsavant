@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
  * @author khushi
  */
 public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelectionChangedListener {
-    
+
     private static final Log LOG = LogFactory.getLog(GeneManiaInfoSubPanel.class);
 
     private final String name;
@@ -581,8 +581,9 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         } else {
             System.out.println("Received gene " + g.getName());
             l.setText(g.getName());
-            if (gene==null || !g.getName().equals(gene.getName()))
-               updateRelatedGenesPanel(g);
+            if (gene==null || !g.getName().equals(gene.getName())){
+                updateRelatedGenesPanel(g);
+            }
 
         }
     }
@@ -599,10 +600,12 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         progressMessage.setVisible(true);
         progressBar.setIndeterminate(true);
         progressMessage.setText("Getting Related Genes");
+
         Runnable r = new Runnable(){
 
             @Override
             public void run() {
+                boolean setMsgOff = true;
                 if (!Thread.interrupted()){
                 try {
                     genemania.setGene(gene.getName());
@@ -612,9 +615,9 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                             Iterator<org.ut.biolab.medsavant.model.Gene> itr = geneSetFetcher.getGenesByNumVariants(genemania.getRelatedGeneNamesByScore()).iterator();
                             org.ut.biolab.medsavant.model.Gene currGene;
                             itr.next();//skip the first one (it's the name of selected gene already displayed)
-                            
+
                             if (Thread.interrupted()) { throw new InterruptedException(); }
-                            
+
                             int i = 1;
                             while (itr.hasNext()) {
                                 currGene = itr.next();
@@ -630,9 +633,9 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                            Iterator<String> itr = genemania.getRelatedGeneNamesByScore().iterator();
                            String currGene;
                            itr.next();//skip the first one (it's the name of selected gene already displayed)
-                           
+
                            if (Thread.interrupted()) { throw new InterruptedException(); }
-                           
+
                             int i = 1;
                             while (itr.hasNext()) {
                                 currGene = itr.next();
@@ -644,13 +647,13 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                             }
                             currSizeOfArray =i-1;
                         }
-                           progressMessage.setVisible(false);
                     }
                     else{
                         progressMessage.setText("Gene not found in GeneMANIA");
+                        setMsgOff = false;
                     }
                 } catch (InterruptedException e){
-                    
+
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Error retrieving data from GeneMANIA: %s", ex);
                 }
@@ -658,6 +661,8 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                     progressBar.setIndeterminate(false);
                     progressBar.setValue(0);
                     progressBar.setVisible(false);
+                    if (setMsgOff)
+                        progressMessage.setVisible(false);
                 }
 
             }

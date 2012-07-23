@@ -16,10 +16,6 @@
 
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.net.URL;
-import java.net.URLEncoder;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.model.Gene;
@@ -27,8 +23,6 @@ import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
-import org.ut.biolab.medsavant.view.images.IconFactory;
-import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
@@ -61,7 +55,7 @@ public class BasicGeneSubInspector extends SubInspector implements GeneSelection
             panel = new KeyValuePairPanel(2);
             panel.addKey(KEY_NAME);
 
-            JButton filterButton2 = ViewUtil.getTexturedButton("Card", IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
+            /*JButton filterButton2 = ViewUtil.getTexturedButton("Card", IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
             filterButton2.setToolTipText("Lookup Gene Card");
             panel.setAdditionalColumn(KEY_NAME, 1, filterButton2);
 
@@ -80,7 +74,7 @@ public class BasicGeneSubInspector extends SubInspector implements GeneSelection
                         DialogUtils.displayError("Problem launching website.");
                     }
                 }
-            });
+            });*/
 
             panel.addKey(KEY_CHROM);
             panel.addKey(KEY_START);
@@ -104,6 +98,8 @@ public class BasicGeneSubInspector extends SubInspector implements GeneSelection
         }
 
         panel.setValue(KEY_NAME, g.getName());
+        JButton filterButton2 = new EntrezButton(g.getName());
+        panel.setAdditionalColumn(KEY_NAME, 1, filterButton2);
         panel.setValue(KEY_CHROM, g.getChrom());
         panel.setValue(KEY_START, ViewUtil.numToString(g.getStart()));
         panel.setValue(KEY_END, ViewUtil.numToString(g.getEnd()));

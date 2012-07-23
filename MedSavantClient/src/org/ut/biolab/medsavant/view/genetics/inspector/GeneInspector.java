@@ -22,6 +22,7 @@ import java.util.List;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.BasicGeneSubInspector;
+import org.ut.biolab.medsavant.view.genetics.variantinfo.GeneManiaInfoSubPanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.OntologySubInspector;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.SubInspector;
 
@@ -48,8 +49,8 @@ public class GeneInspector extends CollapsibleInspector {
 
     private GeneInspector() {
         addSubInfoPanel(new BasicGeneSubInspector());
-//        addSubInfoPanel(new GeneManiaInfoSubPanel());
-        addSubInfoPanel(new OntologySubInspector());
+        //addSubInfoPanel(new GeneManiaInfoSubPanel());
+        //addSubInfoPanel(new OntologySubInspector());
     }
 
     @Override
@@ -58,7 +59,6 @@ public class GeneInspector extends CollapsibleInspector {
     }
 
     public void setGene(Gene g) {
-        System.out.println("Setting gene to be " + g.getName());
         selectedGene = g;
         geneSelectionChanged(g);
     }

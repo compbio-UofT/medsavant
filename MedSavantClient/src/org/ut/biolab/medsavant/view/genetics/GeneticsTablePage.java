@@ -160,7 +160,7 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
 
  *
  */
-        detailView = new PeekingPanel("Detail", BorderLayout.WEST, _container, false, 320);
+        detailView = new PeekingPanel("Detail", BorderLayout.WEST, _container, false, 380);
         detailView.setToggleBarVisible(false);
 
         panel.add(genomeView, BorderLayout.NORTH);

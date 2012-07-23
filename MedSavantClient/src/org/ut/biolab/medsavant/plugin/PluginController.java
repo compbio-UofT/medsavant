@@ -20,16 +20,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.settings.VersionSettings;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
-import org.ut.biolab.medsavant.util.Controller;
-import org.ut.biolab.medsavant.util.ClientIOUtils;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.util.ClientNetworkUtils;
+import org.ut.biolab.medsavant.util.*;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 
@@ -52,7 +53,7 @@ public class PluginController extends Controller {
     private Map<String, String> pluginErrors = new LinkedHashMap<String, String>();
     private PluginLoader pluginLoader;
     private PluginIndex repositoryIndex = null;
-    
+
 
     /** SINGLETON **/
     public static synchronized PluginController getInstance() {
@@ -181,6 +182,38 @@ public class PluginController extends Controller {
         return result;
     }
 
+    public void getGeneManiaData(){
+        URL pathToGMData = NetworkUtils.getKnownGoodURL("http://genomesavant.com/serve/data/genemania/gmdata.zip");
+        try {
+            File data= RemoteFileCache.getCacheFile(pathToGMData);
+            System.out.println("data is" + data.getAbsolutePath());
+            ZipFile zipData = new ZipFile(data.getAbsolutePath());
+            Enumeration entries = zipData.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = (ZipEntry) entries.nextElement();
+                if (entry.isDirectory()) {
+                    (new File(entry.getName())).mkdirs();
+                    continue;
+                }
+                System.err.println("Extracting file: " + entry.getName());
+                copyInputStream(zipData.getInputStream(entry),
+                        new BufferedOutputStream(new FileOutputStream(entry.getName())));
+            }
+            zipData.close();
+        } catch (IOException ex) {
+            Logger.getLogger(PluginController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    private static final void copyInputStream(InputStream in, OutputStream out)
+            throws IOException {
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = in.read(buffer)) >= 0) {
+            out.write(buffer, 0, len);
+        }
+        in.close();
+        out.close();
+    }
     public MedSavantPlugin getPlugin(String id) {
         return loadedPlugins.get(id);
     }

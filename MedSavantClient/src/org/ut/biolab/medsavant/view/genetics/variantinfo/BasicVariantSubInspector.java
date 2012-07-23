@@ -92,11 +92,21 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
 
             geneBox = new JComboBox();
             ViewUtil.makeSmall(geneBox);
-            int geneDropdownWidth = 95;
+            int geneDropdownWidth = 130;
             geneBox.setMinimumSize(new Dimension(geneDropdownWidth, 30));
             geneBox.setPreferredSize(new Dimension(geneDropdownWidth, 30));
             geneBox.setMaximumSize(new Dimension(geneDropdownWidth, 30));
             p.setValue(KEY_GENES, geneBox);
+
+            JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
+            geneInspectorButton.setToolTipText("Inspect this gene");
+            geneInspectorButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    GeneInspector.getInstance().setGene((Gene) (geneBox).getSelectedItem());
+                }
+            });
 
             JLabel l = new JLabel("This will eventually show a chart");
             p.setDetailComponent(KEY_QUAL, l);
