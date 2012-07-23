@@ -30,12 +30,12 @@ import javax.swing.JComboBox;
 import com.healthmarketscience.sqlbuilder.Condition;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.api.Listener;
 
-import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.model.Filter;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterState;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterView;
 
@@ -47,10 +47,11 @@ import org.ut.biolab.medsavant.view.genetics.filter.FilterView;
 public class RegionSetFilterView extends FilterView {
     private static final Log LOG = LogFactory.getLog(RegionSetFilterView.class);
 
-    public static final String FILTER_NAME = "Region Set";
-    public static final String FILTER_ID = "region_set";
+    public static final String FILTER_NAME = "Region List";
+    public static final String FILTER_ID = "region_list";
     private static final String REGION_SET_NONE = "None";
 
+    private final RegionController controller;
     private Integer appliedID = null;
 
     private JComboBox regionsCombo;
@@ -65,15 +66,12 @@ public class RegionSetFilterView extends FilterView {
 
     public RegionSetFilterView(int queryID) throws SQLException, RemoteException {
         super(FILTER_NAME, queryID);
+        controller = RegionController.getInstance();
+
         setLayout(new GridBagLayout());
 
         regionsCombo = new JComboBox();
-
-        regionsCombo.addItem(REGION_SET_NONE);
-        RegionSet[] geneLists = getDefaultValues();
-        for (RegionSet set: geneLists) {
-            regionsCombo.addItem(set);
-        }
+        populateCombo();
 
         applyButton = new JButton("Apply");
         applyButton.setEnabled(false);
@@ -99,6 +97,18 @@ public class RegionSetFilterView extends FilterView {
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.EAST;
         add(applyButton, gbc);
+        
+        RegionController.getInstance().addListener(new Listener<RegionEvent>() {
+            @Override
+            public void handleEvent(RegionEvent event) {
+                regionsCombo.removeAllItems();
+                try {
+                    populateCombo();
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Unable to populate region list: %s", ex);
+                }
+            }
+        });
     }
 
     public final void applyFilter(int regionSetID) {
@@ -111,8 +121,12 @@ public class RegionSetFilterView extends FilterView {
         }
     }
 
-    private RegionSet[] getDefaultValues() throws SQLException, RemoteException {
-        return MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId);
+    private void populateCombo() throws SQLException, RemoteException {
+        RegionSet[] sets = controller.getRegionSets();
+        regionsCombo.addItem(REGION_SET_NONE);
+        for (RegionSet set: sets) {
+            regionsCombo.addItem(set);
+        }
     }
 
     @Override
@@ -137,7 +151,7 @@ public class RegionSetFilterView extends FilterView {
                 RegionSet regionSet = (RegionSet)regionsCombo.getSelectedItem();
                 appliedID = regionSet.getID();
 
-                return getConditions(MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, regionSet, Integer.MAX_VALUE));
+                return getConditions(controller.getRegionsInSet(regionSet));
             }
 
             @Override

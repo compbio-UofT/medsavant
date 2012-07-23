@@ -40,6 +40,7 @@ import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.region.RegionController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -125,7 +126,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
             new MedSavantWorker<RegionSet[]>(pageName) {
                 @Override
                 protected RegionSet[] doInBackground() throws Exception {
-                    return MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId);
+                    return RegionController.getInstance().getRegionSets();
                 }
 
                 @Override

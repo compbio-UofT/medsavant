@@ -40,12 +40,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.geneset.GeneSetController;
 import org.ut.biolab.medsavant.importing.BEDFormat;
 import org.ut.biolab.medsavant.importing.FileFormat;
 import org.ut.biolab.medsavant.importing.ImportFilePanel;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.GeneSet;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -78,6 +76,7 @@ public class RegionWizard extends WizardDialog {
     private int numHeaderLines;
     private final boolean importing;
     private GeneSet standardGenes;
+    private final RegionController controller;
     
     private ListViewTablePanel sourceGenesPanel;
     private ListViewTablePanel selectedGenesPanel;
@@ -85,6 +84,7 @@ public class RegionWizard extends WizardDialog {
     public RegionWizard(boolean imp) throws SQLException, RemoteException {
         super(MedSavantFrame.getInstance(), "Region List Wizard", true);
         this.importing = imp;
+        controller = RegionController.getInstance();
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
         
         //add pages
@@ -309,7 +309,7 @@ public class RegionWizard extends WizardDialog {
     
     private boolean validateListName() {
         try {
-            boolean dup = ArrayUtils.contains(MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId), listName);
+            boolean dup = ArrayUtils.contains(controller.getRegionSets(), listName);
             if (dup) {
                 DialogUtils.displayError("Error", "List name already in use.");
             }
@@ -335,7 +335,7 @@ public class RegionWizard extends WizardDialog {
             path = tempFile.getAbsolutePath();
         }
         RemoteInputStream stream = new SimpleRemoteInputStream(new FileInputStream(path)).export();
-        MedSavantClient.RegionSetManager.addRegionSet(LoginController.sessionId, listName, ReferenceController.getInstance().getCurrentReferenceID(), stream, delim, fileFormat, numHeaderLines);
+        controller.addRegionSet(listName, stream, delim, fileFormat, numHeaderLines);
     }
 
     private void fetchGenes() {

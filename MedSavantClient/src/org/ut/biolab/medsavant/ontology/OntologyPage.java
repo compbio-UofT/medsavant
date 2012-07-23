@@ -16,8 +16,6 @@
 
 package org.ut.biolab.medsavant.ontology;
 
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.MedSavantClient;

@@ -18,7 +18,6 @@ package org.ut.biolab.medsavant.region;
 
 import java.util.List;
 
-import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.model.UserLevel;
@@ -32,6 +31,12 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author mfiume
  */
 class RegionDetailedListEditor extends DetailedListEditor {
+    
+    private final RegionController controller;
+
+    public RegionDetailedListEditor() {
+        controller = RegionController.getInstance();
+    }
 
     @Override
     public boolean doesImplementAdding() {
@@ -89,13 +94,12 @@ class RegionDetailedListEditor extends DetailedListEditor {
                     int numCouldntRemove = 0;
 
                     for (Object[] v : items) {
-                        String listName = ((RegionSet) v[0]).getName();
-                        int listID = ((RegionSet) v[0]).getID();
+                        RegionSet set = (RegionSet)v[0];
                         try {
-                            MedSavantClient.RegionSetManager.removeRegionSet(LoginController.sessionId, listID);
+                            controller.removeSet(set.getID());
                         } catch (Throwable ex) {
                             numCouldntRemove++;
-                            ClientMiscUtils.reportError("Could not remove " + listName + ": %s", ex);
+                            ClientMiscUtils.reportError("Could not remove " + set.getName() + ": %s", ex);
                         }
                     }
                     if (numCouldntRemove != items.size()) {

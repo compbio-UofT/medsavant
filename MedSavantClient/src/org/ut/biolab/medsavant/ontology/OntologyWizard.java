@@ -268,11 +268,11 @@ public class OntologyWizard extends WizardDialog {
         try {
             boolean dup = ArrayUtils.contains(MedSavantClient.OntologyManager.getOntologies(LoginController.sessionId), name);
             if (dup) {
-                DialogUtils.displayError("Error", "List name already in use.");
+                DialogUtils.displayError("Error", "Ontology name already in use.");
             }
             return !dup;
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error fetching region list: %s", ex);
+            ClientMiscUtils.reportError("Error fetching ontology list: %s", ex);
             return false;
         }
     }

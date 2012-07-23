@@ -18,8 +18,6 @@ package org.ut.biolab.medsavant.region;
 
 import javax.swing.JPanel;
 
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
@@ -32,11 +30,14 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  */
 public class RegionPage extends SubSectionView {
 
+    private final RegionController controller;
     int importID = 0;
     SplitScreenView view;
+    
 
     public RegionPage(SectionView parent) {
         super(parent);
+        controller = RegionController.getInstance();
     }
 
     @Override
@@ -50,7 +51,7 @@ public class RegionPage extends SubSectionView {
                 new SimpleDetailedListModel("Region List") {
                     @Override
                     public RegionSet[] getData() throws Exception {
-                        return MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId);
+                        return controller.getRegionSets();
                     }
                 },
                 new RegionDetailedView(),

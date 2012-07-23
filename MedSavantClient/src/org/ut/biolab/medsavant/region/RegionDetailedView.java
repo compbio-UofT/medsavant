@@ -29,9 +29,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RangeCondition;
@@ -49,16 +47,17 @@ import org.ut.biolab.medsavant.view.list.DetailedTableView;
  * @author mfiume
  */
 public class RegionDetailedView extends DetailedTableView {
+    
     private static final Log LOG = LogFactory.getLog(RegionDetailedView.class);
 
-    private static final int LIMIT = 500;
-
+    private final RegionController controller;
     private RegionSet selectedRegion;
     private static List<FilterPanelSubItem> filterPanels;
 
 
     public RegionDetailedView() {
         super("", "Multiple lists (%d)", new String[] { "Region", "Chromosome", "Start", "End" });
+        controller = RegionController.getInstance();
     }
 
     @Override
@@ -73,7 +72,7 @@ public class RegionDetailedView extends DetailedTableView {
 
             @Override
             protected GenomicRegion[] doInBackground() throws Exception {
-                return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, selectedRegion, Integer.MAX_VALUE);
+                return controller.getRegionsInSet(selectedRegion);
             }
 
             @Override
@@ -113,7 +112,7 @@ public class RegionDetailedView extends DetailedTableView {
                 public void actionPerformed(ActionEvent e) {
 
                     try {
-                        GenomicRegion[] regions = MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, set, Integer.MAX_VALUE);
+                        GenomicRegion[] regions = controller.getRegionsInSet(selectedRegion);
                         Map<String, List<Range>> rangeMap = GenomicRegion.mergeGenomicRegions(regions);
                         Condition[] results = new Condition[rangeMap.size()];
                         int i = 0;
