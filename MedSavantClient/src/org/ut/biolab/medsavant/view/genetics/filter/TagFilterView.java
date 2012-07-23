@@ -77,8 +77,6 @@ public class TagFilterView extends FilterView {
     public TagFilterView(int queryID) {
         super(FILTER_NAME, queryID);
 
-        System.out.println("Tag Filter View " + this);
-
         setLayout(new BorderLayout());
         setBorder(ViewUtil.getBigBorder());
         setMaximumSize(new Dimension(200, 80));
@@ -155,7 +153,6 @@ public class TagFilterView extends FilterView {
 
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    System.out.println("Clearing tag filter: " + instance);
                     variantTags.clear();
                     ta.setText("");
                     applyButton.setEnabled(true);
