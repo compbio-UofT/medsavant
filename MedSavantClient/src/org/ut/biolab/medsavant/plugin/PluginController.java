@@ -182,27 +182,35 @@ public class PluginController extends Controller {
         return result;
     }
 
-    public void getGeneManiaData(){
-        URL pathToGMData = NetworkUtils.getKnownGoodURL("http://genomesavant.com/serve/data/genemania/gmdata.zip");
-        try {
-            File data= RemoteFileCache.getCacheFile(pathToGMData);
-            System.out.println("data is" + data.getAbsolutePath());
-            ZipFile zipData = new ZipFile(data.getAbsolutePath());
-            Enumeration entries = zipData.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = (ZipEntry) entries.nextElement();
-                if (entry.isDirectory()) {
-                    (new File(entry.getName())).mkdirs();
-                    continue;
+    public void getGeneManiaData() {
+        Runnable r = new Runnable() {
+
+            @Override
+            public void run() {
+                URL pathToGMData = NetworkUtils.getKnownGoodURL("http://genomesavant.com/serve/data/genemania/gmdata.zip");
+                try {
+                    File data = RemoteFileCache.getCacheFile(pathToGMData);
+                    System.out.println("data is" + data.getAbsolutePath());
+                    ZipFile zipData = new ZipFile(data.getAbsolutePath());
+                    Enumeration entries = zipData.entries();
+                    while (entries.hasMoreElements()) {
+                        ZipEntry entry = (ZipEntry) entries.nextElement();
+                        if (entry.isDirectory()) {
+                            (new File(entry.getName())).mkdirs();
+                            continue;
+                        }
+                        System.err.println("Extracting file: " + entry.getName());
+                        copyInputStream(zipData.getInputStream(entry),
+                                new BufferedOutputStream(new FileOutputStream(entry.getName())));
+                    }
+                    zipData.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(PluginController.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                System.err.println("Extracting file: " + entry.getName());
-                copyInputStream(zipData.getInputStream(entry),
-                        new BufferedOutputStream(new FileOutputStream(entry.getName())));
             }
-            zipData.close();
-        } catch (IOException ex) {
-            Logger.getLogger(PluginController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        };
+        Thread t = new Thread (r);
+        t.start();
     }
     private static final void copyInputStream(InputStream in, OutputStream out)
             throws IOException {
