@@ -30,6 +30,7 @@ import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
 /**
@@ -52,7 +53,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     private JPanel kvpPanel;
     private JPanel settingsPanel;
     private boolean updateQueryNeeded;
-    private JButton settingsButton;
+    private JToggleButton settingsButton;
     private JTextField geneLimit;
     private int glimit;
     private ButtonGroup buttonGroup1;
@@ -106,14 +107,14 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
          kvpPanel.add(kvp, BorderLayout.CENTER);
          JPanel currGenePanel = new JPanel();
          JPanel pMessagePanel = new JPanel();
-         settingsPanel = new JPanel();
+         settingsPanel = ViewUtil.getClearPanel();
          progressBar = new JProgressBar();
          progressBar.setVisible(false);
          progressMessage = new JLabel();
          progressMessage.setVisible(false);
-         p = new JPanel();
+         p = ViewUtil.getClearPanel();
          p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
-         settingsButton = new JButton ("Settings");
+         settingsButton = ViewUtil.getTexturedToggleButton("Settings");
          settingsButton.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {

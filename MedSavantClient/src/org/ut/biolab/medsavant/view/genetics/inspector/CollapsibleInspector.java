@@ -23,6 +23,7 @@ import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 
 import org.ut.biolab.medsavant.view.genetics.variantinfo.SubInspector;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
 /**
@@ -30,13 +31,19 @@ import org.ut.biolab.medsavant.view.genetics.variantinfo.SubInspector;
  * @author mfiume
  */
 public abstract class CollapsibleInspector extends JPanel implements Inspector {
-    private final CollapsiblePanes container;
+
+    private final JPanel container;
+    private final CollapsiblePanes panesContainer;
 
     public CollapsibleInspector() {
-        container = new CollapsiblePanes();
-        container.addExpansion();
+
+        container = ViewUtil.getClearPanel();
+        container.setLayout(new BorderLayout());
+
+        panesContainer = new CollapsiblePanes();
+        panesContainer.addExpansion();
         this.setLayout(new BorderLayout());
-        this.add(container,BorderLayout.NORTH);
+        this.add(panesContainer,BorderLayout.NORTH);
     }
 
     @Override
@@ -44,20 +51,20 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
 
     @Override
     public JPanel getContent() {
-        return container;
+        return panesContainer;
     }
 
     protected void addSubInfoPanel(SubInspector ipan) {
 
         // remove the previous expansion
-        container.remove(container.getComponentCount()-1);
+        panesContainer.remove(panesContainer.getComponentCount()-1);
 
         CollapsiblePane p = new CollapsiblePane(ipan.getName());
         p.setStyle(CollapsiblePane.PLAIN_STYLE);
         p.setLayout(new BorderLayout());
         p.add(ipan.getInfoPanel(),BorderLayout.CENTER);
-        container.add(p);
-        container.addExpansion();
+        panesContainer.add(p);
+        panesContainer.addExpansion();
 
     }
 
