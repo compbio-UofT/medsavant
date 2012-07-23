@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/TagFilterView.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/StarredFilterView.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/inspector/VariantInspector.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/NumericFilterView.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/CohortFilterView.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/StringListFilterView.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/GenericFixedFilterView.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/PluginFilterView.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/TabularFilterView.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/region/RegionSetFilterView.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/component/LinkButton.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/util/PathField.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/TablePanel.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/controller/FilterController.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/model/event/FiltersChangedListener.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/GenomeContainer.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/FilterUtils.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/SearchConditionsPanel.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/FilterPanelSubItem.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/SearchBar.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/variantinfo/BasicVariantSubInspector.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/images/IconFactory.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/variantinfo/BasicGeneSubInspector.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/inspector/GeneInspector.java</file>
+        <file>file:/Users/mfiume/NetBeansProjects/MedSavant/medsavant/MedSavantClient/src/org/ut/biolab/medsavant/view/genetics/filter/BooleanFilterView.java</file>
+    </open-files>
+</project-private>
