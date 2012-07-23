@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.genetics.inspector;
 
 import java.util.ArrayList;
@@ -33,8 +32,6 @@ public class VariantInspector extends CollapsibleInspector implements VariantSel
     private static VariantInspector instance;
     private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
     private static VariantRecord record;
-
-    private boolean isShown = true;
 
     public static VariantInspector getInstance() {
         if (instance == null) {
@@ -61,10 +58,9 @@ public class VariantInspector extends CollapsibleInspector implements VariantSel
 
     @Override
     public void variantSelectionChanged(VariantRecord r) {
-        if (isShown) {
-            for (VariantSelectionChangedListener l : listeners) {
-                l.variantSelectionChanged(r);
-            }
+        InspectorPanel.getInstance().switchToVariantInspector();
+        for (VariantSelectionChangedListener l : listeners) {
+            l.variantSelectionChanged(r);
         }
         record = r;
     }

@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
+import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -34,6 +35,8 @@ import com.jidesoft.pane.OutlookTabbedPane;
 import com.jidesoft.pane.event.CollapsiblePaneEvent;
 import com.jidesoft.pane.event.CollapsiblePaneListener;
 import com.jidesoft.plaf.UIDefaultsLookup;
+import java.util.EnumMap;
+import java.util.HashMap;
 import javax.swing.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -130,36 +133,8 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, (JComponent) gp, false, 225);
         genomeView.setToggleBarVisible(false);
 
-        _container = new JTabbedPane();
+        _container = InspectorPanel.getInstance();
 
-        _container.setTabPlacement(JTabbedPane.TOP);
-        _container.setBorder(ViewUtil.getBigBorder());
-        _container.setBackground(ViewUtil.getTertiaryMenuColor());
-
-        /*
-        VariantInfoPanel vpanel = new VariantInfoPanel();
-        SearchInfoPanel spanel = new SearchInfoPanel();
-        GeneInfoPanel gpanel = new GeneInfoPanel();
-        AnalyticsInfoPanel apanel = new AnalyticsInfoPanel();
-        *
-        */
-
-        addTabPanel(VariantInspector.getInstance());
-        addTabPanel(GeneInspector.getInstance());
-
-        //addTabPanel(apanel);
-        //addTabPanel(spanel);
-
-        //_container.addExpansion();
-
-/*
-        addTabPanel(createTabPanel("Variant Inspector", null, vpanel));
-        addTabPanel(createTabPanel("Gene Inspector", null, gpanel));
-        addTabPanel(createTabPanel("Analytics", null, apanel));
-        addTabPanel(createTabPanel("Search", null, spanel));
-
- *
- */
         detailView = new PeekingPanel("Detail", BorderLayout.WEST, _container, false, 380);
         detailView.setToggleBarVisible(false);
 
@@ -169,6 +144,8 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         tablePanel = new TablePanel(getName());
         panel.add(tablePanel, BorderLayout.CENTER);
     }
+
+
 
     @Override
     public void viewDidLoad() {
@@ -204,131 +181,6 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
         updateContents();
     }
 
-    private void addTabPanel(Inspector tabPanel) {
-        _container.addTab(tabPanel.getName(), null, ViewUtil.getClearBorderlessScrollPane(tabPanel.getContent()), tabPanel.getName());
-    }
-
-    /*
-     * public static class VariantInfoPanel extends InfoPanel implements VariantSelectionChangedListener, CollapsiblePaneListener {
-
-        private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
-
-        private boolean isShown;
-        VariantRecord record;
-
-        public VariantInfoPanel() {
-            super("Variant Inspector");
-            this.addSubInfoPanel(new BasicVariantInfoSubPanel());
-            //this.addSubInfoPanel(new BasicGeneInfoSubPanel());
-            TablePanel.addVariantSelectionChangedListener(this);
-            //this.addCollapsiblePaneListener(this);
-        }
-
-        public static void addVariantSelectionChangedListener(VariantSelectionChangedListener l) {
-            listeners.add(l);
-        }
-
-        @Override
-        public void variantSelectionChanged(VariantRecord r) {
-            if (isShown) {
-                for (VariantSelectionChangedListener l : listeners) {
-                    l.variantSelectionChanged(r);
-                }
-            }
-            record = r;
-        }
-
-        @Override
-        public void paneExpanding(CollapsiblePaneEvent cpe) {
-            variantSelectionChanged(record);
-        }
-
-        @Override
-        public void paneExpanded(CollapsiblePaneEvent cpe) {
-            isShown = true;
-        }
-
-        @Override
-        public void paneCollapsing(CollapsiblePaneEvent cpe) {
-        }
-
-        @Override
-        public void paneCollapsed(CollapsiblePaneEvent cpe) {
-            isShown = false;
-        }
-    }
-
-    private static class AnalyticsInfoPanel extends InfoPanel {
-
-        public AnalyticsInfoPanel() {
-            super("Analytics");
-        }
-    }
-    *
-    */
-
-    private class TabPanel extends JPanel {
-
-        Icon _icon;
-        String _title;
-        JComponent _component;
-
-        public TabPanel(String title, Icon icon, JComponent component) {
-            _title = title;
-            _icon = icon;
-            _component = component;
-        }
-
-        public Icon getIcon() {
-            return _icon;
-        }
-
-        public void setIcon(Icon icon) {
-            _icon = icon;
-        }
-
-        public String getTitle() {
-            return _title;
-        }
-
-        public void setTitle(String title) {
-            _title = title;
-        }
-
-        public JComponent getComponent() {
-            return _component;
-        }
-
-        public void setComponent(JComponent component) {
-            _component = component;
-        }
-    }
-
-    private TabPanel createTabPanel(String title, Icon icon, JComponent component) {
-        return new TabPanel(title, icon, component);
-    }
-
-    /*
-    private static class GeneInfoPanel extends InfoPanel {
 
 
-        public GeneInfoPanel() {
-            super("Gene Inspector");
-            //this.addCollapsiblePaneListener(GeneIntersectionGenerator.getInstance());
-
-            this.addSubInfoPanel(new BasicGeneInfoSubPanel());
-//            this.addSubInfoPanel(new GeneManiaInfoSubPanel());
-        }
-
-    }
-
-    private static class SearchInfoPanel extends InfoPanel {
-
-        public SearchInfoPanel() {
-            super("Search");
-            this.addSubInfoPanel(new SearchInfoSubPanel());
-        }
-    }
-    *
-    */
 }

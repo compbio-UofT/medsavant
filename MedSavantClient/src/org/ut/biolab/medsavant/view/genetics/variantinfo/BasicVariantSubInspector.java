@@ -35,6 +35,7 @@ import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.view.genetics.inspector.GeneInspector;
+import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
 import org.ut.biolab.medsavant.view.genetics.inspector.VariantInspector;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -105,6 +106,7 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
                 @Override
                 public void actionPerformed(ActionEvent ae) {
                     GeneInspector.getInstance().setGene((Gene) (geneBox).getSelectedItem());
+                    InspectorPanel.getInstance().switchToGeneInspector();
                 }
             });
 

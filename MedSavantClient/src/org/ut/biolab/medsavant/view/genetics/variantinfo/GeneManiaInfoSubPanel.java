@@ -53,7 +53,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     private JPanel kvpPanel;
     private JPanel settingsPanel;
     private boolean updateQueryNeeded;
-    private JToggleButton settingsButton;
+    private JButton settingsButton;
     private JTextField geneLimit;
     private int glimit;
     private ButtonGroup buttonGroup1;
@@ -114,7 +114,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
          progressMessage.setVisible(false);
          p = ViewUtil.getClearPanel();
          p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
-         settingsButton = ViewUtil.getTexturedToggleButton("Settings");
+         settingsButton = new JButton("Settings");
          settingsButton.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -126,11 +126,13 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
          pMessagePanel.add(progressMessage);
          settingsPanel.setLayout(new BorderLayout());
          settingsPanel.add(settingsButton, BorderLayout.EAST);
-         p.add(currGenePanel);
-         p.add(progressBar);
-         p.add(pMessagePanel);
+
          p.add(kvpPanel);
-         p.add(new javax.swing.JSeparator(JSeparator.HORIZONTAL));
+         p.add(currGenePanel);
+         p.add(pMessagePanel);
+         p.add(progressBar);
+
+         //p.add(new javax.swing.JSeparator(JSeparator.HORIZONTAL));
          p.add(settingsPanel);
          return p;
      }
@@ -600,7 +602,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         progressBar.setVisible(true);
         progressMessage.setVisible(true);
         progressBar.setIndeterminate(true);
-        progressMessage.setText("Getting Related Genes");
+        progressMessage.setText("Querying GeneMANIA for related genes");
 
         Runnable r = new Runnable(){
 
