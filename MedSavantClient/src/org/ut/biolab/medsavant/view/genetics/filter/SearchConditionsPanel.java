@@ -301,7 +301,6 @@ public class SearchConditionsPanel extends JPanel {
 
         //tag filter
         if (!hasSubItem(TagFilterView.FILTER_ID)) {
-            System.out.println("Regularly creating Tag filter view");
             map.get(Category.VARIANT).add(new SimpleFilterPlaceholder(TagFilterView.class));
         }
 
@@ -534,6 +533,7 @@ public class SearchConditionsPanel extends JPanel {
     class SimpleFilterPlaceholder extends FilterPlaceholder {
 
         private final Class wrappedClass;
+        private FilterView fv;
 
         SimpleFilterPlaceholder(Class clazz) {
             wrappedClass = clazz;
@@ -541,7 +541,11 @@ public class SearchConditionsPanel extends JPanel {
 
         @Override
         public FilterView getFilterView() throws Exception {
-            return (FilterView) wrappedClass.getDeclaredConstructor(int.class).newInstance(id);
+            // TODO: this only allows for one instance of any filter view... should be made cleaner
+            if (fv == null) {
+                fv = (FilterView) wrappedClass.getDeclaredConstructor(int.class).newInstance(id);
+            }
+            return fv;
         }
 
         @Override

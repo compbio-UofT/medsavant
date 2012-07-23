@@ -90,6 +90,8 @@ public class NumericFilterView extends FilterView {
     public NumericFilterView(WhichTable t, String col, int queryID, String alias, boolean isDecimal) throws SQLException, RemoteException {
         super(alias, queryID);
 
+        System.out.println("Creating filter for " + col);
+
         this.whichTable = t;
         this.columnName = col;
         this.alias = alias;
