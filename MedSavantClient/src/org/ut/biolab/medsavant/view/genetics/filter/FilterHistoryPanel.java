@@ -78,7 +78,7 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
         });
         FilterController.addFilterListener(this);
 
-        this.setBackground(new Color(100,100,100));
+        //this.setBackground(new Color(100,100,100));
         this.setBorder(ViewUtil.getMediumBorder());
 
         this.setMinimumSize(new Dimension(200,300));

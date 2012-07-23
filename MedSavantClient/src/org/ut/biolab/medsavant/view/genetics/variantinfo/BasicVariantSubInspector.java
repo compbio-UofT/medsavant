@@ -108,9 +108,10 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
                 }
             });
 
+            p.setAdditionalColumn(KEY_GENES, 0, geneInspectorButton);
+
             JLabel l = new JLabel("This will eventually show a chart");
             p.setDetailComponent(KEY_QUAL, l);
-
 
             final JToggleButton button = ViewUtil.getTexturedToggleButton("SHOW");
             ViewUtil.makeSmall(button);

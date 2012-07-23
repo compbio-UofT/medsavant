@@ -31,7 +31,11 @@ public class EntrezButton extends JButton{
     static String charset = "UTF-8";
 
     public EntrezButton(final String geneName){
-        super("Entrez", IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
+        super("NCBI", IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
+
+        ViewUtil.makeSmall(this);
+        this.putClientProperty("JButton.buttonType", "textured");
+
         this.setVerticalTextPosition(SwingConstants.CENTER);
         this.setHorizontalTextPosition(SwingConstants.LEFT);
         this.setToolTipText("Lookup Gene on Entrez");
@@ -51,6 +55,6 @@ public class EntrezButton extends JButton{
                }
            }
        });
-                                
+
     }
 }

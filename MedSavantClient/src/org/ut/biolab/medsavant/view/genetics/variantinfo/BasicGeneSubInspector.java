@@ -37,7 +37,6 @@ public class BasicGeneSubInspector extends SubInspector implements GeneSelection
     private static String KEY_START = "Start";
     private static String KEY_END = "End";
     private KeyValuePairPanel panel;
-    //private JComboBox geneBox;
 
     public BasicGeneSubInspector() {
         //VariantInspector.addVariantSelectionChangedListener(this);

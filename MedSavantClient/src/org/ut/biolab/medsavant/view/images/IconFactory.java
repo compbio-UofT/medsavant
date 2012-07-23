@@ -85,7 +85,7 @@ public class IconFactory {
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
             case INSPECTOR:
-                return getIcon(iconroot + "inspector.png");
+                return getIcon(iconroot + "inspector2.png");
             case CLEAR:
                 return getIcon(iconroot + "clear.png");
              case CONFIGURE:
