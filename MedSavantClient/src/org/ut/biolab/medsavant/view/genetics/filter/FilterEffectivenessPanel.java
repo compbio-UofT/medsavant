@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.ProgressPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
@@ -45,11 +46,11 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
 
     private static final Log LOG = LogFactory.getLog(FilterEffectivenessPanel.class);
 
-    long numLeft = 1;
-    long numTotal = 1;
+    int numLeft = 1;
+    int numTotal = 1;
     private int waitCounter = 0;
 
-    private final ProgressPanel pp;
+    private final ProgressPanel progressPanel;
     private final JLabel labelVariantsRemaining;
     private WaitPanel waitPanel;
     private JPanel panel;
@@ -65,17 +66,17 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
 
-        setBorder(ViewUtil.getMediumBorder());
-
         setLayout(new GridBagLayout());
-
-        panel = ViewUtil.getClearPanel();
-        panel.setLayout(new BorderLayout());
-        add(panel, gbc, JLayeredPane.DEFAULT_LAYER);
 
         waitPanel = new WaitPanel("Applying Filters");
         waitPanel.setVisible(false);
         add(waitPanel, gbc, JLayeredPane.DRAG_LAYER);
+
+        panel = ViewUtil.getClearPanel();
+        panel.setLayout(new BorderLayout());
+        panel.setBorder(ViewUtil.getMediumBorder());
+        panel.setPreferredSize(waitPanel.getPreferredSize());
+        add(panel, gbc, JLayeredPane.DEFAULT_LAYER);
 
         labelVariantsRemaining = ViewUtil.getDetailTitleLabel("");
         labelVariantsRemaining.setForeground(Color.white);
@@ -91,9 +92,9 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
 
         panel.add(infoPanel,BorderLayout.NORTH);
 
-        pp = new ProgressPanel();
+        progressPanel = new ProgressPanel();
         //pp.setBorder(ViewUtil.getBigBorder());
-        panel.add(pp, BorderLayout.SOUTH);
+        panel.add(progressPanel, BorderLayout.SOUTH);
 
         FilterController.addFilterListener(this);
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
@@ -105,75 +106,68 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
             }
         });
 
-        Thread t = new Thread(){
-            @Override
-            public void run() {
-                setMaxValues();
-            }
-        };
-        t.start();
+        setMaxValues();
     }
 
     @Override
     public void filtersChanged() {
 
-        //final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-        //        "Applying Filter",
-        //        "Filter is being applied. Please wait.",
-        //        true);
-
-        Thread thread = new Thread() {
+        showWaitCard();
+        
+        new MedSavantWorker<Integer>("Filter") {
 
             @Override
-            public void run() {
-                showWaitCard();
-                try {
-                    int numLeft = ResultController.getInstance().getFilteredVariantCount();
-                    showShowCard();
-                    //dialog.close();
-                    setNumLeft(numLeft);
-                } catch (Exception ex) {
-                    showShowCard();
-                    LOG.error("Error getting filtered variant count.", ex);
-                }
-
+            protected Integer doInBackground() throws Exception {
+                return ResultController.getInstance().getFilteredVariantCount();
             }
-        };
+            
+            @Override
+            protected void showProgress(double fraction) {
+            }
 
-        thread.start();
+            @Override
+            protected void showSuccess(Integer result) {
+                showShowCard();
+                setNumLeft(result);
+            }
 
-
-        //dialog.setVisible(true);
-
+            @Override
+            protected void showFailure(Throwable ex) {
+                showShowCard();
+                LOG.error("Error getting filtered variant count.", ex);
+            }
+        }.execute();
     }
 
     private void setNumLeft(int num) {
         numLeft = num;
         refreshProgressLabel();
 
-        pp.animateToValue(num);
+        progressPanel.animateToValue(num);
     }
 
     private void setMaxValues() {
-
         labelVariantsRemaining.setText("Calculating...");
-        updateUI();
 
-        int maxRecords = -1;
+        new MedSavantWorker<Integer>("Filter") {
+            @Override
+            protected void showProgress(double fraction) {
+            }
 
-        try {
-            maxRecords = ResultController.getInstance().getTotalVariantCount();
-        } catch (Exception ex) {
-            LOG.error("Error getting variant count.", ex);
-        }
+            @Override
+            protected void showSuccess(Integer result) {
+                numTotal = result;
+                progressPanel.setMaxValue(numTotal);
+                progressPanel.setToValue(numTotal);
+                setNumLeft(numTotal);
+            }
 
-        numTotal = maxRecords;
+            @Override
+            protected Integer doInBackground() throws Exception {
+                return ResultController.getInstance().getTotalVariantCount();
+            }
+        }.execute();
 
-        if (maxRecords != -1) {
-            pp.setMaxValue(maxRecords);
-            pp.setToValue(maxRecords);
-            setNumLeft(maxRecords);
-        }
     }
 
     public synchronized void showWaitCard() {
