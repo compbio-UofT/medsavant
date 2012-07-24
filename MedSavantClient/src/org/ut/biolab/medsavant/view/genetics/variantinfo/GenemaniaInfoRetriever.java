@@ -28,6 +28,7 @@ import org.genemania.plugin.data.lucene.LuceneDataSetFactory;
 import org.genemania.plugin.model.SearchOptions;
 import org.genemania.type.CombiningMethod;
 import org.genemania.util.NullProgressReporter;
+import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.xml.sax.SAXException;
 /**
  *
@@ -35,7 +36,7 @@ import org.xml.sax.SAXException;
  */
 public class GenemaniaInfoRetriever {
     private String geneName;
-    private final String DATA_PATH= "gmdata";
+    private final String DATA_PATH= DirectorySettings.getCacheDirectory().getAbsolutePath()+"\\" + "gmdata";
     private int geneLimit;
     private CombiningMethod combiningMethod;
     private Map<InteractionNetworkGroup, Collection<InteractionNetwork>> networks;
