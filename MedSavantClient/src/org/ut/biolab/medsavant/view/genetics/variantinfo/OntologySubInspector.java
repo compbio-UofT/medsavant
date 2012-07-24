@@ -66,6 +66,7 @@ public class OntologySubInspector extends SubInspector implements GeneSelectionC
 
             termBox = new JList();
             termBox.setFixedCellHeight(15);
+            termBox.setFixedCellWidth(10);
             termBox.setVisibleRowCount(12);
             termBox.setFont(termBox.getFont().deriveFont(9.0f));
             termBox.addListSelectionListener(new ListSelectionListener() {
@@ -73,12 +74,12 @@ public class OntologySubInspector extends SubInspector implements GeneSelectionC
                 public void valueChanged(ListSelectionEvent lse) {
                     linkButton.setEnabled(lse.getFirstIndex() >= 0);
                 }
-                
+
             });
             termScroller = new JScrollPane(termBox, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             noTermsLabel = new JLabel("No matching terms.");
             noTermsLabel.setFont(KeyValuePairPanel.KEY_FONT);
-            
+
             linkButton = ViewUtil.getTexturedButton("Link", IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
             linkButton.setToolTipText("Lookup ontology term");
             linkButton.addActionListener(new ActionListener() {
@@ -103,7 +104,7 @@ public class OntologySubInspector extends SubInspector implements GeneSelectionC
                     }
                 }
             });
-            
+
             GridBagConstraints gbc = getContentConstraints();
             gbc.gridx = 0;
             gbc.weightx = 0.0;
@@ -165,7 +166,7 @@ public class OntologySubInspector extends SubInspector implements GeneSelectionC
             panel.add(noTermsLabel, gbc);
         }
     }
-    
+
     private GridBagConstraints getContentConstraints() {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 1;

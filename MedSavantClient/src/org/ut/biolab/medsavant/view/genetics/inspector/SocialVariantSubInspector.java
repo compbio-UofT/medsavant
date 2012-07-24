@@ -2,16 +2,14 @@ package org.ut.biolab.medsavant.view.genetics.inspector;
 
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JButton;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.*;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.Settings;
@@ -21,6 +19,7 @@ import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.SQLUtils;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.SubInspector;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -38,11 +37,29 @@ public class SocialVariantSubInspector extends SubInspector {
 
     @Override
     public JPanel getInfoPanel() {
-        JPanel p = new JPanel();
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(p);
 
-        JButton b = createStarVariantsItem();
-        p.add(b);
+        //JButton b = createStarVariantsItem();
+        //p.add(ViewUtil.alignLeft(b));
 
+        final JTextArea ta = new JTextArea();
+        ta.setBorder(ViewUtil.getTinyLineBorder());
+        ta.setRows(3);
+        p.add(ta);
+
+        JButton submit = new JButton("Submit");
+        ViewUtil.makeSmall(submit);
+        p.add(ViewUtil.alignRight(submit));
+
+        submit.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                ta.setText("");
+            }
+
+        });
 
         return p;
     }

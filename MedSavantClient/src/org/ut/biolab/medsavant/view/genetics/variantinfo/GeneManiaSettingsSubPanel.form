@@ -243,6 +243,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Predicted"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="predictActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JCheckBox" name="pi">
       <Properties>

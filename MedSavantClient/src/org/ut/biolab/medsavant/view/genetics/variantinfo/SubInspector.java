@@ -29,6 +29,5 @@ public abstract class SubInspector {
 
     public abstract String getName();
     public abstract JPanel getInfoPanel();
-    public boolean canDisplayFor(VariantRecord r) { return true; }
 
 }

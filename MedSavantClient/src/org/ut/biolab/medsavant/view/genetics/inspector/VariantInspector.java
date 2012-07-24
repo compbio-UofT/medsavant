@@ -15,13 +15,19 @@
  */
 package org.ut.biolab.medsavant.view.genetics.inspector;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Box;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.genetics.TablePanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.BasicVariantSubInspector;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
  *
@@ -41,9 +47,30 @@ public class VariantInspector extends CollapsibleInspector implements VariantSel
     }
 
     private VariantInspector() {
+
+        JPanel messagePanel = new JPanel();
+        //messagePanel.setBackground(Color.white);
+        messagePanel.setBorder(ViewUtil.getHugeBorder());
+        ViewUtil.applyVerticalBoxLayout(messagePanel);
+
+        JLabel h1 = new JLabel("No Variant Selected");
+        h1.setFont(ViewUtil.getMediumTitleFont());
+
+        String m = "<html><div style=\"text-align: center;\">Choose one from the list on the left</div></html>";
+        JLabel h2 = new JLabel(m);
+        h2.setPreferredSize(new Dimension(190,300));
+        h2.setMinimumSize(new Dimension(190,300));
+        h2.setBackground(Color.red);
+
+        messagePanel.add(ViewUtil.center(h1));
+        messagePanel.add(Box.createVerticalStrut(10));
+        messagePanel.add(ViewUtil.center(h2));
+
+        this.setMessage(messagePanel);
+
         TablePanel.addVariantSelectionChangedListener(this);
-        this.addSubInfoPanel(new BasicVariantSubInspector());
-        this.addSubInfoPanel(new SocialVariantSubInspector());
+        this.addSubInspector(new BasicVariantSubInspector());
+        this.addSubInspector(new SocialVariantSubInspector(),true);
         //this.addSubInfoPanel(new BasicGeneInfoSubPanel());
     }
 
@@ -58,6 +85,11 @@ public class VariantInspector extends CollapsibleInspector implements VariantSel
 
     @Override
     public void variantSelectionChanged(VariantRecord r) {
+        if (r == null) {
+            this.switchToMessage();
+        } else {
+            this.switchToPanes();
+        }
         InspectorPanel.getInstance().switchToVariantInspector();
         for (VariantSelectionChangedListener l : listeners) {
             l.variantSelectionChanged(r);

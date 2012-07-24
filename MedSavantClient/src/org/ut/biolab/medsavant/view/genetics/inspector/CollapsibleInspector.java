@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.genetics.inspector;
 
 import java.awt.BorderLayout;
@@ -21,10 +20,14 @@ import javax.swing.JPanel;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import java.awt.CardLayout;
+import java.beans.PropertyVetoException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JLabel;
 
 import org.ut.biolab.medsavant.view.genetics.variantinfo.SubInspector;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
-
 
 /**
  *
@@ -34,16 +37,47 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
 
     private final JPanel container;
     private final CollapsiblePanes panesContainer;
+    private final JPanel messageContainer;
+
+    final static String MESSAGEPANEL = "msg";
+    final static String PANESPANEL = "panes";
 
     public CollapsibleInspector() {
 
         container = ViewUtil.getClearPanel();
-        container.setLayout(new BorderLayout());
+        container.setLayout(new CardLayout());
+
+        messageContainer = ViewUtil.getClearPanel();
+        messageContainer.setBorder(ViewUtil.getBigBorder());
+        messageContainer.setLayout(new BorderLayout());
 
         panesContainer = new CollapsiblePanes();
         panesContainer.addExpansion();
+
         this.setLayout(new BorderLayout());
-        this.add(panesContainer,BorderLayout.NORTH);
+        this.add(container, BorderLayout.CENTER);
+
+        container.add(panesContainer,PANESPANEL);
+        container.add(messageContainer,MESSAGEPANEL);
+
+        switchToMessage();
+    }
+
+    public final void switchToMessage() {
+        System.out.println("Switching to message");
+        CardLayout cl = (CardLayout)(container.getLayout());
+        cl.show(container, MESSAGEPANEL);
+    }
+
+    public void setMessage(JPanel msg) {
+        messageContainer.removeAll();
+        messageContainer.add(msg,BorderLayout.CENTER);
+    }
+
+    public final void switchToPanes() {
+        System.out.println("Switching to panes");
+        CardLayout cl = (CardLayout)(container.getLayout());
+        cl.show(container, PANESPANEL);
     }
 
     @Override
@@ -51,21 +85,29 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
 
     @Override
     public JPanel getContent() {
-        return panesContainer;
+        return this;
     }
 
-    protected void addSubInfoPanel(SubInspector ipan) {
+     protected void addSubInspector(SubInspector ipan) {
+         addSubInspector(ipan,false);
+     }
+
+    protected void addSubInspector(SubInspector ipan, boolean collapsed) {
 
         // remove the previous expansion
-        panesContainer.remove(panesContainer.getComponentCount()-1);
+        panesContainer.remove(panesContainer.getComponentCount() - 1);
 
         CollapsiblePane p = new CollapsiblePane(ipan.getName());
+        try {
+            p.setCollapsed(collapsed);
+        } catch (PropertyVetoException ex) {
+        }
         p.setStyle(CollapsiblePane.PLAIN_STYLE);
         p.setLayout(new BorderLayout());
-        p.add(ipan.getInfoPanel(),BorderLayout.CENTER);
+        p.add(ipan.getInfoPanel(), BorderLayout.CENTER);
         panesContainer.add(p);
         panesContainer.addExpansion();
 
-    }
 
+    }
 }

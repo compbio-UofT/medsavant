@@ -115,6 +115,11 @@ public class GeneManiaSettingsSubPanel extends javax.swing.JFrame {
         path.setText("Pathway interactions");
 
         predict.setText("Predicted");
+        predict.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                predictActionPerformed(evt);
+            }
+        });
 
         pi.setText("Physical interactions");
         pi.addActionListener(new java.awt.event.ActionListener() {
@@ -351,6 +356,10 @@ public class GeneManiaSettingsSubPanel extends javax.swing.JFrame {
     private void mfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mfActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_mfActionPerformed
+
+    private void predictActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_predictActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_predictActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
