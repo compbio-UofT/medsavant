@@ -65,13 +65,14 @@ public class SocialVariantSubInspector extends SubInspector implements VariantSe
 
                 List<StarredVariant> list = new ArrayList<StarredVariant>();
 
-                StarredVariant sv = new StarredVariant(
+                /*StarredVariant sv = new StarredVariant(
                         selectedVariant.getFileID(),
                         selectedVariant.getUploadID(),
                         selectedVariant.getVariantID(),
                             LoginController.getInstance().getUserName(),
                             ta.getText(),
                             SQLUtils.getCurrentTimestamp());
+                            
 
                 list.add(sv);
                 try {
@@ -81,6 +82,8 @@ public class SocialVariantSubInspector extends SubInspector implements VariantSe
                 } catch (RemoteException ex) {
                     Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                * 
+                */
 
                 ta.setText("");
             }
