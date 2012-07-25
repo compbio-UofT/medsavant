@@ -9,15 +9,20 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.Settings;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.StarredVariant;
+import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.SQLUtils;
+import org.ut.biolab.medsavant.vcf.VariantRecord;
+import org.ut.biolab.medsavant.view.genetics.TablePanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.SubInspector;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -25,9 +30,12 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class SocialVariantSubInspector extends SubInspector {
+public class SocialVariantSubInspector extends SubInspector implements VariantSelectionChangedListener {
+    private VariantRecord selectedVariant;
+    private final JTextArea ta = new JTextArea();
 
     public SocialVariantSubInspector() {
+        TablePanel.addVariantSelectionChangedListener(this);
     }
 
     @Override
@@ -40,10 +48,6 @@ public class SocialVariantSubInspector extends SubInspector {
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(p);
 
-        //JButton b = createStarVariantsItem();
-        //p.add(ViewUtil.alignLeft(b));
-
-        final JTextArea ta = new JTextArea();
         ta.setBorder(ViewUtil.getTinyLineBorder());
         ta.setRows(3);
         p.add(ta);
@@ -56,6 +60,28 @@ public class SocialVariantSubInspector extends SubInspector {
 
             @Override
             public void actionPerformed(ActionEvent ae) {
+
+                System.out.println("Commenting on " + selectedVariant);
+
+                List<StarredVariant> list = new ArrayList<StarredVariant>();
+
+                StarredVariant sv = new StarredVariant(
+                        selectedVariant.getFileID(),
+                        selectedVariant.getUploadID(),
+                        selectedVariant.getVariantID(),
+                            LoginController.getInstance().getUserName(),
+                            ta.getText(),
+                            SQLUtils.getCurrentTimestamp());
+
+                list.add(sv);
+                try {
+                    MedSavantClient.VariantManager.addStarredVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), list);
+                } catch (SQLException ex) {
+                    Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (RemoteException ex) {
+                    Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
                 ta.setText("");
             }
 
@@ -181,6 +207,12 @@ public class SocialVariantSubInspector extends SubInspector {
         });
 
         return item;
+    }
+
+    @Override
+    public void variantSelectionChanged(VariantRecord r) {
+        this.selectedVariant = r;
+        ta.setText("");
     }
 
 

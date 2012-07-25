@@ -242,6 +242,8 @@ public class TablePanel extends JLayeredPane {
                         Object[] row = rows.get(0);
 
                         VariantRecord r = new VariantRecord(
+                                (Integer)   row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID],
+                                (Integer)   row[DefaultVariantTableSchema.INDEX_OF_FILE_ID],
                                 (Integer)   row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID],
                                 (Integer)   ReferenceController.getInstance().getCurrentReferenceID(),
                                 (Integer)   0, // pipeline ID
