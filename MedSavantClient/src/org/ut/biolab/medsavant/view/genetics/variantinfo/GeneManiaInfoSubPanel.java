@@ -25,6 +25,9 @@ import javax.swing.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.genemania.type.CombiningMethod;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
@@ -629,8 +632,13 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                 currGene = itr.next();
                                 final org.ut.biolab.medsavant.model.Gene finalGene = currGene;
                                 kvp.addKey(Integer.toString(i));
-                                kvp.setValue(Integer.toString(i), currGene.getName());
-                                JButton geneLinkButton = new EntrezButton(currGene.getName());
+                                JLabel geneName = new JLabel(currGene.getName());
+                                EntrezButton geneLinkButton = new EntrezButton(currGene.getName());
+                                Document doc = Jsoup.parse(geneLinkButton.getURL(), 5*1000);
+                                Element e= doc.select("title").first();
+                                String description = e.ownText().replaceAll(currGene.getName(), "").replaceAll("\\[Homo sapiens\\] - Gene - NCBI", "").trim();
+                                geneName.setToolTipText(description);
+                                kvp.setValue(Integer.toString(i), geneName);
                                 JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
                                 geneInspectorButton.setToolTipText("Inspect this gene");
                                 geneInspectorButton.addActionListener(new ActionListener() {
