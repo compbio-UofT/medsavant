@@ -30,6 +30,9 @@ import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
+import org.ut.biolab.medsavant.view.genetics.inspector.GeneInspector;
+import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
+import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
@@ -596,7 +599,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         kvpPanel.removeAll();
         kvpPanel.invalidate();
         kvpPanel.updateUI();
-        kvp = new KeyValuePairPanel(3);
+        kvp = new KeyValuePairPanel(4);
         kvp.setKeysVisible(false);
         kvpPanel.add(kvp);
         progressBar.setVisible(true);
@@ -624,10 +627,23 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                             int i = 1;
                             while (itr.hasNext()) {
                                 currGene = itr.next();
+                                final org.ut.biolab.medsavant.model.Gene finalGene = currGene;
                                 kvp.addKey(Integer.toString(i));
                                 kvp.setValue(Integer.toString(i), currGene.getName());
                                 JButton geneLinkButton = new EntrezButton(currGene.getName());
-                                kvp.setAdditionalColumn(Integer.toString(i), 0, geneLinkButton);
+                                JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
+                                geneInspectorButton.setToolTipText("Inspect this gene");
+                                geneInspectorButton.addActionListener(new ActionListener() {
+
+                                    @Override
+                                    public void actionPerformed(ActionEvent ae) {
+                                        GeneInspector.getInstance().setGene(finalGene);
+                                        InspectorPanel.getInstance().switchToGeneInspector();
+                                    }
+                                });
+
+                                kvp.setAdditionalColumn(Integer.toString(i), 0, geneInspectorButton);
+                                kvp.setAdditionalColumn(Integer.toString(i), 1, geneLinkButton);
                                 i++;
                             }
                             currSizeOfArray =i-1;
@@ -642,10 +658,23 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                             int i = 1;
                             while (itr.hasNext()) {
                                 currGene = itr.next();
+                                final org.ut.biolab.medsavant.model.Gene finalGene = new GeneSetFetcher().getGene(currGene);
                                 kvp.addKey(Integer.toString(i));
                                 kvp.setValue(Integer.toString(i), currGene);
                                 JButton geneLinkButton = new EntrezButton(currGene);
-                                kvp.setAdditionalColumn(Integer.toString(i), 0, geneLinkButton);
+                                JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
+                                geneInspectorButton.setToolTipText("Inspect this gene");
+                                geneInspectorButton.addActionListener(new ActionListener() {
+
+                                    @Override
+                                    public void actionPerformed(ActionEvent ae) {
+                                        GeneInspector.getInstance().setGene(finalGene);
+                                        InspectorPanel.getInstance().switchToGeneInspector();
+                                    }
+                                });
+
+                                kvp.setAdditionalColumn(Integer.toString(i), 0, geneInspectorButton);
+                                kvp.setAdditionalColumn(Integer.toString(i), 1, geneLinkButton);
                                 i++;
                             }
                             currSizeOfArray =i-1;

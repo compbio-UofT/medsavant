@@ -88,10 +88,14 @@ public class GeneSetFetcher {
         itr.next();//skip the first one which is the queried gene itself
         while (itr.hasNext()){
             String name = itr.next();
-            currGene = geneDictionary.get(name);
+            currGene = getGene(name);
             if (currGene!= null)
                 genes.add(currGene);
         }
         return genes;
+    }
+    
+    public Gene getGene(String geneName){
+        return geneDictionary.get(geneName);
     }
 }
