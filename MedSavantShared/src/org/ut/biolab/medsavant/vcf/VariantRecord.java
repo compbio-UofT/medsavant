@@ -167,6 +167,8 @@ public class VariantRecord implements Serializable {
     }
 
     public VariantRecord(
+            int uploadID,
+            int fileID,
             int variantID,
             int genomeID,
             int pipelineID,
@@ -181,6 +183,8 @@ public class VariantRecord implements Serializable {
             String customInfo,
             Object[] customFields
             ){
+        this.uploadID = uploadID;
+        this.fileID = fileID;
         this.variantID = variantID;
         this.genomeID = genomeID;
         this.pipelineID = pipelineID;
@@ -360,6 +364,21 @@ public class VariantRecord implements Serializable {
         }
 
         return values;
+    }
+
+    public int getUploadID(){
+        return uploadID;
+    }
+
+    public void setUploadIDID(int uploadID){
+        this.uploadID = uploadID;
+    }
+    public int getFileID(){
+        return fileID;
+    }
+
+    public void setFileID(int fileID){
+        this.fileID = fileID;
     }
 
     public int getVariantID(){
