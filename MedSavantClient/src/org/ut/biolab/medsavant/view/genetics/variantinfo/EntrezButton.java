@@ -63,7 +63,7 @@ public class EntrezButton extends JButton{
         String baseUrl1 = "http://www.ncbi.nlm.nih.gov/gene?term=";
         String baseUrl2 = "http://www.ncbi.nlm.nih.gov";
         URL url = new URL(baseUrl1 + URLEncoder.encode(geneName, charset));
-        Document doc = Jsoup.parse(url, 3 * 1000);
+        Document doc = Jsoup.parse(url, 20 * 1000);
         Element link = doc.select("div.rslt:has(em:contains(Homo))").first();
         return new URL(baseUrl2 + link.select("a").attr("href"));
     }

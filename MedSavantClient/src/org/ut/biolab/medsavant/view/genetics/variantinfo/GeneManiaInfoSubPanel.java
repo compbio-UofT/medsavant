@@ -617,9 +617,22 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                 boolean setMsgOff = true;
                 if (!Thread.interrupted()){
                 try {
-                    genemania.setGene(gene.getName());
+                    List<String> geneNames = new ArrayList();
+                    geneNames.add(gene.getName());
+                    List<String> notInGenemania = new ArrayList<String> (geneNames); 
+                    notInGenemania.removeAll(GenemaniaInfoRetriever.getValidGenes(geneNames));
+                    geneNames = GenemaniaInfoRetriever.getValidGenes(geneNames);
+                    genemania.setGenes(geneNames);
+                    if(notInGenemania.size()>0){
+                        String message = "Following gene(s) not found in GeneMANIA: ";
+                        for(String invalidGene: notInGenemania){
+                            message+="\n"+invalidGene;
+                        }
+                        progressMessage.setText(message);
+                        setMsgOff = false;
+                    }
                     GeneSetFetcher geneSetFetcher = new GeneSetFetcher();
-                    if (genemania.validGene()) {
+                    if (genemania.getGenes().size()>0) {
                         if(rankByVarFreq){
                             Iterator<org.ut.biolab.medsavant.model.Gene> itr = geneSetFetcher.getGenesByNumVariants(genemania.getRelatedGeneNamesByScore()).iterator();
                             org.ut.biolab.medsavant.model.Gene currGene;
@@ -634,7 +647,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                 kvp.addKey(Integer.toString(i));
                                 JLabel geneName = new JLabel(currGene.getName());
                                 EntrezButton geneLinkButton = new EntrezButton(currGene.getName());
-                                Document doc = Jsoup.parse(geneLinkButton.getURL(), 5*1000);
+                                Document doc = Jsoup.parse(geneLinkButton.getURL(), 20*1000);
                                 Element e= doc.select("title").first();
                                 String description = e.ownText().replaceAll(currGene.getName(), "").replaceAll("\\[Homo sapiens\\] - Gene - NCBI", "").trim();
                                 geneName.setToolTipText(description);
@@ -688,10 +701,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                             currSizeOfArray =i-1;
                         }
                     }
-                    else{
-                        progressMessage.setText("Gene not found in GeneMANIA");
-                        setMsgOff = false;
-                    }
+                    
                 } catch (InterruptedException e){
 
                 } catch (Exception ex) {

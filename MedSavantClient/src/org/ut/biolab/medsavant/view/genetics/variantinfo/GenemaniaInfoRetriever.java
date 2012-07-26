@@ -6,6 +6,7 @@ package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
 import java.io.File;
 import java.util.*;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 import org.genemania.domain.Gene;
 import org.genemania.domain.InteractionNetwork;
@@ -35,15 +36,14 @@ import org.xml.sax.SAXException;
  * @author khushi
  */
 public class GenemaniaInfoRetriever {
-    private String geneName;
+    private List<String> genes;
     private final String DATA_PATH= DirectorySettings.getCacheDirectory().getAbsolutePath()+"\\" + "gmdata";
     private int geneLimit;
     private CombiningMethod combiningMethod;
     private Map<InteractionNetworkGroup, Collection<InteractionNetwork>> networks;
     private DataSetManager dataSetManager;
-    private DataSet data;
-    private Organism human;
-    private Gene gene;
+    private static DataSet data;
+    private static Organism human;
     private Mania2 mania;
     private DataCache cache;
     private NetworkUtils networkUtils;
@@ -54,8 +54,17 @@ public class GenemaniaInfoRetriever {
              initialize();
     }
 
-    public void setGene(String geneName){
-        this.geneName = geneName;
+    //returns invalid genes that were not set
+    public void setGenes(List<String> geneNames){
+        try {
+            this.genes = getValidGenes(geneNames);
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(GenemaniaInfoRetriever.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+    }
+    
+    public List<String> getGenes(){
+        return genes;
     }
 
     public void setGeneLimit(int geneLimit){
@@ -94,9 +103,7 @@ public class GenemaniaInfoRetriever {
 		EnrichmentEngineRequestDto enrichmentRequest = createEnrichmentRequest(response);
 		EnrichmentEngineResponseDto enrichmentResponse = computeEnrichment(enrichmentRequest);
 
-		List<String> queryGenes = new ArrayList<String>();
-                queryGenes.add(geneName);
-		SearchOptions options = networkUtils.createSearchOptions(human, request, response, enrichmentResponse, data, queryGenes);
+		SearchOptions options = networkUtils.createSearchOptions(human, request, response, enrichmentResponse, data, genes);
 		return options;
     }
 
@@ -135,7 +142,9 @@ public class GenemaniaInfoRetriever {
 		request.setOrganismId(human.getId());
                 request.setInteractionNetworks(collapseNetworks(networks));
 		Set<Long> nodes = new HashSet<Long>();
-                nodes.add(data.getCompletionProvider(human).getNodeId(geneName));
+                for(String geneName: genes){
+                    nodes.add(data.getCompletionProvider(human).getNodeId(geneName));
+                }
                 request.setPositiveNodes(nodes);
 		request.setLimitResults(geneLimit);
 		request.setCombiningMethod(combiningMethod);
@@ -213,11 +222,21 @@ public class GenemaniaInfoRetriever {
         return networks;
     }
 
-    public boolean validGene() throws SAXException, DataStoreException, ApplicationException{
-         gene = data.getCompletionProvider(human).getGene(geneName);
-         if (gene==null)
-                 return false;
-         return true;
+    public static List<String> getValidGenes(List<String> genes) throws SAXException, DataStoreException, ApplicationException{
+        List<String> validGenes = new ArrayList();
+        for (String geneName: genes){
+            if (validGene(geneName))
+                validGenes.add(geneName);
+        }
+        return validGenes;
+    }
+    
+    private static boolean validGene(String geneName) throws SAXException, DataStoreException, ApplicationException{
+        Gene gene = data.getCompletionProvider(human).getGene(geneName);
+        if (gene==null)
+           return false;
+        return true;
+        
      }
 
      private Organism getHumanOrganism(DataSet data) throws DataStoreException{
@@ -233,25 +252,4 @@ public class GenemaniaInfoRetriever {
         }
         return null;
      }
-
-     /*public static void main (String[] args){
-         GenemaniaInfoRetriever g= new GenemaniaInfoRetriever();
-         try{
-             if (g.validGene()){
-             ListIterator<String> itr = g.getRelatedGeneNamesByScore().listIterator();
-             while (itr.hasNext())
-                 System.out.println(itr.next());
-             System.out.println();
-             System.out.println();
-             GeneSetFetcher geneSetFetcher = new GeneSetFetcher();
-             ListIterator<org.ut.biolab.medsavant.model.Gene> litr= geneSetFetcher.getGenesByNumVariants(g.getRelatedGeneNamesByScore()).listIterator();
-             while (litr.hasNext())
-                 System.out.println(litr.next().getName());
-
-             }
-         }
-         catch (Exception e){
-             System.err.println(e.getMessage());
-         }
-     }*/
 }
