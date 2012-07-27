@@ -62,12 +62,12 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         conn.createStatement().execute("CREATE DATABASE " + dbName);
         conn.close();
 
-        
+
         ConnectionController.switchDatabases(sessID, dbName); //closes all connections
         conn = ConnectionController.connectPooled(sessID);
 
         UserManager userMgr = UserManager.getInstance();
-        
+
         // Grant the admin user privileges first so that they can give grants to everybody else.
         userMgr.grantPrivileges(sessID, adminName, UserLevel.ADMIN);
 
@@ -76,7 +76,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         addDefaultReferenceGenomes(sessID);
         addDBSettings(sessID, versionString);
         populateGenes(sessID);
-        
+
         OntologyManager ontMgr = OntologyManager.getInstance();
         ontMgr.addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, OntologyManagerAdapter.GO_OBO_URL, OntologyManagerAdapter.GO_TO_GENES_URL);
         ontMgr.addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, OntologyManagerAdapter.HPO_OBO_URL, OntologyManagerAdapter.HPO_TO_GENES_URL);
@@ -312,8 +312,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "`variant_id` int(11) NOT NULL,"
                     + "`user` varchar(200) COLLATE latin1_bin NOT NULL,"
                     + "`description` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`timestamp` datetime NOT NULL,"
-                    + "UNIQUE KEY `unique` (`project_id`,`reference_id`,`upload_id`,`file_id`,`variant_id`,`user`)"
+                    + "`timestamp` datetime NOT NULL"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
 
             conn.executeUpdate(
@@ -345,7 +344,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         ReferenceManager.getInstance().addReference(sessionId,"hg18", Chromosome.getHG18Chromosomes(), "http://savantbrowser.com/data/hg18/hg18.fa.savant");
         ReferenceManager.getInstance().addReference(sessionId,"hg19", Chromosome.getHG19Chromosomes(), "http://savantbrowser.com/data/hg19/hg19.fa.savant");
     }
-    
+
     private static void addDBSettings(String sid, String versionString) throws SQLException, RemoteException {
         SettingsManager.getInstance().addSetting(sid, Settings.KEY_CLIENT_VERSION, versionString);
         SettingsManager.getInstance().addSetting(sid, Settings.KEY_DB_LOCK, Boolean.toString(false));
@@ -353,7 +352,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
 
     private static void populateGenes(String sessID) throws SQLException, RemoteException {
         TabixTableLoader loader = new TabixTableLoader(MedSavantDatabase.GeneSetTableSchema.getTable());
-        
+
         try {
             // bin	name	chrom	strand	txStart	txEnd	cdsStart	cdsEnd	exonCount	exonStarts	exonEnds	score	name2	cdsStartStat	cdsEndStat	exonFrames
             loader.loadGenes(sessID, NetworkUtils.getKnownGoodURL("http://savantbrowser.com/data/hg18/hg18.refGene.gz").toURI(), "hg18", "RefSeq", null, "transcript", "chrom", null, "start", "end", "codingStart", "codingEnd", null, "exonStarts", "exonEnds", null, "name");

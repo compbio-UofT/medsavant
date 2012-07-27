@@ -57,7 +57,7 @@ import org.ut.biolab.medsavant.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.model.ScatterChartMap;
 import org.ut.biolab.medsavant.model.SimplePatient;
 import org.ut.biolab.medsavant.model.SimpleVariantFile;
-import org.ut.biolab.medsavant.model.StarredVariant;
+import org.ut.biolab.medsavant.model.VariantComment;
 import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.serverapi.AnnotationLogManager;
 import org.ut.biolab.medsavant.serverapi.AnnotationManager;
@@ -73,20 +73,17 @@ import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.util.NetworkUtils;
 
-
 /**
  *
  * @author Andrew
  */
 public class VariantManager extends MedSavantServerUnicastRemoteObject implements VariantManagerAdapter {
-    
+
     private static final Log LOG = LogFactory.getLog(VariantManager.class);
     private static final int COUNT_ESTIMATE_THRESHOLD = 1000;
     private static final int BIN_TOTAL_THRESHOLD = 10000;
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
-
     private static VariantManager instance;
-
     private Map<String, ProgressCallbackAdapter> callbacks = new HashMap<String, ProgressCallbackAdapter>();
 
     private VariantManager() throws RemoteException {
@@ -100,7 +97,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     /**
-     * Make all variant tables live for a project. All users accessing this database will be logged out.
+     * Make all variant tables live for a project. All users accessing this
+     * database will be logged out.
      */
     @Override
     public void publishVariants(String sessID, int projectID) throws Exception {
@@ -140,9 +138,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
     }
 
-
     /**
-     * Make a variant table live. All users accessing this database will be logged out.
+     * Make a variant table live. All users accessing this database will be
+     * logged out.
      */
     @Override
     public void publishVariants(String sessID, int projID, int refID, int updID) throws Exception {
@@ -201,7 +199,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //dump existing table
             LOG.info("Dumping existing variant table");
             String existingTableName = ProjectManager.getInstance().getVariantTableName(sessID, projID, refID, false);
-            File variantDumpFile = new File(basedir,"temp_" + existingTableName);
+            File variantDumpFile = new File(basedir, "temp_" + existingTableName);
             String variantDump = variantDumpFile.getAbsolutePath();
             LOG.info("Dumping variants to file");
             VariantManagerUtils.variantsToFile(sessID, existingTableName, variantDumpFile, null, false, 0);
@@ -219,10 +217,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //annotate
             String outputFilename = vcfAnnotatedVariants + "_annotated";
             LOG.info("File containing annotated variants, sorted by position: " + outputFilename);
-            VariantManagerUtils.annotateTDF(sessID,vcfAnnotatedVariants, outputFilename, annotIDs);
+            VariantManagerUtils.annotateTDF(sessID, vcfAnnotatedVariants, outputFilename, annotIDs);
 
             //split
-            File splitDir = new File(basedir,"splitDir");
+            File splitDir = new File(basedir, "splitDir");
             splitDir.mkdir();
             LOG.info("Splitting annotation file into multiple files by file ID");
             for (File f : splitDir.listFiles()) {
@@ -240,7 +238,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Creating new variant table for resulting variants");
             ProjectManager.getInstance().setCustomVariantFields(sessID, projID, refID, updateId, variantFields);
             String tableName = ProjectManager.getInstance().createVariantTable(sessID, projID, refID, updateId, annotIDs, true);
-            String tableNameSub = ProjectManager.getInstance().createVariantTable(sessID, projID, refID, updateId, AnnotationManager.getInstance().getAnnotationIDs(sessID,projID, refID), false, true);
+            String tableNameSub = ProjectManager.getInstance().createVariantTable(sessID, projID, refID, updateId, AnnotationManager.getInstance().getAnnotationIDs(sessID, projID, refID), false, true);
 
             //upload to staging table
             LOG.info("Uploading variants to table: " + tableName);
@@ -253,15 +251,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Importing to: " + tableNameSub);
             uploadFileToVariantTable(sessID, subFile, tableNameSub);
             //ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
-            
+
             //add entries to tablemap
             ProjectManager.getInstance().addTableToMap(sessID, projID, refID, updateId, false, tableName, tableNameSub);
-            
+
             //cleanup
             LOG.info("Dropping old table(s)");
             int newestId = ProjectManager.getInstance().getNewestUpdateID(sessID, projID, refID, true);
             int minId = -1;
-            int maxId = newestId-1;
+            int maxId = newestId - 1;
             ProjectManager.getInstance().removeTables(sessID, projID, refID, minId, maxId);
 
             //TODO: remove files
@@ -278,7 +276,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             throw e;
         }
     }
-
     private double SEND_FILES_FRACTION = 0.2;
     private double LOG_FRACTION = 0.05;
     private double CREATE_TABLES_FRACTION = 0.05;
@@ -297,7 +294,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         double frac = 0.0;
         for (int i = 0; i < fileStreams.length; i++) {
             makeProgress(sessID, "Sending " + fileNames[i] + "...", frac);
-            
+
             // The second parameter of copyFileFromRemoteStream is actually a file-extension, but we use it to make sure that the temp
             // file has the same type (.vcf or .vcf.gz) as the original file.
             vcfFiles[i] = NetworkUtils.copyFileFromRemoteStream(fileStreams[i], fileNames[i]);
@@ -320,7 +317,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         makeProgress(sessID, "Generating update ID...", frac);
         int updateID = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessID, projID, refID, AnnotationLog.Action.ADD_VARIANTS, user);
         frac += LOG_FRACTION;
-        
+
         try {
             ProjectManager projMgr = ProjectManager.getInstance();
             AnnotationManager annotMgr = AnnotationManager.getInstance();
@@ -329,16 +326,16 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             String existingTableName = projMgr.getVariantTableName(sessID, projID, refID, false);
             IOUtils.checkForWorldExecute(baseDir);
             File existingVariantsFile = new File(baseDir, "temp_proj" + projID + "_ref" + refID + "_update" + updateID);
-            
+
             LOG.info("Dumping variants to file");
             makeProgress(sessID, "Dumping variants to file...", frac);
-            
+
             VariantManagerUtils.variantsToFile(sessID, existingTableName, existingVariantsFile, null, true, 0);
             frac += DUMP_FRACTION;
 
             //create the staging table
             LOG.info("Creating new variant table for resulting variants");
-            
+
             projMgr.setCustomVariantFields(
                     sessID, projID, refID, updateID,
                     projMgr.getCustomVariantFields(sessID, projID, refID, projMgr.getNewestUpdateID(sessID, projID, refID, false)));
@@ -354,7 +351,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             VCFIterator parser = new VCFIterator(vcfFiles, baseDir, updateID, includeHomoRef);
             File f;
             while ((f = parser.next()) != null) {
-                
+
                 List<String> filesUsed = new ArrayList<String>();
 
                 String tempFilename = f.getAbsolutePath();
@@ -372,7 +369,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 }
 
                 //get annotation ids
-                int[] annotIDs = annotMgr.getAnnotationIDs(sessID,projID, refID);
+                int[] annotIDs = annotMgr.getAnnotationIDs(sessID, projID, refID);
 
                 if (annotIDs.length > 0) {
 
@@ -393,7 +390,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     currentFilename = annotatedFilename;
 
                     //split
-                    File splitDir = new File(baseDir,"splitDir");
+                    File splitDir = new File(baseDir, "splitDir");
                     splitDir.mkdir();
                     LOG.info("Splitting annotation file into multiple files by file ID");
                     VariantManagerUtils.splitFileOnColumn(splitDir, currentFilename, 1);
@@ -410,31 +407,31 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
                 //upload to staging table
                 LOG.info("Uploading variants to table: " + tableName);
-                uploadFileToVariantTable(sessID,new File(currentFilename), tableName);
-                
+                uploadFileToVariantTable(sessID, new File(currentFilename), tableName);
+
                 //cleanup
                 System.gc();
                 for (String filename : filesUsed) {
                     boolean deleted = (new File(filename)).delete();
                     LOG.info("Deleting " + filename + " - " + (deleted ? "successful" : "failed"));
                 }
-                
+
 
             }
-            
+
             //create sub table dump
             File subDump = new File(baseDir, "temp_proj" + projID + "_ref" + refID + "_update" + updateID + "_sub");
             LOG.info("Dumping variants to file for sub table");
-            VariantManagerUtils.variantsToFile(sessID,tableName, subDump, null, true, VariantManagerUtils.determineStepForSubset(getNumFilteredVariantsHelper(sessID, tableName, new Condition[][]{})));
-            
+            VariantManagerUtils.variantsToFile(sessID, tableName, subDump, null, true, VariantManagerUtils.determineStepForSubset(getNumFilteredVariantsHelper(sessID, tableName, new Condition[][]{})));
+
             //upload to sub table
             LOG.info("Uploading variants to table: " + tableNameSub);
             uploadFileToVariantTable(sessID, subDump, tableNameSub);
-            //ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub)); 
+            //ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
 
             //add entries to tablemap
             projMgr.addTableToMap(sessID, projID, refID, updateID, false, tableName, tableNameSub);
-            
+
             //add tags to upload
             LOG.info("Adding upload tags");
             VariantManagerUtils.addTagsToUpload(sessID, updateID, tags);
@@ -449,7 +446,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Dropping old table(s)");
             int newestId = projMgr.getNewestUpdateID(sessID, projID, refID, true);
             int minId = -1;
-            int maxId = newestId-1;
+            int maxId = newestId - 1;
             projMgr.removeTables(sessID, projID, refID, minId, maxId);
 
             //TODO: remove files
@@ -460,7 +457,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateID, Status.PENDING);
 
             return updateID;
-            
+
         } catch (Exception e) {
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateID, Status.ERROR);
             throw e;
@@ -488,14 +485,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //dump existing except for files
             String existingTableName = ProjectManager.getInstance().getVariantTableName(sid, projectId, referenceId, false);
-            File existingVariantsFile = new File(baseDir,"temp_proj" + projectId + "_ref" + referenceId + "_update" + updateId);
+            File existingVariantsFile = new File(baseDir, "temp_proj" + projectId + "_ref" + referenceId + "_update" + updateId);
             LOG.info("Dumping variants to file");
             String conditions = "";
             for (int i = 0; i < files.size(); i++) {
                 conditions +=
-                        "!(" + DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID + "=" + files.get(i).getUploadId() +
-                        " AND " + DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID + "=" + files.get(i).getFileId() + ")";
-                if (i != files.size()-1) {
+                        "!(" + DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID + "=" + files.get(i).getUploadId()
+                        + " AND " + DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID + "=" + files.get(i).getFileId() + ")";
+                if (i != files.size() - 1) {
                     conditions += " AND ";
                 }
             }
@@ -506,8 +503,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             ProjectManager.getInstance().setCustomVariantFields(
                     sid, projectId, referenceId, updateId,
                     ProjectManager.getInstance().getCustomVariantFields(sid, projectId, referenceId, ProjectManager.getInstance().getNewestUpdateID(sid, projectId, referenceId, false)));
-            String tableName = ProjectManager.getInstance().createVariantTable(sid, projectId, referenceId, updateId, AnnotationManager.getInstance().getAnnotationIDs(sid,projectId, referenceId), true);
-            String tableNameSub = ProjectManager.getInstance().createVariantTable(sid, projectId, referenceId, updateId, AnnotationManager.getInstance().getAnnotationIDs(sid,projectId, referenceId), false, true);
+            String tableName = ProjectManager.getInstance().createVariantTable(sid, projectId, referenceId, updateId, AnnotationManager.getInstance().getAnnotationIDs(sid, projectId, referenceId), true);
+            String tableNameSub = ProjectManager.getInstance().createVariantTable(sid, projectId, referenceId, updateId, AnnotationManager.getInstance().getAnnotationIDs(sid, projectId, referenceId), false, true);
 
             //upload to staging table
             LOG.info("Uploading variants to table: " + tableName);
@@ -523,12 +520,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //add entries to tablemap
             ProjectManager.getInstance().addTableToMap(sid, projectId, referenceId, updateId, false, tableName, tableNameSub);
-            
+
             //cleanup
             LOG.info("Dropping old table(s)");
             int newestId = ProjectManager.getInstance().getNewestUpdateID(sid, projectId, referenceId, true);
             int minId = -1;
-            int maxId = newestId-1;
+            int maxId = newestId - 1;
             ProjectManager.getInstance().removeTables(sid, projectId, referenceId, minId, maxId);
 
             //TODO: remove files
@@ -559,7 +556,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //select into
         System.out.println("starting select into");
         long start = System.nanoTime();
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID,ProjectManager.getInstance().getVariantTableName(sessID,projID, refID, true));
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, ProjectManager.getInstance().getVariantTableName(sessID, projID, refID, true));
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
@@ -571,60 +568,53 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 + " LINES TERMINATED BY '\\r\\n' ";
         String queryString = query.toString().replace("FROM", intoString + "FROM");
         ConnectionController.executeQuery(sessID, queryString);
-        System.out.println("done: " + (System.nanoTime()-start));
+        System.out.println("done: " + (System.nanoTime() - start));
 
 
-        /*//zip
-        int BUFFER = 2048;
-        BufferedInputStream origin = null;
-        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream("c:\\zip\\myfigs.zip")));
-        byte data[] = new byte[BUFFER];
-
-        File f = new File(".");
-        String files[] = f.list();
-
-        for (int i=0; i<files.length; i++) {
-            System.out.println("Adding: "+files[i]);
-            FileInputStream fi = new
-            FileInputStream(files[i]);
-            origin = new BufferedInputStream(fi, BUFFER);
-            ZipEntry entry = new ZipEntry(files[i]);
-            out.putNextEntry(entry);
-            int count;
-            while ((count = origin.read(data, 0, BUFFER)) != -1) {
-                out.write(data, 0, count);
-            }
-            origin.close();
-        }
-        out.close();*/
+        /*
+         * //zip int BUFFER = 2048; BufferedInputStream origin = null;
+         * ZipOutputStream out = new ZipOutputStream(new
+         * BufferedOutputStream(new FileOutputStream("c:\\zip\\myfigs.zip")));
+         * byte data[] = new byte[BUFFER];
+         *
+         * File f = new File("."); String files[] = f.list();
+         *
+         * for (int i=0; i<files.length; i++) { System.out.println("Adding:
+         * "+files[i]); FileInputStream fi = new FileInputStream(files[i]);
+         * origin = new BufferedInputStream(fi, BUFFER); ZipEntry entry = new
+         * ZipEntry(files[i]); out.putNextEntry(entry); int count; while ((count
+         * = origin.read(data, 0, BUFFER)) != -1) { out.write(data, 0, count); }
+         * origin.close(); }
+        out.close();
+         */
 
         return (new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath()))).export();
     }
+
     @Override
     public TableSchema getCustomTableSchema(String sessionId, int projectId, int referenceId) throws SQLException, RemoteException {
-        return CustomTables.getInstance().getCustomTableSchema(sessionId,ProjectManager.getInstance().getVariantTableName(sessionId,projectId, referenceId, true));
-    }
-
-
-    @Override
-    public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, int start, int limit) throws SQLException, RemoteException {
-        return getVariants(sessionId,projectId, referenceId, new Condition[1][], start, limit);
+        return CustomTables.getInstance().getCustomTableSchema(sessionId, ProjectManager.getInstance().getVariantTableName(sessionId, projectId, referenceId, true));
     }
 
     @Override
-    public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException {
+    public List<Object[]> getVariants(String sessionId, int projectId, int referenceId, int start, int limit) throws SQLException, RemoteException {
+        return getVariants(sessionId, projectId, referenceId, new Condition[1][], start, limit);
+    }
+
+    @Override
+    public List<Object[]> getVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException {
         return getVariants(sessionId, projectId, referenceId, conditions, start, limit, null);
     }
 
     @Override
-    public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order) throws SQLException, RemoteException {
+    public List<Object[]> getVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order) throws SQLException, RemoteException {
         return getVariants(sessionId, projectId, referenceId, conditions, start, limit, order, null);
     }
 
     @Override
-    public List<Object[]> getVariants(String sessionId,int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order, Column[] columns) throws SQLException, RemoteException {
+    public List<Object[]> getVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order, Column[] columns) throws SQLException, RemoteException {
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId,ProjectManager.getInstance().getVariantTableName(sessionId,projectId, referenceId, true));
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId, ProjectManager.getInstance().getVariantTableName(sessionId, projectId, referenceId, true));
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         if (columns == null) {
@@ -670,13 +660,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         if (DistinctValuesCache.isCached(dbName, tablename, columnname)) {
             try {
                 double[] result = DistinctValuesCache.getCachedRange(dbName, tablename, columnname);
-                if (result != null) return result;
+                if (result != null) {
+                    return result;
+                }
             } catch (Exception ex) {
                 LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tablename + "/" + columnname, ex);
             }
         }
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
 
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
@@ -690,7 +682,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         List<Double> list = new ArrayList<Double>();
         list.add(result[0]);
         list.add(result[1]);
-        DistinctValuesCache.cacheResults(dbName, tablename, columnname, (List)list);
+        DistinctValuesCache.cacheResults(dbName, tablename, columnname, (List) list);
 
         return result;
     }
@@ -736,7 +728,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 return null;
             } else {
                 Collections.sort(result);
-                DistinctValuesCache.cacheResults(dbName, tableName, columnName, (List)result);
+                DistinctValuesCache.cacheResults(dbName, tableName, columnName, (List) result);
             }
         }
 
@@ -745,21 +737,21 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public int getVariantCount(String sid, int projectId, int referenceId) throws SQLException, RemoteException {
-        return getFilteredVariantCount(sid,projectId, referenceId, new Condition[0][], true);
+        return getFilteredVariantCount(sid, projectId, referenceId, new Condition[0][], true);
     }
 
     @Override
-    public int getFilteredVariantCount(String sid,int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException {
+    public int getFilteredVariantCount(String sid, int projectId, int referenceId, Condition[][] conditions) throws SQLException, RemoteException {
         return getFilteredVariantCount(sid, projectId, referenceId, conditions, false);
     }
 
-    private int getFilteredVariantCount(String sid,int projectId, int referenceId, Condition[][] conditions, boolean forceExact) throws SQLException, RemoteException {
+    private int getFilteredVariantCount(String sid, int projectId, int referenceId, Condition[][] conditions, boolean forceExact) throws SQLException, RemoteException {
 
         //String name = ProjectQueryUtil.getInstance().getVariantTablename(sid,projectId, referenceId, true);
         Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
-        String tablename = (String)variantTableInfo[0];
-        String tablenameSub = (String)variantTableInfo[1];
-        float subMultiplier = (Float)variantTableInfo[2];
+        String tablename = (String) variantTableInfo[0];
+        String tablenameSub = (String) variantTableInfo[1];
+        float subMultiplier = (Float) variantTableInfo[2];
 
         if (tablename == null) {
             return -1;
@@ -767,7 +759,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //try to get a reasonable approximation
         if (tablenameSub != null && !forceExact) {
-            int estimate = (int)(getNumFilteredVariantsHelper(sid, tablenameSub, conditions) * subMultiplier);
+            int estimate = (int) (getNumFilteredVariantsHelper(sid, tablenameSub, conditions) * subMultiplier);
             if (estimate >= COUNT_ESTIMATE_THRESHOLD) {
                 return estimate;
             }
@@ -778,7 +770,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     private int getNumFilteredVariantsHelper(String sessID, String tablename, Condition[][] conditions) throws SQLException, RemoteException {
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID,tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
@@ -797,7 +789,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public int getVariantCountForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, List<String> dnaIDs) throws SQLException, RemoteException {
 
-        if (dnaIDs.isEmpty()) return 0;
+        if (dnaIDs.isEmpty()) {
+            return 0;
+        }
 
         String name = ProjectManager.getInstance().getVariantTableName(sessID, projID, refID, true);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, name);
@@ -824,19 +818,19 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         TableSchema table;
         int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);
         Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
-        String tablename = (String)variantTableInfo[0];
-        String tablenameSub = (String)variantTableInfo[1];
-        float multiplier = (Float)variantTableInfo[2];
+        String tablename = (String) variantTableInfo[0];
+        String tablenameSub = (String) variantTableInfo[1];
+        float multiplier = (Float) variantTableInfo[2];
         if (total >= BIN_TOTAL_THRESHOLD) {
             table = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
         } else {
             table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
             multiplier = 1;
         }
-        
+
         Range range = new Range(getExtremeValuesForColumn(sid, table.getTableName(), column.getColumnName()));
         double binSize = MiscUtils.generateBins(column, range, logBins);
-        
+
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
@@ -859,11 +853,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             int binNo = rs.getInt(2);
             Range r;
             if (logBins) {
-                r = new Range(Math.pow(10, binNo), Math.pow(10, binNo+1));
+                r = new Range(Math.pow(10, binNo), Math.pow(10, binNo + 1));
             } else {
-                r = new Range(binNo*binSize, (binNo+1)*binSize);
+                r = new Range(binNo * binSize, (binNo + 1) * binSize);
             }
-            long count = (long)(rs.getLong(1) * multiplier);
+            long count = (long) (rs.getLong(1) * multiplier);
             results.put(r, count);
         }
 
@@ -877,9 +871,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         TableSchema table;
         int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);
         Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
-        String tablename = (String)variantTableInfo[0];
-        String tablenameSub = (String)variantTableInfo[1];
-        float multiplier = (Float)variantTableInfo[2];
+        String tablename = (String) variantTableInfo[0];
+        String tablenameSub = (String) variantTableInfo[1];
+        float multiplier = (Float) variantTableInfo[2];
         if (total >= BIN_TOTAL_THRESHOLD) {
             table = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
         } else {
@@ -895,7 +889,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
         q.addGroupings(column);
-        
+
         if (column.getColumnNameSQL().equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT) || column.getColumnNameSQL().equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)) {
             q.addCondition(createNucleotideCondition(column));
         }
@@ -909,7 +903,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             if (key == null) {
                 key = "";
             }
-            map.put(key, (int)(rs.getInt(2) * multiplier));
+            map.put(key, (int) (rs.getInt(2) * multiplier));
         }
 
         return map;
@@ -922,25 +916,25 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         TableSchema table;
         int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);
         Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
-        String tablename = (String)variantTableInfo[0];
-        String tablenameSub = (String)variantTableInfo[1];
-        float multiplier = (Float)variantTableInfo[2];
+        String tablename = (String) variantTableInfo[0];
+        String tablenameSub = (String) variantTableInfo[1];
+        float multiplier = (Float) variantTableInfo[2];
         if (total >= BIN_TOTAL_THRESHOLD) {
             table = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
         } else {
             table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
             multiplier = 1;
         }
-        
-        DbColumn columnX = table.getDBColumn(columnnameX);   
-        DbColumn columnY = table.getDBColumn(columnnameY);     
+
+        DbColumn columnX = table.getDBColumn(columnnameX);
+        DbColumn columnY = table.getDBColumn(columnnameY);
 
         double binSizeX = 0;
         if (!columnXCategorical) {
             Range rangeX = new Range(getExtremeValuesForColumn(sid, table.getTableName(), columnnameX));
             binSizeX = MiscUtils.generateBins(new CustomField(columnnameX, columnX.getTypeNameSQL() + "(" + columnX.getTypeLength() + ")", false, "", ""), rangeX, false);
         }
-        
+
         double binSizeY = 0;
         if (!columnYCategorical) {
             Range rangeY = new Range(getExtremeValuesForColumn(sid, table.getTableName(), columnnameY));
@@ -952,11 +946,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //q.addColumns(columnX, columnY);
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
-        
+
         if (columnnameX.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT) || columnnameX.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)) {
             q.addCondition(createNucleotideCondition(columnX));
         }
-        
+
         if (columnnameY.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT) || columnnameY.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)) {
             q.addCondition(createNucleotideCondition(columnY));
         }
@@ -984,17 +978,21 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         while (rs.next()) {
             String x = rs.getString(2);
             String y = rs.getString(3);
-            
-            if (x == null) x = "null"; //prevents NPE when sorting below
-            if (y == null) y = "null";
-            
+
+            if (x == null) {
+                x = "null"; //prevents NPE when sorting below
+            }
+            if (y == null) {
+                y = "null";
+            }
+
             if (!columnXCategorical) {
                 x = MiscUtils.doubleToString(Integer.parseInt(x) * binSizeX, 2) + " - " + MiscUtils.doubleToString(Integer.parseInt(x) * binSizeX + binSizeX, 2);
             }
             if (!columnYCategorical) {
                 y = MiscUtils.doubleToString(Integer.parseInt(y) * binSizeY, 2) + " - " + MiscUtils.doubleToString(Integer.parseInt(y) * binSizeY + binSizeY, 2);
             }
-            ScatterChartEntry entry = new ScatterChartEntry(x, y, (int)(rs.getInt(1)*multiplier));
+            ScatterChartEntry entry = new ScatterChartEntry(x, y, (int) (rs.getInt(1) * multiplier));
             entries.add(entry);
             if (!xRanges.contains(entry.getXRange())) {
                 xRanges.add(entry.getXRange());
@@ -1025,7 +1023,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         String name = ProjectManager.getInstance().getVariantTableName(sid, projectId, referenceId, true);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, name);
 
-        Condition[] rangeConditions = new Condition[] {
+        Condition[] rangeConditions = new Condition[]{
             BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom),
             BinaryCondition.greaterThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), start, true),
             BinaryCondition.lessThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), end, false)
@@ -1048,9 +1046,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         TableSchema table;
         int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);
         Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
-        String tablename = (String)variantTableInfo[0];
-        String tablenameSub = (String)variantTableInfo[1];
-        float multiplier = (Float)variantTableInfo[2];
+        String tablename = (String) variantTableInfo[0];
+        String tablenameSub = (String) variantTableInfo[1];
+        float multiplier = (Float) variantTableInfo[2];
         if (total >= BIN_TOTAL_THRESHOLD) {
             table = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
         } else {
@@ -1078,7 +1076,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         long start = System.nanoTime();
         ResultSet rs = ConnectionController.executeQuery(sid, query);
         System.out.println(query);
-        System.out.println("  time:" + (System.nanoTime() - start)/1000000000);
+        System.out.println("  time:" + (System.nanoTime() - start) / 1000000000);
 
         Map<String, Map<Range, Integer>> results = new HashMap<String, Map<Range, Integer>>();
         while (rs.next()) {
@@ -1095,7 +1093,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             int binNo = rs.getInt(3);
             Range binRange = new Range(binNo * binsize, (binNo + 1) * binsize);
 
-            int count = (int)(rs.getInt(2) * multiplier);
+            int count = (int) (rs.getInt(2) * multiplier);
 
             chromMap.put(binRange, count);
             results.put(chrom, chromMap);
@@ -1126,7 +1124,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //TODO: approximate counts??
         //might not be a good idea... don't want to miss a dna id
 
-        TableSchema table = getCustomTableSchema(sid,projectId, referenceId);
+        TableSchema table = getCustomTableSchema(sid, projectId, referenceId);
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns("COUNT(DISTINCT " + DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID + ")");
@@ -1163,7 +1161,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         Map<String, List<String>> results = new HashMap<String, List<String>>();
 
-        TableSchema table = getCustomTableSchema(sessID,projID, refID);
+        TableSchema table = getCustomTableSchema(sessID, projID, refID);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addColumns(
@@ -1192,13 +1190,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         //TODO: approximate counts
 
-        String name = ProjectManager.getInstance().getVariantTableName(sessID,projID, refID, true);
+        String name = ProjectManager.getInstance().getVariantTableName(sessID, projID, refID, true);
 
         if (name == null) {
             return null;
         }
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID,name);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, name);
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
@@ -1207,7 +1205,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         q.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
         addConditionsToQuery(q, conditions);
 
-        Map<String, String> patientToDNAIDMap = PatientManager.getInstance().getDNAIDsForFamily(sessID,projID, famID);
+        Map<String, String> patientToDNAIDMap = PatientManager.getInstance().getDNAIDsForFamily(sessID, projID, famID);
         Map<String, List<String>> betterPatientToDNAIDMap = new HashMap<String, List<String>>();
 
         List<String> dnaIDs = new ArrayList<String>();
@@ -1259,14 +1257,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void cancelUpload(String sid,int uploadId, String tableName) {
+    public void cancelUpload(String sid, int uploadId, String tableName) {
         try {
 
             //remove log entry
-            AnnotationLogManager.getInstance().removeAnnotationLogEntry(sid,uploadId);
+            AnnotationLogManager.getInstance().removeAnnotationLogEntry(sid, uploadId);
 
             //drop staging table
-            DBUtil.dropTable(sid,tableName);
+            DBUtil.dropTable(sid, tableName);
 
         } catch (Exception ex) {
             LOG.warn("Error cancelling upload " + uploadId + " for " + tableName, ex);
@@ -1355,7 +1353,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         TableSchema table = MedSavantDatabase.VarianttagTableSchema;
 
         /*
-         * SELECT upload_id FROM (SELECT t17.upload_id, COUNT(*) AS count FROM variant_tag t17 WHERE (((t17.tagkey = 'Sequencer') AND (t17.tagvalue = 'SOLID')) OR ((t17.tagkey = 'Sequencer Version') AND (t17.tagvalue = '5500'))) GROUP BY t17.upload_id) as tbl WHERE count = 2;
+         * SELECT upload_id FROM (SELECT t17.upload_id, COUNT(*) AS count FROM
+         * variant_tag t17 WHERE (((t17.tagkey = 'Sequencer') AND (t17.tagvalue
+         * = 'SOLID')) OR ((t17.tagkey = 'Sequencer Version') AND (t17.tagvalue
+         * = '5500'))) GROUP BY t17.upload_id) as tbl WHERE count = 2;
          */
 
 
@@ -1385,7 +1386,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         q.addCondition(ComboCondition.or(orConditions));
         q.addGroupings(table.getDBColumn(VarianttagTableSchema.COLUMNNAME_OF_UPLOAD_ID));
-        q.addHaving(BinaryCondition.equalTo(FunctionCall.countAll(), variantTags.length-duplicates));
+        q.addHaving(BinaryCondition.equalTo(FunctionCall.countAll(), variantTags.length - duplicates));
 
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
@@ -1416,7 +1417,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         List<Integer> uplIDs = new ArrayList<Integer>();
         List<Integer> fileIDs = new ArrayList<Integer>();
-        while(idRs.next()) {
+        while (idRs.next()) {
             uplIDs.add(idRs.getInt(1));
             fileIDs.add(idRs.getInt(2));
         }
@@ -1452,7 +1453,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
 
         List<SimpleVariantFile> result = new ArrayList<SimpleVariantFile>();
-        while(rs.next()) {
+        while (rs.next()) {
             result.add(new SimpleVariantFile(
                     rs.getInt(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID),
                     rs.getInt(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID),
@@ -1478,20 +1479,53 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
         List<String[]> result = new ArrayList<String[]>();
-        while(rs.next()) {
+        while (rs.next()) {
             result.add(new String[]{rs.getString(1), rs.getString(2)});
         }
         return result;
     }
+    /*
+     * @Override public Set<StarredVariant> getStarredVariants(String sid, int
+     * projectId, int referenceId) throws SQLException, RemoteException {
+     *
+     * TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
+     *
+     * SelectQuery q = new SelectQuery(); q.addFromTable(table.getTable());
+     * q.addColumns(
+     * table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID),
+     * table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID),
+     * table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID),
+     * table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER),
+     * table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION),
+     * table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP));
+     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID),
+     * projectId));
+     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID),
+     * referenceId));
+     *
+     * ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
+     *
+     * Set<StarredVariant> result = new HashSet<StarredVariant>();
+     * while(rs.next()) { result.add(new StarredVariant(
+     * rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID),
+     * rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID),
+     * rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID),
+     * rs.getString(VariantStarredTableSchema.COLUMNNAME_OF_USER),
+     * rs.getString(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION),
+     * rs.getTimestamp(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP))); }
+     * return result; }
+     */
 
     @Override
-    public Set<StarredVariant> getStarredVariants(String sid, int projectId, int referenceId) throws SQLException, RemoteException {
+    public List<VariantComment> getVariantComments(String sid, int projectId, int referenceId, int uploadId, int fileID, int variantID) throws SQLException, RemoteException {
 
         TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addColumns(
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID),
+                table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                 table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID),
                 table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID),
                 table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID),
@@ -1500,12 +1534,19 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
         q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadId));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), fileID));
+        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), variantID));
+
+        System.out.println(q.toString());
 
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
-        Set<StarredVariant> result = new HashSet<StarredVariant>();
-        while(rs.next()) {
-            result.add(new StarredVariant(
+        List<VariantComment> result = new ArrayList<VariantComment>();
+        while (rs.next()) {
+            result.add(new VariantComment(
+                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID),
+                    rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID),
                     rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID),
                     rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID),
                     rs.getInt(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID),
@@ -1517,77 +1558,81 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public int addStarredVariants(String sid, int projectId, int referenceId, List<StarredVariant> variants) throws SQLException, RemoteException {
+    public void addVariantComments(String sid, List<VariantComment> variants) throws SQLException, RemoteException {
 
         TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
-
-        int totalNumStarred = getTotalNumStarred(sid, projectId, referenceId);
-        int numStarred = 0;
 
         Connection c = ConnectionController.connectPooled(sid);
         c.setAutoCommit(false);
 
-        for (StarredVariant variant : variants) {
-
-            if (totalNumStarred == Settings.NUM_STARRED_ALLOWED) {
-                return numStarred;
-            }
-
+        for (VariantComment variant : variants) {
             InsertQuery q = new InsertQuery(table.getTable());
             List<DbColumn> columnsList = table.getColumns();
             Column[] columnsArray = new Column[columnsList.size()];
             columnsArray = columnsList.toArray(columnsArray);
-            q.addColumns(columnsArray, variant.toArray(projectId, referenceId));
-
-            try {
-                c.createStatement().executeUpdate(q.toString());
-                totalNumStarred++;
-            } catch (MySQLIntegrityConstraintViolationException e) {
-                //duplicate entry, update
-                updateStarredVariant(c, projectId, referenceId, variant);
-            }
-            numStarred++;
+            q.addColumns(columnsArray, variant.toArray(variant.getProjectId(), variant.getReferenceId()));
+            c.createStatement().executeUpdate(q.toString());
         }
 
         c.commit();
         c.setAutoCommit(true);
         c.close();
-
-        return numStarred;
     }
 
-    private void updateStarredVariant(Connection c, int projectId, int referenceId, StarredVariant variant) throws SQLException {
 
-        TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
-
-        UpdateQuery q = new UpdateQuery(table.getTable());
-        //q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), variant.getUser());
-        q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION), variant.getDescription());
-        q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP), variant.getTimestamp());
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projectId));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), referenceId));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID), variant.getUploadId()));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), variant.getFileId()));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), variant.getVariantId()));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), variant.getUser()));
-
-        c.createStatement().executeUpdate(q.toString());
+    /*
+     * private void updateStarredVariant(Connection c, int projectId, int
+     * referenceId, VariantComment variant) throws SQLException {
+     *
+     * TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
+     *
+     * UpdateQuery q = new UpdateQuery(table.getTable());
+     * //q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER),
+     * variant.getUser());
+     * q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_DESCRIPTION),
+     * variant.getDescription());
+     * q.addSetClause(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP),
+     * variant.getTimestamp());
+     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID),
+     * projectId));
+     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID),
+     * referenceId));
+     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID),
+     * variant.getUploadId()));
+     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID),
+     * variant.getFileId()));
+     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID),
+     * variant.getVariantId()));
+     * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER),
+     * variant.getUser()));
+     *
+     * c.createStatement().executeUpdate(q.toString());
     }
-
+     */
     @Override
-    public void unstarVariant(String sessID, int projID, int refID, int uploadID, int fileID, int varID, String user) throws SQLException {
+    public void removeVariantComments(String sessID, List<VariantComment> comments) throws SQLException {
 
         TableSchema table = MedSavantDatabase.VariantStarredTableSchema;
 
-        DeleteQuery q = new DeleteQuery(table.getTable());
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), projID));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadID));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), fileID));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), varID));
-        q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), user));
+        Connection c = ConnectionController.connectPooled(sessID);
+        c.setAutoCommit(false);
 
-        ConnectionController.executeUpdate(sessID, q.toString());
+        for (VariantComment vc : comments) {
+            DeleteQuery q = new DeleteQuery(table.getTable());
+            q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_PROJECT_ID), vc.getProjectId()));
+            q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_REFERENCE_ID), vc.getReferenceId()));
+            q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_UPLOAD_ID), vc.getUploadId()));
+            q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_FILE_ID), vc.getFileId()));
+            q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_VARIANT_ID), vc.getVariantId()));
+            q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER), vc.getUser()));
+            q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_TIMESTAMP), vc.getTimestamp()));
+
+            ConnectionController.executeUpdate(sessID, q.toString());
+        }
+
+        c.commit();
+        c.setAutoCommit(true);
+        c.close();
     }
 
     private int getTotalNumStarred(String sid, int projectId, int referenceId) throws SQLException {
@@ -1615,7 +1660,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileId);
         q.addColumn(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_NAME), fileName);
 
-        ConnectionController.executeUpdate(sid,  q.toString());
+        ConnectionController.executeUpdate(sid, q.toString());
     }
 
     public void removeEntryFromFileTable(String sessID, int uploadID, int fileID) throws SQLException {
@@ -1623,16 +1668,16 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         TableSchema table = MedSavantDatabase.VariantFileTableSchema;
 
         DeleteQuery q = new DeleteQuery(table.getTable());
-        q.addCondition(ComboCondition.and(new Condition[] {
-            BinaryCondition.equalTo(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadID),
-            BinaryCondition.equalTo(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileID)
-        }));
+        q.addCondition(ComboCondition.and(new Condition[]{
+                    BinaryCondition.equalTo(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadID),
+                    BinaryCondition.equalTo(table.getDBColumn(VariantFileTableSchema.COLUMNNAME_OF_FILE_ID), fileID)
+                }));
 
         ConnectionController.executeUpdate(sessID, q.toString());
     }
 
     @Override
-    public Map<SimplePatient, Integer> getPatientHeatMap(String sessID, int projID, int refID, Condition[][] conditions, List<SimplePatient> patients) throws SQLException, RemoteException{
+    public Map<SimplePatient, Integer> getPatientHeatMap(String sessID, int projID, int refID, Condition[][] conditions, List<SimplePatient> patients) throws SQLException, RemoteException {
 
         //get dna ids
         List<String> dnaIds = new ArrayList<String>();
@@ -1652,7 +1697,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             Integer count = 0;
             for (String dnaId : p.getDnaIds()) {
                 Integer i = dnaIdMap.get(dnaId);
-                if (i!=null) {
+                if (i != null) {
                     count += i;
                 }
             }
@@ -1663,12 +1708,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, List<String> dnaIDs) throws SQLException, RemoteException{
+    public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, List<String> dnaIDs) throws SQLException, RemoteException {
 
         Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sessID, projID, refID, true);
-        String tablename = (String)variantTableInfo[0];
-        String tablenameSub = (String)variantTableInfo[1];
-        float multiplier = (Float)variantTableInfo[2];
+        String tablename = (String) variantTableInfo[0];
+        String tablenameSub = (String) variantTableInfo[1];
+        float multiplier = (Float) variantTableInfo[2];
 
         TableSchema subTable = CustomTables.getInstance().getCustomTableSchema(sessID, tablenameSub);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
@@ -1719,8 +1764,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
 
-        while(rs.next()) {
-            int value = (int)(rs.getInt(1) * multiplier);
+        while (rs.next()) {
+            int value = (int) (rs.getInt(1) * multiplier);
             if (!useThreshold || value >= PATIENT_HEATMAP_THRESHOLD) {
                 map.put(rs.getString(2), value);
             }
@@ -1734,12 +1779,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 BinaryCondition.equalTo(column, "G"),
                 BinaryCondition.equalTo(column, "T"));
     }
-    
+
     @Override
     public void registerProgressCallback(String sessID, ProgressCallbackAdapter callback) {
         callbacks.put(sessID, callback);
     }
-    
+
     public void makeProgress(String sessID, String activity, double fraction) throws RemoteException {
         ProgressCallbackAdapter callback = callbacks.get(sessID);
         if (callback != null) {
