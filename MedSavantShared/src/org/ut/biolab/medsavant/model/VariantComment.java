@@ -33,6 +33,7 @@ public class VariantComment implements Serializable {
         this.timestamp = timestamp;
     }
 
+    
     public int getProjectId() {
         return projectId;
     }
