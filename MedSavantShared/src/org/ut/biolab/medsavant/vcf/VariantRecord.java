@@ -166,6 +166,7 @@ public class VariantRecord implements Serializable {
         //parseInfo(line[FILE_INDEX_OF_INFO], infoKeys, infoClasses);
     }
 
+    
     public VariantRecord(
             int uploadID,
             int fileID,
