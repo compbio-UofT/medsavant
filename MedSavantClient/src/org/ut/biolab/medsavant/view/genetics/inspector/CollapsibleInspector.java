@@ -98,6 +98,8 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
         panesContainer.remove(panesContainer.getComponentCount() - 1);
 
         CollapsiblePane p = new CollapsiblePane(ipan.getName());
+        ipan.setPaneParent(p);
+
         try {
             p.setCollapsed(collapsed);
         } catch (PropertyVetoException ex) {

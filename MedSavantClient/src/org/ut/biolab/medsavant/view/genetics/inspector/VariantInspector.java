@@ -70,7 +70,7 @@ public class VariantInspector extends CollapsibleInspector implements VariantSel
 
         TablePanel.addVariantSelectionChangedListener(this);
         this.addSubInspector(new BasicVariantSubInspector());
-        this.addSubInspector(new SocialVariantSubInspector(),true);
+        this.addSubInspector(new SocialVariantSubInspector());
         //this.addSubInfoPanel(new BasicGeneInfoSubPanel());
     }
 

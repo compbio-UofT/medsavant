@@ -45,7 +45,7 @@ import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.model.StarredVariant;
+import org.ut.biolab.medsavant.model.VariantComment;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
@@ -69,7 +69,7 @@ public class TablePanel extends JLayeredPane {
     private final Object updateLock = new Object();
     private String pageName;
     private GridBagConstraints c;
-    private Map<Integer, List<StarredVariant>> starMap = new HashMap<Integer, List<StarredVariant>>();
+    private Map<Integer, List<VariantComment>> starMap = new HashMap<Integer, List<VariantComment>>();
     private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
 
 
@@ -147,7 +147,7 @@ public class TablePanel extends JLayeredPane {
                         showWaitCard();
                         try {
                             List<Object[]> result = ResultController.getInstance().getFilteredVariantRecords(start, limit, null);
-                            checkStarring(result);
+                            //checkStarring(result);
                             showShowCard();
                             return result;
                         } catch (Exception ex) {
@@ -184,9 +184,9 @@ public class TablePanel extends JLayeredPane {
                     public String getToolTip(int actualRow) {
                         if (starMap.get(actualRow) != null && !starMap.get(actualRow).isEmpty()) {
                             String s = "<HTML>";
-                            List<StarredVariant> starred = starMap.get(actualRow);
+                            List<VariantComment> starred = starMap.get(actualRow);
                             for (int i = 0; i < starred.size(); i++) {
-                                StarredVariant current = starred.get(i);
+                                VariantComment current = starred.get(i);
                                 s += "\"" + ClientMiscUtils.addBreaksToString(current.getDescription(), 100) + "\"<BR>";
                                 s += "- " + current.getUser() + ", " + current.getTimestamp().toString();
                                 if (i != starred.size() - 1) {
@@ -367,15 +367,6 @@ public class TablePanel extends JLayeredPane {
 
         JPopupMenu menu = new JPopupMenu();
 
-        //star/unstar
-        if (isStarredByUser(row)) {
-            menu.add(createUnstarVariantItem(row));
-        } else {
-            menu.add(createStarVariantsItem(table));
-        }
-
-        menu.add(new JSeparator());
-
         //Filter by position
         JMenuItem filter1Item = new JMenuItem("Filter by Position");
         filter1Item.addActionListener(new ActionListener() {
@@ -422,130 +413,10 @@ public class TablePanel extends JLayeredPane {
 
     private JPopupMenu createPopupMultiple(SortableTable table) {
         JPopupMenu menu = new JPopupMenu();
-
-        //Star variant(s)
-        menu.add(createStarVariantsItem(table));
-
         return menu;
     }
 
-    private JMenuItem createStarVariantsItem(final SortableTable table) {
-
-        final int[] selected = table.getSelectedRows();
-        int[] actualSelected = new int[selected.length];
-        for (int i = 0; i < selected.length; i++) {
-            actualSelected[i] = TableModelWrapperUtils.getActualRowAt(table.getModel(), selected[i]);
-        }
-        final int[] finalActualSelected = actualSelected;
-
-        JMenuItem item = new JMenuItem("Mark Variant(s) as Important");
-        item.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                String description = "";
-                while (true) {
-                    description = JOptionPane.showInputDialog("Add a description (500 char limit):", description.substring(0, Math.min(description.length(), 500)));
-                    if (description == null) {
-                        return;
-                    }
-                    if (description.length() <= 500) {
-                        break;
-                    }
-                }
-
-                List<StarredVariant> list = new ArrayList<StarredVariant>();
-                for (int i = 0; i < finalActualSelected.length; i++) {
-                    int row = selected[i];
-                    int actualRow = finalActualSelected[i];
-                    StarredVariant sv = new StarredVariant(
-                            (Integer) table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID),
-                            (Integer) table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_FILE_ID),
-                            (Integer) table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_VARIANT_ID),
-                            LoginController.getInstance().getUserName(),
-                            description,
-                            SQLUtils.getCurrentTimestamp());
-                    list.add(sv);
-                    if (!starMap.containsKey(actualRow)) {
-                        starMap.put(actualRow, new ArrayList<StarredVariant>());
-                    }
-                    removeStarForUser(actualRow);
-                    starMap.get(actualRow).add(sv);
-                }
-                try {
-                    int numStarred = MedSavantClient.VariantManager.addStarredVariants(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectID(),
-                            ReferenceController.getInstance().getCurrentReferenceID(),
-                            list);
-                    if (numStarred < list.size()) {
-                        JOptionPane.showMessageDialog(
-                                null,
-                                "<HTML>" + (list.size() - numStarred) + " out of " + list.size() + " variants were not marked. <BR>The total number of marked variants cannot exceed " + Settings.NUM_STARRED_ALLOWED + ".</HTML>",
-                                "Out of Space",
-                                JOptionPane.ERROR_MESSAGE);
-                    }
-                } catch (SQLException ex) {
-                    LOG.error("Error adding star.", ex);
-                } catch (RemoteException ex) {
-                    LOG.error("Error adding star.", ex);
-                }
-
-                //add to view
-                for (Integer i : finalActualSelected) {
-                    tablePanel.addSelectedRow(i);
-                }
-                tablePanel.repaint();
-            }
-        });
-
-        return item;
-    }
-
-    private JMenuItem createUnstarVariantItem(final int row) {
-
-        JMenuItem item = new JMenuItem("Unmark");
-        item.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                StarredVariant sv = null;
-                for (StarredVariant current : starMap.get(row)) {
-                    if (current.getUser().equals(LoginController.getInstance().getUserName())) {
-                        sv = current;
-                        break;
-                    }
-                }
-
-                try {
-                    MedSavantClient.VariantManager.unstarVariant(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectID(),
-                            ReferenceController.getInstance().getCurrentReferenceID(),
-                            sv.getUploadId(),
-                            sv.getFileId(),
-                            sv.getVariantId(),
-                            LoginController.getInstance().getUserName());
-                } catch (SQLException ex) {
-                    LOG.error("Error removing star.", ex);
-                } catch (RemoteException ex) {
-                    LOG.error("Error removing star.", ex);
-                }
-
-                //remove from view
-                List<StarredVariant> list = starMap.get(row);
-                if (list.size() == 1) {
-                    tablePanel.removeSelectedRow(row);
-                    tablePanel.repaint();
-                }
-                removeStarForUser(row);
-            }
-        });
-
-        return item;
-    }
-
+/*
     private void checkStarring(List<Object[]> variants) {
 
         List<Integer> selected = new ArrayList<Integer>();
@@ -587,13 +458,13 @@ public class TablePanel extends JLayeredPane {
 
         tablePanel.setSelectedRows(selected);
     }
-
+*/
     private boolean isStarredByUser(int row) {
         if (!starMap.containsKey(row)) {
             return false;
         }
-        List<StarredVariant> starred = starMap.get(row);
-        for (StarredVariant current : starred) {
+        List<VariantComment> starred = starMap.get(row);
+        for (VariantComment current : starred) {
             if (current.getUser().equals(LoginController.getInstance().getUserName())) {
                 return true;
             }
@@ -602,10 +473,10 @@ public class TablePanel extends JLayeredPane {
     }
 
     private void removeStarForUser(int row) {
-        List<StarredVariant> list = starMap.get(row);
+        List<VariantComment> list = starMap.get(row);
         int index = -1;
         for (int i = 0; i < list.size(); i++) {
-            StarredVariant current = list.get(i);
+            VariantComment current = list.get(i);
             if (current.getUser().equals(LoginController.getInstance().getUserName())) {
                 index = i;
             }

@@ -43,7 +43,7 @@ public class FilterUtils {
     public enum WhichTable {
         PATIENT,
         VARIANT;
-        
+
         public String getName() throws RemoteException, SQLException {
             return this == WhichTable.VARIANT ? ProjectController.getInstance().getCurrentVariantTableName() : ProjectController.getInstance().getCurrentPatientTableName();
         }
@@ -140,9 +140,6 @@ public class FilterUtils {
                 break;
             case TAG:
                 fps.addNewSubItem(new TagFilterView(state, fps.getID()), state.getID());
-                break;
-            case STARRED:
-                fps.addNewSubItem(new StarredFilterView(state, fps.getID()), state.getID());
                 break;
             case ONTOLOGY:
                 fps.addNewSubItem(new OntologyFilterView(state, fps.getID()), state.getID());

@@ -2,12 +2,14 @@ package org.ut.biolab.medsavant.view.genetics.inspector;
 
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
-import java.awt.Component;
+import com.jidesoft.swing.AutoResizingTextArea;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,14 +18,16 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.Settings;
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.model.StarredVariant;
+import org.ut.biolab.medsavant.model.VariantComment;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.SQLUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
+import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.view.genetics.TablePanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.SubInspector;
+import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -31,8 +35,10 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  * @author mfiume
  */
 public class SocialVariantSubInspector extends SubInspector implements VariantSelectionChangedListener {
+
     private VariantRecord selectedVariant;
     private final JTextArea ta = new JTextArea();
+    private JPanel existingCommentsPanel;
 
     public SocialVariantSubInspector() {
         TablePanel.addVariantSelectionChangedListener(this);
@@ -40,7 +46,7 @@ public class SocialVariantSubInspector extends SubInspector implements VariantSe
 
     @Override
     public String getName() {
-        return "Comment";
+        return "Comments";
     }
 
     @Override
@@ -48,13 +54,16 @@ public class SocialVariantSubInspector extends SubInspector implements VariantSe
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(p);
 
-        ta.setBorder(ViewUtil.getTinyLineBorder());
-        ta.setRows(3);
-        p.add(ta);
+        existingCommentsPanel = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(existingCommentsPanel);
+
+        p.add(ViewUtil.getClearBorderlessScrollPane(ta));
 
         JButton submit = new JButton("Submit");
         ViewUtil.makeSmall(submit);
         p.add(ViewUtil.alignRight(submit));
+
+        final SocialVariantSubInspector instance = this;
 
         submit.addActionListener(new ActionListener() {
 
@@ -63,160 +72,191 @@ public class SocialVariantSubInspector extends SubInspector implements VariantSe
 
                 System.out.println("Commenting on " + selectedVariant);
 
-                List<StarredVariant> list = new ArrayList<StarredVariant>();
+                List<VariantComment> list = new ArrayList<VariantComment>();
 
-                /*StarredVariant sv = new StarredVariant(
-                        selectedVariant.getFileID(),
+                VariantComment sv = new VariantComment(
+                        ProjectController.getInstance().getCurrentProjectID(),
+                        ReferenceController.getInstance().getCurrentReferenceID(),
                         selectedVariant.getUploadID(),
+                        selectedVariant.getFileID(),
                         selectedVariant.getVariantID(),
-                            LoginController.getInstance().getUserName(),
-                            ta.getText(),
-                            SQLUtils.getCurrentTimestamp());
-                            
+                        LoginController.getInstance().getUserName(),
+                        ta.getText(),
+                        SQLUtils.getCurrentTimestamp());
 
                 list.add(sv);
                 try {
-                    MedSavantClient.VariantManager.addStarredVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), list);
+                    MedSavantClient.VariantManager.addVariantComments(LoginController.sessionId, list);
                 } catch (SQLException ex) {
                     Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (RemoteException ex) {
                     Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                * 
-                */
 
                 ta.setText("");
-            }
 
+                instance.updateComments();
+            }
         });
+
+        p.add(existingCommentsPanel);
+
+        ta.setBorder(ViewUtil.getTinyLineBorder());
+        ta.setRows(3);
+        ta.setColumns(10);
+        ta.setLineWrap(true);
+        ta.setWrapStyleWord(true);
 
         return p;
-    }
-
-     private JButton createStarVariantsItem() {
-
-        JButton item = new JButton("Star");
-        item.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                /*
-
-                String description = "";
-                while (true) {
-                    description = JOptionPane.showInputDialog("Add a description (500 char limit):", description.substring(0, Math.min(description.length(), 500)));
-                    if (description == null) {
-                        return;
-                    }
-                    if (description.length() <= 500) {
-                        break;
-                    }
-                }
-
-                List<StarredVariant> list = new ArrayList<StarredVariant>();
-                for (int i = 0; i < finalActualSelected.length; i++) {
-                    int row = selected[i];
-                    int actualRow = finalActualSelected[i];
-                    StarredVariant sv = new StarredVariant(
-                            (Integer) table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID),
-                            (Integer) table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_FILE_ID),
-                            (Integer) table.getModel().getValueAt(row, DefaultVariantTableSchema.INDEX_OF_VARIANT_ID),
-                            LoginController.getInstance().getUserName(),
-                            description,
-                            SQLUtils.getCurrentTimestamp());
-                    list.add(sv);
-                    if (!starMap.containsKey(actualRow)) {
-                        starMap.put(actualRow, new ArrayList<StarredVariant>());
-                    }
-                    removeStarForUser(actualRow);
-                    starMap.get(actualRow).add(sv);
-                }
-                try {
-                    int numStarred = MedSavantClient.VariantManager.addStarredVariants(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectID(),
-                            ReferenceController.getInstance().getCurrentReferenceID(),
-                            list);
-                    if (numStarred < list.size()) {
-                        JOptionPane.showMessageDialog(
-                                null,
-                                "<HTML>" + (list.size() - numStarred) + " out of " + list.size() + " variants were not marked. <BR>The total number of marked variants cannot exceed " + Settings.NUM_STARRED_ALLOWED + ".</HTML>",
-                                "Out of Space",
-                                JOptionPane.ERROR_MESSAGE);
-                    }
-                } catch (SQLException ex) {
-                    LOG.error("Error adding star.", ex);
-                } catch (RemoteException ex) {
-                    LOG.error("Error adding star.", ex);
-                }
-
-                //add to view
-                for (Integer i : finalActualSelected) {
-                    tablePanel.addSelectedRow(i);
-                }
-                tablePanel.repaint();
-                *
-                */
-            }
-        });
-
-        return item;
-    }
-
-
-
-      private JButton createUnstarVariantItem() {
-
-        JButton item = new JButton("Unmark");
-        item.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                /*
-                StarredVariant sv = null;
-                for (StarredVariant current : starMap.get(row)) {
-                    if (current.getUser().equals(LoginController.getInstance().getUserName())) {
-                        sv = current;
-                        break;
-                    }
-                }
-
-                try {
-                    MedSavantClient.VariantManager.unstarVariant(
-                            LoginController.sessionId,
-                            ProjectController.getInstance().getCurrentProjectID(),
-                            ReferenceController.getInstance().getCurrentReferenceID(),
-                            sv.getUploadId(),
-                            sv.getFileId(),
-                            sv.getVariantId(),
-                            LoginController.getInstance().getUserName());
-                } catch (SQLException ex) {
-                    LOG.error("Error removing star.", ex);
-                } catch (RemoteException ex) {
-                    LOG.error("Error removing star.", ex);
-                }
-
-                //remove from view
-                List<StarredVariant> list = starMap.get(row);
-                if (list.size() == 1) {
-                    tablePanel.removeSelectedRow(row);
-                    tablePanel.repaint();
-                }
-                removeStarForUser(row);
-                *
-                */
-            }
-        });
-
-        return item;
     }
 
     @Override
     public void variantSelectionChanged(VariantRecord r) {
         this.selectedVariant = r;
         ta.setText("");
+        updateComments();
     }
 
+    private void updateComments() {
+        existingCommentsPanel.removeAll();
 
+        KeyValuePairPanel kvp = new KeyValuePairPanel();
+        kvp.setKeysVisible(false);
+
+        existingCommentsPanel.add(kvp);
+
+        try {
+            List<VariantComment> comments = MedSavantClient.VariantManager.getVariantComments(
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentProjectID(),
+                    ReferenceController.getInstance().getCurrentReferenceID(),
+                    selectedVariant.getUploadID(),
+                    selectedVariant.getFileID(),
+                    selectedVariant.getVariantID());
+
+            Collections.reverse(comments);
+
+            parent.setTitle(getName() + (comments.isEmpty() ? "" : " (" + comments.size() + ")"));
+
+            int row = 0;
+            for (VariantComment sv : comments) {
+                String key = (row++) + "";
+
+                if (row == 5) {
+                    kvp.addMoreRow();
+                }
+
+                kvp.addKey(key);
+                kvp.setValue(key, new StarredVariantCommentPanel(sv));
+            }
+
+            existingCommentsPanel.updateUI();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    class StarredVariantCommentPanel extends JPanel {
+
+        private JLabel userLabel;
+        private JLabel timeStampLabel;
+        private JTextArea textArea;
+        private final VariantComment comment;
+
+        public StarredVariantCommentPanel(VariantComment v) {
+            this.setOpaque(false);
+            this.setBorder(ViewUtil.getSmallBorder());
+
+            this.comment = v;
+            initComponents();
+
+            userLabel.setText(v.getUser());
+            timeStampLabel.setText(v.getTimestamp().toLocaleString());
+            textArea.setText(v.getDescription());
+        }
+
+        private void initComponents() {
+
+            this.setLayout(new GridBagLayout());
+
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = 0;
+            c.gridy = 0;
+            c.weightx = 1;
+            c.weighty = 0;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.NORTHWEST;
+
+            JPanel header = ViewUtil.getClearPanel();
+            ViewUtil.applyHorizontalBoxLayout(header);
+
+
+            JPanel h2 = ViewUtil.getClearPanel();
+            ViewUtil.applyVerticalBoxLayout(h2);
+
+            userLabel = new JLabel();
+            userLabel.setFont(ViewUtil.getSmallTitleFont());
+
+            timeStampLabel = new JLabel();
+
+            h2.add(userLabel);
+            h2.add(timeStampLabel);
+
+            header.add(h2);
+
+            header.add(Box.createHorizontalGlue());
+
+            if (comment.getUser().equals(LoginController.getInstance().getUserName())) {
+                JButton rem = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CLEAR));
+                header.add(rem);
+
+                rem.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        List<VariantComment> list = new ArrayList<VariantComment>();
+                        list.add(comment);
+                        try {
+                            MedSavantClient.VariantManager.removeVariantComments(LoginController.sessionId, list);
+                        } catch (SQLException ex) {
+                            Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (RemoteException ex) {
+                            Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        updateComments();
+                    }
+                });
+            }
+
+            textArea = new JTextArea("");
+            textArea.setOpaque(false);
+            textArea.setColumns(20);
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            textArea.setEditable(false);
+            textArea.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
+
+            this.add(header, c);
+
+            c.gridy++;
+            c.weighty = 1;
+            c.fill = GridBagConstraints.VERTICAL;
+
+            this.add(textArea, c);
+
+            Font defaultFont = header.getFont();
+
+            Font userFont = new Font(defaultFont.getFamily(), Font.BOLD, 12);
+            Font timeStampFont = new Font(defaultFont.getFamily(), Font.PLAIN, 9);
+
+            userLabel.setFont(userFont);
+            timeStampLabel.setFont(timeStampFont);
+
+            timeStampLabel.setForeground(Color.gray);
+            textArea.setForeground(Color.darkGray);
+        }
+    }
 }

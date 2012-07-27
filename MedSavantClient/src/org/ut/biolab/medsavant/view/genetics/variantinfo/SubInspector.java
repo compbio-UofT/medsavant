@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
+import com.jidesoft.pane.CollapsiblePane;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.vcf.VariantRecord;
@@ -27,7 +28,13 @@ import org.ut.biolab.medsavant.vcf.VariantRecord;
  */
 public abstract class SubInspector {
 
+    protected CollapsiblePane parent;
+
     public abstract String getName();
     public abstract JPanel getInfoPanel();
+
+    public void setPaneParent(CollapsiblePane p) {
+        this.parent = p;
+    }
 
 }

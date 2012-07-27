@@ -28,8 +28,8 @@ public abstract class Filter {
 
     public static final Condition[] FALSE_CONDITION = new Condition[] { BinaryConditionMS.equalTo(0, 1) };
 
-    public static enum Type { NUMERIC, STRING, BOOLEAN, COHORT, REGION_LIST, GENERIC, TAG, PLUGIN, STARRED, ONTOLOGY };
-    
+    public static enum Type { NUMERIC, STRING, BOOLEAN, COHORT, REGION_LIST, GENERIC, TAG, PLUGIN, ONTOLOGY };
+
     protected Filter() {
     }
 
