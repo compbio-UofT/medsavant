@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.ScatterChartMap;
 import org.ut.biolab.medsavant.model.SimplePatient;
 import org.ut.biolab.medsavant.model.SimpleVariantFile;
-import org.ut.biolab.medsavant.model.StarredVariant;
+import org.ut.biolab.medsavant.model.VariantComment;
 
 
 /**
@@ -53,7 +53,7 @@ public interface VariantManagerAdapter extends Remote {
     public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields) throws Exception;
     public int removeVariants(String sessID, int projID, int refID, List<SimpleVariantFile> files) throws Exception;
     public RemoteInputStream exportVariants(String sessID, int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, IOException, InterruptedException;
-  
+
     public TableSchema getCustomTableSchema(String sessID, int projID, int refID) throws SQLException, RemoteException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, int start, int limit) throws SQLException, RemoteException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException;
@@ -80,9 +80,10 @@ public interface VariantManagerAdapter extends Remote {
     public List<Integer> getUploadIDsMatchingVariantTags(String sessID, String[][] variantTags) throws SQLException, RemoteException;
     public SimpleVariantFile[] getUploadedFiles(String sessID, int projID, int refID) throws SQLException, RemoteException;
     public List<String[]> getTagsForUpload(String sessID, int uploadID) throws SQLException, RemoteException;
-    public Set<StarredVariant> getStarredVariants(String sessID, int projID, int refID) throws SQLException, RemoteException;
-    public int addStarredVariants(String sessID, int projID, int refID, List<StarredVariant> variant) throws SQLException, RemoteException;
-    public void unstarVariant(String sessID, int projID, int refID, int uploadID, int fileID, int variantId, String user) throws SQLException, RemoteException;    
+    //public Set<StarredVariant> getStarredVariants(String sessID, int projID, int refID) throws SQLException, RemoteException;
+    public List<VariantComment> getVariantComments(String sessID, int projID, int refID, int uploadId, int fileID, int variantID) throws SQLException, RemoteException;
+    public void addVariantComments(String sessID, List<VariantComment> comments) throws SQLException, RemoteException;
+    public void removeVariantComments(String sessID, List<VariantComment> comments) throws SQLException, RemoteException;
     public Map<SimplePatient, Integer> getPatientHeatMap(String sessID, int projID, int refID, Condition[][] conditions, List<SimplePatient> patients) throws SQLException, RemoteException;
     public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, List<String> dnaIDs) throws SQLException, RemoteException;
     public ScatterChartMap getFilteredFrequencyValuesForScatter(String sessID, int projID, int refID, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically) throws SQLException, RemoteException;

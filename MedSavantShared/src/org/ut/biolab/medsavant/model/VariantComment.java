@@ -11,7 +11,7 @@ import java.sql.Timestamp;
  *
  * @author Andrew
  */
-public class StarredVariant implements Serializable {
+public class VariantComment implements Serializable {
 
     private int uploadId;
     private int fileId;
@@ -19,8 +19,12 @@ public class StarredVariant implements Serializable {
     private String user;
     private String description;
     private Timestamp timestamp;
-    
-    public StarredVariant(int uploadId, int fileId, int variantId, String user, String description, Timestamp timestamp) {
+    private final int projectId;
+    private final int referenceId;
+
+    public VariantComment(int projectId, int refId, int uploadId, int fileId, int variantId, String user, String description, Timestamp timestamp) {
+        this.projectId = projectId;
+        this.referenceId = refId;
         this.uploadId = uploadId;
         this.fileId = fileId;
         this.variantId = variantId;
@@ -28,7 +32,15 @@ public class StarredVariant implements Serializable {
         this.description = description;
         this.timestamp = timestamp;
     }
-    
+
+    public int getProjectId() {
+        return projectId;
+    }
+
+    public int getReferenceId() {
+        return referenceId;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -48,41 +60,41 @@ public class StarredVariant implements Serializable {
     public int getVariantId() {
         return variantId;
     }
-    
+
     public Timestamp getTimestamp() {
         return timestamp;
     }
-    
+
     @Override
-    public int hashCode() { 
+    public int hashCode() {
         int hash = 23;
         hash = hash*37 + uploadId;
         hash = hash*37 + fileId;
         hash = hash*37 + variantId;
         return hash;
     }
-    
+
     @Override
     public boolean equals(Object o){
-        if(!(o instanceof StarredVariant)) return false;
-        StarredVariant other = (StarredVariant) o;
+        if(!(o instanceof VariantComment)) return false;
+        VariantComment other = (VariantComment) o;
         return this.uploadId == other.uploadId
-                && this.fileId == other.fileId 
+                && this.fileId == other.fileId
                 && this.variantId == other.variantId
                 && (other.user == null || this.user == null || this.user.equals(other.user));
     }
-    
+
     public Object[] toArray(int projectId, int referenceId){
         return new Object[]{
             projectId,
-            referenceId, 
+            referenceId,
             uploadId,
             fileId,
-            variantId, 
+            variantId,
             user,
             description,
             timestamp
         };
     }
-    
+
 }

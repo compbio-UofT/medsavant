@@ -9,13 +9,11 @@ package org.ut.biolab.medsavant.db;
  * @author Andrew
  */
 public class Settings {
-    
+
     /* Version of client used to create database */
     public static final String KEY_CLIENT_VERSION = "client version";
-    
+
     /* Lock for database updates */
     public static final String KEY_DB_LOCK = "db lock";
-    
-    public static final int NUM_STARRED_ALLOWED = 1000;
-       
+
 }
