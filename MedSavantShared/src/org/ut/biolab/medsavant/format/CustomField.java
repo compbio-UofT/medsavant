@@ -42,7 +42,6 @@ public class CustomField implements Serializable {
         this.description = description;
         setColumnType(columnType);
     }
-
     public String getAlias() {
         return alias;
     }
