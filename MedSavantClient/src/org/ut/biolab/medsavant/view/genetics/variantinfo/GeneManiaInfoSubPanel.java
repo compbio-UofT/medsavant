@@ -646,10 +646,9 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                 final org.ut.biolab.medsavant.model.Gene finalGene = currGene;
                                 kvp.addKey(Integer.toString(i));
                                 JLabel geneName = new JLabel(currGene.getName());
-                                EntrezButton geneLinkButton = new EntrezButton(currGene.getName());
-                                Document doc = Jsoup.parse(geneLinkButton.getURL(), 20*1000);
-                                Element e= doc.select("title").first();
-                                String description = e.ownText().replaceAll(currGene.getName(), "").replaceAll("\\[Homo sapiens\\] - Gene - NCBI", "").trim();
+                                EntrezButton geneLinkButton = new EntrezButton("TAAR2");
+                                Element e= geneLinkButton.getParsedLink().select("p.desc").first();
+                                String description = e.ownText().replaceAll("and ", "").replaceAll(" \\[\\]", "");
                                 geneName.setToolTipText(description);
                                 kvp.setValue(Integer.toString(i), geneName);
                                 JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));

@@ -59,12 +59,18 @@ public class EntrezButton extends JButton{
 
     }
     
-    public URL getURL() throws MalformedURLException, UnsupportedEncodingException, IOException {
-        String baseUrl1 = "http://www.ncbi.nlm.nih.gov/gene?term=";
+    private URL getURL() throws MalformedURLException, UnsupportedEncodingException, IOException{
         String baseUrl2 = "http://www.ncbi.nlm.nih.gov";
-        URL url = new URL(baseUrl1 + URLEncoder.encode(geneName, charset));
-        Document doc = Jsoup.parse(url, 20 * 1000);
-        Element link = doc.select("div.rslt:has(em:contains(Homo))").first();
+        Element link = getParsedLink();
         return new URL(baseUrl2 + link.select("a").attr("href"));
     }
+    
+    public Element getParsedLink() throws MalformedURLException, UnsupportedEncodingException, IOException{
+        String baseUrl1 = "http://www.ncbi.nlm.nih.gov/gene?term=";
+        URL url = new URL(baseUrl1 + URLEncoder.encode(geneName, charset));
+        Document doc =Jsoup.parse(url, 20 * 1000);
+        Element link = doc.select("div.rslt:has(em:contains(Homo))").first();
+        return link;
+    }
+    
 }
