@@ -106,7 +106,6 @@ public class MedSavantClient implements MedSavantServerRegistry {
 
         frame = MedSavantFrame.getInstance();
         frame.setExtendedState(MedSavantFrame.MAXIMIZED_BOTH);
-        com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(frame, true);
         frame.setVisible(true);
         LOG.info("MedSavant booted.");
 
