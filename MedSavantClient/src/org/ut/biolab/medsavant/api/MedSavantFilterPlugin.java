@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011 University of Toronto
+ *    Copyright 2011-2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.ut.biolab.medsavant.api;
 
 import java.util.Map;
 import javax.swing.JPanel;
+
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 
 
@@ -43,7 +44,4 @@ public abstract class MedSavantFilterPlugin extends MedSavantPlugin {
     public abstract FilterStateAdapter saveState(int queryID);
 
     public abstract void loadState(Map<String, String> values, int queryID);
-
-    public abstract void resetView();
-
 }

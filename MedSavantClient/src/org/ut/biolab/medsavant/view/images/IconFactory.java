@@ -52,7 +52,6 @@ public class IconFactory {
         ADD_ON_TOOLBAR,
         REMOVE_ON_TOOLBAR,
         ADD,
-        REMOVE,
         EXPAND,
         COLLAPSE,
         EDIT,
@@ -134,8 +133,6 @@ public class IconFactory {
                 return getIcon(iconroot + "mac_remove.png");
             case ADD:
                 return getIcon(iconroot + "add_f.png");
-            case REMOVE:
-                return getIcon(iconroot + "rem_f.png");
             case EDIT:
                 return getIcon(iconroot + "mac_edit.png");
             case IMPORT:

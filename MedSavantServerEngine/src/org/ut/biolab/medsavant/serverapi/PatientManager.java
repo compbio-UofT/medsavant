@@ -41,7 +41,6 @@ import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.format.CustomField.Category;
 import org.ut.biolab.medsavant.format.PatientFormat;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
@@ -209,8 +208,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
                     rs.getString(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE),
                     rs.getBoolean(PatientFormatTableSchema.COLUMNNAME_OF_FILTERABLE),
                     rs.getString(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS),
-                    rs.getString(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION),
-                    Category.PATIENT));
+                    rs.getString(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION)));
         }
         return result.toArray(new CustomField[0]);
     }

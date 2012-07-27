@@ -228,10 +228,4 @@ public abstract class TabularFilterView extends FilterView {
             return availableValues.get(i);
         }
     }
-
-    @Override
-    public void resetView() {
-        selectAll.doClick();
-        applyButton.setEnabled(false);
-    }
 }

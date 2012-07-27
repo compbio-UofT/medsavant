@@ -299,10 +299,4 @@ public class NumericFilterView extends FilterView {
         }
         return new FilterState(Filter.Type.NUMERIC, alias, columnName, map);
     }
-
-     @Override
-    public void resetView() {
-        selectAll.doClick();
-        applyButton.setEnabled(false);
-    }
 }

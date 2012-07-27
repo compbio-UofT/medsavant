@@ -33,72 +33,14 @@ public class CustomField implements Serializable {
     private String alias;
     private String description;
     private ColumnType fieldType;
-    private Category category;
 
-    public static enum Category {
-
-        PATIENT {
-            public String toString() {
-                    return "Patient Conditions";
-                }
-            }
-        ,
-        GENOTYPE {
-            public String toString() {
-                    return "Undefined";
-                }
-            }
-        ,
-        VARIANT {
-            public String toString() {
-                    return "Variant Conditions";
-                }
-            }
-        ,
-        GENOME_COORDS {
-            public String toString() {
-                    return "Ontology and Region Conditions";
-                }
-            }
-        ,
-        PLUGIN {
-            public String toString() {
-                    return "Plugin Conditions";
-                }
-            }
-    }
-
-
-    /*
-    public static String categoryToString(Category cat){
-        switch(cat){
-            case PATIENT:
-                return "Patient & Phenotype";
-            case VARIANT:
-                return "Variant Annotation";
-            case GENOME_COORDS:
-                return "Genomic Coordinates";
-            case PLUGIN:
-                return "Plugins";
-            default:
-                return "undefined";
-        }
-    }
-    *
-    */
-
-    public CustomField(String name, String type, boolean filterable, String alias, String description){
-        this(name, type, filterable, alias, description, Category.VARIANT);
-    }
-
-    public CustomField(String name, String type, boolean filterable, String alias, String description, Category category){
+    public CustomField(String name, String type, boolean filterable, String alias, String description) {
         this.columnName = name;
         this.columnType = type;
         this.filterable = filterable;
         this.alias = alias;
         this.description = description;
         setColumnType(columnType);
-        this.category = category;
     }
 
     public String getAlias() {
@@ -164,10 +106,6 @@ public class CustomField implements Serializable {
         return "`" + (forceLowerCase ? columnName.toLowerCase() : columnName) + "` " + columnType + " DEFAULT NULL,";
     }
 
-    public Category getCategory() {
-        return category;
-    }
-
     public boolean isNumeric() {
         return fieldType.isNumeric();
     }
@@ -183,6 +121,14 @@ public class CustomField implements Serializable {
         CustomField other = (CustomField)o;
         return this.getColumnName().equals(other.getColumnName()) &&
                 this.getColumnTypeString().equals(other.getColumnTypeString());
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + (this.columnName != null ? this.columnName.hashCode() : 0);
+        hash = 89 * hash + (this.description != null ? this.description.hashCode() : 0);
+        return hash;
     }
 
 }

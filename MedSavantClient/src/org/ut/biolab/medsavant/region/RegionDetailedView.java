@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterHolder;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedTableView;
 
@@ -52,7 +52,6 @@ public class RegionDetailedView extends DetailedTableView {
 
     private final RegionController controller;
     private RegionSet selectedRegion;
-    private static List<FilterPanelSubItem> filterPanels;
 
 
     public RegionDetailedView() {
@@ -143,10 +142,7 @@ public class RegionDetailedView extends DetailedTableView {
                             i++;
                         }
 
-                        removeExistingFilters();
-                        filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                                "Region Lists - Filter by List",
-                                regions.length + " Region(s)",
+                        FilterUtils.createAndApplyGenericFixedFilter("Region Lists - Filter by List", regions.length + " Region(s)",
                                 ComboCondition.or(results));
 
                     } catch (Exception x) {
@@ -159,13 +155,5 @@ public class RegionDetailedView extends DetailedTableView {
         }
 
         return popupMenu;
-    }
-
-    private void removeExistingFilters() {
-        if (filterPanels != null) {
-            for (FilterPanelSubItem panel : filterPanels) {
-                panel.removeThis();
-            }
-        }
     }
 }

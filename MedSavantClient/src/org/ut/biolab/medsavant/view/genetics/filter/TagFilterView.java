@@ -332,13 +332,4 @@ public class TagFilterView extends FilterView {
         }
         return list;
     }
-
-
-    @Override
-    public void resetView() {
-
-        clear.doClick();
-        ta.setText("");
-        applyButton.setEnabled(false);
-    }
 }

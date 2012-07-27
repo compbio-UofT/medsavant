@@ -19,7 +19,6 @@ import java.io.Serializable;
 
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.format.AnnotationFormat.AnnotationType;
-import org.ut.biolab.medsavant.format.CustomField.Category;
 
 
 /**
@@ -71,7 +70,7 @@ public class VariantFormat implements Serializable {
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID, "INT(11)", true, ALIAS_OF_UPLOAD_ID, ""),
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID, "INT(11)", true, ALIAS_OF_FILE_ID, ""),
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID, "INT(11)", true, ALIAS_OF_VARIANT_ID, ""),
-            new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID, "VARCHAR(10)", true, ALIAS_OF_DNA_ID, "", Category.PATIENT),
+            new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID, "VARCHAR(10)", true, ALIAS_OF_DNA_ID, ""),
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, "VARCHAR(5)", true, ALIAS_OF_CHROM, ""),
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, "INT(11)", true, ALIAS_OF_POSITION, ""),
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID, "(VARCHAR(45)", false, ALIAS_OF_DBSNP_ID, ""),

@@ -41,7 +41,6 @@ import org.ut.biolab.medsavant.controller.FilterController.FilterAction;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.component.HoverButton;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -68,7 +67,7 @@ public class SearchBar extends JPanel {
 
     public final SearchConditionsPanel createNewSubPanel() {
 
-        SearchConditionsPanel cp = new SearchConditionsPanel(this, subNum++);
+        SearchConditionsPanel cp = new SearchConditionsPanel(subNum++);
         filterContainerContent.add(cp);
         subs2.add(cp);
 
@@ -79,13 +78,6 @@ public class SearchBar extends JPanel {
 
     public void refreshSubPanels() {
         filterContainerContent.removeAll();
-
-        //check for removed items
-        for (int i = subs2.size() - 1; i >= 0; i--) {
-            if (subs2.get(i).isRemoved()) {
-                subs2.remove(i);
-            }
-        }
 
         //refresh panel
         for (int i = 0; i < subs2.size(); i++) {
@@ -132,7 +124,7 @@ public class SearchBar extends JPanel {
         }
     }
 
-    private void saveFilters() throws IOException {
+    private void saveFilters() throws Exception {
 
         String name = DialogUtils.displayInputMessage("Save filters", "Enter a name for these filters", "filters");
         File file = new File(DirectorySettings.getFiltersDirectory(), name + ".xml");
@@ -168,7 +160,7 @@ public class SearchBar extends JPanel {
         out.write("<filters>\n");
         for (SearchConditionsPanel sub : subs2) {
             out.write("\t<set>\n");
-            for (FilterPanelSubItem item : sub.getSubItems()) {
+            for (FilterHolder item : sub.getFilterHolders()) {
                 out.write(item.getFilterView().saveState().generateXML() + "\n");
             }
             out.write("\t</set>\n");
@@ -268,15 +260,6 @@ public class SearchBar extends JPanel {
 
         JPanel addFilterPanel = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(addFilterPanel);
-        final JLabel addLabel = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
-        addLabel.setToolTipText("Add new filter set");
-        addLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                createNewSubPanel();
-            }
-        });
-
 
         FilterEffectivenessPanel hp = new FilterEffectivenessPanel();
 
@@ -290,8 +273,8 @@ public class SearchBar extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 try {
                     saveFilters();
-                } catch (IOException ex) {
-                    ClientMiscUtils.reportError("Error saving filters: %s", ex);
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Error saving filter set: %s", ex);
                 }
             }
         });

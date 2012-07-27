@@ -168,9 +168,4 @@ public class RegionSetFilterView extends FilterView {
         LOG.info(String.format("Adding filter: %s.", f.getName()));
         FilterController.addFilter(f, getQueryID());
     }
-
-    @Override
-    public void resetView() {
-        regionsCombo.setSelectedIndex(0);
-    }
 }

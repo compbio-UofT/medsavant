@@ -186,10 +186,4 @@ class CohortFilterView extends FilterView {
         if (appliedId != null) map.put("value", Integer.toString(appliedId));
         return new FilterState(Filter.Type.COHORT, FILTER_NAME, FILTER_ID, map);
     }
-
-    @Override
-    public void resetView() {
-        b.setSelectedItem(0);
-        applyButton.setEnabled(false);
-    }
 }

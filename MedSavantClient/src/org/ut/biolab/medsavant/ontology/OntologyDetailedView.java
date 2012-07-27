@@ -15,29 +15,13 @@
  */
 package org.ut.biolab.medsavant.ontology;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.util.List;
-import java.util.Map;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.*;
-import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedTableView;
 
 
@@ -49,8 +33,6 @@ public class OntologyDetailedView extends DetailedTableView {
     private static final Log LOG = LogFactory.getLog(OntologyDetailedView.class);
 
     private Ontology selectedItem;
-    private static List<FilterPanelSubItem> filterPanels;
-
 
     public OntologyDetailedView() {
         super("", "Multiple ontologies (%d)", new String[] { "Name", "Type", "OBO URL", "Mapping URL" });
@@ -157,12 +139,4 @@ public class OntologyDetailedView extends DetailedTableView {
 
         return popupMenu;
     }*/
-
-    private void removeExistingFilters() {
-        if (filterPanels != null) {
-            for (FilterPanelSubItem panel : filterPanels) {
-                panel.removeThis();
-            }
-        }
-    }
 }

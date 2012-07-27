@@ -16,8 +16,11 @@
 package org.ut.biolab.medsavant.view.patients;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -31,14 +34,10 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import com.jidesoft.utils.SwingWorker;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
@@ -46,9 +45,7 @@ import org.ut.biolab.medsavant.model.SimplePatient;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.component.StripyTable;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.list.DetailedView;
@@ -64,10 +61,8 @@ public class CohortDetailedView extends DetailedView {
     private Cohort cohort;
     private Cohort[] cohorts;
     private boolean multipleSelected = false;
-    private static List<FilterPanelSubItem> filterPanels;
     private CohortDetailsSW sw;
     private final JPanel details;
-    //private final JPanel menu;
     private JTable list;
     private final CollapsiblePane membersPane;
 
@@ -293,10 +288,7 @@ public class CohortDetailedView extends DetailedView {
                         for (int i = 0; i < dnaIDs.size(); i++) {
                             conditions[i] = BinaryConditionMS.equalTo(col, dnaIDs.get(i));
                         }
-                        removeExistingFilters();
-                        filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                                "Cohorts - Filter by Cohort(s)",
-                                cohorts.length + " Cohort(s) (" + dnaIDs.size() + " DNA Id(s))",
+                        FilterUtils.createAndApplyGenericFixedFilter("Cohorts - Filter by Cohort(s)", cohorts.length + " Cohort(s) (" + dnaIDs.size() + " DNA Id(s))",
                                 ComboCondition.or(conditions));
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Error filtering by cohorts: %s", ex);
@@ -308,13 +300,5 @@ public class CohortDetailedView extends DetailedView {
         }
 
         return popupMenu;
-    }
-
-    private void removeExistingFilters() {
-        if (filterPanels != null) {
-            for (FilterPanelSubItem panel : filterPanels) {
-                panel.removeThis();
-            }
-        }
     }
 }

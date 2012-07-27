@@ -57,8 +57,8 @@ public class FilterUtils {
      * This should generally be used for any filter applications external
      * to the TablePanel.
      */
-    public static List<FilterPanelSubItem> createAndApplyGenericFixedFilter(String title, String description, Condition c) {
-
+    public static void createAndApplyGenericFixedFilter(String title, String description, Condition c) {
+/*
         SearchBar fp = getFilterPanel();
         FilterController.setAutoCommit(false);
 
@@ -73,53 +73,11 @@ public class FilterUtils {
         fp.refreshSubPanels();
 
         FilterController.commit(title, FilterController.FilterAction.ADDED);
-        FilterController.setAutoCommit(true);
-
-        return filterPanels;
-    }
-
-    public static void createAndApplyNumericFilterView(String column, String alias, WhichTable whichTable, double low, double high) throws SQLException, RemoteException{
-
-        SearchBar fp = startFilterBy(column);
-        FilterController.setAutoCommit(false);
-
-        //create and apply filter to each subquery
-        for (SearchConditionsPanel fps : fp.getFilterPanelSubs()) {
-            FilterView view = new NumericFilterView(whichTable, column, fps.getID(), alias, false);
-            fps.addNewSubItem(view, column);
-            ((NumericFilterView)view).applyFilter(low, high);
-        }
-
-        fp.refreshSubPanels();
-
-        FilterController.commit(alias, FilterController.FilterAction.ADDED);
-        FilterController.setAutoCommit(true);
-    }
-
-    public static void createAndApplyStringListFilterView(String column, String alias, WhichTable whichTable, List<String> values) throws SQLException, RemoteException {
-
-        SearchBar fp = startFilterBy(column);
-        FilterController.setAutoCommit(false);
-
-        //create and apply filter to each subquery
-        for (SearchConditionsPanel fps : fp.getFilterPanelSubs()) {
-            FilterView view = new StringListFilterView(whichTable, column, fps.getID(), alias);
-            fps.addNewSubItem(view, column);
-            ((StringListFilterView)view).applyFilter(values);
-        }
-
-        fp.refreshSubPanels();
-
-        FilterController.commit(alias, FilterController.FilterAction.ADDED);
-        FilterController.setAutoCommit(true);
-    }
-
-    public static void removeFiltersById(String id) {
-        removeFiltersById(getFilterPanel(), id);
+        FilterController.setAutoCommit(true);*/
     }
 
     public static void loadFilterView(FilterState state, SearchConditionsPanel fps) throws SQLException, RemoteException {
-        switch (state.getType()) {
+/*        switch (state.getType()) {
             case NUMERIC:
                 fps.addNewSubItem(new NumericFilterView(state, fps.getID()), state.getID());
                 break;
@@ -155,23 +113,9 @@ public class FilterUtils {
                     }
                 }
                 break;
-        }
+        }*/
     }
 
-
-    /*
-     * Common functionality for all created filters
-     */
-    private static SearchBar startFilterBy(String column) {
-
-        //get filter panel
-        SearchBar fp = getFilterPanel();
-
-        //remove filters by id
-        removeFiltersById(fp, column);
-
-        return fp;
-    }
 
     private static SearchBar getFilterPanel() {
         /*FilterPanel fp = GeneticsFilterPage.getInstance().getFilterPanel();
@@ -190,15 +134,11 @@ public class FilterUtils {
         return fp;
     }
 
-    private static void removeFiltersById(SearchBar fp, String id) {
-        for (SearchConditionsPanel fps : fp.getFilterPanelSubs()) {
-            fps.removeFiltersByID(id);
-        }
-    }
-
+    // TODO: What does clearFilterSets mean when filters aren't added/removed.
     public static void clearFilterSets() {
+/*
         FilterController.removeAllFilters();
         SearchBar fp = getFilterPanel();
-        fp.clearAll();
+        fp.clearAll();*/
     }
 }

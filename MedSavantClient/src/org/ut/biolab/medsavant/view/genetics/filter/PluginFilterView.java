@@ -41,12 +41,6 @@ public class PluginFilterView {
             public FilterState saveState() {
                 return plugin.saveState(queryID);
             }
-
-            @Override
-            public void resetView() {
-                plugin.resetView();
-            }
-
         };
     }
 }

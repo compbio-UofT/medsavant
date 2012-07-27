@@ -98,9 +98,4 @@ public class GenericFixedFilterView extends FilterView {
     private String replaceAllTableReferences(String s){
         return s.replaceAll("t[0-9]+\\.", "");
     }
-
-    @Override
-    public void resetView() {
-    }
-
 }

@@ -37,7 +37,6 @@ import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -54,7 +53,6 @@ class VariantFilesDetailedView extends DetailedView {
     private SimpleVariantFile[] files;
     private DetailsSW sw;
     private CollapsiblePane infoPanel;
-    private static List<FilterPanelSubItem> filterPanels;
 
     public VariantFilesDetailedView() {
 
@@ -199,10 +197,7 @@ class VariantFilesDetailedView extends DetailedView {
                                 BinaryCondition.equalTo(file, files[i].getFileId()));
                     }
 
-                    removeExistingFilters();
-                    filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                            "Variant Files - Filter by File(s)",
-                            files.length + " Files(s)",
+                    FilterUtils.createAndApplyGenericFixedFilter("Variant Files - Filter by File(s)", files.length + " Files(s)",
                             ComboCondition.or(conditions));
                 }
             });
@@ -211,13 +206,4 @@ class VariantFilesDetailedView extends DetailedView {
 
         return popupMenu;
     }
-
-    private void removeExistingFilters() {
-        if (filterPanels != null) {
-            for (FilterPanelSubItem panel : filterPanels) {
-                panel.removeThis();
-            }
-        }
-    }
-
 }

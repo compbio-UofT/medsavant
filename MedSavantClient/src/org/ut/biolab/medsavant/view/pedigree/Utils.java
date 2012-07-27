@@ -34,7 +34,7 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterPanelSubItem;
+import org.ut.biolab.medsavant.view.genetics.filter.FilterHolder;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 
 /**
@@ -42,8 +42,6 @@ import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
  * @author Andrew
  */
 public class Utils {
-
-    private static List<FilterPanelSubItem> filterPanels;
 
     public static JPopupMenu createPopup(final String familyId) {
         JPopupMenu popupMenu = new JPopupMenu();
@@ -78,10 +76,7 @@ public class Utils {
                 for (int i = 0; i < dnaIds.size(); i++) {
                     conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
                 }
-                removeExistingFilters();
-                filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
-                        "Individuals - Filter by Family",
-                        numPatients + " Patient(s) (" + dnaIds.size() + " DNA Id(s))",
+                FilterUtils.createAndApplyGenericFixedFilter("Individuals - Filter by Family", numPatients + " Patient(s) (" + dnaIds.size() + " DNA Id(s))",
                         ComboCondition.or(conditions));
 
             }
@@ -118,8 +113,7 @@ public class Utils {
                     for (int i = 0; i < dnaIDs.size(); i++) {
                         conditions[i] = BinaryConditionMS.equalTo(col, dnaIDs.get(i));
                     }
-                    removeExistingFilters();
-                    filterPanels = FilterUtils.createAndApplyGenericFixedFilter(
+                    FilterUtils.createAndApplyGenericFixedFilter(
                             "Individuals - Filter by Selected Patient(s)",
                             patientIds.length + " Patient(s) (" + dnaIDs.size() + " DNA Id(s))",
                             ComboCondition.or(conditions));
@@ -131,14 +125,5 @@ public class Utils {
         popupMenu.add(filter1Item);
 
         return popupMenu;
-    }
-
-    private static void removeExistingFilters() {
-        if (filterPanels != null) {
-            for (FilterPanelSubItem panel : filterPanels) {
-                panel.removeThis();
-            }
-            filterPanels.clear();
-        }
     }
 }

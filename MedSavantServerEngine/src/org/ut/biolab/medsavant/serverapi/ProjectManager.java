@@ -50,7 +50,6 @@ import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtil;
 import org.ut.biolab.medsavant.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.format.CustomField.Category;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
@@ -547,8 +546,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                     rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE),
                     rs.getBoolean(VariantFormatTableSchema.COLUMNNAME_OF_FILTERABLE),
                     rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_ALIAS),
-                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_DESCRIPTION),
-                    Category.VARIANT));
+                    rs.getString(VariantFormatTableSchema.COLUMNNAME_OF_DESCRIPTION)));
         }
         return result.toArray(new CustomField[0]);
     }
