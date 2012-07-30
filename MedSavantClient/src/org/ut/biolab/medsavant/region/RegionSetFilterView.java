@@ -129,11 +129,17 @@ public class RegionSetFilterView extends FilterView {
         }
     }
 
+    public static FilterState wrapState(Integer applied) {
+        Map<String, String> map = new HashMap<String, String>();
+        if (applied != null) {
+            map.put("value", applied.toString());
+        }
+        return new FilterState(Filter.Type.REGION_LIST, FILTER_NAME, FILTER_ID, map);
+    }
+
     @Override
     public FilterState saveState() {
-        Map<String, String> map = new HashMap<String, String>();
-        if (appliedID != null) map.put("value", Integer.toString(appliedID));
-        return new FilterState(Filter.Type.REGION_LIST, FILTER_NAME, FILTER_ID, map);
+        return wrapState(appliedID);
     }
 
     private void applyCurrentFilter() {

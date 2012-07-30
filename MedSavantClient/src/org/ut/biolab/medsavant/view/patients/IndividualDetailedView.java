@@ -91,7 +91,7 @@ public class IndividualDetailedView extends DetailedView {
     private final JPanel infoContent;
     private final JPanel infoDetails;
     private final JPanel menu;
-    private int[] patientIds;
+    private int[] patientIDs;
     //private final JPanel pedigreeContent;
     private final JPanel pedigreeDetails;
     private PedigreeSW sw0;
@@ -206,10 +206,10 @@ public class IndividualDetailedView extends DetailedView {
         view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "0", new SymbolSexUndesignated()));
 	view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "null", new SymbolSexUndesignated()));
 
-        view.addRule(new PedigreeBasicRule(patientIds));
+        view.addRule(new PedigreeBasicRule(patientIDs));
 
         selectedNodes = new ArrayList<Integer>();
-        for(Integer i : patientIds) {
+        for(Integer i : patientIDs) {
             selectedNodes.add(i);
         }
 
@@ -247,7 +247,7 @@ public class IndividualDetailedView extends DetailedView {
                             selectedNodes.add(patientId);
                             overNodeView.setBorderColor(ViewUtil.detailSelectedBackground);
                         } else {
-                            for(int i : patientIds) {
+                            for(int i : patientIDs) {
                                 if (i == patientId) return;
                             }
                             selectedNodes.remove(patientId);
@@ -482,8 +482,8 @@ public class IndividualDetailedView extends DetailedView {
 
         cp.setTitle(hospitalId);
 
-        patientIds = new int[1];
-        patientIds[0] = patientId;
+        patientIDs = new int[1];
+        patientIDs[0] = patientId;
 
         infoDetails.removeAll();
         infoDetails.updateUI();
@@ -506,9 +506,9 @@ public class IndividualDetailedView extends DetailedView {
 
     @Override
     public void setMultipleSelections(List<Object[]> items) {
-        patientIds = new int[items.size()];
+        patientIDs = new int[items.size()];
         for(int i = 0; i < items.size(); i++) {
-            patientIds[i] = (Integer) items.get(i)[0];
+            patientIDs[i] = (Integer) items.get(i)[0];
         }
         if (items.isEmpty()) {
                 cp.setTitle("");
@@ -523,11 +523,11 @@ public class IndividualDetailedView extends DetailedView {
 
 
     @Override
-    public void setRightClick(MouseEvent e) {
-        if (patientIds != null && patientIds.length > 0) {
-            JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(patientIds);
-            popup.show(e.getComponent(), e.getX(), e.getY());
+    public JPopupMenu createPopup() {
+        if (patientIDs != null && patientIDs.length > 0) {
+            return org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(patientIDs);
         }
+        return null;
     }
 
     private JButton addIndividualsButton() {
@@ -537,7 +537,7 @@ public class IndividualDetailedView extends DetailedView {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (patientIds != null && patientIds.length > 0) {
+                if (patientIDs != null && patientIDs.length > 0) {
                     try {
                         Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
                         ComboForm form = new ComboForm(cohorts, "Select Cohort", "Select which cohort to add to:");
@@ -545,7 +545,7 @@ public class IndividualDetailedView extends DetailedView {
                         if (selected == null) {
                             return;
                         }
-                        MedSavantClient.CohortManager.addPatientsToCohort(LoginController.sessionId, patientIds, selected.getId());
+                        MedSavantClient.CohortManager.addPatientsToCohort(LoginController.sessionId, patientIDs, selected.getId());
                     } catch (Exception x) {
                         LOG.error("Error fetching cohorts.", x);
                     }

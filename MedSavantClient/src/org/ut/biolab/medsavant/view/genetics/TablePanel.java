@@ -26,6 +26,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableModel;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
@@ -37,10 +38,13 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.filter.*;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.VariantComment;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -286,7 +290,7 @@ public class TablePanel extends JLayeredPane {
                             if (r < 0 || r >= table.getRowCount()) {
                                 return;
                             }
-                            JPopupMenu popup = createPopupSingle(table, r);
+                            JPopupMenu popup = createPopupSingle();
                             popup.show(e.getComponent(), e.getX(), e.getY());
                         } else if (numSelected > 1) {
                             JPopupMenu popup = createPopupMultiple(table);
@@ -350,60 +354,66 @@ public class TablePanel extends JLayeredPane {
         }
     }
 
-    private JPopupMenu createPopupSingle(SortableTable table, int r) {
-
-        table.setRowSelectionInterval(r, r);
-        int row = TableModelWrapperUtils.getActualRowAt(table.getModel(), r);
-
-        final String chrom = (String) table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
-        final int position = (Integer) table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
-        final String alt = (String) table.getModel().getValueAt(r, DefaultVariantTableSchema.INDEX_OF_ALT);
-
+    private JPopupMenu createPopupSingle() {
 
         JPopupMenu menu = new JPopupMenu();
 
+        TableModel model = tablePanel.getTable().getModel();
+        int r = TableModelWrapperUtils.getActualRowAt(model, tablePanel.getTable().getSelectedRow());
+
+        String chrom = (String)model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
+        int pos = (Integer)model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
+        String alt = (String)model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_ALT);
+
         //Filter by position
-        JMenuItem filter1Item = new JMenuItem("Filter by Position");
-        filter1Item.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                ThreadController.getInstance().cancelWorkers(pageName);
-
-/* TODO:               Condition[] conditions = new Condition[2];
-                conditions[0] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom);
-                conditions[1] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), position);
-                FilterUtils.createAndApplyGenericFixedFilter(
-                        "Table - Filter by Position",
-                        "Chromosome: " + chrom + ", Position: " + position,
-                        ComboCondition.and(conditions));*/
-            }
-        });
-        menu.add(filter1Item);
+        JMenuItem posItem = new JMenuItem("Filter by Position");
+        posItem.addActionListener(new PopupActionListener(chrom, pos, null));
+        menu.add(posItem);
 
         //Filter by position and alt
-        JMenuItem filter2Item = new JMenuItem("Filter by Position and Alt");
-/* TODO:       filter2Item.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                ThreadController.getInstance().cancelWorkers(pageName);
-
-                Condition[] conditions = new Condition[3];
-                conditions[0] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom);
-                conditions[1] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), position);
-                conditions[2] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_ALT), alt);
-                FilterUtils.createAndApplyGenericFixedFilter(
-                        "Table - Filter by Position",
-                        "Chromosome: " + chrom + ", Position: " + position + ", Alt: " + alt,
-                        ComboCondition.and(conditions));
-            }
-        });*/
-        menu.add(filter2Item);
+        JMenuItem posAndAltItem = new JMenuItem("Filter by Position and Alt");
+        posAndAltItem.addActionListener(new PopupActionListener(chrom, pos, alt));
+        menu.add(posAndAltItem);
 
         return menu;
+    }
+
+    private class PopupActionListener implements ActionListener {
+        private final String chrom;
+        private final int pos;
+        private final String alt;
+
+        PopupActionListener(String chrom, int pos, String alt) {
+            this.chrom = chrom;
+            this.pos = pos;
+            this.alt = alt;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ThreadController.getInstance().cancelWorkers(pageName);
+
+            try {
+                TableModel model = tablePanel.getTable().getModel();
+                int r = TableModelWrapperUtils.getActualRowAt(model, tablePanel.getTable().getSelectedRow());
+
+                // TODO: Support for adding ad hoc filters to multiple query panels.
+                QueryPanel qp = GeneticsFilterPage.getSearchBar().getQueryPanels().get(0);
+                TableSchema schema = ProjectController.getInstance().getCurrentVariantTableSchema();
+                DbColumn chromColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
+                qp.loadFilterView(StringListFilterView.wrapState(WhichTable.VARIANT, chromColumn.getName(), VariantFormat.ALIAS_OF_CHROM, Arrays.asList(chrom)));
+
+                DbColumn posColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION);
+                qp.loadFilterView(NumericFilterView.wrapState(WhichTable.VARIANT, posColumn.getName(), VariantFormat.ALIAS_OF_POSITION, new Range(pos, pos), false));
+
+                if (alt != null) {
+                    DbColumn altColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_ALT);
+                    qp.loadFilterView(StringListFilterView.wrapState(WhichTable.VARIANT, altColumn.getName(), VariantFormat.ALIAS_OF_ALT, Arrays.asList(alt)));
+                }
+            } catch (Exception ex) {
+                ClientMiscUtils.reportError("Unable to set filter: %s", ex);
+            }
+        }
     }
 
     private JPopupMenu createPopupMultiple(SortableTable table) {

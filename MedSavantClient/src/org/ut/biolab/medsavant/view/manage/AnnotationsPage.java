@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import javax.swing.JPopupMenu;
 
 import org.ut.biolab.medsavant.controller.ExternalAnnotationController;
 import org.ut.biolab.medsavant.util.ThreadController;
@@ -192,8 +193,8 @@ public class AnnotationsPage extends SubSectionView {
         }
 
         @Override
-        public void setRightClick(MouseEvent e) {
-            //nothing yet
+        public JPopupMenu createPopup() {
+            return null;
         }
 
         private synchronized void setDetailsList(List<String[]> info) {

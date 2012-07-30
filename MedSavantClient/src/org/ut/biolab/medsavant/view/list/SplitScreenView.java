@@ -20,12 +20,7 @@ import java.awt.CardLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import javax.swing.Box;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -289,10 +284,13 @@ public class SplitScreenView extends JPanel {
             stp.getTable().addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    if(SwingUtilities.isRightMouseButton(e)) {
+                    if (SwingUtilities.isRightMouseButton(e)) {
                         int row = stp.getTable().rowAtPoint(e.getPoint());
                         stp.getTable().getSelectionModel().setSelectionInterval(row, row);
-                        detailedView.setRightClick(e);
+                        JPopupMenu popup = detailedView.createPopup();
+                        if (popup != null) {
+                            popup.show(e.getComponent(), e.getX(), e.getY());
+                        }
                     }
                 }
             });

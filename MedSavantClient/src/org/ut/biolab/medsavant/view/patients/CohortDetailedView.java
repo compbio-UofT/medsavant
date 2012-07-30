@@ -188,20 +188,6 @@ public class CohortDetailedView extends DetailedView {
         details.updateUI();
     }
 
-    @Override
-    public void setRightClick(MouseEvent e) {
-        Cohort[] selected;
-        if (multipleSelected) {
-            selected = cohorts;
-        } else {
-            selected = new Cohort[1];
-            selected[0] = cohort;
-        }
-
-        JPopupMenu popup = createPopup(selected);
-        popup.show(e.getComponent(), e.getX(), e.getY());
-    }
-
     /*
      * private JButton setDefaultCaseButton() { JButton button = new
      * JButton("Set default Case cohort");
@@ -255,7 +241,8 @@ public class CohortDetailedView extends DetailedView {
         return button;
     }
 
-    private JPopupMenu createPopup(final Cohort[] cohorts) {
+    @Override
+    public JPopupMenu createPopup() {
         JPopupMenu popupMenu = new JPopupMenu();
 
         if (ProjectController.getInstance().getCurrentVariantTableSchema() == null) {

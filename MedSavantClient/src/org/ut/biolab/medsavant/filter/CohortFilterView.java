@@ -50,7 +50,7 @@ class CohortFilterView extends FilterView {
     public static final String FILTER_ID = "cohort";
     private static final String COHORT_ALL = "All Individuals";
 
-    private Integer appliedId;
+    private Integer appliedID;
     private ActionListener al;
     private JComboBox b;
     private final JButton applyButton;
@@ -97,7 +97,7 @@ class CohortFilterView extends FilterView {
                         }
 
                         Cohort cohort = (Cohort) b.getSelectedItem();
-                        appliedId = cohort.getId();
+                        appliedID = cohort.getId();
 
                         try {
 
@@ -177,10 +177,16 @@ class CohortFilterView extends FilterView {
                 ProjectController.getInstance().getCurrentProjectID());
     }
 
+    public static FilterState wrapState(Integer applied) {
+        Map<String, String> map = new HashMap<String, String>();
+        if (applied != null) {
+            map.put("value", applied.toString());
+        }
+        return new FilterState(Filter.Type.COHORT, FILTER_NAME, FILTER_ID, map);
+    }
+
     @Override
     public FilterState saveState() {
-        Map<String, String> map = new HashMap<String, String>();
-        if (appliedId != null) map.put("value", Integer.toString(appliedId));
-        return new FilterState(Filter.Type.COHORT, FILTER_NAME, FILTER_ID, map);
+        return wrapState(appliedID);
     }
 }

@@ -97,10 +97,6 @@ public class FilterController extends Controller<FilterEvent> {
         fireEvent(new FilterEvent(prev == null ? FilterEvent.Type.ADDED : FilterEvent.Type.MODIFIED, filter));
     }
 
-    public void addFilter(String filterID, int queryID, Object... args) {
-        
-    }
-
     public void removeFilter(String filtID, int queryID) {
 
         if (filterMap.get(queryID) != null) {

@@ -101,21 +101,25 @@ public class StringListFilterView extends TabularFilterView {
         initContentPanel();
     }
 
-    @Override
-    public FilterState saveState() {
+    public static FilterState wrapState(WhichTable t, String colName, String alias, List<String> applied) {
         Map<String, String> map = new HashMap<String, String>();
-        map.put("table", whichTable.toString());
-        if (appliedValues != null && !appliedValues.isEmpty()) {
-            String values = "";
-            for (int i = 0; i < appliedValues.size(); i++) {
-                values += appliedValues.get(i);
-                if (i != appliedValues.size() - 1) {
-                    values += ";;;";
+        map.put("table", t.toString());
+        if (applied != null && !applied.isEmpty()) {
+            StringBuilder values = new StringBuilder();
+            for (int i = 0; i < applied.size(); i++) {
+                values.append(applied.get(i));
+                if (i != applied.size() - 1) {
+                    values.append(";;;");
                 }
             }
-            map.put("values", values);
+            map.put("values", values.toString());
         }
-        return new FilterState(Filter.Type.STRING, alias, columnName, map);
+        return new FilterState(Filter.Type.STRING, alias, colName, map);
+    }
+
+    @Override
+    public FilterState saveState() {
+        return wrapState(whichTable, columnName, alias, appliedValues);
     }
 
     @Override

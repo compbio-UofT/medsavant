@@ -17,7 +17,6 @@ package org.ut.biolab.medsavant.region;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -52,12 +51,6 @@ public class RegionDetailedView extends DetailedTableView {
     }
 
     @Override
-    public void setRightClick(MouseEvent e) {
-        JPopupMenu popup = createPopup();
-        popup.show(e.getComponent(), e.getX(), e.getY());
-    }
-
-    @Override
     public MedSavantWorker<GenomicRegion[]> createWorker() {
         return new MedSavantWorker<GenomicRegion[]>("") {
 
@@ -88,7 +81,8 @@ public class RegionDetailedView extends DetailedTableView {
         super.setSelectedItem(item);
     }
 
-    private JPopupMenu createPopup() {
+    @Override
+    public JPopupMenu createPopup() {
         JPopupMenu popupMenu = new JPopupMenu();
 
         if (ProjectController.getInstance().getCurrentVariantTableSchema() == null) {
@@ -101,12 +95,13 @@ public class RegionDetailedView extends DetailedTableView {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
+/* TODO:                    fps.loadFilterView(state);
                     try {
                         GenomicRegion[] regions = controller.getRegionsInSet(selectedRegion);
                         FilterController.getInstance().addFilter(RegionSetFilterView.FILTER_ID, FilterController.getInstance().getCurrentFilterSetID(), (Object)regions);
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Error filtering region lists: %s", ex);
-                    }
+                    }*/
                 }
             });
             popupMenu.add(filter1Item);

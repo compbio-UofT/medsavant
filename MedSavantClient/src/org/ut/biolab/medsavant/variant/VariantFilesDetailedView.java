@@ -19,7 +19,6 @@ package org.ut.biolab.medsavant.variant;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -99,12 +98,6 @@ class VariantFilesDetailedView extends DetailedView {
         sw.execute();
     }
 
-    @Override
-    public void setRightClick(MouseEvent e) {
-        JPopupMenu popup = createPopup(files);
-        popup.show(e.getComponent(), e.getX(), e.getY());
-    }
-
     public synchronized void setFileInfoList(List<String[]> info) {
 
         details.removeAll();
@@ -173,7 +166,8 @@ class VariantFilesDetailedView extends DetailedView {
         details.updateUI();
     }
 
-    private JPopupMenu createPopup(final SimpleVariantFile[] files) {
+    @Override
+    public JPopupMenu createPopup() {
         JPopupMenu popupMenu = new JPopupMenu();
 
         if (ProjectController.getInstance().getCurrentVariantTableSchema() == null) {

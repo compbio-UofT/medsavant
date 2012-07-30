@@ -19,9 +19,9 @@ package org.ut.biolab.medsavant.project;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
@@ -262,8 +262,8 @@ public class ProjectManagementPage extends SubSectionView {
         }
 
         @Override
-        public void setRightClick(MouseEvent e) {
-            //nothing yet
+        public JPopupMenu createPopup() {
+            return null;    //nothing yet
         }
 
         private class DetailsWorker extends MedSavantWorker<ProjectDetails[]> {

@@ -27,9 +27,6 @@ import java.util.TreeMap;
 import javax.swing.*;
 import javax.swing.table.TableModel;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.grid.SortableTable;
 
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -265,7 +262,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
 
                     ThreadController.getInstance().cancelWorkers(pageName);
                     
-                    FilterController.getInstance().addFilter(RegionSetFilterView.FILTER_ID, FilterController.getInstance().getCurrentFilterSetID(), chrom, startPos, endPos);
+// TODO:                   FilterController.getInstance().addFilter(RegionSetFilterView.FILTER_ID, FilterController.getInstance().getCurrentFilterSetID(), chrom, startPos, endPos);
                 }
             });
             menu.add(filter1Item);

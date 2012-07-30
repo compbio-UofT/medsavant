@@ -34,21 +34,24 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
+ * Panel which contains a collection of <code>QueryPanel</code>s, each of which contains a range of <code>Filter</code>s.
  *
  * @author Andrew
  */
 public class SearchBar extends JPanel {
 
     private FilterController filterController;
-    private List<QueryPanel> subs2 = new ArrayList<QueryPanel>();
-    private int subNum = 1;
-    private JPanel filterContainerContent;
+    private List<QueryPanel> queryPanels = new ArrayList<QueryPanel>();
+    private int nextQueryID = 1;
+    private JPanel queryPanelContainer;
     private JComboBox filterList;
     private boolean addingItems = false;
     private FilterHistoryPanel historyPanel;
     private JButton deleteButton;
 
-    /** Creates new form FilterPanel */
+    /**
+     * Creates search bar to contains our query panels.
+     */
     public SearchBar() {
         filterController = FilterController.getInstance();
         initComponents();
@@ -57,9 +60,9 @@ public class SearchBar extends JPanel {
 
     public final QueryPanel createNewQueryPanel() {
 
-        QueryPanel cp = new QueryPanel(subNum++);
-        filterContainerContent.add(cp);
-        subs2.add(cp);
+        QueryPanel cp = new QueryPanel(nextQueryID++);
+        queryPanelContainer.add(cp);
+        queryPanels.add(cp);
 
         refreshSubPanels();
 
@@ -67,16 +70,16 @@ public class SearchBar extends JPanel {
     }
 
     public void refreshSubPanels() {
-        filterContainerContent.removeAll();
+        queryPanelContainer.removeAll();
 
         //refresh panel
-        for (int i = 0; i < subs2.size(); i++) {
-            filterContainerContent.add(subs2.get(i));
-            filterContainerContent.add(Box.createVerticalStrut(5));
+        for (int i = 0; i < queryPanels.size(); i++) {
+            queryPanelContainer.add(queryPanels.get(i));
+            queryPanelContainer.add(Box.createVerticalStrut(5));
         }
 
         //filterContainer.add(createNewOrButton());
-        filterContainerContent.add(Box.createVerticalGlue());
+        queryPanelContainer.add(Box.createVerticalGlue());
     }
 
     private void checkFilterListChanged() {
@@ -93,13 +96,13 @@ public class SearchBar extends JPanel {
         }
     }
 
-    public List<QueryPanel> getFilterPanelSubs() {
-        return subs2;
+    public List<QueryPanel> getQueryPanels() {
+        return queryPanels;
     }
 
     public void clearAll() {
-        subs2.clear();
-        subNum = 1;
+        queryPanels.clear();
+        nextQueryID = 1;
         createNewQueryPanel();
     }
 
@@ -148,7 +151,7 @@ public class SearchBar extends JPanel {
         BufferedWriter out = new BufferedWriter(new FileWriter(file, false));
 
         out.write("<filters>\n");
-        for (QueryPanel sub : subs2) {
+        for (QueryPanel sub : queryPanels) {
             out.write("\t<set>\n");
             for (FilterHolder item : sub.getFilterHolders()) {
                 out.write(item.getFilterView().saveState().generateXML() + "\n");
@@ -216,10 +219,10 @@ public class SearchBar extends JPanel {
 
         filterController.removeAllFilters();
         for (int i = 0; i < states.size(); i++) {
-            QueryPanel fps = createNewQueryPanel();
+            QueryPanel qp = createNewQueryPanel();
             List<FilterState> filters = states.get(i);
             for (FilterState state : filters) {
-                fps.loadFilterView(state);
+                qp.loadFilterView(state);
             }
         }
         refreshSubPanels();
@@ -234,14 +237,14 @@ public class SearchBar extends JPanel {
         filterAndToolbarContainer.setLayout(new BorderLayout());
         //filterAndToolbarContainer.setBorder(ViewUtil.getMediumBorder());
 
-        filterContainerContent = ViewUtil.getClearPanel();
-        filterContainerContent.setLayout(new BoxLayout(filterContainerContent, BoxLayout.Y_AXIS));
+        queryPanelContainer = ViewUtil.getClearPanel();
+        queryPanelContainer.setLayout(new BoxLayout(queryPanelContainer, BoxLayout.Y_AXIS));
 
         JPanel topContainer = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(topContainer);
 
 
-        JScrollPane scroll = ViewUtil.getClearBorderlessScrollPane(filterContainerContent);
+        JScrollPane scroll = ViewUtil.getClearBorderlessScrollPane(queryPanelContainer);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         JPanel addFilterPanel = ViewUtil.getClearPanel();
@@ -285,8 +288,6 @@ public class SearchBar extends JPanel {
             }
         });
         updateFilterList();
-
-
 
         JToolBar saveContainer = new JToolBar();// ViewUtil.getClearPanel();
         saveContainer.setBackground(ViewUtil.getTertiaryMenuColor());

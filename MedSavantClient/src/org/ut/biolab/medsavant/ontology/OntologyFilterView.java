@@ -73,22 +73,26 @@ public class OntologyFilterView extends TabularFilterView {
         }.setVisible(true);
     }
 
-    @Override
-    public FilterState saveState() {
+    public static FilterState wrapState(String title, OntologyType ont, List<String> applied) {
         Map<String, String> map = new HashMap<String, String>();
-        String filterID = OntologyFilter.ontologyToFilterID(ontology);
+        String filterID = OntologyFilter.ontologyToFilterID(ont);
         map.put("ontology", filterID);
-        if (appliedValues != null && !appliedValues.isEmpty()) {
+        if (applied != null && !applied.isEmpty()) {
             String values = "";
-            for (int i = 0; i < appliedValues.size(); i++) {
-                values += appliedValues.get(i);
-                if (i != appliedValues.size() - 1) {
+            for (int i = 0; i < applied.size(); i++) {
+                values += applied.get(i);
+                if (i != applied.size() - 1) {
                     values += ";;;";
                 }
             }
             map.put("values", values);
         }
-        return new FilterState(Filter.Type.ONTOLOGY, getTitle(), filterID, map);
+        return new FilterState(Filter.Type.ONTOLOGY, title, filterID, map);
+    }
+
+    @Override
+    public FilterState saveState() {
+        return wrapState(getTitle(), ontology, appliedValues);
     }
 
     @Override

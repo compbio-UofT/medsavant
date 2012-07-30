@@ -91,7 +91,7 @@ public class GeneticsFilterPage extends SubSectionView {
         ThreadController.getInstance().cancelWorkers(getName());
     }
 
-    public static SearchBar getFilterPanel() {
+    public static SearchBar getSearchBar() {
         return panel;
     }
 }

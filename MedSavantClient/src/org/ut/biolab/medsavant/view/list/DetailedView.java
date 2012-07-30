@@ -21,10 +21,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -83,11 +80,7 @@ public abstract class DetailedView extends JPanel {
 
     public abstract void setMultipleSelections(List<Object[]> selectedRows);
 
-    public abstract void setRightClick(MouseEvent e);
-
-    /*public void setTitle(String str) {
-        this.title.setText(str);
-    }*/
+    public abstract JPopupMenu createPopup();
 
     public JPanel getContentPanel() {
         return this.contentPanel;

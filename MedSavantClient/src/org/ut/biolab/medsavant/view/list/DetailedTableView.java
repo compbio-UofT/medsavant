@@ -18,7 +18,6 @@ package org.ut.biolab.medsavant.view.list;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.*;
 
@@ -94,8 +93,8 @@ public abstract class DetailedTableView extends DetailedView {
     }
 
     @Override
-    public void setRightClick(MouseEvent e) {
-        //nothing yet
+    public JPopupMenu createPopup() {
+        return null;
     }
 
     public synchronized void setData(Object[][] data) {

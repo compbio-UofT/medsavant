@@ -17,9 +17,9 @@ package org.ut.biolab.medsavant.user;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
@@ -221,8 +221,8 @@ public class UserManagementPage extends SubSectionView implements Listener<UserE
         }
 
         @Override
-        public void setRightClick(MouseEvent e) {
-            //nothing yet
+        public JPopupMenu createPopup() {
+            return null;    //nothing yet
         }
 
         public synchronized void setUserInfoList(String[] info) {

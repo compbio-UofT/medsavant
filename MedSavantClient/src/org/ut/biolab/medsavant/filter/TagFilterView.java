@@ -35,7 +35,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
@@ -301,14 +300,18 @@ public class TagFilterView extends FilterView {
         return result;
     }
 
-    @Override
-    public FilterState saveState() {
+    public static FilterState wrapState(List<VariantTag> applied) {
         Map<String, String> map = new HashMap<String, String>();
-        map.put("variantTags", variantTagsToString(appliedTags));
+        map.put("variantTags", variantTagsToString(applied));
         return new FilterState(Filter.Type.TAG, FILTER_NAME, FILTER_ID, map);
     }
 
-    private String variantTagsToString(List<VariantTag> tags) {
+    @Override
+    public FilterState saveState() {
+        return wrapState(appliedTags);
+    }
+
+    private static String variantTagsToString(List<VariantTag> tags) {
         String s = "";
         for (VariantTag tag : tags) {
             s += tag.key + ":::" + tag.value + ";;;";
@@ -316,7 +319,7 @@ public class TagFilterView extends FilterView {
         return s;
     }
 
-    private List<VariantTag> stringToVariantTags(String s) {
+    private static List<VariantTag> stringToVariantTags(String s) {
         List<VariantTag> list = new ArrayList<VariantTag>();
         String[] pairs = s.split(";;;");
         for (String x : pairs) {

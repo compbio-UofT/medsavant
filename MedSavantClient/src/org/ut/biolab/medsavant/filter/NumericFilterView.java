@@ -284,15 +284,19 @@ public class NumericFilterView extends FilterView {
         }
     }
 
+    public static FilterState wrapState(WhichTable t, String colName, String alias, Range r, boolean dec) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("table", t.toString());
+        map.put("isDecimal", Boolean.toString(dec));
+        if (r != null) {
+            map.put("min", Double.toString(r.getMin()));
+            map.put("max", Double.toString(r.getMax()));
+        }
+        return new FilterState(Filter.Type.NUMERIC, alias, colName, map);        
+    }
+
     @Override
     public FilterState saveState() {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("table", whichTable.toString());
-        map.put("isDecimal", Boolean.toString(isDecimal));
-        if (appliedRange != null) {
-            map.put("min", Double.toString(appliedRange.getMin()));
-            map.put("max", Double.toString(appliedRange.getMax()));
-        }
-        return new FilterState(Filter.Type.NUMERIC, alias, columnName, map);
+        return wrapState(whichTable, columnName, alias, appliedRange, isDecimal);
     }
 }
