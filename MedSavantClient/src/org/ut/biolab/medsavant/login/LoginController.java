@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.controller;
+package org.ut.biolab.medsavant.login;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.event.LoginEvent;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.project.ProjectChooser;
 import org.ut.biolab.medsavant.project.ProjectController;

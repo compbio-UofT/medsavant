@@ -16,15 +16,12 @@
 package org.ut.biolab.medsavant.view.genetics.inspector;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.beans.PropertyVetoException;
 import javax.swing.JPanel;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
-import java.awt.CardLayout;
-import java.beans.PropertyVetoException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JLabel;
 
 import org.ut.biolab.medsavant.view.genetics.variantinfo.SubInspector;
 import org.ut.biolab.medsavant.view.util.ViewUtil;

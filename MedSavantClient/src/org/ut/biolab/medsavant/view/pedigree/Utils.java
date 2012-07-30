@@ -30,12 +30,11 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterHolder;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
+
 
 /**
  *
@@ -48,7 +47,7 @@ public class Utils {
 
         //Filter by patient
         JMenuItem filter1Item = new JMenuItem("Filter by Family");
-        filter1Item.addActionListener(new ActionListener() {
+/* TODO:        filter1Item.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -80,7 +79,7 @@ public class Utils {
                         ComboCondition.or(conditions));
 
             }
-        });
+        });*/
         popupMenu.add(filter1Item);
 
         return popupMenu;
@@ -91,7 +90,7 @@ public class Utils {
 
         //Filter by patient
         JMenuItem filter1Item = new JMenuItem("Filter by Selected Patient(s)");
-        filter1Item.addActionListener(new ActionListener() {
+/*        filter1Item.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -121,7 +120,7 @@ public class Utils {
                     ClientMiscUtils.reportError("Error applying patient filters: %s", ex);
                 }
             }
-        });
+        });*/
         popupMenu.add(filter1Item);
 
         return popupMenu;

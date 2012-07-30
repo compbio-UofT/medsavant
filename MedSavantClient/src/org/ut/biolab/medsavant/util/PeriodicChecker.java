@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
 import javax.swing.Timer;
 
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.event.LoginEvent;
+import org.ut.biolab.medsavant.login.LoginEvent;
 
 /**
  * Class which performs a periodic task while the user is logged in.

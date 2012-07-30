@@ -17,8 +17,8 @@
 package org.ut.biolab.medsavant.api;
 
 import java.util.Map;
-import org.ut.biolab.medsavant.model.Filter;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterState;
+import org.ut.biolab.medsavant.filter.Filter;
+import org.ut.biolab.medsavant.filter.FilterState;
 
 
 /**

@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.view.patients;
 
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -33,12 +34,11 @@ import com.jidesoft.wizard.AbstractWizardPage;
 import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-
-import java.awt.event.KeyAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
 
 /**

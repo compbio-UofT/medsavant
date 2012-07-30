@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011-2012 University of Toronto
+ *    Copyright 2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,25 +14,30 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.model;
-
-import com.healthmarketscience.sqlbuilder.Condition;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
+package org.ut.biolab.medsavant.reference;
 
 
 /**
+ * Event class which is fired off by changes in the ReferenceController.
  *
- * @author mfiume
+ * @author tarkvara
  */
-public abstract class Filter {
+public class ReferenceEvent {
+    public enum Type { ADDED, REMOVED, CHANGED };
 
-    public static final Condition[] FALSE_CONDITION = new Condition[] { BinaryConditionMS.equalTo(0, 1) };
+    private final Type type;
+    private final String name;
 
-    public static enum Type { NUMERIC, STRING, BOOLEAN, COHORT, REGION_LIST, GENERIC, TAG, PLUGIN, ONTOLOGY };
-
-    protected Filter() {
+    public ReferenceEvent(Type type, String name) {
+        this.type = type;
+        this.name = name;
     }
 
-    public abstract String getName();
-    public abstract String getID();
+    public Type getType() {
+        return type;
+    }
+
+    public String getName() {
+        return name;
+    }
 }

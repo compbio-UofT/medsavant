@@ -57,24 +57,23 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.TableSchema;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.filter.WhichTable;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RangeCondition;
 import org.ut.biolab.medsavant.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.model.ScatterChartMap;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.WhichTable;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -644,7 +643,7 @@ public class SummaryChart extends JLayeredPane {
                     LoginController.sessionId, 
                     ProjectController.getInstance().getCurrentProjectID(), 
                     ReferenceController.getInstance().getCurrentReferenceID(), 
-                    FilterController.getInstance().getQueryFilterConditions(), 
+                    FilterController.getInstance().getAllFilterConditions(), 
                     columnX, 
                     columnY, 
                     !mapGenerator.isNumeric() || mapGenerator.getTable() == WhichTable.PATIENT, 
@@ -749,7 +748,7 @@ public class SummaryChart extends JLayeredPane {
 
                     TableSchema variantTable = ProjectController.getInstance().getCurrentVariantTableSchema();
                     TableSchema patientTable = ProjectController.getInstance().getCurrentPatientTableSchema();
-                    if (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
+/*                    if (mapGenerator.isNumeric() && !mapGenerator.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
 
                         Range r = Range.rangeFromString(values.get(0));
 
@@ -810,7 +809,7 @@ public class SummaryChart extends JLayeredPane {
                                     mapGenerator.getName() + ": " + values.size() + " selection(s)",
                                     ComboCondition.or(conditions));
                         }
-                    }
+                    }*/
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Error filtering by selection: %s", ex);
                 }

@@ -34,10 +34,9 @@ import com.jidesoft.pane.CollapsiblePanes;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -197,8 +196,10 @@ class VariantFilesDetailedView extends DetailedView {
                                 BinaryCondition.equalTo(file, files[i].getFileId()));
                     }
 
+                    /* TODO:
                     FilterUtils.createAndApplyGenericFixedFilter("Variant Files - Filter by File(s)", files.length + " Files(s)",
                             ComboCondition.or(conditions));
+                            */
                 }
             });
             popupMenu.add(filter1Item);

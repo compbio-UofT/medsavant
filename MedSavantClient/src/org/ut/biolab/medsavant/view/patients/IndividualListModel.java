@@ -20,9 +20,9 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.format.PatientFormat;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
 
 /**

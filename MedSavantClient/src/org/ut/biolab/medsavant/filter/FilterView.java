@@ -14,32 +14,34 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.model.event;
+package org.ut.biolab.medsavant.filter;
 
-import org.ut.biolab.medsavant.model.Filter;
+import javax.swing.JPanel;
 
 
 /**
- * Little event which is sent around when our filter list has changed.
  *
- * @author tarkvara
+ * @author mfiume
  */
-public final class FilterEvent {
-    public enum Type { ADDED, REMOVED, MODIFIED };
+public abstract class FilterView extends JPanel {
 
-    private final Type type;
-    private final Filter filter;
+    private final String title;
+    protected final int queryID;
 
-    public FilterEvent(Type t, Filter f) {
-        type = t;
-        filter = f;
+    public FilterView(String title, int queryID) {
+        this.title = title;
+        this.queryID = queryID;
     }
-    
-    public Type getType() {
-        return type;
+
+    public String getTitle() {
+        return title;
     }
-    
-    public Filter getFilter() {
-        return filter;
+
+    public abstract FilterState saveState();
+
+    /**
+     * Give derived classes a chance to clean up when the filter instance is being removed.
+     */
+    public void cleanup() {
     }
 }

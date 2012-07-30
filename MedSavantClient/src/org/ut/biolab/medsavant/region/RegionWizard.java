@@ -40,12 +40,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.controller.GeneSetController;
+import org.ut.biolab.medsavant.geneset.GeneSetController;
 import org.ut.biolab.medsavant.importing.BEDFormat;
 import org.ut.biolab.medsavant.importing.FileFormat;
 import org.ut.biolab.medsavant.importing.ImportFilePanel;
 import org.ut.biolab.medsavant.model.GeneSet;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.GeneFetcher;
 import org.ut.biolab.medsavant.util.MedSavantWorker;

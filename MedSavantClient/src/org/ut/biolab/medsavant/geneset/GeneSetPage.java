@@ -16,8 +16,6 @@
 
 package org.ut.biolab.medsavant.geneset;
 
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 
@@ -26,7 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.model.GeneSet;
 import org.ut.biolab.medsavant.serverapi.GeneSetManagerAdapter;

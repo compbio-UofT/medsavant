@@ -36,12 +36,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
@@ -128,7 +128,7 @@ public class SavantExportForm extends javax.swing.JDialog {
                 LoginController.sessionId,
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
-                FilterController.getInstance().getQueryFilterConditions(),
+                FilterController.getInstance().getAllFilterConditions(),
                 selectedIds,
                 -1);
 

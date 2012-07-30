@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.controller;
+package org.ut.biolab.medsavant.geneset;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -24,11 +24,11 @@ import java.util.Map;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.GeneSet;
-import org.ut.biolab.medsavant.controller.ReferenceController;
-import org.ut.biolab.medsavant.event.ReferenceEvent;
+import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.serverapi.GeneSetManagerAdapter;
 
 

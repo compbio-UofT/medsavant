@@ -39,12 +39,12 @@ import com.jidesoft.converter.PercentConverter;
 import com.jidesoft.grid.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.filter.FilterController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.model.SimplePatient;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.ExportTable;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -280,7 +280,7 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
 
                 @Override
                 protected Integer doInBackground() throws Exception {
-                    return MedSavantClient.CohortManager.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), cohort.getId(), FilterController.getInstance().getQueryFilterConditions());
+                    return MedSavantClient.CohortManager.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), cohort.getId(), FilterController.getInstance().getAllFilterConditions());
                 }
 
                 @Override
@@ -317,7 +317,7 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
 
                     @Override
                     protected Map<SimplePatient, Integer> doInBackground() throws Exception {
-                        return MedSavantClient.VariantManager.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), FilterController.getInstance().getQueryFilterConditions(), patients);
+                        return MedSavantClient.VariantManager.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), FilterController.getInstance().getAllFilterConditions(), patients);
                     }
 
                     @Override

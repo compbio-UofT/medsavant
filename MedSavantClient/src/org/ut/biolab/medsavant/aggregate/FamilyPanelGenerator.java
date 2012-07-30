@@ -51,10 +51,10 @@ import pedviz.view.symbols.SymbolSexMale;
 import pedviz.view.symbols.SymbolSexUndesignated;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.filter.FilterController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.pedigree.Pedigree;
@@ -212,7 +212,7 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
                         LoginController.sessionId,
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
-                        familyId, FilterController.getInstance().getQueryFilterConditions());
+                        familyId, FilterController.getInstance().getAllFilterConditions());
             }
 
             @Override

@@ -27,9 +27,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Collection;
 import javax.swing.*;
-import org.ut.biolab.medsavant.controller.GeneSetController;
-import org.ut.biolab.medsavant.model.Gene;
 
+import org.ut.biolab.medsavant.geneset.GeneSetController;
+import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;

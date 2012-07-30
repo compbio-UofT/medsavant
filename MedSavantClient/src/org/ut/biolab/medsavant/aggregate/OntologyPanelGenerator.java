@@ -33,14 +33,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.GeneSetController;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.filter.FilterController;
+import org.ut.biolab.medsavant.geneset.GeneSetController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.OntologyTerm;
 import org.ut.biolab.medsavant.ontology.OntologyListItem;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ThreadController;
 
@@ -384,7 +384,7 @@ class OntologyPanelGenerator extends AggregatePanelGenerator {
                                             LoginController.sessionId,
                                             ProjectController.getInstance().getCurrentProjectID(),
                                             ReferenceController.getInstance().getCurrentReferenceID(),
-                                            FilterController.getInstance().getQueryFilterConditions(),
+                                            FilterController.getInstance().getAllFilterConditions(),
                                             gene.getChrom(),
                                             gene.getStart(),
                                             gene.getEnd());

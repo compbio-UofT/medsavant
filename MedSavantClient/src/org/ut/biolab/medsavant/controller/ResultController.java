@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.controller;
 
+import org.ut.biolab.medsavant.filter.FilterController;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
@@ -24,8 +25,10 @@ import com.healthmarketscience.sqlbuilder.dbspec.Column;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.model.event.FilterEvent;
+import org.ut.biolab.medsavant.filter.FilterEvent;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 
 
 /**
@@ -111,7 +114,7 @@ public class ResultController {
                 LoginController.sessionId,
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
-                FilterController.getInstance().getQueryFilterConditions(),
+                FilterController.getInstance().getAllFilterConditions(),
                 start,
                 limit,
                 order);
@@ -133,7 +136,7 @@ public class ResultController {
                         LoginController.sessionId,
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
-                        filterController.getQueryFilterConditions());
+                        filterController.getAllFilterConditions());
                 filterSetIDForFilteredCount = tempFilterId; //temp not really necessary as this is synched...
             }
             return filteredVariantCount;

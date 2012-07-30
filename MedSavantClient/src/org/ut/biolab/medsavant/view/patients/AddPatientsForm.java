@@ -42,7 +42,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;

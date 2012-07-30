@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.controller;
+package org.ut.biolab.medsavant.filter;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -30,14 +30,12 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.event.LoginEvent;
-import org.ut.biolab.medsavant.model.Filter;
-import org.ut.biolab.medsavant.model.QueryFilter;
-import org.ut.biolab.medsavant.model.RangeFilter;
-import org.ut.biolab.medsavant.model.event.FilterEvent;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.login.LoginEvent;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.project.ProjectEvent;
-import org.ut.biolab.medsavant.event.ReferenceEvent;
+import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.util.Controller;
 
 
@@ -99,6 +97,10 @@ public class FilterController extends Controller<FilterEvent> {
         fireEvent(new FilterEvent(prev == null ? FilterEvent.Type.ADDED : FilterEvent.Type.MODIFIED, filter));
     }
 
+    public void addFilter(String filterID, int queryID, Object... args) {
+        
+    }
+
     public void removeFilter(String filtID, int queryID) {
 
         if (filterMap.get(queryID) != null) {
@@ -114,10 +116,10 @@ public class FilterController extends Controller<FilterEvent> {
         }
     }
 
-    public void removeFilterSet(int queryID) {
+    public void removeQuery(int queryID) {
         Map<String, Filter> map = filterMap.remove(queryID);
         if (map == null ||map.isEmpty()) return;
-        Filter f = new QueryFilter() {
+        Filter f = new Filter() {
             @Override
             public String getName() {
                 return "Filter Set";
@@ -151,8 +153,8 @@ public class FilterController extends Controller<FilterEvent> {
         return filterMap.get(queryID).get(title);
     }
 
-    public List<QueryFilter> getQueryFilters(int queryID) {
-        List<QueryFilter> qfs = new ArrayList<QueryFilter>();
+    public List<Filter> getFilters(int queryID) {
+        List<Filter> qfs = new ArrayList<Filter>();
         RangeFilter rf = new RangeFilter() {
             @Override
             public String getName() {
@@ -168,26 +170,26 @@ public class FilterController extends Controller<FilterEvent> {
             if (f instanceof RangeFilter) {
                 rf.merge(((RangeFilter)f).getRangeSet());
                 hasRangeFilter = true;
-            } else if (f instanceof QueryFilter) {
-                qfs.add((QueryFilter) f);
+            } else if (f instanceof Filter) {
+                qfs.add((Filter) f);
             }
         }
         if (hasRangeFilter) {
-            qfs.add((QueryFilter)rf);
+            qfs.add((Filter)rf);
         }
         return qfs;
     }
 
-    public List<List<QueryFilter>> getQueryFilters() {
-        List<List<QueryFilter>> qfs = new ArrayList<List<QueryFilter>>();
+    public List<List<Filter>> getAllFilters() {
+        List<List<Filter>> qfs = new ArrayList<List<Filter>>();
         for (Object key : filterMap.keySet().toArray()) {
-            qfs.add(getQueryFilters((Integer)key));
+            qfs.add(getFilters((Integer)key));
         }
         return qfs;
     }
 
-    public Condition[] getQueryFilterConditions(int queryID) throws SQLException, RemoteException {
-        List<QueryFilter> filters = prioritizeFilters(getQueryFilters(queryID));
+    public Condition[] getFilterConditions(int queryID) throws SQLException, RemoteException {
+        List<Filter> filters = prioritizeFilters(getFilters(queryID));
         Condition[] conditions = new Condition[filters.size()];
         for (int i = 0; i < filters.size(); i++) {
             conditions[i] = ComboCondition.or(filters.get(i).getConditions());
@@ -195,32 +197,34 @@ public class FilterController extends Controller<FilterEvent> {
         return conditions;
     }
 
-    private List<QueryFilter> prioritizeFilters(List<QueryFilter> filters) {
+    public Condition[][] getAllFilterConditions() throws SQLException, RemoteException {
+        Object[] keys = filterMap.keySet().toArray();
+        Condition[][] conditions = new Condition[keys.length][];
+        for (int i = 0; i < keys.length; i++) {
+            conditions[i] = getFilterConditions((Integer)keys[i]);
+        }
+        return conditions;
+    }
 
-        List<QueryFilter> result = new ArrayList<QueryFilter>();
+    private List<Filter> prioritizeFilters(List<Filter> filters) {
+
+        List<Filter> result = new ArrayList<Filter>();
         addFiltersToList(filters, result, DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
         addFiltersToList(filters, result, DefaultVariantTableSchema.COLUMNNAME_OF_POSITION);
-        for (QueryFilter f : filters) result.add(f); //remaining
+        for (Filter f : filters) {
+            result.add(f); //remaining
+        }
 
         return result;
     }
 
     //add anything from filters with filterId to list
-    private void addFiltersToList(List<QueryFilter> filters, List<QueryFilter> list, String filterId) {
+    private void addFiltersToList(List<Filter> filters, List<Filter> list, String filterId) {
         for (int i = filters.size()-1; i >= 0; i--) {
             if (filters.get(i).getID().equals(filterId)) {
                 list.add(filters.remove(i));
             }
         }
-    }
-
-    public Condition[][] getQueryFilterConditions() throws SQLException, RemoteException {
-        Object[] keys = filterMap.keySet().toArray();
-        Condition[][] conditions = new Condition[keys.length][];
-        for (int i = 0; i < keys.length; i++) {
-            conditions[i] = getQueryFilterConditions((Integer)keys[i]);
-        }
-        return conditions;
     }
 
     public boolean hasFiltersApplied() {
@@ -231,9 +235,5 @@ public class FilterController extends Controller<FilterEvent> {
             }
         }
         return false;
-    }
-
-    public boolean isFilterActive(int queryId, String filterId) {
-        return filterMap.containsKey(queryId) && filterMap.get(queryId).containsKey(filterId);
     }
 }

@@ -28,8 +28,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.LoginController;
-import org.ut.biolab.medsavant.event.LoginEvent;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.login.LoginEvent;
 import org.ut.biolab.medsavant.model.Notification;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.project.ProjectController;

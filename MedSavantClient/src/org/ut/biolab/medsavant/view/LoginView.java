@@ -16,7 +16,6 @@
 
 package org.ut.biolab.medsavant.view;
 
-import org.ut.biolab.medsavant.controller.LoginController;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
@@ -30,7 +29,8 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.SettingsController;
-import org.ut.biolab.medsavant.event.LoginEvent;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.login.LoginEvent;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.manage.AddRemoveDatabaseDialog;
 import org.ut.biolab.medsavant.view.images.IconFactory;

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import javax.swing.*;
+import javax.swing.table.TableModel;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
@@ -32,21 +33,19 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.grid.SortableTable;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.util.ThreadController;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.filter.FilterController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.region.RegionController;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.region.RegionSetFilterView;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.DataRetriever;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -164,7 +163,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectID(),
                                     ReferenceController.getInstance().getCurrentReferenceID(),
-                                    FilterController.getInstance().getQueryFilterConditions(),
+                                    FilterController.getInstance().getAllFilterConditions(),
                                     r.getChrom(),
                                     r.getStart(),
                                     r.getEnd());
@@ -188,7 +187,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectID(),
                                     ReferenceController.getInstance().getCurrentReferenceID(),
-                                    FilterController.getInstance().getQueryFilterConditions(),
+                                    FilterController.getInstance().getAllFilterConditions(),
                                     r.getChrom(),
                                     r.getStart(),
                                     r.getEnd());
@@ -235,8 +234,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
                     if (numSelected == 1) {
                         int r = table.rowAtPoint(e.getPoint());
                         if (r < 0 || r >= table.getRowCount()) return;
-                        JPopupMenu popup = createPopupSingle(table, r);
-                        popup.show(e.getComponent(), e.getX(), e.getY());
+                        createPopupSingle().show(e.getComponent(), e.getX(), e.getY());
                     } else if (numSelected > 1) {
                         //JPopupMenu popup = createPopupMultiple(table);
                         //popup.show(e.getComponent(), e.getX(), e.getY());
@@ -248,14 +246,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
             showShowCard();
         }
 
-        private JPopupMenu createPopupSingle(SortableTable table, int r) {
-
-            table.setRowSelectionInterval(r, r);
-            //int row = TableModelWrapperUtils.getActualRowAt(table.getModel(), r);
-
-            final String chrom = (String)table.getModel().getValueAt(r, 1);
-            final int positionstart = (Integer)table.getModel().getValueAt(r, 2);
-            final int positionend = (Integer)table.getModel().getValueAt(r, 3);
+        private JPopupMenu createPopupSingle() {
 
             JPopupMenu menu = new JPopupMenu();
 
@@ -265,17 +256,16 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    SortableTable table = stp.getTable();
+                    int r = table.getSelectedRows()[0];
+                    TableModel model = stp.getTable().getModel();
+                    String chrom = (String)model.getValueAt(r, 1);
+                    int startPos = (Integer)model.getValueAt(r, 2);
+                    int endPos = (Integer)model.getValueAt(r, 3);
 
                     ThreadController.getInstance().cancelWorkers(pageName);
-
-                    Condition[] conditions = new Condition[3];
-                    conditions[0] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom);
-                    conditions[1] = BinaryCondition.greaterThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), positionstart, true);
-                    conditions[2] = BinaryCondition.lessThan(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), positionend, true);
-                    FilterUtils.createAndApplyGenericFixedFilter(
-                            "Aggregate - Filter by Region",
-                            "Chromosome: " + chrom + ", Position: " + positionstart + " - " + positionend,
-                            ComboCondition.and(conditions));
+                    
+                    FilterController.getInstance().addFilter(RegionSetFilterView.FILTER_ID, FilterController.getInstance().getCurrentFilterSetID(), chrom, startPos, endPos);
                 }
             });
             menu.add(filter1Item);

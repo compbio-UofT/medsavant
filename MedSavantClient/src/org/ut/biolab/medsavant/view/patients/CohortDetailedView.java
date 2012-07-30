@@ -39,14 +39,13 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.model.SimplePatient;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.StripyTable;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -265,7 +264,7 @@ public class CohortDetailedView extends DetailedView {
 
             //Filter by patient
             JMenuItem filter1Item = new JMenuItem("Filter by Cohort(s)");
-            filter1Item.addActionListener(new ActionListener() {
+/* TODO:           filter1Item.addActionListener(new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -295,7 +294,7 @@ public class CohortDetailedView extends DetailedView {
                     }
 
                 }
-            });
+            });*/
             popupMenu.add(filter1Item);
         }
 

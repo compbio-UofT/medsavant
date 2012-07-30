@@ -22,14 +22,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.grid.SortableTable;
@@ -40,19 +37,17 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.Settings;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.VariantFormat;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.VariantComment;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.*;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -376,20 +371,20 @@ public class TablePanel extends JLayeredPane {
 
                 ThreadController.getInstance().cancelWorkers(pageName);
 
-                Condition[] conditions = new Condition[2];
+/* TODO:               Condition[] conditions = new Condition[2];
                 conditions[0] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom);
                 conditions[1] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), position);
                 FilterUtils.createAndApplyGenericFixedFilter(
                         "Table - Filter by Position",
                         "Chromosome: " + chrom + ", Position: " + position,
-                        ComboCondition.and(conditions));
+                        ComboCondition.and(conditions));*/
             }
         });
         menu.add(filter1Item);
 
         //Filter by position and alt
         JMenuItem filter2Item = new JMenuItem("Filter by Position and Alt");
-        filter2Item.addActionListener(new ActionListener() {
+/* TODO:       filter2Item.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -405,7 +400,7 @@ public class TablePanel extends JLayeredPane {
                         "Chromosome: " + chrom + ", Position: " + position + ", Alt: " + alt,
                         ComboCondition.and(conditions));
             }
-        });
+        });*/
         menu.add(filter2Item);
 
         return menu;

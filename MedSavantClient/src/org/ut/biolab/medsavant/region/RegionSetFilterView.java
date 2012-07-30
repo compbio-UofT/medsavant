@@ -32,12 +32,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.model.RegionSet;
-import org.ut.biolab.medsavant.model.Filter;
+import org.ut.biolab.medsavant.filter.Filter;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterState;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterView;
+import org.ut.biolab.medsavant.filter.FilterState;
+import org.ut.biolab.medsavant.filter.FilterView;
 
 
 /**

@@ -1,27 +1,36 @@
+/*
+ *    Copyright 2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package org.ut.biolab.medsavant.view.genetics.inspector;
 
-import com.jidesoft.grid.SortableTable;
-import com.jidesoft.grid.TableModelWrapperUtils;
-import com.jidesoft.swing.AutoResizingTextArea;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
+
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.Settings;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.VariantComment;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.SQLUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
@@ -87,10 +96,8 @@ public class SocialVariantSubInspector extends SubInspector implements VariantSe
                 list.add(sv);
                 try {
                     MedSavantClient.VariantManager.addVariantComments(LoginController.sessionId, list);
-                } catch (SQLException ex) {
-                    Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (RemoteException ex) {
-                    Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Error adding variant comments: %s", ex);
                 }
 
                 ta.setText("");
@@ -152,10 +159,8 @@ public class SocialVariantSubInspector extends SubInspector implements VariantSe
 
             existingCommentsPanel.updateUI();
 
-        } catch (SQLException ex) {
-            Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (RemoteException ex) {
-            Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Error updating comments: %s", ex);
         }
     }
 
@@ -221,10 +226,8 @@ public class SocialVariantSubInspector extends SubInspector implements VariantSe
                         list.add(comment);
                         try {
                             MedSavantClient.VariantManager.removeVariantComments(LoginController.sessionId, list);
-                        } catch (SQLException ex) {
-                            Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (RemoteException ex) {
-                            Logger.getLogger(SocialVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (Exception ex) {
+                            ClientMiscUtils.reportError("Error removing variant comments: %s", ex);
                         }
                         updateComments();
                     }

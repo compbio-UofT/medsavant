@@ -21,12 +21,12 @@ import java.sql.SQLException;
 import java.util.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.controller.*;
-import org.ut.biolab.medsavant.controller.GeneSetController;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.filter.FilterController;
+import org.ut.biolab.medsavant.geneset.GeneSetController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 
 /**
@@ -62,8 +62,8 @@ public class GeneSetFetcher {
             @Override
             public int compare (Gene gene1, Gene gene2) {
                 try {
-                    int numVariantsInGene1 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getQueryFilterConditions(), gene1.getChrom(), gene1.getStart(), gene1.getEnd());
-                    int numVariantsInGene2 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getQueryFilterConditions(), gene2.getChrom(), gene2.getStart(), gene2.getEnd());
+                    int numVariantsInGene1 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getAllFilterConditions(), gene1.getChrom(), gene1.getStart(), gene1.getEnd());
+                    int numVariantsInGene2 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getAllFilterConditions(), gene2.getChrom(), gene2.getStart(), gene2.getEnd());
                     if (numVariantsInGene1 == numVariantsInGene2) {
                         return 0;
                     } else if (numVariantsInGene1 < numVariantsInGene2) {

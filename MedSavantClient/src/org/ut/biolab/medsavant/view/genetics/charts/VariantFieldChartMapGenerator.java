@@ -26,18 +26,18 @@ import com.healthmarketscience.sqlbuilder.Condition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.filter.FilterController;
+import org.ut.biolab.medsavant.filter.FilterEvent;
+import org.ut.biolab.medsavant.filter.WhichTable;
 import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.WhichTable;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -86,7 +86,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
         Condition[][] filterConditions;
         if (useFilteredCounts) {
-            filterConditions = FilterController.getInstance().getQueryFilterConditions();
+            filterConditions = FilterController.getInstance().getAllFilterConditions();
         } else {
             filterConditions = new Condition[][]{};
         }
@@ -163,7 +163,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
         Condition[][] conditions;
         if (useFilteredCounts) {
-            conditions = FilterController.getInstance().getQueryFilterConditions();
+            conditions = FilterController.getInstance().getAllFilterConditions();
         } else {
             conditions = new Condition[][]{};
         }
@@ -275,7 +275,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                 + "_" + field.getColumnName()
                 + "_" + isLogScaleX;
 
-        boolean noConditions = !useFilteredCounts || (FilterController.getInstance().getQueryFilterConditions().length == 0);
+        boolean noConditions = !useFilteredCounts || (FilterController.getInstance().getAllFilterConditions().length == 0);
 
         if (!useFilteredCounts) {
             if (unfilteredMapCache.containsKey(cacheKey)) {

@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.region;
 
+import org.ut.biolab.medsavant.filter.Filter;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
@@ -35,7 +36,7 @@ import org.ut.biolab.medsavant.util.BinaryConditionMS;
  *
  * @author tarkvara
  */
-public abstract class RegionSetFilter extends QueryFilter {
+public abstract class RegionSetFilter extends Filter {
     
     protected Condition[] getConditions(GenomicRegion[] regions) throws SQLException, RemoteException {
 

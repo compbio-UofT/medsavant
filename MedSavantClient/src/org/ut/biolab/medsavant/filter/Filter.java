@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.model;
+package org.ut.biolab.medsavant.filter;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -25,21 +25,26 @@ import com.healthmarketscience.sqlbuilder.InCondition;
 
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 
 
 /**
  *
  * @author mfiume
  */
-public abstract class QueryFilter extends Filter {
+public abstract class Filter {
 
-    protected QueryFilter() {
+    public static enum Type { NUMERIC, STRING, BOOLEAN, COHORT, REGION_LIST, GENERIC, TAG, PLUGIN, ONTOLOGY };
+
+    public static final Condition[] FALSE_CONDITION = new Condition[] { BinaryConditionMS.equalTo(0, 1) };
+
+    public Filter() {
     }
     
-    public boolean unionOverConditions() {
-        return false;
-    }
-    
+    public abstract String getName();
+
+    public abstract String getID();
+
     public abstract Condition[] getConditions() throws SQLException, RemoteException;
     
     /**

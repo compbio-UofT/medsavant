@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.model;
+package org.ut.biolab.medsavant.filter;
 
 import java.rmi.RemoteException;
 import java.util.List;
@@ -28,13 +28,15 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.model.RangeSet;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 
 /**
  *
  * @author AndrewBrook
  */
-public abstract class RangeFilter extends QueryFilter {
+public abstract class RangeFilter extends Filter {
     private static final Log LOG = LogFactory.getLog(RangeFilter.class);
 
     private RangeSet ranges;
