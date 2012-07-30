@@ -22,20 +22,20 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.model.event.FilterEvent;
+import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
@@ -47,7 +47,6 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class GenomeContainer extends JLayeredPane {
 
-    private static final Logger LOG = Logger.getLogger(GenomeContainer.class.getName());
     private Chromosome[] genome;
     private final JPanel chrContainer;
     private ArrayList<ChromosomePanel> chrViews;
@@ -179,16 +178,18 @@ public class GenomeContainer extends JLayeredPane {
         }
     }
 
-    private class GetNumVariantsSwingWorker extends MedSavantWorker implements FiltersChangedListener {
+    private class GetNumVariantsSwingWorker extends MedSavantWorker {
 
-        private int maxRegion = 0;
-        private int regionsDone = 0;
-        private int activeThreads = 0;
-        private final Object workerLock = new Object();
-
-        public GetNumVariantsSwingWorker(String pageName) {
+        GetNumVariantsSwingWorker(String pageName) {
             super(pageName);
-            FilterController.addActiveFilterListener(this);
+            FilterController.getInstance().addListener(new Listener<FilterEvent>() {
+                @Override
+                public void handleEvent(FilterEvent event) {
+                    if (!isDone()) {
+                        cancel(true);
+                    }
+                }
+            });
         }
 
         @Override
@@ -198,7 +199,7 @@ public class GenomeContainer extends JLayeredPane {
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectID(),
                     ReferenceController.getInstance().getCurrentReferenceID(),
-                    FilterController.getQueryFilterConditions(),
+                    FilterController.getInstance().getQueryFilterConditions(),
                     3000000);
             long time = System.currentTimeMillis() - start;
 
@@ -220,23 +221,6 @@ public class GenomeContainer extends JLayeredPane {
 
             showShowCard();
             return true;
-        }
-
-        /*@Override
-        protected void done() {
-        try {
-        get();
-        showShowCard();
-        } catch (Exception x) {
-        // TODO: #90
-        LOG.log(Level.SEVERE, null, x);
-        }
-        } */
-        @Override
-        public void filtersChanged() {
-            if (!isDone()) {
-                cancel(true);
-            }
         }
 
         @Override

@@ -23,8 +23,8 @@ import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.util.ThreadController;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  *
  * @author mfiume
  */
-public class GeneticsChartPage extends SubSectionView implements FiltersChangedListener {
+public class GeneticsChartPage extends SubSectionView {
 
     private JPanel panel;
     //private ChartContainer cc;
@@ -46,7 +46,13 @@ public class GeneticsChartPage extends SubSectionView implements FiltersChangedL
 
     public GeneticsChartPage(SectionView parent) {
         super(parent);
-        FilterController.addFilterListener(this);
+        FilterController.getInstance().addListener(new Listener<FilterEvent>() {
+            @Override
+            public void handleEvent(FilterEvent event) {
+                ThreadController.getInstance().cancelWorkers(getName());
+                tryUpdate();
+            }
+        });
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override
             public void handleEvent(ReferenceEvent event) {
@@ -115,12 +121,6 @@ public class GeneticsChartPage extends SubSectionView implements FiltersChangedL
     public void viewDidUnload() {
         isLoaded = false;
         ThreadController.getInstance().cancelWorkers(getName());
-    }
-
-    @Override
-    public void filtersChanged() {
-        ThreadController.getInstance().cancelWorkers(getName());
-        tryUpdate();
     }
 
     private void tryUpdate() {

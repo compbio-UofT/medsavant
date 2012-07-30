@@ -25,6 +25,7 @@ import java.util.HashMap;
 import com.healthmarketscience.sqlbuilder.Condition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
@@ -32,7 +33,7 @@ import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -43,7 +44,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class VariantFieldChartMapGenerator implements ChartMapGenerator, FiltersChangedListener {
+public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
     private final CustomField field;
     private final WhichTable whichTable;
@@ -51,9 +52,17 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
     Map<String, ChartFrequencyMap> filteredMapCache = new HashMap<String,ChartFrequencyMap>();
 
     private VariantFieldChartMapGenerator(CustomField field, WhichTable whichTable) {
-        FilterController.addFilterListener(this, true);
         this.field = field;
         this.whichTable = whichTable;
+
+        FilterController.getInstance().addListener(new Listener<FilterEvent>() {
+            @Override
+            public void handleEvent(FilterEvent event) {
+                if (!filteredMapCache.isEmpty()) {
+                    filteredMapCache.clear();
+                }
+            } 
+        });
     }
 
     public static VariantFieldChartMapGenerator createVariantChart(CustomField field) {
@@ -77,7 +86,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         
         Condition[][] filterConditions;
         if (useFilteredCounts) {
-            filterConditions = FilterController.getQueryFilterConditions();
+            filterConditions = FilterController.getInstance().getQueryFilterConditions();
         } else {
             filterConditions = new Condition[][]{};
         }
@@ -154,7 +163,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
 
         Condition[][] conditions;
         if (useFilteredCounts) {
-            conditions = FilterController.getQueryFilterConditions();
+            conditions = FilterController.getInstance().getQueryFilterConditions();
         } else {
             conditions = new Condition[][]{};
         }
@@ -266,7 +275,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
                 + "_" + field.getColumnName()
                 + "_" + isLogScaleX;
 
-        boolean noConditions = !useFilteredCounts || (FilterController.getQueryFilterConditions().length == 0);
+        boolean noConditions = !useFilteredCounts || (FilterController.getInstance().getQueryFilterConditions().length == 0);
 
         if (!useFilteredCounts) {
             if (unfilteredMapCache.containsKey(cacheKey)) {
@@ -341,13 +350,6 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator, Filters
         return field.getColumnName();
     }
 
-    @Override
-    public void filtersChanged() {
-        if (!filteredMapCache.isEmpty()) {
-            filteredMapCache.clear();
-        }
-    }
-    
     private List<String> getDNAIDs() throws SQLException, RemoteException{
         List<String> dnaIds = MedSavantClient.VariantManager.getDistinctValuesForColumn(
                     LoginController.sessionId, 

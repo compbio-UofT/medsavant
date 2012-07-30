@@ -227,21 +227,8 @@ public class SummaryChart extends JLayeredPane {
         setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
 
         //begin creating chart
-        if (isScatter) {
-            new ScatterChartMapWorker().execute();
-        } else {
-            new ChartMapWorker().execute();
-        }
-            
-        /*Thread t = new Thread() {
-            public void run() {
-                removeAll();
-                add(waitPanel, c, JLayeredPane.MODAL_LAYER);
-                waitPanel.setVisible(true);
-                setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
-            }
-        };
-        t.start();*/
+        mapWorker = isScatter ? new ScatterChartMapWorker() : new ChartMapWorker();
+        mapWorker.execute();
     }
 
     private synchronized Chart drawChart(ChartFrequencyMap[] chartMaps) {
@@ -518,8 +505,8 @@ public class SummaryChart extends JLayeredPane {
                     } else {
                         return entry.getFrequency();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (Exception ex) {
+                    LOG.error("Exception thrown by mapper.", ex);
                 }
                 return x;
             }
@@ -540,13 +527,11 @@ public class SummaryChart extends JLayeredPane {
 
     public class ChartMapWorker extends MedSavantWorker<ChartFrequencyMap[]> {
 
-        @SuppressWarnings("LeakingThisInConstructor")
         ChartMapWorker() {
             super(pageName);
             if (mapWorker != null) {
                 mapWorker.cancel(true);
             }
-            mapWorker = this;
         }
 
         @Override
@@ -595,13 +580,11 @@ public class SummaryChart extends JLayeredPane {
     
     public class ScatterChartMapWorker extends MedSavantWorker<ScatterChartMap> {
         
-        @SuppressWarnings("LeakingThisInConstructor")
         ScatterChartMapWorker() {
             super(pageName);
             if (mapWorker != null) {
                 mapWorker.cancel(true);
             }
-            mapWorker = this;
         }
         
         private ScatterChartMap mapPatientField(ScatterChartMap scatterMap, ChartMapGenerator generator, boolean isX) throws NonFatalDatabaseException, SQLException, RemoteException{
@@ -661,7 +644,7 @@ public class SummaryChart extends JLayeredPane {
                     LoginController.sessionId, 
                     ProjectController.getInstance().getCurrentProjectID(), 
                     ReferenceController.getInstance().getCurrentReferenceID(), 
-                    FilterController.getQueryFilterConditions(), 
+                    FilterController.getInstance().getQueryFilterConditions(), 
                     columnX, 
                     columnY, 
                     !mapGenerator.isNumeric() || mapGenerator.getTable() == WhichTable.PATIENT, 

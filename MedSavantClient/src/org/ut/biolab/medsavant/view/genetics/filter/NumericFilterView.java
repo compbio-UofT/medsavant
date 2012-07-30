@@ -79,7 +79,7 @@ public class NumericFilterView extends FilterView {
     private JButton selectAll;
 
     public NumericFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
-        this(WhichTable.valueOf(state.getValues().get("table")), state.getID(), queryID, state.getName(), Boolean.valueOf(state.getValues().get("isDecimal")));
+        this(WhichTable.valueOf(state.getValues().get("table")), state.getFilterID(), queryID, state.getName(), Boolean.valueOf(state.getValues().get("isDecimal")));
         String minString = state.getValues().get("min");
         String maxString = state.getValues().get("max");
         if (minString != null && maxString != null) {
@@ -230,7 +230,7 @@ public class NumericFilterView extends FilterView {
                         return columnName;
                     }
                 };
-                FilterController.addFilter(f, getQueryID());
+                FilterController.getInstance().addFilter(f, queryID);
             }
         };
         applyButton.addActionListener(al);

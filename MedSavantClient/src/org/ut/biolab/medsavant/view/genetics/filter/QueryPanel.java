@@ -17,14 +17,13 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.awt.*;
 import java.beans.PropertyVetoException;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import org.ut.biolab.medsavant.api.Listener;
 
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.controller.FilterController;
@@ -33,7 +32,7 @@ import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.OntologyType;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginDescriptor;
@@ -45,19 +44,21 @@ import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.WhichTable;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
+ * Panel which holds together a group of related filters which are ANDed together to form a single query.  Multiple <code>QueryPanel</code>
+ * can be ORed together.
  *
  * @author mfiume
  */
-public class SearchConditionsPanel extends CollapsiblePanes {
+public class QueryPanel extends CollapsiblePanes {
 
     static final Color DEFAULT_KEY_COLOR = Color.GRAY;
     static final Color INACTIVE_KEY_COLOR = Color.RED;
 
     private int queryID;
 
-    private List<FilterHolder> filterHolders = new ArrayList<FilterHolder>();
+    private Map<String, FilterHolder> filterHolders = new TreeMap<String, FilterHolder>();
 
-    public SearchConditionsPanel(int queryID) {
+    public QueryPanel(int queryID) {
         this.queryID = queryID;
 
         setOpaque(false);
@@ -69,7 +70,7 @@ public class SearchConditionsPanel extends CollapsiblePanes {
         p1.setCollapsible(false);
 
         ViewUtil.applyVerticalBoxLayout(p1.getContentPane());
-        p1.add(generateFilterList());
+        p1.add(populateFilterList());
 
         add(p1);
         addExpansion();
@@ -78,8 +79,8 @@ public class SearchConditionsPanel extends CollapsiblePanes {
 
     }
 
-    public List<FilterHolder> getFilterHolders() {
-        return this.filterHolders;
+    public Collection<FilterHolder> getFilterHolders() {
+        return filterHolders.values();
     }
 
     private boolean isFilterable(ColumnType type) {
@@ -95,7 +96,7 @@ public class SearchConditionsPanel extends CollapsiblePanes {
         }
     }
 
-    private JPanel generateFilterList() {
+    private JPanel populateFilterList() {
         CollapsiblePanes panes = new CollapsiblePanes();
         panes.setOpaque(false);
         ViewUtil.applyVerticalBoxLayout(panes);
@@ -175,31 +176,47 @@ public class SearchConditionsPanel extends CollapsiblePanes {
             f.addTo(kvp, longRunning);
         }
 
-        FilterController.addFilterListener(new FiltersChangedListener() {
+        FilterController.getInstance().addListener(new Listener<FilterEvent>() {
 
             @Override
-            public void filtersChanged() throws SQLException, RemoteException {
-                Filter changedFilter = FilterController.getLastFilter();
+            public void handleEvent(FilterEvent event) {
+                Filter changedFilter = event.getFilter();
 
                 if (kvp.containsKey(changedFilter.getName())) {
-                    FilterController.FilterAction act = FilterController.getLastAction();
-
                     int index = 0;
                     Component c = ((JPanel) kvp.getAdditionalColumn(changedFilter.getName(), index)).getComponent(0);
 
-                    if (act == FilterController.FilterAction.ADDED || act == FilterController.FilterAction.MODIFIED) {
-                        kvp.setKeyColour(changedFilter.getName(), INACTIVE_KEY_COLOR);
-                        c.setVisible(true);
-                    } else if (act == FilterController.FilterAction.REMOVED) {
-                        kvp.setKeyColour(changedFilter.getName(), DEFAULT_KEY_COLOR);
-                        c.setVisible(false);
+                    switch (event.getType()) {
+                        case ADDED:
+                        case MODIFIED:
+                            kvp.setKeyColour(changedFilter.getName(), INACTIVE_KEY_COLOR);
+                            c.setVisible(true);
+                            break;
+                        case REMOVED:
+                            kvp.setKeyColour(changedFilter.getName(), DEFAULT_KEY_COLOR);
+                            c.setVisible(false);
+                            break;
                     }
                 }
             }
         });
-        filterHolders.addAll(catHolders);
+        for (FilterHolder h: catHolders) {
+            filterHolders.put(h.getFilterID(), h);
+        }
         catHolders.clear();
         
         return cPanel;
+    }
+
+    /**
+     * Given state loaded in from a saved file, find the correct filter holder and load in the given info.
+     */
+    public void loadFilterView(FilterState state) throws Exception {
+        FilterHolder h = filterHolders.get(state.getFilterID());
+        if (h != null) {
+            h.loadFilterView(state);
+        } else {
+            throw new Exception(String.format("Unknown filter ID \"%s\"", state.getFilterID()));
+        }
     }
 }

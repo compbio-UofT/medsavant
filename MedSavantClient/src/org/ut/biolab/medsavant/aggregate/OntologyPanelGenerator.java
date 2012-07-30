@@ -384,7 +384,7 @@ class OntologyPanelGenerator extends AggregatePanelGenerator {
                                             LoginController.sessionId,
                                             ProjectController.getInstance().getCurrentProjectID(),
                                             ReferenceController.getInstance().getCurrentReferenceID(),
-                                            FilterController.getQueryFilterConditions(),
+                                            FilterController.getInstance().getQueryFilterConditions(),
                                             gene.getChrom(),
                                             gene.getStart(),
                                             gene.getEnd());

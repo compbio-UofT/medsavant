@@ -67,7 +67,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     public boolean setReference(String refName, boolean getConfirmation) throws SQLException, RemoteException {
         if (manager.containsReference(LoginController.sessionId, refName)) {
 
-            if(getConfirmation && FilterController.hasFiltersApplied()){
+            if (getConfirmation && FilterController.getInstance().hasFiltersApplied()){
                 if(!DialogUtils.confirmChangeReference(false)){
                     return false;
                 }

@@ -57,7 +57,7 @@ public class ExportVCF {
                 LoginController.sessionId, 
                 ProjectController.getInstance().getCurrentProjectID(), 
                 ReferenceController.getInstance().getCurrentReferenceID(), 
-                FilterController.getQueryFilterConditions());
+                FilterController.getInstance().getQueryFilterConditions());
         if (worker.isCancelled()) {
             throw new InterruptedException();
         }

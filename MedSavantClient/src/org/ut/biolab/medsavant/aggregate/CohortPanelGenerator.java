@@ -280,7 +280,7 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
                 
                 @Override
                 protected Integer doInBackground() throws Exception {
-                    return MedSavantClient.CohortManager.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), cohort.getId(), FilterController.getQueryFilterConditions());
+                    return MedSavantClient.CohortManager.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), cohort.getId(), FilterController.getInstance().getQueryFilterConditions());
                 }
 
                 @Override
@@ -317,7 +317,7 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
 
                     @Override
                     protected Map<SimplePatient, Integer> doInBackground() throws Exception {
-                        return MedSavantClient.VariantManager.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), FilterController.getQueryFilterConditions(), patients);
+                        return MedSavantClient.VariantManager.getPatientHeatMap(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), FilterController.getInstance().getQueryFilterConditions(), patients);
                     }
 
                     @Override

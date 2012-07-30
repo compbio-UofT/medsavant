@@ -137,7 +137,7 @@ class CohortFilterView extends FilterView {
                     }
                 };
                 LOG.info("Adding filter: " + f.getName());
-                FilterController.addFilter(f, getQueryID());
+                FilterController.getInstance().addFilter(f, queryID);
 
             }
         };

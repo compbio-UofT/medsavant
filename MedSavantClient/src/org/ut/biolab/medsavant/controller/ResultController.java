@@ -23,8 +23,9 @@ import java.util.List;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 
@@ -32,7 +33,7 @@ import org.ut.biolab.medsavant.reference.ReferenceController;
 /**
  * @author Andrew
  */
-public class ResultController implements FiltersChangedListener {
+public class ResultController {
     private List<Object[]> filteredVariants;
 
     private static ResultController instance;
@@ -62,14 +63,22 @@ public class ResultController implements FiltersChangedListener {
 
     private int filteredVariantCount = -1;
     private int totalVariantCount = -1;
+    
+    private FilterController filterController;
 
     private ResultController() {
+        filterController = FilterController.getInstance();
+        filterController.addListener(new Listener<FilterEvent>() {
+            @Override
+            public void handleEvent(FilterEvent event) {
+                filteredVariantCount = -1;
+            }
+        });
     }
 
     public static ResultController getInstance() {
         if (instance == null) {
             instance = new ResultController();
-            FilterController.addFilterListener(instance);
         }
         return instance;
     }
@@ -81,7 +90,7 @@ public class ResultController implements FiltersChangedListener {
 
     public List<Object[]> getFilteredVariantRecords(int start, int limit, Column[] order) throws RemoteException, SQLException {
         synchronized (recordsLock) {
-            if (filterSetIDForRecords != FilterController.getCurrentFilterSetID() || this.limit != limit || this.start != start ||
+            if (filterSetIDForRecords != filterController.getCurrentFilterSetID() || this.limit != limit || this.start != start ||
                     ProjectController.getInstance().getCurrentProjectID() != projectIDForRecords ||
                     ReferenceController.getInstance().getCurrentReferenceID() != referenceIDForRecords ||
                     !SettingsController.getInstance().getDBName().equals(dbNameForRecords)) {
@@ -98,13 +107,13 @@ public class ResultController implements FiltersChangedListener {
 
     private void updateFilteredVariantDBResults(int start, int limit, Column[] order) throws RemoteException, SQLException {
 
-        filterSetIDForRecords = FilterController.getCurrentFilterSetID();
+        filterSetIDForRecords = filterController.getCurrentFilterSetID();
 
         filteredVariants = MedSavantClient.VariantManager.getVariants(
                 LoginController.sessionId,
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
-                FilterController.getQueryFilterConditions(),
+                FilterController.getInstance().getQueryFilterConditions(),
                 start,
                 limit,
                 order);
@@ -114,19 +123,19 @@ public class ResultController implements FiltersChangedListener {
     public int getFilteredVariantCount() throws RemoteException, SQLException {
         synchronized (filteredCountLock) {
             if (filteredVariantCount == -1 ||
-                    filterSetIDForFilteredCount != FilterController.getCurrentFilterSetID() ||
+                    filterSetIDForFilteredCount != filterController.getCurrentFilterSetID() ||
                     ProjectController.getInstance().getCurrentProjectID() != projectIDForFilteredCount ||
                     ReferenceController.getInstance().getCurrentReferenceID() != referenceIDForFilteredCount ||
                     !SettingsController.getInstance().getDBName().equals(dbNameForFilteredCount)) {
                 projectIDForFilteredCount = ProjectController.getInstance().getCurrentProjectID();
                 referenceIDForFilteredCount = ReferenceController.getInstance().getCurrentReferenceID();
                 dbNameForFilteredCount = SettingsController.getInstance().getDBName();
-                int tempFilterId = FilterController.getCurrentFilterSetID();
+                int tempFilterId = filterController.getCurrentFilterSetID();
                 filteredVariantCount =  MedSavantClient.VariantManager.getFilteredVariantCount(
                         LoginController.sessionId,
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
-                        FilterController.getQueryFilterConditions());
+                        filterController.getQueryFilterConditions());
                 filterSetIDForFilteredCount = tempFilterId; //temp not really necessary as this is synched...
             }
             return filteredVariantCount;
@@ -149,11 +158,6 @@ public class ResultController implements FiltersChangedListener {
             }
             return totalVariantCount;
         }
-    }
-
-    @Override
-    public void filtersChanged() {
-        filteredVariantCount = -1;
     }
 
     public void refreshCounts() {

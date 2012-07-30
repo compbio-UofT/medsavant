@@ -114,7 +114,7 @@ public class ProjectController extends Controller<ProjectEvent> {
     public void setProject(String projName) throws RemoteException, SQLException {
         if (manager.containsProject(LoginController.sessionId, projName)) {
 
-            if (manager.containsProject(LoginController.sessionId, currentProjectName) && FilterController.hasFiltersApplied()) {
+            if (manager.containsProject(LoginController.sessionId, currentProjectName) && FilterController.getInstance().hasFiltersApplied()) {
                 if (!DialogUtils.confirmChangeReference(true)) {
                     return;
                 }

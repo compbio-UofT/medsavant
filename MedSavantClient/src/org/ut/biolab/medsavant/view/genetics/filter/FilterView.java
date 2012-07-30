@@ -44,8 +44,4 @@ public abstract class FilterView extends JPanel {
      */
     public void cleanup() {
     }
-
-    public int getQueryID(){
-        return queryID;
-    }
 }

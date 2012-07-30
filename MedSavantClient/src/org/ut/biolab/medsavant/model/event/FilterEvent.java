@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011-2012 University of Toronto
+ *    Copyright 2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,16 +16,30 @@
 
 package org.ut.biolab.medsavant.model.event;
 
-import java.rmi.RemoteException;
-import java.sql.SQLException;
+import org.ut.biolab.medsavant.model.Filter;
 
 
 /**
+ * Little event which is sent around when our filter list has changed.
  *
- * @author mfiume
+ * @author tarkvara
  */
-public interface FiltersChangedListener {
+public final class FilterEvent {
+    public enum Type { ADDED, REMOVED, MODIFIED };
 
-    public void filtersChanged() throws SQLException, RemoteException;
+    private final Type type;
+    private final Filter filter;
 
+    public FilterEvent(Type t, Filter f) {
+        type = t;
+        filter = f;
+    }
+    
+    public Type getType() {
+        return type;
+    }
+    
+    public Filter getFilter() {
+        return filter;
+    }
 }

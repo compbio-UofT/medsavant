@@ -18,20 +18,11 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 
-import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
-import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.TableSchema;
-import org.ut.biolab.medsavant.ontology.OntologyFilterView;
-import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
-import org.ut.biolab.medsavant.plugin.PluginController;
-import org.ut.biolab.medsavant.plugin.PluginDescriptor;
-import org.ut.biolab.medsavant.region.RegionSetFilterView;
 import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
 
 /**
@@ -74,71 +65,5 @@ public class FilterUtils {
 
         FilterController.commit(title, FilterController.FilterAction.ADDED);
         FilterController.setAutoCommit(true);*/
-    }
-
-    public static void loadFilterView(FilterState state, SearchConditionsPanel fps) throws SQLException, RemoteException {
-/*        switch (state.getType()) {
-            case NUMERIC:
-                fps.addNewSubItem(new NumericFilterView(state, fps.getID()), state.getID());
-                break;
-            case STRING:
-                fps.addNewSubItem(new StringListFilterView(state, fps.getID()), state.getID());
-                break;
-            case BOOLEAN:
-                fps.addNewSubItem(new BooleanFilterView(state, fps.getID()), state.getID());
-                break;
-            case REGION_LIST:
-                fps.addNewSubItem(new RegionSetFilterView(state, fps.getID()), state.getID());
-                break;
-            case COHORT:
-                fps.addNewSubItem(new CohortFilterView(state, fps.getID()), state.getID());
-                break;
-            case GENERIC:
-                fps.addNewSubItem(new GenericFixedFilterView(state, fps.getID()), state.getID());
-                break;
-            case TAG:
-                fps.addNewSubItem(new TagFilterView(state, fps.getID()), state.getID());
-                break;
-            case ONTOLOGY:
-                fps.addNewSubItem(new OntologyFilterView(state, fps.getID()), state.getID());
-                break;
-            case PLUGIN:
-                PluginController pc = PluginController.getInstance();
-                for (PluginDescriptor desc: pc.getDescriptors()) {
-                    final MedSavantPlugin p = pc.getPlugin(desc.getID());
-                    if (p instanceof MedSavantFilterPlugin && ((MedSavantFilterPlugin)p).getTitle().equals(state.getName())) {
-                        FilterView view = PluginFilterView.getFilterView((MedSavantFilterPlugin)p, fps.getID());
-                        ((MedSavantFilterPlugin)p).loadState(state.getValues(), fps.getID());
-                        fps.addNewSubItem(view, state.getID());
-                    }
-                }
-                break;
-        }*/
-    }
-
-
-    private static SearchBar getFilterPanel() {
-        /*FilterPanel fp = GeneticsFilterPage.getInstance().getFilterPanel();
-        if (fp == null) {
-            GeneticsFilterPage.getInstance().getView(true);
-            GeneticsFilterPage.getInstance().setUpdateRequired(false);
-            fp = GeneticsFilterPage.getInstance().getFilterPanel();
-        }*/
-        SearchBar fp = GeneticsFilterPage.getFilterPanel();
-
-        //deal with case where no sub panels
-        if (fp.getFilterPanelSubs().isEmpty()) {
-            fp.createNewSubPanel();
-        }
-
-        return fp;
-    }
-
-    // TODO: What does clearFilterSets mean when filters aren't added/removed.
-    public static void clearFilterSets() {
-/*
-        FilterController.removeAllFilters();
-        SearchBar fp = getFilterPanel();
-        fp.clearAll();*/
     }
 }

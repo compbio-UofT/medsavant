@@ -18,30 +18,20 @@ package org.ut.biolab.medsavant.view.genetics.filter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.sql.SQLException;
+import java.io.*;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.controller.FilterController.FilterAction;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -51,7 +41,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class SearchBar extends JPanel {
 
-    private List<SearchConditionsPanel> subs2 = new ArrayList<SearchConditionsPanel>();
+    private FilterController filterController;
+    private List<QueryPanel> subs2 = new ArrayList<QueryPanel>();
     private int subNum = 1;
     private JPanel filterContainerContent;
     private JComboBox filterList;
@@ -61,13 +52,14 @@ public class SearchBar extends JPanel {
 
     /** Creates new form FilterPanel */
     public SearchBar() {
+        filterController = FilterController.getInstance();
         initComponents();
-        createNewSubPanel();
+        createNewQueryPanel();
     }
 
-    public final SearchConditionsPanel createNewSubPanel() {
+    public final QueryPanel createNewQueryPanel() {
 
-        SearchConditionsPanel cp = new SearchConditionsPanel(subNum++);
+        QueryPanel cp = new QueryPanel(subNum++);
         filterContainerContent.add(cp);
         subs2.add(cp);
 
@@ -103,14 +95,14 @@ public class SearchBar extends JPanel {
         }
     }
 
-    public List<SearchConditionsPanel> getFilterPanelSubs() {
+    public List<QueryPanel> getFilterPanelSubs() {
         return subs2;
     }
 
     public void clearAll() {
         subs2.clear();
         subNum = 1;
-        createNewSubPanel();
+        createNewQueryPanel();
     }
 
     private void removeCurrentSavedFilterFile() {
@@ -158,7 +150,7 @@ public class SearchBar extends JPanel {
         BufferedWriter out = new BufferedWriter(new FileWriter(file, false));
 
         out.write("<filters>\n");
-        for (SearchConditionsPanel sub : subs2) {
+        for (QueryPanel sub : subs2) {
             out.write("\t<set>\n");
             for (FilterHolder item : sub.getFilterHolders()) {
                 out.write(item.getFilterView().saveState().generateXML() + "\n");
@@ -174,14 +166,14 @@ public class SearchBar extends JPanel {
 
     }
 
-    private void loadFiltersFromFile(File file) throws ParserConfigurationException, SAXException, IOException, SQLException {
+    private void loadFiltersFromFile(File file) throws Exception {
 
-        //warn of overwrite
-        if (FilterController.hasFiltersApplied() && DialogUtils.askYesNo("Confirm Load", "<html>Loading filters clears all existing filters. <br>Are you sure you want to continue?</html>") == JOptionPane.NO_OPTION) {
+        if (file == null) {
             return;
         }
 
-        if (file == null) {
+        //warn of overwrite
+        if (filterController.hasFiltersApplied() && DialogUtils.askYesNo("Confirm Load", "<html>Loading filters clears all existing filters. <br>Are you sure you want to continue?</html>") == JOptionPane.NO_OPTION) {
             return;
         }
 
@@ -224,18 +216,14 @@ public class SearchBar extends JPanel {
             }
         }
 
-        //generate
-        FilterUtils.clearFilterSets();
-        FilterController.setAutoCommit(false);
+        filterController.removeAllFilters();
         for (int i = 0; i < states.size(); i++) {
-            SearchConditionsPanel fps = createNewSubPanel();
+            QueryPanel fps = createNewQueryPanel();
             List<FilterState> filters = states.get(i);
             for (FilterState state : filters) {
-                FilterUtils.loadFilterView(state, fps);
+                fps.loadFilterView(state);
             }
         }
-        FilterController.commit(file.getName(), FilterAction.REPLACED);
-        FilterController.setAutoCommit(true);
         refreshSubPanels();
 
     }

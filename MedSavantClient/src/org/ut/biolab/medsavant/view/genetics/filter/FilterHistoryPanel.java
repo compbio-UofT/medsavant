@@ -38,7 +38,7 @@ import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.model.Filter;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -49,7 +49,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 /**
  * @author AndrewBrook
  */
-public class FilterHistoryPanel extends JPanel implements FiltersChangedListener {
+public class FilterHistoryPanel extends JPanel {
 
     private static final Log LOG = LogFactory.getLog(FilterHistoryPanel.class);
 
@@ -67,6 +67,30 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
 
     public FilterHistoryPanel() {
 
+        FilterController.getInstance().addListener(new Listener<FilterEvent>() {
+            @Override
+            public void handleEvent(final FilterEvent event) {
+                new MedSavantWorker<Void>("FilterHistoryPanel") {
+
+                    @Override
+                    protected void showProgress(double fraction) {
+                    }
+
+                    @Override
+                    protected void showSuccess(Void result) {
+                    }
+
+                    @Override
+                    protected Void doInBackground() throws RemoteException, SQLException {
+                        int numLeft = ResultController.getInstance().getFilteredVariantCount();
+                        addFilterSet(event.getFilter(), event.getType(), numLeft);
+                        return null;
+                    }
+
+                }.execute();
+            } 
+        });
+
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override
             public void handleEvent(ReferenceEvent event) {
@@ -76,7 +100,6 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
             }
 
         });
-        FilterController.addFilterListener(this);
 
         //this.setBackground(new Color(100,100,100));
         this.setBorder(ViewUtil.getMediumBorder());
@@ -137,36 +160,6 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
 
     }
 
-    @Override
-    public void filtersChanged() {
-        //final IndeterminateProgressDialog dialog = new IndeterminateProgressDialog(
-        //        "Applying Filter",
-        //        "Filter is being applied. Please wait.",
-        //        true);
-
-        final Filter filter = FilterController.getLastFilter();
-        final String action = FilterController.getLastActionString();
-
-        new MedSavantWorker<Void>("FilterHistoryPanel") {
-
-            @Override
-            protected void showProgress(double fraction) {
-            }
-
-            @Override
-            protected void showSuccess(Void result) {
-            }
-
-            @Override
-            protected Void doInBackground() throws RemoteException, SQLException {
-                int numLeft = ResultController.getInstance().getFilteredVariantCount();
-                addFilterSet(filter, action, numLeft);
-                return null;
-            }
-
-        }.execute();
-    }
-
     public final void reset() {
         model.clear();
         Thread t = new Thread() {
@@ -195,8 +188,8 @@ public class FilterHistoryPanel extends JPanel implements FiltersChangedListener
         table.repaint();
     }
 
-    private void addFilterSet(Filter filter, String action, int numLeft) {
-        model.addRow(filter.getName(), action, numLeft);
+    private void addFilterSet(Filter filter, FilterEvent.Type action, int numLeft) {
+        model.addRow(filter.getName(), action.toString(), numLeft);
         table.updateUI();
         this.repaint();
 

@@ -20,7 +20,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.InCondition;
 
@@ -32,7 +31,6 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord.VariantType;
@@ -52,7 +50,7 @@ public class StringListFilterView extends TabularFilterView {
     private final String alias;
 
     public StringListFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
-        this(WhichTable.valueOf(state.getValues().get("table")), state.getID(), queryID, state.getName());
+        this(WhichTable.valueOf(state.getValues().get("table")), state.getFilterID(), queryID, state.getName());
         String values = state.getValues().get("values");
         if (values != null) {
             List<String> l = new ArrayList<String>();
@@ -140,11 +138,11 @@ public class StringListFilterView extends TabularFilterView {
         }
 
         if (appliedValues.size() == availableValues.size()) {
-            FilterController.removeFilter(columnName, queryID);
+            FilterController.getInstance().removeFilter(columnName, queryID);
             return;
         }
 
-        FilterController.addFilter(new QueryFilter() {
+        FilterController.getInstance().addFilter(new QueryFilter() {
 
             @Override
             public Condition[] getConditions() throws SQLException, RemoteException {
@@ -169,7 +167,7 @@ public class StringListFilterView extends TabularFilterView {
             public String getID() {
                 return columnName;
             }
-        }, getQueryID());
+        }, queryID);
     }
 
 }

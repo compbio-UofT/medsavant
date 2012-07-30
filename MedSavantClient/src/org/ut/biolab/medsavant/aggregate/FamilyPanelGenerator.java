@@ -212,7 +212,7 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
                         LoginController.sessionId, 
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
-                        familyId, FilterController.getQueryFilterConditions());
+                        familyId, FilterController.getInstance().getQueryFilterConditions());
             }
 
             @Override

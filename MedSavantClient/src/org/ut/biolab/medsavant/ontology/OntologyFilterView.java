@@ -20,9 +20,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.login.LoginController;
@@ -38,7 +35,6 @@ import org.ut.biolab.medsavant.view.genetics.filter.TabularFilterView;
  * @author tarkvara
  */
 public class OntologyFilterView extends TabularFilterView {
-    private static final Log LOG = LogFactory.getLog(OntologyFilterView.class);
 
     private final OntologyType ontology;
 
@@ -46,7 +42,7 @@ public class OntologyFilterView extends TabularFilterView {
      * Constructor for loading a saved filter from a file.
      */
     public OntologyFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
-        this(OntologyFilter.filterIDToOntology(state.getID()), queryID);
+        this(OntologyFilter.filterIDToOntology(state.getFilterID()), queryID);
         String values = state.getValues().get("values");
         if (values != null) {
             List<String> l = new ArrayList<String>();
@@ -105,11 +101,12 @@ public class OntologyFilterView extends TabularFilterView {
             appliedValues.add(filterableList.getModel().getElementAt(i));
         }
 
+        FilterController fc = FilterController.getInstance();
         if (appliedValues.size() == availableValues.size()) {
-            FilterController.removeFilter(OntologyFilter.ontologyToFilterID(ontology), queryID);
+            fc.removeFilter(OntologyFilter.ontologyToFilterID(ontology), queryID);
             return;
         }
 
-        FilterController.addFilter(new OntologyFilter(appliedValues, ontology), getQueryID());
+        fc.addFilter(new OntologyFilter(appliedValues, ontology), queryID);
     }
 }

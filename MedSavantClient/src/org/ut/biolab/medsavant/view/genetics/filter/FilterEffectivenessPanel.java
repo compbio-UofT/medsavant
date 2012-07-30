@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-public class FilterEffectivenessPanel extends JLayeredPane implements FiltersChangedListener {
+public class FilterEffectivenessPanel extends JLayeredPane {
 
     private static final Log LOG = LogFactory.getLog(FilterEffectivenessPanel.class);
 
@@ -96,7 +96,36 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
         //pp.setBorder(ViewUtil.getBigBorder());
         panel.add(progressPanel, BorderLayout.SOUTH);
 
-        FilterController.addFilterListener(this);
+        FilterController.getInstance().addListener(new Listener<FilterEvent>() {
+            @Override
+            public void handleEvent(FilterEvent event) {
+                showWaitCard();
+
+                new MedSavantWorker<Integer>("Filter") {
+
+                    @Override
+                    protected Integer doInBackground() throws Exception {
+                        return ResultController.getInstance().getFilteredVariantCount();
+                    }
+
+                    @Override
+                    protected void showProgress(double fraction) {
+                    }
+
+                    @Override
+                    protected void showSuccess(Integer result) {
+                        showShowCard();
+                        setNumLeft(result);
+                    }
+
+                    @Override
+                    protected void showFailure(Throwable ex) {
+                        showShowCard();
+                        LOG.error("Error getting filtered variant count.", ex);
+                    }
+                }.execute();
+            }
+        });
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override
             public void handleEvent(ReferenceEvent event) {
@@ -107,36 +136,6 @@ public class FilterEffectivenessPanel extends JLayeredPane implements FiltersCha
         });
 
         setMaxValues();
-    }
-
-    @Override
-    public void filtersChanged() {
-
-        showWaitCard();
-        
-        new MedSavantWorker<Integer>("Filter") {
-
-            @Override
-            protected Integer doInBackground() throws Exception {
-                return ResultController.getInstance().getFilteredVariantCount();
-            }
-            
-            @Override
-            protected void showProgress(double fraction) {
-            }
-
-            @Override
-            protected void showSuccess(Integer result) {
-                showShowCard();
-                setNumLeft(result);
-            }
-
-            @Override
-            protected void showFailure(Throwable ex) {
-                showShowCard();
-                LOG.error("Error getting filtered variant count.", ex);
-            }
-        }.execute();
     }
 
     private void setNumLeft(int num) {

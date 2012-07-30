@@ -19,8 +19,6 @@ package org.ut.biolab.medsavant.view.genetics.variantinfo;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.*;
@@ -36,12 +34,11 @@ import org.ut.biolab.medsavant.util.ClientMiscUtils;
  * @author khushi
  */
 public class GeneSetFetcher {
-    private static final Log LOG = LogFactory.getLog(GeneSetFetcher.class);
 
     Map<String, Gene> geneDictionary;
     
     public GeneSetFetcher() {
-        geneDictionary= new HashMap<String, Gene>();
+        geneDictionary = new HashMap<String, Gene>();
         try {
             initializeGeneDictionary();
         } catch (Exception ex) {
@@ -49,7 +46,7 @@ public class GeneSetFetcher {
         }
     }
     
-    public Map<String, Gene> getGeneDictionary(){
+    public Map<String, Gene> getGeneDictionary() {
         return geneDictionary;
     }
     
@@ -59,18 +56,19 @@ public class GeneSetFetcher {
         }
     }
     
-    public List<Gene> getGenesByNumVariants(List<String> relatedGenes){
+    public List<Gene> getGenesByNumVariants(List<String> relatedGenes) {
         List<Gene> genes = getGenes(relatedGenes);
-        Collections.sort(genes, new Comparator<Gene>(){
+        Collections.sort(genes, new Comparator<Gene>() {
             @Override
-            public int compare (Gene gene1, Gene gene2){
+            public int compare (Gene gene1, Gene gene2) {
                 try {
-                    int numVariantsInGene1 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getQueryFilterConditions(), gene1.getChrom(), gene1.getStart(), gene1.getEnd());
-                    int numVariantsInGene2 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getQueryFilterConditions(), gene2.getChrom(), gene2.getStart(), gene2.getEnd());
-                    if(numVariantsInGene1 == numVariantsInGene2)
+                    int numVariantsInGene1 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getQueryFilterConditions(), gene1.getChrom(), gene1.getStart(), gene1.getEnd());
+                    int numVariantsInGene2 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getQueryFilterConditions(), gene2.getChrom(), gene2.getStart(), gene2.getEnd());
+                    if (numVariantsInGene1 == numVariantsInGene2) {
                         return 0;
-                    else if (numVariantsInGene1 <numVariantsInGene2)
+                    } else if (numVariantsInGene1 < numVariantsInGene2) {
                         return -1;
+                    }
                     return 1;
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Unable to initialise gene dictionary: %s", ex);
@@ -81,12 +79,12 @@ public class GeneSetFetcher {
         return genes;
     }
     
-    public List<Gene> getGenes(List<String> geneNames){
+    public List<Gene> getGenes(List<String> geneNames) {
         List<Gene> genes = new ArrayList<Gene>();
         Iterator<String> itr = geneNames.iterator();
         Gene currGene;
         itr.next();//skip the first one which is the queried gene itself
-        while (itr.hasNext()){
+        while (itr.hasNext()) {
             String name = itr.next();
             currGene = getGene(name);
             if (currGene!= null)
@@ -95,7 +93,7 @@ public class GeneSetFetcher {
         return genes;
     }
     
-    public Gene getGene(String geneName){
+    public Gene getGene(String geneName) {
         return geneDictionary.get(geneName);
     }
 }

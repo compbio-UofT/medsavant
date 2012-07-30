@@ -35,32 +35,26 @@ import org.ut.biolab.medsavant.login.LoginEvent;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.RangeFilter;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
+import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.project.ProjectEvent;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.util.Controller;
 
 
 /**
  *
  * @author mfiume
  */
-public class FilterController {
+public class FilterController extends Controller<FilterEvent> {
 
     private static final Log LOG = LogFactory.getLog(FilterController.class);
 
-    private static int filterSetID = 0;
+    private static FilterController instance;
 
-    //private static Map<Integer, Map<Integer, Map<String, Filter>>> filterMapHistory = new TreeMap<Integer, Map<Integer, Map<String, Filter>>>();
-    private static Map<Integer, Map<String, Filter>> filterMap = new TreeMap<Integer, Map<String, Filter>>();
-    private static List<FiltersChangedListener> listeners = new ArrayList<FiltersChangedListener>();
-    private static List<FiltersChangedListener> activeListeners = new ArrayList<FiltersChangedListener>();
-
-    private static Filter lastFilter;
-    private static FilterAction lastAction;
-
-    private static boolean autoCommit = true;
+    private int filterSetID = 0;
+    private Map<Integer, Map<String, Filter>> filterMap = new TreeMap<Integer, Map<String, Filter>>();
 
     private FilterController() {
         ProjectController.getInstance().addListener(new Listener<ProjectEvent>() {
@@ -92,39 +86,38 @@ public class FilterController {
         });
     }
 
-    public static enum FilterAction {ADDED, REMOVED, MODIFIED, REPLACED};
-
-    public static void addFilter(Filter filter, int queryId) {
-
-        if (filterMap.get(queryId) == null) {
-            filterMap.put(queryId, new TreeMap<String, Filter>());
+    public static FilterController getInstance() {
+        if (instance == null) {
+            instance = new FilterController();
         }
-        Filter prev = filterMap.get(queryId).put(filter.getID(), filter);
-
-        if (prev == null) {
-            setLastFilter(filter, FilterAction.ADDED);
-        } else {
-            setLastFilter(filter, FilterAction.MODIFIED);
-        }
-        fireFiltersChangedEvent();
+        return instance;
     }
 
-    public static void removeFilter(String filterId, int queryId) {
-
-        if (filterMap.get(queryId) == null) return; //filter was never actually added
-
-        Filter removed = filterMap.get(queryId).remove(filterId);
-        if (filterMap.get(queryId).isEmpty()) {
-            filterMap.remove(queryId);
+    public void addFilter(Filter filter, int queryID) {
+        if (filterMap.get(queryID) == null) {
+            filterMap.put(queryID, new TreeMap<String, Filter>());
         }
-
-        if (removed == null) return; //something went wrong, but ignore it
-        setLastFilter(removed, FilterAction.REMOVED);
-        fireFiltersChangedEvent();
+        Filter prev = filterMap.get(queryID).put(filter.getID(), filter);
+        fireEvent(new FilterEvent(prev == null ? FilterEvent.Type.ADDED : FilterEvent.Type.MODIFIED, filter));
     }
 
-    public static void removeFilterSet(int queryId) {
-        Map<String, Filter> map = filterMap.remove(queryId);
+    public void removeFilter(String filtID, int queryID) {
+
+        if (filterMap.get(queryID) != null) {
+
+            Filter removed = filterMap.get(queryID).remove(filtID);
+            if (filterMap.get(queryID).isEmpty()) {
+                filterMap.remove(queryID);
+            }
+
+            if (removed != null) {
+                fireEvent(new FilterEvent(FilterEvent.Type.REMOVED, removed));
+            }
+        }
+    }
+
+    public void removeFilterSet(int queryID) {
+        Map<String, Filter> map = filterMap.remove(queryID);
         if (map == null ||map.isEmpty()) return;
         Filter f = new QueryFilter() {
             @Override
@@ -142,94 +135,25 @@ public class FilterController {
                 return null;
             }
         };
-        setLastFilter(f, FilterAction.REMOVED);
-        fireFiltersChangedEvent();
+        fireEvent(new FilterEvent(FilterEvent.Type.REMOVED, f));
     }
 
-    public static void removeAllFilters() {
+    /**
+     * Called when the project or reference has changed, or when the user logs out.
+     */
+    public void removeAllFilters() {
         filterMap.clear();
-        //filterMapHistory.clear();
     }
 
-    public static void addFilterListener(FiltersChangedListener l, boolean first) {
-        listeners.add(0, l);
-    }
-
-    public static void addFilterListener(FiltersChangedListener l) {
-        listeners.add(l);
-    }
-
-    public static void removeFilterListener(FiltersChangedListener l) {
-        listeners.remove(l);
-    }
-
-    public static void addActiveFilterListener(FiltersChangedListener l) {
-        activeListeners.add(l);
-    }
-
-    public synchronized static int getCurrentFilterSetID() {
+    public int getCurrentFilterSetID() {
         return filterSetID;
     }
 
-    //public static Map<String,Filter> getFilterSet(int filterSetID) {
-    /*public static Map<Integer, Map<String, Filter>> getFilterSet(int filterSetID) {
-        return filterMapHistory.get(filterSetID);
-    }*/
-
-    public static void fireFiltersChangedEvent() {
-        fireFiltersChangedEvent(false);
+    public Filter getFilter(String title, int queryID) {
+        return filterMap.get(queryID).get(title);
     }
 
-    private synchronized static void fireFiltersChangedEvent(boolean force) {
-
-        if (!autoCommit && !force) return;
-
-        filterSetID++;
-        //filterMapHistory.put(filterSetID,filterMap);
-
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    ResultController.getInstance().getFilteredVariantCount();
-                } catch (Exception ex) {
-                    LOG.error("Error getting filtered variant count.", ex);
-
-                }
-            }
-        };
-        t.setPriority(Thread.MAX_PRIORITY);//Make sure this thread executes immediately. Is this good enough?
-        t.start();
-
-        //cancel any running workers from last filter
-        for (FiltersChangedListener l : activeListeners) {
-            try {
-                l.filtersChanged();
-            } catch (Exception ex) {
-                LOG.error("Error while sending first filtersChanged() notification.", ex);
-            }
-        }
-        activeListeners.clear();
-
-        //start new filter change
-        for (FiltersChangedListener l : listeners) {
-            try {
-                l.filtersChanged();
-            } catch (Exception ex) {
-                LOG.error("Error while sending second filtersChanged() notification.", ex);
-            }
-        }
-
-        //current view should be refreshed if it relies on filters
-        //ViewController.getInstance().refreshView();
-    }
-
-    public static Filter getFilter(String title, int queryId) {
-        //return filterMap.get(title);
-        return filterMap.get(queryId).get(title);
-    }
-
-    public static List<QueryFilter> getQueryFilters(int queryId) {
+    public List<QueryFilter> getQueryFilters(int queryID) {
         List<QueryFilter> qfs = new ArrayList<QueryFilter>();
         RangeFilter rf = new RangeFilter() {
             @Override
@@ -242,7 +166,7 @@ public class FilterController {
             }
         };
         boolean hasRangeFilter = false;
-        for (Filter f : filterMap.get(queryId).values()) {
+        for (Filter f : filterMap.get(queryID).values()) {
             if (f instanceof RangeFilter) {
                 rf.merge(((RangeFilter)f).getRangeSet());
                 hasRangeFilter = true;
@@ -256,7 +180,7 @@ public class FilterController {
         return qfs;
     }
 
-    public static List<List<QueryFilter>> getQueryFilters() {
+    public List<List<QueryFilter>> getQueryFilters() {
         List<List<QueryFilter>> qfs = new ArrayList<List<QueryFilter>>();
         for (Object key : filterMap.keySet().toArray()) {
             qfs.add(getQueryFilters((Integer)key));
@@ -264,8 +188,8 @@ public class FilterController {
         return qfs;
     }
 
-    public static Condition[] getQueryFilterConditions(int queryId) throws SQLException, RemoteException {
-        List<QueryFilter> filters = prioritizeFilters(getQueryFilters(queryId));
+    public Condition[] getQueryFilterConditions(int queryID) throws SQLException, RemoteException {
+        List<QueryFilter> filters = prioritizeFilters(getQueryFilters(queryID));
         Condition[] conditions = new Condition[filters.size()];
         for (int i = 0; i < filters.size(); i++) {
             conditions[i] = ComboCondition.or(filters.get(i).getConditions());
@@ -273,7 +197,7 @@ public class FilterController {
         return conditions;
     }
 
-    private static List<QueryFilter> prioritizeFilters(List<QueryFilter> filters) {
+    private List<QueryFilter> prioritizeFilters(List<QueryFilter> filters) {
 
         List<QueryFilter> result = new ArrayList<QueryFilter>();
         addFiltersToList(filters, result, DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
@@ -284,7 +208,7 @@ public class FilterController {
     }
 
     //add anything from filters with filterId to list
-    private static void addFiltersToList(List<QueryFilter> filters, List<QueryFilter> list, String filterId) {
+    private void addFiltersToList(List<QueryFilter> filters, List<QueryFilter> list, String filterId) {
         for (int i = filters.size()-1; i >= 0; i--) {
             if (filters.get(i).getID().equals(filterId)) {
                 list.add(filters.remove(i));
@@ -292,7 +216,7 @@ public class FilterController {
         }
     }
 
-    public static Condition[][] getQueryFilterConditions() throws SQLException, RemoteException {
+    public Condition[][] getQueryFilterConditions() throws SQLException, RemoteException {
         Object[] keys = filterMap.keySet().toArray();
         Condition[][] conditions = new Condition[keys.length][];
         for (int i = 0; i < keys.length; i++) {
@@ -301,36 +225,7 @@ public class FilterController {
         return conditions;
     }
 
-    private static void setLastFilter(Filter filter, FilterAction action) {
-        System.out.println("Setting last filter " + filter.getName() + " " + filter.getID() + " " + action.toString());
-        lastFilter = filter;
-        lastAction = action;
-    }
-
-    public static Filter getLastFilter() {
-        return lastFilter;
-    }
-
-    public static FilterAction getLastAction() {
-        return lastAction;
-    }
-
-    public static String getLastActionString() {
-        switch(lastAction) {
-            case ADDED:
-                return "Added";
-            case REMOVED:
-                return "Removed";
-            case MODIFIED:
-                return "Modified";
-            case REPLACED:
-                return "Replaced";
-            default:
-                return "";
-        }
-    }
-
-    public static boolean hasFiltersApplied() {
+    public boolean hasFiltersApplied() {
         for (Integer key : filterMap.keySet()) {
             Map<String, Filter> current = filterMap.get(key);
             if (current != null && !current.isEmpty()) {
@@ -340,34 +235,7 @@ public class FilterController {
         return false;
     }
 
-    public static boolean isFilterActive(int queryId, String filterId) {
+    public boolean isFilterActive(int queryId, String filterId) {
         return filterMap.containsKey(queryId) && filterMap.get(queryId).containsKey(filterId);
     }
-
-    public static void setAutoCommit(boolean auto) {
-        autoCommit = auto;
-    }
-
-    public static void commit(final String filterName, FilterAction action) {
-
-        Filter f = new QueryFilter() {
-            @Override
-            public String getName() {
-                return filterName;
-            }
-
-            @Override
-            public String getID() {
-                return null;
-            }
-
-            @Override
-            public Condition[] getConditions() {
-                return null;
-            }
-        };
-        setLastFilter(f, action);
-        fireFiltersChangedEvent(true);
-    }
-
 }

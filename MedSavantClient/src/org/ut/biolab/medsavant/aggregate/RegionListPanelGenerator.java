@@ -164,7 +164,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectID(),
                                     ReferenceController.getInstance().getCurrentReferenceID(),
-                                    FilterController.getQueryFilterConditions(),
+                                    FilterController.getInstance().getQueryFilterConditions(),
                                     r.getChrom(),
                                     r.getStart(),
                                     r.getEnd());
@@ -188,7 +188,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectID(),
                                     ReferenceController.getInstance().getCurrentReferenceID(),
-                                    FilterController.getQueryFilterConditions(),
+                                    FilterController.getInstance().getQueryFilterConditions(),
                                     r.getChrom(),
                                     r.getStart(),
                                     r.getEnd());

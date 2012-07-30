@@ -15,9 +15,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics.filter;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -33,7 +31,6 @@ import javax.swing.*;
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import java.awt.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -238,7 +235,7 @@ public class TagFilterView extends FilterView {
                             return FILTER_ID;
                         }
                     };
-                    FilterController.addFilter(f, getQueryID());
+                    FilterController.getInstance().addFilter(f, TagFilterView.this.queryID);
                 }
                 };
 

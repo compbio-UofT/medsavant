@@ -30,8 +30,8 @@ import javax.swing.JComboBox;
 import com.healthmarketscience.sqlbuilder.Condition;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.api.Listener;
 
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.model.Filter;
@@ -166,6 +166,6 @@ public class RegionSetFilterView extends FilterView {
             }
         };
         LOG.info(String.format("Adding filter: %s.", f.getName()));
-        FilterController.addFilter(f, getQueryID());
+        FilterController.getInstance().addFilter(f, queryID);
     }
 }

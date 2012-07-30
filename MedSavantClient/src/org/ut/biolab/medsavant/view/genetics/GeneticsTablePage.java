@@ -15,60 +15,35 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
-import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.beans.PropertyVetoException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
-
-import com.jidesoft.pane.CollapsiblePane;
-import com.jidesoft.pane.CollapsiblePanes;
-import com.jidesoft.pane.OutlookTabbedPane;
-import com.jidesoft.pane.event.CollapsiblePaneEvent;
-import com.jidesoft.pane.event.CollapsiblePaneListener;
-import com.jidesoft.plaf.UIDefaultsLookup;
-import java.util.EnumMap;
-import java.util.HashMap;
 import javax.swing.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Chromosome;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
-import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
+import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.vcf.VariantRecord;
-import org.ut.biolab.medsavant.view.genetics.inspector.GeneInspector;
-import org.ut.biolab.medsavant.view.genetics.inspector.Inspector;
-import org.ut.biolab.medsavant.view.genetics.inspector.VariantInspector;
-import org.ut.biolab.medsavant.view.genetics.variantinfo.*;
+import org.ut.biolab.medsavant.util.ThreadController;
+import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
-import org.ut.biolab.medsavant.view.util.ViewUtil;
+
 
 /**
  *
  * @author mfiume
  */
-public class GeneticsTablePage extends SubSectionView implements FiltersChangedListener {
-
-    private static final Log LOG = LogFactory.getLog(GeneticsTablePage.class);
+public class GeneticsTablePage extends SubSectionView {
 
     private JPanel panel;
     private TablePanel tablePanel;
@@ -81,7 +56,13 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
 
     public GeneticsTablePage(SectionView parent) {
         super(parent);
-        FilterController.addFilterListener(this);
+        FilterController.getInstance().addListener(new Listener<FilterEvent>() {
+            @Override
+            public void handleEvent(FilterEvent event) {
+                updateContents();
+            }
+            
+        });
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override
             public void handleEvent(ReferenceEvent event) {
@@ -175,12 +156,4 @@ public class GeneticsTablePage extends SubSectionView implements FiltersChangedL
             gp.updateIfRequired();
         }
     }
-
-    @Override
-    public void filtersChanged() {
-        updateContents();
-    }
-
-
-
 }

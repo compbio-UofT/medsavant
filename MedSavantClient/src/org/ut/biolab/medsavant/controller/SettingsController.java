@@ -181,7 +181,7 @@ public class SettingsController {
             try {
                 br = new BufferedReader(new FileReader(pFile));
 
-                String line = "";
+                String line;
                 while ((line = br.readLine()) != null) {
 
                     int splitIndex = line.indexOf(DELIM);
@@ -190,7 +190,8 @@ public class SettingsController {
 
                     setValueSilent(key,value);
                 }
-            } catch (IOException ex) {
+            } catch (Exception ex) {
+                LOG.error("Error reading " + PERSISTENCE_FILE_PATH, ex);
                 resetPersistenceMap();
             } finally {
                 try {
@@ -345,5 +346,4 @@ public class SettingsController {
     public void setServerPort(String port) {
         setValue(KEY_SERVER_PORT, port);
     }
-
 }

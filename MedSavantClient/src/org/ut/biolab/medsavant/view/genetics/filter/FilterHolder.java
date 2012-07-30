@@ -30,6 +30,9 @@ import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.OntologyType;
 import org.ut.biolab.medsavant.ontology.OntologyFilter;
 import org.ut.biolab.medsavant.ontology.OntologyFilterView;
+import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
+import org.ut.biolab.medsavant.plugin.PluginController;
+import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -77,11 +80,13 @@ public abstract class FilterHolder {
 
     public abstract FilterView createFilterView() throws Exception;
 
+    public abstract void loadFilterView(FilterState state) throws Exception;
+
     void addTo(KeyValuePairPanel kvp, final boolean longRunning) {
         parent = kvp;
         kvp.addKey(name);
 
-        kvp.setKeyColour(name, SearchConditionsPanel.DEFAULT_KEY_COLOR);
+        kvp.setKeyColour(name, QueryPanel.DEFAULT_KEY_COLOR);
 
         JLabel detailString = new JLabel("");
         detailString.setForeground(Color.orange);
@@ -135,7 +140,7 @@ public abstract class FilterHolder {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
-                    FilterController.removeFilter(name, queryID);
+                    FilterController.getInstance().removeFilter(filterID, queryID);
                     filterView = null;
                     clearButton.setVisible(false);
                     editButton.setSelected(false);
@@ -156,16 +161,21 @@ public abstract class FilterHolder {
  */
 class SimpleFilterHolder extends FilterHolder {
 
-    private final Class wrappedClass;
+    private final Class viewClass;
 
     SimpleFilterHolder(Class clazz, int queryID) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         super((String)clazz.getField("FILTER_NAME").get(null), (String)clazz.getField("FILTER_ID").get(null), queryID);
-        wrappedClass = clazz;
+        viewClass = clazz;
     }
 
     @Override
     public FilterView createFilterView() throws Exception {
-        return (FilterView)wrappedClass.getDeclaredConstructor(int.class).newInstance(queryID);
+        return (FilterView)viewClass.getDeclaredConstructor(int.class).newInstance(queryID);
+    }
+    
+    @Override
+    public void loadFilterView(FilterState state) throws Exception {
+        filterView = (FilterView)viewClass.getDeclaredConstructor(FilterState.class, int.class).newInstance(state, queryID);
     }
 }
 
@@ -186,7 +196,6 @@ class FieldFilterHolder extends FilterHolder {
         this.whichTable = table;
     }
 
-
     @Override
     public FilterView createFilterView() throws Exception {
        if (field.getColumnName().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
@@ -206,6 +215,24 @@ class FieldFilterHolder extends FilterHolder {
             }
         }
     }
+
+    @Override
+    public void loadFilterView(FilterState state) throws Exception {
+        switch (state.getType()) {
+            case NUMERIC:
+                filterView = new NumericFilterView(state, queryID);
+                break;
+            case STRING:
+                filterView = new StringListFilterView(state, queryID);
+                break;
+            case BOOLEAN:
+                filterView = new BooleanFilterView(state, queryID);
+                break;
+            default:
+                throw new Exception("Unknown filter type " + state.getType());
+
+        }
+    }
 }
 
 class OntologyFilterHolder extends FilterHolder {
@@ -221,6 +248,11 @@ class OntologyFilterHolder extends FilterHolder {
     public FilterView createFilterView() throws SQLException, RemoteException {
         return new OntologyFilterView(ontology, queryID);
     }
+    
+    @Override
+    public void loadFilterView(FilterState state) throws SQLException, RemoteException {
+        filterView = new OntologyFilterView(state, queryID);
+    }
 }
 
 
@@ -235,5 +267,17 @@ class PluginFilterHolder extends FilterHolder {
     @Override
     public FilterView createFilterView() {
         return PluginFilterView.getFilterView(plugin, queryID);
+    }
+    
+    @Override
+    public void loadFilterView(FilterState state) {
+        PluginController pc = PluginController.getInstance();
+        for (PluginDescriptor desc: pc.getDescriptors()) {
+            MedSavantPlugin p = pc.getPlugin(desc.getID());
+            if (p instanceof MedSavantFilterPlugin && ((MedSavantFilterPlugin)p).getTitle().equals(state.getName())) {
+                filterView = PluginFilterView.getFilterView((MedSavantFilterPlugin)p, queryID);
+                ((MedSavantFilterPlugin)p).loadState(state.getValues(), queryID);
+            }
+        }
     }
 }

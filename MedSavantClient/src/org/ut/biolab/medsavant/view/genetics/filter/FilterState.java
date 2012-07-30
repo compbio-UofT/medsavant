@@ -27,13 +27,13 @@ import org.ut.biolab.medsavant.model.Filter;
 public class FilterState {
     
     private final String name;
-    private final String id;
+    private final String filterID;
     private final Map<String, String> values;
     private final Filter.Type type;
     
     public FilterState(Filter.Type type, String name, String id, Map<String, String> values) {
         this.name = name;
-        this.id = id;
+        this.filterID = id;
         this.values = values;
         this.type = type;
     }
@@ -42,8 +42,8 @@ public class FilterState {
         return name;
     }
     
-    public String getID() {
-        return id;
+    public String getFilterID() {
+        return filterID;
     }
     
     public Map<String, String> getValues() {
@@ -55,7 +55,7 @@ public class FilterState {
     }
     
     public String generateXML() {
-        String s = "\t\t<filter name=\"" + name + "\" id=\"" + id + "\" type=\"" + type + "\" >\n";
+        String s = "\t\t<filter name=\"" + name + "\" id=\"" + filterID + "\" type=\"" + type + "\" >\n";
         for(String key : values.keySet()) {
             s += "\t\t\t<param key=\"" + key + "\" value=\"" + values.get(key) + "\" />\n";
         }

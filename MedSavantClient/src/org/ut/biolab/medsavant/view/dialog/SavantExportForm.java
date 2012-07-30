@@ -128,7 +128,7 @@ public class SavantExportForm extends javax.swing.JDialog {
                 LoginController.sessionId, 
                 ProjectController.getInstance().getCurrentProjectID(), 
                 ReferenceController.getInstance().getCurrentReferenceID(), 
-                FilterController.getQueryFilterConditions(),
+                FilterController.getInstance().getQueryFilterConditions(),
                 selectedIds, 
                 -1);
         

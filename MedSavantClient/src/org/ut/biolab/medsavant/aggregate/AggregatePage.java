@@ -21,8 +21,8 @@ import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.FilterController;
+import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.util.ThreadController;
-import org.ut.biolab.medsavant.model.event.FiltersChangedListener;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -41,9 +41,9 @@ public class AggregatePage extends SubSectionView {
 
     public AggregatePage(SectionView parent) {
         super(parent);
-        FilterController.addFilterListener(new FiltersChangedListener() {
+        FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
-            public void filtersChanged() {
+            public void handleEvent(FilterEvent event) {
                 ThreadController.getInstance().cancelWorkers(getName());
                 if (statsPanel != null) {
                     statsPanel.update(true, isLoaded);

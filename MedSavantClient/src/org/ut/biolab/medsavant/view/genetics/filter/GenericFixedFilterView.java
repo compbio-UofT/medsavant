@@ -41,19 +41,19 @@ public class GenericFixedFilterView extends FilterView {
     private String id;
     private String alias;
     private String description;
-    private Condition c;
+    private Condition condition;
 
-    public GenericFixedFilterView(FilterState state, int queryId){
-        this(state.getName(), new CustomCondition(state.getValues().get("condition")), state.getValues().get("description"), queryId, state.getID());
+    public GenericFixedFilterView(FilterState state, int queryID) {
+        this(state.getName(), new CustomCondition(state.getValues().get("condition")), state.getValues().get("description"), queryID, state.getFilterID());
     }
 
-    public GenericFixedFilterView(final String alias, final Condition c, String description, int queryId, final String id){
-        super(alias, queryId);
+    public GenericFixedFilterView(String alias, Condition c, String description, int queryID, String id) {
+        super(alias, queryID);
 
         this.alias = alias;
         this.description = description;
         this.id = id;
-        this.c = c;
+        this.condition = c;
 
         setBorder(ViewUtil.getMediumBorder());
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -70,32 +70,32 @@ public class GenericFixedFilterView extends FilterView {
 
             @Override
             public Condition[] getConditions() {
-                return new Condition[]{c};
+                return new Condition[]{ condition };
             }
 
             @Override
             public String getName() {
-                return alias;
+                return GenericFixedFilterView.this.alias;
             }
 
             @Override
             public String getID() {
-                return id;
+                return GenericFixedFilterView.this.id;
             }
 
         };
-        FilterController.addFilter(f, getQueryID());
+        FilterController.getInstance().addFilter(f, queryID);
     }
 
     @Override
     public FilterState saveState() {
         Map<String, String> map = new HashMap<String, String>();
         map.put("description", description);
-        map.put("condition", replaceAllTableReferences(c.toString()));
+        map.put("condition", replaceAllTableReferences(condition.toString()));
         return new FilterState(Filter.Type.GENERIC, alias, id, map);
     }
 
-    private String replaceAllTableReferences(String s){
+    private String replaceAllTableReferences(String s) {
         return s.replaceAll("t[0-9]+\\.", "");
     }
 }
