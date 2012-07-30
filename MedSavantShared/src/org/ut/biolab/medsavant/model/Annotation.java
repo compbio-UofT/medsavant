@@ -17,6 +17,7 @@
 package org.ut.biolab.medsavant.model;
 
 import java.io.Serializable;
+import java.net.URL;
 
 import org.ut.biolab.medsavant.format.AnnotationFormat.AnnotationType;
 
@@ -71,7 +72,7 @@ public class Annotation implements Serializable {
     public boolean isInterval() {
         return type == AnnotationType.INTERVAL;
     }
-    
+
     public AnnotationType getAnnotationType(){
         return type;
     }

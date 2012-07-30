@@ -21,6 +21,7 @@ import java.sql.SQLException;
 
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.model.Annotation;
+import org.ut.biolab.medsavant.model.AnnotationDownloadInformation;
 
 
 /**
@@ -29,10 +30,12 @@ import org.ut.biolab.medsavant.model.Annotation;
  */
 public interface AnnotationManagerAdapter extends Remote {
 
-    public Annotation[] getAnnotations(String sessID) throws SQLException, RemoteException;
-    public Annotation getAnnotation(String sessID, int annotID) throws SQLException, RemoteException;
-    public int[] getAnnotationIDs(String sessID, int projID, int refID) throws SQLException, RemoteException;
-    public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException, RemoteException;
-    public int addAnnotation(String sessID, String program, String version, int refID, String path, boolean hasRef, boolean hasAlt, int type) throws SQLException, RemoteException;
-    public void addAnnotationFormat(String sessID, int annotID, int position, String columnName, String columnType, boolean isFilterable, String alias, String description) throws SQLException, RemoteException;
+    public Annotation getAnnotation(String sid,int annotation_id) throws SQLException;
+    public Annotation[] getAnnotations(String sid) throws SQLException;
+
+    public int[] getAnnotationIDs(String sessID, int projID, int refID) throws SQLException;
+    public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException;
+
+    public void installAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info);
+
 }
