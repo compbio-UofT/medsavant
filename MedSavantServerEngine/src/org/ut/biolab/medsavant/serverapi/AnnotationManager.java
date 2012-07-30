@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.serverapi;
 
 import java.rmi.RemoteException;
@@ -29,6 +28,15 @@ import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.AnnotationColumns;
@@ -42,9 +50,11 @@ import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.logging.DBLogger;
 import org.ut.biolab.medsavant.model.Annotation;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
+import org.ut.biolab.medsavant.model.AnnotationDownloadInformation;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
+import org.ut.biolab.medsavant.util.DirectorySettings;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
-
+import org.ut.biolab.medsavant.util.NetworkUtils;
 
 /**
  *
@@ -62,6 +72,46 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
             instance = new AnnotationManager();
         }
         return instance;
+    }
+
+    @Override
+    public void installAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info) {
+        if (!checkIfAnnotationIsInstalled(info)) {
+            downloadAnnotation(info);
+        }
+    }
+
+    @Override
+    public Annotation getAnnotation(String sid,int annotation_id) throws SQLException {
+
+        TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
+        TableSchema annTable = MedSavantDatabase.AnnotationTableSchema;
+
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(annTable.getTable());
+        query.addAllColumns();
+        query.addJoin(
+                SelectQuery.JoinType.LEFT_OUTER,
+                annTable.getTable(),
+                refTable.getTable(),
+                BinaryConditionMS.equalTo(
+                    annTable.getDBColumn(REFERENCE_ID.name),
+                    refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
+        query.addCondition(BinaryConditionMS.equalTo(annTable.getDBColumn(ANNOTATION_ID.name), annotation_id));
+
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+
+        rs.next();
+        Annotation result = new Annotation(
+                    rs.getInt(ANNOTATION_ID.name),
+                    rs.getString(PROGRAM.name),
+                    rs.getString(VERSION.name),
+                    rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
+                    rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
+                    rs.getString(PATH.name),
+                    AnnotationType.fromInt(rs.getInt(TYPE.name)));
+
+        return result;
     }
 
     @Override
@@ -99,39 +149,6 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         return result.toArray(new Annotation[0]);
     }
 
-    @Override
-    public Annotation getAnnotation(String sid,int annotation_id) throws SQLException {
-
-        TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
-        TableSchema annTable = MedSavantDatabase.AnnotationTableSchema;
-
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(annTable.getTable());
-        query.addAllColumns();
-        query.addJoin(
-                SelectQuery.JoinType.LEFT_OUTER,
-                annTable.getTable(),
-                refTable.getTable(),
-                BinaryConditionMS.equalTo(
-                    annTable.getDBColumn(REFERENCE_ID.name),
-                    refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID)));
-        query.addCondition(BinaryConditionMS.equalTo(annTable.getDBColumn(ANNOTATION_ID.name), annotation_id));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-
-        rs.next();
-        Annotation result = new Annotation(
-                    rs.getInt(ANNOTATION_ID.name),
-                    rs.getString(PROGRAM.name),
-                    rs.getString(VERSION.name),
-                    rs.getInt(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID),
-                    rs.getString(ReferenceTableSchema.COLUMNNAME_OF_NAME),
-                    rs.getString(PATH.name),
-                    AnnotationType.fromInt(rs.getInt(TYPE.name)));
-
-        return result;
-    }
-
     /*
      * Get the annotation ids associated with the latest published table.
      */
@@ -167,6 +184,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
         return result;
     }
+
 
     @Override
     public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException {
@@ -212,34 +230,139 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     }
 
 
-    @Override
-    public int addAnnotation(String sessID, String prog, String vers, int refID, String path, boolean hasRef, boolean hasAlt, int type) throws SQLException {
 
-        DBLogger.log("Adding annotation...");
+    /**
+     * HELPER FUNCTIONS *
+     */
+    private static final File localDirectory = new File(DirectorySettings.getMedSavantDirectory() + "/annotation");
 
-        Connection conn = ConnectionController.connectPooled(sessID);
+    public static void printFile(File f) throws FileNotFoundException, IOException {
+        BufferedReader br = new BufferedReader(new FileReader(f));
+        String line = "";
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+        br.close();
+    }
+
+    public static void downloadAnnotation(AnnotationDownloadInformation adi) {
+
+        String programName = adi.getProgramName();
+        String version = adi.getProgramVersion();
+        String reference = adi.getReference();
+        URL u = null;
         try {
-            InsertQuery query = MedSavantDatabase.AnnotationTableSchema.insert(PROGRAM, prog, VERSION, vers, REFERENCE_ID, refID, PATH, path, HAS_REF, hasRef, HAS_ALT, hasAlt, TYPE, type);
-            PreparedStatement stmt = conn.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
+            u = new URL(adi.getUrl());
+        } catch (MalformedURLException ex) {
+            ex.printStackTrace();
+        }
 
-            stmt.execute();
-            ResultSet res = stmt.getGeneratedKeys();
-            res.next();
-
-            int annotID = res.getInt(1);
-            return annotID;
-        } finally {
-            conn.close();
+        File targetDir = new File(localDirectory.getAbsolutePath() + "/" + programName + "/" + version + "/" + reference);
+        targetDir.mkdirs();
+        try {
+            String targetFileName = "tmp.zip";
+            NetworkUtils.downloadFile(u, targetDir, targetFileName);
+            File zip = new File(targetDir, targetFileName);
+            extractFolder(zip.getAbsolutePath(), new File(zip.getAbsolutePath()).getParent());
+            zip.delete();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 
-    @Override
-    public void addAnnotationFormat(String sessID, int annotID, int pos, String colName, String colType, boolean filt, String alias, String desc) throws SQLException {
+    /**
+     * Unzip a zip file
+     *
+     * @param zipFile Path to the zip file
+     * @param toPath Destination path
+     * @throws ZipException
+     * @throws IOException
+     */
+    private static void extractFolder(String zipFile, String toPath) throws ZipException, IOException {
+        int BUFFER = 2048;
+        File file = new File(zipFile);
 
-        TableSchema table = MedSavantDatabase.AnnotationFormatTableSchema;
-        ConnectionController.executePreparedUpdate(sessID, table.preparedInsert(AnnotationFormatColumns.ANNOTATION_ID,
-                AnnotationFormatColumns.POSITION, AnnotationFormatColumns.COLUMN_NAME, AnnotationFormatColumns.COLUMN_TYPE,
-                AnnotationFormatColumns.FILTERABLE, AnnotationFormatColumns.ALIAS, AnnotationFormatColumns.DESCRIPTION).toString(),
-                annotID, pos, colName, colType, filt, alias, desc);
+        ZipFile zip = new ZipFile(file);
+
+        //new File(newPath).mkdir();
+        Enumeration zipFileEntries = zip.entries();
+
+        // Process each entry
+        while (zipFileEntries.hasMoreElements()) {
+            // grab a zip file entry
+            ZipEntry entry = (ZipEntry) zipFileEntries.nextElement();
+            String currentEntry = entry.getName();
+            File destFile = new File(toPath, currentEntry);
+            File destinationParent = destFile.getParentFile();
+
+            // create the parent directory structure if needed
+            destinationParent.mkdirs();
+
+            if (!entry.isDirectory()) {
+                BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
+                int currentByte;
+                // establish buffer for writing file
+                byte data[] = new byte[BUFFER];
+
+                // write the current file to disk
+                FileOutputStream fos = new FileOutputStream(destFile);
+                BufferedOutputStream dest = new BufferedOutputStream(fos,
+                        BUFFER);
+
+                // read and write until last byte is encountered
+                while ((currentByte = is.read(data, 0, BUFFER)) != -1) {
+                    dest.write(data, 0, currentByte);
+                }
+                dest.flush();
+                dest.close();
+                is.close();
+            }
+
+            if (currentEntry.endsWith(".zip")) {
+                // found a zip file, try to open
+                extractFolder(destFile.getAbsolutePath(), new File(destFile.getAbsolutePath()).getParent());
+            }
+        }
+    }
+
+    /**
+     * Get the prescribed directory for the given annotation
+     * @param info The annotation whose directory is to be returned
+     * @return  The directory
+     */
+    private static File getDirectoryForAnnotation(AnnotationDownloadInformation info) {
+        return getDirectoryForAnnotation(info.getProgramName(), info.getProgramVersion(), info.getReference());
+    }
+
+
+    /**
+     * Get the prescribed directory for the given annotation
+     * @param programName The program name for this annotation
+     * @param programVersion The program version for this annotation
+     * @param reference The genome reference that this annotation applies to
+     * @return
+     */
+    private static File getDirectoryForAnnotation(String programName, String programVersion, String reference) {
+        return new File(localDirectory.getAbsolutePath() + "/" + reference + "/" + programName + "/" + programVersion);
+    }
+
+    /**
+     * Checks that the annotation is installed
+     * @param info The Annotation information (version,reference,etc) for the annotation to check
+     * @return Whether or not this annotation is currently installed
+     */
+    private boolean checkIfAnnotationIsInstalled(AnnotationDownloadInformation info) {
+        File dir = getDirectoryForAnnotation(info);
+        if (dir.exists()) {
+            File annotationZip = new File (dir + "/annotation.gz");
+            File annotationIndex = new File (dir + "/annotation.tbi");
+            File annotationDescription = new File (dir + "/annotation.xml");
+
+            if (annotationZip.exists() && annotationIndex.exists() && annotationDescription.exists()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
