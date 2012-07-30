@@ -35,11 +35,11 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.region.RegionController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -102,7 +102,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
 
             JPanel banner = new JPanel();
             banner.setLayout(new BoxLayout(banner, BoxLayout.X_AXIS));
-        
+
             banner.setBackground(new Color(245,245,245));
             banner.setBorder(BorderFactory.createTitledBorder("Region List"));
 
@@ -297,7 +297,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
         }
 
         private synchronized void updateGeneTable() {
-            
+
             regionToVariantCountMap.clear();
             regionToIndividualCountMap.clear();
 
@@ -323,7 +323,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
         }
 
         public synchronized void updateData() {
-            
+
             List<Object[]> data = new ArrayList<Object[]>();
 
             int i = 0;

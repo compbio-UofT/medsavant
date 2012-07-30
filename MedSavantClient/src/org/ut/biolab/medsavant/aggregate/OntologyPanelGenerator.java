@@ -34,13 +34,13 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.geneset.GeneSetController;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.GeneSetController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.OntologyTerm;
 import org.ut.biolab.medsavant.ontology.OntologyListItem;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ThreadController;
 
@@ -50,7 +50,7 @@ import org.ut.biolab.medsavant.util.ThreadController;
  * @author mfiume, tarkvara
  */
 class OntologyPanelGenerator extends AggregatePanelGenerator {
-    
+
     private static final Log LOG = LogFactory.getLog(OntologyPanelGenerator.class);
 
     OntologyPanelGenerator(String page) {
@@ -76,7 +76,7 @@ class OntologyPanelGenerator extends AggregatePanelGenerator {
 
         private OntologyPanel() {
             setLayout(new GridBagLayout());
-            
+
             chooser = new JComboBox(OntologyListItem.DEFAULT_ITEMS);
             chooser.setMaximumSize(new Dimension(400, chooser.getMaximumSize().height));
             progress = new JProgressBar();
@@ -89,7 +89,7 @@ class OntologyPanelGenerator extends AggregatePanelGenerator {
             banner.setBorder(BorderFactory.createTitledBorder("Ontology"));
 
             tree = new TreeTable();
-            
+
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.weightx = 1.0;
             gbc.anchor = GridBagConstraints.WEST;
@@ -103,11 +103,11 @@ class OntologyPanelGenerator extends AggregatePanelGenerator {
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.anchor = GridBagConstraints.NORTH;
             add(banner, gbc);
-            
+
             gbc.weighty = 1.0;
             gbc.fill = GridBagConstraints.BOTH;
             add(new JScrollPane(tree), gbc);
-                    
+
             chooser.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -147,8 +147,8 @@ class OntologyPanelGenerator extends AggregatePanelGenerator {
                 termFetcher.execute();
             }
         }
-        
-        
+
+
         /**
          * Class which provides a tree-like data-structure for all terms within a given ontology.
          */
@@ -203,14 +203,14 @@ class OntologyPanelGenerator extends AggregatePanelGenerator {
                 }
                 return allChildren.get(term);
             }
-            
+
         }
 
         /**
          * Class which represents a single term within the tree-model.
          */
         private class OntologyNode extends DefaultExpandableRow {
-            
+
             private static final int COUNT_COLUMN = 3;
 
             private final OntologyTerm term;
@@ -290,7 +290,7 @@ class OntologyPanelGenerator extends AggregatePanelGenerator {
                 }
             }
         }
-            
+
         private class NodeProgressRenderer extends JPanel implements TableCellRenderer {
 
             private JLabel label;

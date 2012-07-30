@@ -19,7 +19,7 @@ package org.ut.biolab.medsavant.view;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.project.ProjectsSection;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
@@ -50,7 +50,7 @@ public class LoggedInView extends JPanel {
         if (LoginController.getInstance().getUserLevel() == UserLevel.ADMIN) {
             viewController.addSection(new ManageSection());
         }
-        
+
         viewController.selectFirstItem();
     }
 }

@@ -22,7 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;

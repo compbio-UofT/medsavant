@@ -38,7 +38,7 @@ import java.awt.event.KeyAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
 
 /**
@@ -46,38 +46,38 @@ import org.ut.biolab.medsavant.project.ProjectController;
  * @author Andrew
  */
 public class CohortWizard extends WizardDialog {
-    
+
     private static final Log LOG = LogFactory.getLog(CohortWizard.class);
 
     private String cohortName;
-    
+
     public CohortWizard() {
         setTitle("Cohort Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
-        
+
         //add pages
         PageList model = new PageList();
         model.append(getNamePage());
         setPageList(model);
-        
+
         pack();
         setResizable(false);
         setLocationRelativeTo(null);
     }
-    
+
     private AbstractWizardPage getNamePage() {
-        final CompletionWizardPage page = new CompletionWizardPage("Create Cohort") {          
+        final CompletionWizardPage page = new CompletionWizardPage("Create Cohort") {
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.FINISH);
-                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);              
-            }     
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.NEXT);
+            }
         };
         page.addText(
                 "Choose a name for the cohort. \n"
                 + "The name cannot already be in use. ");
-        
+
         //setup text field
         final JTextField namefield = new JTextField();
         namefield.addKeyListener(new KeyAdapter() {
@@ -94,28 +94,28 @@ public class CohortWizard extends WizardDialog {
         page.addComponent(namefield);
         return page;
     }
-    
+
     @Override
     public ButtonPanel createButtonPanel() {
         ButtonPanel bp = super.createButtonPanel();
-        
+
         //remove finish button
         bp.removeButton((AbstractButton)bp.getButtonByName(ButtonNames.FINISH));
-        
+
         //add new finish button
         JButton finishButton = new JButton("Finish");
-        finishButton.setName(ButtonNames.FINISH);      
+        finishButton.setName(ButtonNames.FINISH);
         finishButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 finish();
             }
-        });       
+        });
         bp.addButton(finishButton);
-        
+
         return bp;
     }
-    
+
     public void finish() {
         if (cohortName == null || cohortName.equals("")) return;
         try {
@@ -128,5 +128,5 @@ public class CohortWizard extends WizardDialog {
         setVisible(false);
         dispose();
     }
-    
+
 }

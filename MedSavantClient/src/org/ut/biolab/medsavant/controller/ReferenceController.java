@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.reference;
+package org.ut.biolab.medsavant.controller;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -24,8 +24,9 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Chromosome;
+import org.ut.biolab.medsavant.event.ReferenceEvent;
 import org.ut.biolab.medsavant.serverapi.ReferenceManagerAdapter;
 import org.ut.biolab.medsavant.util.Controller;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
@@ -67,7 +68,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     public boolean setReference(String refName, boolean getConfirmation) throws SQLException, RemoteException {
         if (manager.containsReference(LoginController.sessionId, refName)) {
 
-            if (getConfirmation && FilterController.getInstance().hasFiltersApplied()){
+            if(getConfirmation && FilterController.getInstance().hasFiltersApplied()){
                 if(!DialogUtils.confirmChangeReference(false)){
                     return false;
                 }
@@ -123,7 +124,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
                     manager.removeReference(LoginController.sessionId, manager.getReferenceID(LoginController.sessionId, refName));
                     fireEvent(new ReferenceEvent(ReferenceEvent.Type.REMOVED, refName));
                 } catch (Throwable ex) {
-                    setVisible(false);                    
+                    setVisible(false);
                     DialogUtils.displayError("Cannot remove this reference because projects\nor annotations still refer to it.");
                 }
             }

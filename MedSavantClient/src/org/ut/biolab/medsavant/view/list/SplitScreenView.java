@@ -33,7 +33,7 @@ import com.jidesoft.grid.TableModelWrapperUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -111,10 +111,10 @@ public class SplitScreenView extends JPanel {
             WaitPanel wp = new WaitPanel("Getting list");
             wp.setBackground(ViewUtil.getTertiaryMenuColor());
             add(wp, CARD_WAIT);
-            
+
             showCard = new JPanel();
             add(showCard, CARD_SHOW);
-            
+
             JPanel errorPanel = new JPanel();
             errorPanel.setLayout(new BorderLayout());
             errorMessage = new JLabel("An error occurred:");

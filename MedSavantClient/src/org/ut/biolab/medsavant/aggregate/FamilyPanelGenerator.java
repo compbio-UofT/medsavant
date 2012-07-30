@@ -52,9 +52,9 @@ import pedviz.view.symbols.SymbolSexUndesignated;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.pedigree.Pedigree;
@@ -159,7 +159,7 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
         }
 
         private class FamilyListGetter extends MedSavantWorker<List<String>> {
-            
+
             public FamilyListGetter() {
                 super(pageName);
             }
@@ -179,11 +179,11 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
         }
 
         private void showFamilyAggregates(String famID) {
-            
+
             pedigreePanel.removeAll();
             pedigreePanel.add(new WaitPanel("Getting pedigree"));
             familyID = famID;
-            
+
 
             stopThreads();
 
@@ -209,7 +209,7 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
             @Override
             protected Map<String, Integer> doInBackground() throws Exception {
                 return MedSavantClient.VariantManager.getNumVariantsInFamily(
-                        LoginController.sessionId, 
+                        LoginController.sessionId,
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         familyId, FilterController.getInstance().getQueryFilterConditions());
@@ -297,7 +297,7 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
 
             this.pedigree = pedigree;
             this.graphView = view;
-            
+
             //add ability to click
             view.addNodeListener(new NodeListener() {
                 @Override
@@ -324,13 +324,13 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
                                 patientIds = new int[selectedNodes.size()];
                                 for(int i = 0; i < selectedNodes.size(); i++) {
                                     patientIds[i] = selectedNodes.get(i);
-                                }  
+                                }
                             } else {
                                 patientIds = new int[]{patientId};
                             }
                             JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(patientIds);
                             popup.show(e.getComponent(), e.getX(), e.getY());
-                        } else if (SwingUtilities.isLeftMouseButton(e)) { 
+                        } else if (SwingUtilities.isLeftMouseButton(e)) {
                             if (!selectedNodes.contains(patientId)) {
                                 selectedNodes.add(patientId);
                                 overNodeView.setBorderColor(ViewUtil.detailSelectedBackground);
@@ -338,7 +338,7 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
                                 selectedNodes.remove(patientId);
                                 overNodeView.setBorderColor(Color.black);
                             }
-                        } 
+                        }
                     } else {
                         if (SwingUtilities.isRightMouseButton(e) && familyID != null) {
                             JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(familyID);
@@ -349,7 +349,7 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
                     pedigreePanel.repaint();
                 }
             });
-            
+
 
             updateResultView();
         }

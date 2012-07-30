@@ -40,12 +40,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.geneset.GeneSetController;
+import org.ut.biolab.medsavant.controller.GeneSetController;
 import org.ut.biolab.medsavant.importing.BEDFormat;
 import org.ut.biolab.medsavant.importing.FileFormat;
 import org.ut.biolab.medsavant.importing.ImportFilePanel;
 import org.ut.biolab.medsavant.model.GeneSet;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.GeneFetcher;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -77,16 +77,16 @@ public class RegionWizard extends WizardDialog {
     private final boolean importing;
     private GeneSet standardGenes;
     private final RegionController controller;
-    
+
     private ListViewTablePanel sourceGenesPanel;
     private ListViewTablePanel selectedGenesPanel;
-    
+
     public RegionWizard(boolean imp) throws SQLException, RemoteException {
         super(MedSavantFrame.getInstance(), "Region List Wizard", true);
         this.importing = imp;
         controller = RegionController.getInstance();
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
-        
+
         //add pages
         PageList model = new PageList();
         if (imp) {
@@ -102,13 +102,13 @@ public class RegionWizard extends WizardDialog {
                 // That's odd.  We have no standard genes for this genome.
                 throw new IllegalArgumentException(String.format("No standard genes to choose from for %s.", ReferenceController.getInstance().getCurrentReferenceName()));
             }
-            
+
             fetchGenes();
             model.append(getCreationPage());
             model.append(getCompletionPage());
         }
         setPageList(model);
-        
+
         //change next action
         setNextAction(new AbstractAction() {
             @Override
@@ -118,7 +118,7 @@ public class RegionWizard extends WizardDialog {
                     if (importing) {
                         setCurrentPage(PAGENAME_FILE);
                     } else {
-                        setCurrentPage(PAGENAME_GENES);                            
+                        setCurrentPage(PAGENAME_GENES);
                     }
                 } else if (pageName.equals(PAGENAME_FILE) || pageName.equals(PAGENAME_GENES)) {
                     setCurrentPage(PAGENAME_CREATE);
@@ -127,17 +127,17 @@ public class RegionWizard extends WizardDialog {
                 }
             }
         });
-        
+
         pack();
         setResizable(false);
         setLocationRelativeTo(MedSavantFrame.getInstance());
     }
-    
+
     @Override
     public Dimension getPreferredSize() {
         return new Dimension(960, 600);
     }
-    
+
     private AbstractWizardPage getNamePage() {
         return new DefaultWizardPage(PAGENAME_NAME) {
 
@@ -173,13 +173,13 @@ public class RegionWizard extends WizardDialog {
             }
         };
     }
-    
+
     private AbstractWizardPage getFilePage() {
 
         //setup page
         return new DefaultWizardPage(PAGENAME_FILE) {
             {
-                ImportFilePanel importPanel = new ImportFilePanel() {          
+                ImportFilePanel importPanel = new ImportFilePanel() {
                     @Override
                     public void setReady(boolean ready) {
                         if (ready) {
@@ -191,7 +191,7 @@ public class RegionWizard extends WizardDialog {
                         } else {
                             fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
                         }
-                    }          
+                    }
                 };
                 importPanel.addFileFormat(new BEDFormat());
                 addComponent(importPanel);
@@ -210,7 +210,7 @@ public class RegionWizard extends WizardDialog {
             }
         };
     }
-    
+
     private AbstractWizardPage getGenesPage() {
         return new DefaultWizardPage(PAGENAME_GENES) {
             {
@@ -218,7 +218,7 @@ public class RegionWizard extends WizardDialog {
                 sourceGenesPanel.setFontSize(10);
                 selectedGenesPanel = new ListViewTablePanel(new Object[0][0], COLUMN_NAMES, COLUMN_CLASSES, new int[0]);
                 selectedGenesPanel.setFontSize(10);
-                
+
                 PartSelectorPanel selector = new PartSelectorPanel(sourceGenesPanel, selectedGenesPanel);
                 selector.setBackground(Color.WHITE);
                 addComponent(selector);
@@ -229,7 +229,7 @@ public class RegionWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
-            }            
+            }
         };
     }
 
@@ -295,7 +295,7 @@ public class RegionWizard extends WizardDialog {
             }
         };
     }
-    
+
     private AbstractWizardPage getCompletionPage() {
         return new CompletionWizardPage(PAGENAME_COMPLETE) {
             @Override
@@ -306,7 +306,7 @@ public class RegionWizard extends WizardDialog {
             }
         };
     }
-    
+
     private boolean validateListName() {
         try {
             boolean dup = ArrayUtils.contains(controller.getRegionSets(), listName);
@@ -319,7 +319,7 @@ public class RegionWizard extends WizardDialog {
             return false;
         }
     }
-    
+
     private void createList() throws SQLException, IOException {
         if (!importing) {
             File tempFile = File.createTempFile("genes", ".bed");
@@ -345,7 +345,7 @@ public class RegionWizard extends WizardDialog {
                 sourceGenesPanel.updateData(data);
                 sourceGenesPanel.updateView();
             }
-                            
+
             /**
              * Don't have progress bar handy, so we don't do anything to show progress.
              */

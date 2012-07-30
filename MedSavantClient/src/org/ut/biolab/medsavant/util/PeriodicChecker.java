@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
 import javax.swing.Timer;
 
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.login.LoginEvent;
+import org.ut.biolab.medsavant.event.LoginEvent;
 
 /**
  * Class which performs a periodic task while the user is logged in.
@@ -18,7 +18,7 @@ import org.ut.biolab.medsavant.login.LoginEvent;
 public abstract class PeriodicChecker implements ActionListener, Listener<LoginEvent> {
     private final int interval;
     private Timer timer;
-    
+
     public PeriodicChecker(int interval) {
         this.interval = interval;
     }

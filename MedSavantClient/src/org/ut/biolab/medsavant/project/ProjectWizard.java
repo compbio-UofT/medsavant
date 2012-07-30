@@ -47,7 +47,7 @@ import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.PatientFormat;
 import org.ut.biolab.medsavant.format.VariantFormat;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Annotation;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.model.Reference;
@@ -513,7 +513,7 @@ public class ProjectWizard extends WizardDialog {
                         createProject();
                         return null;
                     }
-                    
+
                     @Override
                     protected void showSuccess(Void result) {
                         if (modify) {
@@ -792,7 +792,7 @@ public class ProjectWizard extends WizardDialog {
         public boolean isSelected() {
             return checkBox.isSelected();
         }
-        
+
         public void setSelected(boolean value) {
             checkBox.setSelected(value);
         }

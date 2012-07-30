@@ -33,7 +33,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.clientapi.ProgressCallbackAdapter;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -45,7 +45,7 @@ import org.ut.biolab.medsavant.util.MedSavantWorker;
  * @author tarkvara
  */
 public abstract class VariantWorker extends MedSavantWorker<Void> {
-    
+
     private static final Log LOG = LogFactory.getLog(PublicationWorker.class);
 
     private final String activity;
@@ -54,7 +54,7 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
     private final JLabel progressLabel;
     private final JProgressBar progressBar;
     protected final JButton workButton;
-    
+
     /**
      * Initialise functionality shared by all UpdateWorkers and PublicationWorkers.
      *
@@ -71,7 +71,7 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
         this.progressLabel = progressLabel;
         this.progressBar = progressBar;
         this.workButton = workButton;
-        
+
         progressLabel.setText(String.format("%s variants...", activity));
 
         try {

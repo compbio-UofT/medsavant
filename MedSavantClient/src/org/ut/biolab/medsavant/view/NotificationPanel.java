@@ -28,8 +28,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.login.LoginEvent;
+import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.event.LoginEvent;
 import org.ut.biolab.medsavant.model.Notification;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -52,22 +52,22 @@ public class NotificationPanel extends JComponent {
 
     private Notification[] notifications;
     private JPopupMenu popup;
-    
+
     public NotificationPanel() {
         setOpaque(false);
         setPreferredSize(new Dimension(120, 20));
         setBackground(Color.GREEN);
         setVisible(false);
-        
+
         setCursor(new Cursor(Cursor.HAND_CURSOR));
-               
+
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 showPopup(0);
             }
         });
-        
+
         LoginController.getInstance().addListener(new PeriodicChecker(UPDATE_INTERVAL) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -77,7 +77,7 @@ public class NotificationPanel extends JComponent {
                     setNotifications(null);
                 }
             }
-            
+
             @Override
             public void handleEvent(LoginEvent evt) {
                 super.handleEvent(evt);
@@ -87,7 +87,7 @@ public class NotificationPanel extends JComponent {
             }
         });
     }
-    
+
     @Override
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D)g;
@@ -107,12 +107,12 @@ public class NotificationPanel extends JComponent {
     private void showPopup(final int start) {
         popup = new JPopupMenu();
         popup.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        
+
         boolean headerAdded = false;
         if (notifications == null) {
             popup.add(new NotificationIcon(null, null));
         } else {
-            
+
             //add notifications
             for (int i = start; i < Math.min(start+5, notifications.length); i++) {
                 popup.add(new NotificationIcon(notifications[i], popup));
@@ -120,7 +120,7 @@ public class NotificationPanel extends JComponent {
                     popup.add(createSeparator());
                 }
             }
-            
+
             //add page header
             if (notifications.length > 5) {
                 JPanel header = new JPanel();
@@ -135,7 +135,7 @@ public class NotificationPanel extends JComponent {
                         }
                     });
                     header.add(prevButton);
-                }                    
+                }
                 header.add(Box.createHorizontalGlue());
                 if (start + 5 < notifications.length) {
                     JLabel nextButton = ViewUtil.createLabelButton("  Next Page  ");
@@ -148,15 +148,15 @@ public class NotificationPanel extends JComponent {
                     header.add(nextButton);
                 }
                 popup.add(createSeparator());
-                popup.add(header);                
+                popup.add(header);
                 headerAdded = true;
             }
         }
-        
+
         int offset = -Math.min(5, notifications.length - start) * (MENU_ICON_SIZE.height + 2) -3 - (headerAdded ? 16 : 0);
         popup.show(this, 0, offset);
     }
-    
+
     private JSeparator createSeparator() {
         JSeparator sep = new JSeparator(JSeparator.HORIZONTAL);
         sep.setMaximumSize(new Dimension(1000,1));
@@ -164,12 +164,12 @@ public class NotificationPanel extends JComponent {
         sep.setForeground(Color.LIGHT_GRAY);
         return sep;
     }
-    
+
     private void setNotifications(Notification[] list) {
         notifications = list;
         setVisible(list != null && list.length > 0);
     }
-   
+
     class NotificationIcon extends JPanel {
 
         public NotificationIcon(final Notification n, final JPopupMenu p) {
@@ -211,7 +211,7 @@ public class NotificationPanel extends JComponent {
                             p.setVisible(false);
 
                             //get db lock
-                            try {            
+                            try {
                                 if (MedSavantClient.SettingsManager.getDBLock(LoginController.sessionId)) {
                                     try {
                                         ProjectController.getInstance().promptToPublish((ProjectDetails)n.getData());

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.reference;
+package org.ut.biolab.medsavant.event;
 
 
 /**
@@ -32,11 +32,11 @@ public class ReferenceEvent {
         this.type = type;
         this.name = name;
     }
-    
+
     public Type getType() {
         return type;
     }
-    
+
     public String getName() {
         return name;
     }

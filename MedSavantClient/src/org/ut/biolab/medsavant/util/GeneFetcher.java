@@ -17,7 +17,7 @@
 package org.ut.biolab.medsavant.util;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.GeneSet;
 

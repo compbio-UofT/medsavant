@@ -24,10 +24,10 @@ import com.healthmarketscience.rmiio.RemoteInputStream;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.importing.FileFormat;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.util.Controller;
 
 
@@ -38,7 +38,7 @@ import org.ut.biolab.medsavant.util.Controller;
  */
 public class RegionController extends Controller<RegionEvent> {
     private static RegionController instance;
-    
+
     public static RegionController getInstance() {
         if (instance == null) {
             instance = new RegionController();
@@ -55,7 +55,7 @@ public class RegionController extends Controller<RegionEvent> {
         MedSavantClient.RegionSetManager.removeRegionSet(LoginController.sessionId, setID);
         fireEvent(new RegionEvent(RegionEvent.Type.REMOVED));
     }
-    
+
     public RegionSet[] getRegionSets() throws SQLException, RemoteException {
         return MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId);
     }

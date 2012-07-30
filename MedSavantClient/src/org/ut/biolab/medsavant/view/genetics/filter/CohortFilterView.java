@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;

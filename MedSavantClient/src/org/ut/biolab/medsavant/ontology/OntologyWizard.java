@@ -41,7 +41,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.OntologyType;
 import org.ut.biolab.medsavant.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -62,10 +62,10 @@ public class OntologyWizard extends WizardDialog {
 
     private String name;
     private OntologyType type;
-    
+
     private JTextField oboField = new JTextField();
     private JTextField mappingField = new JTextField();
-    
+
     public OntologyWizard() throws SQLException, RemoteException {
         super((Frame)DialogUtils.getFrontWindow(), "Ontology Wizard", true);
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
@@ -77,7 +77,7 @@ public class OntologyWizard extends WizardDialog {
         model.append(getCreationPage());
         model.append(getCompletionPage());
         setPageList(model);
-        
+
         //change next action
         setNextAction(new AbstractAction() {
             @Override
@@ -92,12 +92,12 @@ public class OntologyWizard extends WizardDialog {
                 }
             }
         });
-        
+
         pack();
         setResizable(false);
         setLocationRelativeTo(DialogUtils.getFrontWindow());
     }
-    
+
     private AbstractWizardPage getNamePage() {
         return new DefaultWizardPage(PAGENAME_NAME) {
             private JTextField nameField = new JTextField();
@@ -156,7 +156,7 @@ public class OntologyWizard extends WizardDialog {
             }
         };
     }
-    
+
     private AbstractWizardPage getSourcePage() {
 
         return new DefaultWizardPage(PAGENAME_SOURCE) {
@@ -175,7 +175,7 @@ public class OntologyWizard extends WizardDialog {
                 addText("URL for the OBO file containing the ontology data:");
                 addComponent(oboField);
                 oboField.addKeyListener(listener);
-                
+
                 addText("URL for the file definining the mapping between genes\nand ontology terms:");
                 addComponent(mappingField);
                 mappingField.addKeyListener(listener);
@@ -190,7 +190,7 @@ public class OntologyWizard extends WizardDialog {
             }
         };
     }
-    
+
     private AbstractWizardPage getCreationPage() {
 
         //setup page
@@ -252,7 +252,7 @@ public class OntologyWizard extends WizardDialog {
             }
         };
     }
-    
+
     private AbstractWizardPage getCompletionPage() {
         return new CompletionWizardPage(PAGENAME_COMPLETE) {
             @Override
@@ -263,7 +263,7 @@ public class OntologyWizard extends WizardDialog {
             }
         };
     }
-    
+
     private boolean validateName() {
         try {
             boolean dup = ArrayUtils.contains(MedSavantClient.OntologyManager.getOntologies(LoginController.sessionId), name);
@@ -276,7 +276,7 @@ public class OntologyWizard extends WizardDialog {
             return false;
         }
     }
-    
+
     private void create() throws SQLException, IOException {
         MedSavantClient.OntologyManager.addOntology(LoginController.sessionId, name, type, new URL(oboField.getText()), new URL(mappingField.getText()));
     }

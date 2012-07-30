@@ -34,7 +34,7 @@ import com.jidesoft.pane.CollapsiblePanes;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils;

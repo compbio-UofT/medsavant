@@ -22,7 +22,7 @@ import java.util.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.*;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;

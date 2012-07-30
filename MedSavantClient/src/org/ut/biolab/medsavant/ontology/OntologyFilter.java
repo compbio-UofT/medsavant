@@ -28,13 +28,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.geneset.GeneSetController;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.GeneSetController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.OntologyTerm;
 import org.ut.biolab.medsavant.model.OntologyType;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.region.RegionSetFilter;
 
 
@@ -43,7 +43,7 @@ import org.ut.biolab.medsavant.region.RegionSetFilter;
  * @author tarkvara
  */
 public class OntologyFilter extends RegionSetFilter {
-    
+
     private static final Log LOG = LogFactory.getLog(OntologyFilter.class);
 
     private final List<OntologyTerm> appliedTerms;
@@ -100,11 +100,11 @@ public class OntologyFilter extends RegionSetFilter {
                 return null;
         }
     }
-    
+
     public static String ontologyToFilterID(OntologyType ontology) {
         return ontology.toString();
     }
-    
+
     public static OntologyType filterIDToOntology(String filterID) {
         return Enum.valueOf(OntologyType.class, filterID);
     }

@@ -40,10 +40,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -89,7 +89,7 @@ public class ImportVariantsWizard extends WizardDialog {
     public Dimension getPreferredSize() {
         return new Dimension(720, 600);
     }
-    
+
 
     private AbstractWizardPage getWelcomePage() {
 
@@ -344,7 +344,7 @@ public class ImportVariantsWizard extends WizardDialog {
             private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after upload");
             private final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
             private final JProgressBar publishProgressBar = new JProgressBar();
-            
+
             {
                 addComponent(progressLabel);
                 addComponent(progressBar);

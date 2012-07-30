@@ -40,9 +40,9 @@ import com.jidesoft.grid.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.model.SimplePatient;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -73,13 +73,13 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
             }
         }
     };
-    
+
     private boolean init = false;
-    
+
     CohortPanelGenerator(String page) {
         super(page);
     }
-    
+
     @Override
     public String getName() {
         return "Cohort";
@@ -103,7 +103,7 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
             }
         }
     }
-    
+
     private class CohortPanel extends AggregatePanel {
 
         private TreeTable table;
@@ -113,15 +113,15 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
         private JScrollPane container;
         private JPanel progressPanel;
         private JButton exportButton;
-        
-        public CohortPanel() {                       
+
+        public CohortPanel() {
             init();
         }
-        
+
         private void init() {
             removeAll();
             setLayout(new BorderLayout());
-            
+
             exportButton = new JButton("Export Page");
             exportButton.setEnabled(false);
             exportButton.addMouseListener(new MouseAdapter() {
@@ -134,15 +134,15 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
                     }
                 }
             });
-            
+
             progressPanel = new JPanel();
             progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.X_AXIS));
             progressPanel.add(Box.createHorizontalGlue());
-            progressPanel.add(exportButton);           
-            progressPanel.add(Box.createRigidArea(new Dimension(10,30)));            
-            
+            progressPanel.add(exportButton);
+            progressPanel.add(Box.createRigidArea(new Dimension(10,30)));
+
             showWaitCard();
-            
+
             new MedSavantWorker<CohortTreeTableModel>(pageName) {
 
                 @Override
@@ -153,10 +153,10 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
                     List rows = new ArrayList();
                     Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
                     for (Cohort c : cohorts) {
-                        List<SimplePatient> simplePatients = MedSavantClient.CohortManager.getIndividualsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), c.getId());           
-                        CohortNode n = new CohortNode(c, simplePatients);      
+                        List<SimplePatient> simplePatients = MedSavantClient.CohortManager.getIndividualsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), c.getId());
+                        CohortNode n = new CohortNode(c, simplePatients);
                         nodes.add(n);
-                        n.addChild(new LoadingNode()); 
+                        n.addChild(new LoadingNode());
                         rows.add(n);
                     }
 
@@ -185,31 +185,31 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
                     table = new TreeTable(sortableTreeTableModel);
 
                     container.getViewport().add(table);
-                    
+
                     showShowCard();
                     init = true;
                 }
             }.execute();
         }
-        
+
         private void showWaitCard() {
             removeAll();
             add(new WaitPanel("Getting aggregate information"), BorderLayout.CENTER);
         }
 
         private void showShowCard() {
-            removeAll();     
+            removeAll();
             add(progressPanel, BorderLayout.NORTH);
             add(container, BorderLayout.CENTER);
         }
-        
+
         public void update() {
             table.collapseAll();
-            for (CohortNode n : nodes) {               
+            for (CohortNode n : nodes) {
                 n.reset();
             }
         }
-        
+
         @Override
         public void recalculate() {
             if (updateRequired) {
@@ -232,8 +232,8 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
     }
 
     private class CohortNode extends DefaultExpandableRow {
-        
-        private Cohort cohort;       
+
+        private Cohort cohort;
         private List<SimplePatient> patients;
         private int value = -1;
 
@@ -271,13 +271,13 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
             }
             return null;
         }
-        
-        private void getVariantCount() {           
+
+        private void getVariantCount() {
             new MedSavantWorker<Integer>(pageName) {
 
                 @Override
                 protected void showProgress(double fraction) {}
-                
+
                 @Override
                 protected Integer doInBackground() throws Exception {
                     return MedSavantClient.CohortManager.getNumVariantsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), cohort.getId(), FilterController.getInstance().getQueryFilterConditions());
@@ -290,24 +290,24 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
                     panel.repaint();
                     cleanup();
                 }
-               
+
             }.execute();
         }
-        
+
         public void reset() {
             value = -1;
             this.removeAllChildren();
             setExpanded(false);
-            addChild(new LoadingNode()); 
+            addChild(new LoadingNode());
             getVariantCount();
         }
-        
+
         public void finish() {
             if (value == -1) {
                 reset();
             }
         }
-        
+
         private void expand() {
             if (hasChildren() && !(getChildAt(0) instanceof PatientNode)) {
                 new MedSavantWorker<Map<SimplePatient, Integer>>(pageName) {
@@ -333,17 +333,17 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
             }
         }
     }
-    
+
     private class PatientNode extends DefaultExpandableRow {
 
         private SimplePatient patient;
         private int value;
-        
+
         public PatientNode(SimplePatient p, Integer count) {
             this.patient = p;
             this.value = count;
         }
-        
+
         @Override
         public Object getValueAt(int i) {
             switch (i) {
@@ -356,16 +356,16 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
             }
             return null;
         }
-        
+
     }
-    
+
     private class LoadingNode extends DefaultExpandableRow {
-        
+
         @Override
         public Object getValueAt(int i) {
             return "Loading...";
         }
-        
+
     }
 
     static class CohortTreeTableModel extends TreeTableModel implements StyleModel {
@@ -446,5 +446,5 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
         public boolean isCellStyleOn() {
             return true;
         }
-    }   
+    }
 }

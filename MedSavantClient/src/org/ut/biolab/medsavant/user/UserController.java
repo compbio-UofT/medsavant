@@ -20,7 +20,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.util.Controller;
 
@@ -32,14 +32,14 @@ import org.ut.biolab.medsavant.util.Controller;
 public class UserController extends Controller<UserEvent> {
 
     private static UserController instance;
-    
+
     public static UserController getInstance() {
         if (instance == null) {
             instance = new UserController();
         }
         return instance;
     }
-    
+
     public void addUser(String name, char[] pass, UserLevel level) throws SQLException, RemoteException {
         MedSavantClient.UserManager.addUser(LoginController.sessionId, name, pass, level);
         fireEvent(new UserEvent(UserEvent.Type.ADDED, name));
@@ -53,8 +53,8 @@ public class UserController extends Controller<UserEvent> {
     public String[] getUserNames() throws SQLException, RemoteException {
         return MedSavantClient.UserManager.getUserNames(LoginController.sessionId);
     }
-    
+
     public void getUserLevel() {
-        
+
     }
 }

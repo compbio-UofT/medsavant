@@ -15,7 +15,9 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.rmi.RemoteException;
@@ -30,12 +32,12 @@ import javax.swing.JPanel;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.FilterController;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FilterEvent;
-import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;

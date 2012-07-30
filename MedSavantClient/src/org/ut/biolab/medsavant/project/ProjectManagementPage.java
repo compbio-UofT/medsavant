@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;

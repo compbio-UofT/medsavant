@@ -24,12 +24,12 @@ import java.util.List;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.login.LoginEvent;
+import org.ut.biolab.medsavant.controller.LoginController;
+import org.ut.biolab.medsavant.event.LoginEvent;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.project.ProjectEvent;
-import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.event.ReferenceEvent;
 import org.ut.biolab.medsavant.view.component.HoverButton;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.subview.SectionView;

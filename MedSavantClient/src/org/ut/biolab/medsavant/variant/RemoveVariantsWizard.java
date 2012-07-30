@@ -35,10 +35,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -51,12 +51,12 @@ public class RemoveVariantsWizard extends WizardDialog {
     private final int projectID;
     private final int referenceID;
     private final List<SimpleVariantFile> files;
-    
+
     public RemoveVariantsWizard(List<SimpleVariantFile> files) {
         this.projectID = ProjectController.getInstance().getCurrentProjectID();
         this.referenceID = ReferenceController.getInstance().getCurrentReferenceID();
         this.files = files;
-        
+
         setTitle("Remove Variants Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
@@ -71,7 +71,7 @@ public class RemoveVariantsWizard extends WizardDialog {
         setResizable(false);
         setLocationRelativeTo(getParent());
     }
-    
+
     private AbstractWizardPage getWelcomePage() {
 
         //setup page
@@ -84,7 +84,7 @@ public class RemoveVariantsWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
             }
         };
-       
+
         String projectName = ProjectController.getInstance().getCurrentProjectName();
         String referenceName = ReferenceController.getInstance().getCurrentReferenceName();
 
@@ -98,7 +98,7 @@ public class RemoveVariantsWizard extends WizardDialog {
 
         return page;
     }
-    
+
     private AbstractWizardPage getQueuePage() {
         //setup page
         return new DefaultWizardPage("Remove & Publish Variants") {
@@ -109,7 +109,7 @@ public class RemoveVariantsWizard extends WizardDialog {
             private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after removal");
             private final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
             private final JProgressBar publishProgressBar = new JProgressBar();
-            
+
             {
                 addComponent(progressLabel);
                 addComponent(progressBar);
@@ -153,7 +153,7 @@ public class RemoveVariantsWizard extends WizardDialog {
             }
         };
     }
-    
+
     private AbstractWizardPage getCompletePage() {
 
         final CompletionWizardPage page = new CompletionWizardPage("Complete") {
@@ -170,5 +170,5 @@ public class RemoveVariantsWizard extends WizardDialog {
 
         return page;
     }
-    
+
 }

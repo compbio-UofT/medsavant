@@ -30,16 +30,14 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.login.LoginEvent;
+import org.ut.biolab.medsavant.event.LoginEvent;
 import org.ut.biolab.medsavant.model.Filter;
 import org.ut.biolab.medsavant.model.QueryFilter;
 import org.ut.biolab.medsavant.model.RangeFilter;
 import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.project.ProjectEvent;
-import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.event.ReferenceEvent;
 import org.ut.biolab.medsavant.util.Controller;
 
 

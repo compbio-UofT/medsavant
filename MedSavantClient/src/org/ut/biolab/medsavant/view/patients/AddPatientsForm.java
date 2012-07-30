@@ -42,7 +42,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
@@ -63,44 +63,44 @@ public class AddPatientsForm extends JDialog {
     public AddPatientsForm() throws RemoteException, SQLException {
         this.setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);      
-        
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+
         createTable();
-        
+
         setLocationRelativeTo(null);
     }
-    
-    private void createTable() throws RemoteException, SQLException {       
+
+    private void createTable() throws RemoteException, SQLException {
         scrollPane.getViewport().setBackground(Color.white);
-        
+
         DefaultTableModel model = new DefaultTableModel() {
             @Override
-            public boolean isCellEditable(int row, int col) {  
+            public boolean isCellEditable(int row, int col) {
                 if (col == 0) return false;
-                return true;        
-            }  
+                return true;
+            }
         };
         model.addColumn("Short Name");
         model.addColumn("Value");
-        
+
         CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
         for (int i = 1; i < fields.length; i++) { //skip patient id
             model.addRow(new Object[]{ fields[i], ""} );
         }
 
-        
-        table.setModel(model);    
-        
+
+        table.setModel(model);
+
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 setTip();
             }
-        });  
-        
+        });
+
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
     }
-    
+
     private void setTip() {
         int index = table.getSelectedRow();
         Object o = table.getValueAt(index, 0);
@@ -116,9 +116,9 @@ public class AddPatientsForm extends JDialog {
                 s += "(true/false)";
                 break;
         }
-        this.tipLabel.setText(s);   
+        this.tipLabel.setText(s);
     }
-    
+
     private void addPatient() throws SQLException, RemoteException {
 
         List<String> values = new ArrayList<String>();
@@ -128,101 +128,101 @@ public class AddPatientsForm extends JDialog {
             if (value != null && !value.equals("")) {
                 cols.add((CustomField) table.getModel().getValueAt(i, 0));
                 values.add((String)table.getModel().getValueAt(i, 1));
-            }           
+            }
         }
-        
+
         // replace empty strings for nulls
         for (int i = 0; i < values.size(); i++) {
             values.set(i, values.get(i).equals("") ? null : values.get(i));
         }
-        
+
         MedSavantClient.PatientManager.addPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), cols, values);
-        clearTable();    
+        clearTable();
     }
-    
+
     private void clearTable() {
         for (int i = 0; i < table.getRowCount(); i++) {
             table.getModel().setValueAt("", i, 1);
         }
     }
-    
+
     private void generateTemplate() throws SQLException, RemoteException {
-        
+
         File file = DialogUtils.chooseFileForSave("Export Patients", "template.csv", ExtensionFileFilter.createFilters(new String[]{"csv"}), null);
         if (file == null) return;
-        
+
         progressBar.setIndeterminate(true);
         progressMessage.setText("Exporting Patients");
 
         CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
         List<Object[]> patients = MedSavantClient.PatientManager.getPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
-        
+
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));      
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));
             CSVWriter out = new CSVWriter(writer, ',', '"');
-            
+
             //write header
             String[] headerList = new String[fields.length - 1];
             for (int i = 1; i < fields.length; i++) { //skip patientId
-                headerList[i-1] = fields[i].getAlias(); 
+                headerList[i-1] = fields[i].getAlias();
             }
             out.writeNext(headerList);
-            
+
             //write patients
             for (Object[] patient : patients) {
                 String[] line = new String[patient.length - 1];
                 for (int i = 1; i < patient.length; i++) {
                     line[i-1] = valueToString(patient[i]);
-                }                
+                }
                 out.writeNext(line);
             }
-            
+
             out.close();
             writer.close();
             progressMessage.setText("Export successful");
         } catch (IOException ex) {
             LOG.error("Error exporting patients.", ex);
             progressMessage.setText("Error exporting patients");
-        } 
+        }
         progressBar.setIndeterminate(false);
         progressBar.setValue(0);
     }
-    
+
     private String valueToString(Object val) {
         if (val == null) {
             return "";
-        } 
+        }
         return val.toString();
     }
-    
+
     private void importFile() throws SQLException, RemoteException {
-        
+
         //Warn that data will be replaced
         if (JOptionPane.NO_OPTION == JOptionPane.showConfirmDialog(
-                null, 
-                "<html>Importing patients will REPLACE all existing patients.<br>Are you sure you want to do this?</html>", 
-                "Confirm", 
-                JOptionPane.YES_NO_OPTION, 
+                null,
+                "<html>Importing patients will REPLACE all existing patients.<br>Are you sure you want to do this?</html>",
+                "Confirm",
+                JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE)) return;
-        
+
         //remove current data
         MedSavantClient.PatientManager.clearPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
-                
+
         final File file = DialogUtils.chooseFileForOpen("Import File", new ExtensionsFileFilter(new String[]{"csv"}), null);
         if (file == null) return;
-        
+
         progressBar.setIndeterminate(true);
         progressMessage.setText("Importing Patients");
         setButtonsEnabled(false);
-        
+
         Thread t = new Thread() {
             @Override
             public void run() {
 
                 try {
-                    
+
                     CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
-                    
+
                     BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
                     CSVReader in = new CSVReader(bufferedReader);
 
@@ -240,9 +240,9 @@ public class AddPatientsForm extends JDialog {
                         }
                         if (!found) {
                             JOptionPane.showMessageDialog(
-                                        null, 
-                                        "<HTML>The headers in this file do not match those in the database.<BR>Please regenerate the template file.</HTML>", 
-                                        "Error", 
+                                        null,
+                                        "<HTML>The headers in this file do not match those in the database.<BR>Please regenerate the template file.</HTML>",
+                                        "Error",
                                         JOptionPane.ERROR_MESSAGE);
                             progressMessage.setText("Error importing patients");
                             progressBar.setIndeterminate(false);
@@ -286,13 +286,13 @@ public class AddPatientsForm extends JDialog {
                     progressBar.setIndeterminate(false);
                     progressBar.setValue(0);
                 }
-                
+
             }
         };
         t.start();
-             
+
     }
-    
+
     private void setButtonsEnabled(boolean enabled) {
         doneButton.setEnabled(enabled);
         jButton1.setEnabled(enabled);
@@ -305,7 +305,7 @@ public class AddPatientsForm extends JDialog {
         this.setVisible(false);
         this.dispose();
     }
-    
+
 
     /** This method is called from within the constructor to
      * initialize the form.

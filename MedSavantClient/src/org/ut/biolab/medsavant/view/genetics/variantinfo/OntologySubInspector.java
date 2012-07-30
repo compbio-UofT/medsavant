@@ -26,7 +26,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.OntologyTerm;
 import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;

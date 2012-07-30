@@ -24,10 +24,8 @@ import com.healthmarketscience.sqlbuilder.dbspec.Column;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
 
 
 /**
@@ -63,7 +61,7 @@ public class ResultController {
 
     private int filteredVariantCount = -1;
     private int totalVariantCount = -1;
-    
+
     private FilterController filterController;
 
     private ResultController() {

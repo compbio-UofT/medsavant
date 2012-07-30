@@ -23,8 +23,8 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.util.ThreadController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.event.ReferenceEvent;
 import org.ut.biolab.medsavant.view.genetics.filter.SearchBar;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;

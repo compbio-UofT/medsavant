@@ -30,12 +30,12 @@ import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.genetics.filter.FilterUtils.WhichTable;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -83,14 +83,14 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         if (Thread.currentThread().isInterrupted()) {
             return null;
         }
-        
+
         Condition[][] filterConditions;
         if (useFilteredCounts) {
             filterConditions = FilterController.getInstance().getQueryFilterConditions();
         } else {
             filterConditions = new Condition[][]{};
         }
-        
+
         if (whichTable == WhichTable.VARIANT) {
 
             chartMap.addAll(MedSavantClient.VariantManager.getFilteredFrequencyValuesForCategoricalColumn(
@@ -99,7 +99,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                     ReferenceController.getInstance().getCurrentReferenceID(),
                     filterConditions,
                     field.getColumnName()));
-            
+
         } else if (whichTable == WhichTable.PATIENT) {
 
             //get dna ids for each distinct value
@@ -111,27 +111,27 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
             if (field.getColumnName().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
                 map = ClientMiscUtils.modifyGenderMap(map);
             }
-            
+
             if (Thread.currentThread().isInterrupted()) return null;
-            
+
             //get a count for each dna id
             List<String> dnaIDs = getDNAIDs();
             Map<String, Integer> dnaIdToCount = MedSavantClient.VariantManager.getDNAIDHeatMap(
-                    LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentProjectID(), 
-                    ReferenceController.getInstance().getCurrentReferenceID(), 
-                    filterConditions, 
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentProjectID(),
+                    ReferenceController.getInstance().getCurrentReferenceID(),
+                    filterConditions,
                     dnaIDs);
-            
+
             for (Object key: map.keySet()) {
-                
+
                 //generate sum from each dna id
                 int numVariants = 0;
                 for (String dnaId : map.get(key)) {
                     Integer value = dnaIdToCount.get(dnaId);
                     if (value != null) numVariants += value;
                 }
-                
+
                 //add entry
                 if (numVariants > 0) {
                     chartMap.addEntry(key.toString(), numVariants);
@@ -167,9 +167,9 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         } else {
             conditions = new Condition[][]{};
         }
-        
+
         if (whichTable == WhichTable.VARIANT) {
-                
+
                 Map<Range,Long> resultMap = MedSavantClient.VariantManager.getFilteredFrequencyValuesForNumericColumn(
                         LoginController.sessionId,
                         ProjectController.getInstance().getCurrentProjectID(),
@@ -196,9 +196,9 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                     }
                 }
         } else {
-            
-            //TODO: This hasn't been properly tested. Need a numeric field in patients. 
-            
+
+            //TODO: This hasn't been properly tested. Need a numeric field in patients.
+
             String tablename = null;
             if (whichTable == WhichTable.VARIANT) {
                 tablename = ProjectController.getInstance().getCurrentVariantTableName();
@@ -211,7 +211,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                     field.getColumnName()));
 
             double binSize = org.ut.biolab.medsavant.util.ClientMiscUtils.generateBins(field, r, isLogScaleX);
-            
+
             //get dna ids for each distinct value
             Map<Object, List<String>> map = MedSavantClient.PatientManager.getDNAIDsForValues(
                     LoginController.sessionId,
@@ -226,23 +226,23 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
             }
 
             if (Thread.currentThread().isInterrupted()) return null;
-            
+
             List<String> dnaIds = getDNAIDs();
             //get a count for each dna id
             Map<String, Integer> dnaIDToCount = MedSavantClient.VariantManager.getDNAIDHeatMap(
-                    LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentProjectID(), 
-                    ReferenceController.getInstance().getCurrentReferenceID(), 
-                    conditions, 
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentProjectID(),
+                    ReferenceController.getInstance().getCurrentReferenceID(),
+                    conditions,
                     dnaIds);
-            
+
             int[] counts = new int[maxBin+1];
             Arrays.fill(counts, 0);
             for (Object key : map.keySet()) {
-                
+
                 double value = ClientMiscUtils.getDouble(key);
                 int bin = (int)(value / binSize);
-                
+
                 for (String dnaId : map.get(key)) {
                     Integer count = dnaIDToCount.get(dnaId);
                     if (count != null) {
@@ -250,7 +250,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                     }
                 }
             }
-            
+
             for (int i = 0; i < counts.length; i++) {
                 double min = i * binSize;
                 double max = min + binSize;
@@ -258,7 +258,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                         checkInt(min) + " - " + checkInt(max),
                         counts[i]);
             }
-            
+
         }
         return chartMap;
     }
@@ -352,13 +352,13 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
 
     private List<String> getDNAIDs() throws SQLException, RemoteException{
         List<String> dnaIds = MedSavantClient.VariantManager.getDistinctValuesForColumn(
-                    LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentVariantTableName(), 
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentVariantTableName(),
                     DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID, true);
         if (dnaIds == null) {
             dnaIds = MedSavantClient.VariantManager.getDistinctValuesForColumn(
-                    LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentVariantSubTableName(), 
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentVariantSubTableName(),
                     DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID,
                     false);
         }

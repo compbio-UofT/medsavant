@@ -19,7 +19,7 @@ package org.ut.biolab.medsavant.ontology;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Ontology;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;

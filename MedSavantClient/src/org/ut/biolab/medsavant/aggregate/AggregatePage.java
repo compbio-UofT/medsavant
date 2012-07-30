@@ -23,8 +23,8 @@ import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.FilterController;
 import org.ut.biolab.medsavant.model.event.FilterEvent;
 import org.ut.biolab.medsavant.util.ThreadController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.event.ReferenceEvent;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 

@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.model.SimplePatient;
 import org.ut.biolab.medsavant.project.ProjectController;

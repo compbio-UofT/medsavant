@@ -30,10 +30,10 @@ import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.VariantFormat;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.ProjectDetails;
-import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.reference.ReferenceEvent;
+import org.ut.biolab.medsavant.controller.ReferenceController;
+import org.ut.biolab.medsavant.event.ReferenceEvent;
 import org.ut.biolab.medsavant.serverapi.ProjectManagerAdapter;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.Controller;
@@ -253,7 +253,7 @@ public class ProjectController extends Controller<ProjectEvent> {
             } catch (Exception ex) {
                 ClientMiscUtils.reportError("Error cancelling publication of variants: %s", ex);
             }
-        } else if (option == JOptionPane.YES_OPTION) {                          
+        } else if (option == JOptionPane.YES_OPTION) {
             try {
                 MedSavantClient.VariantManager.publishVariants(LoginController.sessionId, pd.getProjectID(), pd.getReferenceID(), pd.getUpdateID());
                 LoginController.getInstance().logout();

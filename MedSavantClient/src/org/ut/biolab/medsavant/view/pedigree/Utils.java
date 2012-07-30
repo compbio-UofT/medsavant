@@ -30,7 +30,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;

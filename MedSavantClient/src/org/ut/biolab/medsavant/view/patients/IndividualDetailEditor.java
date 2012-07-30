@@ -19,7 +19,7 @@ package org.ut.biolab.medsavant.view.patients;
 import java.util.List;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -85,7 +85,7 @@ class IndividualDetailEditor extends DetailedListEditor {
                                 patients);
                         DialogUtils.displayMessage("Successfully removed " + items.size() + " patient(s)");
                     } catch (Exception ex) {
-                        setVisible(false);                        
+                        setVisible(false);
                         ClientMiscUtils.reportError("Error removing patient(s): %s", ex);
                     }
 

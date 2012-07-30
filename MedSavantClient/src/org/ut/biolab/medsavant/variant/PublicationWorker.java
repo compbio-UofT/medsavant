@@ -25,14 +25,14 @@ import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.wizard.WizardDialog;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 
 
 /**
  * Worker class which publishes variants.  Shared by ImportVariantsWizard, RemoveVariantsWizard, and ProjectWizard.
- * 
+ *
  * @author tarkvara
  */
 public class PublicationWorker extends VariantWorker {

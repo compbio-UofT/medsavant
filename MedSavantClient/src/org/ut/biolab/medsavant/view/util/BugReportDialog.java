@@ -20,7 +20,7 @@ import java.awt.Dialog;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 
-import org.ut.biolab.medsavant.mail.Mail;
+import org.ut.biolab.medsavant.util.Mail;
 import org.ut.biolab.medsavant.settings.VersionSettings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 

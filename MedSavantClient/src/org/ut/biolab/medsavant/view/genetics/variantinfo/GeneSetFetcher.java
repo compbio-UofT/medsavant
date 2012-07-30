@@ -22,11 +22,11 @@ import java.util.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.*;
-import org.ut.biolab.medsavant.geneset.GeneSetController;
-import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.controller.GeneSetController;
+import org.ut.biolab.medsavant.controller.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.controller.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 
 /**
@@ -36,7 +36,7 @@ import org.ut.biolab.medsavant.util.ClientMiscUtils;
 public class GeneSetFetcher {
 
     Map<String, Gene> geneDictionary;
-    
+
     public GeneSetFetcher() {
         geneDictionary = new HashMap<String, Gene>();
         try {
@@ -45,17 +45,17 @@ public class GeneSetFetcher {
             ClientMiscUtils.reportError("Unable to initialise gene dictionary: %s", ex);
         }
     }
-    
+
     public Map<String, Gene> getGeneDictionary() {
         return geneDictionary;
     }
-    
+
     private void initializeGeneDictionary() throws SQLException, RemoteException {
         for (Gene currentGene: GeneSetController.getInstance().getCurrentGenes()) {
             geneDictionary.put(currentGene.getName(), currentGene);
         }
     }
-    
+
     public List<Gene> getGenesByNumVariants(List<String> relatedGenes) {
         List<Gene> genes = getGenes(relatedGenes);
         Collections.sort(genes, new Comparator<Gene>() {
@@ -78,7 +78,7 @@ public class GeneSetFetcher {
         });
         return genes;
     }
-    
+
     public List<Gene> getGenes(List<String> geneNames) {
         List<Gene> genes = new ArrayList<Gene>();
         Iterator<String> itr = geneNames.iterator();
@@ -92,7 +92,7 @@ public class GeneSetFetcher {
         }
         return genes;
     }
-    
+
     public Gene getGene(String geneName) {
         return geneDictionary.get(geneName);
     }
