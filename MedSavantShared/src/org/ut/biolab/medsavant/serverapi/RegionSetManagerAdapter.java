@@ -38,5 +38,5 @@ public interface RegionSetManagerAdapter extends Remote {
     public void removeRegionSet(String sessID, int regionSetID) throws SQLException, RemoteException;
     public RegionSet[] getRegionSets(String sessID) throws SQLException, RemoteException;
     public GenomicRegion[] getRegionsInSet(String sessID, RegionSet set, int limit) throws SQLException, RemoteException;
-    public void addToRegionSet(String sessID, RegionSet set, int limit, int genomeID, String chrom, int start, int end, String desc) throws SQLException;
+    public void addToRegionSet(String sessID, RegionSet set, int limit, int genomeID, String chrom, int start, int end, String desc) throws SQLException, RemoteException;
 }
