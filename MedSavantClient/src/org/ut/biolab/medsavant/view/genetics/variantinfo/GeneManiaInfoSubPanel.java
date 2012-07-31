@@ -19,7 +19,13 @@ package org.ut.biolab.medsavant.view.genetics.variantinfo;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 import org.apache.commons.logging.Log;
@@ -30,12 +36,15 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import org.ut.biolab.medsavant.model.Gene;
+import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
+import org.ut.biolab.medsavant.region.RegionController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.view.genetics.inspector.GeneInspector;
 import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
@@ -602,7 +611,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         kvpPanel.removeAll();
         kvpPanel.invalidate();
         kvpPanel.updateUI();
-        kvp = new KeyValuePairPanel(4);
+        kvp = new KeyValuePairPanel(5);
         kvp.setKeysVisible(false);
         kvpPanel.add(kvp);
         progressBar.setVisible(true);
@@ -646,7 +655,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                 final org.ut.biolab.medsavant.model.Gene finalGene = currGene;
                                 kvp.addKey(Integer.toString(i));
                                 JLabel geneName = new JLabel(currGene.getName());
-                                EntrezButton geneLinkButton = new EntrezButton("TAAR2");
+                                EntrezButton geneLinkButton = new EntrezButton(currGene.getName());
                                 Element e= geneLinkButton.getParsedLink().select("p.desc").first();
                                 String description = e.ownText().replaceAll("and ", "").replaceAll(" \\[\\]", "");
                                 geneName.setToolTipText(description);
@@ -661,9 +670,37 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                         InspectorPanel.getInstance().switchToGeneInspector();
                                     }
                                 });
+                                final JPopupMenu regionSets = new JPopupMenu();
+                                final RegionController regionController = RegionController.getInstance();
+                                for (RegionSet s : regionController.getRegionSets()) {
+                                    final RegionSet finalRegionSet = s;
+                                    JMenuItem menuItem = new JMenuItem(s.getName());
+                                    menuItem.addActionListener(new ActionListener() {
 
+                                        public void actionPerformed(ActionEvent ae) {
+                                            try {
+                                                regionController.addToRegionSet(finalRegionSet, finalGene.getChrom(), finalGene.getStart(), finalGene.getEnd(), finalGene.getName());
+                                                 DialogUtils.displayMessage(String.format("Successfully added %s to %s list", finalGene.getName(), finalRegionSet.getName()));
+                                            } catch (SQLException ex) {
+                                                Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, ex);
+                                            } catch (RemoteException e){
+                                                Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, e);
+                                            }
+                                        }
+                                    });
+                                    regionSets.add(menuItem);
+                                }
+                                final JLabel addToRegionListButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+                                addToRegionListButton.setToolTipText("Add to Region List");
+                                addToRegionListButton.addMouseListener(new MouseAdapter() {
+                                    @Override
+                                    public void mouseClicked(MouseEvent e) {
+                                          regionSets.show(addToRegionListButton, 0, addToRegionListButton.getHeight()); 
+                                    }
+                                });
                                 kvp.setAdditionalColumn(Integer.toString(i), 0, geneInspectorButton);
-                                kvp.setAdditionalColumn(Integer.toString(i), 1, geneLinkButton);
+                                kvp.setAdditionalColumn(Integer.toString(i), 1, addToRegionListButton);
+                                kvp.setAdditionalColumn(Integer.toString(i), 2, geneLinkButton);
                                 i++;
                             }
                             currSizeOfArray =i-1;

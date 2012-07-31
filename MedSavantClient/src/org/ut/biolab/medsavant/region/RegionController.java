@@ -64,7 +64,7 @@ public class RegionController extends Controller<RegionEvent> {
         return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, set, Integer.MAX_VALUE);
     }
     
-    public void addToRegionSet(RegionSet set, String chrom, int start, int end, String desc) throws SQLException{
+    public void addToRegionSet(RegionSet set, String chrom, int start, int end, String desc) throws SQLException, RemoteException{
         MedSavantClient.RegionSetManager.addToRegionSet(LoginController.sessionId, set, Integer.MAX_VALUE, ReferenceController.getInstance().getCurrentReferenceID(), chrom, start, end, desc);
         fireEvent(new RegionEvent(RegionEvent.Type.ADDED));
     }
