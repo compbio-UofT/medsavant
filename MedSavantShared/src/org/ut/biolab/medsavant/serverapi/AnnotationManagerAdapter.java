@@ -30,12 +30,12 @@ import org.ut.biolab.medsavant.model.AnnotationDownloadInformation;
  */
 public interface AnnotationManagerAdapter extends Remote {
 
-    public Annotation getAnnotation(String sid,int annotation_id) throws SQLException;
-    public Annotation[] getAnnotations(String sid) throws SQLException;
+    public Annotation getAnnotation(String sid,int annotation_id) throws SQLException, RemoteException;
+    public Annotation[] getAnnotations(String sid) throws SQLException, RemoteException;
 
-    public int[] getAnnotationIDs(String sessID, int projID, int refID) throws SQLException;
-    public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException;
+    public int[] getAnnotationIDs(String sessID, int projID, int refID) throws SQLException, RemoteException;
+    public AnnotationFormat getAnnotationFormat(String sessID, int annotID) throws SQLException, RemoteException;
 
-    public void installAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info);
+    public void installAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info) throws RemoteException;
 
 }
