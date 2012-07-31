@@ -370,4 +370,19 @@ public class SearchBar extends JPanel {
         }
         addingItems = false;
     }
+    
+    /**
+     * Load the given list of new filters into all the query panels.
+     */
+    public void loadFilters(FilterState... states) {
+        try {
+            for (QueryPanel qp: queryPanels) {
+                for (FilterState state: states) {
+                    qp.loadFilterView(state);
+                }
+            }
+        } catch (Exception ex) {
+            ClientMiscUtils.reportError("Unable to apply requested filters: %s", ex);
+        }
+    }
 }

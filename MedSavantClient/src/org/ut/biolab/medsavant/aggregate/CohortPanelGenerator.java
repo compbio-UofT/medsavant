@@ -37,6 +37,7 @@ import javax.swing.JScrollPane;
 import com.jidesoft.converter.ConverterContext;
 import com.jidesoft.converter.PercentConverter;
 import com.jidesoft.grid.*;
+import java.util.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.filter.FilterController;

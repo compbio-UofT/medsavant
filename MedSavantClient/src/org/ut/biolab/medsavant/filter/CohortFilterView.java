@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011-2012 University of Toronto
+ *    Copyright 2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,177 +16,112 @@
 
 package org.ut.biolab.medsavant.filter;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.swing.*;
+import java.util.*;
 
-import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
+
 
 /**
+ * Filter by cohort; a little more complicated than a straight string-list filter.
  *
- * @author mfiume
+ * @author tarkvara
  */
-class CohortFilterView extends FilterView {
-    private static final Log LOG = LogFactory.getLog(CohortFilterView.class);
+public class CohortFilterView extends TabularFilterView<Cohort> {
     public static final String FILTER_NAME = "Cohort";
     public static final String FILTER_ID = "cohort";
-    private static final String COHORT_ALL = "All Individuals";
 
-    private Integer appliedID;
-    private ActionListener al;
-    private JComboBox b;
-    private final JButton applyButton;
+    Cohort[] cohorts;
 
-    public CohortFilterView(FilterState state, int queryId) throws SQLException, RemoteException {
-        this(queryId);
-        if (state.getValues().get("value") != null) {
-            applyFilter(Integer.parseInt(state.getValues().get("value")));
+    /**
+     * Constructor for loading a saved filter from a file.
+     */
+    public CohortFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
+        this(queryID);
+        String values = state.getValues().get("values");
+        if (values != null) {
+            setFilterValues(Arrays.asList(values.split(";;;")));
         }
     }
 
-    public CohortFilterView(int queryId) throws SQLException, RemoteException {
-        super(FILTER_NAME, queryId);
-        setLayout(new BorderLayout());
-        setMaximumSize(new Dimension(1000,80));
-
-        b = new JComboBox();
-        b.setMaximumSize(new Dimension(1000,30));
-
-        b.addItem(COHORT_ALL);
-
-        Cohort[] cohorts = getDefaultValues();
-        for (Cohort c : cohorts) {
-            b.addItem(c);
-        }
-
-        applyButton = new JButton("Apply");
-        applyButton.setEnabled(false);
-
-        al = new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                applyButton.setEnabled(false);
-
-                Filter f = new Filter() {
-
-                    @Override
-                    public Condition[] getConditions() {
-
-                        if (b.getSelectedItem().equals(COHORT_ALL)) {
-                            return new Condition[0];
-                        }
-
-                        Cohort cohort = (Cohort) b.getSelectedItem();
-                        appliedID = cohort.getId();
-
-                        try {
-
-                            List<String> dnaIds = MedSavantClient.CohortManager.getDNAIDsInCohort(
-                                    LoginController.sessionId,
-                                    cohort.getId());
-
-                            Condition[] results = new Condition[dnaIds.size()];
-                            int i = 0;
-                            for (String dnaId : dnaIds) {
-                                results[i] = BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaId);
-                                i++;
-                            }
-
-                            Condition[] resultsCombined = new Condition[1];
-                            resultsCombined[0] = ComboCondition.or(results);
-
-                            return resultsCombined;
-
-                        } catch (Exception ex) {
-                            ClientMiscUtils.reportError("Error getting DNA IDs for cohort: %s", ex);
-                        }
-                        return null;
-                    }
-
-                    @Override
-                    public String getName() {
-                        return FILTER_NAME;
-                    }
-
-                    @Override
-                    public String getID() {
-                        return FILTER_ID;
-                    }
-                };
-                LOG.info("Adding filter: " + f.getName());
-                FilterController.getInstance().addFilter(f, queryID);
-
-            }
-        };
-        applyButton.addActionListener(al);
-
-        b.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                applyButton.setEnabled(true);
-            }
-        });
-
-
-
-        JPanel bottomContainer = new JPanel();
-        bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
-        bottomContainer.setMaximumSize(new Dimension(1000,30));
-
-        bottomContainer.add(Box.createHorizontalGlue());
-        bottomContainer.add(applyButton);
-
-        add(b, BorderLayout.CENTER);
-        add(bottomContainer, BorderLayout.SOUTH);
+    /**
+     * Constructor which holders use to create a fresh filter-view.
+     */
+    public CohortFilterView(int queryID) throws SQLException, RemoteException {
+        super(FILTER_NAME, queryID);
+        availableValues = new ArrayList<Cohort>();
+        availableValues.addAll(Arrays.asList(MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID())));
+        initContentPanel();
     }
 
-    public final void applyFilter(int cohortId) {
-        for (int i = 0; i < b.getItemCount(); i++) {
-            if (b.getItemAt(i) instanceof Cohort && ((Cohort)b.getItemAt(i)).getId() == cohortId) {
-                b.setSelectedIndex(i);
-                al.actionPerformed(new ActionEvent(this, 0, null));
-                return;
-            }
-        }
-    }
-
-    private Cohort[] getDefaultValues() throws SQLException, RemoteException {
-        return MedSavantClient.CohortManager.getCohorts(
-                LoginController.sessionId,
-                ProjectController.getInstance().getCurrentProjectID());
-    }
-
-    public static FilterState wrapState(Integer applied) {
+    public static FilterState wrapState(Collection<Cohort> applied) {
         Map<String, String> map = new HashMap<String, String>();
-        if (applied != null) {
-            map.put("value", applied.toString());
+        if (applied != null && !applied.isEmpty()) {
+            StringBuilder values = new StringBuilder();
+            int i = 0;
+            for (Cohort val: applied) {
+                values.append(val.toString());
+                if (i++ != applied.size() - 1) {
+                    values.append(";;;");
+                }
+            }
+            map.put("values", values.toString());
         }
         return new FilterState(Filter.Type.COHORT, FILTER_NAME, FILTER_ID, map);
     }
 
     @Override
     public FilterState saveState() {
-        return wrapState(appliedID);
+        return wrapState(appliedValues);
+    }
+
+    @Override
+    protected void applyFilter() {
+        applyButton.setEnabled(false);
+
+        appliedValues = new ArrayList<Cohort>();
+
+        int[] indices = filterableList.getCheckBoxListSelectedIndices();
+        for (int i: indices) {
+            appliedValues.add((Cohort)filterableList.getModel().getElementAt(i));
+        }
+
+        FilterController fc = FilterController.getInstance();
+        if (appliedValues.size() == availableValues.size()) {
+            fc.removeFilter(FILTER_ID, queryID);
+            return;
+        }
+
+        fc.addFilter(new CohortFilter(), queryID);
+    }
+    
+    private class CohortFilter extends Filter {
+        @Override
+        public String getName() {
+            return FILTER_NAME;
+        }
+
+        @Override
+        public String getID() {
+            return FILTER_ID;
+        }
+
+        @Override
+        public Condition[] getConditions() throws SQLException, RemoteException {
+            if (appliedValues.size() > 0) {
+                List<String> cohNames = new ArrayList<String>();
+                for (Cohort coh: appliedValues) {
+                    cohNames.add(coh.getName());
+                }
+                return getDNAIDCondition(MedSavantClient.CohortManager.getDNAIDsForCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), cohNames));
+            }
+            return FALSE_CONDITION;
+        }
     }
 }

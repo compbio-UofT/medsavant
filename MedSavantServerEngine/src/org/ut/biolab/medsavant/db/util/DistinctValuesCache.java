@@ -27,6 +27,8 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.util.DirectorySettings;
 
 /**
@@ -101,11 +103,11 @@ public class DistinctValuesCache {
         return getResults(dbName, tableName, columnName);
     }
     
-    public static double[] getCachedRange(String dbName, String tableName, String columnName) throws IOException{
+    public static Range getCachedRange(String dbName, String tableName, String columnName) throws IOException{
         List<String> results = getResults(dbName, tableName, columnName);
         if (results == null || results.size() != 2) {
             return null;
         }
-        return new double[] { Double.parseDouble(results.get(0)), Double.parseDouble(results.get(1)) };
+        return new Range(Double.parseDouble(results.get(0)), Double.parseDouble(results.get(1)));
     }
 }

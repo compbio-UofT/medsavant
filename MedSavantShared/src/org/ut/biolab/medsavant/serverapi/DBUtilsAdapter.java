@@ -24,7 +24,6 @@ import java.util.List;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.model.Range;
 
@@ -33,13 +32,12 @@ import org.ut.biolab.medsavant.model.Range;
  *
  * @author Andrew
  */
-public interface DBUtilAdapter extends Remote {
+public interface DBUtilsAdapter extends Remote {
     
     public TableSchema importTableSchema(String sessID, String tableName) throws SQLException, RemoteException;
     
-    public List<String> getDistinctValuesForColumn(String sessID, TableSchema t, DbColumn col) throws SQLException, RemoteException;
-    public List<String> getDistinctValuesForColumn(String sessID, TableSchema t, DbColumn col, int limit) throws SQLException, RemoteException;
-    public Range getExtremeValuesForColumn(String sessID, TableSchema t, DbColumn col) throws SQLException, RemoteException;
+    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String columnName, boolean useCache) throws SQLException, RemoteException;
+    public Range getExtremeValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException;
     public Condition getRangeCondition(DbColumn col, Range r) throws RemoteException;
     public int getNumRecordsInTable(String sessID, String name) throws SQLException, RemoteException;
 }

@@ -35,7 +35,7 @@ import org.ut.biolab.medsavant.filter.TabularFilterView;
  *
  * @author tarkvara
  */
-public class OntologyFilterView extends TabularFilterView {
+public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
 
     private final OntologyType ontology;
 
@@ -48,7 +48,7 @@ public class OntologyFilterView extends TabularFilterView {
         if (values != null) {
             List<String> l = new ArrayList<String>();
             Collections.addAll(l, values.split(";;;"));
-            applyFilter(l);
+            setFilterValues(l);
         }
     }
 
@@ -73,7 +73,7 @@ public class OntologyFilterView extends TabularFilterView {
         }.setVisible(true);
     }
 
-    public static FilterState wrapState(String title, OntologyType ont, List<String> applied) {
+    public static FilterState wrapState(String title, OntologyType ont, List<OntologyTerm> applied) {
         Map<String, String> map = new HashMap<String, String>();
         String filterID = OntologyFilter.ontologyToFilterID(ont);
         map.put("ontology", filterID);
@@ -103,7 +103,7 @@ public class OntologyFilterView extends TabularFilterView {
 
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
         for (int i: indices) {
-            appliedValues.add(filterableList.getModel().getElementAt(i));
+            appliedValues.add((OntologyTerm)filterableList.getModel().getElementAt(i));
         }
 
         FilterController fc = FilterController.getInstance();

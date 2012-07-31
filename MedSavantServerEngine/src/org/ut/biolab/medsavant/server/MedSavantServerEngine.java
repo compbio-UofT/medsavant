@@ -27,7 +27,7 @@ import gnu.getopt.Getopt;
 import org.ut.biolab.medsavant.db.admin.SetupMedSavantDatabase;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
-import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.util.DBUtils;
 import org.ut.biolab.medsavant.db.variants.VariantManager;
 import org.ut.biolab.medsavant.ontology.OntologyManager;
 import org.ut.biolab.medsavant.serverapi.*;
@@ -168,7 +168,7 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
         registry.rebind(SETTINGS_MANAGER, SettingsManager.getInstance());
         registry.rebind(USER_MANAGER, UserManager.getInstance());
         registry.rebind(VARIANT_MANAGER, VariantManager.getInstance());
-        registry.rebind(DB_UTIL_MANAGER, DBUtil.getInstance());
+        registry.rebind(DB_UTIL_MANAGER, DBUtils.getInstance());
         registry.rebind(SETUP_MANAGER, SetupMedSavantDatabase.getInstance());
         registry.rebind(CUSTOM_TABLES_MANAGER, CustomTables.getInstance());
         registry.rebind(NOTIFICATION_MANAGER, NotificationManager.getInstance());

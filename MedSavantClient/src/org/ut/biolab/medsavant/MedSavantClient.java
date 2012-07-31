@@ -49,7 +49,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static SettingsManagerAdapter SettingsManager;
     public static RegionSetManagerAdapter RegionSetManager;
     public static ReferenceManagerAdapter ReferenceManager;
-    public static DBUtilAdapter DBUtilAdapter;
+    public static DBUtilsAdapter DBUtils;
     public static SetupAdapter SetupManager;
     public static VariantManagerAdapter VariantManager;
     public static NotificationManagerAdapter NotificationManager;
@@ -143,7 +143,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
         SettingsManager = (SettingsManagerAdapter)registry.lookup(SETTINGS_MANAGER);
         UserManager = (UserManagerAdapter)registry.lookup(USER_MANAGER);
         VariantManager = (VariantManagerAdapter)registry.lookup(VARIANT_MANAGER);
-        DBUtilAdapter = (DBUtilAdapter)registry.lookup(DB_UTIL_MANAGER);
+        DBUtils = (DBUtilsAdapter)registry.lookup(DB_UTIL_MANAGER);
         SetupManager = (SetupAdapter)registry.lookup(SETUP_MANAGER);
         CustomTablesManager = (CustomTablesAdapter)registry.lookup(CUSTOM_TABLES_MANAGER);
         NotificationManager = (NotificationManagerAdapter)registry.lookup(NOTIFICATION_MANAGER);

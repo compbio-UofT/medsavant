@@ -95,6 +95,7 @@ public class RegionDetailedView extends DetailedTableView {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    RegionSetFilterView.wrapState(selectedRegion.getID());
 /* TODO:                    fps.loadFilterView(state);
                     try {
                         GenomicRegion[] regions = controller.getRegionsInSet(selectedRegion);

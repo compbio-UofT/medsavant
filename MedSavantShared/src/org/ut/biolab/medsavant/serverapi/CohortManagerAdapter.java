@@ -19,6 +19,7 @@ package org.ut.biolab.medsavant.serverapi;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.Condition;
@@ -34,7 +35,8 @@ import org.ut.biolab.medsavant.model.SimplePatient;
 public interface CohortManagerAdapter extends Remote {
 
     public List<SimplePatient> getIndividualsInCohort(String sessID, int projID, int cohID) throws SQLException, RemoteException;
-    public List<String> getDNAIDsInCohort(String sessID, int cohortID) throws SQLException, RemoteException;
+    public List<String> getDNAIDsForCohort(String sessID, int cohortID) throws SQLException, RemoteException;
+    public List<String> getDNAIDsForCohorts(String sessID, int projID, Collection<String> cohNames) throws SQLException, RemoteException;
     public List<String> getIndividualFieldFromCohort(String sessID, int cohID, String columnname) throws SQLException, RemoteException;
     public void addPatientsToCohort(String sessID, int[] patientIds, int cohID) throws SQLException, RemoteException;
     public void removePatientsFromCohort(String sessID, int[] patientIds, int cohID) throws SQLException, RemoteException;

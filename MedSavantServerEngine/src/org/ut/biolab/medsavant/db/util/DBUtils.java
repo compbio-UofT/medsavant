@@ -33,12 +33,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.ColumnType;
-import org.ut.biolab.medsavant.db.FatalDatabaseException;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.serverapi.DBUtilAdapter;
+import org.ut.biolab.medsavant.server.SessionController;
+import org.ut.biolab.medsavant.serverapi.DBUtilsAdapter;
 import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.MiscUtils;
 
@@ -46,19 +46,19 @@ import org.ut.biolab.medsavant.util.MiscUtils;
  *
  * @author mfiume
  */
-public class DBUtil extends MedSavantServerUnicastRemoteObject implements DBUtilAdapter {
-    private static final Log LOG = LogFactory.getLog(DBUtil.class);
+public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUtilsAdapter {
+    private static final Log LOG = LogFactory.getLog(DBUtils.class);
 
-    private static DBUtil instance;
+    private static DBUtils instance;
 
-    public static synchronized DBUtil getInstance() throws RemoteException {
+    public static synchronized DBUtils getInstance() throws RemoteException {
         if (instance == null) {
-            instance = new DBUtil();
+            instance = new DBUtils();
         }
         return instance;
     }
 
-    private DBUtil() throws RemoteException {
+    private DBUtils() throws RemoteException {
     }
 
     public static boolean fieldExists(String sid, String tableName, String fieldName) throws SQLException {
@@ -204,85 +204,83 @@ public class DBUtil extends MedSavantServerUnicastRemoteObject implements DBUtil
         }
     }
 
+    /**
+     * A return value of null indicates too many values.
+     */
     @Override
-    public List<String> getDistinctValuesForColumn(String sid,TableSchema t, DbColumn col) throws SQLException {
-        return getDistinctValuesForColumn(sid,t, col, -1);
-    }
+    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String columnName, boolean useCache) throws SQLException, RemoteException {
 
-    @Override
-    public List<String> getDistinctValuesForColumn(String sid,TableSchema t, DbColumn col, int limit) throws SQLException {
-
-        if (t.getColumnType(t.getColumnIndex(col)).isNumeric()) {
-            throw new FatalDatabaseException("Can't get distinct values for numeric field : " + col.getAbsoluteName());
+        String dbName = SessionController.getInstance().getDatabaseForSession(sessID);
+        if (useCache && DistinctValuesCache.isCached(dbName, tableName, columnName)) {
+            try {
+                List<String> result = DistinctValuesCache.getCachedStringList(dbName, tableName, columnName);
+                return result;
+            } catch (Exception ex) {
+                LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tableName + "/" + columnName, ex);
+            }
         }
 
-        SelectQuery q = new SelectQuery();
-        q.setIsDistinct(true);
-        q.addColumns(col);
-        q.addFromTable(t.getTable());
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tableName);
 
-        String queryString = q.toString();
-        if(limit > 0) queryString = queryString + " LIMIT " + limit;
-        ResultSet rs = ConnectionController.executeQuery(sid, queryString);
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.setIsDistinct(true);
+        query.addColumns(table.getDBColumn(columnName));
 
-        List<String> distinctValues = new ArrayList<String>();
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + (useCache ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
 
-        while(rs.next()) {
+        List<String> result = new ArrayList<String>();
+        while (rs.next()) {
             String val = rs.getString(1);
-            if(val == null){
-                distinctValues.add("");
+            if (val == null) {
+                result.add("");
             } else {
-                distinctValues.add(val);
+                result.add(val);
             }
         }
 
-        Collections.sort(distinctValues);
+        if (useCache) {
+            if (result.size() == DistinctValuesCache.CACHE_LIMIT) {
+                DistinctValuesCache.cacheResults(dbName, tableName, columnName, null);
+                return null;
+            } else {
+                Collections.sort(result);
+                DistinctValuesCache.cacheResults(dbName, tableName, columnName, (List) result);
+            }
+        }
 
-        return distinctValues;
+        return result;
     }
-
 
     @Override
-    public Range getExtremeValuesForColumn(String sid,TableSchema t, DbColumn col) throws SQLException {
+    public Range getExtremeValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException {
 
-        if (!t.getColumnType(t.getColumnIndex(col)).isNumeric()) {
-            throw new FatalDatabaseException("Can't get extreme values for non-numeric field : " + col.getAbsoluteName());
-        }
-
-        SelectQuery q = new SelectQuery();
-        q.addFromTable(t.getTable());
-        q.addCustomColumns(FunctionCall.min().addColumnParams(col));
-        q.addCustomColumns(FunctionCall.max().addColumnParams(col));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
-
-        double min = 0;
-        double max = 0;
-
-        ColumnType type = t.getColumnType(col);
-
-        while(rs.next()) {
-            switch(type) {
-                case INTEGER:
-                    min = rs.getInt(1);
-                    max = rs.getInt(2);
-                    break;
-                case FLOAT:
-                    min = rs.getFloat(1);
-                    max = rs.getFloat(2);
-                    break;
-                case DECIMAL:
-                    min = rs.getDouble(1);
-                    max = rs.getDouble(2);
-                    break;
-                default:
-                    throw new FatalDatabaseException("Unhandled column type: " + type);
+        String dbName = SessionController.getInstance().getDatabaseForSession(sid);
+        if (DistinctValuesCache.isCached(dbName, tablename, columnname)) {
+            try {
+                Range result = DistinctValuesCache.getCachedRange(dbName, tablename, columnname);
+                if (result != null) {
+                    return result;
+                }
+            } catch (Exception ex) {
+                LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tablename + "/" + columnname, ex);
             }
         }
 
-        return new Range(min,max);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
 
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(table.getTable());
+        query.addCustomColumns(FunctionCall.min().addColumnParams(table.getDBColumn(columnname)));
+        query.addCustomColumns(FunctionCall.max().addColumnParams(table.getDBColumn(columnname)));
+
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+        rs.next();
+
+        Range result = new Range(rs.getDouble(1), rs.getDouble(2));
+        return result;
     }
+
 
 
     @Override

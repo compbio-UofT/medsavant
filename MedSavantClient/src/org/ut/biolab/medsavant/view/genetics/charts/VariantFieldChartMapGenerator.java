@@ -198,17 +198,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         } else {
 
             //TODO: This hasn't been properly tested. Need a numeric field in patients.
-
-            String tablename = null;
-            if (whichTable == WhichTable.VARIANT) {
-                tablename = ProjectController.getInstance().getCurrentVariantTableName();
-            } else if (whichTable == WhichTable.PATIENT) {
-                tablename = ProjectController.getInstance().getCurrentPatientTableName();
-            }
-            Range r = new Range(MedSavantClient.VariantManager.getExtremeValuesForColumn(
-                    LoginController.sessionId,
-                    tablename,
-                    field.getColumnName()));
+            Range r = MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.sessionId, whichTable.getName(), field.getColumnName());
 
             double binSize = org.ut.biolab.medsavant.util.ClientMiscUtils.generateBins(field, r, isLogScaleX);
 
@@ -350,18 +340,15 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         return field.getColumnName();
     }
 
-    private List<String> getDNAIDs() throws SQLException, RemoteException{
-        List<String> dnaIds = MedSavantClient.VariantManager.getDistinctValuesForColumn(
-                    LoginController.sessionId,
+    private List<String> getDNAIDs() throws SQLException, RemoteException {
+        List<String> dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId,
                     ProjectController.getInstance().getCurrentVariantTableName(),
                     DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID, true);
-        if (dnaIds == null) {
-            dnaIds = MedSavantClient.VariantManager.getDistinctValuesForColumn(
-                    LoginController.sessionId,
+        if (dnaIDs == null) {
+            dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId,
                     ProjectController.getInstance().getCurrentVariantSubTableName(),
-                    DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID,
-                    false);
+                    DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID, false);
         }
-        return dnaIds;
+        return dnaIDs;
     }
 }

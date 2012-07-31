@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.*;
 
-import com.healthmarketscience.sqlbuilder.ComboCondition;
-import com.healthmarketscience.sqlbuilder.Condition;
 import com.jidesoft.chart.Chart;
 import com.jidesoft.chart.ChartType;
 import com.jidesoft.chart.Legend;
@@ -61,17 +59,13 @@ import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.db.NonFatalDatabaseException;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.filter.WhichTable;
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.model.RangeCondition;
 import org.ut.biolab.medsavant.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.model.ScatterChartMap;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -586,7 +580,7 @@ public class SummaryChart extends JLayeredPane {
             }
         }
 
-        private ScatterChartMap mapPatientField(ScatterChartMap scatterMap, ChartMapGenerator generator, boolean isX) throws NonFatalDatabaseException, SQLException, RemoteException{
+        private ScatterChartMap mapPatientField(ScatterChartMap scatterMap, ChartMapGenerator generator, boolean isX) throws SQLException, RemoteException{
             Map<Object, List<String>> map = MedSavantClient.PatientManager.getDNAIDsForValues(
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectID(),

@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.db.MedSavantDatabase.PatientTablemapTableSchema;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBSettings;
-import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.util.DBUtils;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.PatientFormat;
 import org.ut.biolab.medsavant.model.Range;
@@ -746,6 +746,6 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public boolean hasOptionalField(String sessID, int pid, String fieldName) throws SQLException {
         String tableName = getPatientTableName(sessID, pid);
-        return DBUtil.fieldExists(sessID, tableName, MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO);
+        return DBUtils.fieldExists(sessID, tableName, MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO);
     }
 }

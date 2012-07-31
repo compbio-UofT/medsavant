@@ -32,6 +32,7 @@ import javax.swing.text.Position;
 import com.jidesoft.list.FilterableCheckBoxList;
 import com.jidesoft.list.QuickListFilterField;
 import com.jidesoft.swing.SearchableUtils;
+import java.util.Collection;
 
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -42,12 +43,12 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author tarkvara
  */
-public abstract class TabularFilterView extends FilterView {
+public abstract class TabularFilterView<T> extends FilterView {
 
     private static final int FIELD_WIDTH = 260;
 
-    protected List availableValues;
-    protected List appliedValues;
+    protected List<T> availableValues;
+    protected List<T> appliedValues;
 
     protected FilterableCheckBoxList filterableList;
     protected JButton applyButton;
@@ -177,25 +178,23 @@ public abstract class TabularFilterView extends FilterView {
         add(applyButton, gbc);
     }
 
-    public final void applyFilter(List<String> list) {
+    public final void setFilterValues(Collection<String> list) {
 
         ArrayList<Integer> indicesOfItemsFromListInFilterableList = new ArrayList<Integer>();
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
-        for (int i : indices) {
+        for (int i: indices) {
             String option = filterableList.getModel().getElementAt(i).toString();
             if (list.contains(option)) {
                 indicesOfItemsFromListInFilterableList.add(i);
             }
         }
 
-        int[] selectedIndicies = new int[indicesOfItemsFromListInFilterableList.size()];
-
-
-        for (int i = 0; i < selectedIndicies.length; i++) {
-            selectedIndicies[i] = indicesOfItemsFromListInFilterableList.get(i);
+        int[] selectedIndices = new int[indicesOfItemsFromListInFilterableList.size()];
+        for (int i = 0; i < selectedIndices.length; i++) {
+            selectedIndices[i] = indicesOfItemsFromListInFilterableList.get(i);
         }
 
-        filterableList.setCheckBoxListSelectedIndices(selectedIndicies);
+        filterableList.setCheckBoxListSelectedIndices(selectedIndices);
 
         applyFilter();
     }

@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
  *
  * @author Andrew
  */
-public class StringListFilterView extends TabularFilterView {
+public class StringListFilterView extends TabularFilterView<String> {
 
     private final WhichTable whichTable;
     private final String columnName;
@@ -49,9 +49,7 @@ public class StringListFilterView extends TabularFilterView {
         this(WhichTable.valueOf(state.getValues().get("table")), state.getFilterID(), queryID, state.getName());
         String values = state.getValues().get("values");
         if (values != null) {
-            List<String> l = new ArrayList<String>();
-            Collections.addAll(l, values.split(";;;"));
-            applyFilter(l);
+            setFilterValues(Arrays.asList(values.split(";;;")));
         }
     }
 
@@ -85,7 +83,7 @@ public class StringListFilterView extends TabularFilterView {
                 @Override
                 public void run() {
                     try {
-                        availableValues = MedSavantClient.VariantManager.getDistinctValuesForColumn(LoginController.sessionId, whichTable.getName(), columnName, true);
+                        availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId, whichTable.getName(), columnName, true);
                         if (columnName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM)) {
                             Collections.sort(availableValues, new ChromosomeComparator());
                         }
@@ -101,14 +99,15 @@ public class StringListFilterView extends TabularFilterView {
         initContentPanel();
     }
 
-    public static FilterState wrapState(WhichTable t, String colName, String alias, List<String> applied) {
+    public static FilterState wrapState(WhichTable t, String colName, String alias, Collection<String> applied) {
         Map<String, String> map = new HashMap<String, String>();
         map.put("table", t.toString());
         if (applied != null && !applied.isEmpty()) {
             StringBuilder values = new StringBuilder();
-            for (int i = 0; i < applied.size(); i++) {
-                values.append(applied.get(i));
-                if (i != applied.size() - 1) {
+            int i = 0;
+            for (String val: applied) {
+                values.append(val);
+                if (i++ != applied.size() - 1) {
                     values.append(";;;");
                 }
             }
@@ -142,32 +141,32 @@ public class StringListFilterView extends TabularFilterView {
             return;
         }
 
-        FilterController.getInstance().addFilter(new Filter() {
-
-            @Override
-            public Condition[] getConditions() throws SQLException, RemoteException {
-                if (appliedValues.size() > 0) {
-                    if (whichTable == WhichTable.VARIANT) {
-                        return new Condition[] {
-                            new InCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnName), appliedValues)
-                        };
-                    } else if (whichTable == WhichTable.PATIENT) {
-                        return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName));
-                    }
-                }
-                return FALSE_CONDITION;
-            }
-
-            @Override
-            public String getName() {
-                return alias;
-            }
-
-            @Override
-            public String getID() {
-                return columnName;
-            }
-        }, queryID);
+        FilterController.getInstance().addFilter(new StringListFilter(), queryID);
     }
 
+    private class StringListFilter extends Filter {
+        @Override
+        public String getName() {
+            return alias;
+        }
+
+        @Override
+        public String getID() {
+            return columnName;
+        }
+
+        @Override
+        public Condition[] getConditions() throws SQLException, RemoteException {
+            if (appliedValues.size() > 0) {
+                if (whichTable == WhichTable.VARIANT) {
+                    return new Condition[] {
+                        new InCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnName), appliedValues)
+                    };
+                } else if (whichTable == WhichTable.PATIENT) {
+                    return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName));
+                }
+            }
+            return FALSE_CONDITION;
+        }
+    }
 }

@@ -131,7 +131,6 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         
         try {
-// SELECT t13.region_set_id,name,COUNT(*) FROM region_set t13 LEFT JOIN region_set_membership USING (region_set_id) GROUP BY region_set_id;
             SelectQuery query = MedSavantDatabase.RegionSetMembershipTableSchema.groupBy(REGION_SET_ID).leftJoin(MedSavantDatabase.RegionSetTableSchema, "region_set_id").select(REGION_SET_ID, "NAME", "COUNT(*)");
             LOG.info("getRegionSets: " + query);
             ResultSet rs = conn.createStatement().executeQuery(query.toString());

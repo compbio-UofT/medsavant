@@ -102,7 +102,7 @@ public class NumericFilterView extends FilterView {
                 @Override
                 public void run() {
                     try {
-                        initHelper(new Range(MedSavantClient.VariantManager.getExtremeValuesForColumn(LoginController.sessionId, whichTable.getName(), columnName)));
+                        initHelper(MedSavantClient.DBUtils.getExtremeValuesForColumn(LoginController.sessionId, whichTable.getName(), columnName));
                     } catch (Throwable ex) {
                         ClientMiscUtils.reportError(String.format("Error getting extreme values for %s.%s: %%s", whichTable, columnName), ex);
                     }

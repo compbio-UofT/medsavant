@@ -393,25 +393,20 @@ public class TablePanel extends JLayeredPane {
         public void actionPerformed(ActionEvent e) {
             ThreadController.getInstance().cancelWorkers(pageName);
 
-            try {
-                TableModel model = tablePanel.getTable().getModel();
-                int r = TableModelWrapperUtils.getActualRowAt(model, tablePanel.getTable().getSelectedRow());
+            TableSchema schema = ProjectController.getInstance().getCurrentVariantTableSchema();
+            DbColumn chromColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
+            FilterState chromState = StringListFilterView.wrapState(WhichTable.VARIANT, chromColumn.getName(), VariantFormat.ALIAS_OF_CHROM, Arrays.asList(chrom));
 
-                // TODO: Support for adding ad hoc filters to multiple query panels.
-                QueryPanel qp = GeneticsFilterPage.getSearchBar().getQueryPanels().get(0);
-                TableSchema schema = ProjectController.getInstance().getCurrentVariantTableSchema();
-                DbColumn chromColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
-                qp.loadFilterView(StringListFilterView.wrapState(WhichTable.VARIANT, chromColumn.getName(), VariantFormat.ALIAS_OF_CHROM, Arrays.asList(chrom)));
+            DbColumn posColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION);
+            FilterState posState = NumericFilterView.wrapState(WhichTable.VARIANT, posColumn.getName(), VariantFormat.ALIAS_OF_POSITION, new Range(pos, pos), false);
 
-                DbColumn posColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION);
-                qp.loadFilterView(NumericFilterView.wrapState(WhichTable.VARIANT, posColumn.getName(), VariantFormat.ALIAS_OF_POSITION, new Range(pos, pos), false));
+            if (alt != null) {
+                DbColumn altColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_ALT);
+                FilterState altState = StringListFilterView.wrapState(WhichTable.VARIANT, altColumn.getName(), VariantFormat.ALIAS_OF_ALT, Arrays.asList(alt));
 
-                if (alt != null) {
-                    DbColumn altColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_ALT);
-                    qp.loadFilterView(StringListFilterView.wrapState(WhichTable.VARIANT, altColumn.getName(), VariantFormat.ALIAS_OF_ALT, Arrays.asList(alt)));
-                }
-            } catch (Exception ex) {
-                ClientMiscUtils.reportError("Unable to set filter: %s", ex);
+                GeneticsFilterPage.getSearchBar().loadFilters(chromState, posState, altState);
+            } else {
+                GeneticsFilterPage.getSearchBar().loadFilters(chromState, posState);                    
             }
         }
     }

@@ -31,7 +31,6 @@ import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
-import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,13 +41,11 @@ import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantFileTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantStarredTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.VarianttagTableSchema;
-import org.ut.biolab.medsavant.db.Settings;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.db.util.CustomTables;
-import org.ut.biolab.medsavant.db.util.DBUtil;
-import org.ut.biolab.medsavant.db.util.DistinctValuesCache;
+import org.ut.biolab.medsavant.db.util.DBUtils;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.AnnotationLog;
 import org.ut.biolab.medsavant.model.AnnotationLog.Status;
@@ -654,88 +651,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public double[] getExtremeValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException {
-
-        String dbName = SessionController.getInstance().getDatabaseForSession(sid);
-        if (DistinctValuesCache.isCached(dbName, tablename, columnname)) {
-            try {
-                double[] result = DistinctValuesCache.getCachedRange(dbName, tablename, columnname);
-                if (result != null) {
-                    return result;
-                }
-            } catch (Exception ex) {
-                LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tablename + "/" + columnname, ex);
-            }
-        }
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
-
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.addCustomColumns(FunctionCall.min().addColumnParams(table.getDBColumn(columnname)));
-        query.addCustomColumns(FunctionCall.max().addColumnParams(table.getDBColumn(columnname)));
-
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-        rs.next();
-
-        double[] result = new double[]{rs.getDouble(1), rs.getDouble(2)};
-        List<Double> list = new ArrayList<Double>();
-        list.add(result[0]);
-        list.add(result[1]);
-        DistinctValuesCache.cacheResults(dbName, tablename, columnname, (List) list);
-
-        return result;
-    }
-
-    /**
-     * A return value of null indicates too many values.
-     */
-    @Override
-    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String columnName, boolean useCache) throws SQLException, RemoteException {
-
-        String dbName = SessionController.getInstance().getDatabaseForSession(sessID);
-        if (useCache && DistinctValuesCache.isCached(dbName, tableName, columnName)) {
-            try {
-                List<String> result = DistinctValuesCache.getCachedStringList(dbName, tableName, columnName);
-                return result;
-            } catch (Exception ex) {
-                LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tableName + "/" + columnName, ex);
-            }
-        }
-
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tableName);
-
-        SelectQuery query = new SelectQuery();
-        query.addFromTable(table.getTable());
-        query.setIsDistinct(true);
-        query.addColumns(table.getDBColumn(columnName));
-
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + (useCache ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
-
-        List<String> result = new ArrayList<String>();
-        while (rs.next()) {
-            String val = rs.getString(1);
-            if (val == null) {
-                result.add("");
-            } else {
-                result.add(val);
-            }
-        }
-
-        if (useCache) {
-            if (result.size() == DistinctValuesCache.CACHE_LIMIT) {
-                DistinctValuesCache.cacheResults(dbName, tableName, columnName, null);
-                return null;
-            } else {
-                Collections.sort(result);
-                DistinctValuesCache.cacheResults(dbName, tableName, columnName, (List) result);
-            }
-        }
-
-        return result;
-    }
-
-    @Override
     public int getVariantCount(String sid, int projectId, int referenceId) throws SQLException, RemoteException {
         return getFilteredVariantCount(sid, projectId, referenceId, new Condition[0][], true);
     }
@@ -787,7 +702,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * Convenience method
      */
     @Override
-    public int getVariantCountForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, List<String> dnaIDs) throws SQLException, RemoteException {
+    public int getVariantCountForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException {
 
         if (dnaIDs.isEmpty()) {
             return 0;
@@ -797,12 +712,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, name);
 
         Condition[] dnaConditions = new Condition[dnaIDs.size()];
-        for (int i = 0; i < dnaIDs.size(); i++) {
-            dnaConditions[i] = BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIDs.get(i));
+        int i = 0;
+        for (String id: dnaIDs) {
+            dnaConditions[i++] = BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), id);
         }
 
         Condition[] c1 = new Condition[conditions.length];
-        for (int i = 0; i < conditions.length; i++) {
+        for (i = 0; i < conditions.length; i++) {
             c1[i] = ComboCondition.and(conditions[i]);
         }
 
@@ -828,7 +744,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             multiplier = 1;
         }
 
-        Range range = new Range(getExtremeValuesForColumn(sid, table.getTableName(), column.getColumnName()));
+        Range range = DBUtils.getInstance().getExtremeValuesForColumn(sid, table.getTableName(), column.getColumnName());
         double binSize = MiscUtils.generateBins(column, range, logBins);
 
         SelectQuery q = new SelectQuery();
@@ -931,13 +847,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         double binSizeX = 0;
         if (!columnXCategorical) {
-            Range rangeX = new Range(getExtremeValuesForColumn(sid, table.getTableName(), columnnameX));
+            Range rangeX = DBUtils.getInstance().getExtremeValuesForColumn(sid, table.getTableName(), columnnameX);
             binSizeX = MiscUtils.generateBins(new CustomField(columnnameX, columnX.getTypeNameSQL() + "(" + columnX.getTypeLength() + ")", false, "", ""), rangeX, false);
         }
 
         double binSizeY = 0;
         if (!columnYCategorical) {
-            Range rangeY = new Range(getExtremeValuesForColumn(sid, table.getTableName(), columnnameY));
+            Range rangeY = DBUtils.getInstance().getExtremeValuesForColumn(sid, table.getTableName(), columnnameY);
             binSizeY = MiscUtils.generateBins(new CustomField(columnnameY, columnY.getTypeNameSQL() + "(" + columnY.getTypeLength() + ")", false, "", ""), rangeY, false);
         }
 
@@ -1264,7 +1180,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             AnnotationLogManager.getInstance().removeAnnotationLogEntry(sid, uploadId);
 
             //drop staging table
-            DBUtil.dropTable(sid, tableName);
+            DBUtils.dropTable(sid, tableName);
 
         } catch (Exception ex) {
             LOG.warn("Error cancelling upload " + uploadId + " for " + tableName, ex);
@@ -1677,7 +1593,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public Map<SimplePatient, Integer> getPatientHeatMap(String sessID, int projID, int refID, Condition[][] conditions, List<SimplePatient> patients) throws SQLException, RemoteException {
+    public Map<SimplePatient, Integer> getPatientHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<SimplePatient> patients) throws SQLException, RemoteException {
 
         //get dna ids
         List<String> dnaIds = new ArrayList<String>();
@@ -1708,7 +1624,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, List<String> dnaIDs) throws SQLException, RemoteException {
+    public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException {
 
         Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sessID, projID, refID, true);
         String tablename = (String) variantTableInfo[0];
@@ -1746,14 +1662,15 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return dnaIdMap;
     }
 
-    private void getDNAIDHeatMapHelper(String sid, TableSchema table, float multiplier, List<String> dnaIds, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException {
+    private void getDNAIDHeatMapHelper(String sid, TableSchema table, float multiplier, Collection<String> dnaIDs, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException {
 
         //generate conditions from dna ids
-        Condition[] dnaIdConditions = new Condition[dnaIds.size()];
-        for (int i = 0; i < dnaIds.size(); i++) {
-            dnaIdConditions[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIds.get(i));
+        Condition[] dnaIDConditions = new Condition[dnaIDs.size()];
+        int i = 0;
+        for (String id: dnaIDs) {
+            dnaIDConditions[i++] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), id);
         }
-        Condition dnaCondition = ComboCondition.or(dnaIdConditions);
+        Condition dnaCondition = ComboCondition.or(dnaIDConditions);
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());

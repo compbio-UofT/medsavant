@@ -26,11 +26,11 @@ import java.sql.SQLException;
  */
 public class BooleanFilterView extends StringListFilterView {
 
-    public BooleanFilterView(FilterState state, int queryId) throws SQLException, RemoteException {
-        super(state, queryId);
+    public BooleanFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
+        super(state, queryID);
     }
 
-    public BooleanFilterView(WhichTable t, String colName, int queryId, String alias) throws SQLException, RemoteException {
-        super(t, colName, queryId, alias, true);
+    public BooleanFilterView(WhichTable t, String colName, int queryID, String alias) throws SQLException, RemoteException {
+        super(t, colName, queryID, alias, true);
     }
 }

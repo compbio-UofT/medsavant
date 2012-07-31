@@ -20,8 +20,7 @@ import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.DeleteQuery;
@@ -29,6 +28,7 @@ import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
@@ -83,14 +83,14 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<SimplePatient> result = new ArrayList<SimplePatient>();
-        while(rs.next()) {
+        while (rs.next()) {
             result.add(new SimplePatient(rs.getInt(1), rs.getString(2), PatientManager.getInstance().parseDNAIDs(rs.getString(3))));
         }
         return result;
     }
 
     @Override
-    public List<String> getDNAIDsInCohort(String sessID, int cohortId) throws SQLException, RemoteException {
+    public List<String> getDNAIDsForCohort(String sessID, int cohortId) throws SQLException, RemoteException {
         List<String> list = getIndividualFieldFromCohort(sessID, cohortId, DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS);
         List<String> result = new ArrayList<String>();
         for (String s : list) {
@@ -99,6 +99,36 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
             for (String id : dnaIDs) {
                 if (!result.contains(id)) {
                     result.add(id);
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public List<String> getDNAIDsForCohorts(String sessID, int projID, Collection<String> cohNames) throws SQLException, RemoteException {
+        
+        String selQuery = String.format("SELECT %s FROM %s WHERE %s = ANY (SELECT %s FROM %s JOIN %s USING (%s) WHERE %s IN ('%s'))",
+                DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS,
+                PatientManager.getInstance().getPatientTableName(sessID, projID),
+                DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID,
+                CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID,
+                CohortMembershipTableSchema.TABLE_NAME,
+                CohortTableSchema.TABLE_NAME,
+                CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID,
+                CohortTableSchema.COLUMNNAME_OF_NAME,
+                StringUtils.join(cohNames, "','"));
+
+        List<String> result = new ArrayList<String>();
+        ResultSet rs = ConnectionController.executeQuery(sessID, selQuery);
+        while (rs.next()) {
+            String s = rs.getString(1);
+            if (s != null) {
+                String[] dnaIDs = s.split(",");
+                for (String id : dnaIDs) {
+                    if (!result.contains(id)) {
+                        result.add(id);
+                    }
                 }
             }
         }
@@ -204,7 +234,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
 
         List<Cohort> result = new ArrayList<Cohort>();
-        while(rs.next()) {
+        while (rs.next()) {
             result.add(new Cohort(rs.getInt(CohortTableSchema.COLUMNNAME_OF_COHORT_ID), rs.getString(CohortTableSchema.COLUMNNAME_OF_NAME)));
         }
         return result.toArray(new Cohort[0]);
@@ -261,7 +291,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
         List<Integer> result = new ArrayList<Integer>();
-        while(rs.next()) {
+        while (rs.next()) {
             result.add(rs.getInt(1));
         }
         return ArrayUtils.toPrimitive(result.toArray(new Integer[0]));
@@ -284,7 +314,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
 
     @Override
     public int getNumVariantsInCohort(String sessID, int projID, int refID, int cohortID, Condition[][] conditions) throws SQLException, InterruptedException, RemoteException {
-        List<String> dnaIDs = getDNAIDsInCohort(sessID, cohortID);
+        List<String> dnaIDs = getDNAIDsForCohort(sessID, cohortID);
         return VariantManager.getInstance().getVariantCountForDNAIDs(sessID, projID, refID, conditions, dnaIDs);
     }
 }

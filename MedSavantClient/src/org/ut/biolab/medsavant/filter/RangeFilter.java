@@ -67,7 +67,7 @@ public abstract class RangeFilter extends Filter {
             List<Range> rangesInChr = ranges.getRanges(chrName);
             for(Range r : rangesInChr) {
                 try {
-                    Condition posCondition = MedSavantClient.DBUtilAdapter.getRangeCondition(posCol, r);
+                    Condition posCondition = MedSavantClient.DBUtils.getRangeCondition(posCol, r);
                     Condition chrCondition = BinaryConditionMS.equalTo(chrCol, chrName);
                     conditions[pos] = ComboCondition.and(posCondition, chrCondition);
                     pos++;

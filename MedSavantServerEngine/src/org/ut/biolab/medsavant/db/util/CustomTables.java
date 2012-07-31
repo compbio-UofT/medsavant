@@ -61,7 +61,7 @@ public class CustomTables extends MedSavantServerUnicastRemoteObject implements 
             if(!dbnameToTableMap.get(dbName).containsKey(tablename) && isOverLimit()){
                 clearMap();
             }
-            dbnameToTableMap.get(dbName).put(tablename, DBUtil.getInstance().importTableSchema(sid, tablename));
+            dbnameToTableMap.get(dbName).put(tablename, DBUtils.getInstance().importTableSchema(sid, tablename));
         }
 
         return dbnameToTableMap.get(dbName).get(tablename);

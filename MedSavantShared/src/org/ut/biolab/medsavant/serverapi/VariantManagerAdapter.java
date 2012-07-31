@@ -21,9 +21,9 @@ import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.sqlbuilder.Condition;
@@ -59,11 +59,9 @@ public interface VariantManagerAdapter extends Remote {
     public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit, Column[] order) throws SQLException, RemoteException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit, Column[] order, Column[] columns) throws SQLException, RemoteException;
-    public double[] getExtremeValuesForColumn(String sessID, String tablename, String columnname) throws SQLException, RemoteException;
-    public List<String> getDistinctValuesForColumn(String sessID, String tablename, String columnname, boolean cache) throws SQLException, RemoteException;
     public int getVariantCount(String sessID, int projID, int refID) throws SQLException, RemoteException;
     public int getFilteredVariantCount(String sessID,int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException;
-    public int getVariantCountForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, List<String> dnaIDs) throws SQLException, RemoteException;
+    public int getVariantCountForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException;
     public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sessID, int projID, int refID, Condition[][] conditions, CustomField column, boolean logBins) throws SQLException, RemoteException;
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sessID, int projID, int refID, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException;
     public int getVariantCountInRange(String sessID, int projID, int refID, Condition[][] conditions, String chrom, long start, long end) throws SQLException, RemoteException;
@@ -84,8 +82,8 @@ public interface VariantManagerAdapter extends Remote {
     public List<VariantComment> getVariantComments(String sessID, int projID, int refID, int uploadId, int fileID, int variantID) throws SQLException, RemoteException;
     public void addVariantComments(String sessID, List<VariantComment> comments) throws SQLException, RemoteException;
     public void removeVariantComments(String sessID, List<VariantComment> comments) throws SQLException, RemoteException;
-    public Map<SimplePatient, Integer> getPatientHeatMap(String sessID, int projID, int refID, Condition[][] conditions, List<SimplePatient> patients) throws SQLException, RemoteException;
-    public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, List<String> dnaIDs) throws SQLException, RemoteException;
+    public Map<SimplePatient, Integer> getPatientHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<SimplePatient> patients) throws SQLException, RemoteException;
+    public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException;
     public ScatterChartMap getFilteredFrequencyValuesForScatter(String sessID, int projID, int refID, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically) throws SQLException, RemoteException;
 
     public void registerProgressCallback(String sessID, ProgressCallbackAdapter callback) throws RemoteException;

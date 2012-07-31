@@ -80,7 +80,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         exportButton.setEnabled(false);
 
         //populate individuals
-        List<String> temp = MedSavantClient.VariantManager.getDistinctValuesForColumn(
+        List<String> temp = MedSavantClient.DBUtils.getDistinctValuesForColumn(
                 LoginController.sessionId,
                 ProjectController.getInstance().getCurrentPatientTableName(),
                 DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS,

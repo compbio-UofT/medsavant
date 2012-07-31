@@ -47,7 +47,7 @@ import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.db.util.DBSettings;
-import org.ut.biolab.medsavant.db.util.DBUtil;
+import org.ut.biolab.medsavant.db.util.DBUtils;
 import org.ut.biolab.medsavant.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.ProjectDetails;
@@ -143,7 +143,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
             while (rs.next()) {
                 String tableName = rs.getString(1);
-                DBUtil.dropTable(sessID, tableName);
+                DBUtils.dropTable(sessID, tableName);
             }
 
             DeleteQuery query2 = new DeleteQuery(table.getTable());
