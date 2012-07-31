@@ -165,7 +165,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
             conn.close();
         }
     }
-    public void addToRegionSet(String sessID, RegionSet set, int limit, int genomeID, String chrom, int start, int end, String desc) throws SQLException{
+    public void addToRegionSet(String sessID, RegionSet set, int limit, int genomeID, String chrom, int start, int end, String desc) throws SQLException, RemoteException{
         Connection conn = ConnectionController.connectPooled(sessID);
         try{
             InsertQuery query = MedSavantDatabase.RegionSetMembershipTableSchema.where(REGION_SET_ID, set.getID()).insert(GENOME_ID, genomeID, REGION_SET_ID, set.getID(), CHROM, chrom, START, start, END, end, DESCRIPTION, desc);
