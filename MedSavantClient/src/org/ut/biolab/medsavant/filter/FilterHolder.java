@@ -198,22 +198,26 @@ class FieldFilterHolder extends FilterHolder {
 
     @Override
     public FilterView createFilterView() throws Exception {
-       if (field.getColumnName().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
-            return new StringListFilterView(whichTable, field.getColumnName(), queryID, field.getAlias());
-        } else {
-            switch (field.getColumnType()) {
-                case INTEGER:
-                    return new NumericFilterView(whichTable, field.getColumnName(), queryID, field.getAlias(), false);
-                case FLOAT:
-                case DECIMAL:
-                    return new NumericFilterView(whichTable, field.getColumnName(), queryID, field.getAlias(), true);
-                case BOOLEAN:
-                    return new BooleanFilterView(whichTable, field.getColumnName(), queryID, field.getAlias());
-                case VARCHAR:
-                default:
-                    return new StringListFilterView(whichTable, field.getColumnName(), queryID, field.getAlias());
-            }
+        String colName = field.getColumnName();
+        String alias = field.getAlias();
+        switch (field.getColumnType()) {
+            case INTEGER:
+                if (!colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID)) {
+                    return new NumericFilterView(whichTable, colName, queryID, alias, false);
+                }
+                break;
+            case FLOAT:
+            case DECIMAL:
+                return new NumericFilterView(whichTable, colName, queryID, alias, true);
+            case BOOLEAN:
+                if (!colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
+                    return new BooleanFilterView(whichTable, colName, queryID, alias);
+                }
+                break;
         }
+        // If nothing else claimed this, make it a StringListFilter.
+        return new StringListFilterView(whichTable, colName, queryID, alias);
+        
     }
 
     @Override

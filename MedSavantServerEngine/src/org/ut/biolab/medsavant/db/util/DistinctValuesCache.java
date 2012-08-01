@@ -42,19 +42,15 @@ public class DistinctValuesCache {
     public static final int CACHE_LIMIT = 10000;
     
     private static File getDirectory(String dbName, String tableName) {
-        return new File(new File(DirectorySettings.getTmpDirectory(), dbName), tableName);
+        return new File(new File(DirectorySettings.getCacheDirectory(), dbName), tableName);
     }
     
     private static File getFile(File dir, String columnName) {
         return new File(dir, columnName);
     }
     
-    private static File getFile(String dbName, String tableName, String columnName) {
-        return getFile(getDirectory(dbName, tableName), columnName);
-    }
-    
     public static boolean isCached(String dbName, String tableName, String columnName) {
-        return getFile(dbName, tableName, columnName).exists();
+        return getFile(getDirectory(dbName, tableName), columnName).exists();
     }
     
     public static void cacheResults(String dbName, String tableName, String columnName, List<Object> result) {
@@ -64,13 +60,15 @@ public class DistinctValuesCache {
             return; //couldn't create directory
         }
         
-        File file = getFile(dir, columnName);
-        try{
-            BufferedWriter out = new BufferedWriter(new FileWriter(file, false));
+        File f = getFile(dir, columnName);
+        LOG.info("Marked " + f.getAbsolutePath() + " for deletion on exit.");
+        f.deleteOnExit();
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(f, false));
             if (result == null) {
                 out.write(CACHE_NULL);
             } else {
-                for(Object o : result) {
+                for (Object o : result) {
                     out.write(o.toString());
                     out.newLine();
                 }
@@ -78,14 +76,18 @@ public class DistinctValuesCache {
             out.close();
         } catch (Exception ex) {
             LOG.error("Error caching results for " + dbName + "." + tableName + "." + columnName, ex);
-            file.delete();
+            f.delete();
         }
     }
     
     private static List<String> getResults(String dbName, String tableName, String columnName) throws IOException {
         List<String> result = new ArrayList<String>();
         
-        BufferedReader in = new BufferedReader(new FileReader(getFile(dbName, tableName, columnName)));
+        File dir = getDirectory(dbName, tableName);
+        File f = getFile(dir, columnName);
+        LOG.info("Marked " + f.getAbsolutePath() + " for deletion on exit.");
+        f.deleteOnExit();
+        BufferedReader in = new BufferedReader(new FileReader(f));
         String line;
         while ((line = in.readLine()) != null)   {
             if (result.isEmpty() && line.startsWith(CACHE_NULL)) {
@@ -95,7 +97,8 @@ public class DistinctValuesCache {
             result.add(line);
         }
         in.close();
-        
+
+        LOG.info(result.size() + " values retrieved from " + f.getAbsolutePath());
         return result;
     }
     

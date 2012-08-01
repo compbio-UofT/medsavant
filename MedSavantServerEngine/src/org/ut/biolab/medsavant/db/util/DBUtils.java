@@ -208,15 +208,17 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
      * A return value of null indicates too many values.
      */
     @Override
-    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String columnName, boolean useCache) throws SQLException, RemoteException {
+    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean cached) throws SQLException, RemoteException {
+        LOG.info("Getting distinct values for " + tableName + "." + colName);
 
+        List<String> result;
         String dbName = SessionController.getInstance().getDatabaseForSession(sessID);
-        if (useCache && DistinctValuesCache.isCached(dbName, tableName, columnName)) {
+        if (cached && DistinctValuesCache.isCached(dbName, tableName, colName)) {
             try {
-                List<String> result = DistinctValuesCache.getCachedStringList(dbName, tableName, columnName);
+                result = DistinctValuesCache.getCachedStringList(dbName, tableName, colName);
                 return result;
             } catch (Exception ex) {
-                LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tableName + "/" + columnName, ex);
+                LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tableName + "/" + colName, ex);
             }
         }
 
@@ -225,11 +227,11 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.setIsDistinct(true);
-        query.addColumns(table.getDBColumn(columnName));
+        query.addColumns(table.getDBColumn(colName));
 
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + (useCache ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + (cached ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
 
-        List<String> result = new ArrayList<String>();
+        result = new ArrayList<String>();
         while (rs.next()) {
             String val = rs.getString(1);
             if (val == null) {
@@ -239,13 +241,13 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
             }
         }
 
-        if (useCache) {
+        if (cached) {
             if (result.size() == DistinctValuesCache.CACHE_LIMIT) {
-                DistinctValuesCache.cacheResults(dbName, tableName, columnName, null);
+                DistinctValuesCache.cacheResults(dbName, tableName, colName, null);
                 return null;
             } else {
                 Collections.sort(result);
-                DistinctValuesCache.cacheResults(dbName, tableName, columnName, (List) result);
+                DistinctValuesCache.cacheResults(dbName, tableName, colName, (List)result);
             }
         }
 
@@ -254,7 +256,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
     @Override
     public Range getExtremeValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException {
-
+        LOG.info("Getting extreme values for " + tablename + "." + columnname);
         String dbName = SessionController.getInstance().getDatabaseForSession(sid);
         if (DistinctValuesCache.isCached(dbName, tablename, columnname)) {
             try {
