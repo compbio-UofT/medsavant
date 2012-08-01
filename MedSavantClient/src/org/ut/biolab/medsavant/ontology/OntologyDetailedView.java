@@ -15,9 +15,6 @@
  */
 package org.ut.biolab.medsavant.ontology;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.ut.biolab.medsavant.model.Ontology;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.list.DetailedTableView;
@@ -27,22 +24,19 @@ import org.ut.biolab.medsavant.view.list.DetailedTableView;
  *
  * @author tarkvara
  */
-public class OntologyDetailedView extends DetailedTableView {
-    private static final Log LOG = LogFactory.getLog(OntologyDetailedView.class);
-
-    private Ontology selectedItem;
+public class OntologyDetailedView extends DetailedTableView<Ontology> {
 
     public OntologyDetailedView() {
         super("", "Multiple ontologies (%d)", new String[] { "Name", "Type", "OBO URL", "Mapping URL" });
     }
 
     @Override
-    public MedSavantWorker<Ontology[]> createWorker() {
+    public MedSavantWorker createWorker() {
         return new MedSavantWorker<Ontology[]>("Ontologies") {
 
             @Override
             protected Ontology[] doInBackground() throws Exception {
-                return new Ontology[] { selectedItem };
+                return new Ontology[] { selected.get(0) };
             }
 
             @Override
@@ -59,11 +53,5 @@ public class OntologyDetailedView extends DetailedTableView {
                 setData(list);
             }
         };
-    }
-
-    @Override
-    public void setSelectedItem(Object[] item) {
-        selectedItem = (Ontology)item[0];
-        super.setSelectedItem(item);
     }
 }

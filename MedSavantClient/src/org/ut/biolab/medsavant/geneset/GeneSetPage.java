@@ -17,8 +17,6 @@
 package org.ut.biolab.medsavant.geneset;
 
 import javax.swing.JPanel;
-import javax.swing.SwingWorker;
-
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,6 +27,7 @@ import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.model.GeneSet;
 import org.ut.biolab.medsavant.serverapi.GeneSetManagerAdapter;
 import org.ut.biolab.medsavant.util.GeneFetcher;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedTableView;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
@@ -90,25 +89,15 @@ public class GeneSetPage extends SubSectionView {
         panel.refresh();
     }
 
-    /*
-     * REFERENCE GENOMES DETAILED VIEW
-     */
-    private static class GenesDetailedView extends DetailedTableView {
-        private GeneSet selectedSet = null;
+    private static class GenesDetailedView extends DetailedTableView<GeneSet> {
 
         public GenesDetailedView() {
             super("", "Multiple gene sets (%d)", new String[] { "Name", "Chromosome", "Start", "End", "Coding Start", "Coding End" });
         }
 
         @Override
-        public void setSelectedItem(Object[] item) {
-            selectedSet = (GeneSet)item[0];
-            super.setSelectedItem(item);
-        }
-
-        @Override
-        public SwingWorker createWorker() {
-            return new GeneFetcher(selectedSet, getName()) {
+        public MedSavantWorker createWorker() {
+            return new GeneFetcher(selected.get(0), getName()) {
                 @Override
                 public void setData(Object[][] data) {
                     GenesDetailedView.this.setData(data);

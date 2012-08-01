@@ -20,12 +20,12 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Collection;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.InCondition;
 
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
 
 
 /**
@@ -36,7 +36,7 @@ public abstract class Filter {
 
     public static enum Type { NUMERIC, STRING, BOOLEAN, COHORT, REGION_LIST, GENERIC, TAG, PLUGIN, ONTOLOGY };
 
-    public static final Condition[] FALSE_CONDITION = new Condition[] { BinaryConditionMS.equalTo(0, 1) };
+    public static final Condition[] FALSE_CONDITION = new Condition[] { BinaryCondition.equalTo(0, 1) };
 
     public Filter() {
     }
@@ -51,6 +51,9 @@ public abstract class Filter {
      * Many filters need to make a filter based on a list of DNA IDs.
      */
     public Condition[] getDNAIDCondition(Collection<String> dnaIDs) {
-        return new Condition[] { new InCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIDs) };
+        if (dnaIDs.size() > 0) {
+            return new Condition[] { new InCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIDs) };
+        }
+        return FALSE_CONDITION;
     }
 }

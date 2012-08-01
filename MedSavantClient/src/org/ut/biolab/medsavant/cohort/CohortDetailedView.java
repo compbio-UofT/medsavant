@@ -223,7 +223,7 @@ public class CohortDetailedView extends DetailedView {
         } else {
 
             //Filter by patient
-            JMenuItem filter1Item = new JMenuItem(cohorts.length == 1 ? "Filter on Cohort " + cohorts[0] : "Filter by Selected Cohorts");
+            JMenuItem filter1Item = new JMenuItem(String.format("<html>Filter by %s</html>", cohorts.length == 1 ? "Cohort <i>" + cohorts[0] + "</i>" : "Selected Cohorts"));
             filter1Item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {

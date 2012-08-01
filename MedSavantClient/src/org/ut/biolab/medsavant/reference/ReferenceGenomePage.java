@@ -102,30 +102,22 @@ public class ReferenceGenomePage extends SubSectionView {
     }
 
 
-    /*
-     * REFERENCE GENOMES DETAILED VIEW
+    /**
+     * Reference genome detailed view.
      */
-    private class ReferenceDetailedView extends DetailedTableView {
-
-        private Reference ref;
+    private class ReferenceDetailedView extends DetailedTableView<Reference> {
 
         public ReferenceDetailedView() {
             super("", "Multiple references (%d)", new String[] { "Contig Name", "Contig Length", "Centromere Position" });
         }
 
         @Override
-        public void setSelectedItem(Object[] item) {
-            ref = (Reference)item[0];
-            super.setSelectedItem(item);
-        }
-
-        @Override
-        public SwingWorker createWorker() {
+        public MedSavantWorker createWorker() {
             return new MedSavantWorker<Chromosome[]>(getName()) {
 
                 @Override
                 protected Chromosome[] doInBackground() throws Exception {
-                    return MedSavantClient.ReferenceManager.getChromosomes(LoginController.sessionId, ref.getId());
+                    return MedSavantClient.ReferenceManager.getChromosomes(LoginController.sessionId, selected.get(0).getId());
                 }
 
                 @Override

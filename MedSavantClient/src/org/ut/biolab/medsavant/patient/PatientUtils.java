@@ -87,7 +87,7 @@ public class PatientUtils {
     public static JPopupMenu createPopup(final int[] patientIDs) {
         JPopupMenu popupMenu = new JPopupMenu();
 
-        JMenuItem filter1Item = new JMenuItem(String.format("Filter by %s", patientIDs.length == 1 ? "Patient " + patientIDs[0] : "Selected Patients"));
+        JMenuItem filter1Item = new JMenuItem(String.format("<html>Filter by %s</html>", patientIDs.length == 1 ? "Patient <i>" + patientIDs[0] + "</i>" : "Selected Patients"));
         filter1Item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

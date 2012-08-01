@@ -24,11 +24,9 @@ import javax.swing.JPopupMenu;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.list.DetailedTableView;
 
@@ -37,13 +35,11 @@ import org.ut.biolab.medsavant.view.list.DetailedTableView;
  *
  * @author mfiume
  */
-public class RegionDetailedView extends DetailedTableView {
+public class RegionDetailedView extends DetailedTableView<RegionSet> {
     
     private static final Log LOG = LogFactory.getLog(RegionDetailedView.class);
 
     private final RegionController controller;
-    private RegionSet selectedRegion;
-
 
     public RegionDetailedView() {
         super("", "Multiple lists (%d)", new String[] { "Region", "Chromosome", "Start", "End" });
@@ -51,12 +47,12 @@ public class RegionDetailedView extends DetailedTableView {
     }
 
     @Override
-    public MedSavantWorker<GenomicRegion[]> createWorker() {
+    public MedSavantWorker createWorker() {
         return new MedSavantWorker<GenomicRegion[]>("") {
 
             @Override
             protected GenomicRegion[] doInBackground() throws Exception {
-                return controller.getRegionsInSet(selectedRegion);
+                return controller.getRegionsInSet(selected.get(0));
             }
 
             @Override
@@ -76,12 +72,6 @@ public class RegionDetailedView extends DetailedTableView {
     }
 
     @Override
-    public void setSelectedItem(Object[] item) {
-        selectedRegion = (RegionSet)item[0];
-        super.setSelectedItem(item);
-    }
-
-    @Override
     public JPopupMenu createPopup() {
         JPopupMenu popupMenu = new JPopupMenu();
 
@@ -90,13 +80,12 @@ public class RegionDetailedView extends DetailedTableView {
         } else {
 
             //Filter by patient
-            JMenuItem filter1Item = new JMenuItem("Filter by Region List");
+            JMenuItem filter1Item = new JMenuItem(String.format("<html>Filter by %s</html>", selected.size() == 1 ? "Region List <i>" + selected.get(0) + "</i>" : "Selected Region Lists"));
             filter1Item.addActionListener(new ActionListener() {
-
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    RegionSetFilterView.wrapState(selectedRegion.getID());
-/* TODO:                    fps.loadFilterView(state);
+/* TODO:                    RegionSetFilterView.wrapState(selectedRegion.getID());
+                    fps.loadFilterView(state);
                     try {
                         GenomicRegion[] regions = controller.getRegionsInSet(selectedRegion);
                         FilterController.getInstance().addFilter(RegionSetFilterView.FILTER_ID, FilterController.getInstance().getCurrentFilterSetID(), (Object)regions);

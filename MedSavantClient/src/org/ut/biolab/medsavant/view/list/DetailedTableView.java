@@ -18,12 +18,14 @@ package org.ut.biolab.medsavant.view.list;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.StripyTable;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -34,7 +36,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author tarkvara
  */
-public abstract class DetailedTableView extends DetailedView {
+public abstract class DetailedTableView<T> extends DetailedView {
 
     private final String[] columnNames;
     private final String multipleTitle;
@@ -42,7 +44,8 @@ public abstract class DetailedTableView extends DetailedView {
     private final JPanel details;
     private final CollapsiblePane infoPanel;
 
-    private SwingWorker worker;
+    protected List<T> selected = new ArrayList<T>();
+    private MedSavantWorker worker;
 
     public DetailedTableView(String title, String multTitle, String[] colNames) {
         multipleTitle = multTitle;
@@ -79,7 +82,8 @@ public abstract class DetailedTableView extends DetailedView {
 
     @Override
     public void setSelectedItem(Object[] item) {
-        //setTitle(item[0].toString());
+        selected.clear();
+        selected.add((T)item[0]);
         infoPanel.setTitle(item[0].toString());
 
         details.removeAll();
@@ -90,6 +94,21 @@ public abstract class DetailedTableView extends DetailedView {
         }
         worker = createWorker();
         worker.execute();
+    }
+
+    @Override
+    public void setMultipleSelections(List<Object[]> items) {
+        selected.clear();
+        for (Object[] item: items) {
+            selected.add((T)item[0]);
+        }
+        if (items.isEmpty()) {
+            infoPanel.setTitle("");
+        } else {
+            infoPanel.setTitle(String.format(multipleTitle, items.size()));
+        }
+        details.removeAll();
+        details.updateUI();
     }
 
     @Override
@@ -121,16 +140,5 @@ public abstract class DetailedTableView extends DetailedView {
         details.updateUI();
     }
 
-    @Override
-    public void setMultipleSelections(List<Object[]> items) {
-        if (items.isEmpty()) {
-            infoPanel.setTitle("");
-        } else {
-            infoPanel.setTitle(String.format(multipleTitle, items.size()));
-        }
-        details.removeAll();
-        details.updateUI();
-    }
-
-    public abstract SwingWorker createWorker();
+    public abstract MedSavantWorker createWorker();
 }
