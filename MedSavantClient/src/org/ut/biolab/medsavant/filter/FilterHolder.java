@@ -113,19 +113,7 @@ public abstract class FilterHolder {
                 }
 
                 if (result == DialogUtils.YES) {
-
-                    if (filterView == null) {
-                        try {
-                            parent.setDetailComponent(name, getFilterView());
-                        } catch (Exception e) {
-                            DialogUtils.displayException("Problem displaying filter", "Problem getting values for filter " + name, e);
-                        }
-                    }
-
-                    clearButton.setVisible(true);
-                    parent.toggleDetailVisibility(name);
-                    parent.invalidate();
-                    parent.repaint();
+                    openFilterView();
                 } else {
                     editButton.setSelected(false);
                 }
@@ -149,6 +137,19 @@ public abstract class FilterHolder {
                 }
             }
         });
+    }
+    
+    public void openFilterView() {
+        try {
+            parent.setDetailComponent(name, getFilterView());
+        } catch (Exception e) {
+            DialogUtils.displayException("Problem displaying filter", "Problem getting values for filter " + name, e);
+        }
+
+        clearButton.setVisible(true);
+        parent.toggleDetailVisibility(name);
+        parent.invalidate();
+        parent.repaint();
     }
 }
 

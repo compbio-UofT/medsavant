@@ -57,8 +57,8 @@ import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.view.pedigree.Pedigree;
-import org.ut.biolab.medsavant.view.pedigree.PedigreeBasicRule;
+import org.ut.biolab.medsavant.patient.Pedigree;
+import org.ut.biolab.medsavant.patient.PedigreeBasicRule;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -328,7 +328,7 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
                             } else {
                                 patientIds = new int[]{patientId};
                             }
-                            JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(patientIds);
+                            JPopupMenu popup = org.ut.biolab.medsavant.patient.PatientUtils.createPopup(patientIds);
                             popup.show(e.getComponent(), e.getX(), e.getY());
                         } else if (SwingUtilities.isLeftMouseButton(e)) {
                             if (!selectedNodes.contains(patientId)) {
@@ -341,7 +341,7 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
                         }
                     } else {
                         if (SwingUtilities.isRightMouseButton(e) && familyID != null) {
-                            JPopupMenu popup = org.ut.biolab.medsavant.view.pedigree.Utils.createPopup(familyID);
+                            JPopupMenu popup = org.ut.biolab.medsavant.patient.PatientUtils.createPopup(familyID);
                             popup.show(e.getComponent(), e.getX(), e.getY());
 
                         }

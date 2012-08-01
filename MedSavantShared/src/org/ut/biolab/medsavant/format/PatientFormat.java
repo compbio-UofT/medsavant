@@ -26,15 +26,15 @@ import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
  */
 public class PatientFormat implements Serializable {
     
-    public static String ALIAS_OF_PATIENT_ID = "Patient ID";
-    public static String ALIAS_OF_FAMILY_ID = "Family ID";
-    public static String ALIAS_OF_HOSPITAL_ID = "Hospital ID";
-    public static String ALIAS_OF_IDBIOMOM = "ID of Mother";
-    public static String ALIAS_OF_IDBIODAD = "ID of Father";
-    public static String ALIAS_OF_GENDER = "Gender";
-    public static String ALIAS_OF_AFFECTED = "Affected";
-    public static String ALIAS_OF_DNA_IDS = "DNA ID(s)";
-    public static String ALIAS_OF_BAM_URL = "BAM URL(s)"; 
+    public static final String ALIAS_OF_PATIENT_ID = "Patient ID";
+    public static final String ALIAS_OF_FAMILY_ID = "Family ID";
+    public static final String ALIAS_OF_HOSPITAL_ID = "Hospital ID";
+    public static final String ALIAS_OF_IDBIOMOM = "ID of Mother";
+    public static final String ALIAS_OF_IDBIODAD = "ID of Father";
+    public static final String ALIAS_OF_GENDER = "Gender";
+    public static final String ALIAS_OF_AFFECTED = "Affected";
+    public static final String ALIAS_OF_DNA_IDS = "DNA ID(s)";
+    public static final String ALIAS_OF_BAM_URL = "BAM URL(s)"; 
     
     public static CustomField[] getDefaultAnnotationFormat() {
         return new CustomField[] {

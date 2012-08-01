@@ -21,7 +21,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.Arrays;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -56,75 +55,6 @@ public class ListViewTablePanel extends JPanel {
     private int[] hiddenColumns;
     private final JPanel fieldPanel;
     private float fontSize = 14.0f;
-
-    public SortableTable getTable() {
-        return table;
-    }
-
-    public final synchronized void updateData(Object[][] newData) {
-        data = newData;
-        model.fireTableDataChanged();
-        table.repaint();
-    }
-
-    @SuppressWarnings("UseOfObsoleteCollectionType")
-    public void updateView() {
-
-        if (data == null) {
-            return;
-        }
-
-        boolean first = false;
-        if (model == null) {
-            model = new GenericTableModel(data, columnNames, columnClasses);
-            first = true;
-        } else {
-            java.util.Vector dataVec = model.getDataVector();
-            dataVec.removeAllElements();
-            for (Object[] row: data) {
-                dataVec.add(new java.util.Vector(Arrays.asList(row)));
-            }
-        }
-
-        if (first) {
-            int[] columns = new int[columnNames.length];
-            for (int i = 0; i < columns.length; i++) {
-                columns[i] = i;
-            }
-            filterField.setTableModel(model);
-            filterField.setColumnIndices(columns);
-            filterField.setObjectConverterManagerEnabled(true);
-
-            table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
-            columnChooser.hideColumns(table, hiddenColumns);
-
-            int[] favColumns = new int[columnNames.length - hiddenColumns.length];
-            int pos = 0;
-            for (int i = 0; i < columnNames.length; i++) {
-                boolean hidden = false;
-                for (int j = 0; j < hiddenColumns.length; j++) {
-                    if (hiddenColumns[j] == i) {
-                        hidden = true;
-                        break;
-                    }
-                }
-                if (!hidden) {
-                    favColumns[pos] = i;
-                    pos++;
-                }
-            }
-            columnChooser.setFavoriteColumns(favColumns);
-        } else {
-            model.fireTableDataChanged();
-        }
-    }
-
-    private void setTableModel(Object[][] data, String[] columnNames, Class[] columnClasses) {
-        this.data = data;
-        this.columnNames = columnNames;
-        this.columnClasses = columnClasses;
-        updateView();
-    }
 
     public ListViewTablePanel(Object[][] data, String[] columnNames, Class[] columnClasses, int[] hiddenColumns) {
         this(data, columnNames, columnClasses, hiddenColumns, true, true, true, true);
@@ -215,19 +145,73 @@ public class ListViewTablePanel extends JPanel {
         updateData(data);
     }
 
-    private int getTotalRowCount() {
-        if (data == null) {
-            return 0;
-        }
-        return data.length;
+    public SortableTable getTable() {
+        return table;
     }
 
-    private JButton niceButton() {
-        JButton b = new JButton();
-        b.setBorder(null);
-        b.setBorderPainted(false);
-        b.setOpaque(false);
-        return b;
+    public final synchronized void updateData(Object[][] newData) {
+        data = newData;
+        model.fireTableDataChanged();
+        table.repaint();
+    }
+
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    public void updateView() {
+
+        if (data == null) {
+            return;
+        }
+
+        boolean first = false;
+        if (model == null) {
+            model = new GenericTableModel(data, columnNames, columnClasses);
+            first = true;
+        } else {
+            java.util.Vector dataVec = model.getDataVector();
+            dataVec.removeAllElements();
+            for (Object[] row: data) {
+                dataVec.add(new java.util.Vector(Arrays.asList(row)));
+            }
+        }
+
+        if (first) {
+            int[] columns = new int[columnNames.length];
+            for (int i = 0; i < columns.length; i++) {
+                columns[i] = i;
+            }
+            filterField.setTableModel(model);
+            filterField.setColumnIndices(columns);
+            filterField.setObjectConverterManagerEnabled(true);
+
+            table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
+            columnChooser.hideColumns(table, hiddenColumns);
+
+            int[] favColumns = new int[columnNames.length - hiddenColumns.length];
+            int pos = 0;
+            for (int i = 0; i < columnNames.length; i++) {
+                boolean hidden = false;
+                for (int j = 0; j < hiddenColumns.length; j++) {
+                    if (hiddenColumns[j] == i) {
+                        hidden = true;
+                        break;
+                    }
+                }
+                if (!hidden) {
+                    favColumns[pos] = i;
+                    pos++;
+                }
+            }
+            columnChooser.setFavoriteColumns(favColumns);
+        } else {
+            model.fireTableDataChanged();
+        }
+    }
+
+    private void setTableModel(Object[][] data, String[] columnNames, Class[] columnClasses) {
+        this.data = data;
+        this.columnNames = columnNames;
+        this.columnClasses = columnClasses;
+        updateView();
     }
 
     public void setSelectionMode(int selectionMode) {

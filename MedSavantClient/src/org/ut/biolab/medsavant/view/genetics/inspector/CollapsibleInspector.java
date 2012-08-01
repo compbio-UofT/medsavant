@@ -61,7 +61,6 @@ public abstract class CollapsibleInspector extends JPanel implements Inspector {
     }
 
     public final void switchToMessage() {
-        System.out.println("Switching to message");
         CardLayout cl = (CardLayout)(container.getLayout());
         cl.show(container, MESSAGEPANEL);
     }

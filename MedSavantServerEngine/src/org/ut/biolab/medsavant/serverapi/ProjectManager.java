@@ -15,7 +15,6 @@
  */
 package org.ut.biolab.medsavant.serverapi;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -26,8 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.xml.parsers.ParserConfigurationException;
-import org.xml.sax.SAXException;
 
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
@@ -317,7 +314,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public int addProject(String sessID, String name, CustomField[] fields) throws SQLException, ParserConfigurationException, SAXException, IOException {
+    public int addProject(String sessID, String name, CustomField[] fields) throws SQLException, RemoteException {
 
         TableSchema table = MedSavantDatabase.ProjectTableSchema;
         InsertQuery query = new InsertQuery(table.getTable());

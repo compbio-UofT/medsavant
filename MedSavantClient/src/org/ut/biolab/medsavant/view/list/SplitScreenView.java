@@ -285,8 +285,6 @@ public class SplitScreenView extends JPanel {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     if (SwingUtilities.isRightMouseButton(e)) {
-                        int row = stp.getTable().rowAtPoint(e.getPoint());
-                        stp.getTable().getSelectionModel().setSelectionInterval(row, row);
                         JPopupMenu popup = detailedView.createPopup();
                         if (popup != null) {
                             popup.show(e.getComponent(), e.getX(), e.getY());

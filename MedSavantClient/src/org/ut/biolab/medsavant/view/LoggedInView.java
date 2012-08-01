@@ -19,12 +19,17 @@ package org.ut.biolab.medsavant.view;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
+import org.ut.biolab.medsavant.cohort.CohortsPage;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.UserLevel;
+import org.ut.biolab.medsavant.patient.IndividualsPage;
 import org.ut.biolab.medsavant.project.ProjectsSection;
+import org.ut.biolab.medsavant.region.RegionPage;
+import org.ut.biolab.medsavant.variant.VariantFilesPage;
 import org.ut.biolab.medsavant.view.genetics.GeneticsSection;
 import org.ut.biolab.medsavant.view.manage.ManageSection;
-import org.ut.biolab.medsavant.view.patients.ListsSection;
+import org.ut.biolab.medsavant.view.subview.SectionView;
+import org.ut.biolab.medsavant.view.subview.SubSectionView;
 
 
 /**
@@ -52,5 +57,22 @@ public class LoggedInView extends JPanel {
         }
 
         viewController.selectFirstItem();
+    }
+
+    private class ListsSection extends SectionView {
+        @Override
+        public String getName() {
+            return "Tables";
+        }
+
+        @Override
+        public SubSectionView[] getSubSections() {
+            return new SubSectionView[] {
+                new IndividualsPage(this),
+                new CohortsPage(this),
+                new RegionPage(this),
+                new VariantFilesPage(this)
+            };
+        }
     }
 }

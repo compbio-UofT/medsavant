@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.filter;
+package org.ut.biolab.medsavant.cohort;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -23,6 +23,10 @@ import java.util.*;
 import com.healthmarketscience.sqlbuilder.Condition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.filter.Filter;
+import org.ut.biolab.medsavant.filter.FilterController;
+import org.ut.biolab.medsavant.filter.FilterState;
+import org.ut.biolab.medsavant.filter.TabularFilterView;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.project.ProjectController;

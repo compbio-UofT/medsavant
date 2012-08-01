@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.filter;
 
+import org.ut.biolab.medsavant.cohort.CohortFilterView;
 import java.awt.*;
 import java.beans.PropertyVetoException;
 import java.util.*;
@@ -211,6 +212,7 @@ public class QueryPanel extends CollapsiblePanes {
         FilterHolder h = filterHolders.get(state.getFilterID());
         if (h != null) {
             h.loadFilterView(state);
+            h.openFilterView();
         } else {
             throw new Exception(String.format("Unknown filter ID \"%s\"", state.getFilterID()));
         }

@@ -16,7 +16,6 @@
 
 package org.ut.biolab.medsavant.serverapi;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -26,8 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.parsers.ParserConfigurationException;
-import org.xml.sax.SAXException;
 
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
@@ -230,7 +227,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
 
     @Override
-    public void createPatientTable(String sid, int projectid, CustomField[] fields) throws SQLException, ParserConfigurationException, SAXException, IOException {
+    public void createPatientTable(String sid, int projectid, CustomField[] fields) throws SQLException {
 
         String patientTableName = DBSettings.createPatientTableName(projectid);
         Connection c = ConnectionController.connectPooled(sid);
