@@ -85,7 +85,12 @@ public class AnnotationDownloadInformation {
         return null;
     }
 
-    public static List<AnnotationDownloadInformation> getDownloadAbleAnnotations(String versionName, String referenceName) throws XMLStreamException, FileNotFoundException, ParserConfigurationException, SAXException, IOException {
+    public static List<AnnotationDownloadInformation> getDownloadableAnnotations(String versionName) throws XMLStreamException, FileNotFoundException, ParserConfigurationException, SAXException, IOException {
+        return getDownloadableAnnotations(versionName,null);
+    }
+
+
+    public static List<AnnotationDownloadInformation> getDownloadableAnnotations(String versionName, String referenceName) throws XMLStreamException, FileNotFoundException, ParserConfigurationException, SAXException, IOException {
 
         File f = downloadAnnotationDatabase();
 
@@ -103,13 +108,13 @@ public class AnnotationDownloadInformation {
 
             if (version.getAttribute("name").equals(versionName)) {
                 NodeList referenceList = version.getElementsByTagName("reference");
+
+                List<AnnotationDownloadInformation> adiList = new ArrayList<AnnotationDownloadInformation>();
+
                 for (int j = 0; j < referenceList.getLength(); j++) {
                     Element reference = (Element) referenceList.item(j);
 
-
-                    if (reference.getAttribute("name").equals(referenceName)) {
-
-                        List<AnnotationDownloadInformation> adiList = new ArrayList<AnnotationDownloadInformation>();
+                    if (referenceName == null || reference.getAttribute("name").equals(referenceName)) {
 
                         NodeList annotationList = reference.getElementsByTagName("annotation");
                         for (int k = 0; k < annotationList.getLength(); k++) {
@@ -119,19 +124,15 @@ public class AnnotationDownloadInformation {
                             AnnotationDownloadInformation adi = new AnnotationDownloadInformation(
                                     annotation.getAttribute("name"),
                                     annotation.getAttribute("version"),
-                                    referenceName,
+                                    reference.getAttribute("name"),
                                     annotation.getAttribute("description"),
                                     annotation.getAttribute("url"));
-                            System.out.println(adi);
 
                             adiList.add(adi);
                         }
-
-                        return adiList;
                     }
-
-
                 }
+                return adiList;
             }
         }
 
