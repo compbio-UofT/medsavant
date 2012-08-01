@@ -6,6 +6,6 @@ general.autologin=false
 medsavant.version=1.0
 server.address=medsavant.cs.toronto.edu
 server.port=36800
-user.name=mfiume
+user.name=root
 user.password=
 user.rememberpass=false

@@ -27,11 +27,14 @@ import javax.swing.JPanel;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import javax.swing.JPopupMenu;
+import org.ut.biolab.medsavant.annotation.InstallAnnotationWizard;
 
 import org.ut.biolab.medsavant.controller.ExternalAnnotationController;
 import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.model.Annotation;
+import org.ut.biolab.medsavant.ontology.OntologyWizard;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
@@ -62,10 +65,11 @@ public class AnnotationsPage extends SubSectionView {
 
         @Override
         public void addItems() {
-            JOptionPane.showMessageDialog(MedSavantFrame.getInstance(),
-                    "Annotations can only be added using the \n"
-                    + "MedSavant Database Utility.",
-                    "", JOptionPane.INFORMATION_MESSAGE);
+            try {
+                new InstallAnnotationWizard().setVisible(true);
+            } catch (Exception ex) {
+                ClientMiscUtils.reportError("Error downloading annotations", ex);
+            }
         }
 
         @Override
@@ -89,7 +93,6 @@ public class AnnotationsPage extends SubSectionView {
     public void referenceChanged(String name) {
         panel.refresh();
     }
-
     private SplitScreenView panel;
 
     public AnnotationsPage(SectionView parent) {
@@ -106,6 +109,7 @@ public class AnnotationsPage extends SubSectionView {
     public JPanel getView(boolean update) {
         panel = new SplitScreenView(
                 new SimpleDetailedListModel<Annotation>("Program") {
+
                     @Override
                     public Annotation[] getData() throws Exception {
                         return ExternalAnnotationController.getInstance().getExternalAnnotations();

@@ -35,12 +35,12 @@ import com.apple.eawt.QuitHandler;
 import com.apple.eawt.QuitResponse;
 import java.awt.Color;
 
-import org.ut.biolab.medsavant.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.controller.SettingsController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.login.LoginEvent;
 import org.ut.biolab.medsavant.plugin.PluginManagerDialog;
+import org.ut.biolab.medsavant.serverapi.MedSavantProgramInformation;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.WaitPanel;

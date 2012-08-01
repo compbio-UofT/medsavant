@@ -17,20 +17,22 @@ package org.ut.biolab.medsavant.view.component;
 
 import java.awt.Component;
 import javax.swing.JTable;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import org.ut.biolab.medsavant.view.util.ViewUtil;
-
 
 /**
  *
  * @author tarkvara
  */
 public class StripyTable extends JTable {
+
     public StripyTable(Object[][] data, String[] colNames) {
         super(data, colNames);
     }
-    
+
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
         Component comp = super.prepareRenderer(renderer, row, col);
