@@ -36,6 +36,8 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
+import java.awt.Component;
+import java.awt.Container;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,6 +66,7 @@ public class RegionWizard extends WizardDialog {
     private static final String PAGENAME_NAME = "List Name";
     private static final String PAGENAME_FILE = "Choose File";
     private static final String PAGENAME_GENES = "Select Genes";
+    private static final String PAGENAME_RECOMMEND = "Recommend Related Genes";
     private static final String PAGENAME_CREATE = "Create";
     private static final String PAGENAME_COMPLETE = "Complete";
     private static final String[] COLUMN_NAMES = new String[] { "Name", "Chromosome", "Start", "End" };
@@ -92,6 +95,7 @@ public class RegionWizard extends WizardDialog {
         if (imp) {
             model.append(getNamePage());
             model.append(getFilePage());
+            model.append(getRecommendPage());
             model.append(getCreationPage());
             model.append(getCompletionPage());
         } else {
@@ -104,6 +108,7 @@ public class RegionWizard extends WizardDialog {
             }
 
             fetchGenes();
+            model.append(getRecommendPage());
             model.append(getCreationPage());
             model.append(getCompletionPage());
         }
@@ -121,6 +126,8 @@ public class RegionWizard extends WizardDialog {
                         setCurrentPage(PAGENAME_GENES);
                     }
                 } else if (pageName.equals(PAGENAME_FILE) || pageName.equals(PAGENAME_GENES)) {
+                    setCurrentPage(PAGENAME_RECOMMEND);
+                } else if (pageName.equals(PAGENAME_RECOMMEND)){
                     setCurrentPage(PAGENAME_CREATE);
                 } else if (pageName.equals(PAGENAME_CREATE)) {
                     setCurrentPage(PAGENAME_COMPLETE);
@@ -233,6 +240,42 @@ public class RegionWizard extends WizardDialog {
         };
     }
 
+    private AbstractWizardPage getRecommendPage(){
+        return new DefaultWizardPage(PAGENAME_RECOMMEND){
+            private JButton genemaniaButton;
+            private JProgressBar progressBar;
+            private JButton settingsButton;
+            {    
+                  addText("Query GeneMANIA for Related Genes");
+                  addComponent(selectedGenesPanel);
+                  progressBar = new JProgressBar();
+                  progressBar.setVisible(false);
+                  addComponent(progressBar);
+                  genemaniaButton = new JButton ("Recommend");
+                  settingsButton = new JButton("Settings");
+                  genemaniaButton.addActionListener(new ActionListener(){
+                      public void actionPerformed(ActionEvent e){
+                          genemaniaButton.setEnabled(false);
+                          settingsButton.setEnabled(false);
+                          fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
+                          progressBar.setVisible(true);
+                          progressBar.setIndeterminate(true);
+                          
+                      }
+                  });
+                  addComponent(genemaniaButton); 
+                  addComponent(ViewUtil.alignRight(settingsButton));
+                  
+            }
+        
+        @Override
+        public void setupWizardButtons(){
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
+        }
+        };
+    }
 
     private AbstractWizardPage getCreationPage() {
 

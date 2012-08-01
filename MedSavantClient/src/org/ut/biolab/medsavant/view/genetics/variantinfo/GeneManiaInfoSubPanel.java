@@ -95,11 +95,12 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     private Set<String> networksSelected;
     private int geneLimitDifference;
     private Thread genemaniaAlgorithmThread;
-
+    private boolean dataPresent;
     private int currSizeOfArray;
 
     public GeneManiaInfoSubPanel(){
         name = "Related Genes";
+        dataPresent =true;
     }
 
     @Override
@@ -109,7 +110,16 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
 
     @Override
     public JPanel getInfoPanel() {
-         genemania = new GenemaniaInfoRetriever();
+        l = new JLabel("Selected gene: ");
+        p = ViewUtil.getClearPanel();
+        try {
+            genemania = new GenemaniaInfoRetriever();
+        } catch (Exception ex) {
+            progressMessage = new JLabel("<html><center>" +ex.getMessage() + "<br>Please try again after data has been downloaded.</center></html>", SwingConstants.CENTER);
+            p.add(progressMessage);
+            dataPresent = false;
+            return p;
+        }
          initializeSettingsComponents();
          setGeneLimit();
          setRankingMethod();
@@ -127,7 +137,6 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
          progressBar.setVisible(false);
          progressMessage = new JLabel();
          progressMessage.setVisible(false);
-         p = ViewUtil.getClearPanel();
          p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
          settingsButton = new JButton("Settings");
          settingsButton.addActionListener(new java.awt.event.ActionListener() {
@@ -594,7 +603,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
 
     @Override
     public void geneSelectionChanged(Gene g) {
-        if (g == null) {
+        if (g == null||!dataPresent) {
             l.setText("None");
         } else {
             System.out.println("Received gene " + g.getName());
@@ -633,10 +642,11 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                     geneNames = GenemaniaInfoRetriever.getValidGenes(geneNames);
                     genemania.setGenes(geneNames);
                     if(notInGenemania.size()>0){
-                        String message = "Following gene(s) not found in GeneMANIA: ";
+                        String message = "<html><center>Following gene(s) not found in GeneMANIA: ";
                         for(String invalidGene: notInGenemania){
-                            message+="\n"+invalidGene;
+                            message+="<br>"+invalidGene;
                         }
+                        message+="</center></html>";
                         progressMessage.setText(message);
                         setMsgOff = false;
                     }

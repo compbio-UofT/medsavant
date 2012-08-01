@@ -228,7 +228,7 @@ public class MedSavantFrame extends JFrame implements Listener<LoginEvent> {
 
 
             UIManager.put("TitledBorder.border", UIManager.getBorder("TitledBorder.aquaVariant"));
-            com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(this, true);
+//            com.apple.eawt.FullScreenUtilities.setWindowCanFullScreen(this, true);
             Application macOSXApplication = Application.getApplication();
             macOSXApplication.setAboutHandler(new AboutHandler() {
 

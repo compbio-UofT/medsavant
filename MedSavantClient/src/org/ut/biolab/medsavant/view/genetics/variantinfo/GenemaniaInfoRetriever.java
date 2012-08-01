@@ -50,8 +50,12 @@ public class GenemaniaInfoRetriever {
     private static final int MIN_CATEGORIES = 10;
     private static final double Q_VALUE_THRESHOLD = 0.1;
 
-    public GenemaniaInfoRetriever(){
-             initialize();
+    public GenemaniaInfoRetriever() throws Exception {
+        if (new File(DirectorySettings.getCacheDirectory().getAbsolutePath() + "\\done.txt").exists()) {
+            initialize();
+        } else {
+            throw new Exception("Data not found.");
+        }
     }
 
     //returns invalid genes that were not set
@@ -183,12 +187,13 @@ public class GenemaniaInfoRetriever {
         try{
             dataSetManager = new DataSetManager();
             dataSetManager.addDataSetFactory(new LuceneDataSetFactory<Object, Object, Object>(dataSetManager, null, new FileUtils(), new NullCytoscapeUtils<Object, Object, Object>(), null), Collections.emptyMap());
-            data = dataSetManager.open(new File (DATA_PATH));
+                data = dataSetManager.open(new File (DATA_PATH));
 
             human= getHumanOrganism(data);
             networkUtils = new NetworkUtils();
             cache = new DataCache(new SynchronizedObjectCache(new MemObjectCache(data.getObjectCache(NullProgressReporter.instance(), false))));
             mania = new Mania2(cache);
+            
         }
         catch(Exception e){
             e.printStackTrace();

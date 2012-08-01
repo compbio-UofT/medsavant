@@ -188,7 +188,7 @@ public class PluginController extends Controller {
             @Override
             public void run() {
                 String directoryPath = DirectorySettings.getCacheDirectory().getAbsolutePath();
-                if (!(new File(directoryPath + "\\gmdata")).exists()) {
+                if (!(new File(directoryPath + "\\done.txt")).exists()) {
                     URL pathToGMData = NetworkUtils.getKnownGoodURL("http://genomesavant.com/serve/data/genemania/gmdata.zip");
                     try {
                         File data = RemoteFileCache.getCacheFile(pathToGMData);
@@ -206,6 +206,10 @@ public class PluginController extends Controller {
                                     new BufferedOutputStream(new FileOutputStream(directoryPath + "\\"+entry.getName())));
                         }
                         zipData.close();
+                        FileWriter fstream = new FileWriter(directoryPath+ "\\done.txt");
+                        BufferedWriter out = new BufferedWriter(fstream);
+                        out.write("This file indicates that the GeneMANIA data has finished downloading.");
+                        out.close();
                     } catch (IOException ex) {
                         Logger.getLogger(PluginController.class.getName()).log(Level.SEVERE, null, ex);
                     }

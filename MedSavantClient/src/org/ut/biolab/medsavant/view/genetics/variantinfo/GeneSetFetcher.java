@@ -64,9 +64,13 @@ public class GeneSetFetcher {
                 try {
                     int numVariantsInGene1 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getAllFilterConditions(), gene1.getChrom(), gene1.getStart(), gene1.getEnd());
                     int numVariantsInGene2 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getAllFilterConditions(), gene2.getChrom(), gene2.getStart(), gene2.getEnd());
-                    if (numVariantsInGene1 == numVariantsInGene2) {
+                    int gene1Length = gene1.getEnd()-gene1.getStart();
+                    double normalizedVarFreq1 = numVariantsInGene1/gene1Length;
+                    int gene2Length = gene2.getEnd()-gene2.getStart();
+                    double normalizedVarFreq2 = numVariantsInGene2/gene2Length;
+                    if (normalizedVarFreq1 == normalizedVarFreq2) {
                         return 0;
-                    } else if (numVariantsInGene1 < numVariantsInGene2) {
+                    } else if (normalizedVarFreq1 < normalizedVarFreq2) {
                         return -1;
                     }
                     return 1;
