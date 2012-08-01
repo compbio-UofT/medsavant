@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.aggregate;
+package org.ut.biolab.medsavant.ontology;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -33,12 +33,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.aggregate.AggregatePanel;
+import org.ut.biolab.medsavant.aggregate.AggregatePanelGenerator;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.geneset.GeneSetController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.OntologyTerm;
-import org.ut.biolab.medsavant.ontology.OntologyListItem;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -49,11 +50,11 @@ import org.ut.biolab.medsavant.util.ThreadController;
  *
  * @author mfiume, tarkvara
  */
-class OntologyPanelGenerator extends AggregatePanelGenerator {
+public class OntologyPanelGenerator extends AggregatePanelGenerator {
 
     private static final Log LOG = LogFactory.getLog(OntologyPanelGenerator.class);
 
-    OntologyPanelGenerator(String page) {
+    public OntologyPanelGenerator(String page) {
         super(page);
     }
 
@@ -63,7 +64,7 @@ class OntologyPanelGenerator extends AggregatePanelGenerator {
     }
 
     @Override
-    AggregatePanel generatePanel() {
+    public AggregatePanel generatePanel() {
         return new OntologyPanel();
     }
 

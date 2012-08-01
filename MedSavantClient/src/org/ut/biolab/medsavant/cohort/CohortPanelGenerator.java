@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.aggregate;
+package org.ut.biolab.medsavant.cohort;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -37,9 +37,10 @@ import javax.swing.JScrollPane;
 import com.jidesoft.converter.ConverterContext;
 import com.jidesoft.converter.PercentConverter;
 import com.jidesoft.grid.*;
-import java.util.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.aggregate.AggregatePanel;
+import org.ut.biolab.medsavant.aggregate.AggregatePanelGenerator;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -56,7 +57,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author Andrew
  */
-class CohortPanelGenerator extends AggregatePanelGenerator {
+public class CohortPanelGenerator extends AggregatePanelGenerator {
 
     private static final Comparator VALUE_COMPARATOR = new Comparator() {
         @Override
@@ -77,7 +78,7 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
 
     private boolean init = false;
 
-    CohortPanelGenerator(String page) {
+    public CohortPanelGenerator(String page) {
         super(page);
     }
 
@@ -87,7 +88,7 @@ class CohortPanelGenerator extends AggregatePanelGenerator {
     }
 
     @Override
-    AggregatePanel generatePanel() {
+    public AggregatePanel generatePanel() {
         return new CohortPanel();
     }
 

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.aggregate;
+package org.ut.biolab.medsavant.patient;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -51,14 +51,14 @@ import pedviz.view.symbols.SymbolSexMale;
 import pedviz.view.symbols.SymbolSexUndesignated;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.aggregate.AggregatePanel;
+import org.ut.biolab.medsavant.aggregate.AggregatePanelGenerator;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.patient.Pedigree;
-import org.ut.biolab.medsavant.patient.PedigreeBasicRule;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -66,9 +66,9 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-class FamilyPanelGenerator extends AggregatePanelGenerator {
+public class FamilyPanelGenerator extends AggregatePanelGenerator {
 
-    FamilyPanelGenerator(String page) {
+    public FamilyPanelGenerator(String page) {
         super(page);
     }
 
@@ -78,7 +78,7 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
     }
 
     @Override
-    AggregatePanel generatePanel() {
+    public AggregatePanel generatePanel() {
         return new FamilyPanel();
     }
 
@@ -154,7 +154,7 @@ class FamilyPanelGenerator extends AggregatePanelGenerator {
         }
 
         @Override
-        void recalculate() {
+        public void recalculate() {
             showFamilyAggregates((String)familyLister.getSelectedItem());
         }
 

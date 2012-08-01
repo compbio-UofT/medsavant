@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.ut.biolab.medsavant.aggregate;
+package org.ut.biolab.medsavant.region;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,14 +30,14 @@ import javax.swing.table.TableModel;
 import com.jidesoft.grid.SortableTable;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.aggregate.AggregatePanel;
+import org.ut.biolab.medsavant.aggregate.AggregatePanelGenerator;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.region.RegionController;
-import org.ut.biolab.medsavant.region.RegionSetFilterView;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.DataRetriever;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -50,9 +50,9 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-class RegionListPanelGenerator extends AggregatePanelGenerator {
+public class RegionListPanelGenerator extends AggregatePanelGenerator {
 
-    RegionListPanelGenerator(String page) {
+    public RegionListPanelGenerator(String page) {
         super(page);
     }
 
@@ -62,7 +62,7 @@ class RegionListPanelGenerator extends AggregatePanelGenerator {
     }
 
     @Override
-    AggregatePanel generatePanel() {
+    public AggregatePanel generatePanel() {
         return new RegionListPanel();
     }
 

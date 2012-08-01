@@ -16,14 +16,12 @@
 
 package org.ut.biolab.medsavant.aggregate;
 
-import javax.swing.JPanel;
-
 
 /**
  *
  * @author Nirvana Nursimulu
  */
-abstract class AggregatePanelGenerator {
+public abstract class AggregatePanelGenerator {
     
     /** Page for thread-management purposes. */
     protected final String pageName;
@@ -53,9 +51,9 @@ abstract class AggregatePanelGenerator {
     /**
      * Create the appropriate panel for this aggregate.
      */
-    abstract AggregatePanel generatePanel();
+    public abstract AggregatePanel generatePanel();
 
-    void run(boolean reset) {
+    public void run(boolean reset) {
         if (reset || updateRequired) {
             panel.recalculate();
         }

@@ -25,6 +25,10 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
+import org.ut.biolab.medsavant.cohort.CohortPanelGenerator;
+import org.ut.biolab.medsavant.ontology.OntologyPanelGenerator;
+import org.ut.biolab.medsavant.patient.FamilyPanelGenerator;
+import org.ut.biolab.medsavant.region.RegionListPanelGenerator;
 import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
