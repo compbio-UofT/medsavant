@@ -24,10 +24,8 @@ import java.util.Collection;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 
-import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.filter.*;
 import org.ut.biolab.medsavant.model.RegionSet;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
 
 
 /**
@@ -55,18 +53,6 @@ public class RegionSetFilterView extends TabularFilterView<RegionSet> {
         availableValues = new ArrayList<RegionSet>();
         availableValues.addAll(Arrays.asList(controller.getRegionSets()));
         initContentPanel();
-
-        RegionController.getInstance().addListener(new Listener<RegionEvent>() {
-            @Override
-            public void handleEvent(RegionEvent event) {
-                availableValues.clear();
-                try {
-                    availableValues.addAll(Arrays.asList(controller.getRegionSets()));
-                } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Unable to populate region list: %s", ex);
-                }
-            }
-        });
     }
 
     public static FilterState wrapState(Collection<RegionSet> applied) {
