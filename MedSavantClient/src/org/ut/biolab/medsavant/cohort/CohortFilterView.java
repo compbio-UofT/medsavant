@@ -41,8 +41,6 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
     public static final String FILTER_NAME = "Cohort";
     public static final String FILTER_ID = "cohort";
 
-    Cohort[] cohorts;
-
     /**
      * Constructor for loading a saved filter from a file.
      */
@@ -65,19 +63,7 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
     }
 
     public static FilterState wrapState(Collection<Cohort> applied) {
-        Map<String, String> map = new HashMap<String, String>();
-        if (applied != null && !applied.isEmpty()) {
-            StringBuilder values = new StringBuilder();
-            int i = 0;
-            for (Cohort val: applied) {
-                values.append(val.toString());
-                if (i++ != applied.size() - 1) {
-                    values.append(";;;");
-                }
-            }
-            map.put("values", values.toString());
-        }
-        return new FilterState(Filter.Type.COHORT, FILTER_NAME, FILTER_ID, map);
+        return new FilterState(Filter.Type.COHORT, FILTER_NAME, FILTER_ID, wrapValues(applied));
     }
 
     @Override
@@ -87,22 +73,8 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
 
     @Override
     protected void applyFilter() {
-        applyButton.setEnabled(false);
-
-        appliedValues = new ArrayList<Cohort>();
-
-        int[] indices = filterableList.getCheckBoxListSelectedIndices();
-        for (int i: indices) {
-            appliedValues.add((Cohort)filterableList.getModel().getElementAt(i));
-        }
-
-        FilterController fc = FilterController.getInstance();
-        if (appliedValues.size() == availableValues.size()) {
-            fc.removeFilter(FILTER_ID, queryID);
-            return;
-        }
-
-        fc.addFilter(new CohortFilter(), queryID);
+        preapplyFilter();
+        FilterController.getInstance().addFilter(new CohortFilter(), queryID);
     }
     
     private class CohortFilter extends Filter {

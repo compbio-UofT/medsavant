@@ -21,6 +21,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
+import java.util.Collection;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.importing.FileFormat;
@@ -62,6 +63,10 @@ public class RegionController extends Controller<RegionEvent> {
 
     public GenomicRegion[] getRegionsInSet(RegionSet set) throws SQLException, RemoteException {
         return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, set, Integer.MAX_VALUE);
+    }
+    
+    public GenomicRegion[] getRegionsInSets(Collection<RegionSet> sets) throws SQLException, RemoteException {
+        return MedSavantClient.RegionSetManager.getRegionsInSets(LoginController.sessionId, sets, Integer.MAX_VALUE);
     }
     
     public void addToRegionSet(RegionSet set, String chrom, int start, int end, String desc) throws SQLException, RemoteException{

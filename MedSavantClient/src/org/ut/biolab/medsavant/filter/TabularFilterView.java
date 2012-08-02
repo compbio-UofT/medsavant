@@ -22,8 +22,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -32,7 +31,6 @@ import javax.swing.text.Position;
 import com.jidesoft.list.FilterableCheckBoxList;
 import com.jidesoft.list.QuickListFilterField;
 import com.jidesoft.swing.SearchableUtils;
-import java.util.Collection;
 
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -201,6 +199,20 @@ public abstract class TabularFilterView<T> extends FilterView {
 
     protected abstract void applyFilter();
 
+    /**
+     * Shared code which derived classes can call to set things up properly in their <code>applyFilter</code> calls.
+     */
+    protected void preapplyFilter() {
+        applyButton.setEnabled(false);
+
+        appliedValues = new ArrayList<T>();
+
+        int[] indices = filterableList.getCheckBoxListSelectedIndices();
+        for (int i: indices) {
+            appliedValues.add((T)filterableList.getModel().getElementAt(i));
+        }
+    }
+
     private void setAllSelected(boolean b) {
         int[] selected;
 
@@ -214,6 +226,23 @@ public abstract class TabularFilterView<T> extends FilterView {
         }
         filterableList.setCheckBoxListSelectedIndices(selected);
     }
+
+    public static Map<String, String> wrapValues(Collection applied) {
+        Map<String, String> map = new HashMap<String, String>();
+        if (applied != null && !applied.isEmpty()) {
+            StringBuilder values = new StringBuilder();
+            int i = 0;
+            for (Object val: applied) {
+                values.append(val.toString());
+                if (i++ != applied.size() - 1) {
+                    values.append(";;;");
+                }
+            }
+            map.put("values", values.toString());
+        }
+        return map;
+    }
+
 
     class SimpleListModel extends AbstractListModel {
 

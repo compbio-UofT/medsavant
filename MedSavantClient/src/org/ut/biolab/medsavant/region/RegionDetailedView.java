@@ -17,17 +17,20 @@ package org.ut.biolab.medsavant.region;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.cohort.CohortFilterView;
 
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.view.list.DetailedTableView;
 
 
@@ -84,14 +87,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
             filter1Item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-/* TODO:                    RegionSetFilterView.wrapState(selectedRegion.getID());
-                    fps.loadFilterView(state);
-                    try {
-                        GenomicRegion[] regions = controller.getRegionsInSet(selectedRegion);
-                        FilterController.getInstance().addFilter(RegionSetFilterView.FILTER_ID, FilterController.getInstance().getCurrentFilterSetID(), (Object)regions);
-                    } catch (Exception ex) {
-                        ClientMiscUtils.reportError("Error filtering region lists: %s", ex);
-                    }*/
+                    GeneticsFilterPage.getSearchBar().loadFilters(RegionSetFilterView.wrapState(selected));
                 }
             });
             popupMenu.add(filter1Item);

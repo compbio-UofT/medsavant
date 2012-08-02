@@ -100,19 +100,8 @@ public class StringListFilterView extends TabularFilterView<String> {
     }
 
     public static FilterState wrapState(WhichTable t, String colName, String alias, Collection<String> applied) {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = wrapValues(applied);
         map.put("table", t.toString());
-        if (applied != null && !applied.isEmpty()) {
-            StringBuilder values = new StringBuilder();
-            int i = 0;
-            for (String val: applied) {
-                values.append(val);
-                if (i++ != applied.size() - 1) {
-                    values.append(";;;");
-                }
-            }
-            map.put("values", values.toString());
-        }
         return new FilterState(Filter.Type.STRING, alias, colName, map);
     }
 

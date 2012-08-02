@@ -62,10 +62,12 @@ public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
         //separate by chr
         Map<String, List<Range>> chrMap = new HashMap<String, List<Range>>();
         for (GenomicRegion r: regions) {
-            if (chrMap.get(r.getChrom()) == null) {
-                chrMap.put(r.getChrom(), new ArrayList<Range>());
+            if (r != null) {
+                if (chrMap.get(r.getChrom()) == null) {
+                    chrMap.put(r.getChrom(), new ArrayList<Range>());
+                }
+                chrMap.get(r.getChrom()).add(new Range(r.getStart(), r.getEnd()));
             }
-            chrMap.get(r.getChrom()).add(new Range(r.getStart(), r.getEnd()));
         }
         
         //sort by start position

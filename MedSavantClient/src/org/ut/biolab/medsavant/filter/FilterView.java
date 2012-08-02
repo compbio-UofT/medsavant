@@ -36,7 +36,7 @@ public abstract class FilterView extends JPanel {
     public String getTitle() {
         return title;
     }
-
+    
     public abstract FilterState saveState();
 
     /**

@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -32,8 +33,11 @@ import org.apache.commons.logging.LogFactory;
  * @author mfiume
  */
 public class Range implements Comparable<Range>, Serializable {
+
     private static final Log LOG = LogFactory.getLog(Range.class);
+    private static final String RANGE_STRING = " - ";
     
+
     private double min;
     private double max;
 
@@ -56,77 +60,40 @@ public class Range implements Comparable<Range>, Serializable {
         return max;
     }
     
-    public static void main(String[] args) {
-        
-        List<Range> range1 = new ArrayList<Range>();
-        List<Range> range2 = new ArrayList<Range>();
-        range1.add(new Range(2, 6));
-        range1.add(new Range(2, 5));        
-        range1.add(new Range(1, 3));
-        range2.add(new Range(7, 8));
-        range2.add(new Range(4, 6));
-        range2.add(new Range(9, 12));
-        range1.add(new Range(10, 11));
-
-        List<Range> res = merge(range1, range2);
-    }
-    
     /**
-     * Return the list of ranges which result from merging the ranges from 
-     * range1 with those from range2. Note that we work under the assumption 
-     * that min less or equal to max.  Otherwise, use at your own risk 
-     * (behaviour untested for).
-     * @param range1 the first list of ranges.
-     * @param range2 the second list of ranges.
+     * Get the list you get by merging the Range objects in the collection
+     *
+     * @param range
      * @return the merged list.
-     * @author Nirvana
      */
-    public static List<Range> merge(List<Range> range1, List<Range> range2) {
-
+    public static List<Range> merge(Collection<Range> range) {
         List<Range> mergedList = new ArrayList<Range>();
         
         // Arrange first in order by starting positions.
         TreeSet<Range> allRangesInOrder = new TreeSet<Range>();
-        for (Range currRange:range1) {
-            allRangesInOrder.add(currRange);
-        }
-        for (Range currRange: range2) {
-            allRangesInOrder.add(currRange);
-        }
+        allRangesInOrder.addAll(range);
         
         // Merge now.
-        Range currMerged = null;
+        Range curMerged = null;
 
-        for (Range currRange: allRangesInOrder) {
-            // To detect the beginning:
-            if (currMerged == null) {
-                currMerged = new Range(currRange.min, currRange.max);
-                mergedList.add(currMerged);
-            }
-            else if (currMerged.canBeMergedWith(currRange)) {
+        for (Range r: allRangesInOrder) {
+            if (curMerged != null && curMerged.canBeMergedWith(r)) {
                 // merge them here
-                currMerged.max = Math.max(currMerged.max, currRange.max);
-                currMerged.min = Math.min(currMerged.min, currRange.min);
+                curMerged.max = Math.max(curMerged.max, r.max);
+                curMerged.min = Math.min(curMerged.min, r.min);
+            } else {
+                if (curMerged != null) {
+                    mergedList.add(curMerged);
+                }
+                curMerged = new Range(r.min, r.max);
             }
-            else{
-                currMerged = new Range(currRange.min, currRange.max);
-                mergedList.add(currMerged);
-            }
+        }
+        // Merge in the last one.
+        if (curMerged != null) {
+            mergedList.add(curMerged);
         }
         return mergedList;
     }
-    
-    
-    /**
-     * Get the list you get by merging the Range objects in this list.
-     * @param range
-     * @return the merged list.
-     * @author Nirvana
-     */
-    public static List<Range> merge(List<Range> range) {
-        return merge(range, new ArrayList<Range>());
-    }
-    
 
 
     /**
@@ -136,22 +103,19 @@ public class Range implements Comparable<Range>, Serializable {
      * @return 
      * @author Nirvana
      */
+    @Override
     public int compareTo(Range range) {
-        if (this.min < range.min) {
+        if (min < range.min) {
             return -1;
-        }
-        else if (this.min > range.min) {
+        } else if (min > range.min) {
             return 1;
-        }
-        // If both have the same min, differentiate by max.
-        else{
-            if (this.max < range.max) {
+        } else{
+            // If both have the same min, differentiate by max.
+            if (max < range.max) {
                 return -1;
-            }
-            else if (this.max > range.max) {
+            } else if (max > range.max) {
                 return 1;
-            }
-            else{
+            } else {
                 return 0;
             }
         }
@@ -161,34 +125,30 @@ public class Range implements Comparable<Range>, Serializable {
      * This range object equals another object iff the other is a range object,
      * and has the same min and max as this object.  This complies with the 
      * comparator method (compareTo).
-     * @author Nirvana
      */
     @Override
-    public boolean equals(Object r) {
-        try{
-            Range range = (Range)r;
-            return range.min == this.min && range.max == this.max;
+    public boolean equals(Object that) {
+        if (that instanceof Range) {
+            Range r = (Range)that;
+            return r.min == min && r.max == max;
         }
-        catch(Exception e) {
-            return false;
-        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 17 * hash + (int) (Double.doubleToLongBits(this.min) ^ (Double.doubleToLongBits(this.min) >>> 32));
+        hash = 17 * hash + (int) (Double.doubleToLongBits(this.max) ^ (Double.doubleToLongBits(this.max) >>> 32));
+        return hash;
     }
     
     /**
-     * Returns true iff this range and the range given intersect (ie, can be
-     * merged).
-     * @param range
-     * @return 
-     * @author Nirvana
+     * Returns true iff this range and the range given intersect (i.e. can be merged).
      */
-    public boolean canBeMergedWith(Range range) {
-        return (this.min <= range.max && range.max <= this.max) || 
-                (range.min <= this.max && this.max <= range.max) || 
-                (this.min >= range.min && this.max <= range.max) ||
-                (range.min >= this.min && range.max <= this.max);
+    public boolean canBeMergedWith(Range r) {
+        return min <= r.max && max >= r.min;
     }
-    
-    private static String RANGE_STRING = " - ";
     
     @Override
     public String toString() {
@@ -226,5 +186,4 @@ public class Range implements Comparable<Range>, Serializable {
             this.max = Math.max(min, Math.min(max, this.max));
         }
     }
-    
 }

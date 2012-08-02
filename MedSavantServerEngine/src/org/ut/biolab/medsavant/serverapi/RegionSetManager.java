@@ -31,6 +31,7 @@ import java.util.List;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import java.util.Collection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -164,13 +165,39 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
             conn.close();
         }
     }
-    public void addToRegionSet(String sessID, RegionSet set, int limit, int genomeID, String chrom, int start, int end, String desc) throws SQLException, RemoteException{
-        Connection conn = ConnectionController.connectPooled(sessID);
-        try{
-            InsertQuery query = MedSavantDatabase.RegionSetMembershipTableSchema.where(REGION_SET_ID, set.getID()).insert(GENOME_ID, genomeID, REGION_SET_ID, set.getID(), CHROM, chrom, START, start, END, end, DESCRIPTION, desc);
-            PreparedStatement stmt = conn.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
 
-            stmt.execute();
+    @Override
+    public GenomicRegion[] getRegionsInSets(String sessID, Collection<RegionSet> sets, int limit) throws SQLException {
+
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        
+        try {
+            List<Integer> ids = new ArrayList<Integer>(sets.size());
+            int maxRegions = 0;
+            for (RegionSet s: sets) {
+                ids.add(s.getID());
+                maxRegions += s.getSize();
+            }
+            SelectQuery query = MedSavantDatabase.RegionSetMembershipTableSchema.distinct().whereIn(REGION_SET_ID, ids).select(DESCRIPTION, CHROM, START, END);
+            ResultSet rs = conn.executeQuery(query.toString() + " LIMIT " + limit);
+
+            GenomicRegion[] result = new GenomicRegion[Math.min(maxRegions, limit)];
+            int i = 0;
+            while (rs.next()) {
+                result[i++] = new GenomicRegion(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4));
+            }
+            return result;
+        } finally {
+            conn.close();
+        }
+    }
+
+    @Override
+    public void addToRegionSet(String sessID, RegionSet set, int limit, int genomeID, String chrom, int start, int end, String desc) throws SQLException, RemoteException{
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        try{
+            InsertQuery query = MedSavantDatabase.RegionSetMembershipTableSchema.insert(GENOME_ID, genomeID, REGION_SET_ID, set.getID(), CHROM, chrom, START, start, END, end, DESCRIPTION, desc);
+            conn.executeUpdate(query.toString());
         } finally{
             conn.close();
         }

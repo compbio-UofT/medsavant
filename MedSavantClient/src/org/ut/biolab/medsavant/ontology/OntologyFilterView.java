@@ -74,19 +74,9 @@ public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
     }
 
     public static FilterState wrapState(String title, OntologyType ont, List<OntologyTerm> applied) {
-        Map<String, String> map = new HashMap<String, String>();
         String filterID = OntologyFilter.ontologyToFilterID(ont);
+        Map<String, String> map = wrapValues(applied);
         map.put("ontology", filterID);
-        if (applied != null && !applied.isEmpty()) {
-            String values = "";
-            for (int i = 0; i < applied.size(); i++) {
-                values += applied.get(i);
-                if (i != applied.size() - 1) {
-                    values += ";;;";
-                }
-            }
-            map.put("values", values);
-        }
         return new FilterState(Filter.Type.ONTOLOGY, title, filterID, map);
     }
 
@@ -97,21 +87,7 @@ public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
 
     @Override
     protected void applyFilter() {
-        applyButton.setEnabled(false);
-
-        appliedValues = new ArrayList<OntologyTerm>();
-
-        int[] indices = filterableList.getCheckBoxListSelectedIndices();
-        for (int i: indices) {
-            appliedValues.add((OntologyTerm)filterableList.getModel().getElementAt(i));
-        }
-
-        FilterController fc = FilterController.getInstance();
-        if (appliedValues.size() == availableValues.size()) {
-            fc.removeFilter(OntologyFilter.ontologyToFilterID(ontology), queryID);
-            return;
-        }
-
-        fc.addFilter(new OntologyFilter(appliedValues, ontology), queryID);
+        preapplyFilter();
+        FilterController.getInstance().addFilter(new OntologyFilter(appliedValues, ontology), queryID);
     }
 }

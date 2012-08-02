@@ -491,7 +491,7 @@ public class IndividualDetailedView extends DetailedView {
             patientIDs[i] = (Integer) items.get(i)[0];
         }
         if (items.isEmpty()) {
-                cp.setTitle("");
+            cp.setTitle("");
         } else {
             cp.setTitle("Multiple individuals (" + items.size() + ")");
         }

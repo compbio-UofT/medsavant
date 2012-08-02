@@ -19,15 +19,12 @@ package org.ut.biolab.medsavant.db;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import com.healthmarketscience.sqlbuilder.CreateTableQuery;
-import com.healthmarketscience.sqlbuilder.CustomSql;
-import com.healthmarketscience.sqlbuilder.DeleteQuery;
-import com.healthmarketscience.sqlbuilder.InsertQuery;
+import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
@@ -238,6 +235,21 @@ public class TableSchema implements Serializable {
         for (int i = 0; i < wheres.length; i += 2) {
             selectQuery.addCondition(BinaryConditionMS.equalTo(table.findColumn(((ColumnDef)wheres[i]).name), wheres[i + 1]));
         }
+        return this;
+    }
+    
+    /**
+     * Create a query object which will use the <code>IN</code> keyword to group all elements.
+     *
+     * @param ins collection of values for the <code>IN</code> clause
+     * @return <code>this</code>
+     */
+    public synchronized TableSchema whereIn(ColumnDef col, Collection ins) {
+        if (selectQuery == null) {
+            selectQuery = new SelectQuery(false);
+            selectQuery.addFromTable(table);
+        }
+        selectQuery.addCondition(new InCondition(table.findColumn(col.name), ins));
         return this;
     }
     

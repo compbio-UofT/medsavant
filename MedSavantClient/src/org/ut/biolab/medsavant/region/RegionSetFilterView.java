@@ -16,94 +16,52 @@
 
 package org.ut.biolab.medsavant.region;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 import com.healthmarketscience.sqlbuilder.Condition;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.filter.FilterController;
+import org.ut.biolab.medsavant.filter.*;
 import org.ut.biolab.medsavant.model.RegionSet;
-import org.ut.biolab.medsavant.filter.Filter;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.filter.FilterState;
-import org.ut.biolab.medsavant.filter.FilterView;
 
 
 /**
  *
  * @author mfiume
  */
-public class RegionSetFilterView extends FilterView {
-    private static final Log LOG = LogFactory.getLog(RegionSetFilterView.class);
+public class RegionSetFilterView extends TabularFilterView<RegionSet> {
 
     public static final String FILTER_NAME = "Region List";
     public static final String FILTER_ID = "region_list";
-    private static final String REGION_SET_NONE = "None";
 
     private final RegionController controller;
-    private Integer appliedID = null;
-
-    private JComboBox regionsCombo;
-    private JButton applyButton;
 
     public RegionSetFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
         this(queryID);
-        if (state.getValues().get("value") != null) {
-            applyFilter(Integer.parseInt(state.getValues().get("value")));
+        String values = state.getValues().get("values");
+        if (values != null) {
+            setFilterValues(Arrays.asList(values.split(";;;")));
         }
     }
 
     public RegionSetFilterView(int queryID) throws SQLException, RemoteException {
         super(FILTER_NAME, queryID);
         controller = RegionController.getInstance();
+        availableValues = new ArrayList<RegionSet>();
+        availableValues.addAll(Arrays.asList(controller.getRegionSets()));
+        initContentPanel();
 
-        setLayout(new GridBagLayout());
-
-        regionsCombo = new JComboBox();
-        populateCombo();
-
-        applyButton = new JButton("Apply");
-        applyButton.setEnabled(false);
-        applyButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                applyCurrentFilter();
-            }
-        });
-
-        regionsCombo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                applyButton.setEnabled(true);
-            }
-        });
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.weightx = 1.0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(regionsCombo, gbc);
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.EAST;
-        add(applyButton, gbc);
-        
         RegionController.getInstance().addListener(new Listener<RegionEvent>() {
             @Override
             public void handleEvent(RegionEvent event) {
-                regionsCombo.removeAllItems();
+                availableValues.clear();
                 try {
-                    populateCombo();
+                    availableValues.addAll(Arrays.asList(controller.getRegionSets()));
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Unable to populate region list: %s", ex);
                 }
@@ -111,53 +69,23 @@ public class RegionSetFilterView extends FilterView {
         });
     }
 
-    public final void applyFilter(int regionSetID) {
-        for (int i = 0; i < regionsCombo.getItemCount(); i++) {
-            if (regionsCombo.getItemAt(i) instanceof RegionSet && ((RegionSet)regionsCombo.getItemAt(i)).getID() == regionSetID) {
-                regionsCombo.setSelectedIndex(i);
-                applyCurrentFilter();
-                return;
-            }
-        }
-    }
-
-    private void populateCombo() throws SQLException, RemoteException {
-        RegionSet[] sets = controller.getRegionSets();
-        regionsCombo.addItem(REGION_SET_NONE);
-        for (RegionSet set: sets) {
-            regionsCombo.addItem(set);
-        }
-    }
-
-    public static FilterState wrapState(Integer applied) {
-        Map<String, String> map = new HashMap<String, String>();
-        if (applied != null) {
-            map.put("value", applied.toString());
-        }
-        return new FilterState(Filter.Type.REGION_LIST, FILTER_NAME, FILTER_ID, map);
+    public static FilterState wrapState(Collection<RegionSet> applied) {
+        return new FilterState(Filter.Type.REGION_LIST, FILTER_NAME, FILTER_ID, wrapValues(applied));
     }
 
     @Override
     public FilterState saveState() {
-        return wrapState(appliedID);
+        return wrapState(appliedValues);
     }
 
-    private void applyCurrentFilter() {
-        applyButton.setEnabled(false);
+    @Override
+    protected void applyFilter() {
+        preapplyFilter();
 
-        Filter f = new RegionSetFilter() {
-
+        FilterController.getInstance().addFilter(new RegionSetFilter() {
             @Override
             public Condition[] getConditions() throws SQLException, RemoteException {
-
-                if (regionsCombo.getSelectedItem().equals(REGION_SET_NONE)) {
-                    return new Condition[0];
-                }
-
-                RegionSet regionSet = (RegionSet)regionsCombo.getSelectedItem();
-                appliedID = regionSet.getID();
-
-                return getConditions(controller.getRegionsInSet(regionSet));
+                return getConditions(controller.getRegionsInSets(appliedValues));
             }
 
             @Override
@@ -170,8 +98,6 @@ public class RegionSetFilterView extends FilterView {
             public String getID() {
                 return FILTER_ID;
             }
-        };
-        LOG.info(String.format("Adding filter: %s.", f.getName()));
-        FilterController.getInstance().addFilter(f, queryID);
+        }, queryID);
     }
 }
