@@ -18,6 +18,7 @@ package org.ut.biolab.medsavant.patient;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -35,44 +36,16 @@ import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
  */
 public class PatientUtils {
 
-    public static JPopupMenu createPopup(final String familyId) {
+    public static JPopupMenu createPopup(final String famID) {
         JPopupMenu popupMenu = new JPopupMenu();
 
-        //Filter by patient
         JMenuItem filter1Item = new JMenuItem("Filter by Family");
-/* TODO:        filter1Item.addActionListener(new ActionListener() {
-
+        filter1Item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                List<String> dnaIds = new ArrayList<String>();
-                int numPatients = 0;
-                try {
-                    Map<String, String> patientIDToDNAIDMap = MedSavantClient.PatientManager.getDNAIDsForFamily(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), familyId);
-                    numPatients = patientIDToDNAIDMap.size();
-                    Object[] values = patientIDToDNAIDMap.values().toArray();
-                    for (Object o : values) {
-                        String[] d = ((String) o).split(",");
-                        for (String id : d) {
-                            if (!dnaIds.contains(id)) {
-                                dnaIds.add(id);
-                            }
-                        }
-                    }
-                } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Error getting DNA IDs for family: %s", ex);
-                }
-
-                DbColumn col = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID);
-                Condition[] conditions = new Condition[dnaIds.size()];
-                for (int i = 0; i < dnaIds.size(); i++) {
-                    conditions[i] = BinaryConditionMS.equalTo(col, dnaIds.get(i));
-                }
-                FilterUtils.createAndApplyGenericFixedFilter("Individuals - Filter by Family", numPatients + " Patient(s) (" + dnaIds.size() + " DNA Id(s))",
-                        ComboCondition.or(conditions));
-
+                GeneticsFilterPage.getSearchBar().loadFilters(StringListFilterView.wrapState(WhichTable.PATIENT, DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID, PatientFormat.ALIAS_OF_FAMILY_ID, Arrays.asList(famID)));
             }
-        });*/
+        });
         popupMenu.add(filter1Item);
 
         return popupMenu;
@@ -81,18 +54,17 @@ public class PatientUtils {
     /**
      * Create a popup to filter by patient IDs.
      *
-     * @param patientIDs
-     * @return 
+     * @param patIDs ids of selected patient(s)
      */
-    public static JPopupMenu createPopup(final int[] patientIDs) {
+    public static JPopupMenu createPopup(final int[] patIDs) {
         JPopupMenu popupMenu = new JPopupMenu();
 
-        JMenuItem filter1Item = new JMenuItem(String.format("<html>Filter by %s</html>", patientIDs.length == 1 ? "Patient <i>" + patientIDs[0] + "</i>" : "Selected Patients"));
+        JMenuItem filter1Item = new JMenuItem(String.format("<html>Filter by %s</html>", patIDs.length == 1 ? "Patient <i>" + patIDs[0] + "</i>" : "Selected Patients"));
         filter1Item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 List<String> patientIDStrings = new ArrayList<String>();
-                for (int id: patientIDs) {
+                for (int id: patIDs) {
                     patientIDStrings.add(Integer.toString(id));
                 }
                 GeneticsFilterPage.getSearchBar().loadFilters(StringListFilterView.wrapState(WhichTable.PATIENT, DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID, PatientFormat.ALIAS_OF_PATIENT_ID, patientIDStrings));
