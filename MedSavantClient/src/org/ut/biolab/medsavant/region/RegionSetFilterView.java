@@ -51,7 +51,7 @@ public class RegionSetFilterView extends TabularFilterView<RegionSet> {
         super(FILTER_NAME, queryID);
         controller = RegionController.getInstance();
         availableValues = new ArrayList<RegionSet>();
-        availableValues.addAll(Arrays.asList(controller.getRegionSets()));
+        availableValues.addAll(controller.getRegionSets());
         initContentPanel();
     }
 

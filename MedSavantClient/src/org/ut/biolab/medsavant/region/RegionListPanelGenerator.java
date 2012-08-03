@@ -119,9 +119,9 @@ public class RegionListPanelGenerator extends AggregatePanelGenerator {
                 }
             });
 
-            new MedSavantWorker<RegionSet[]>(pageName) {
+            new MedSavantWorker<List<RegionSet>>(pageName) {
                 @Override
-                protected RegionSet[] doInBackground() throws Exception {
+                protected List<RegionSet> doInBackground() throws Exception {
                     return RegionController.getInstance().getRegionSets();
                 }
 
@@ -129,7 +129,7 @@ public class RegionListPanelGenerator extends AggregatePanelGenerator {
                 protected void showProgress(double fraction) {}
 
                 @Override
-                protected void showSuccess(RegionSet[] result) {
+                protected void showSuccess(List<RegionSet> result) {
                     updateGeneListDropDown(result);
                 }
             }.execute();
@@ -341,7 +341,7 @@ public class RegionListPanelGenerator extends AggregatePanelGenerator {
             incrementProgress();
         }
 
-        public void updateGeneListDropDown(RegionSet[] geneLists) {
+        public void updateGeneListDropDown(List<RegionSet> geneLists) {
             for (RegionSet genel : geneLists) {
                 regionsCombo.addItem(genel);
             }
@@ -353,8 +353,8 @@ public class RegionListPanelGenerator extends AggregatePanelGenerator {
                 aggregator.cancel(true);
             }
 
-            this.numbersRetrieved = 0;
-            this.updateProgess();
+            numbersRetrieved = 0;
+            updateProgess();
 
             showWaitCard();
 
@@ -363,7 +363,7 @@ public class RegionListPanelGenerator extends AggregatePanelGenerator {
 
                 @Override
                 protected GenomicRegion[] doInBackground() throws Exception {
-                    return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, regionSet, limit);
+                    return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, regionSet, limit).toArray(new GenomicRegion[0]);
                 }
 
                 @Override

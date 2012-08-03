@@ -51,7 +51,7 @@ public class RegionPage extends SubSectionView {
                 new SimpleDetailedListModel("Region List") {
                     @Override
                     public RegionSet[] getData() throws Exception {
-                        return controller.getRegionSets();
+                        return controller.getRegionSets().toArray(new RegionSet[0]);
                     }
                 },
                 new RegionDetailedView(),

@@ -19,6 +19,7 @@ package org.ut.biolab.medsavant.region;
 import org.ut.biolab.medsavant.filter.Filter;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +39,7 @@ import org.ut.biolab.medsavant.util.BinaryConditionMS;
  */
 public abstract class RegionSetFilter extends Filter {
     
-    protected Condition[] getConditions(GenomicRegion[] regions) throws SQLException, RemoteException {
+    protected Condition[] getConditions(Collection<GenomicRegion> regions) throws SQLException, RemoteException {
 
         Map<String, List<Range>> rangeMap = GenomicRegion.mergeGenomicRegions(regions);
         

@@ -44,11 +44,15 @@ import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.Range;
+import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.model.VariantComment;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.region.RegionController;
+import org.ut.biolab.medsavant.region.RegionSetFilterView;
 import org.ut.biolab.medsavant.util.*;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
@@ -208,65 +212,68 @@ public class TablePanel extends JLayeredPane {
                             return;
                         }
 
-                        int rowToFetch = stp.getTable().getSelectedRows()[0];
+                        int[] selRows = stp.getTable().getSelectedRows();
+                        if (selRows.length > 0) {
+                            int rowToFetch = selRows[0];
 
-                        int uploadID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID);
-                        int fileID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_FILE_ID);
-                        int variantID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_VARIANT_ID);
+                            int uploadID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID);
+                            int fileID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_FILE_ID);
+                            int variantID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_VARIANT_ID);
 
-                        DbColumn uIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID);
-                        DbColumn fIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID);
-                        DbColumn vIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID);
+                            DbColumn uIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID);
+                            DbColumn fIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID);
+                            DbColumn vIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID);
 
-                        Condition[][] conditions = new Condition[1][3];
-                        conditions[0][0] = BinaryConditionMS.equalTo(uIDcol, uploadID);
-                        conditions[0][1] = BinaryConditionMS.equalTo(fIDcol, fileID);
-                        conditions[0][2] = BinaryConditionMS.equalTo(vIDcol, variantID);
+                            Condition[][] conditions = new Condition[1][3];
+                            conditions[0][0] = BinaryConditionMS.equalTo(uIDcol, uploadID);
+                            conditions[0][1] = BinaryConditionMS.equalTo(fIDcol, fileID);
+                            conditions[0][2] = BinaryConditionMS.equalTo(vIDcol, variantID);
 
 
-                        List<Object[]> rows;
-                        try {
-                            rows = MedSavantClient.VariantManager.getVariants(
-                                    LoginController.sessionId,
-                                    ProjectController.getInstance().getCurrentProjectID(),
-                                    ReferenceController.getInstance().getCurrentReferenceID(),
-                                    conditions,
-                                    0, 1);
+                            List<Object[]> rows;
+                            try {
+                                rows = MedSavantClient.VariantManager.getVariants(
+                                        LoginController.sessionId,
+                                        ProjectController.getInstance().getCurrentProjectID(),
+                                        ReferenceController.getInstance().getCurrentReferenceID(),
+                                        conditions,
+                                        0, 1);
 
-                        } catch (Exception ex) {
-                            DialogUtils.displayError("Error", "There was a problem retriving variant results");
-                            return;
-                        }
+                            } catch (Exception ex) {
+                                DialogUtils.displayError("Error", "There was a problem retriving variant results");
+                                return;
+                            }
 
-                        Object[] row = rows.get(0);
+                            Object[] row = rows.get(0);
 
-                        VariantRecord r = new VariantRecord(
-                                (Integer)   row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID],
-                                (Integer)   row[DefaultVariantTableSchema.INDEX_OF_FILE_ID],
-                                (Integer)   row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID],
-                                (Integer)   ReferenceController.getInstance().getCurrentReferenceID(),
-                                (Integer)   0, // pipeline ID
-                                (String)    row[DefaultVariantTableSchema.INDEX_OF_DNA_ID],
-                                (String)    row[DefaultVariantTableSchema.INDEX_OF_CHROM],
-                                (Integer)   row[DefaultVariantTableSchema.INDEX_OF_POSITION], // TODO: this should be a long
-                                (String)    row[DefaultVariantTableSchema.INDEX_OF_DBSNP_ID],
-                                (String)    row[DefaultVariantTableSchema.INDEX_OF_REF],
-                                (String)    row[DefaultVariantTableSchema.INDEX_OF_ALT],
-                                (Float)     row[DefaultVariantTableSchema.INDEX_OF_QUAL],
-                                (String)    row[DefaultVariantTableSchema.INDEX_OF_FILTER],
-                                (String)    row[DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO],
-                                new Object[]{});
+                            VariantRecord r = new VariantRecord(
+                                    (Integer)   row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID],
+                                    (Integer)   row[DefaultVariantTableSchema.INDEX_OF_FILE_ID],
+                                    (Integer)   row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID],
+                                    (Integer)   ReferenceController.getInstance().getCurrentReferenceID(),
+                                    (Integer)   0, // pipeline ID
+                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_DNA_ID],
+                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_CHROM],
+                                    (Integer)   row[DefaultVariantTableSchema.INDEX_OF_POSITION], // TODO: this should be a long
+                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_DBSNP_ID],
+                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_REF],
+                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_ALT],
+                                    (Float)     row[DefaultVariantTableSchema.INDEX_OF_QUAL],
+                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_FILTER],
+                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO],
+                                    new Object[]{});
 
-                        String type = (String)row[DefaultVariantTableSchema.INDEX_OF_VARIANT_TYPE];
-                        String zygosity = (String)row[DefaultVariantTableSchema.INDEX_OF_ZYGOSITY];
-                        String genotype = ((String)row[DefaultVariantTableSchema.INDEX_OF_GT]);
+                            String type = (String)row[DefaultVariantTableSchema.INDEX_OF_VARIANT_TYPE];
+                            String zygosity = (String)row[DefaultVariantTableSchema.INDEX_OF_ZYGOSITY];
+                            String genotype = ((String)row[DefaultVariantTableSchema.INDEX_OF_GT]);
 
-                        r.setType(VariantRecord.VariantType.valueOf(type));
-                        r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
-                        r.setGenotype(genotype);
+                            r.setType(VariantRecord.VariantType.valueOf(type));
+                            r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
+                            r.setGenotype(genotype);
 
-                        for (VariantSelectionChangedListener l : listeners) {
-                            l.variantSelectionChanged(r);
+                            for (VariantSelectionChangedListener l : listeners) {
+                                l.variantSelectionChanged(r);
+                            }
                         }
                     }
                 });
@@ -293,7 +300,7 @@ public class TablePanel extends JLayeredPane {
                             JPopupMenu popup = createPopupSingle();
                             popup.show(e.getComponent(), e.getX(), e.getY());
                         } else if (numSelected > 1) {
-                            JPopupMenu popup = createPopupMultiple(table);
+                            JPopupMenu popup = createPopupMultiple();
                             popup.show(e.getComponent(), e.getX(), e.getY());
                         }
                     }
@@ -323,7 +330,7 @@ public class TablePanel extends JLayeredPane {
 
     private void showWaitCard() {
         waitPanel.setVisible(true);
-        this.setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
+        setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
         waitPanel.repaint();
     }
 
@@ -411,8 +418,31 @@ public class TablePanel extends JLayeredPane {
         }
     }
 
-    private JPopupMenu createPopupMultiple(SortableTable table) {
+    private JPopupMenu createPopupMultiple() {
         JPopupMenu menu = new JPopupMenu();
+
+        JMenuItem posItem = new JMenuItem("Filter by Selected Positions");
+        posItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                ThreadController.getInstance().cancelWorkers(pageName);
+
+                List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
+                TableModel model = tablePanel.getTable().getModel();
+                int[] selRows = TableModelWrapperUtils.getActualRowsAt(model, tablePanel.getTable().getSelectedRows(), false);
+                for (int r: selRows) {
+                    String chrom = (String)model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
+                    int pos = (Integer)model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
+                    regions.add(new GenomicRegion(null, chrom, pos, pos));
+                }
+                
+                RegionSet r = RegionController.getInstance().createAdHocRegionSet(regions);
+                GeneticsFilterPage.getSearchBar().loadFilters(RegionSetFilterView.wrapState(Arrays.asList(r)));
+            }
+            
+        });
+        menu.add(posItem);
+
         return menu;
     }
 

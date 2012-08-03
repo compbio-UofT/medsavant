@@ -36,9 +36,6 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-import java.awt.Component;
-import java.awt.Container;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -47,6 +44,7 @@ import org.ut.biolab.medsavant.importing.BEDFormat;
 import org.ut.biolab.medsavant.importing.FileFormat;
 import org.ut.biolab.medsavant.importing.ImportFilePanel;
 import org.ut.biolab.medsavant.model.GeneSet;
+import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.GeneFetcher;
@@ -246,34 +244,33 @@ public class RegionWizard extends WizardDialog {
             private JProgressBar progressBar;
             private JButton settingsButton;
             {    
-                  addText("Query GeneMANIA for Related Genes");
-                  addComponent(selectedGenesPanel);
-                  progressBar = new JProgressBar();
-                  progressBar.setVisible(false);
-                  addComponent(progressBar);
-                  genemaniaButton = new JButton ("Recommend");
-                  settingsButton = new JButton("Settings");
-                  genemaniaButton.addActionListener(new ActionListener(){
-                      public void actionPerformed(ActionEvent e){
-                          genemaniaButton.setEnabled(false);
-                          settingsButton.setEnabled(false);
-                          fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
-                          progressBar.setVisible(true);
-                          progressBar.setIndeterminate(true);
-                          
-                      }
-                  });
-                  addComponent(genemaniaButton); 
-                  addComponent(ViewUtil.alignRight(settingsButton));
-                  
+                addText("Query GeneMANIA for Related Genes");
+                addComponent(selectedGenesPanel);
+                progressBar = new JProgressBar();
+                progressBar.setVisible(false);
+                addComponent(progressBar);
+                genemaniaButton = new JButton ("Recommend");
+                settingsButton = new JButton("Settings");
+                genemaniaButton.addActionListener(new ActionListener(){
+                    @Override
+                    public void actionPerformed(ActionEvent e){
+                        genemaniaButton.setEnabled(false);
+                        settingsButton.setEnabled(false);
+                        fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
+                        progressBar.setVisible(true);
+                        progressBar.setIndeterminate(true);
+                    }
+                });
+                addComponent(genemaniaButton); 
+                addComponent(ViewUtil.alignRight(settingsButton));
             }
         
-        @Override
-        public void setupWizardButtons(){
+            @Override
+            public void setupWizardButtons(){
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
-        }
+            }
         };
     }
 
@@ -352,11 +349,13 @@ public class RegionWizard extends WizardDialog {
 
     private boolean validateListName() {
         try {
-            boolean dup = ArrayUtils.contains(controller.getRegionSets(), listName);
-            if (dup) {
-                DialogUtils.displayError("Error", "List name already in use.");
+            for (RegionSet r: controller.getRegionSets()) {
+                if (r.getName().equals(listName)) {
+                    DialogUtils.displayError("Error", "List name already in use.");
+                    return false;
+                }
             }
-            return !dup;
+            return true;
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error fetching region list: %s", ex);
             return false;

@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.healthmarketscience.sqlbuilder.Condition;
-import java.util.Map;
+import java.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -68,10 +68,10 @@ public class OntologyFilter extends RegionSetFilter {
                 }
             }
         }
-        GenomicRegion[] regions = new GenomicRegion[genes.size()];
+        List<GenomicRegion> regions = new ArrayList<GenomicRegion>(genes.size());
         int i = 0;
         for (Gene g: genes) {
-            regions[i++] = new GenomicRegion(g.getName(), g.getChrom(), g.getStart(), g.getEnd());
+            regions.add(new GenomicRegion(g.getName(), g.getChrom(), g.getStart(), g.getEnd()));
         }
         return getConditions(regions);
     }

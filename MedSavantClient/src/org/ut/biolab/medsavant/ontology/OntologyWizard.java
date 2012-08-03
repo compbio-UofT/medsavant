@@ -16,10 +16,7 @@
 package org.ut.biolab.medsavant.ontology;
 
 import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.net.URL;
 import java.rmi.RemoteException;
@@ -34,7 +31,6 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-import java.awt.event.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -42,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.model.Ontology;
 import org.ut.biolab.medsavant.model.OntologyType;
 import org.ut.biolab.medsavant.serverapi.OntologyManagerAdapter;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -266,11 +263,13 @@ public class OntologyWizard extends WizardDialog {
 
     private boolean validateName() {
         try {
-            boolean dup = ArrayUtils.contains(MedSavantClient.OntologyManager.getOntologies(LoginController.sessionId), name);
-            if (dup) {
-                DialogUtils.displayError("Error", "Ontology name already in use.");
+            for (Ontology ont: MedSavantClient.OntologyManager.getOntologies(LoginController.sessionId)) {
+                if (ont.getName().equals(name)) {
+                    DialogUtils.displayError("Error", "Ontology name already in use.");
+                    return false;
+                }
             }
-            return !dup;
+            return true;
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error fetching ontology list: %s", ex);
             return false;

@@ -19,9 +19,9 @@ package org.ut.biolab.medsavant.region;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.*;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
-import java.util.Collection;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.importing.FileFormat;
@@ -39,6 +39,8 @@ import org.ut.biolab.medsavant.util.Controller;
  */
 public class RegionController extends Controller<RegionEvent> {
     private static RegionController instance;
+    
+    private List<AdHocRegionSet> localRegionSets = new ArrayList<AdHocRegionSet>();
 
     public static RegionController getInstance() {
         if (instance == null) {
@@ -57,20 +59,61 @@ public class RegionController extends Controller<RegionEvent> {
         fireEvent(new RegionEvent(RegionEvent.Type.REMOVED));
     }
 
-    public RegionSet[] getRegionSets() throws SQLException, RemoteException {
-        return MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId);
+    public List<RegionSet> getRegionSets() throws SQLException, RemoteException {
+        List<RegionSet> result = new ArrayList<RegionSet>();
+        result.addAll(MedSavantClient.RegionSetManager.getRegionSets(LoginController.sessionId));
+        result.addAll(localRegionSets);
+        return result;
     }
 
-    public GenomicRegion[] getRegionsInSet(RegionSet set) throws SQLException, RemoteException {
+    public List<GenomicRegion> getRegionsInSet(RegionSet set) throws SQLException, RemoteException {
+        if (set instanceof AdHocRegionSet) {
+            return ((AdHocRegionSet)set).regions;
+        }
         return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, set, Integer.MAX_VALUE);
     }
     
-    public GenomicRegion[] getRegionsInSets(Collection<RegionSet> sets) throws SQLException, RemoteException {
-        return MedSavantClient.RegionSetManager.getRegionsInSets(LoginController.sessionId, sets, Integer.MAX_VALUE);
+    public List<GenomicRegion> getRegionsInSets(Collection<RegionSet> sets) throws SQLException, RemoteException {
+        List<GenomicRegion> result = new ArrayList<GenomicRegion>();
+        for (AdHocRegionSet r: localRegionSets) {
+            if (sets.contains(r)) {
+                result.addAll(r.regions);
+                sets.remove(r);
+            }
+        }
+        if (!sets.isEmpty()) {
+            result.addAll(MedSavantClient.RegionSetManager.getRegionsInSets(LoginController.sessionId, sets, Integer.MAX_VALUE));
+        }
+        return result;
     }
     
     public void addToRegionSet(RegionSet set, String chrom, int start, int end, String desc) throws SQLException, RemoteException{
         MedSavantClient.RegionSetManager.addToRegionSet(LoginController.sessionId, set, Integer.MAX_VALUE, ReferenceController.getInstance().getCurrentReferenceID(), chrom, start, end, desc);
         fireEvent(new RegionEvent(RegionEvent.Type.ADDED));
+    }
+    
+    /**
+     * Create a region-set which wraps the given regions.  Right, we only need one ad hoc region-set to exist at a time.
+     *
+     * @param r the regions to be wrapped
+     */
+    public RegionSet createAdHocRegionSet(List<GenomicRegion> r) {
+        localRegionSets.clear();    // There can be only one.
+        AdHocRegionSet result = new AdHocRegionSet(r);
+        localRegionSets.add(result);
+        fireEvent(new RegionEvent(RegionEvent.Type.ADDED));
+        return result;
+    }
+
+    /**
+     * Class which wraps up a collection of GenomicRegions and makes them look like a RegionSet.
+     */
+    private class AdHocRegionSet extends RegionSet {
+        final List<GenomicRegion> regions;
+
+        AdHocRegionSet(List<GenomicRegion> r) {
+            super(-1, "Ad Hoc Region Set", r.size());
+            regions = r;
+        }
     }
 }

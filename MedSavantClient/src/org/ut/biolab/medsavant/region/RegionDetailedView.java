@@ -17,14 +17,13 @@ package org.ut.biolab.medsavant.region;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
+import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ut.biolab.medsavant.cohort.CohortFilterView;
 
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
@@ -51,10 +50,10 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
 
     @Override
     public MedSavantWorker createWorker() {
-        return new MedSavantWorker<GenomicRegion[]>("") {
+        return new MedSavantWorker<List<GenomicRegion>>("") {
 
             @Override
-            protected GenomicRegion[] doInBackground() throws Exception {
+            protected List<GenomicRegion> doInBackground() throws Exception {
                 return controller.getRegionsInSet(selected.get(0));
             }
 
@@ -63,10 +62,10 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
             }
 
             @Override
-            protected void showSuccess(GenomicRegion[] result) {
-                Object[][] list = new Object[result.length][];
-                for (int i = 0; i < result.length; i++) {
-                    GenomicRegion r = result[i];
+            protected void showSuccess(List<GenomicRegion> result) {
+                Object[][] list = new Object[result.size()][];
+                for (int i = 0; i < result.size(); i++) {
+                    GenomicRegion r = result.get(i);
                     list[i] = new Object[] { r.getName(), r.getChrom(), r.getStart(), r.getEnd() };
                 }
                 setData(list);
