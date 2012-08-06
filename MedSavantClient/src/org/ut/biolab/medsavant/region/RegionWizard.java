@@ -36,6 +36,8 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
+import java.awt.*;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -240,38 +242,54 @@ public class RegionWizard extends WizardDialog {
 
     private AbstractWizardPage getRecommendPage(){
         return new DefaultWizardPage(PAGENAME_RECOMMEND){
-            private JButton genemaniaButton;
-            private JProgressBar progressBar;
-            private JButton settingsButton;
-            {    
-                addText("Query GeneMANIA for Related Genes");
-                addComponent(selectedGenesPanel);
-                progressBar = new JProgressBar();
-                progressBar.setVisible(false);
-                addComponent(progressBar);
-                genemaniaButton = new JButton ("Recommend");
-                settingsButton = new JButton("Settings");
-                genemaniaButton.addActionListener(new ActionListener(){
-                    @Override
-                    public void actionPerformed(ActionEvent e){
-                        genemaniaButton.setEnabled(false);
-                        settingsButton.setEnabled(false);
-                        fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
-                        progressBar.setVisible(true);
-                        progressBar.setIndeterminate(true);
-                    }
-                });
-                addComponent(genemaniaButton); 
-                addComponent(ViewUtil.alignRight(settingsButton));
+            {
+                
+                addComponent(getRecommendTabbedPane());
+                
             }
         
-            @Override
-            public void setupWizardButtons(){
+        @Override
+        public void setupWizardButtons(){ 
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.NEXT);
             }
         };
+    }
+    
+    private JTabbedPane getRecommendTabbedPane(){
+        JTabbedPane tabbedPane = new JTabbedPane();
+        JPanel card1 = new JPanel();
+        final JButton genemaniaButton;
+        final JProgressBar progressBar;
+        final JButton settingsButton;
+
+        card1.add(new JLabel("Query GeneMANIA for Related Genes"));
+        card1.add(selectedGenesPanel);
+        progressBar = new JProgressBar();
+        progressBar.setVisible(false);
+        card1.add(progressBar);
+        genemaniaButton = new JButton("Recommend");
+        settingsButton = new JButton("Settings");
+        genemaniaButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                genemaniaButton.setEnabled(false);
+                settingsButton.setEnabled(false);
+                //fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
+                progressBar.setVisible(true);
+                progressBar.setIndeterminate(true);
+
+            }
+        });
+        card1.add(genemaniaButton);
+        card1.add(ViewUtil.alignRight(settingsButton));
+        JPanel card2 = new JPanel();
+        card2.add(new JLabel("Select genes from recommended genes list"));
+        tabbedPane.addTab("Query genes", card1);
+        tabbedPane.addTab("Select genes", card2);
+        return tabbedPane;
+            
     }
 
     private AbstractWizardPage getCreationPage() {
