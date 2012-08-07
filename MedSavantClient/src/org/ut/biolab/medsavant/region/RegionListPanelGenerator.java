@@ -73,7 +73,7 @@ public class RegionListPanelGenerator extends AggregatePanelGenerator {
         private MedSavantWorker aggregator;
         private final TreeMap<GenomicRegion, Integer> regionToVariantCountMap;
         private SearchableTablePanel stp;
-        private GenomicRegion[] currentRegions;
+        private List<GenomicRegion> currentRegions;
         private final TreeMap<GenomicRegion, Integer> regionToIndividualCountMap;
         private final JProgressBar progress;
 
@@ -154,8 +154,8 @@ public class RegionListPanelGenerator extends AggregatePanelGenerator {
 
                     try {
                         //compute variant field
-                        for (int i = 0; i < Math.min(currentRegions.length, limit); i++) {
-                            GenomicRegion r = currentRegions[i];
+                        for (int i = 0; i < Math.min(currentRegions.size(), limit); i++) {
+                            GenomicRegion r = currentRegions.get(i);
                             int recordsInRegion = MedSavantClient.VariantManager.getVariantCountInRange(
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectID(),
@@ -178,8 +178,8 @@ public class RegionListPanelGenerator extends AggregatePanelGenerator {
 
                     //compute patient field
                     try {
-                        for (int i = 0; i < Math.min(currentRegions.length, limit); i++) {
-                            GenomicRegion r = currentRegions[i];
+                        for (int i = 0; i < Math.min(currentRegions.size(), limit); i++) {
+                            GenomicRegion r = currentRegions.get(i);
                             int recordsInRegion = MedSavantClient.VariantManager.getPatientCountWithVariantsInRange(
                                     LoginController.sessionId,
                                     ProjectController.getInstance().getCurrentProjectID(),
@@ -205,7 +205,7 @@ public class RegionListPanelGenerator extends AggregatePanelGenerator {
 
                 @Override
                 public int getTotalNum() {
-                    return currentRegions.length;
+                    return currentRegions.size();
                 }
 
                 @Override
@@ -304,7 +304,7 @@ public class RegionListPanelGenerator extends AggregatePanelGenerator {
 
         }
 
-        private void initGeneTable(GenomicRegion[] genes) {
+        private void initGeneTable(List<GenomicRegion> genes) {
             this.currentRegions = genes;
             updateGeneTable();
         }
@@ -359,18 +359,18 @@ public class RegionListPanelGenerator extends AggregatePanelGenerator {
             showWaitCard();
 
             progress.setString("Getting regions for " + regionSet);
-            aggregator = new MedSavantWorker<GenomicRegion[]>(pageName) {
+            aggregator = new MedSavantWorker<List<GenomicRegion>>(pageName) {
 
                 @Override
-                protected GenomicRegion[] doInBackground() throws Exception {
-                    return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, regionSet, limit).toArray(new GenomicRegion[0]);
+                protected List<GenomicRegion> doInBackground() throws Exception {
+                    return RegionController.getInstance().getRegionsInSet(regionSet, limit);
                 }
 
                 @Override
                 protected void showProgress(double fraction) {}
 
                 @Override
-                protected void showSuccess(GenomicRegion[] result) {
+                protected void showSuccess(List<GenomicRegion> result) {
                     initGeneTable(result);
                 }
             };

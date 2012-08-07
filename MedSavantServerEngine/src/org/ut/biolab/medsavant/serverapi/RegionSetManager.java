@@ -127,7 +127,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public RegionSet[] getRegionSets(String sessID) throws SQLException {
+    public List<RegionSet> getRegionSets(String sessID) throws SQLException {
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         
@@ -139,14 +139,14 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
             while (rs.next()) {
                 result.add(new RegionSet(rs.getInt(1), rs.getString(2), rs.getInt(3)));
             }
-            return result.toArray(new RegionSet[0]);
+            return result;
         } finally {
             conn.close();
         }
     }
 
     @Override
-    public GenomicRegion[] getRegionsInSet(String sessID, RegionSet set, int limit) throws SQLException {
+    public List<GenomicRegion> getRegionsInSet(String sessID, RegionSet set, int limit) throws SQLException {
 
         Connection conn = ConnectionController.connectPooled(sessID);
         
@@ -155,10 +155,9 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
             LOG.info("getRegionsInSet(" + set.getName() + "): " + query);
             ResultSet rs = conn.createStatement().executeQuery(query.toString() + " LIMIT " + limit);
 
-            GenomicRegion[] result = new GenomicRegion[Math.min(set.getSize(), limit)];
-            int i = 0;
+            List<GenomicRegion> result = new ArrayList<GenomicRegion>();
             while (rs.next()) {
-                result[i++] = new GenomicRegion(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4));
+                result.add(new GenomicRegion(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4)));
             }
             return result;
         } finally {
@@ -167,7 +166,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public GenomicRegion[] getRegionsInSets(String sessID, Collection<RegionSet> sets, int limit) throws SQLException {
+    public List<GenomicRegion> getRegionsInSets(String sessID, Collection<RegionSet> sets, int limit) throws SQLException {
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         
@@ -181,10 +180,9 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
             SelectQuery query = MedSavantDatabase.RegionSetMembershipTableSchema.distinct().whereIn(REGION_SET_ID, ids).select(DESCRIPTION, CHROM, START, END);
             ResultSet rs = conn.executeQuery(query.toString() + " LIMIT " + limit);
 
-            GenomicRegion[] result = new GenomicRegion[Math.min(maxRegions, limit)];
-            int i = 0;
+            List<GenomicRegion> result = new ArrayList<GenomicRegion>();
             while (rs.next()) {
-                result[i++] = new GenomicRegion(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4));
+                result.add(new GenomicRegion(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getInt(4)));
             }
             return result;
         } finally {

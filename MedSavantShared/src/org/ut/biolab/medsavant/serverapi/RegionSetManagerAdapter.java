@@ -21,6 +21,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 
@@ -38,9 +39,9 @@ public interface RegionSetManagerAdapter extends Remote {
     public void addRegionSet(String sessID, String regionSetName, int genomeID, RemoteInputStream fileStream, char delim, FileFormat fileFormat, int numHeaderLines) throws IOException, SQLException, RemoteException;
     public void removeRegionSet(String sessID, int regionSetID) throws SQLException, RemoteException;
 
-    public RegionSet[] getRegionSets(String sessID) throws SQLException, RemoteException;
-    public GenomicRegion[] getRegionsInSet(String sessID, RegionSet set, int limit) throws SQLException, RemoteException;
-    public GenomicRegion[] getRegionsInSets(String sessID, Collection<RegionSet> sets, int limit) throws SQLException, RemoteException;
+    public List<RegionSet> getRegionSets(String sessID) throws SQLException, RemoteException;
+    public List<GenomicRegion> getRegionsInSet(String sessID, RegionSet set, int limit) throws SQLException, RemoteException;
+    public List<GenomicRegion> getRegionsInSets(String sessID, Collection<RegionSet> sets, int limit) throws SQLException, RemoteException;
 
     public void addToRegionSet(String sessID, RegionSet set, int limit, int genomeID, String chrom, int start, int end, String desc) throws SQLException, RemoteException;
 }

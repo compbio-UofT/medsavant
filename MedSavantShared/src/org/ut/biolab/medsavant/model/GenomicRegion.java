@@ -17,11 +17,10 @@
 package org.ut.biolab.medsavant.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import org.ut.biolab.medsavant.util.ChromosomeComparator;
+
 
 /**
  *
@@ -57,7 +56,7 @@ public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
         return end;
     }
     
-    public static Map<String, List<Range>> mergeGenomicRegions(GenomicRegion[] regions) {
+    public static Map<String, List<Range>> mergeGenomicRegions(Collection<GenomicRegion> regions) {
         
         //separate by chr
         Map<String, List<Range>> chrMap = new HashMap<String, List<Range>>();

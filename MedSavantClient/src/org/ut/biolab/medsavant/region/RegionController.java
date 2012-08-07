@@ -66,11 +66,11 @@ public class RegionController extends Controller<RegionEvent> {
         return result;
     }
 
-    public List<GenomicRegion> getRegionsInSet(RegionSet set) throws SQLException, RemoteException {
+    public List<GenomicRegion> getRegionsInSet(RegionSet set, int limit) throws SQLException, RemoteException {
         if (set instanceof AdHocRegionSet) {
             return ((AdHocRegionSet)set).regions;
         }
-        return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, set, Integer.MAX_VALUE);
+        return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, set, limit);
     }
     
     public List<GenomicRegion> getRegionsInSets(Collection<RegionSet> sets) throws SQLException, RemoteException {
