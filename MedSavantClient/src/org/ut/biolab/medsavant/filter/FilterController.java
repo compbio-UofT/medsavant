@@ -89,6 +89,12 @@ public class FilterController extends Controller<FilterEvent> {
         return instance;
     }
 
+    @Override
+    public void fireEvent(FilterEvent evt) {
+        filterSetID++;
+        super.fireEvent(evt);
+    }
+
     public void addFilter(Filter filter, int queryID) {
         if (filterMap.get(queryID) == null) {
             filterMap.put(queryID, new TreeMap<String, Filter>());

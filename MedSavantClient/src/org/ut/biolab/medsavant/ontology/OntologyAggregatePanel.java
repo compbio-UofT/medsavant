@@ -319,7 +319,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
                     bar.setVisible(true);
                 } else {
                     double prog = 1.0 - (double)node.uncountedGenes.size() / node.totalGenes;
-                    label.setText("> " + val);
+                    label.setText("≥ " + val);
                     bar.setIndeterminate(false);
                     bar.setValue((int)(prog * 100.0));
                     bar.setString(String.format("%.1f%%", prog * 100.0));

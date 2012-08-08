@@ -40,8 +40,7 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
 public class GeneticsChartPage extends SubSectionView {
 
     private JPanel panel;
-    //private ChartContainer cc;
-    private ChartView cc;
+    private ChartView chartView;
     private boolean isLoaded = false;
 
     public GeneticsChartPage(SectionView parent) {
@@ -74,7 +73,7 @@ public class GeneticsChartPage extends SubSectionView {
             if (panel == null || update) {
                 setPanel();
             }
-            cc.updateIfRequired();
+            chartView.updateIfRequired();
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error creating chart view: %s", ex);
         }
@@ -89,8 +88,8 @@ public class GeneticsChartPage extends SubSectionView {
         //PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true,400);
         //panel.add(detailView, BorderLayout.WEST);
 
-        cc = new ChartView(getName());
-        panel.add(cc, BorderLayout.CENTER);
+        chartView = new ChartView(getName());
+        panel.add(chartView, BorderLayout.CENTER);
     }
 
     @Override
@@ -124,10 +123,10 @@ public class GeneticsChartPage extends SubSectionView {
     }
 
     private void tryUpdate() {
-        if (cc != null) {
-            cc.setUpdateRequired(true);
+        if (chartView != null) {
+            chartView.setUpdateRequired(true);
             if (isLoaded) {
-                cc.updateIfRequired();
+                chartView.updateIfRequired();
             }
         }
     }

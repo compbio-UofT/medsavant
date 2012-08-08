@@ -41,6 +41,7 @@ import org.ut.biolab.medsavant.view.subview.SubSectionViewCollection;
 public class GeneticsSection extends SectionView {
 
     public static boolean isInitialized = false;
+    private JPanel[] persistencePanels;
 
     public GeneticsSection() {
         getSectionMenuComponents(); // force banner to be active, in turn forcing default reference selection
@@ -53,9 +54,8 @@ public class GeneticsSection extends SectionView {
 
     @Override
     public SubSectionView[] getSubSections() {
-        SubSectionView[] pages = new SubSectionView[4];
 
-        SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this,"Plugins");
+        SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this, "Plugins");
 
         PluginController pc = PluginController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
@@ -73,12 +73,10 @@ public class GeneticsSection extends SectionView {
         };
     }
 
-    JPanel[] persistencePanels;
-
     @Override
     public JPanel[] getPersistentPanels() {
         if (persistencePanels == null) {
-            persistencePanels =  new JPanel[] {
+            persistencePanels = new JPanel[] {
                 new GeneticsFilterPage(this).getView(true)
             };
         }
