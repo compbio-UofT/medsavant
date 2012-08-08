@@ -20,19 +20,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
-import java.awt.event.KeyAdapter;
-import java.awt.event.MouseAdapter;
-import javax.swing.border.Border;
 
 import com.jidesoft.grid.*;
 import org.apache.commons.logging.Log;
@@ -68,7 +62,7 @@ public class SearchableTablePanel extends JPanel {
     private int numRowsPerPage = ROWSPERPAGE_2;
     private final JComboBox rowsPerPageDropdown;
     private JTextField rowsRetrievedBox;
-    private int DEFAULT_ROWS_RETRIEVED = 1000;
+    private int defaultRowsRetrieved = 1000;
     private static final int MAX_ROWS_RETRIEVED = 100000;
     private List<Object[]> data;
     private String[] columnNames;
@@ -99,8 +93,11 @@ public class SearchableTablePanel extends JPanel {
     }
 
     private synchronized void updateView(boolean newData) {
-        if (worker != null) worker.cancel(true);
-        (worker = new GetDataSwingWorker(pageName, newData)).execute();
+        if (worker != null) {
+            worker.cancel(true);
+        }
+        worker = new GetDataSwingWorker(pageName, newData);
+        worker.execute();
     }
 
     public void setTableHeaderVisible(boolean b) {
@@ -121,7 +118,7 @@ public class SearchableTablePanel extends JPanel {
         this.exportButton.setVisible(b);
     }
 
-    private class GetDataSwingWorker extends MedSavantWorker {
+    private class GetDataSwingWorker extends MedSavantWorker<List<Object[]>> {
 
         boolean update;
 
@@ -145,83 +142,96 @@ public class SearchableTablePanel extends JPanel {
         }
 
         @Override
-        protected void showSuccess(Object result) {
-            List<Object[]> pageData = (List<Object[]>)result;
-            applyData(pageData);
+        protected void showSuccess(List<Object[]> result) {
+            applyData(result);
             retriever.retrievalComplete();
         }
     }
 
-    @SuppressWarnings("UseOfObsoleteCollectionType")
-    public final void applyData(List<Object[]> pageData) {
+    /**
+     * Initialise the table to an empty state.
+     */
+    private void initEmpty() {
+        model = new GenericTableModel(new Object[0][0], columnNames, columnClasses);
 
-        boolean first = false;
-        if (model == null) {
-            model = new GenericTableModel(pageData.toArray(new Object[0][0]), columnNames, columnClasses);
-            first = true;
-        } else {
+        gotoFirst.setEnabled(false);
+        gotoPrevious.setEnabled(false);
+        gotoNext.setEnabled(false);
+        gotoLast.setEnabled(false);
+
+        pageText.setText("0");
+        pageLabel2.setText(" of 0");
+        amountLabel.setText("  Showing 0 - 0 of 0");
+
+        int[] columns = new int[columnNames.length];
+        for (int i = 0; i < columns.length; i++) {
+            columns[i] = i;
+        }
+        filterField.setTableModel(model);
+        filterField.setColumnIndices(columns);
+        filterField.setObjectConverterManagerEnabled(true);
+
+        //table.setModel(model);
+        table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
+        columnChooser.hideColumns(table, hiddenColumns);
+
+        int[] favColumns = new int[columnNames.length - hiddenColumns.length];
+        int pos = 0;
+        for (int i = 0; i < columnNames.length; i++) {
+            boolean hidden = false;
+            for (int j = 0; j < hiddenColumns.length; j++) {
+                if (hiddenColumns[j] == i) {
+                    hidden = true;
+                    break;
+                }
+            }
+            if (!hidden) {
+                favColumns[pos] = i;
+                pos++;
+            }
+        }
+        columnChooser.setFavoriteColumns(favColumns);
+    }
+
+    /**
+     * Brute-force replacement of current table data with the given data, blowing away the current table selection.
+     *
+     * @param pageData the new data
+     */
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    public synchronized void applyData(List<Object[]> pageData) {
+
+        if (pageData != null) {
             // We can't call setDataVector directly because that blows away any custom table renderers we've set.
             java.util.Vector v = model.getDataVector();
             v.removeAllElements();
             for (Object[] r: pageData) {
                 v.add(new java.util.Vector(Arrays.asList(r)));
             }
-        }
 
-        gotoFirst.setEnabled(true);
-        gotoPrevious.setEnabled(true);
-        gotoNext.setEnabled(true);
-        gotoLast.setEnabled(true);
+            gotoFirst.setEnabled(true);
+            gotoPrevious.setEnabled(true);
+            gotoNext.setEnabled(true);
+            gotoLast.setEnabled(true);
 
-        if (pageNum == 1 || pageNum == 0) {
-            gotoFirst.setEnabled(false);
-            gotoPrevious.setEnabled(false);
-        }
-        if (pageNum == getTotalNumPages() || pageNum == 0) {
-            gotoNext.setEnabled(false);
-            gotoLast.setEnabled(false);
-        }
-
-        pageText.setText(Integer.toString(getPageNumber()));
-        pageLabel2.setText(" of " + ViewUtil.numToString(getTotalNumPages()));
-        int start = getTotalNumPages() == 0 ? 0 : (getPageNumber() - 1) * getRowsPerPage() + 1;
-        int end = getTotalNumPages() == 0 ? 0 : Math.min(start + getRowsPerPage() - 1, getTotalRowCount());
-        amountLabel.setText("  Showing " + ViewUtil.numToString(start) + " - " + ViewUtil.numToString(end) + " of " + ViewUtil.numToString(getTotalRowCount()));
-
-        if (first) {
-            int[] columns = new int[columnNames.length];
-            for (int i = 0; i < columns.length; i++) {
-                columns[i] = i;
+            if (pageNum == 1 || pageNum == 0) {
+                gotoFirst.setEnabled(false);
+                gotoPrevious.setEnabled(false);
             }
-            filterField.setTableModel(model);
-            filterField.setColumnIndices(columns);
-            filterField.setObjectConverterManagerEnabled(true);
-
-            //table.setModel(model);
-            table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
-            columnChooser.hideColumns(table, hiddenColumns);
-
-            int[] favColumns = new int[columnNames.length - hiddenColumns.length];
-            int pos = 0;
-            for (int i = 0; i < columnNames.length; i++) {
-                boolean hidden = false;
-                for (int j = 0; j < hiddenColumns.length; j++) {
-                    if (hiddenColumns[j] == i) {
-                        hidden = true;
-                        break;
-                    }
-                }
-                if (!hidden) {
-                    favColumns[pos] = i;
-                    pos++;
-                }
+            if (pageNum == getTotalNumPages() || pageNum == 0) {
+                gotoNext.setEnabled(false);
+                gotoLast.setEnabled(false);
             }
-            columnChooser.setFavoriteColumns(favColumns);
-        } else {
+
+            pageText.setText(Integer.toString(getPageNumber()));
+            pageLabel2.setText(" of " + ViewUtil.numToString(getTotalNumPages()));
+            int start = getTotalNumPages() == 0 ? 0 : (getPageNumber() - 1) * getRowsPerPage() + 1;
+            int end = getTotalNumPages() == 0 ? 0 : Math.min(start + getRowsPerPage() - 1, getTotalRowCount());
+            amountLabel.setText("  Showing " + ViewUtil.numToString(start) + " - " + ViewUtil.numToString(end) + " of " + ViewUtil.numToString(getTotalRowCount()));
+
             model.fireTableDataChanged();
         }
     }
-
 
     private void setTableModel(List<Object[]> data, String[] columnNames, Class[] columnClasses) {
         if (data == null) {
@@ -237,55 +247,36 @@ public class SearchableTablePanel extends JPanel {
         this(pageName, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, TableSelectionType.ROW, defaultRowsRetrieved, retriever);
     }
 
-    public class JTableCBRenderer implements TableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-
-            if (value instanceof JCheckBox) {
-                JCheckBox button = (JCheckBox)value;
-                if (isSelected) {
-                    button.setForeground(table.getForeground());
-                    button.setBackground(table.getSelectionBackground());
-                } else {
-                    button.setForeground(table.getForeground());
-                    button.setBackground(UIManager.getColor("Button.background"));
-                }
-                return button;
-            }
-            return (Component) value;
-        }
-    }
-
     public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns,
         boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, TableSelectionType selectionType, int defaultRowsRetrieved, DataRetriever retriever) {
 
         this.pageName = pageName;
         this.rowsPerPageX = defaultRows;
-        this.DEFAULT_ROWS_RETRIEVED = defaultRowsRetrieved;
+        this.defaultRowsRetrieved = defaultRowsRetrieved;
 
         this.retriever = retriever;
         this.hiddenColumns = hiddenColumns;
-        final Border border = BorderFactory.createEmptyBorder(0, 7, 0, 7);
         table = new SortableTable() {
 
             @Override
-            public Component prepareRenderer(TableCellRenderer renderer, int Index_row, int Index_col) {
-                JComponent comp = (JComponent)super.prepareRenderer(renderer, Index_row, Index_col);
-                //even index, selected or not selected
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
+                synchronized (SearchableTablePanel.this) {
+                    JComponent comp = (JComponent)super.prepareRenderer(renderer, row, col);
 
-                if (isCellSelected(Index_row, Index_col)) {
-                    comp.setBackground(new Color(75, 149, 229));
-                } else if (selectedRows != null && selectedRows.contains(TableModelWrapperUtils.getActualRowAt(table.getModel(), Index_row))) {
-                    comp.setBackground(SELECTED_COLOUR);
-                } else if (Index_row % 2 == 0 && !isCellSelected(Index_row, Index_col)) {
-                    comp.setBackground(Color.white);
-                } else {
-                    comp.setBackground(DARK_COLOUR);
+                    // Even index, selected or not selected
+                    if (isCellSelected(row, col)) {
+                        comp.setBackground(new Color(75, 149, 229));
+                    } else if (selectedRows != null && selectedRows.contains(TableModelWrapperUtils.getActualRowAt(getModel(), row))) {
+                        comp.setBackground(SELECTED_COLOUR);
+                    } else if (row % 2 == 0 && !isCellSelected(row, col)) {
+                        comp.setBackground(Color.WHITE);
+                    } else {
+                        comp.setBackground(DARK_COLOUR);
+                    }
+
+                    comp.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 7));
+                    return comp;
                 }
-
-                comp.setBorder(border);
-                return comp;
             }
 
             @Override
@@ -337,7 +328,7 @@ public class SearchableTablePanel extends JPanel {
             fieldPanel.add(filterField);
         }
 
-        chooseColumnButton = new JButton("Show/Hide fields");
+        chooseColumnButton = new JButton("Show/Hide Fields");
         chooseColumnButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -354,7 +345,7 @@ public class SearchableTablePanel extends JPanel {
                     ExportTable.exportTable(table);
                 } catch (Exception ex) {
                     LOG.error("Error while exporting.", ex);
-                    DialogUtils.displayException("MedSavant", "<HTML>A problem occurred while exporting.<BR>Make sure the output file is not being used. </HTML>", ex);
+                    DialogUtils.displayException("MedSavant", "<HTML>A problem occurred while exporting.<BR>Make sure the output file is not already in use.</HTML>", ex);
                 }
             }
         });
@@ -467,7 +458,6 @@ public class SearchableTablePanel extends JPanel {
             rowsPerPageDropdown.setSelectedIndex(1);
         }
         rowsPerPageDropdown.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 JComboBox cb = (JComboBox) e.getSource();
@@ -486,20 +476,17 @@ public class SearchableTablePanel extends JPanel {
         jsp.setBorder(null);
         tablePanel.add(jsp);
 
-        //this.setBackground(Color.white);
-
         if (allowSort) {
-            this.add(fieldPanel, BorderLayout.NORTH);
+            add(fieldPanel, BorderLayout.NORTH);
         }
 
         if (allowPages) {
-            this.add(bottomPanel, BorderLayout.SOUTH);
+            add(bottomPanel, BorderLayout.SOUTH);
         }
 
-        this.add(tablePanel,BorderLayout.CENTER);
+        add(tablePanel,BorderLayout.CENTER);
 
-        applyData(new ArrayList<Object[]>());
-        //updateView(true);
+        initEmpty();
     }
 
     public void setNumRowsPerPage(int num) {
@@ -576,8 +563,8 @@ public class SearchableTablePanel extends JPanel {
         try {
             limit = Integer.parseInt(this.rowsRetrievedBox.getText());
         } catch (NumberFormatException ex) {
-            rowsRetrievedBox.setText(String.valueOf(DEFAULT_ROWS_RETRIEVED));
-            return DEFAULT_ROWS_RETRIEVED;
+            rowsRetrievedBox.setText(String.valueOf(defaultRowsRetrieved));
+            return defaultRowsRetrieved;
         }
         if (limit > MAX_ROWS_RETRIEVED) {
             rowsRetrievedBox.setText(String.valueOf(MAX_ROWS_RETRIEVED));

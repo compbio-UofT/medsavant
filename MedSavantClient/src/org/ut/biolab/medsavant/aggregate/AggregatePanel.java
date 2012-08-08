@@ -23,5 +23,12 @@ import javax.swing.JPanel;
  * @author tarkvara
  */
 public abstract class AggregatePanel extends JPanel {
+    /** Page name for thread-management purposes. */
+    protected final String pageName;
+    
+    protected AggregatePanel(String p) {
+        pageName = p;
+    }
+
     public abstract void recalculate();
 }

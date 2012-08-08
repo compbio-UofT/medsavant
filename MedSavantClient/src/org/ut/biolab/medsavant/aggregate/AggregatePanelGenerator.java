@@ -23,19 +23,9 @@ package org.ut.biolab.medsavant.aggregate;
  */
 public abstract class AggregatePanelGenerator {
     
-    /** Page for thread-management purposes. */
-    protected final String pageName;
-
     protected boolean updateRequired;
-
     protected AggregatePanel panel;
 
-    protected AggregatePanelGenerator(String page) {
-        pageName = page;
-    }
-
-    public abstract String getName();
-    
     /**
      * Get the panel for this aggregate, creating if necessary.
      */

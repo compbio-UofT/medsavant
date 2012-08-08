@@ -17,7 +17,6 @@
 package org.ut.biolab.medsavant.cohort;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
@@ -40,7 +39,6 @@ import com.jidesoft.grid.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.aggregate.AggregatePanel;
-import org.ut.biolab.medsavant.aggregate.AggregatePanelGenerator;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -57,7 +55,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author Andrew
  */
-public class CohortPanelGenerator extends AggregatePanelGenerator {
+public class CohortAggregatePanel extends AggregatePanel {
 
     private static final Comparator VALUE_COMPARATOR = new Comparator() {
         @Override
@@ -78,158 +76,123 @@ public class CohortPanelGenerator extends AggregatePanelGenerator {
 
     private boolean init = false;
 
-    public CohortPanelGenerator(String page) {
+    private TreeTable table;
+    private SortableTreeTableModel sortableTreeTableModel;
+    private CohortTreeTableModel tableModel;
+    private List<CohortNode> nodes = new ArrayList<CohortNode>();
+    private JScrollPane container;
+    private JPanel progressPanel;
+    private JButton exportButton;
+
+    public CohortAggregatePanel(String page) {
         super(page);
+        init();
     }
 
-    @Override
-    public String getName() {
-        return "Cohort";
-    }
+    private void init() {
+        removeAll();
+        setLayout(new BorderLayout());
 
-    @Override
-    public AggregatePanel generatePanel() {
-        return new CohortPanel();
-    }
-
-    @Override
-    public void run(boolean reset) {
-        if (reset) {
-            ((CohortPanel)panel).init();
-        } else if (init) {
-            if (updateRequired) {
-                ((CohortPanel)panel).update();
-                updateRequired = false;
-            } else {
-                panel.recalculate();
+        exportButton = new JButton("Export Page");
+        exportButton.setEnabled(false);
+        exportButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                try {
+                    ExportTable.exportTable(table);
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("A problem occurred while exporting: %s\nMake sure the output file is not in use.", ex);
+                }
             }
-        }
+        });
+
+        progressPanel = new JPanel();
+        progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.X_AXIS));
+        progressPanel.add(Box.createHorizontalGlue());
+        progressPanel.add(exportButton);
+        progressPanel.add(Box.createRigidArea(new Dimension(10,30)));
+
+        showWaitCard();
+
+        new MedSavantWorker<CohortTreeTableModel>(pageName) {
+
+            @Override
+            protected CohortTreeTableModel doInBackground() throws Exception {
+                container = new JScrollPane();
+                add(container, BorderLayout.CENTER);
+
+                List rows = new ArrayList();
+                Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
+                for (Cohort c : cohorts) {
+                    List<SimplePatient> simplePatients = MedSavantClient.CohortManager.getIndividualsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), c.getId());
+                    CohortNode n = new CohortNode(c, simplePatients);
+                    nodes.add(n);
+                    n.addChild(new LoadingNode());
+                    rows.add(n);
+                }
+
+                return new CohortTreeTableModel(rows);
+            }
+
+            @Override
+            protected void showProgress(double fraction) {}
+
+            @Override
+            protected void showSuccess(CohortTreeTableModel result) {
+                tableModel = result;
+                sortableTreeTableModel = new StripySortableTreeTableModel(tableModel) {
+                    @Override
+                    public Comparator getComparator(int col) {
+                        if (col == 0) {
+                            return super.getComparator(col);
+                        } else {
+                            return VALUE_COMPARATOR;
+                        }
+                    }
+                };
+                sortableTreeTableModel.setAutoResort(false);
+                sortableTreeTableModel.setOptimized(true);
+                sortableTreeTableModel.setAlwaysUseComparators(true);
+                table = new TreeTable(sortableTreeTableModel);
+
+                container.getViewport().add(table);
+
+                showShowCard();
+                init = true;
+            }
+        }.execute();
     }
 
-    private class CohortPanel extends AggregatePanel {
+    private void showWaitCard() {
+        removeAll();
+        add(new WaitPanel("Getting aggregate information"), BorderLayout.CENTER);
+    }
 
-        private TreeTable table;
-        private SortableTreeTableModel sortableTreeTableModel;
-        private CohortTreeTableModel tableModel;
-        private List<CohortNode> nodes = new ArrayList<CohortNode>();
-        private JScrollPane container;
-        private JPanel progressPanel;
-        private JButton exportButton;
+    private void showShowCard() {
+        removeAll();
+        add(progressPanel, BorderLayout.NORTH);
+        add(container, BorderLayout.CENTER);
+    }
 
-        public CohortPanel() {
-            init();
-        }
-
-        private void init() {
-            removeAll();
-            setLayout(new BorderLayout());
-
-            exportButton = new JButton("Export Page");
-            exportButton.setEnabled(false);
-            exportButton.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    try {
-                        ExportTable.exportTable(table);
-                    } catch (Exception ex) {
-                        ClientMiscUtils.reportError("A problem occurred while exporting: %s\nMake sure the output file is not in use.", ex);
-                    }
-                }
-            });
-
-            progressPanel = new JPanel();
-            progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.X_AXIS));
-            progressPanel.add(Box.createHorizontalGlue());
-            progressPanel.add(exportButton);
-            progressPanel.add(Box.createRigidArea(new Dimension(10,30)));
-
-            showWaitCard();
-
-            new MedSavantWorker<CohortTreeTableModel>(pageName) {
-
-                @Override
-                protected CohortTreeTableModel doInBackground() throws Exception {
-                    container = new JScrollPane();
-                    add(container, BorderLayout.CENTER);
-
-                    List rows = new ArrayList();
-                    Cohort[] cohorts = MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
-                    for (Cohort c : cohorts) {
-                        List<SimplePatient> simplePatients = MedSavantClient.CohortManager.getIndividualsInCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), c.getId());
-                        CohortNode n = new CohortNode(c, simplePatients);
-                        nodes.add(n);
-                        n.addChild(new LoadingNode());
-                        rows.add(n);
-                    }
-
-                    return new CohortTreeTableModel(rows);
-                }
-
-                @Override
-                protected void showProgress(double fraction) {}
-
-                @Override
-                protected void showSuccess(CohortTreeTableModel result) {
-                    tableModel = result;
-                    sortableTreeTableModel = new StripySortableTreeTableModel(tableModel) {
-                        @Override
-                        public Comparator getComparator(int col) {
-                            if (col == 0) {
-                                return super.getComparator(col);
-                            } else {
-                                return VALUE_COMPARATOR;
-                            }
-                        }
-                    };
-                    sortableTreeTableModel.setAutoResort(false);
-                    sortableTreeTableModel.setOptimized(true);
-                    sortableTreeTableModel.setAlwaysUseComparators(true);
-                    table = new TreeTable(sortableTreeTableModel);
-
-                    container.getViewport().add(table);
-
-                    showShowCard();
-                    init = true;
-                }
-            }.execute();
-        }
-
-        private void showWaitCard() {
-            removeAll();
-            add(new WaitPanel("Getting aggregate information"), BorderLayout.CENTER);
-        }
-
-        private void showShowCard() {
-            removeAll();
-            add(progressPanel, BorderLayout.NORTH);
-            add(container, BorderLayout.CENTER);
-        }
-
-        public void update() {
+    public void update() {
+        if (table != null) {
             table.collapseAll();
             for (CohortNode n : nodes) {
                 n.reset();
             }
         }
+    }
 
-        @Override
-        public void recalculate() {
-            if (updateRequired) {
-                update();
-            } else {
-                //resetProgress();
-                for (CohortNode n : nodes) {
-                    n.finish();
-                }
-            }
-        }
+    @Override
+    public void recalculate() {
+        update();
+    }
 
-        public synchronized void refresh() {
-            // Added check that the model has actually been created.
-            if (sortableTreeTableModel != null) {
-                sortableTreeTableModel.resort();
-                table.repaint();
-            }
+    public synchronized void refresh() {
+        // Added check that the model has actually been created.
+        if (sortableTreeTableModel != null) {
+            sortableTreeTableModel.resort();
+            table.repaint();
         }
     }
 
@@ -288,8 +251,8 @@ public class CohortPanelGenerator extends AggregatePanelGenerator {
                 @Override
                 protected void showSuccess(Integer result) {
                     value = result;
-                    ((CohortPanel)panel).refresh();
-                    panel.repaint();
+                    refresh();
+                    repaint();
                     cleanup();
                 }
 
@@ -328,7 +291,7 @@ public class CohortPanelGenerator extends AggregatePanelGenerator {
                         for (SimplePatient key: result.keySet()) {
                             addChild(new PatientNode(key, result.get(key)));
                         }
-                        ((CohortPanel)panel).refresh();
+                        refresh();
                     }
 
                 }.execute();
@@ -336,7 +299,7 @@ public class CohortPanelGenerator extends AggregatePanelGenerator {
         }
     }
 
-    private class PatientNode extends DefaultExpandableRow {
+    private static class PatientNode extends DefaultExpandableRow {
 
         private SimplePatient patient;
         private int value;
@@ -361,7 +324,7 @@ public class CohortPanelGenerator extends AggregatePanelGenerator {
 
     }
 
-    private class LoadingNode extends DefaultExpandableRow {
+    private static class LoadingNode extends DefaultExpandableRow {
 
         @Override
         public Object getValueAt(int i) {
@@ -370,13 +333,12 @@ public class CohortPanelGenerator extends AggregatePanelGenerator {
 
     }
 
-    static class CohortTreeTableModel extends TreeTableModel implements StyleModel {
-        private static final long serialVersionUID = 3589523753024111735L;
+    private static class CohortTreeTableModel extends TreeTableModel implements StyleModel {
 
-        public CohortTreeTableModel() {
+        private CohortTreeTableModel() {
         }
 
-        public CohortTreeTableModel(java.util.List rows) {
+        private CohortTreeTableModel(java.util.List rows) {
             super(rows);
         }
 
@@ -389,7 +351,7 @@ public class CohortPanelGenerator extends AggregatePanelGenerator {
         public ConverterContext getConverterContextAt(int rowIndex, int columnIndex) {
             if (columnIndex == 1) {
                 if (rowIndex == 0) {
-//                    return super.getConverterContextAt(rowIndex, columnIndex);
+    //                    return super.getConverterContextAt(rowIndex, columnIndex);
                 }
                 return PercentConverter.CONTEXT;
             }
@@ -427,19 +389,13 @@ public class CohortPanelGenerator extends AggregatePanelGenerator {
             return null;
         }
 
-        static final CellStyle BOLD = new CellStyle();
-
-        static {
-            BOLD.setFontStyle(Font.BOLD);
-            BOLD.setBackground(new Color(50,53,59));
-            BOLD.setForeground(Color.white);
-        }
-
         @Override
         public CellStyle getCellStyleAt(int rowIndex, int columnIndex) {
             Row row = getRowAt(rowIndex);
             if (row.getParent() == getRoot() || (row instanceof ExpandableRow && ((ExpandableRow) row).hasChildren())) {
-                return BOLD;
+                CellStyle bold = new CellStyle();
+                bold.setFontStyle(Font.BOLD);
+                return bold;
             }
             return null;
         }

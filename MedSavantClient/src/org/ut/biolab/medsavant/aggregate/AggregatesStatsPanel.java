@@ -19,16 +19,15 @@ package org.ut.biolab.medsavant.aggregate;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.TreeMap;
 import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
-import org.ut.biolab.medsavant.cohort.CohortPanelGenerator;
-import org.ut.biolab.medsavant.ontology.OntologyPanelGenerator;
-import org.ut.biolab.medsavant.patient.FamilyPanelGenerator;
-import org.ut.biolab.medsavant.region.RegionListPanelGenerator;
+import org.ut.biolab.medsavant.cohort.CohortAggregatePanel;
+import org.ut.biolab.medsavant.ontology.OntologyAggregatePanel;
+import org.ut.biolab.medsavant.patient.FamilyAggregatePanel;
+import org.ut.biolab.medsavant.region.RegionListAggregatePanel;
 import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -38,34 +37,15 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class AggregatesStatsPanel extends JPanel {
     
+    private JComboBox generatorCombo;
     private JPanel toolBarPanel;
-    private String currentRegionStat;
     private final String pageName;
-    
-    /**
-     * List containing the name of region stats the user can view.
-     */
-    private TreeMap<String, AggregatePanelGenerator> panelMap = new TreeMap<String, AggregatePanelGenerator>();
-
     
     public AggregatesStatsPanel(String pageName) {
         this.pageName = pageName;
         setLayout(new BorderLayout());
-        addPanels();
         initToolBar();
         updateRegionStats();
-    }
-    
-    private void addPanels() {
-        // Add your panel here.
-        addPanel(new OntologyPanelGenerator(pageName));
-        addPanel(new RegionListPanelGenerator(pageName));
-        addPanel(new CohortPanelGenerator(pageName));
-        addPanel(new FamilyPanelGenerator(pageName));
-    }
-    
-    private void addPanel(AggregatePanelGenerator p) {
-        panelMap.put(p.getName(), p);
     }
     
     private void updateRegionStats() {
@@ -75,7 +55,7 @@ public class AggregatesStatsPanel extends JPanel {
         removeAll();
         add(toolBarPanel, BorderLayout.NORTH);
 
-        AggregatePanelGenerator gen = panelMap.get(currentRegionStat);
+        AggregatePanelGenerator gen = (AggregatePanelGenerator)generatorCombo.getSelectedItem();
         JPanel p = gen.getPanel();
         gen.run(false);
         
@@ -94,43 +74,56 @@ public class AggregatesStatsPanel extends JPanel {
         
         toolBarPanel.add(Box.createHorizontalGlue());
         
-//        bar.setFloatable(false);        
-        JComboBox b = new JComboBox();
+        generatorCombo = new JComboBox();
+        generatorCombo.addItem(new AggregatePanelGenerator() {
+            @Override
+            public String toString() { return "Cohort"; }
+
+            @Override
+            public AggregatePanel generatePanel() { return new CohortAggregatePanel(pageName); }
+        });
+        generatorCombo.addItem(new AggregatePanelGenerator() {
+            @Override
+            public String toString() { return "Family"; }
+
+            @Override
+            public AggregatePanel generatePanel() { return new FamilyAggregatePanel(pageName); }
+        });
+        generatorCombo.addItem(new AggregatePanelGenerator() {
+            @Override
+            public String toString() { return "Ontology"; }
+
+            @Override
+            public AggregatePanel generatePanel() { return new OntologyAggregatePanel(pageName); }
+        });
+        generatorCombo.addItem(new AggregatePanelGenerator() {
+            @Override
+            public String toString() { return "Region List"; }
+
+            @Override
+            public AggregatePanel generatePanel() { return new RegionListAggregatePanel(pageName); }
+        });
+        generatorCombo.setSelectedIndex(0);
         
-        for (String regionStatsName: panelMap.keySet()) {
-            b.addItem(regionStatsName);
-        }
-        
-        setCurrentRegionStats(panelMap.firstKey());
-        
-        b.addActionListener(new ActionListener() {
+        generatorCombo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JComboBox cb = (JComboBox) e.getSource();
-                String regionStatsName = (String) cb.getSelectedItem();
-                setCurrentRegionStats(regionStatsName);
                 updateRegionStats();
             }
         });
         
-        bar.add(b);
-//        bar.add(Box.createHorizontalStrut(5));
-        this.add(toolBarPanel, BorderLayout.NORTH);   
-        this.updateUI();
-    }
-
-    private void setCurrentRegionStats(String regionStatsName) {
-        currentRegionStat = regionStatsName;
+        bar.add(generatorCombo);
+        add(toolBarPanel, BorderLayout.NORTH);   
     }
     
-    public void update(boolean update, boolean isLoaded) {
+    public void update(boolean update, boolean loaded) {
         if (update) {
-            for(String key : panelMap.keySet()) {
-                panelMap.get(key).setUpdateRequired(true);
+            for (int i = 0; i < generatorCombo.getItemCount(); i++) {
+                ((AggregatePanelGenerator)generatorCombo.getItemAt(i)).setUpdateRequired(true);
             }
         }
-        if (isLoaded && panelMap != null && currentRegionStat != null) {
-            panelMap.get(currentRegionStat).run(update);
+        if (loaded) {
+            ((AggregatePanelGenerator)generatorCombo.getSelectedItem()).run(update);
         }
     }
 }

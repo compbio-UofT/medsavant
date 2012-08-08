@@ -74,15 +74,19 @@ public class RegionController extends Controller<RegionEvent> {
     }
     
     public List<GenomicRegion> getRegionsInSets(Collection<RegionSet> sets) throws SQLException, RemoteException {
+        // We make a copy of the sets because the original value may be a collection which we shouldn't modify.
+        Set<RegionSet> setsSet = new HashSet<RegionSet>();
+        setsSet.addAll(sets);
+
         List<GenomicRegion> result = new ArrayList<GenomicRegion>();
         for (AdHocRegionSet r: localRegionSets) {
-            if (sets.contains(r)) {
+            if (setsSet.contains(r)) {
                 result.addAll(r.regions);
-                sets.remove(r);
+                setsSet.remove(r);
             }
         }
-        if (!sets.isEmpty()) {
-            result.addAll(MedSavantClient.RegionSetManager.getRegionsInSets(LoginController.sessionId, sets, Integer.MAX_VALUE));
+        if (!setsSet.isEmpty()) {
+            result.addAll(MedSavantClient.RegionSetManager.getRegionsInSets(LoginController.sessionId, setsSet, Integer.MAX_VALUE));
         }
         return result;
     }
@@ -97,9 +101,9 @@ public class RegionController extends Controller<RegionEvent> {
      *
      * @param r the regions to be wrapped
      */
-    public RegionSet createAdHocRegionSet(List<GenomicRegion> r) {
+    public RegionSet createAdHocRegionSet(String name, List<GenomicRegion> r) {
         localRegionSets.clear();    // There can be only one.
-        AdHocRegionSet result = new AdHocRegionSet(r);
+        AdHocRegionSet result = new AdHocRegionSet(name, r);
         localRegionSets.add(result);
         fireEvent(new RegionEvent(RegionEvent.Type.ADDED));
         return result;
@@ -111,8 +115,8 @@ public class RegionController extends Controller<RegionEvent> {
     private class AdHocRegionSet extends RegionSet {
         final List<GenomicRegion> regions;
 
-        AdHocRegionSet(List<GenomicRegion> r) {
-            super(-1, "Ad Hoc Region Set", r.size());
+        AdHocRegionSet(String name, List<GenomicRegion> r) {
+            super(-1, name, r.size());
             regions = r;
         }
     }

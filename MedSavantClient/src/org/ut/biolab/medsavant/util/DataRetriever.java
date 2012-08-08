@@ -24,7 +24,7 @@ import java.util.List;
  */
 public abstract class DataRetriever<T> {
 
-    public abstract List<T> retrieve(int start, int limit);
+    public abstract List<T> retrieve(int start, int limit) throws Exception;
     public abstract int getTotalNum();
     public abstract void retrievalComplete();
     

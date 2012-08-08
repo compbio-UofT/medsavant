@@ -436,7 +436,7 @@ public class TablePanel extends JLayeredPane {
                     regions.add(new GenomicRegion(null, chrom, pos, pos));
                 }
                 
-                RegionSet r = RegionController.getInstance().createAdHocRegionSet(regions);
+                RegionSet r = RegionController.getInstance().createAdHocRegionSet("Selected Variant Positions", regions);
                 GeneticsFilterPage.getSearchBar().loadFilters(RegionSetFilterView.wrapState(Arrays.asList(r)));
             }
             
