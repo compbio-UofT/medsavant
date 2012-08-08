@@ -38,6 +38,9 @@ import org.xml.sax.SAXException;
 public class GenemaniaInfoRetriever {
     private List<String> genes;
     private final String DATA_PATH= DirectorySettings.getCacheDirectory().getAbsolutePath()+"\\" + "gmdata";
+    private final int DEFAULT_GENE_LIMIT = 50;
+    private final CombiningMethod DEFAULT_COMBINING_METHOD = CombiningMethod.AVERAGE;
+    private final String[] DEFAULT_NETWORKS = {"Genetic interactions", "Shared protein domains", "Other", "Pathway", "Physical interactions", "Co-localization", "Predicted", "Co-expression"}; 
     private int geneLimit;
     private CombiningMethod combiningMethod;
     private Map<InteractionNetworkGroup, Collection<InteractionNetwork>> networks;
@@ -193,6 +196,10 @@ public class GenemaniaInfoRetriever {
             networkUtils = new NetworkUtils();
             cache = new DataCache(new SynchronizedObjectCache(new MemObjectCache(data.getObjectCache(NullProgressReporter.instance(), false))));
             mania = new Mania2(cache);
+            setGeneLimit(DEFAULT_GENE_LIMIT);
+            setCombiningMethod(DEFAULT_COMBINING_METHOD);
+            setNetworks(new HashSet<String>(Arrays.asList(DEFAULT_NETWORKS)));
+            
             
         }
         catch(Exception e){
@@ -223,10 +230,18 @@ public class GenemaniaInfoRetriever {
         networks= groupMembers;
     }
 
-    public Map<InteractionNetworkGroup, Collection<InteractionNetwork>> getNetorks(){
+    public Map<InteractionNetworkGroup, Collection<InteractionNetwork>> getNetworks(){
         return networks;
     }
 
+    public int getGeneLimit(){
+        return geneLimit;
+    }
+    
+    public CombiningMethod getCombiningMethod(){
+        return combiningMethod;
+    }
+    
     public static List<String> getValidGenes(List<String> genes) throws SAXException, DataStoreException, ApplicationException{
         List<String> validGenes = new ArrayList();
         for (String geneName: genes){

@@ -99,6 +99,7 @@ public class RegionWizard extends WizardDialog {
 
     private ListViewTablePanel sourceGenesPanel;
     private ListViewTablePanel selectedGenesPanel;
+    private ListViewTablePanel selectedGenesPanelForGeneMania;
     private ListViewTablePanel finalSelectedGenes;
     private GenemaniaInfoRetriever genemania;
     private boolean rankByVarFreq;
@@ -284,13 +285,18 @@ public class RegionWizard extends WizardDialog {
                     try {
                     
                     genemania = new GenemaniaInfoRetriever();
-                    genemania.setCombiningMethod(CombiningMethod.AVERAGE);
-                    genemania.setGeneLimit(50);
-                    String elements[] ={"coexp", "coloc", "spd", "gi", "pi", "path", "predict", "other"}; 
-                    genemania.setNetworks(new HashSet<String>(Arrays.asList(elements)));
                     java.util.List<String> geneNames = new ArrayList();
-                    for (int i = 0; i < selectedGenesPanel.getTable().getRowCount(); i++) {
-                        Object[] rowData = selectedGenesPanel.getRowData(i);
+                    int[] selectedRows = selectedGenesPanelForGeneMania.getSelectedRows();
+                    if(selectedRows.length==0){
+                        //getRowData doesn't work for the cloned table so use the original
+                        for (int i=0; i<selectedGenesPanel.getTable().getRowCount(); i++){
+                            Object[] rowData = selectedGenesPanel.getRowData(i);
+                            geneNames.add((String) rowData[0]);
+                        }
+                    }
+                    for (int row: selectedRows){
+                        //getRowData doesn't work for the cloned table so use the original
+                        Object[] rowData = selectedGenesPanel.getRowData(row);
                         geneNames.add((String) rowData[0]);
                     }
                     java.util.List<String> notInGenemania = new ArrayList<String> (geneNames); 
@@ -319,11 +325,10 @@ public class RegionWizard extends WizardDialog {
                             while (itr.hasNext()) {
                                 currGene = itr.next();
                                 final org.ut.biolab.medsavant.model.Gene finalGene = currGene;
-                                JLabel geneName = new JLabel(currGene.getName());
-                                recommendedGenes.addRow(new Object[]{geneName, finalGene.getChrom(), finalGene.getStart(), finalGene.getEnd()});
+                                recommendedGenes.addRow(new Object[]{currGene.getName(), finalGene.getChrom(), finalGene.getStart(), finalGene.getEnd()});
                                 i++;
                             }
-                            //currSizeOfArray =i-1;
+                            
                         }
                         else {
                            Iterator<String> itr = genemania.getRelatedGeneNamesByScore().iterator();
@@ -336,7 +341,7 @@ public class RegionWizard extends WizardDialog {
                                 recommendedGenes.addRow(new Object[]{finalGene.getName(), finalGene.getChrom(), finalGene.getStart(), finalGene.getEnd()});
                                 i++;
                             }
-                            //currSizeOfArray =i-1;
+                            
                         }
                     }
                 } catch (Exception ex) {
@@ -346,6 +351,14 @@ public class RegionWizard extends WizardDialog {
                     progressBar.setIndeterminate(false);
                     progressBar.setValue(0);
                     progressBar.setVisible(false);
+                    genemaniaButton.setEnabled(true);
+                    settingsButton.setEnabled(true);
+                    fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.BACK);
+                    tabbedPane.setEnabledAt(1, true);
+                    tabbedPane.setSelectedIndex(1);
+                    for (int i=0; i<selectedGenesPanel.getTable().getRowCount(); i++){
+                            finalSelectedGenes.addRow(selectedGenesPanel.getRowData(i));
+                     }
                     if (setMsgOff)
                         progressMessage.setVisible(false);
                 }
@@ -366,7 +379,7 @@ public class RegionWizard extends WizardDialog {
                 recommendedGenes.setFontSize(10);
                 card1a.setLayout(new BoxLayout(card1a, BoxLayout.PAGE_AXIS));
                 card1a.add(new JLabel("Query GeneMANIA for Related Genes"), Component.LEFT_ALIGNMENT);
-                ListViewTablePanel selectedGenesPanelForGeneMania= new ListViewTablePanel(new Object[0][0], COLUMN_NAMES, COLUMN_CLASSES, new int[0]);
+                selectedGenesPanelForGeneMania= new ListViewTablePanel(new Object[0][0], COLUMN_NAMES, COLUMN_CLASSES, new int[0]);
                 selectedGenesPanelForGeneMania.getTable().setModel(selectedGenesPanel.getTable().getModel());;
                 card1a.add(selectedGenesPanelForGeneMania);
                 progressMessage.setVisible(false);
@@ -385,10 +398,11 @@ public class RegionWizard extends WizardDialog {
                         fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
                         progressBar.setVisible(true);
                         progressBar.setIndeterminate(true);
+                        progressMessage.setText("Querying GeneMANIA for related genes");
+                        progressMessage.setVisible(true);
                         Thread t = new Thread (r);
                         t.start();
-                        tabbedPane.setEnabledAt(1, true);
-                        tabbedPane.setSelectedIndex(1);
+
                     }
                 });
                 settingsButton.addActionListener(new ActionListener(){
@@ -405,7 +419,6 @@ public class RegionWizard extends WizardDialog {
                 card2.setLayout(new BoxLayout(card2, BoxLayout.PAGE_AXIS));
                 card2.add(new JLabel("Select genes from recommended genes list"));
                 finalSelectedGenes = new ListViewTablePanel(new Object[0][0], COLUMN_NAMES, COLUMN_CLASSES, new int[0]);
-                finalSelectedGenes.getTable().setModel(selectedGenesPanel.getTable().getModel());
                 PartSelectorPanel selector = new PartSelectorPanel(recommendedGenes, finalSelectedGenes);
                 selector.setBackground(Color.WHITE);
                 card2.add(selector);
