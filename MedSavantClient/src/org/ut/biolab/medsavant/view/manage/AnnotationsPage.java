@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.view.manage;
 
+import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
@@ -27,13 +28,16 @@ import javax.swing.JPanel;
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 import javax.swing.JPopupMenu;
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.annotation.InstallAnnotationWizard;
 
 import org.ut.biolab.medsavant.controller.ExternalAnnotationController;
 import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Annotation;
 import org.ut.biolab.medsavant.ontology.OntologyWizard;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.CollapsiblePanel;
@@ -43,6 +47,7 @@ import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -68,16 +73,27 @@ public class AnnotationsPage extends SubSectionView {
             try {
                 new InstallAnnotationWizard().setVisible(true);
             } catch (Exception ex) {
-                ClientMiscUtils.reportError("Error downloading annotations", ex);
+                ClientMiscUtils.reportError("Error installing annotations", ex);
             }
         }
 
         @Override
         public void deleteItems(List<Object[]> items) {
-            JOptionPane.showMessageDialog(MedSavantFrame.getInstance(),
-                    "Annotations can only be deleted using the \n"
-                    + "MedSavant Database Utility.",
-                    "", JOptionPane.INFORMATION_MESSAGE);
+            try {
+
+                Annotation an = (Annotation) items.get(0)[0];
+
+                int response = DialogUtils.askYesNo("Confirm", "Are you sure you want to uninstall " + an.getProgram() + "?");
+
+                if (response == DialogUtils.YES) {
+                    MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.sessionId, an);
+                    DialogUtils.displayMessage("Annotation " + an.getProgram() + " uninstalled");
+                }
+
+            } catch (Exception ex) {
+                ClientMiscUtils.reportError("Error uninstalling annotations", ex);
+            }
+
         }
     }
 //implements ExternalAnnotationListener {

@@ -300,10 +300,11 @@ public class InstallAnnotationWizard extends WizardDialog {
                         fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
                         progressBar.setIndeterminate(true);
                         new MedSavantWorker<Void>("Annotations") {
+                            private boolean success;
 
                             @Override
                             public Void doInBackground() throws Exception {
-                                create();
+                                success = create();
                                 return null;
                             }
 
@@ -313,7 +314,13 @@ public class InstallAnnotationWizard extends WizardDialog {
 
                             @Override
                             protected void showSuccess(Void result) {
-                                ((CompletionWizardPage) getPageByTitle(PAGENAME_COMPLETE)).addText("Annotation has been successfully installed.\n\nYou can apply this annotation to a project by\nediting project settings.");
+
+                                if (success) {
+                                    ((CompletionWizardPage) getPageByTitle(PAGENAME_COMPLETE)).addText("Annotation has been successfully installed.\n\nYou can apply this annotation to a project by\nediting project settings.");
+                                } else {
+                                    ((CompletionWizardPage) getPageByTitle(PAGENAME_COMPLETE)).addText("Annotation could not be installed.\n\nEither this annotation is already installed or the\ninstallation package is invalid.");
+                                }
+
                                 setCurrentPage(PAGENAME_COMPLETE);
                             }
 
@@ -321,7 +328,7 @@ public class InstallAnnotationWizard extends WizardDialog {
                             protected void showFailure(Throwable t) {
                                 InstallAnnotationWizard.this.setVisible(false);
                                 LOG.error("Error installing annotation.", t);
-                                DialogUtils.displayException("Error", "There was an error while trying to install this annotation. ", t);
+                                DialogUtils.displayException("Error", "There was an error while trying to install this annotation.", t);
                             }
                         }.execute();
                     }
@@ -352,9 +359,7 @@ public class InstallAnnotationWizard extends WizardDialog {
         };
     }
 
-    private void create() throws SQLException, IOException {
-        System.out.println("Installing annotation...");
-        MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), this.annotationToInstall);
-        System.out.println("Done installing annotation");
+    private boolean create() throws SQLException, IOException {
+        return MedSavantClient.AnnotationManagerAdapter.installAnnotationForProject(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), this.annotationToInstall);
     }
 }

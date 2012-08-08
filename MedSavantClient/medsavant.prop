@@ -1,6 +1,6 @@
 db.driver=com.mysql.jdbc.Driver
 db.host=localhost
-db.name=asd
+db.name=mfiume2
 db.port=5029
 general.autologin=false
 medsavant.version=1.0
