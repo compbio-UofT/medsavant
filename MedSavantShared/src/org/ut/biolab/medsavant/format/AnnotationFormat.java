@@ -23,30 +23,38 @@ import java.io.Serializable;
  * @author Andrew
  */
 public class AnnotationFormat implements Serializable {
-    
+
     private final String program;
     private final String version;
-    private final int referenceId;
+    private final String referenceName;
     private final String path;
     private final boolean hasRef;
     private final boolean hasAlt;
     private final CustomField[] fields;
     private final AnnotationType type;
-    
-    public AnnotationFormat(String program, String version, int referenceId, String path, boolean hasRef, boolean hasAlt, AnnotationType type, CustomField[] fields){
+
+    public AnnotationFormat(
+            String program,
+            String version,
+            String referenceName,
+            String path,
+            boolean hasRef,
+            boolean hasAlt,
+            AnnotationType type,
+            CustomField[] fields){
         this.program = program;
         this.version = version;
-        this.referenceId = referenceId;
+        this.referenceName = referenceName;
         this.path = path;
         this.hasRef = hasRef;
         this.hasAlt = hasAlt;
         this.fields = fields;
         this.type = type;
     }
-    
+
     public String generateSchema(){
         String result = "";
-        
+
         //add custom columns
         for(int i = 0; i < fields.length; i++){
             CustomField field = fields[i];
@@ -57,35 +65,43 @@ public class AnnotationFormat implements Serializable {
 
         return result;
     }
-    
+
     public int getNumNonDefaultFields(){
         return fields.length;
     }
-    
+
     public boolean hasRef(){
         return hasRef;
     }
-    
+
     public boolean hasAlt(){
         return hasAlt;
     }
-    
+
     public CustomField[] getCustomFields(){
         return fields;
     }
-    
+
     public String getProgram(){
         return program;
     }
-    
+
     public String getVersion(){
         return version;
     }
-    
+
+    public String getReferenceName() {
+        return referenceName;
+    }
+
+    public AnnotationType getType() {
+        return type;
+    }
+
     public static enum AnnotationType {
         POSITION,
         INTERVAL;
-        
+
         public static AnnotationType fromInt(int type) {
             switch (type){
                 case 0:
@@ -96,7 +112,7 @@ public class AnnotationFormat implements Serializable {
                     return null;
             }
         }
-    
+
         public static int toInt(AnnotationType type) {
             switch (type){
                 case POSITION:
@@ -107,7 +123,15 @@ public class AnnotationFormat implements Serializable {
                     return -1;
             }
         }
-    
+
+        public static AnnotationType fromString(String s) {
+            if (s.toLowerCase().equals("interval")) {
+                return AnnotationType.INTERVAL;
+            } else {
+                return AnnotationType.POSITION;
+            }
+        }
+
         @Override
         public String toString() {
             switch (this) {
@@ -119,5 +143,12 @@ public class AnnotationFormat implements Serializable {
                     return "";
             }
         }
-    };    
+    };
+
+    @Override
+    public String toString() {
+        return "AnnotationFormat{" + "program=" + program + ", version=" + version + ", referenceName=" + referenceName + ", path=" + path + ", hasRef=" + hasRef + ", hasAlt=" + hasAlt + ", fields=" + fields + ", type=" + type + '}';
+    }
+
+
 }

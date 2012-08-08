@@ -79,7 +79,7 @@ public class Annotation implements Serializable {
 
     @Override
     public String toString() {
-        return getProgram() + " (v" + getVersion() + ")";
+        return getProgram() + " (v" + getVersion() + ", " + getReferenceName() + ")";
     }
 
 }

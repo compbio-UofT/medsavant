@@ -84,11 +84,11 @@ public class VariantFormat implements Serializable {
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO, "VARCHAR(500)", false, ALIAS_OF_CUSTOM_INFO, "")
         };
 
-        return new AnnotationFormat("default", "default", 0, "", true, true, AnnotationType.POSITION, fields);
+        return new AnnotationFormat("default", "default", "0", "", true, true, AnnotationType.POSITION, fields);
     }
-    
+
     public static AnnotationFormat getCustomFieldAnnotationFormat(CustomField[] customFields) {
 
-        return new AnnotationFormat(ANNOTATION_FORMAT_CUSTOM_VCF, ANNOTATION_FORMAT_CUSTOM_VCF, 0, "", true, true, AnnotationType.POSITION, customFields);
-    }    
+        return new AnnotationFormat(ANNOTATION_FORMAT_CUSTOM_VCF, ANNOTATION_FORMAT_CUSTOM_VCF, "0", "", true, true, AnnotationType.POSITION, customFields);
+    }
 }

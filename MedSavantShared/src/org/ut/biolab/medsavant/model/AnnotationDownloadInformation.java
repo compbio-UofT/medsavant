@@ -3,6 +3,7 @@ package org.ut.biolab.medsavant.model;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ import org.xml.sax.SAXException;
  *
  * @author mfiume
  */
-public class AnnotationDownloadInformation {
+public class AnnotationDownloadInformation implements Serializable {
 
     String name;
     String version;
