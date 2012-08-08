@@ -236,8 +236,6 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
     @Override
     public String getReferenceUrl(String sid,int referenceid) throws SQLException {
 
-
-
         TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
         SelectQuery query = new SelectQuery();
         query.addFromTable(refTable.getTable());
@@ -269,5 +267,17 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
                     rs.getInt(ChromosomeTableSchema.COLUMNNAME_OF_CONTIG_LENGTH)));
         }
         return result.toArray(new Chromosome[0]);
+    }
+
+    String getReferenceName(String sid, int refID) throws SQLException {
+        TableSchema refTable = MedSavantDatabase.ReferenceTableSchema;
+        SelectQuery query = new SelectQuery();
+        query.addFromTable(refTable.getTable());
+        query.addColumns(refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_NAME));
+        query.addCondition(BinaryConditionMS.equalTo(refTable.getDBColumn(ReferenceTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID));
+
+        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+        rs.next();
+        return rs.getString(1);
     }
 }

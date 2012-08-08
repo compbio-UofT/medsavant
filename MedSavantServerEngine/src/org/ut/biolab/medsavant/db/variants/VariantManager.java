@@ -235,7 +235,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Creating new variant table for resulting variants");
             ProjectManager.getInstance().setCustomVariantFields(sessID, projID, refID, updateId, variantFields);
             String tableName = ProjectManager.getInstance().createVariantTable(sessID, projID, refID, updateId, annotIDs, true);
-            String tableNameSub = ProjectManager.getInstance().createVariantTable(sessID, projID, refID, updateId, AnnotationManager.getInstance().getAnnotationIDs(sessID, projID, refID), false, true);
+            String tableNameSub = ProjectManager.getInstance().createVariantTable(sessID, projID, refID, updateId, annotIDs, false, true);
 
             //upload to staging table
             LOG.info("Uploading variants to table: " + tableName);
@@ -1024,13 +1024,16 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         // TODO: for some reason the connection is closed going into this function
         Connection c = ConnectionController.connectPooled(sid);
 
-        Statement s = c.createStatement();
-        s.setQueryTimeout(60 * 60); // 1 hour
-        s.execute(
-                "LOAD DATA LOCAL INFILE '" + file.getAbsolutePath().replaceAll("\\\\", "/") + "' "
+        String query = "LOAD DATA LOCAL INFILE '" + file.getAbsolutePath().replaceAll("\\\\", "/") + "' "
                 + "INTO TABLE " + tableName + " "
                 + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
-                + "LINES TERMINATED BY '\\r\\n';");
+                + "LINES TERMINATED BY '\\r\\n';";
+
+        System.out.println(query);
+
+        Statement s = c.createStatement();
+        s.setQueryTimeout(60 * 60); // 1 hour
+        s.execute(query);
         c.close();
     }
 

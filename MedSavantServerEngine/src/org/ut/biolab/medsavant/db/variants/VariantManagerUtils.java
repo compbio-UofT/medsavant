@@ -40,13 +40,13 @@ import org.ut.biolab.medsavant.vcf.VariantRecord;
  * @author Andrew
  */
 public class VariantManagerUtils {
-    
+
     private static final Log LOG = LogFactory.getLog(VariantManagerUtils.class);
     private static final int OUTPUT_LINES_LIMIT = 1000000;
     //private static final int MAX_SUBSET_SIZE = 100000000; //bytes = 100MB
     private static final int MIN_SUBSET_SIZE = 100000000; //bytes = 100MB
     private static final int SUBSET_COMPRESSION = 1000; // times
-    
+
     public static void annotateTDF(String sid, String tdfFilename, String outputFilename, int[] annotationIds) throws Exception {
         (new VariantAnnotator(tdfFilename, outputFilename, annotationIds)).annotate(sid);
     }
@@ -65,18 +65,18 @@ public class VariantManagerUtils {
 
     public static void variantsToFile(String sid, String tableName, File file, String conditions, boolean complete, int step) throws SQLException {
         String query;
-        
+
         if (complete) {
             query = "SELECT *";
         } else {
-            query = "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`, `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, `variant_type`, `zygosity`, `custom_info`";
+            query = "SELECT `upload_id`, `file_id`, `variant_id`, `dna_id`, `chrom`, `position`, `dbsnp_id`, `ref`, `alt`, `qual`, `filter`, `variant_type`, `zygosity`, `gt`, `custom_info`";
         }
-              
+
         query += " INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\""
                 + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"'"
                 + " LINES TERMINATED BY '\\r\\n'"
                 + " FROM " + tableName;
-        
+
         if (step > 1) {
             if (conditions != null && conditions.length()> 1) {
                 conditions += " AND `variant_id`%" + step + "=0";
@@ -87,9 +87,9 @@ public class VariantManagerUtils {
 
         if (conditions != null && conditions.length()> 1) {
             query += " WHERE " + conditions;
-        }  
-        
-        System.err.println(query);
+        }
+
+        System.out.println(query);
 
         ConnectionController.executeQuery(sid, query);
     }
@@ -197,6 +197,8 @@ public class VariantManagerUtils {
 
     public static void addCustomVcfFields(String infile, String outfile, CustomField[] customFields, int customInfoIndex) throws FileNotFoundException, IOException {
 
+        System.out.println("Adding custom VCF fields infile=" + infile + " oufile=" + outfile + " customInfoIndex=" + customInfoIndex);
+
         String[] infoFields = new String[customFields.length];
         Class[] infoClasses = new Class[customFields.length];
         for (int i = 0; i < customFields.length; i++) {
@@ -215,7 +217,7 @@ public class VariantManagerUtils {
         reader.close();
         writer.close();
     }
-    
+
     public static void addTagsToUpload(String sid, int uploadID, String[][] variantTags) throws SQLException, RemoteException {
         try {
             VariantManager.getInstance().addTagsToUpload(sid, uploadID, variantTags);
@@ -229,19 +231,19 @@ public class VariantManagerUtils {
             throw new InterruptedException();
         }
     }
-        
+
     /*
-     * Given vcf files, parse out the relevant information and concatenate to 
-     * create a single, ready-to-use csv. 
+     * Given vcf files, parse out the relevant information and concatenate to
+     * create a single, ready-to-use csv.
      */
     public static File parseVCFs(File[] vcfFiles, File tmpDir, int updateId, boolean includeHomoRef) throws IOException, InterruptedException, ParseException {
-        
+
         boolean variantFound = false;
         File outfile = new File(tmpDir, "1_tmp.tdf");
 
         //add files to staging table
         for (int i = 0; i < vcfFiles.length; i++) {
-      
+
             //create temp file
             VariantManagerUtils.checkInterrupt();
             int lastChunkWritten = 0;
@@ -256,7 +258,7 @@ public class VariantManagerUtils {
                 reader = new FileReader(vcfFiles[i]);
             }
             CSVReader r = new CSVReader(reader, '\t');
-            
+
             //CSVReader r = new CSVReader(new FileReader(vcfFiles[i]), VCFParser.defaultDelimiter);
             if (r == null) {
                 throw new FileNotFoundException();
@@ -291,10 +293,10 @@ public class VariantManagerUtils {
         if (!variantFound) {
             throw new ParseException("No variants were found. Ensure that your files are in the correct format. ", 0);
         }
-        
+
         return outfile;
     }
-    
+
     public static int determineStepForSubset(long length) {
         int step;
         if (length <= MIN_SUBSET_SIZE) {
@@ -305,9 +307,9 @@ public class VariantManagerUtils {
         }
         return step;
     }
-    
+
     public static void generateSubset(File inFile, File outFile) throws IOException, InterruptedException{
-    
+
         System.out.println("generate subset");
         long length = inFile.length();
         int step;
@@ -317,12 +319,12 @@ public class VariantManagerUtils {
             long targetSize = Math.max(MIN_SUBSET_SIZE, length / 1000);
             step = (int)Math.ceil((double)length / (double)targetSize);
         }
-        
-        
-        
+
+
+
         /*double ratio = (double)MAX_SUBSET_SIZE / length;
         int step;
- 
+
         if (ratio >= 1) { // file is smaller than max size, copy directly
             step = 1;
         } else {
@@ -330,17 +332,17 @@ public class VariantManagerUtils {
         }*/
 
         System.out.println("length: " + length + "  step: " + step);
-        
+
         /*String sedCommand = "sed -n '0~" + step + "p' " + inFile.getAbsolutePath() + " > " + outFile.getAbsolutePath();
         System.out.println(sedCommand);
 
         Process p = Runtime.getRuntime().exec(sedCommand);
         p.waitFor();
          */
-        
+
         BufferedReader in = new BufferedReader(new FileReader(inFile));
         BufferedWriter out = new BufferedWriter(new FileWriter(outFile));
-        
+
         int i = 1;
         String line;
         while((line = in.readLine()) != null) {
@@ -351,10 +353,10 @@ public class VariantManagerUtils {
                 i++;
             }
         }
-        
+
         in.close();
         out.close();
     }
-    
-    
+
+
 }

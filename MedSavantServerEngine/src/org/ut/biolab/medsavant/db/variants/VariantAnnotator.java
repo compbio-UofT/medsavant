@@ -170,6 +170,7 @@ public class VariantAnnotator {
                     numMatchesForChromosome++;
                     //log("Matched " + currentVariant + " with " + currentAnnotation);
                     // write current line with current annotation
+
                     writer.writeNext(copyArraysExcludingEntries(currentVariant.line, currentAnnotation.line, outLine, currentAnnotation.getNumRelevantFields()));
                 } else {
                     // write current line without annotation
@@ -250,6 +251,8 @@ public class VariantAnnotator {
 
     public void annotate(String sid) throws Exception {
         ServerLogger.logByEmail("Annotation started", "Annotation of " + tdfFilename + " was started. " + annotationIds.length + " annotation(s) will be performed.\n\nYou will be notified again upon completion.");
+
+        LOG.info("Annotation of " + tdfFilename + " was started. " + annotationIds.length + " annotation(s) will be performed.");
 
         // if no annotations to perform, copy input to output
         if (annotationIds.length == 0) {
