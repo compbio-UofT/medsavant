@@ -66,7 +66,6 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class IndividualDetailedView extends DetailedView implements PedigreeFields {
 
-    private final String pageName;
     private List<String> fieldNames;
     private DetailsWorker detailsWorker;
     private final JPanel infoContent;
@@ -85,7 +84,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
     private final CollapsiblePane collapsiblePane;
 
     public IndividualDetailedView(String page) throws RemoteException, SQLException {
-        pageName = page;
+        super(page);
 
         fieldNames = MedSavantClient.PatientManager.getPatientFieldAliases(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
 
@@ -443,7 +442,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         private final int patientID;
 
         private DetailsWorker(int patID) {
-            super(pageName);
+            super(getPageName());
             patientID = patID;
         }
 
@@ -467,7 +466,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         private final int patientID;
 
         public PedigreeWorker(int patID) {
-            super(pageName);
+            super(getPageName());
             this.patientID = patID;
         }
 

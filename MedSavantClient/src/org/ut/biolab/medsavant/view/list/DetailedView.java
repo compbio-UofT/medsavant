@@ -31,12 +31,14 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public abstract class DetailedView extends JPanel {
 
+    private final String pageName;
     private final JPanel contentPanel;
     protected SplitScreenView parent;
     private final JPanel bottomPanel;
     private final Component glue;
 
-    public DetailedView() {
+    public DetailedView(String page) {
+        pageName = page;
         setPreferredSize(new Dimension(9999, 350));
         setOpaque(false);
         setLayout(new BorderLayout());
@@ -73,5 +75,9 @@ public abstract class DetailedView extends JPanel {
     public void addBottomComponent(Component c) {
         bottomPanel.add(c);
         bottomPanel.add(glue);
+    }
+    
+    public String getPageName() {
+        return pageName;
     }
 }

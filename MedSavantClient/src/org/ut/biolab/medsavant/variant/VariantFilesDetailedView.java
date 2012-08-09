@@ -45,7 +45,6 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 class VariantFilesDetailedView extends DetailedView {
 
-    private final String pageName;
     private final JPanel details;
     private final JPanel content;
     private SimpleVariantFile[] files;
@@ -53,7 +52,7 @@ class VariantFilesDetailedView extends DetailedView {
     private CollapsiblePane infoPanel;
 
     public VariantFilesDetailedView(String page) {
-        pageName = page;
+        super(page);
 
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
@@ -122,7 +121,7 @@ class VariantFilesDetailedView extends DetailedView {
         private final SimpleVariantFile file;
 
         public DetailsWorker(SimpleVariantFile f) {
-            super(pageName);
+            super(getPageName());
             this.file = f;
         }
 

@@ -215,6 +215,7 @@ public class ProjectManagementPage extends SubSectionView {
 
 
         public ProjectsDetailedView() {
+            super(ProjectManagementPage.this.getName());
 
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());

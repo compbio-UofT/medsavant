@@ -51,7 +51,6 @@ class CohortDetailedView extends DetailedView {
 
     private static final Log LOG = LogFactory.getLog(CohortDetailedView.class);
 
-    private final String pageName;
     private Cohort[] cohorts;
     private CohortDetailsWorker worker;
     private final JPanel details;
@@ -59,7 +58,7 @@ class CohortDetailedView extends DetailedView {
     private final CollapsiblePane membersPane;
 
     CohortDetailedView(String page) {
-        pageName = page;
+        super(page);
 
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
@@ -92,7 +91,7 @@ class CohortDetailedView extends DetailedView {
         private final Cohort cohort;
 
         CohortDetailsWorker(Cohort coh) {
-            super(pageName);
+            super(getPageName());
             cohort = coh;
         }
 

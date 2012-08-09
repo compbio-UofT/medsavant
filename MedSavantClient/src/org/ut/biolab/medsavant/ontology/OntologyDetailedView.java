@@ -26,13 +26,13 @@ import org.ut.biolab.medsavant.view.list.DetailedTableView;
  */
 public class OntologyDetailedView extends DetailedTableView<Ontology> {
 
-    public OntologyDetailedView() {
-        super("", "Multiple ontologies (%d)", new String[] { "Name", "Type", "OBO URL", "Mapping URL" });
+    public OntologyDetailedView(String page) {
+        super(page, "", "Multiple ontologies (%d)", new String[] { "Name", "Type", "OBO URL", "Mapping URL" });
     }
 
     @Override
     public MedSavantWorker createWorker() {
-        return new MedSavantWorker<Ontology[]>("Ontologies") {
+        return new MedSavantWorker<Ontology[]>(getPageName()) {
 
             @Override
             protected Ontology[] doInBackground() throws Exception {

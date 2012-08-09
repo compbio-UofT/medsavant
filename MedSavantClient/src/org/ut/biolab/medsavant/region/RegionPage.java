@@ -54,7 +54,7 @@ public class RegionPage extends SubSectionView {
                         return controller.getRegionSets().toArray(new RegionSet[0]);
                     }
                 },
-                new RegionDetailedView(),
+                new RegionDetailedView(getName()),
                 new RegionDetailedListEditor());
 
         return view;

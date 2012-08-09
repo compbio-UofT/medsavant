@@ -25,11 +25,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.jidesoft.grid.TableModelWrapperUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
@@ -43,15 +41,13 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class SplitScreenView extends JPanel {
 
-    private static final Log LOG = LogFactory.getLog(SplitScreenView.class);
-
     //TODO: handle limits better!
     private static final int LIMIT = 10000;
 
     private final DetailedListModel detailedListModel;
     private final DetailedView detailedView;
     private final DetailedListEditor detailedEditor;
-    private final ListView listView;
+    private final MasterView masterView;
 
     public SplitScreenView(DetailedListModel model, DetailedView view) {
         this(model, view, new DetailedListEditor());
@@ -64,9 +60,9 @@ public class SplitScreenView extends JPanel {
 
         setLayout(new BorderLayout());
 
-        listView = new ListView();
+        masterView = new MasterView();
 
-        PeekingPanel pp = new PeekingPanel("List", BorderLayout.EAST, (JComponent)listView, true, 330);
+        PeekingPanel pp = new PeekingPanel("List", BorderLayout.EAST, (JComponent)masterView, true, 330);
         pp.setToggleBarVisible(false);
         add(pp, BorderLayout.WEST);
         add(detailedView, BorderLayout.CENTER);
@@ -74,21 +70,21 @@ public class SplitScreenView extends JPanel {
     }
 
     public void refresh() {
-        listView.refreshList();
+        masterView.refreshList();
     }
 
     public Object[][] getList() {
-        return listView.data;
+        return masterView.data;
     }
 
     public void selectInterval(int start, int end){
-        start = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), start);
-        end = TableModelWrapperUtils.getRowAt(listView.stp.getTable().getModel(), end);
-        listView.stp.getTable().getSelectionModel().setSelectionInterval(start, end);
-        listView.stp.scrollToIndex(start);
+        start = TableModelWrapperUtils.getRowAt(masterView.stp.getTable().getModel(), start);
+        end = TableModelWrapperUtils.getRowAt(masterView.stp.getTable().getModel(), end);
+        masterView.stp.getTable().getSelectionModel().setSelectionInterval(start, end);
+        masterView.stp.scrollToIndex(start);
     }
 
-    private class ListView extends JPanel {
+    private class MasterView extends JPanel {
 
         private static final String CARD_WAIT = "wait";
         private static final String CARD_SHOW = "show";
@@ -102,7 +98,7 @@ public class SplitScreenView extends JPanel {
         private RowSelectionGrabber selectionGrabber;
         private JPanel buttonPanel;
 
-        private ListView() {
+        private MasterView() {
             setLayout(new CardLayout());
 
             WaitPanel wp = new WaitPanel("Getting list");
@@ -224,25 +220,20 @@ public class SplitScreenView extends JPanel {
 
         private void fetchList() {
 
-            SwingWorker sw = new SwingWorker<Object[][], Void>() {
-
+            new MedSavantWorker<Object[][]>(detailedView.getPageName()) {
                 @Override
                 protected Object[][] doInBackground() throws Exception {
                     return detailedListModel.getList(LIMIT);
                 }
 
-                @Override
-                protected void done() {
-                    try {
-                        setList(get());
-                    } catch (Throwable x) {
-                        LOG.error("Unable to load detail list.", x);
-                        showErrorCard(MiscUtils.getMessage(x));
-                    }
+                protected void showProgress(double ignored) {
                 }
-            };
 
-            sw.execute();
+                @Override
+                protected void showSuccess(Object[][] result) {
+                    setList(result);
+                }
+            }.execute();
         }
 
         private void updateShowCard() {

@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
@@ -35,6 +37,8 @@ import org.ut.biolab.medsavant.reference.ReferenceController;
  * @author Andrew
  */
 public class ResultController {
+    private static final Log LOG = LogFactory.getLog(ResultController.class);
+
     private List<Object[]> filteredVariants;
 
     private static ResultController instance;
@@ -95,7 +99,9 @@ public class ResultController {
                     ProjectController.getInstance().getCurrentProjectID() != projectIDForRecords ||
                     ReferenceController.getInstance().getCurrentReferenceID() != referenceIDForRecords ||
                     !SettingsController.getInstance().getDBName().equals(dbNameForRecords)) {
+                long then = System.currentTimeMillis();
                 updateFilteredVariantDBResults(start, limit, order);
+                LOG.info("Query for " + start + ", " + limit + " took " + (System.currentTimeMillis() - then) + "ms to return " + filteredVariants.size() + " records.");
                 this.limit = limit;
                 this.start = start;
                 projectIDForRecords = ProjectController.getInstance().getCurrentProjectID();

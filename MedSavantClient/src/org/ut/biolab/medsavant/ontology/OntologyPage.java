@@ -53,7 +53,7 @@ public class OntologyPage extends SubSectionView {
                         return MedSavantClient.OntologyManager.getOntologies(LoginController.sessionId);
                     }
                 },
-                new OntologyDetailedView(),
+                new OntologyDetailedView(getName()),
                 new OntologyDetailedListEditor());
 
         return view;

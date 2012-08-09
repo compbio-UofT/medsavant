@@ -101,7 +101,7 @@ public class ReferenceGenomePage extends SubSectionView {
     private class ReferenceDetailedView extends DetailedTableView<Reference> {
 
         public ReferenceDetailedView() {
-            super("", "Multiple references (%d)", new String[] { "Contig Name", "Contig Length", "Centromere Position" });
+            super(ReferenceGenomePage.this.getName(), "", "Multiple references (%d)", new String[] { "Contig Name", "Contig Length", "Centromere Position" });
         }
 
         @Override

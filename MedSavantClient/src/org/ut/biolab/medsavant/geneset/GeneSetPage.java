@@ -18,9 +18,6 @@ package org.ut.biolab.medsavant.geneset;
 
 import javax.swing.JPanel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.util.ThreadController;
@@ -41,9 +38,8 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
  * @author tarkvara
  */
 public class GeneSetPage extends SubSectionView {
-    private static final Log LOG = LogFactory.getLog(GeneSetPage.class);
 
-    private SplitScreenView panel;
+    private SplitScreenView view;
     private boolean updateRequired = false;
     private final GeneSetManagerAdapter manager;
 
@@ -59,10 +55,18 @@ public class GeneSetPage extends SubSectionView {
 
     @Override
     public JPanel getView(boolean update) {
-        if (panel == null || updateRequired) {
-            setPanel();
+        if (view == null || updateRequired) {
+            view = new SplitScreenView(
+                    new SimpleDetailedListModel<GeneSet>("Gene Sets") {
+                        @Override
+                        public GeneSet[] getData() throws Exception {
+                            return manager.getGeneSets(LoginController.sessionId);
+                        }
+                    },
+                    new GenesDetailedView(),
+                    new DetailedListEditor());
         }
-        return panel;
+        return view;
     }
 
     @Override
@@ -73,26 +77,14 @@ public class GeneSetPage extends SubSectionView {
         ThreadController.getInstance().cancelWorkers(getName());
     }
 
-    public void setPanel() {
-        panel = new SplitScreenView(
-                new SimpleDetailedListModel<GeneSet>("Gene Sets") {
-                    @Override
-                    public GeneSet[] getData() throws Exception {
-                        return manager.getGeneSets(LoginController.sessionId);
-                    }
-                },
-                new GenesDetailedView(),
-                new DetailedListEditor());
-    }
-
     public void update(){
-        panel.refresh();
+        view.refresh();
     }
 
     private class GenesDetailedView extends DetailedTableView<GeneSet> {
 
         public GenesDetailedView() {
-            super("", "Multiple gene sets (%d)", new String[] { "Name", "Chromosome", "Start", "End", "Coding Start", "Coding End" });
+            super(GeneSetPage.this.getName(), "", "Multiple gene sets (%d)", new String[] { "Name", "Chromosome", "Start", "End", "Coding Start", "Coding End" });
         }
 
         @Override

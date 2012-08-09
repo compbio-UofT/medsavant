@@ -56,58 +56,6 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class AnnotationsPage extends SubSectionView {
 
-    private static class ExternalAnnotationDetailedListEditor extends DetailedListEditor {
-
-        @Override
-        public boolean doesImplementAdding() {
-            return true;
-        }
-
-        @Override
-        public boolean doesImplementDeleting() {
-            return true;
-        }
-
-        @Override
-        public void addItems() {
-            try {
-                new InstallAnnotationWizard().setVisible(true);
-            } catch (Exception ex) {
-                ClientMiscUtils.reportError("Error installing annotations", ex);
-            }
-        }
-
-        @Override
-        public void deleteItems(List<Object[]> items) {
-            try {
-
-                Annotation an = (Annotation) items.get(0)[0];
-
-                int response = DialogUtils.askYesNo("Confirm", "Are you sure you want to uninstall " + an.getProgram() + "?");
-
-                if (response == DialogUtils.YES) {
-                    MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.sessionId, an);
-                    DialogUtils.displayMessage("Annotation " + an.getProgram() + " uninstalled");
-                }
-
-            } catch (Exception ex) {
-                ClientMiscUtils.reportError("Error uninstalling annotations", ex);
-            }
-
-        }
-    }
-
-    public void referenceAdded(String name) {
-        panel.refresh();
-    }
-
-    public void referenceRemoved(String name) {
-        panel.refresh();
-    }
-
-    public void referenceChanged(String name) {
-        panel.refresh();
-    }
     private SplitScreenView panel;
 
     public AnnotationsPage(SectionView parent) {
@@ -149,6 +97,7 @@ public class AnnotationsPage extends SubSectionView {
         private CollapsiblePane infoPanel;
 
         public ExternalAnnotationDetailedView() {
+            super(AnnotationsPage.this.getName());
 
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());
@@ -233,5 +182,58 @@ public class AnnotationsPage extends SubSectionView {
             details.updateUI();
 
         }
+    }
+
+    private static class ExternalAnnotationDetailedListEditor extends DetailedListEditor {
+
+        @Override
+        public boolean doesImplementAdding() {
+            return true;
+        }
+
+        @Override
+        public boolean doesImplementDeleting() {
+            return true;
+        }
+
+        @Override
+        public void addItems() {
+            try {
+                new InstallAnnotationWizard().setVisible(true);
+            } catch (Exception ex) {
+                ClientMiscUtils.reportError("Error installing annotations", ex);
+            }
+        }
+
+        @Override
+        public void deleteItems(List<Object[]> items) {
+            try {
+
+                Annotation an = (Annotation) items.get(0)[0];
+
+                int response = DialogUtils.askYesNo("Confirm", "Are you sure you want to uninstall " + an.getProgram() + "?");
+
+                if (response == DialogUtils.YES) {
+                    MedSavantClient.AnnotationManagerAdapter.uninstallAnnotation(LoginController.sessionId, an);
+                    DialogUtils.displayMessage("Annotation " + an.getProgram() + " uninstalled");
+                }
+
+            } catch (Exception ex) {
+                ClientMiscUtils.reportError("Error uninstalling annotations", ex);
+            }
+
+        }
+    }
+
+    public void referenceAdded(String name) {
+        panel.refresh();
+    }
+
+    public void referenceRemoved(String name) {
+        panel.refresh();
+    }
+
+    public void referenceChanged(String name) {
+        panel.refresh();
     }
 }

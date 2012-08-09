@@ -22,9 +22,6 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -39,18 +36,16 @@ import org.ut.biolab.medsavant.view.list.DetailedTableView;
  */
 public class RegionDetailedView extends DetailedTableView<RegionSet> {
     
-    private static final Log LOG = LogFactory.getLog(RegionDetailedView.class);
-
     private final RegionController controller;
 
-    public RegionDetailedView() {
-        super("", "Multiple lists (%d)", new String[] { "Region", "Chromosome", "Start", "End" });
+    public RegionDetailedView(String page) {
+        super(page, "", "Multiple lists (%d)", new String[] { "Region", "Chromosome", "Start", "End" });
         controller = RegionController.getInstance();
     }
 
     @Override
     public MedSavantWorker createWorker() {
-        return new MedSavantWorker<List<GenomicRegion>>("") {
+        return new MedSavantWorker<List<GenomicRegion>>(getPageName()) {
 
             @Override
             protected List<GenomicRegion> doInBackground() throws Exception {

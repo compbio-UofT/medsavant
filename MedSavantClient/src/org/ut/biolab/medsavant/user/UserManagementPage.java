@@ -172,6 +172,7 @@ public class UserManagementPage extends SubSectionView implements Listener<UserE
         private CollapsiblePane infoPanel;
 
         public UserDetailedView() {
+            super(UserManagementPage.this.getName());
 
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());

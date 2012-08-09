@@ -47,7 +47,8 @@ public abstract class DetailedTableView<T> extends DetailedView {
     protected List<T> selected = new ArrayList<T>();
     private MedSavantWorker worker;
 
-    public DetailedTableView(String title, String multTitle, String[] colNames) {
+    public DetailedTableView(String page, String title, String multTitle, String[] colNames) {
+        super(page);
         multipleTitle = multTitle;
         columnNames = colNames;
 
