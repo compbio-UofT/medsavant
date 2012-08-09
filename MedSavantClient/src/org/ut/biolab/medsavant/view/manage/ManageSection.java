@@ -31,11 +31,7 @@ import org.ut.biolab.medsavant.view.subview.SectionView;
 public class ManageSection extends SectionView {
 
     public ManageSection() {
-    }
-
-    @Override
-    public String getName() {
-        return "Administration";
+        super("Administration");
     }
 
     @Override

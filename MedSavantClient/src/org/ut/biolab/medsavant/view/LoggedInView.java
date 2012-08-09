@@ -60,9 +60,8 @@ public class LoggedInView extends JPanel {
     }
 
     private class ListsSection extends SectionView {
-        @Override
-        public String getName() {
-            return "Tables";
+        private ListsSection() {
+            super("Tables");
         }
 
         @Override

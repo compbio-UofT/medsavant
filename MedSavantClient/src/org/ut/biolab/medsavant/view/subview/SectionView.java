@@ -26,7 +26,15 @@ import javax.swing.JPanel;
  */
 public abstract class SectionView {
 
-    public abstract String getName();
+    private final String name;
+    
+    protected SectionView(String name) {
+        this.name = name;
+    }
+
+    public final String getName() {
+        return name;
+    }
 
     public abstract SubSectionView[] getSubSections();
 

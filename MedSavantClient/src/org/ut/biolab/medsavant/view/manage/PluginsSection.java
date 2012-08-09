@@ -33,11 +33,7 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
 public class PluginsSection extends SectionView {
 
     public PluginsSection() {
-    }
-
-    @Override
-    public String getName() {
-        return "Plugins";
+        super("Plugins");
     }
 
     @Override

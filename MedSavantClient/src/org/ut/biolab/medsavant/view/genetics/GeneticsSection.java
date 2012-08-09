@@ -44,12 +44,8 @@ public class GeneticsSection extends SectionView {
     private JPanel[] persistencePanels;
 
     public GeneticsSection() {
+        super("Variants");
         getSectionMenuComponents(); // force banner to be active, in turn forcing default reference selection
-    }
-
-    @Override
-    public String getName() {
-        return "Variants";
     }
 
     @Override

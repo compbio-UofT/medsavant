@@ -28,9 +28,8 @@ import org.ut.biolab.medsavant.view.subview.SubSectionView;
 public class ProjectsSection extends SectionView {
     private SubSectionView[] subSections;
 
-    @Override
-    public String getName() {
-        return ProjectController.getInstance().getCurrentProjectName();
+    public ProjectsSection() {
+        super(ProjectController.getInstance().getCurrentProjectName());
     }
 
     @Override
