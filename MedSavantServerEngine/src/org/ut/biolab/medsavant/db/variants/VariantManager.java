@@ -250,7 +250,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
 
             //add entries to tablemap
-            ProjectManager.getInstance().addTableToMap(sessID, projID, refID, updateId, false, tableName, tableNameSub);
+            ProjectManager.getInstance().addTableToMap(sessID, projID, refID, updateId, false, tableName, annotIDs, tableNameSub);
 
             //cleanup
             LOG.info("Dropping old table(s)");
@@ -345,6 +345,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             uploadFileToVariantTable(sessID, existingVariantsFile, tableName);
             frac += LOAD_INTO_TABLE_FRACTION;
 
+            //get annotation ids
+            int[] annotIDs = annotMgr.getAnnotationIDs(sessID, projID, refID);
+
+
             VCFIterator parser = new VCFIterator(vcfFiles, baseDir, updateID, includeHomoRef);
             File f;
             while ((f = parser.next()) != null) {
@@ -365,8 +369,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                     currentFilename = customFieldFilename;
                 }
 
-                //get annotation ids
-                int[] annotIDs = annotMgr.getAnnotationIDs(sessID, projID, refID);
 
                 if (annotIDs.length > 0) {
 
@@ -427,7 +429,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
 
             //add entries to tablemap
-            projMgr.addTableToMap(sessID, projID, refID, updateID, false, tableName, tableNameSub);
+            projMgr.addTableToMap(sessID, projID, refID, updateID, false, tableName, annotIDs, tableNameSub);
 
             //add tags to upload
             LOG.info("Adding upload tags");
@@ -515,8 +517,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             uploadFileToVariantTable(sid, subFile, tableNameSub);
             //ProjectQueryUtil.getInstance().addSubsetInfoToMap(sid, projectId, referenceId, updateId, tableNameSub, ProjectQueryUtil.getInstance().getMultiplier(sid, tableName, tableNameSub));
 
+            //get annotation ids
+            AnnotationManager annotMgr = AnnotationManager.getInstance();
+            int[] annotIDs = annotMgr.getAnnotationIDs(sid, projectId, referenceId);
+
             //add entries to tablemap
-            ProjectManager.getInstance().addTableToMap(sid, projectId, referenceId, updateId, false, tableName, tableNameSub);
+            ProjectManager.getInstance().addTableToMap(sid, projectId, referenceId, updateId, false, tableName, annotIDs, tableNameSub);
 
             //cleanup
             LOG.info("Dropping old table(s)");

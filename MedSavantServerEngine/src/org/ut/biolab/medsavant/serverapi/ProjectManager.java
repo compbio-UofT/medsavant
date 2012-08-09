@@ -58,10 +58,10 @@ import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 public class ProjectManager extends MedSavantServerUnicastRemoteObject implements ProjectManagerAdapter {
 
     private static final Log LOG = LogFactory.getLog(ProjectManager.class);
-    
+
     private static ProjectManager instance;
 
-    
+
     private ProjectManager() throws RemoteException {
     }
 
@@ -218,24 +218,41 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
             query = query.substring(0, query.length() - 1); //remove last comma
             query += ") ENGINE=BRIGHTHOUSE;";
-            LOG.info(query);
             conn.createStatement().execute(query);
         } finally {
             conn.close();
         }
         return variantTableName;
     }
-    
+
     @Override
-    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, String subTableName) throws SQLException{
+    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException{
+
+
         TableSchema variantTableMap = MedSavantDatabase.VarianttablemapTableSchema;
         InsertQuery query = new InsertQuery(variantTableMap.getTable());
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID);
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_REFERENCE_ID), refID);
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updID);
+
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), published);
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), tableName);
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME), subTableName);
+
+
+        // add annotation ids
+        //LOG.info("\n\n\n\n\n\n\n");
+        //LOG.info(annotationIDs);
+        if (annotationIDs.length > 0) {
+            String annIDString = "";
+            for (int id : annotationIDs) {
+                annIDString += id + ",";
+            }
+            //LOG.info(annIDString);
+            annIDString = annIDString.substring(0,annIDString.length()-1); // remove the last comma
+            query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS), annIDString);
+        }
+
         ConnectionController.executeUpdate(sessID, query.toString());
     }
 
@@ -510,7 +527,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId);
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_POSITION), i);
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), f.getColumnName());
-            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), f.getColumnTypeString());
+            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), f.getSQLFieldTypeString());
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (f.isFilterable() ? "1" : "0"));
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_ALIAS), f.getAlias());
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), f.getDescription());

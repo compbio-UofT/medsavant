@@ -272,7 +272,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
             query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid);
             query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), i);
             query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), a.getColumnName());
-            query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), a.getColumnTypeString());
+            query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), a.getSQLFieldTypeString());
             query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (a.isFilterable() ? "1" : "0"));
             query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS), a.getAlias());
             query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), a.getDescription());
@@ -314,7 +314,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         InsertQuery query = new InsertQuery(table.getTable());
         for (int i = 0; i < Math.min(cols.size(), values.size()); i++) {
-            query.addColumn(new DbColumn(table.getTable(), cols.get(i).getColumnName(), cols.get(i).getColumnTypeString(), 100), values.get(i));
+            query.addColumn(new DbColumn(table.getTable(), cols.get(i).getColumnName(), cols.get(i).getSQLFieldTypeString(), 100), values.get(i));
         }
 
         ConnectionController.executeUpdate(sid,  query.toString());
@@ -370,7 +370,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         q.addColumns(currentDNAID);
         q.addCondition(BinaryCondition.greaterThan(testColumn, r.getMin(), true));
         q.addCondition(BinaryCondition.lessThan(testColumn, r.getMax(), true));
-        
+
         ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
 
         List<String> result = new ArrayList<String>();
@@ -466,7 +466,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projID);
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), tempPos++);
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), f.getColumnName());
-                q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), f.getColumnTypeString());
+                q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), f.getSQLFieldTypeString());
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (f.isFilterable() ? "1" : "0"));
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS), f.getAlias());
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), f.getDescription());

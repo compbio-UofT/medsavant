@@ -145,8 +145,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
         int i = 0;
         for (CustomField a : format.getCustomFields()) {
-            System.out.println(a.getAlias() + " is " + a.getColumnType() + "(" + a.getColumnLength() + ")");
-            addAnnotationFormat(sessionID, id, i++, id + "_" + a.getColumnName(), a.getColumnType() + "(" + a.getColumnLength() + ")", a.isFilterable(), a.getAlias(), a.getDescription());
+            addAnnotationFormat(sessionID, id, i++, id + "_" + a.getColumnName(), a.getSQLFieldTypeString(), a.isFilterable(), a.getAlias(), a.getDescription());
         }
         conn.commit();
         conn.setAutoCommit(true);
@@ -503,6 +502,8 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
      * @return
      */
     private static File getDirectoryForAnnotation(String programName, String programVersion, String reference) {
+
+
         return new File(localDirectory.getAbsolutePath() + "/" + reference + "/" + programName + "/" + programVersion);
     }
 
