@@ -26,7 +26,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.api.MedSavantSectionPlugin;
-import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.plugin.PluginController;
 import org.ut.biolab.medsavant.plugin.PluginEvent;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
@@ -34,6 +33,7 @@ import org.ut.biolab.medsavant.plugin.PluginDescriptor;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+
 
 /**
  * Page which a plugin can use to present its UI.
@@ -43,20 +43,19 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class PluginPage extends SubSectionView {
     private static final Log LOG = LogFactory.getLog(PluginPage.class);
     private static PluginController controller = PluginController.getInstance();
-    private final PluginDescriptor descriptor;
-    private MedSavantSectionPlugin p;
-    JPanel panel;
+
+    private MedSavantSectionPlugin plugin;
+    private final JPanel panel;
 
     public PluginPage(SectionView parent, PluginDescriptor desc) {
-        super(parent);
-        descriptor = desc;
+        super(parent, desc.getName());
         panel = new JPanel();
         panel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-        p = (MedSavantSectionPlugin)controller.getPlugin(desc.getID());
-        if (p != null) {
-            p.init(panel);
+        plugin = (MedSavantSectionPlugin)controller.getPlugin(desc.getID());
+        if (plugin != null) {
+            plugin.init(panel);
         } else {
             JLabel placeholder = new JLabel(controller.getPluginStatus(desc.getID()));
             placeholder.setFont(ViewUtil.getBigTitleFont());
@@ -74,8 +73,8 @@ public class PluginPage extends SubSectionView {
                             panel.removeAll();
                             MedSavantPlugin plug = event.getPlugin();
                             if (plug instanceof MedSavantSectionPlugin) {
-                                p = (MedSavantSectionPlugin)plug;
-                                p.init(panel);
+                                plugin = (MedSavantSectionPlugin)plug;
+                                plugin.init(panel);
                             }
                             break;
                         case ERROR:
@@ -89,25 +88,23 @@ public class PluginPage extends SubSectionView {
     }
 
     @Override
-    public String getName() {
-        return descriptor.getName();
-    }
-
-    @Override
     public JPanel getView(boolean update) {
         return panel;
     }
 
     @Override
     public void viewDidLoad() {
-        if (p != null)
-            ((MedSavantSectionPlugin)p).viewDidLoad();
+        super.viewDidLoad();
+        if (plugin != null) {
+            ((MedSavantSectionPlugin)plugin).viewDidLoad();
+        }
     }
 
     @Override
     public void viewDidUnload() {
-        if (p != null)
-            ((MedSavantSectionPlugin)p).viewDidUnload();
-        ThreadController.getInstance().cancelWorkers(getName());
+        if (plugin != null) {
+            ((MedSavantSectionPlugin)plugin).viewDidUnload();
+        }
+        super.viewDidUnload();
     }
 }

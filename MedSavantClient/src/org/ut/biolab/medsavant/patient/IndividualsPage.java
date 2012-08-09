@@ -19,7 +19,6 @@ package org.ut.biolab.medsavant.patient;
 import java.awt.Component;
 import javax.swing.JPanel;
 
-import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.list.SplitScreenView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
@@ -33,12 +32,7 @@ public class IndividualsPage extends SubSectionView {
     private SplitScreenView view;
 
     public IndividualsPage(SectionView parent) {
-        super(parent);
-    }
-
-    @Override
-    public String getName() {
-        return "Individuals";
+        super(parent, "Individuals");
     }
 
     @Override
@@ -46,7 +40,7 @@ public class IndividualsPage extends SubSectionView {
         try {
             view = new SplitScreenView(
                     new IndividualListModel(),
-                    new IndividualDetailedView(getName()),
+                    new IndividualDetailedView(pageName),
                     new IndividualDetailEditor());
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Unable to create individuals page: %s", ex);
@@ -57,14 +51,5 @@ public class IndividualsPage extends SubSectionView {
     @Override
     public Component[] getSubSectionMenuComponents() {
         return new Component[0];
-    }
-
-    @Override
-    public void viewDidLoad() {
-    }
-
-    @Override
-    public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
     }
 }

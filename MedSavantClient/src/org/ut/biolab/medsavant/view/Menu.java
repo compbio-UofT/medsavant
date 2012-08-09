@@ -254,7 +254,7 @@ public class Menu extends JPanel {
         private final ButtonGroup group;
 
         SubSectionButton(SubSectionView v, ButtonGroup g) {
-            super(v.getName());
+            super(v.getPageName());
             view = v;
             group = g;
             setFontSize(12);

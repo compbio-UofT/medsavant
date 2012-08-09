@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.filter.SearchBar;
@@ -42,7 +41,7 @@ public class GeneticsFilterPage extends SubSectionView {
     private static SearchBar panel;
 
     public GeneticsFilterPage(SectionView parent) {
-        super(parent);
+        super(parent, "Search Bar");
 
         panel = new SearchBar();
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
@@ -57,15 +56,10 @@ public class GeneticsFilterPage extends SubSectionView {
     }
 
     @Override
-    public String getName() {
-        return "Search Bar";
-    }
-
-    @Override
     public JPanel getView(boolean update) {
         if (view == null || update) {
             view = ViewUtil.getClearPanel();
-            view.setName(this.getName());
+            view.setName(pageName);
             view.setLayout(new BorderLayout());
             view.add(panel,BorderLayout.CENTER);
 
@@ -80,15 +74,6 @@ public class GeneticsFilterPage extends SubSectionView {
         }
 
         return view;
-    }
-
-    @Override
-    public void viewDidLoad() {
-    }
-
-    @Override
-    public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
     }
 
     public static SearchBar getSearchBar() {

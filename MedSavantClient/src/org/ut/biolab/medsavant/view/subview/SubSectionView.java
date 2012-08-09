@@ -29,6 +29,8 @@ import org.ut.biolab.medsavant.util.ThreadController;
 public abstract class SubSectionView {
 
     private final SectionView parent;
+    protected final String pageName;
+    protected boolean loaded;
     private boolean updateRequired = true;
 
     public void setUpdateRequired(boolean required){
@@ -39,15 +41,18 @@ public abstract class SubSectionView {
         return this.updateRequired;
     }
 
-    public SubSectionView(SectionView parent) {
+    public SubSectionView(SectionView parent, String page) {
         this.parent = parent;
+        pageName = page;
     }
-
-    public abstract String getName();
 
     public abstract JPanel getView(boolean update);
 
     public Component[] getSubSectionMenuComponents() { return null; }
+
+    public String getPageName() {
+        return pageName;
+    }
 
     public SectionView getParent() {
         return parent;
@@ -57,12 +62,14 @@ public abstract class SubSectionView {
      * Give derived classes a chance to initialise themselves after loading.
      */
     public void viewDidLoad() {
+        loaded = true;
     }
 
     /**
      * Provide cleanup when unloading the view.
      */
     public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
+        loaded = false;
+        ThreadController.getInstance().cancelWorkers(pageName);
     }
 }

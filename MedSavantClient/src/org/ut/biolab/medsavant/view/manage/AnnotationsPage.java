@@ -59,13 +59,7 @@ public class AnnotationsPage extends SubSectionView {
     private SplitScreenView panel;
 
     public AnnotationsPage(SectionView parent) {
-        super(parent);
-        //ExternalAnnotationController.getInstance().addExternalAnnotationListener(this);
-    }
-
-    @Override
-    public String getName() {
-        return "Annotations";
+        super(parent, "Annotations");
     }
 
     @Override
@@ -97,7 +91,7 @@ public class AnnotationsPage extends SubSectionView {
         private CollapsiblePane infoPanel;
 
         public ExternalAnnotationDetailedView() {
-            super(AnnotationsPage.this.getName());
+            super(pageName);
 
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());

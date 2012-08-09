@@ -36,13 +36,8 @@ public class RegionPage extends SubSectionView {
     
 
     public RegionPage(SectionView parent) {
-        super(parent);
+        super(parent, "Region Lists");
         controller = RegionController.getInstance();
-    }
-
-    @Override
-    public String getName() {
-        return "Region Lists";
     }
 
     @Override
@@ -54,7 +49,7 @@ public class RegionPage extends SubSectionView {
                         return controller.getRegionSets().toArray(new RegionSet[0]);
                     }
                 },
-                new RegionDetailedView(getName()),
+                new RegionDetailedView(pageName),
                 new RegionDetailedListEditor());
 
         return view;

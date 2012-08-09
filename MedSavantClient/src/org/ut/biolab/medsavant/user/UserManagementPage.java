@@ -30,7 +30,6 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedView;
@@ -50,13 +49,8 @@ public class UserManagementPage extends SubSectionView implements Listener<UserE
     private SplitScreenView panel;
 
     public UserManagementPage(SectionView parent) {
-        super(parent);
+        super(parent, "Users");
         UserController.getInstance().addListener(this);
-    }
-
-    @Override
-    public String getName() {
-        return "Users";
     }
 
     @Override
@@ -82,15 +76,6 @@ public class UserManagementPage extends SubSectionView implements Listener<UserE
     @Override
     public Component[] getSubSectionMenuComponents() {
         return new Component[0];
-    }
-
-    @Override
-    public void viewDidLoad() {
-    }
-
-    @Override
-    public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
     }
 
     @Override
@@ -172,7 +157,7 @@ public class UserManagementPage extends SubSectionView implements Listener<UserE
         private CollapsiblePane infoPanel;
 
         public UserDetailedView() {
-            super(UserManagementPage.this.getName());
+            super(pageName);
 
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());
@@ -260,7 +245,7 @@ public class UserManagementPage extends SubSectionView implements Listener<UserE
             private String userName;
 
             public DetailsWorker(String userName) {
-                super(UserManagementPage.this.getName());
+                super(pageName);
                 this.userName = userName;
             }
 

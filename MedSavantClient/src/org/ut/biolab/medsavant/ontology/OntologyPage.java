@@ -36,12 +36,7 @@ public class OntologyPage extends SubSectionView {
     SplitScreenView view;
 
     public OntologyPage(SectionView parent) {
-        super(parent);
-    }
-
-    @Override
-    public String getName() {
-        return "Ontologies";
+        super(parent, "Ontologies");
     }
 
     @Override
@@ -53,7 +48,7 @@ public class OntologyPage extends SubSectionView {
                         return MedSavantClient.OntologyManager.getOntologies(LoginController.sessionId);
                     }
                 },
-                new OntologyDetailedView(getName()),
+                new OntologyDetailedView(pageName),
                 new OntologyDetailedListEditor());
 
         return view;

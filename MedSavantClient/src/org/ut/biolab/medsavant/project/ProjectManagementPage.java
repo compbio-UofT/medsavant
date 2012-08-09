@@ -34,7 +34,6 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
@@ -57,7 +56,7 @@ public class ProjectManagementPage extends SubSectionView {
     private SplitScreenView panel;
 
     public ProjectManagementPage(SectionView parent) {
-        super(parent);
+        super(parent, "Projects");
         controller.addListener(new Listener<ProjectEvent>() {
             @Override
             public void handleEvent(ProjectEvent event) {
@@ -66,11 +65,6 @@ public class ProjectManagementPage extends SubSectionView {
                 }
             }
         });
-    }
-
-    @Override
-    public String getName() {
-        return "Projects";
     }
 
     @Override
@@ -99,15 +93,6 @@ public class ProjectManagementPage extends SubSectionView {
         //result[0] = getAddPatientsButton();
 
         return result;
-    }
-
-    @Override
-    public void viewDidLoad() {
-    }
-
-    @Override
-    public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
     }
 
     private class ProjectDetailedListEditor extends DetailedListEditor {
@@ -215,7 +200,7 @@ public class ProjectManagementPage extends SubSectionView {
 
 
         public ProjectsDetailedView() {
-            super(ProjectManagementPage.this.getName());
+            super(pageName);
 
             JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
             viewContainer.setLayout(new BorderLayout());
@@ -275,7 +260,7 @@ public class ProjectManagementPage extends SubSectionView {
             Dimension buttonDim = new Dimension(100, 23);
 
             public DetailsWorker(String projectName) {
-                super(ProjectManagementPage.this.getName());
+                super(pageName);
                 this.projectName = projectName;
             }
 

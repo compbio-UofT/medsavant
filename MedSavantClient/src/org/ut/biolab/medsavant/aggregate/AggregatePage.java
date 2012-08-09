@@ -40,11 +40,11 @@ public class AggregatePage extends SubSectionView {
     private boolean isLoaded = false;
 
     public AggregatePage(SectionView parent) {
-        super(parent);
+        super(parent, "Enrichment");
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
             public void handleEvent(FilterEvent event) {
-                ThreadController.getInstance().cancelWorkers(getName());
+                ThreadController.getInstance().cancelWorkers(pageName);
                 if (statsPanel != null) {
                     statsPanel.update(true, isLoaded);
                 }
@@ -61,17 +61,12 @@ public class AggregatePage extends SubSectionView {
     }
 
     @Override
-    public String getName() {
-        return "Enrichment";
-    }
-
-    @Override
     public JPanel getView(boolean update) {
         if (panel == null) {
             panel = new JPanel();
             panel.setLayout(new BorderLayout());
 
-            statsPanel = new AggregatesStatsPanel(getName());
+            statsPanel = new AggregatesStatsPanel(pageName);
             panel.add(statsPanel, BorderLayout.CENTER);
         }
         if (statsPanel != null) {

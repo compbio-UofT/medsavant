@@ -43,17 +43,16 @@ public class VariantFilesPage extends SubSectionView {
     static final Log LOG = LogFactory.getLog(VariantFilesPage.class);
 
     private SplitScreenView panel;
-    private boolean isLoaded = false;
     private boolean updateRequired = false;
     private boolean showPeekOnUnload = false;
 
     public VariantFilesPage(SectionView parent) {
-        super(parent);
+        super(parent, "Variant Files");
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override
             public void handleEvent(ReferenceEvent event) {
                 if (event.getType() == ReferenceEvent.Type.CHANGED) {
-                    if (isLoaded) {
+                    if (loaded) {
                         update();
                     } else {
                         updateRequired = true;
@@ -61,11 +60,6 @@ public class VariantFilesPage extends SubSectionView {
                 }
             }
         });
-    }
-
-    @Override
-    public String getName() {
-        return "Variant Files";
     }
 
     @Override
@@ -78,16 +72,15 @@ public class VariantFilesPage extends SubSectionView {
 
     @Override
     public void viewDidLoad() {
-        isLoaded = true;
+        super.viewDidLoad();
         showPeekOnUnload = ViewController.getInstance().isPeekRightShown();
         ViewController.getInstance().setPeekRightShown(false);
     }
 
     @Override
     public void viewDidUnload() {
-        isLoaded = false;
         ViewController.getInstance().setPeekRightShown(showPeekOnUnload);
-        ThreadController.getInstance().cancelWorkers(getName());
+        super.viewDidUnload();
     }
 
     public void setPanel() {
@@ -98,7 +91,7 @@ public class VariantFilesPage extends SubSectionView {
                         return MedSavantClient.VariantManager.getUploadedFiles(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID());
                     }
                 },
-                new VariantFilesDetailedView(getName()),
+                new VariantFilesDetailedView(pageName),
                 new VariantFilesDetailedListEditor());
     }
 

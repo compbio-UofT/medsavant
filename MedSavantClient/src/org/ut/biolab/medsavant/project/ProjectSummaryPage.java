@@ -46,18 +46,14 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class ProjectSummaryPage extends SubSectionView {
 
     private static final Log LOG = LogFactory.getLog(ProjectSummaryPage.class);
-    String projectName;
-    int projectID;
+
+    private final String projectName;
+    private final int projectID;
 
     ProjectSummaryPage(SectionView parent) {
-        super(parent);
+        super(parent, "Summary");
         projectName = ProjectController.getInstance().getCurrentProjectName();
         projectID = ProjectController.getInstance().getCurrentProjectID();
-    }
-
-    @Override
-    public String getName() {
-        return "Summary";
     }
 
     @Override
@@ -82,21 +78,6 @@ public class ProjectSummaryPage extends SubSectionView {
         view.add(title);
         view.add(panes);
 
-        /*
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.anchor = GridBagConstraints.NORTH;
-        gbc.insets = new Insets(30, 30, 30, 30);
-
-        view.add(title, gbc);
-        gbc.insets.top = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        view.add(patientSummary, gbc);
-        view.add(variantSummary, gbc);
-        gbc.weighty = 1.0;
-        view.add(referenceSummary, gbc);
-        *
-        */
         return view;
     }
 

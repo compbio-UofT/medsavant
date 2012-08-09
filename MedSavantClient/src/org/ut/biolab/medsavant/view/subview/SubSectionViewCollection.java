@@ -36,7 +36,6 @@ import javax.swing.JRadioButton;
  */
 public class SubSectionViewCollection extends SubSectionView {
 
-    private final String name;
     Map<String, SubSectionView> subsectionMap;
     private JPanel panel;
     private List<Component> menuComponents = new ArrayList<Component>();
@@ -45,9 +44,8 @@ public class SubSectionViewCollection extends SubSectionView {
     private SubSectionView currentView;
 
 
-    public SubSectionViewCollection(SectionView parent, String name) {
-        super(parent);
-        this.name = name;
+    public SubSectionViewCollection(SectionView parent, String page) {
+        super(parent, page);
         subsectionMap = new HashMap<String, SubSectionView>();
 
         buttonGroup = new ButtonGroup();
@@ -56,6 +54,7 @@ public class SubSectionViewCollection extends SubSectionView {
 
     }
 
+    @Override
     public Component[] getSubSectionMenuComponents() {
         Component[] arr = new Component[menuComponents.size()];
         for (int i = 0; i < arr.length; i++) {
@@ -67,14 +66,14 @@ public class SubSectionViewCollection extends SubSectionView {
 
     public void addSubSectionView(SubSectionView v) {
 
-        this.subsectionMap.put(v.getName(), v);
+        this.subsectionMap.put(v.getPageName(), v);
 
 
         // init the view
         //v.getView(true);
 
-        final String title = v.getName();
-        JRadioButton button = new JRadioButton(v.getName()) {
+        final String title = v.getPageName();
+        JRadioButton button = new JRadioButton(v.getPageName()) {
 
             {
                 this.setOpaque(false);
@@ -144,7 +143,7 @@ public class SubSectionViewCollection extends SubSectionView {
 
         if (this.subsectionMap.keySet().size() == 1) {
             button.setSelected(true);
-            firstPageName = v.getName();
+            firstPageName = v.getPageName();
         }
 
         button.addActionListener(new ActionListener() {
@@ -174,11 +173,6 @@ public class SubSectionViewCollection extends SubSectionView {
         contentPanel.add(currentView.getView(false),BorderLayout.CENTER);
         contentPanel.updateUI();
         currentView.viewDidLoad();
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override

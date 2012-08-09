@@ -47,13 +47,12 @@ public class GeneticsTablePage extends SubSectionView {
     private JPanel panel;
     private TablePanel tablePanel;
     private GenomeContainer genomeContainer;
-    private boolean isLoaded = false;
     private PeekingPanel genomeView;
     private Component[] settingComponents;
     private PeekingPanel detailView;
 
     public GeneticsTablePage(SectionView parent) {
-        super(parent);
+        super(parent, "Spreadsheet");
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
             public void handleEvent(FilterEvent event) {
@@ -72,11 +71,6 @@ public class GeneticsTablePage extends SubSectionView {
     }
 
     @Override
-    public String getName() {
-        return "Spreadsheet";
-    }
-
-    @Override
     public Component[] getSubSectionMenuComponents() {
         if (settingComponents == null) {
             settingComponents = new Component[2];
@@ -90,7 +84,7 @@ public class GeneticsTablePage extends SubSectionView {
     public JPanel getView(boolean update) {
         try {
             if (panel == null || update) {
-                ThreadController.getInstance().cancelWorkers(getName());
+                ThreadController.getInstance().cancelWorkers(pageName);
                 setPanel();
             } else {
                 tablePanel.updateIfRequired();
@@ -107,7 +101,7 @@ public class GeneticsTablePage extends SubSectionView {
         panel.setLayout(new BorderLayout());
 
         Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceID());
-        genomeContainer = new GenomeContainer(getName(), chroms);
+        genomeContainer = new GenomeContainer(pageName, chroms);
 
         genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, genomeContainer, false, 225);
         genomeView.setToggleBarVisible(false);
@@ -120,7 +114,7 @@ public class GeneticsTablePage extends SubSectionView {
         panel.add(genomeView, BorderLayout.NORTH);
         panel.add(detailView, BorderLayout.EAST);
 
-        tablePanel = new TablePanel(getName());
+        tablePanel = new TablePanel(pageName);
         panel.add(tablePanel, BorderLayout.CENTER);
     }
 
@@ -128,28 +122,27 @@ public class GeneticsTablePage extends SubSectionView {
 
     @Override
     public void viewDidLoad() {
-        isLoaded = true;
+        super.viewDidLoad();
         tablePanel.updateIfRequired();
         genomeContainer.updateIfRequired();
     }
 
     @Override
     public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
         if (tablePanel != null && !tablePanel.isInit()) {
             setUpdateRequired(true);
         }
-        isLoaded = false;
+        super.viewDidUnload();
     }
 
     public void updateContents() {
-        ThreadController.getInstance().cancelWorkers(getName());
+        ThreadController.getInstance().cancelWorkers(pageName);
         if (tablePanel == null || genomeContainer == null) {
             return;
         }
         tablePanel.setUpdateRequired(true);
         genomeContainer.setUpdateRequired(true);
-        if (isLoaded) {
+        if (loaded) {
             tablePanel.updateIfRequired();
             genomeContainer.updateIfRequired();
         }

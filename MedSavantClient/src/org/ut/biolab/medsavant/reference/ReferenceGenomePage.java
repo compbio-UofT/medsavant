@@ -22,7 +22,6 @@ import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.Reference;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedTableView;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
@@ -44,7 +43,7 @@ public class ReferenceGenomePage extends SubSectionView {
     private SplitScreenView panel;
 
     public ReferenceGenomePage(SectionView parent) {
-        super(parent);
+        super(parent, "Reference Genomes");
         controller = ReferenceController.getInstance();
         controller.addListener(new Listener<ReferenceEvent>() {
             @Override
@@ -57,25 +56,11 @@ public class ReferenceGenomePage extends SubSectionView {
     }
 
     @Override
-    public String getName() {
-        return "Reference Genomes";
-    }
-
-    @Override
     public JPanel getView(boolean update) {
         if (panel == null || updateRequired) {
             setPanel();
         }
         return panel;
-    }
-
-    @Override
-    public void viewDidLoad() {
-    }
-
-    @Override
-    public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
     }
 
     public void setPanel() {
@@ -101,12 +86,12 @@ public class ReferenceGenomePage extends SubSectionView {
     private class ReferenceDetailedView extends DetailedTableView<Reference> {
 
         public ReferenceDetailedView() {
-            super(ReferenceGenomePage.this.getName(), "", "Multiple references (%d)", new String[] { "Contig Name", "Contig Length", "Centromere Position" });
+            super(pageName, "", "Multiple references (%d)", new String[] { "Contig Name", "Contig Length", "Centromere Position" });
         }
 
         @Override
         public MedSavantWorker createWorker() {
-            return new MedSavantWorker<Chromosome[]>(ReferenceGenomePage.this.getName()) {
+            return new MedSavantWorker<Chromosome[]>(pageName) {
 
                 @Override
                 protected Chromosome[] doInBackground() throws Exception {

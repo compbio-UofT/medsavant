@@ -44,13 +44,8 @@ public class GeneSetPage extends SubSectionView {
     private final GeneSetManagerAdapter manager;
 
     public GeneSetPage(SectionView parent) {
-        super(parent);
+        super(parent, "Standard Gene Sets");
         manager = MedSavantClient.GeneSetManager;
-    }
-
-    @Override
-    public String getName() {
-        return "Standard Gene Sets";
     }
 
     @Override
@@ -69,14 +64,6 @@ public class GeneSetPage extends SubSectionView {
         return view;
     }
 
-    @Override
-    public void viewDidLoad() {}
-
-    @Override
-    public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
-    }
-
     public void update(){
         view.refresh();
     }
@@ -84,12 +71,12 @@ public class GeneSetPage extends SubSectionView {
     private class GenesDetailedView extends DetailedTableView<GeneSet> {
 
         public GenesDetailedView() {
-            super(GeneSetPage.this.getName(), "", "Multiple gene sets (%d)", new String[] { "Name", "Chromosome", "Start", "End", "Coding Start", "Coding End" });
+            super(pageName, "", "Multiple gene sets (%d)", new String[] { "Name", "Chromosome", "Start", "End", "Coding Start", "Coding End" });
         }
 
         @Override
         public MedSavantWorker createWorker() {
-            return new GeneFetcher(selected.get(0), GeneSetPage.this.getName()) {
+            return new GeneFetcher(selected.get(0), pageName) {
                 @Override
                 public void setData(Object[][] data) {
                     GenesDetailedView.this.setData(data);

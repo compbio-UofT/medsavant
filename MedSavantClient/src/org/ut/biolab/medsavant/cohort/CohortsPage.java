@@ -37,12 +37,7 @@ public class CohortsPage extends SubSectionView {
     private SplitScreenView view;
 
     public CohortsPage(SectionView parent) {
-        super(parent);
-    }
-
-    @Override
-    public String getName() {
-        return "Cohorts";
+        super(parent, "Cohorts");
     }
 
     @Override
@@ -54,7 +49,7 @@ public class CohortsPage extends SubSectionView {
                         return MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
                     }
                 },
-                new CohortDetailedView(getName()),
+                new CohortDetailedView(pageName),
                 new CohortDetailedListEditor());
 
         return view;

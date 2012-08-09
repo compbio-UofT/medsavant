@@ -44,11 +44,11 @@ public class GeneticsChartPage extends SubSectionView {
     private boolean isLoaded = false;
 
     public GeneticsChartPage(SectionView parent) {
-        super(parent);
+        super(parent, "Chart");
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
             public void handleEvent(FilterEvent event) {
-                ThreadController.getInstance().cancelWorkers(getName());
+                ThreadController.getInstance().cancelWorkers(pageName);
                 tryUpdate();
             }
         });
@@ -60,11 +60,6 @@ public class GeneticsChartPage extends SubSectionView {
                 }
             }
         });
-    }
-
-    @Override
-    public String getName() {
-        return "Chart";
     }
 
     @Override
@@ -88,7 +83,7 @@ public class GeneticsChartPage extends SubSectionView {
         //PeekingPanel detailView = new PeekingPanel("Filters", BorderLayout.EAST, new FilterPanel(), true,400);
         //panel.add(detailView, BorderLayout.WEST);
 
-        chartView = new ChartView(getName());
+        chartView = new ChartView(pageName);
         panel.add(chartView, BorderLayout.CENTER);
     }
 
@@ -119,7 +114,7 @@ public class GeneticsChartPage extends SubSectionView {
     @Override
     public void viewDidUnload() {
         isLoaded = false;
-        ThreadController.getInstance().cancelWorkers(getName());
+        super.viewDidUnload();
     }
 
     private void tryUpdate() {

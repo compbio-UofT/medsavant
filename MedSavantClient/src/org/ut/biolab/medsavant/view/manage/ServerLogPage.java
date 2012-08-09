@@ -33,7 +33,6 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.AnnotationLog;
 import org.ut.biolab.medsavant.model.GeneralLog;
 import org.ut.biolab.medsavant.util.DataRetriever;
-import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -69,12 +68,7 @@ public class ServerLogPage extends SubSectionView {
     private WaitPanel waitPanel;
 
     public ServerLogPage(SectionView parent) {
-        super(parent);
-    }
-
-    @Override
-    public String getName() {
-        return "Logs";
+        super(parent, "Logs");
     }
 
     @Override
@@ -221,31 +215,10 @@ public class ServerLogPage extends SubSectionView {
             public void retrievalComplete() {
             }
         };
-        clientTable = new SearchableTablePanel(getName(), CLIENT_COLUMN_NAMES, CLIENT_COLUMN_CLASSES, new int[0], limit, retriever);
+        clientTable = new SearchableTablePanel(pageName, CLIENT_COLUMN_NAMES, CLIENT_COLUMN_CLASSES, new int[0], limit, retriever);
         p.add(clientTable, BorderLayout.CENTER);
         return p;
     }
-
-    /*private JPanel getServerCard() {
-        JPanel p = new JPanel();
-        p.setLayout(new BorderLayout());
-        DataRetriever retriever = new DataRetriever(){
-            public List<Object[]> retrieve(int start, int limit) {
-                return retrieveServerData(start, limit);
-            }
-            public int getTotalNum() {
-                try {
-                    return MedSavantClient.LogQueryUtilAdapter.getServerLogSize(LoginController.sessionId);
-                } catch (Exception ex) {
-                    return 0;
-                }
-            }
-            public void retrievalComplete() {}
-        };
-        serverTable = new SearchableTablePanel(getName(), serverColumnNames, serverColumnClasses, new ArrayList<Integer>(), limit, retriever);
-        p.add(serverTable, BorderLayout.CENTER);
-        return p;
-    }*/
 
     private JPanel getAnnotationCard() {
         JPanel p = new JPanel();
@@ -269,7 +242,7 @@ public class ServerLogPage extends SubSectionView {
             public void retrievalComplete() {
             }
         };
-        annotationTable = new SearchableTablePanel(getName(), ANNOTATIONS_COLUMN_NAMES, ANNOTATIONS_COLUMN_CLASSES, new int[0], limit, retriever);
+        annotationTable = new SearchableTablePanel(pageName, ANNOTATIONS_COLUMN_NAMES, ANNOTATIONS_COLUMN_CLASSES, new int[0], limit, retriever);
         p.add(annotationTable, BorderLayout.CENTER);
         return p;
     }
@@ -289,15 +262,6 @@ public class ServerLogPage extends SubSectionView {
     @Override
     public Component[] getSubSectionMenuComponents() {
         return null;
-    }
-
-    @Override
-    public void viewDidLoad() {
-    }
-
-    @Override
-    public void viewDidUnload() {
-        ThreadController.getInstance().cancelWorkers(getName());
     }
 
     private WaitPanel getWaitPanel() {
@@ -341,32 +305,6 @@ public class ServerLogPage extends SubSectionView {
         hideWaitPanel();
         return v;
     }
-
-    /*private List<Object[]> retrieveServerData(int start, int limit){
-        if(!currentCard.equals(CARDNAME_SERVER)) return new ArrayList<Object[]>();
-        List<Object[]> v = null;
-        waitPanel.setIndeterminate();
-        waitPanel.setStatus("");
-        showWaitPanel();
-        try {
-            List<GeneralLog> logs = MedSavantClient.LogQueryUtilAdapter.getServerLog(LoginController.sessionId, start, limit);
-            v = new ArrayList<Object[]>();
-            for(GeneralLog log : logs) {
-                v.add(new Object[] {
-                    log.getEvent(),
-                    log.getDescription(),
-                    log.getTimestamp()
-                });
-            }
-        } catch (Exception e){
-            waitPanel.setComplete();
-            waitPanel.setStatus("Problem getting log");
-            showWaitPanel();
-            Logger.getLogger(ServerLogPage.class.getName()).log(Level.SEVERE, null, e);
-        }
-        hideWaitPanel();
-        return v;
-    }*/
 
     private List<Object[]> retrieveClientData(int start, int limit){
         if(!currentCard.equals(CARDNAME_CLIENT)) return new ArrayList<Object[]>();
