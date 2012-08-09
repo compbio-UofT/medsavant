@@ -50,7 +50,7 @@ public class CustomField implements Serializable {
         return columnName;
     }
 
-    public String getColumnTypeString() {
+    public String getSQLFieldTypeString() {
         return columnType;
     }
 
@@ -119,7 +119,7 @@ public class CustomField implements Serializable {
         if(o == null || !o.getClass().equals(CustomField.class)) return false;
         CustomField other = (CustomField)o;
         return this.getColumnName().equals(other.getColumnName()) &&
-                this.getColumnTypeString().equals(other.getColumnTypeString());
+                this.getSQLFieldTypeString().equals(other.getSQLFieldTypeString());
     }
 
     @Override

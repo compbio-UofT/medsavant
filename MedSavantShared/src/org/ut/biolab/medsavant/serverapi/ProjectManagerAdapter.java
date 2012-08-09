@@ -52,7 +52,7 @@ public interface ProjectManagerAdapter extends Remote {
     public CustomField[] getCustomVariantFields(String sessID,  int projID, int refID, int updateId) throws SQLException, RemoteException;
     public int getNewestUpdateID(String sessID,  int projID, int refID, boolean published) throws SQLException, RemoteException;
     public ProjectDetails[] getUnpublishedChanges(String sessID) throws SQLException, RemoteException;
-    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, String subTableName) throws SQLException, RemoteException;
+    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException;
 
     public String[] getReferenceNamesForProject(String sessID, int projectid) throws SQLException, RemoteException;
     public int[] getReferenceIDsForProject(String sessID, int projID) throws SQLException, RemoteException;
