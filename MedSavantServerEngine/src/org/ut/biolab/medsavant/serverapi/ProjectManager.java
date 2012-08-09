@@ -460,7 +460,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                 String annString = rs.getString(VariantTablemapTableSchema.COLUMNNAME_OF_ANNOTATION_IDS);
                 int[] annIDs;
                 if (annString != null) {
-                    String[] anns = annString.split(annString, ',');
+                    String[] anns = annString.split(",");
                     annIDs = new int[anns.length];
                     for (int i = 0; i < anns.length; i++) {
                         annIDs[i] = Integer.parseInt(anns[i]);
