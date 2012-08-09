@@ -18,14 +18,15 @@ package org.ut.biolab.medsavant.patient;
 
 
 /**
+ * Defines string constants which identify pedigree fields.
  *
  * @author mfiume
  */
-public class Pedigree {
-    public static final String FIELD_GENDER = "GENDER";
-    public static final String FIELD_HOSPITALID = "HOSPITAL";
-    public static final String FIELD_MOM = "MOM";
-    public static final String FIELD_DAD = "DAD";
-    public static final String FIELD_PATIENTID = "PATIENT";
-    public static final String FIELD_AFFECTED = "AFFECTED";
+public interface PedigreeFields {
+    public static final String GENDER = "GENDER";
+    public static final String HOSPITAL_ID = "HOSPITAL";
+    public static final String MOM = "MOM";
+    public static final String DAD = "DAD";
+    public static final String PATIENT_ID = "PATIENT";
+    public static final String AFFECTED = "AFFECTED";
 }

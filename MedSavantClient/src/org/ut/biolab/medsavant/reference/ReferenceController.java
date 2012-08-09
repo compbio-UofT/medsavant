@@ -19,13 +19,11 @@ package org.ut.biolab.medsavant.reference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Chromosome;
+import org.ut.biolab.medsavant.model.Reference;
 import org.ut.biolab.medsavant.serverapi.ReferenceManagerAdapter;
 import org.ut.biolab.medsavant.util.Controller;
 import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
@@ -36,7 +34,6 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author mfiume
  */
 public class ReferenceController extends Controller<ReferenceEvent> {
-    private static final Log LOG = LogFactory.getLog(ReferenceController.class);
 
     private static ReferenceController instance;
 
@@ -55,12 +52,12 @@ public class ReferenceController extends Controller<ReferenceEvent> {
         }
         return instance;
     }
-
-    public String[] getReferenceNames() throws SQLException, RemoteException {
-        return manager.getReferenceNames(LoginController.sessionId);
+    
+    public Reference[] getReferences() throws SQLException, RemoteException {
+        return manager.getReferences(LoginController.sessionId);
     }
 
-     public boolean setReference(String refName) throws SQLException, RemoteException{
+    public boolean setReference(String refName) throws SQLException, RemoteException{
         return setReference(refName, false);
     }
 
@@ -90,6 +87,10 @@ public class ReferenceController extends Controller<ReferenceEvent> {
         return this.currentReferenceID;
     }
 
+    public String[] getReferenceNames() throws SQLException, RemoteException {
+        return manager.getReferenceNames(LoginController.sessionId);
+    }
+
     public String getCurrentReferenceName(){
         return this.currentReferenceName;
     }
@@ -103,7 +104,11 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public Chromosome[] getChromosomes() throws SQLException, RemoteException {
-        return manager.getChromosomes(LoginController.sessionId, currentReferenceID);
+        return getChromosomes(currentReferenceID);
+    }
+
+    public Chromosome[] getChromosomes(int refID) throws SQLException, RemoteException {
+        return manager.getChromosomes(LoginController.sessionId, refID);
     }
 
     public boolean isReferenceSet(){

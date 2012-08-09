@@ -65,7 +65,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-public class FamilyAggregatePanel extends AggregatePanel {
+public class FamilyAggregatePanel extends AggregatePanel implements PedigreeFields {
 
     private static final String FIELD_NUMVARIANTS = "VARIANTS";
 
@@ -227,12 +227,7 @@ public class FamilyAggregatePanel extends AggregatePanel {
             File outfile = new File(DirectorySettings.getTmpDirectory(), "pedigree" + familyId + ".csv");
 
             CSVWriter w = new CSVWriter(new FileWriter(outfile), ',', CSVWriter.NO_QUOTE_CHARACTER);
-            w.writeNext(new String[]{Pedigree.FIELD_HOSPITALID,
-                        Pedigree.FIELD_MOM,
-                        Pedigree.FIELD_DAD,
-                        Pedigree.FIELD_PATIENTID,
-                        Pedigree.FIELD_GENDER,
-                        Pedigree.FIELD_AFFECTED});
+            w.writeNext(new String[]{ HOSPITAL_ID, MOM, DAD, PATIENT_ID, GENDER, AFFECTED });
             for (Object[] row : results) {
                 String[] srow = new String[row.length];
                 for (int i = 0; i < row.length; i++) {
@@ -253,7 +248,7 @@ public class FamilyAggregatePanel extends AggregatePanel {
 
             Graph pedigree = new Graph();
             CsvGraphLoader loader = new CsvGraphLoader(result.getAbsolutePath(), ",");
-            loader.setSettings(Pedigree.FIELD_HOSPITALID, Pedigree.FIELD_MOM, Pedigree.FIELD_DAD);
+            loader.setSettings(HOSPITAL_ID, MOM, DAD);
             loader.load(pedigree);
 
             setPedigree(pedigree);
@@ -273,10 +268,10 @@ public class FamilyAggregatePanel extends AggregatePanel {
 
         GraphView2D view = new GraphView2D(s.getLayoutedGraph());
 
-        view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "1", new SymbolSexMale()));
-        view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "2", new SymbolSexFemale()));
-        view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "0", new SymbolSexUndesignated()));
-        view.addRule(new ShapeRule(Pedigree.FIELD_GENDER, "null", new SymbolSexUndesignated()));
+        view.addRule(new ShapeRule(GENDER, "1", new SymbolSexMale()));
+        view.addRule(new ShapeRule(GENDER, "2", new SymbolSexFemale()));
+        view.addRule(new ShapeRule(GENDER, "0", new SymbolSexUndesignated()));
+        view.addRule(new ShapeRule(GENDER, "null", new SymbolSexUndesignated()));
 
         view.addRule(new PedigreeBasicRule());
         view.addRule(new NumVariantRule());
@@ -303,7 +298,7 @@ public class FamilyAggregatePanel extends AggregatePanel {
             public void mouseClicked(MouseEvent e) {
                 if (overNode != null) {
                     String hospitalId = (String)overNode.getId();
-                    Integer patientId = Integer.parseInt((String)overNode.getUserData(Pedigree.FIELD_PATIENTID));
+                    Integer patientId = Integer.parseInt((String)overNode.getUserData(PATIENT_ID));
                     if (SwingUtilities.isRightMouseButton(e)) {
                         int[] patientIds;
                         if (selectedNodes != null && !selectedNodes.isEmpty()) {

@@ -16,9 +16,6 @@
 
 package org.ut.biolab.medsavant.cohort;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -57,20 +54,9 @@ public class CohortsPage extends SubSectionView {
                         return MedSavantClient.CohortManager.getCohorts(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
                     }
                 },
-                new CohortDetailedView(),
+                new CohortDetailedView(getName()),
                 new CohortDetailedListEditor());
 
         return view;
-    }
-
-    private JButton getAddCohortButton(){
-        JButton button = new JButton("Add cohort");
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new CohortWizard();
-                if(view != null) view.refresh();
-            }
-        });
-        return button;
     }
 }

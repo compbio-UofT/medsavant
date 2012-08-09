@@ -662,7 +662,7 @@ public class ProjectWizard extends WizardDialog {
 
             //edit references and annotations
             for (CheckListItem cli : checkListItems) {
-                ProjectDetails pd = getProjectDetails(cli.getReference().getId());
+                ProjectDetails pd = getProjectDetails(cli.getReference().getID());
 
                 //skip if not selected and not existing
                 if (!cli.isSelected() && pd == null) {
@@ -674,19 +674,19 @@ public class ProjectWizard extends WizardDialog {
 
                 //add new ref
                 if (pd == null && cli.isSelected()) {
-                    int refID = cli.getReference().getId();
+                    int refID = cli.getReference().getID();
                     String tablename = manager.createVariantTable(LoginController.sessionId, projectID, refID, 0, annIDs, false);
                     manager.setCustomVariantFields(LoginController.sessionId, projectID, refID, 0, variantFields);
                     manager.addTableToMap(LoginController.sessionId, projectID, refID, 0, true, tablename, null);
                     continue;
                 } else if (pd != null && !cli.isSelected()) {
                     //remove existing ref
-                    manager.removeReferenceForProject(LoginController.sessionId, projectID, cli.getReference().getId());
+                    manager.removeReferenceForProject(LoginController.sessionId, projectID, cli.getReference().getID());
                     continue;
                 }
 
                 //make modifications
-                MedSavantClient.VariantManager.updateTable(LoginController.sessionId, projectID, cli.getReference().getId(), annIDs, variantFields);
+                MedSavantClient.VariantManager.updateTable(LoginController.sessionId, projectID, cli.getReference().getID(), annIDs, variantFields);
 
             }
 
@@ -702,7 +702,7 @@ public class ProjectWizard extends WizardDialog {
                 if (cli.isSelected()) {
 
                     //set custom vcf fields
-                    int refID = cli.getReference().getId();
+                    int refID = cli.getReference().getID();
                     manager.setCustomVariantFields(LoginController.sessionId, projID, refID, 0, variantFields);
 
                     int[] annIDs = cli.getAnnotationIDs();
@@ -741,7 +741,7 @@ public class ProjectWizard extends WizardDialog {
                     }
                 }
             });
-            ProjectDetails pd = getProjectDetails(ref.getId());
+            ProjectDetails pd = getProjectDetails(ref.getID());
             boolean selected = pd != null;
             checkBox.setSelected(selected);
 
@@ -756,7 +756,7 @@ public class ProjectWizard extends WizardDialog {
             for (final Annotation a : annotations) {
 
                 //make sure annotation is for this reference
-                if (a.getReferenceID() != reference.getId()) {
+                if (a.getReferenceID() != reference.getID()) {
                     continue;
                 }
 

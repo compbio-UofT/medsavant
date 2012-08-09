@@ -19,7 +19,6 @@ package org.ut.biolab.medsavant.view.list;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.*;
 
@@ -32,39 +31,20 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public abstract class DetailedView extends JPanel {
 
-    //private final JLabel title;
     private final JPanel contentPanel;
     protected SplitScreenView parent;
     private final JPanel bottomPanel;
     private final Component glue;
 
     public DetailedView() {
-        this.setPreferredSize(new Dimension(9999, 350));
-
-        this.setOpaque(false);
-
-        this.setLayout(new BorderLayout());
-
-        /*JPanel h1 = new JPanel();
-        h1.setBorder(ViewUtil.getBigBorder());
-        //BorderFactory.createCompoundBorder(
-        //        ViewUtil.getTinyLineBorder(), ViewUtil.getBigBorder()
-        //        ));
-
-        h1.setLayout(new BoxLayout(h1, BoxLayout.X_AXIS));
-        this.title = ViewUtil.getDetailTitleLabel("");
-        h1.add(Box.createHorizontalGlue());
-        h1.add(title);
-        h1.add(Box.createHorizontalGlue());
-        *
-        */
-
-        //this.add(h1, BorderLayout.NORTH);
+        setPreferredSize(new Dimension(9999, 350));
+        setOpaque(false);
+        setLayout(new BorderLayout());
 
         contentPanel = new JPanel();
         contentPanel.setBorder(ViewUtil.getMediumBorder());
 
-        this.add(contentPanel, BorderLayout.CENTER);
+        add(contentPanel, BorderLayout.CENTER);
 
         bottomPanel = new JPanel();
         ViewUtil.applyHorizontalBoxLayout(bottomPanel);
@@ -73,7 +53,7 @@ public abstract class DetailedView extends JPanel {
         glue = Box.createHorizontalGlue();
         bottomPanel.add(glue);
 
-        this.add(bottomPanel, BorderLayout.SOUTH);
+        add(bottomPanel, BorderLayout.SOUTH);
     }
 
     public abstract void setSelectedItem(Object[] selectedRow);
@@ -83,7 +63,7 @@ public abstract class DetailedView extends JPanel {
     public abstract JPopupMenu createPopup();
 
     public JPanel getContentPanel() {
-        return this.contentPanel;
+        return contentPanel;
     }
 
     public void setSplitScreenParent(SplitScreenView parent) {

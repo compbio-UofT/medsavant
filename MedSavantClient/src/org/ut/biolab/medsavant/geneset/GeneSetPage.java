@@ -89,7 +89,7 @@ public class GeneSetPage extends SubSectionView {
         panel.refresh();
     }
 
-    private static class GenesDetailedView extends DetailedTableView<GeneSet> {
+    private class GenesDetailedView extends DetailedTableView<GeneSet> {
 
         public GenesDetailedView() {
             super("", "Multiple gene sets (%d)", new String[] { "Name", "Chromosome", "Start", "End", "Coding Start", "Coding End" });
@@ -97,7 +97,7 @@ public class GeneSetPage extends SubSectionView {
 
         @Override
         public MedSavantWorker createWorker() {
-            return new GeneFetcher(selected.get(0), getName()) {
+            return new GeneFetcher(selected.get(0), GeneSetPage.this.getName()) {
                 @Override
                 public void setData(Object[][] data) {
                     GenesDetailedView.this.setData(data);

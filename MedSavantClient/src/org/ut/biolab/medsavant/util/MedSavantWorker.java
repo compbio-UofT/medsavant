@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.SwingWorker;
 
 
-
 /**
  * SwingWorker wrapper which provides hooks do the right thing in response to errors, cancellation, etc.
  *
@@ -35,8 +34,10 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
      * @param pageName which view created this worker
      */   
     public MedSavantWorker(String pageName) {
-        super();
         this.pageName = pageName;
+        if (pageName == null) {
+            System.out.println("pageName was null");
+        }
         ThreadController.getInstance().addWorker(pageName, this);
     }
     

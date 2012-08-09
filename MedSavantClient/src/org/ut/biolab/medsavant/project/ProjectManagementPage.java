@@ -51,8 +51,9 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class ProjectManagementPage extends SubSectionView {
     private static final Log LOG = LogFactory.getLog(ProjectManagementPage.class);
-    private ProjectController controller = ProjectController.getInstance();
 
+    private ProjectController controller = ProjectController.getInstance();
+    
     private SplitScreenView panel;
 
     public ProjectManagementPage(SectionView parent) {
@@ -202,13 +203,14 @@ public class ProjectManagementPage extends SubSectionView {
             }
         }
     }
-    private static class ProjectsDetailedView extends DetailedView {
+
+    private class ProjectsDetailedView extends DetailedView {
 
         private final JPanel content;
         private String projectName;
-        private DetailsWorker sw;
+        private DetailsWorker detailsWorker;
 
-        private static JPanel details;
+        private JPanel details;
         private CollapsiblePane infoPanel;
 
 
@@ -223,19 +225,19 @@ public class ProjectManagementPage extends SubSectionView {
             viewContainer.add(ViewUtil.getClearBorderlessScrollPane(infoContainer), BorderLayout.CENTER);
 
             CollapsiblePanes panes = new CollapsiblePanes();
-        panes.setOpaque(false);
-        infoContainer.add(panes);
+            panes.setOpaque(false);
+            infoContainer.add(panes);
 
-	infoPanel = new CollapsiblePane();
-        infoPanel.setStyle(CollapsiblePane.TREE_STYLE);
-        infoPanel.setCollapsible(false);
-        panes.add(infoPanel);
-        panes.addExpansion();
+            infoPanel = new CollapsiblePane();
+            infoPanel.setStyle(CollapsiblePane.TREE_STYLE);
+            infoPanel.setCollapsible(false);
+            panes.add(infoPanel);
+            panes.addExpansion();
 
-        content = new JPanel();
-        content.setLayout(new BorderLayout());
-        infoPanel.setLayout(new BorderLayout());
-        infoPanel.add(content,BorderLayout.CENTER);
+            content = new JPanel();
+            content.setLayout(new BorderLayout());
+            infoPanel.setLayout(new BorderLayout());
+            infoPanel.add(content,BorderLayout.CENTER);
 
             details = ViewUtil.getClearPanel();
 
@@ -254,11 +256,11 @@ public class ProjectManagementPage extends SubSectionView {
             details.removeAll();
             details.updateUI();
 
-            if (sw != null) {
-                sw.cancel(true);
+            if (detailsWorker != null) {
+                detailsWorker.cancel(true);
             }
-            sw = new DetailsWorker(projectName);
-            sw.execute();
+            detailsWorker = new DetailsWorker(projectName);
+            detailsWorker.execute();
         }
 
         @Override
@@ -272,7 +274,7 @@ public class ProjectManagementPage extends SubSectionView {
             Dimension buttonDim = new Dimension(100, 23);
 
             public DetailsWorker(String projectName) {
-                super(getName());
+                super(ProjectManagementPage.this.getName());
                 this.projectName = projectName;
             }
 

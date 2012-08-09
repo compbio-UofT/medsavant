@@ -1,12 +1,30 @@
+/*
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package org.ut.biolab.medsavant.view.component;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JButton;
-import javax.swing.JComponent;
+
 
 public class HoverButton extends JButton {
+
+    private static final Color UNSELECTED_TEXT_COLOR = Color.GRAY;
 
     private boolean over;
     private Font f;
@@ -17,6 +35,7 @@ public class HoverButton extends JButton {
     private int totalWidth;
     private int topPadding = 1;
     private int totalHeight;
+    private Color textColor = Color.white;
 
     public void setForeColor(Color c) {
         this.textColor = c;
@@ -38,33 +57,31 @@ public class HoverButton extends JButton {
 
         resetFont();
 
-        this.setOpaque(false);
-        final JComponent instance = this;
-        this.addMouseListener(new MouseAdapter() {
+        setOpaque(false);
+        addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-
                 over = true;
-                instance.repaint();
+                repaint();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 over = false;
-                instance.repaint();
+                repaint();
             }
         });
-        this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         resize();
     }
 
     private void resize() {
 
-        String title = this.getText();
+        String title = getText();
 
-        Graphics2D g2d = (Graphics2D) this.getGraphics();
+        Graphics2D g2d = (Graphics2D)getGraphics();
         if (g2d == null) {
             return;
         }
@@ -78,15 +95,12 @@ public class HoverButton extends JButton {
         totalWidth = width + sidePadding * 2;
         totalHeight = height + topPadding * 2;
 
-        this.setPreferredSize(new Dimension(totalWidth, totalHeight));
-        this.setMinimumSize(new Dimension(totalWidth, totalHeight));
-        this.setMaximumSize(new Dimension(totalWidth, totalHeight));
+        setPreferredSize(new Dimension(totalWidth, totalHeight));
+        setMinimumSize(new Dimension(totalWidth, totalHeight));
+        setMaximumSize(new Dimension(totalWidth, totalHeight));
 
         invalidate();
     }
-    Color textColorUnselected = Color.gray;
-    Color textColor = Color.white;
-    Color bgColor = new Color(255, 255, 255, 255);
 
     @Override
     public void paintComponent(Graphics g) {
@@ -98,13 +112,12 @@ public class HoverButton extends JButton {
 
         g2d.setFont(f);
 
-        int width = g2d.getFontMetrics().stringWidth(title);
         int height = g2d.getFontMetrics().getAscent();
 
         if (over || this.isSelected()) {
             g2d.setColor(textColor);
         } else {
-            g2d.setColor(textColorUnselected);
+            g2d.setColor(UNSELECTED_TEXT_COLOR);
         }
 
 

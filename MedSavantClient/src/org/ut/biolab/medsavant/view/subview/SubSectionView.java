@@ -28,7 +28,7 @@ import org.ut.biolab.medsavant.util.ThreadController;
  */
 public abstract class SubSectionView {
 
-    private SectionView parent;
+    private final SectionView parent;
     private boolean updateRequired = true;
 
     public void setUpdateRequired(boolean required){
@@ -50,7 +50,7 @@ public abstract class SubSectionView {
     public Component[] getSubSectionMenuComponents() { return null; }
 
     public SectionView getParent() {
-        return this.parent;
+        return parent;
     }
 
     /**

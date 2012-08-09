@@ -42,14 +42,16 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class SplitScreenView extends JPanel {
+
     private static final Log LOG = LogFactory.getLog(SplitScreenView.class);
+
+    //TODO: handle limits better!
+    private static final int LIMIT = 10000;
 
     private final DetailedListModel detailedListModel;
     private final DetailedView detailedView;
     private final DetailedListEditor detailedEditor;
     private final ListView listView;
-    //TODO: handle limits better!
-    private static final int limit = 10000;
 
     public SplitScreenView(DetailedListModel model, DetailedView view) {
         this(model, view, new DetailedListEditor());
@@ -226,7 +228,7 @@ public class SplitScreenView extends JPanel {
 
                 @Override
                 protected Object[][] doInBackground() throws Exception {
-                    return detailedListModel.getList(limit);
+                    return detailedListModel.getList(LIMIT);
                 }
 
                 @Override

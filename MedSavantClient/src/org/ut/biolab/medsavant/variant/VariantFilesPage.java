@@ -98,7 +98,7 @@ public class VariantFilesPage extends SubSectionView {
                         return MedSavantClient.VariantManager.getUploadedFiles(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID());
                     }
                 },
-                new VariantFilesDetailedView(),
+                new VariantFilesDetailedView(getName()),
                 new VariantFilesDetailedListEditor());
     }
 

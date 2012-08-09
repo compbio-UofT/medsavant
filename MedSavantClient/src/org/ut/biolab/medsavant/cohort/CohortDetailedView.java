@@ -28,7 +28,6 @@ import javax.swing.*;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
-import com.jidesoft.utils.SwingWorker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -37,6 +36,7 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.model.SimplePatient;
 import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.StripyTable;
 import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -47,16 +47,19 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class CohortDetailedView extends DetailedView {
+class CohortDetailedView extends DetailedView {
 
     private static final Log LOG = LogFactory.getLog(CohortDetailedView.class);
+
+    private final String pageName;
     private Cohort[] cohorts;
     private CohortDetailsWorker worker;
     private final JPanel details;
     private JTable list;
     private final CollapsiblePane membersPane;
 
-    public CohortDetailedView() {
+    CohortDetailedView(String page) {
+        pageName = page;
 
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
@@ -82,20 +85,19 @@ public class CohortDetailedView extends DetailedView {
         membersPane.add(details, BorderLayout.CENTER);
 
         panes.addExpansion();
-
-        //addBottomComponent(menu);
     }
 
-    private class CohortDetailsWorker extends SwingWorker {
+    private class CohortDetailsWorker extends MedSavantWorker<List<SimplePatient>> {
 
         private final Cohort cohort;
 
-        public CohortDetailsWorker(Cohort cohort) {
-            this.cohort = cohort;
+        CohortDetailsWorker(Cohort coh) {
+            super(pageName);
+            cohort = coh;
         }
 
         @Override
-        protected Object doInBackground() throws Exception {
+        protected List<SimplePatient> doInBackground() throws Exception {
             List<SimplePatient> patientList = MedSavantClient.CohortManager.getIndividualsInCohort(
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectID(),
@@ -103,15 +105,12 @@ public class CohortDetailedView extends DetailedView {
             return patientList;
         }
 
-        @Override
-        protected void done() {
-            try {
-                List<SimplePatient> result = (List<SimplePatient>) get();
-                setPatientList(result);
+        protected void showProgress(double ignored) {
+        }
 
-            } catch (Exception ex) {
-                return;
-            }
+        @Override
+        protected void showSuccess(List<SimplePatient> result) {
+            setPatientList(result);
         }
     }
 

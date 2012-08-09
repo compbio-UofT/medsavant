@@ -18,6 +18,7 @@ package org.ut.biolab.medsavant.patient;
 
 import java.awt.Color;
 import java.util.HashSet;
+
 import pedviz.view.NodeView;
 import pedviz.view.rules.Rule;
 
@@ -29,18 +30,18 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class PedigreeBasicRule extends Rule {
+public class PedigreeBasicRule extends Rule implements PedigreeFields {
 
-        private final HashSet<Integer> selectedIds;
+        private final HashSet<Integer> selectedIDs;
 
         public PedigreeBasicRule() {
-            selectedIds = null;
+            selectedIDs = null;
         }
 
         public PedigreeBasicRule(int[] patientIds) {
-            selectedIds = new HashSet<Integer>();
+            selectedIDs = new HashSet<Integer>();
             for (int id : patientIds) {
-                selectedIds.add(id);
+                selectedIDs.add(id);
             }
         }
 
@@ -50,18 +51,18 @@ public class PedigreeBasicRule extends Rule {
             String hospitalIdOfNode = nv.getNode().getId().toString();
             nv.setHintText(hospitalIdOfNode);
 
-            if (selectedIds !=null) {
+            if (selectedIDs !=null) {
 
 
-                Object pIdPrecursor = nv.getNode().getUserData(Pedigree.FIELD_PATIENTID);
+                Object pIdPrecursor = nv.getNode().getUserData(PATIENT_ID);
                 if (pIdPrecursor != null) {
                     int patientId = Integer.parseInt(pIdPrecursor.toString());
-                    if (selectedIds.contains(patientId)) {
+                    if (selectedIDs.contains(patientId)) {
                         nv.setBorderColor(ViewUtil.detailSelectedBackground);
                     }
                 }
 
-                Object affectedPrecursor = nv.getNode().getUserData(Pedigree.FIELD_AFFECTED);
+                Object affectedPrecursor = nv.getNode().getUserData(AFFECTED);
                 if (affectedPrecursor != null) {
                     boolean affected = 1 == Integer.parseInt(affectedPrecursor.toString());
                     if (affected) {
@@ -71,7 +72,7 @@ public class PedigreeBasicRule extends Rule {
 
             }
 
-            Object hIdPrecursor = nv.getNode().getUserData(Pedigree.FIELD_HOSPITALID);
+            Object hIdPrecursor = nv.getNode().getUserData(HOSPITAL_ID);
             if (hIdPrecursor != null) {
                 String hospitalId = hIdPrecursor.toString();
                 nv.addSymbol(new HospitalSymbol(hospitalId));

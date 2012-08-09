@@ -96,7 +96,6 @@ public class AnnotationsPage extends SubSectionView {
 
         }
     }
-//implements ExternalAnnotationListener {
 
     public void referenceAdded(String name) {
         panel.refresh();

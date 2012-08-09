@@ -19,9 +19,7 @@ package org.ut.biolab.medsavant.variant;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import javax.swing.*;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
@@ -36,6 +34,7 @@ import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -46,13 +45,15 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 class VariantFilesDetailedView extends DetailedView {
 
+    private final String pageName;
     private final JPanel details;
     private final JPanel content;
     private SimpleVariantFile[] files;
-    private DetailsSW sw;
+    private DetailsWorker detailsWorker;
     private CollapsiblePane infoPanel;
 
-    public VariantFilesDetailedView() {
+    public VariantFilesDetailedView(String page) {
+        pageName = page;
 
         JPanel viewContainer = (JPanel) ViewUtil.clear(this.getContentPanel());
         viewContainer.setLayout(new BorderLayout());
@@ -91,11 +92,11 @@ class VariantFilesDetailedView extends DetailedView {
         details.removeAll();
         details.updateUI();
 
-        if (sw != null) {
-            sw.cancel(true);
+        if (detailsWorker != null) {
+            detailsWorker.cancel(true);
         }
-        sw = new DetailsSW(files[0]);
-        sw.execute();
+        detailsWorker = new DetailsWorker(files[0]);
+        detailsWorker.execute();
     }
 
     public synchronized void setFileInfoList(List<String[]> info) {
@@ -116,37 +117,29 @@ class VariantFilesDetailedView extends DetailedView {
 
     }
 
-    private class DetailsSW extends SwingWorker {
+    private class DetailsWorker extends MedSavantWorker<List<String[]>> {
 
-        private SimpleVariantFile file;
+        private final SimpleVariantFile file;
 
-        public DetailsSW(SimpleVariantFile file) {
-            this.file = file;
+        public DetailsWorker(SimpleVariantFile f) {
+            super(pageName);
+            this.file = f;
         }
 
         @Override
-        protected Object doInBackground() throws Exception {
-            try {
-                return MedSavantClient.VariantManager.getTagsForUpload(LoginController.sessionId, file.getUploadId());
-            } catch (SQLException ex) {
-                return null;
-            }
+        protected List<String[]> doInBackground() throws Exception {
+            return MedSavantClient.VariantManager.getTagsForUpload(LoginController.sessionId, file.getUploadId());
+        }
+
+        protected void showProgress(double ignored) {
         }
 
         @Override
-        protected void done() {
-            List<String[]> infoList = null;
-            try {
-                infoList = (List<String[]>) get();
-                infoList.add(0, new String[]{"File Name", file.getName()});
-                infoList.add(1, new String[]{"Upload ID", Integer.toString(file.getUploadId())});
-                infoList.add(2, new String[]{"File ID", Integer.toString(file.getFileId())});
-                //infoList.add(3, new String[]{"User", file.getUser()});
-            } catch (InterruptedException ex) {
-            } catch (ExecutionException ex) {
-                VariantFilesPage.LOG.error("Error fetching variant details.", ex);
-            }
-            setFileInfoList(infoList);
+        protected void showSuccess(List<String[]> result) {
+            result.add(0, new String[]{"File Name", file.getName()});
+            result.add(1, new String[]{"Upload ID", Integer.toString(file.getUploadId())});
+            result.add(2, new String[]{"File ID", Integer.toString(file.getFileId())});
+            setFileInfoList(result);
         }
     }
 

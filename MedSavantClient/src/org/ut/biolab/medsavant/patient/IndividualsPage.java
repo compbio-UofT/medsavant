@@ -46,7 +46,7 @@ public class IndividualsPage extends SubSectionView {
         try {
             view = new SplitScreenView(
                     new IndividualListModel(),
-                    new IndividualDetailedView(),
+                    new IndividualDetailedView(getName()),
                     new IndividualDetailEditor());
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Unable to create individuals page: %s", ex);

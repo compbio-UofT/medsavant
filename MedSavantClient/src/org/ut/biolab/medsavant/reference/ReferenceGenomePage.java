@@ -17,17 +17,10 @@ package org.ut.biolab.medsavant.reference;
 
 import java.util.List;
 import javax.swing.JPanel;
-import javax.swing.SwingWorker;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.Reference;
-import org.ut.biolab.medsavant.serverapi.ReferenceManagerAdapter;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
@@ -44,16 +37,16 @@ import org.ut.biolab.medsavant.view.util.DialogUtils;
  * @author Andrew
  */
 public class ReferenceGenomePage extends SubSectionView {
-    private static final Log LOG = LogFactory.getLog(ReferenceGenomePage.class);
 
-    private ReferenceManagerAdapter manager;
-    private SplitScreenView panel;
+    private ReferenceController controller;
     private boolean updateRequired = false;
+
+    private SplitScreenView panel;
 
     public ReferenceGenomePage(SectionView parent) {
         super(parent);
-        manager = MedSavantClient.ReferenceManager;
-        ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
+        controller = ReferenceController.getInstance();
+        controller.addListener(new Listener<ReferenceEvent>() {
             @Override
             public void handleEvent(ReferenceEvent event) {
                 if (panel != null) {
@@ -90,7 +83,7 @@ public class ReferenceGenomePage extends SubSectionView {
                 new SimpleDetailedListModel<Reference>("Reference") {
                     @Override
                     public Reference[] getData() throws Exception {
-                        return manager.getReferences(LoginController.sessionId);
+                        return controller.getReferences();
                     }
                 },
                 new ReferenceDetailedView(),
@@ -113,11 +106,11 @@ public class ReferenceGenomePage extends SubSectionView {
 
         @Override
         public MedSavantWorker createWorker() {
-            return new MedSavantWorker<Chromosome[]>(getName()) {
+            return new MedSavantWorker<Chromosome[]>(ReferenceGenomePage.this.getName()) {
 
                 @Override
                 protected Chromosome[] doInBackground() throws Exception {
-                    return MedSavantClient.ReferenceManager.getChromosomes(LoginController.sessionId, selected.get(0).getId());
+                    return controller.getChromosomes(selected.get(0).getID());
                 }
 
                 @Override
@@ -184,5 +177,4 @@ public class ReferenceGenomePage extends SubSectionView {
             }
         }
     }
-
 }
