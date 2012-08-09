@@ -133,11 +133,7 @@ public class ProjectManagementPage extends SubSectionView {
                                                                       MedSavantClient.PatientManager.getCustomPatientFields(LoginController.sessionId, projID),
                                                                       MedSavantClient.ProjectManager.getProjectDetails(LoginController.sessionId, projID));
                                 wiz.setVisible(true);
-                                if (wiz.isModified()) {
-                                    // TODO: This looks suspicious to me.  Why aren't these being fired within a ProjectController method?
-                                    controller.fireEvent(new ProjectEvent(ProjectEvent.Type.REMOVED, projName));
-                                    controller.fireEvent(new ProjectEvent(ProjectEvent.Type.ADDED, MedSavantClient.ProjectManager.getProjectName(LoginController.sessionId, projID)));
-                                }
+                                
                             } finally {
                                 try {
                                     MedSavantClient.SettingsManager.releaseDBLock(LoginController.sessionId);

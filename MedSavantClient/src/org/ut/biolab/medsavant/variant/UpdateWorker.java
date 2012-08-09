@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.variant;
 
 import java.awt.event.ActionEvent;
@@ -29,25 +28,23 @@ import com.jidesoft.wizard.WizardDialog;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 /**
- * Code shared by VariantWorkers which update the variant tables, either by uploading variants or by removing them.
- * Unlike PublicationWorkers, these 1) grab a database lock, and 2) enable the publishing UI upon success.
+ * Code shared by VariantWorkers which update the variant tables, either by
+ * uploading variants or by removing them. Unlike PublicationWorkers, these 1)
+ * grab a database lock, and 2) enable the publishing UI upon success.
  *
  * @author tarvara
  */
 public abstract class UpdateWorker extends VariantWorker {
-    
-    private static final Log LOG = LogFactory.getLog(UpdateWorker.class);
 
+    private static final Log LOG = LogFactory.getLog(UpdateWorker.class);
     protected int updateID;
     private final String publishText;
-
     private final JCheckBox autoPublishCheck;
     private final JLabel publishProgressLabel;
     private final JProgressBar publishProgressBar;
     private final JButton publishButton;
-    
+
     protected UpdateWorker(String activity, WizardDialog wizard, JLabel progressLabel, JProgressBar progressBar, JButton workButton, JCheckBox autoPublishCheck, JLabel publishProgressLabel, JProgressBar publishProgressBar, JButton publishButton) {
         super(activity, wizard, progressLabel, progressBar, workButton);
         this.autoPublishCheck = autoPublishCheck;
@@ -55,7 +52,7 @@ public abstract class UpdateWorker extends VariantWorker {
         this.publishProgressBar = publishProgressBar;
         this.publishButton = publishButton;
         this.publishText = publishButton.getText();
-        
+
         wizard.getCurrentPage().fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.BACK);
     }
 
@@ -68,22 +65,24 @@ public abstract class UpdateWorker extends VariantWorker {
 
         autoPublishCheck.setVisible(false);
 
-        if (autoPublishCheck.isSelected()) {
-            new PublicationWorker(updateID, wizard, publishProgressLabel, publishProgressBar, publishButton).execute();
-        } else {
-            publishButton.setVisible(true);
+        if (updateID != -1) {
+            if (autoPublishCheck.isSelected()) {
+                new PublicationWorker(updateID, wizard, publishProgressLabel, publishProgressBar, publishButton).execute();
+            } else {
+                publishButton.setVisible(true);
 
-            if (publishButton.getActionListeners().length == 0) {
-                publishButton.addActionListener(new ActionListener() {
+                if (publishButton.getActionListeners().length == 0) {
+                    publishButton.addActionListener(new ActionListener() {
 
-                    @Override
-                    public void actionPerformed(ActionEvent ae) {
-                        new PublicationWorker(updateID, wizard, publishProgressLabel, publishProgressBar, publishButton).execute();
-                        publishButton.setText("Cancel");
-                    }
-                });
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            new PublicationWorker(updateID, wizard, publishProgressLabel, publishProgressBar, publishButton).execute();
+                            publishButton.setText("Cancel");
+                        }
+                    });
+                }
+                wizard.getCurrentPage().fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
             }
-            wizard.getCurrentPage().fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
         }
     }
 

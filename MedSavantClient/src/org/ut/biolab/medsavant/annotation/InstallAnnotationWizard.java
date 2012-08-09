@@ -78,11 +78,13 @@ public class InstallAnnotationWizard extends WizardDialog {
 
         //add pages
         PageList model = new PageList();
-        model.append(getAnnotationSourcePage());
+        //model.append(getAnnotationSourcePage());
         model.append(getChoosePage());
         model.append(getInstallPage());
         model.append(getCompletionPage());
         setPageList(model);
+
+        setSourceFromRepo(true);
 
         //change next action
         setNextAction(new AbstractAction() {

@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.project;
 
 import java.awt.Color;
@@ -69,12 +68,9 @@ public class ProjectWizard extends WizardDialog {
     private static final String PAGENAME_VCF = "Custom VCF Fields";
     private static final String PAGENAME_REF = "Reference";
     private static final String PAGENAME_COMPLETE = "Complete";
-
     private static String PAGENAME_CREATE = "Create";
-
     private final boolean modify;
     private boolean isModified = false;
-
     private final int projectID;
     private final String originalProjectName;
     private String projectName;
@@ -85,10 +81,11 @@ public class ProjectWizard extends WizardDialog {
     private CustomField[] variantFields;
     private List<CheckListItem> checkListItems = new ArrayList<CheckListItem>();
     private boolean variantFieldsChanged = false;
-
     private final ProjectManagerAdapter manager;
 
-    /* modify existing project */
+    /*
+     * modify existing project
+     */
     public ProjectWizard(int projID, String projName, CustomField[] fields, ProjectDetails[] details) {
         this.modify = true;
         this.projectID = projID;
@@ -102,7 +99,9 @@ public class ProjectWizard extends WizardDialog {
         setupWizard();
     }
 
-    /* create new project */
+    /*
+     * create new project
+     */
     public ProjectWizard() {
         modify = false;
         projectID = -1;
@@ -128,6 +127,7 @@ public class ProjectWizard extends WizardDialog {
 
         //change next action
         setNextAction(new AbstractAction() {
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 String pagename = getCurrentPage().getTitle();
@@ -154,6 +154,7 @@ public class ProjectWizard extends WizardDialog {
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_NAME) {
+
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
@@ -172,6 +173,7 @@ public class ProjectWizard extends WizardDialog {
         //setup text field
         final JTextField namefield = new JTextField();
         namefield.addKeyListener(new KeyAdapter() {
+
             @Override
             public void keyReleased(KeyEvent e) {
                 if (namefield.getText() != null && !namefield.getText().equals("")) {
@@ -183,7 +185,9 @@ public class ProjectWizard extends WizardDialog {
             }
         });
         page.addComponent(namefield);
-        if (modify) namefield.setText(projectName);
+        if (modify) {
+            namefield.setText(projectName);
+        }
 
         return page;
     }
@@ -192,6 +196,7 @@ public class ProjectWizard extends WizardDialog {
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_PATIENTS) {
+
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
@@ -204,10 +209,11 @@ public class ProjectWizard extends WizardDialog {
         page.addText("Add relevant fields for patients. ");
 
         JScrollPane scrollpane = new JScrollPane();
-        scrollpane.setPreferredSize(new Dimension(300,250));
+        scrollpane.setPreferredSize(new Dimension(300, 250));
         scrollpane.getViewport().setBackground(Color.white);
 
         final JTable table = new JTable() {
+
             @Override
             public Class<?> getColumnClass(int column) {
                 if (column == 2) {
@@ -219,6 +225,7 @@ public class ProjectWizard extends WizardDialog {
         };
 
         patientFormatModel = new DefaultTableModel() {
+
             @Override
             public boolean isCellEditable(int row, int col) {
                 return row >= 8;
@@ -242,7 +249,7 @@ public class ProjectWizard extends WizardDialog {
 
         if (modify) {
             for (CustomField f : patientFields) {
-                patientFormatModel.addRow(new Object[]{f.getColumnName(), f.getColumnTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
+                patientFormatModel.addRow(new Object[]{f.getColumnName(), f.getSQLFieldTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
             }
         }
 
@@ -253,6 +260,7 @@ public class ProjectWizard extends WizardDialog {
 
         JButton addFieldButton = new JButton("Add Field");
         addFieldButton.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseReleased(MouseEvent e) {
                 patientFormatModel.addRow(new Object[5]);
@@ -263,6 +271,7 @@ public class ProjectWizard extends WizardDialog {
 
         JButton removeFieldButton = new JButton("Remove Field");
         removeFieldButton.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseReleased(MouseEvent e) {
                 int row = table.getSelectedRow();
@@ -281,6 +290,7 @@ public class ProjectWizard extends WizardDialog {
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_VCF) {
+
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
@@ -293,10 +303,11 @@ public class ProjectWizard extends WizardDialog {
         page.addText("Add extra fields to retrieve from VCF files. ");
 
         JScrollPane scrollpane = new JScrollPane();
-        scrollpane.setPreferredSize(new Dimension(300,250));
+        scrollpane.setPreferredSize(new Dimension(300, 250));
         scrollpane.getViewport().setBackground(Color.white);
 
         final JTable table = new JTable() {
+
             @Override
             public Class<?> getColumnClass(int column) {
                 if (column == 2) {
@@ -322,7 +333,7 @@ public class ProjectWizard extends WizardDialog {
                         LoginController.sessionId, projectID, firstRef,
                         manager.getNewestUpdateID(LoginController.sessionId, projectID, firstRef, false));
                 for (CustomField f : fields) {
-                    variantFormatModel.addRow(new Object[]{f.getColumnName().toUpperCase(), f.getColumnTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
+                    variantFormatModel.addRow(new Object[]{f.getColumnName().toUpperCase(), f.getSQLFieldTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
                 }
             } catch (SQLException ex) {
                 LOG.error("Error getting reference IDs for project.", ex);
@@ -354,6 +365,7 @@ public class ProjectWizard extends WizardDialog {
         page.addComponent(scrollpane);
 
         table.addKeyListener(new KeyListener() {
+
             @Override
             public void keyTyped(KeyEvent e) {
                 variantFieldsChanged = true;
@@ -372,6 +384,7 @@ public class ProjectWizard extends WizardDialog {
 
         JButton addFieldButton = new JButton("Add Field");
         addFieldButton.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseReleased(MouseEvent e) {
                 variantFormatModel.addRow(new Object[2]);
@@ -383,6 +396,7 @@ public class ProjectWizard extends WizardDialog {
 
         JButton removeFieldButton = new JButton("Remove Field");
         removeFieldButton.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseReleased(MouseEvent e) {
                 int row = table.getSelectedRow();
@@ -410,6 +424,7 @@ public class ProjectWizard extends WizardDialog {
 
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_REF) {
+
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.BACK);
@@ -417,13 +432,13 @@ public class ProjectWizard extends WizardDialog {
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
             }
         };
-        page.addText("Choose reference genome(s) to add to this project, along\n" +
-                     "with corresponding annotations. Annotations will be\n" +
-                     "applied to all variants added to these tables.");
+        page.addText("Choose reference genome(s) to add to this project, along\n"
+                + "with corresponding annotations. Annotations will be\n"
+                + "applied to all variants added to these tables.");
 
         //setup list
         JScrollPane scrollpane = new JScrollPane();
-        scrollpane.setPreferredSize(new Dimension(300,220));
+        scrollpane.setPreferredSize(new Dimension(300, 220));
         scrollpane.getViewport().setBackground(Color.white);
 
         final JPanel p = new JPanel();
@@ -436,6 +451,7 @@ public class ProjectWizard extends WizardDialog {
 
         JButton addRefButton = new JButton("New Reference");
         addRefButton.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseReleased(MouseEvent e) {
                 new NewReferenceDialog().setVisible(true);
@@ -453,9 +469,9 @@ public class ProjectWizard extends WizardDialog {
         try {
             references = MedSavantClient.ReferenceManager.getReferences(LoginController.sessionId);
             annotations = MedSavantClient.AnnotationManagerAdapter.getAnnotations(LoginController.sessionId);
-        } catch(SQLException ex) {
+        } catch (SQLException ex) {
             LOG.error("Error getting references and annotations.", ex);
-        } catch(RemoteException ex) {
+        } catch (RemoteException ex) {
             LOG.error("Error getting references and annotations.", ex);
         }
 
@@ -479,6 +495,7 @@ public class ProjectWizard extends WizardDialog {
     private AbstractWizardPage getCreatePage() {
         //setup page
         final DefaultWizardPage page = new DefaultWizardPage(PAGENAME_CREATE) {
+
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.BACK);
@@ -508,31 +525,34 @@ public class ProjectWizard extends WizardDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new UpdateWorker(modify ? "Modifying project" : "Creating project", ProjectWizard.this, progressLabel, progressBar, workButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishButton) {
+
                     @Override
                     protected Void doInBackground() throws Exception {
-                        createProject();
+                        if (!modify) {
+                            createNewProject();
+                        } else {
+                            updateID = modifyProject(true,true,true);
+                        }
                         return null;
                     }
 
                     @Override
                     protected void showSuccess(Void result) {
                         if (modify) {
-                            ((CompletionWizardPage)getPageByTitle(PAGENAME_COMPLETE)).addText("Project " + projectName + " has been modified.");
+                            ((CompletionWizardPage) getPageByTitle(PAGENAME_COMPLETE)).addText("Project " + projectName + " has been modified.");
                             super.showSuccess(result);
                         } else {
-                            ((CompletionWizardPage)getPageByTitle(PAGENAME_COMPLETE)).addText("Project " + projectName + " has been created.");
+                            ((CompletionWizardPage) getPageByTitle(PAGENAME_COMPLETE)).addText("Project " + projectName + " has been created.");
                             setCurrentPage(PAGENAME_COMPLETE);
                         }
                     }
-
                 }.execute();
             }
-
         });
 
         page.addComponent(ViewUtil.alignRight(workButton));
         //cancelButton.setVisible(false);
-       // page.addComponent(ViewUtil.alignRight(cancelButton));
+        // page.addComponent(ViewUtil.alignRight(cancelButton));
 
         if (modify) {
             page.addComponent(autoPublishVariants);
@@ -557,6 +577,7 @@ public class ProjectWizard extends WizardDialog {
 
     private AbstractWizardPage getCompletionPage() {
         CompletionWizardPage page = new CompletionWizardPage(PAGENAME_COMPLETE) {
+
             @Override
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.BACK);
@@ -623,25 +644,31 @@ public class ProjectWizard extends WizardDialog {
     private boolean validateFormatModel(List<CustomField> fields, DefaultTableModel model, int firstRow) {
 
         for (int row = firstRow; row < model.getRowCount(); row++) {
-            String fieldName = (String)model.getValueAt(row, 0);
-            String fieldType = (String)model.getValueAt(row, 1);
-            Boolean fieldFilterable = (Boolean)model.getValueAt(row, 2);
-            String fieldAlias = (String)model.getValueAt(row, 3);
-            String fieldDescription = (String)model.getValueAt(row, 4);
+            String fieldName = (String) model.getValueAt(row, 0);
+            String fieldType = (String) model.getValueAt(row, 1);
+            Boolean fieldFilterable = (Boolean) model.getValueAt(row, 2);
+            String fieldAlias = (String) model.getValueAt(row, 3);
+            String fieldDescription = (String) model.getValueAt(row, 4);
 
             if (fieldName == null || fieldType == null) {
                 continue;
             }
 
             if (!fieldName.matches("^([a-z]|[A-Z]|_|[0-9])+$")) {// ||
-                    //!fieldType.matches("^([a-z]|[A-Z])+\\([0-9]+\\)$")) {
+                //!fieldType.matches("^([a-z]|[A-Z])+\\([0-9]+\\)$")) {
                 return false;
             }
 
             if (!fieldName.equals("") && !fieldType.equals("")) {
-                if (fieldFilterable == null) fieldFilterable = false;
-                if (fieldAlias == null) fieldAlias = fieldName;
-                if (fieldDescription == null) fieldDescription = "";
+                if (fieldFilterable == null) {
+                    fieldFilterable = false;
+                }
+                if (fieldAlias == null) {
+                    fieldAlias = fieldName;
+                }
+                if (fieldDescription == null) {
+                    fieldDescription = "";
+                }
                 fields.add(new CustomField(fieldName, fieldType, fieldFilterable, fieldAlias, fieldDescription));
             }
         }
@@ -649,16 +676,42 @@ public class ProjectWizard extends WizardDialog {
         return true;
     }
 
-    private void createProject() throws Exception {
-        if (modify) {
+    private void createNewProject() throws Exception {
+        //create project
+        int projID = ProjectController.getInstance().addProject(projectName, patientFields);
 
+        //add references and annotations
+        for (CheckListItem cli : checkListItems) {
+            if (cli.isSelected()) {
+
+                //set custom vcf fields
+                int refID = cli.getReference().getID();
+                manager.setCustomVariantFields(LoginController.sessionId, projID, refID, 0, variantFields);
+
+                int[] annIDs = cli.getAnnotationIDs();
+                String tablename = manager.createVariantTable(LoginController.sessionId, projID, refID, 0, annIDs, false);
+                manager.addTableToMap(LoginController.sessionId, projID, refID, 0, true, tablename, annIDs, null);
+            }
+        }
+    }
+
+    private int modifyProject(boolean modifyProjectName, boolean modifyPatientFields, boolean modifyVariants) throws Exception {
+
+        int updateID = -1;
+
+        if (modifyProjectName) {
             //change project name
             if (!projectName.equals(originalProjectName)) {
                 manager.renameProject(LoginController.sessionId, projectID, projectName);
             }
+        }
 
+        if (modifyPatientFields) {
             //modify patientFields
             MedSavantClient.PatientManager.updateFields(LoginController.sessionId, projectID, patientFields);
+        }
+
+        if (modifyVariants) {
 
             //edit references and annotations
             for (CheckListItem cli : checkListItems) {
@@ -672,12 +725,13 @@ public class ProjectWizard extends WizardDialog {
                 //get annotation ids
                 int[] annIDs = cli.getAnnotationIDs();
 
+
                 //add new ref
                 if (pd == null && cli.isSelected()) {
                     int refID = cli.getReference().getID();
                     String tablename = manager.createVariantTable(LoginController.sessionId, projectID, refID, 0, annIDs, false);
                     manager.setCustomVariantFields(LoginController.sessionId, projectID, refID, 0, variantFields);
-                    manager.addTableToMap(LoginController.sessionId, projectID, refID, 0, true, tablename, null);
+                    manager.addTableToMap(LoginController.sessionId, projectID, refID, 0, true, tablename, annIDs, null);
                     continue;
                 } else if (pd != null && !cli.isSelected()) {
                     //remove existing ref
@@ -686,38 +740,21 @@ public class ProjectWizard extends WizardDialog {
                 }
 
                 //make modifications
-                MedSavantClient.VariantManager.updateTable(LoginController.sessionId, projectID, cli.getReference().getID(), annIDs, variantFields);
+                updateID = MedSavantClient.VariantManager.updateTable(LoginController.sessionId, projectID, cli.getReference().getID(), annIDs, variantFields);
 
-            }
-
-            isModified = true;
-
-        } else {
-
-            //create project
-            int projID = ProjectController.getInstance().addProject(projectName, patientFields);
-
-            //add references and annotations
-            for (CheckListItem cli : checkListItems) {
-                if (cli.isSelected()) {
-
-                    //set custom vcf fields
-                    int refID = cli.getReference().getID();
-                    manager.setCustomVariantFields(LoginController.sessionId, projID, refID, 0, variantFields);
-
-                    int[] annIDs = cli.getAnnotationIDs();
-                    String tablename = manager.createVariantTable(LoginController.sessionId, projID, refID, 0, annIDs, false);
-                    manager.addTableToMap(LoginController.sessionId, projID, refID, 0, true, tablename, null);
-                }
             }
         }
+
+        ProjectController.getInstance().fireEvent(new ProjectEvent(ProjectEvent.Type.REMOVED, projectName));
+        ProjectController.getInstance().fireEvent(new ProjectEvent(ProjectEvent.Type.ADDED, projectName));
+
+        return updateID;
     }
 
     private class CheckListItem extends JPanel {
 
         private final Reference reference;
         private final Map<Integer, Boolean> annIDsMap = new HashMap<Integer, Boolean>();
-
         private final JCheckBox checkBox;
         private final List<JCheckBox> annBoxes = new ArrayList<JCheckBox>();
 
@@ -730,9 +767,10 @@ public class ProjectWizard extends WizardDialog {
 
 
             checkBox = new JCheckBox(ref.getName());
-            checkBox.setMaximumSize(new Dimension(1000,20));
+            checkBox.setMaximumSize(new Dimension(1000, 20));
             checkBox.setBackground(getBackground());
             checkBox.addItemListener(new ItemListener() {
+
                 @Override
                 public void itemStateChanged(ItemEvent e) {
                     boolean selected = checkBox.isSelected();
@@ -761,9 +799,10 @@ public class ProjectWizard extends WizardDialog {
                 }
 
                 final JCheckBox b1 = new JCheckBox(a.getProgram() + " " + a.getVersion());
-                b1.setMaximumSize(new Dimension(1000,20));
+                b1.setMaximumSize(new Dimension(1000, 20));
                 b1.setBackground(Color.white);
                 b1.addItemListener(new ItemListener() {
+
                     @Override
                     public void itemStateChanged(ItemEvent e) {
                         annIDsMap.put(a.getID(), b1.isSelected());
@@ -779,7 +818,7 @@ public class ProjectWizard extends WizardDialog {
                 }
 
                 JPanel p1 = new JPanel();
-                p1.setMaximumSize(new Dimension(1000,20));
+                p1.setMaximumSize(new Dimension(1000, 20));
                 p1.setBackground(Color.white);
                 p1.setLayout(new BoxLayout(p1, BoxLayout.X_AXIS));
                 p1.add(Box.createHorizontalStrut(30));

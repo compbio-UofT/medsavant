@@ -42,6 +42,9 @@ public class PublicationWorker extends VariantWorker {
 
     public PublicationWorker(int updateID, WizardDialog wizard, JLabel progressLabel, JProgressBar progressBar, JButton publishButton) {
         super("Publishing variants", wizard, progressLabel, progressBar, publishButton);
+
+        System.out.println("PUBLICATION WORKER HAS UPDATE ID: " + updateID);
+
         this.updateID = updateID;
         publishText = publishButton.getText();
     }
