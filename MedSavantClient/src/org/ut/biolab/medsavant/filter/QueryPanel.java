@@ -48,8 +48,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class QueryPanel extends CollapsiblePanes {
 
-    static final Color DEFAULT_KEY_COLOR = Color.GRAY;
-    static final Color INACTIVE_KEY_COLOR = Color.RED;
+    static final Color INACTIVE_KEY_COLOR = Color.GRAY;
+    static final Color ACTIVE_KEY_COLOR = Color.RED;
 
     private int queryID;
 
@@ -159,50 +159,27 @@ public class QueryPanel extends CollapsiblePanes {
     
     private CollapsiblePane addFilterCategory(String title, List<FilterHolder> catHolders, boolean longRunning) throws PropertyVetoException {
 
-        CollapsiblePane cPanel = new CollapsiblePane(title);
-        cPanel.setCollapsed(true);
-        cPanel.setOpaque(false);
-        cPanel.setLayout(new BorderLayout());
+        CollapsiblePane cPane = new CollapsiblePane(title);
+        cPane.setCollapsed(true);
+        cPane.setOpaque(false);
+        cPane.setLayout(new BorderLayout());
 
-        cPanel.setStyle(CollapsiblePane.PLAIN_STYLE);
+        cPane.setStyle(CollapsiblePane.PLAIN_STYLE);
 
-        final KeyValuePairPanel kvp = new KeyValuePairPanel(2);
-        cPanel.add(kvp, BorderLayout.CENTER);
+        KeyValuePairPanel kvp = new KeyValuePairPanel(2);
+        cPane.add(kvp, BorderLayout.CENTER);
 
         for (FilterHolder f: catHolders) {
             f.addTo(kvp, longRunning);
         }
 
-        FilterController.getInstance().addListener(new Listener<FilterEvent>() {
-
-            @Override
-            public void handleEvent(FilterEvent event) {
-                Filter changedFilter = event.getFilter();
-
-                if (kvp.containsKey(changedFilter.getName())) {
-                    int index = 0;
-                    Component c = ((JPanel) kvp.getAdditionalColumn(changedFilter.getName(), index)).getComponent(0);
-
-                    switch (event.getType()) {
-                        case ADDED:
-                        case MODIFIED:
-                            kvp.setKeyColour(changedFilter.getName(), INACTIVE_KEY_COLOR);
-                            c.setVisible(true);
-                            break;
-                        case REMOVED:
-                            kvp.setKeyColour(changedFilter.getName(), DEFAULT_KEY_COLOR);
-                            c.setVisible(false);
-                            break;
-                    }
-                }
-            }
-        });
+        FilterController.getInstance().addListener(new FilterEventListener(cPane, kvp));
         for (FilterHolder h: catHolders) {
             filterHolders.put(h.getFilterID(), h);
         }
         catHolders.clear();
         
-        return cPanel;
+        return cPane;
     }
 
     /**
@@ -215,6 +192,40 @@ public class QueryPanel extends CollapsiblePanes {
             h.openFilterView();
         } else {
             throw new Exception(String.format("Unknown filter ID \"%s\"", state.getFilterID()));
+        }
+    }
+    
+    private class FilterEventListener implements Listener<FilterEvent> {
+        private final String baseTitle;
+        private final CollapsiblePane collapsiblePane;
+        private final KeyValuePairPanel keyValuePanel;
+        
+        private FilterEventListener(CollapsiblePane cPane, KeyValuePairPanel kvp) {
+            collapsiblePane = cPane;
+            keyValuePanel = kvp;
+            baseTitle = cPane.getTitle();
+        }
+
+        @Override
+        public void handleEvent(FilterEvent event) {
+            Filter changedFilter = event.getFilter();
+
+            if (keyValuePanel.containsKey(changedFilter.getName())) {
+                Component xButton = ((JPanel)keyValuePanel.getAdditionalColumn(changedFilter.getName(), 0)).getComponent(0);
+                switch (event.getType()) {
+                    case ADDED:
+                    case MODIFIED:
+                        keyValuePanel.setKeyColour(changedFilter.getName(), ACTIVE_KEY_COLOR);
+                        collapsiblePane.setTitle(String.format("<html><font color=\"red\">%s</font></html>", baseTitle));   // Assumes that ACTIVE_KEY_COLOR is in fact red.
+                        xButton.setVisible(true);
+                        break;
+                    case REMOVED:
+                        keyValuePanel.setKeyColour(changedFilter.getName(), INACTIVE_KEY_COLOR);
+                        collapsiblePane.setTitle(baseTitle);
+                        xButton.setVisible(false);
+                        break;
+                }
+            }
         }
     }
 }

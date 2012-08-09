@@ -85,7 +85,7 @@ public abstract class FilterHolder {
         parent = kvp;
         kvp.addKey(name);
 
-        kvp.setKeyColour(name, QueryPanel.DEFAULT_KEY_COLOR);
+        kvp.setKeyColour(name, QueryPanel.INACTIVE_KEY_COLOR);
 
         JLabel detailString = new JLabel("");
         detailString.setForeground(Color.orange);
@@ -142,14 +142,12 @@ public abstract class FilterHolder {
     public void openFilterView() {
         try {
             parent.setDetailComponent(name, getFilterView());
+            parent.toggleDetailVisibility(name);
+            parent.invalidate();
+            parent.repaint();
         } catch (Exception e) {
             DialogUtils.displayException("Problem displaying filter", "Problem getting values for filter " + name, e);
         }
-
-        clearButton.setVisible(true);
-        parent.toggleDetailVisibility(name);
-        parent.invalidate();
-        parent.repaint();
     }
 }
 
