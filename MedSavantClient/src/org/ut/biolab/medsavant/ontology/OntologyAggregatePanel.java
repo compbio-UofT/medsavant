@@ -19,11 +19,14 @@ package org.ut.biolab.medsavant.ontology;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -39,10 +42,12 @@ import org.ut.biolab.medsavant.geneset.GeneSetController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.OntologyTerm;
+import org.ut.biolab.medsavant.model.OntologyType;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ThreadController;
+import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
 
 
 /**
@@ -58,6 +63,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
     private TreeTable tree;
 
     private MedSavantWorker termFetcher;
+    private VariantFetcher variantFetcher;
 
     public OntologyAggregatePanel(String page) {
         super(page);
@@ -97,67 +103,130 @@ public class OntologyAggregatePanel extends AggregatePanel {
         chooser.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (termFetcher != null) {
+                    termFetcher.cancel(true);
+                    termFetcher = null;
+                }
                 recalculate();
             }
         });
+
+        tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    createPopup().show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
+
     }
 
     @Override
     public void recalculate() {
         if (chooser != null && chooser.getSelectedItem() != null) {
-            // Cancels both the TermFetcher and the VariantFetcher.
-            ThreadController.getInstance().cancelWorkers(pageName);
-            tree.setModel(new OntologyTreeModel(null));
+            // We only want to cancel the VariantFetcher.
+            if (variantFetcher != null) {
+                variantFetcher.cancel(true);
+                variantFetcher = null;
+            }
+            
+            // It's quite possible that we've successfully fetched all the terms, in which case the dead worker tells us that
+            // we don't need to do it again.
+            if (termFetcher == null) {
+                tree.setModel(new OntologyTreeModel(null));
 
-            progress.setIndeterminate(true);
-            progress.setVisible(true);
-            termFetcher = new MedSavantWorker<OntologyTerm[]>(pageName) {
-                @Override
-                protected OntologyTerm[] doInBackground() throws Exception {
-                    return MedSavantClient.OntologyManager.getAllTerms(LoginController.sessionId, ((OntologyListItem)chooser.getSelectedItem()).getType());
+                progress.setIndeterminate(true);
+                progress.setVisible(true);
+                termFetcher = new MedSavantWorker<OntologyTerm[]>(pageName) {
+                    @Override
+                    protected OntologyTerm[] doInBackground() throws Exception {
+                        return MedSavantClient.OntologyManager.getAllTerms(LoginController.sessionId, ((OntologyListItem)chooser.getSelectedItem()).getType());
+                    }
+
+                    @Override
+                    protected void showProgress(double fraction) {
+                    }
+
+                    @Override
+                    protected void showSuccess(OntologyTerm[] result) {
+                        tree.setModel(new OntologyTreeModel(result));
+                        TableColumn col = tree.getColumnModel().getColumn(3);
+                        col.setCellRenderer(new NodeProgressRenderer());
+                        progress.setVisible(false);
+                    }
+                };
+
+                termFetcher.execute();
+            } else {
+                // Already have our terms.  Just reset and start a new variant fetcher.
+                if (tree.getModel() != null) {
+                    for (int i = 0; i < tree.getRowCount(); i++) {
+                        OntologyNode rowNode = (OntologyNode)tree.getRowAt(i);
+                        rowNode.resetCount();
+                    }
+                    OntologyTreeModel actualModel = (OntologyTreeModel)TableModelWrapperUtils.getActualTableModel(tree.getModel());
+                    actualModel.geneCounts.clear();
+                    actualModel.fireTableDataChanged();
+                    variantFetcher = new VariantFetcher(actualModel);
+                    variantFetcher.execute();
                 }
-
-                @Override
-                protected void showProgress(double fraction) {
-                }
-
-                @Override
-                protected void showSuccess(OntologyTerm[] result) {
-                    tree.setModel(new OntologyTreeModel(result));
-                    TableColumn col = tree.getColumnModel().getColumn(3);
-                    col.setCellRenderer(new NodeProgressRenderer());
-                    progress.setVisible(false);
-                }
-            };
-
-            termFetcher.execute();
+            }
         }
+    }
+
+    private JPopupMenu createPopup() {
+        JPopupMenu menu = new JPopupMenu();
+
+        SortableTreeTableModel model = (SortableTreeTableModel)tree.getModel();
+        final int[] selRows = TableModelWrapperUtils.getActualRowsAt(model, tree.getSelectedRows(), false);
+
+        JMenuItem posItem = new JMenuItem(String.format("<html>Filter by %s</html>", selRows.length == 1 ? "Ontology Term <i>" + model.getValueAt(selRows[0], 0) + "</i>" : "Selected Ontology Terms"));
+        posItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                ThreadController.getInstance().cancelWorkers(pageName);
+
+                List<OntologyTerm> terms = new ArrayList<OntologyTerm>();
+                SortableTreeTableModel model = (SortableTreeTableModel)tree.getModel();
+                for (int r: selRows) {
+                    OntologyNode rowNode = (OntologyNode)model.getRowAt(r);
+                    terms.add(rowNode.term);
+                }
+
+                OntologyType ont = terms.get(0).getOntology();
+                GeneticsFilterPage.getSearchBar().loadFilters(OntologyFilterView.wrapState(OntologyFilter.ontologyToTitle(ont), ont, terms));
+            }
+
+        });
+        menu.add(posItem);
+
+        return menu;
     }
 
 
     /**
-        * Class which provides a tree-like data-structure for all terms within a given ontology.
-        */
+     * Class which provides a tree-like data-structure for all terms within a given ontology.
+     */
     private class OntologyTreeModel extends TreeTableModel {
 
         private final OntologyTerm[] allTerms;
         private final Map<OntologyTerm, OntologyTerm[]> allChildren = new HashMap<OntologyTerm, OntologyTerm[]>();
         private final Map<String, Integer> geneCounts = new HashMap<String, Integer>();
-        private VariantFetcher variantFetcher;
 
         public OntologyTreeModel(OntologyTerm[] terms) {
             allTerms = terms;
 
             if (terms != null) {
-                variantFetcher = new VariantFetcher(this);
                 for (OntologyTerm t: terms) {
                     if (t.getParentIDs() == null) {
                         OntologyNode node = new OntologyNode(t, this);
                         addRow(node);
-                        variantFetcher.push(node);
                     }
                 }
+                variantFetcher = new VariantFetcher(this);
                 variantFetcher.execute();
+
             }
         }
 
@@ -193,8 +262,8 @@ public class OntologyAggregatePanel extends AggregatePanel {
     }
 
     /**
-        * Class which represents a single term within the tree-model.
-        */
+     * Class which represents a single term within the tree-model.
+     */
     private class OntologyNode extends DefaultExpandableRow {
 
         private static final int COUNT_COLUMN = 3;
@@ -231,7 +300,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
                                         @Override
                                         public void run() {
                                             for (Object child: getChildren()) {
-                                                model.variantFetcher.push((OntologyNode)child);
+                                                variantFetcher.push((OntologyNode)child);
                                             }
                                         }
                                     }.start();
@@ -274,6 +343,12 @@ public class OntologyAggregatePanel extends AggregatePanel {
                 }
                 model.fireTableCellUpdated(model.getRowIndex(this), COUNT_COLUMN);
             }
+        }
+        
+        private void resetCount() {
+            LOG.info("Reset count for " + term);
+            uncountedGenes = new HashSet<String>();
+            count = 0;
         }
     }
 
@@ -341,6 +416,9 @@ public class OntologyAggregatePanel extends AggregatePanel {
         private VariantFetcher(OntologyTreeModel m) {
             super(pageName);
             model = m;
+            for (int i = 0; i < model.getRowCount(); i++) {
+                push((OntologyNode)model.getRowAt(i));
+            }
         }
 
         @Override

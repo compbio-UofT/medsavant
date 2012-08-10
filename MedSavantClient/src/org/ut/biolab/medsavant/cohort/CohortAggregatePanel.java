@@ -253,7 +253,6 @@ public class CohortAggregatePanel extends AggregatePanel {
                     value = result;
                     refresh();
                     repaint();
-                    cleanup();
                 }
 
             }.execute();

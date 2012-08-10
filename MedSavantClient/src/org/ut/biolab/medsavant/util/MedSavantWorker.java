@@ -35,9 +35,6 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
      */   
     public MedSavantWorker(String pageName) {
         this.pageName = pageName;
-        if (pageName == null) {
-            System.out.println("pageName was null");
-        }
         ThreadController.getInstance().addWorker(pageName, this);
     }
     
@@ -52,7 +49,8 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
             } catch (ExecutionException x) {
                 showFailure(x.getCause());
             } finally {
-                cleanup();
+                // Succeed or fail, we want to remove the worker from our page.
+                ThreadController.getInstance().removeWorker(pageName, this);
             }
         }
     }
@@ -78,12 +76,5 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
         if (!(t instanceof InterruptedException)) {
             ClientMiscUtils.reportError("Exception thrown by background task: %s", t);
         }
-    }
-    
-    /**
-     * Must be called after worker finishes. 
-     */
-    public void cleanup() {
-        ThreadController.getInstance().removeWorker(pageName, this);
     }
 }

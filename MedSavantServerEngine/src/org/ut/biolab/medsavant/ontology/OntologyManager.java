@@ -174,22 +174,24 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             StringBuilder termsString = new StringBuilder("\'");
-            termsString.append(terms[0].getID());
-            for (int i = 1; i < terms.length; i++) {
-                termsString.append("\', \'");
-                termsString.append(terms[i].getID());
-            }
-            termsString.append('\'');
-            ResultSet rs = conn.executePreparedQuery(String.format("SELECT id,genes FROM ontology WHERE ontology=? and id IN (%s)", termsString), terms[0].getOntology().toString());
+            if (terms.length > 0) {
+                termsString.append(terms[0].getID());
+                for (int i = 1; i < terms.length; i++) {
+                    termsString.append("\', \'");
+                    termsString.append(terms[i].getID());
+                }
+                termsString.append('\'');
+                ResultSet rs = conn.executePreparedQuery(String.format("SELECT id,genes FROM ontology WHERE ontology=? and id IN (%s)", termsString), terms[0].getOntology().toString());
 
-            while (rs.next()) {
-                OntologyTerm term = findTermByID(terms, rs.getString(1));
+                while (rs.next()) {
+                    OntologyTerm term = findTermByID(terms, rs.getString(1));
 
-                String genesString = rs.getString(2);
-                if (genesString != null && genesString.length() > 2) {
-                    // Gene-string should be of the form "|gene1|gene2|...|geneN|".
-                    // We start splitting at position 1 to avoid an empty string at the start.
-                    result.put(term, genesString.substring(1).split("\\|"));
+                    String genesString = rs.getString(2);
+                    if (genesString != null && genesString.length() > 2) {
+                        // Gene-string should be of the form "|gene1|gene2|...|geneN|".
+                        // We start splitting at position 1 to avoid an empty string at the start.
+                        result.put(term, genesString.substring(1).split("\\|"));
+                    }
                 }
             }
         } finally {
