@@ -1,0 +1,255 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.ut.biolab.medsavant.view.list;
+
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
+import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.view.util.WaitPanel;
+
+/**
+ *
+ * @author tarkvara
+ */
+public class MasterView extends JPanel {
+
+    //TODO: handle limits better!
+    static final int LIMIT = 10000;
+
+    private static final String CARD_WAIT = "wait";
+    private static final String CARD_SHOW = "show";
+    private static final String CARD_ERROR = "error";
+
+    private final String pageName;
+    private final DetailedListModel detailedModel;
+    private final DetailedView detailedView;
+    private final DetailedListEditor detailedEditor;
+
+    Object[][] data;
+    private final JPanel showCard;
+    private final JLabel errorMessage;
+    ListViewTablePanel stp;
+    //private int limit = 10000;
+    private RowSelectionGrabber selectionGrabber;
+    private JPanel buttonPanel;
+
+    public MasterView(String page, DetailedListModel model, DetailedView view, DetailedListEditor editor) {
+        pageName = page;
+        detailedModel = model;
+        detailedView = view;
+        detailedEditor = editor;
+
+        setLayout(new CardLayout());
+
+        WaitPanel wp = new WaitPanel("Getting list");
+        wp.setBackground(ViewUtil.getTertiaryMenuColor());
+        add(wp, CARD_WAIT);
+
+        showCard = new JPanel();
+        add(showCard, CARD_SHOW);
+
+        JPanel errorPanel = new JPanel();
+        errorPanel.setLayout(new BorderLayout());
+        errorMessage = new JLabel("An error occurred:");
+        errorPanel.add(errorMessage, BorderLayout.NORTH);
+
+        add(errorPanel, CARD_ERROR);
+
+        buttonPanel = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(buttonPanel);
+
+        buttonPanel.setBorder(ViewUtil.getMediumBorder());
+        buttonPanel.add(Box.createHorizontalGlue());
+
+        if (detailedEditor.doesImplementAdding()) {
+
+            JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD_ON_TOOLBAR));
+            butt.setToolTipText("Add");
+            butt.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    detailedEditor.addItems();
+                    // In some cases, such as uploading/publishing variants, the addItems() method may have logged us out.
+                    if (LoginController.getInstance().isLoggedIn()) {
+                        refreshList();
+                    }
+                }
+            });
+            buttonPanel.add(butt);
+            buttonPanel.add(ViewUtil.getSmallSeparator());
+        }
+
+        if (detailedEditor.doesImplementImporting()) {
+
+            JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.IMPORT));
+            butt.setToolTipText("Import");
+            butt.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    detailedEditor.importItems();
+                    refreshList();
+                }
+            });
+            buttonPanel.add(butt);
+            buttonPanel.add(ViewUtil.getSmallSeparator());
+        }
+
+        if (detailedEditor.doesImplementDeleting()) {
+            JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.REMOVE_ON_TOOLBAR));
+            butt.setToolTipText("Remove selected");
+            butt.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    detailedEditor.deleteItems(selectionGrabber.getSelectedItems());
+                    // In some cases, such as removing/publishing variants, the deleteItems() method may have logged us out.
+                    if (LoginController.getInstance().isLoggedIn()) {
+                        refreshList();
+                    }
+                }
+            });
+            buttonPanel.add(butt);
+            buttonPanel.add(ViewUtil.getSmallSeparator());
+        }
+
+        if (detailedEditor.doesImplementEditing()) {
+            JLabel butt = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.EDIT));
+            butt.setToolTipText("Edit selected");
+            butt.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (selectionGrabber.getSelectedItems().size() > 0) {
+                        detailedEditor.editItems(selectionGrabber.getSelectedItems().get(0));
+                        refreshList();
+                    } else {
+                        DialogUtils.displayMessage("Choose one item to edit");
+                    }
+                }
+            });
+            buttonPanel.add(butt);
+        }
+
+        buttonPanel.add(Box.createHorizontalGlue());
+
+        showWaitCard();
+        fetchList();
+    }
+
+    private void showWaitCard() {
+        ((CardLayout)getLayout()).show(this, CARD_WAIT);
+    }
+
+    private void showShowCard() {
+        ((CardLayout)getLayout()).show(this, CARD_SHOW);
+    }
+
+    private void showErrorCard(String message) {
+        errorMessage.setText(String.format("<html><font color=\"#ff0000\">An error occurred:<br><font size=\"-2\">%s</font></font></html>", message));
+        ((CardLayout)getLayout()).show(this, CARD_ERROR);
+    }
+
+    private synchronized void setList(Object[][] list) {
+        this.data = list;
+        updateShowCard();
+        showShowCard();
+    }
+
+    void refreshList() {
+        showWaitCard();
+        fetchList();
+    }
+
+    private void fetchList() {
+
+        new MedSavantWorker<Object[][]>(pageName) {
+            @Override
+            protected Object[][] doInBackground() throws Exception {
+                return detailedModel.getList(LIMIT);
+            }
+
+            protected void showProgress(double ignored) {
+            }
+
+            @Override
+            protected void showSuccess(Object[][] result) {
+                setList(result);
+            }
+        }.execute();
+    }
+
+    private void updateShowCard() {
+        showCard.removeAll();
+
+        showCard.setLayout(new BorderLayout());
+        showCard.setBackground(ViewUtil.getTertiaryMenuColor());
+        showCard.setBorder(ViewUtil.getBigBorder());
+
+        String[] columnNames = detailedModel.getColumnNames();
+        Class[] columnClasses = detailedModel.getColumnClasses();
+        int[] columnVisibility = detailedModel.getHiddenColumns();
+
+        stp = new ListViewTablePanel(data, columnNames, columnClasses, columnVisibility) {
+
+            @Override
+            public void forceRefreshData() {
+                refreshList();
+            }
+        };
+
+        selectionGrabber = new RowSelectionGrabber(stp.getTable(), data);
+
+        if (detailedView != null) {
+            stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+
+                    if(e.getValueIsAdjusting()) return;
+
+                    List<Object[]> selectedItems = selectionGrabber.getSelectedItems();
+                    if (selectedItems.size() == 1) {
+                        detailedView.setSelectedItem(selectedItems.get(0));
+                    } else {
+                        detailedView.setMultipleSelections(selectedItems);
+                    }
+
+                }
+            });
+
+            stp.getTable().addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (SwingUtilities.isRightMouseButton(e)) {
+                        JPopupMenu popup = detailedView.createPopup();
+                        if (popup != null) {
+                            popup.show(e.getComponent(), e.getX(), e.getY());
+                        }
+                    }
+                }
+            });
+        }
+
+        stp.getTable().getSelectionModel().setSelectionInterval(0, 0);
+
+        showCard.add(stp, BorderLayout.CENTER);
+
+        showCard.add(buttonPanel, BorderLayout.SOUTH);
+
+    }
+
+    public RowSelectionGrabber getSelectionGrabber() {
+        return selectionGrabber;
+    }
+}

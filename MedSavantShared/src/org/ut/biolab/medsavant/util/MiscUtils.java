@@ -39,7 +39,6 @@ import net.sf.samtools.SAMRecord;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.model.UserLevel;
 
 
 /**
@@ -134,6 +133,19 @@ public class MiscUtils {
             lastSlashIndex = path.lastIndexOf("/");
         }
         return path.substring(lastSlashIndex+1, path.length());
+    }
+
+    /**
+     * Extract the base file-name (removing the extension) from a path.
+     */
+    public static String getBaseName(String path) {
+        String name = new File(path).getName();
+        int dotIndex = name.lastIndexOf(".");
+        if (dotIndex == -1 || dotIndex == name.length() - 1) {
+            return name;
+        } else {
+            return name.substring(0, dotIndex);
+        }
     }
 
     /**

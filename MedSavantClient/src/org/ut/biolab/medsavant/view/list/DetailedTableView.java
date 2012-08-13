@@ -77,7 +77,7 @@ public abstract class DetailedTableView<T> extends DetailedView {
         details = new JPanel();
         details.setLayout(new BorderLayout());
         infoPanel.setLayout(new BorderLayout());
-        infoPanel.add(details,BorderLayout.CENTER);
+        infoPanel.add(details, BorderLayout.CENTER);
 
     }
 

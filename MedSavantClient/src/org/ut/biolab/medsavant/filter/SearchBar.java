@@ -28,7 +28,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -40,24 +39,28 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class SearchBar extends JPanel {
 
-    private FilterController filterController;
-    private List<QueryPanel> queryPanels = new ArrayList<QueryPanel>();
+    private FilterController controller;
+    List<QueryPanel> queryPanels = new ArrayList<QueryPanel>();
     private int nextQueryID = 1;
     private JPanel queryPanelContainer;
-    private JComboBox filterList;
-    private boolean addingItems = false;
     private FilterHistoryPanel historyPanel;
-    private JButton deleteButton;
+    private JToggleButton historyButton;
+    private SavedFiltersPanel savedFiltersPanel;
+    private JToggleButton savedFiltersButton;
 
     /**
      * Creates search bar to contains our query panels.
      */
     public SearchBar() {
-        filterController = FilterController.getInstance();
+        controller = FilterController.getInstance();
         initComponents();
         createNewQueryPanel();
     }
 
+    /**
+     * Add a new query panel to the search area.  Currently, the UI provides no way to add additional query panels, so there can only
+     * be one.
+     */
     public final QueryPanel createNewQueryPanel() {
 
         QueryPanel cp = new QueryPanel(nextQueryID++);
@@ -78,93 +81,13 @@ public class SearchBar extends JPanel {
             queryPanelContainer.add(Box.createVerticalStrut(5));
         }
 
-        //filterContainer.add(createNewOrButton());
         queryPanelContainer.add(Box.createVerticalGlue());
-    }
-
-    private void checkFilterListChanged() {
-        if (!addingItems) {
-            int index = filterList.getSelectedIndex();
-
-            if (index != 0) {
-                try {
-                    loadFiltersFromFile(new File(DirectorySettings.getFiltersDirectory(), (String)filterList.getItemAt(index)));
-                } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Error loading filters: %s", ex);
-                }
-            }
-        }
-    }
-
-    public List<QueryPanel> getQueryPanels() {
-        return queryPanels;
     }
 
     public void clearAll() {
         queryPanels.clear();
         nextQueryID = 1;
         createNewQueryPanel();
-    }
-
-    private void removeCurrentSavedFilterFile() {
-        int index = filterList.getSelectedIndex();
-        if (index != 0) {
-            File f = new File(DirectorySettings.getFiltersDirectory(), (String)filterList.getSelectedItem());
-            if (f.exists()) {
-                f.delete();
-                updateFilterList();
-            }
-        }
-    }
-
-    private void saveFilters() throws Exception {
-
-        String name = DialogUtils.displayInputMessage("Save filters", "Enter a name for these filters", "filters");
-        File file = new File(DirectorySettings.getFiltersDirectory(), name + ".xml");
-
-        if (file == null) {
-            return;
-        }
-        if (name == null || name.isEmpty()) {
-            return;
-        }
-
-        while (file.exists()) {
-
-            int response;
-            while (true) {
-                response = DialogUtils.askYesNoCancel("Filters exist", "Filters with that name already exist. Overwrite?");
-                if (response == DialogUtils.CANCEL) {
-                    return;
-                }
-                if (response == DialogUtils.NO) {
-                    saveFilters();
-                    return;
-                }
-
-                file.delete();
-                break;
-            }
-        }
-
-        //write
-        BufferedWriter out = new BufferedWriter(new FileWriter(file, false));
-
-        out.write("<filters>\n");
-        for (QueryPanel sub : queryPanels) {
-            out.write("\t<set>\n");
-            for (FilterHolder item : sub.getFilterHolders()) {
-                out.write(item.getFilterView().saveState().generateXML() + "\n");
-            }
-            out.write("\t</set>\n");
-        }
-        out.write("</filters>");
-
-
-        out.close();
-
-        updateFilterList();
-
     }
 
     private void loadFiltersFromFile(File file) throws Exception {
@@ -174,7 +97,7 @@ public class SearchBar extends JPanel {
         }
 
         //warn of overwrite
-        if (filterController.hasFiltersApplied() && DialogUtils.askYesNo("Confirm Load", "<html>Loading filters clears all existing filters. <br>Are you sure you want to continue?</html>") == JOptionPane.NO_OPTION) {
+        if (controller.hasFiltersApplied() && DialogUtils.askYesNo("Confirm Load", "<html>Loading filters clears all existing filters. <br>Are you sure you want to continue?</html>") == JOptionPane.NO_OPTION) {
             return;
         }
 
@@ -217,7 +140,7 @@ public class SearchBar extends JPanel {
             }
         }
 
-        filterController.removeAllFilters();
+        controller.removeAllFilters();
         for (int i = 0; i < states.size(); i++) {
             QueryPanel qp = createNewQueryPanel();
             List<FilterState> filters = states.get(i);
@@ -233,144 +156,78 @@ public class SearchBar extends JPanel {
         setOpaque(false);
         setLayout(new GridBagLayout());
 
-        JPanel filterAndToolbarContainer = ViewUtil.getClearPanel();
-        filterAndToolbarContainer.setLayout(new BorderLayout());
-        //filterAndToolbarContainer.setBorder(ViewUtil.getMediumBorder());
+        FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel();
 
         queryPanelContainer = ViewUtil.getClearPanel();
         queryPanelContainer.setLayout(new BoxLayout(queryPanelContainer, BoxLayout.Y_AXIS));
 
-        JPanel topContainer = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(topContainer);
-
-
         JScrollPane scroll = ViewUtil.getClearBorderlessScrollPane(queryPanelContainer);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        JPanel addFilterPanel = ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(addFilterPanel);
+        historyButton = ViewUtil.getSoftToggleButton("Search History");
+        historyButton.setSelected(false);
+        ViewUtil.makeSmall(historyButton);
 
-        FilterEffectivenessPanel hp = new FilterEffectivenessPanel();
-
-        JButton saveButton = new JButton("Save");
-        ViewUtil.makeSmall(saveButton);
-        //saveButton.setFontSize(11);
-        //saveButton.setContentAreaFilled(false);
-        saveButton.setToolTipText("Save filter set");
-        saveButton.addActionListener(new ActionListener() {
+        historyButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    saveFilters();
-                } catch (Exception ex) {
-                    ClientMiscUtils.reportError("Error saving filter set: %s", ex);
+            public void actionPerformed(ActionEvent ae) {
+                boolean vis = historyButton.isSelected();
+                historyPanel.setVisible(vis);
+                if (vis) {
+                    savedFiltersButton.setSelected(false);
+                    savedFiltersPanel.setVisible(false);
                 }
             }
         });
 
-        deleteButton = new JButton("Forget");
-        ViewUtil.makeMini(deleteButton);
-        //deleteButton.setFontSize(11);
-        deleteButton.setToolTipText("Forget this search");
-        deleteButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                removeCurrentSavedFilterFile();
-            }
-        });
+        savedFiltersButton = ViewUtil.getSoftToggleButton("Saved Filter Sets");
+        savedFiltersButton.setSelected(false);
+        ViewUtil.makeSmall(savedFiltersButton);
 
-
-        filterList = new JComboBox();
-        filterList.addActionListener(new ActionListener() {
+        savedFiltersButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                checkFilterListChanged();
+                boolean vis = savedFiltersButton.isSelected();
+                savedFiltersPanel.setVisible(vis);
+                if (vis) {
+                    historyButton.setSelected(false);
+                    historyPanel.setVisible(false);
+                }
             }
         });
-        updateFilterList();
-
-        JToolBar saveContainer = new JToolBar();// ViewUtil.getClearPanel();
-        saveContainer.setBackground(ViewUtil.getTertiaryMenuColor());
-        saveContainer.setFloatable(false);
-        //ViewUtil.applyMenuStyleInset(saveContainer);
-
-
-        saveContainer.setLayout(new BoxLayout(saveContainer, BoxLayout.X_AXIS));
-        saveContainer.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-
-        filterList.putClientProperty( "JComponent.sizeVariant", "small" );
-
-        saveContainer.add(filterList);
-        saveContainer.add(Box.createHorizontalGlue());
-        saveContainer.add(saveButton);
-        saveContainer.add(Box.createHorizontalStrut(3));
-        saveContainer.add(deleteButton);
-
-        //topContainer.add(saveContainer);
-        topContainer.add(hp);
-
-
-        JPanel bottomContainer = ViewUtil.getClearPanel();
-        ViewUtil.applyVerticalBoxLayout(bottomContainer);
 
         historyPanel = new FilterHistoryPanel();
+        historyPanel.setVisible(false);
 
-        final JToggleButton showHistoryButton = ViewUtil.getSoftToggleButton("Search History");
-        showHistoryButton.setSelected(false);
-        ViewUtil.makeSmall(showHistoryButton);
-        //showHistoryButton.setFont(new Font("Arial", Font.BOLD, 12));
-        //showHistoryButton.setForeground(Color.white);
-
-        showHistoryButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                historyPanel.setVisible(showHistoryButton.isSelected());
-            }
-
-        });
-
-        JPanel historyButtonPanel = ViewUtil.alignLeft(showHistoryButton);
-        historyButtonPanel.setBorder(ViewUtil.getMediumBorder());
-
-        historyPanel.setVisible(showHistoryButton.isSelected());
-        bottomContainer.add(historyButtonPanel);
-        bottomContainer.add(historyPanel);
-
+        savedFiltersPanel = new SavedFiltersPanel();
+        savedFiltersPanel.setVisible(false);
+        
         GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        add(topContainer, gbc);
+        add(effectivenessPanel, gbc);
 
         gbc.weighty = 1.0;
+        gbc.gridy++;
         add(scroll, gbc);
 
         gbc.weighty = 0.0;
-        add(bottomContainer, gbc);
+        gbc.gridy++;
+        gbc.gridwidth = 1;
+        add(historyButton, gbc);
+        gbc.gridx++;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        add(savedFiltersButton, gbc);
+        
+        gbc.gridx = 0;
+        gbc.gridy++;
+        add(historyPanel, gbc);
+        add(savedFiltersPanel, gbc);
     }
 
-    private void updateFilterList() {
-        File filterDir = DirectorySettings.getFiltersDirectory();
-
-        addingItems = true;
-        filterList.removeAllItems();
-
-        if (filterDir.list().length == 0) {
-            filterList.addItem("No saved searches");
-            filterList.setEnabled(false);
-            deleteButton.setEnabled(false);
-        } else {
-            filterList.addItem("Load a saved search");
-            for (String fn: filterDir.list()) {
-                filterList.addItem(fn);
-            }
-            filterList.setEnabled(true);
-            deleteButton.setEnabled(true);
-        }
-        addingItems = false;
-    }
-    
     /**
      * Load the given list of new filters into all the query panels.
      */

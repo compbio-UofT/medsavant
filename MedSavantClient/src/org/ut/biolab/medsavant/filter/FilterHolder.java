@@ -70,6 +70,10 @@ public abstract class FilterHolder {
         return name;
     }
 
+    public boolean hasFilterView() {
+        return filterView != null;
+    }
+
     public FilterView getFilterView() throws Exception {
         if (filterView == null) {
             filterView = createFilterView();
