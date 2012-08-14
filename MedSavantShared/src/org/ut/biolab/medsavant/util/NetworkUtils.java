@@ -47,7 +47,7 @@ import org.apache.commons.net.ftp.FTPFile;
  */
 public class NetworkUtils {
 
-    private static final Log LOG = LogFactory.getLog(NetworkUtils.class);    
+    private static final Log LOG = LogFactory.getLog(NetworkUtils.class);
     private static final int CONNECT_TIMEOUT = 30000; // 30s timeout for making connection
     private static final int READ_TIMEOUT = 30000;    // 30s timeout for reading data
     public static final int BUF_SIZE = 8192;         // 8kB buffer
@@ -64,7 +64,7 @@ public class NetworkUtils {
                 @Override
                 public void checkClientTrusted(X509Certificate[] certs, String authType) {
                 }
-                
+
                 @Override
                 public void checkServerTrusted(X509Certificate[] certs, String authType) {
                 }
@@ -87,7 +87,7 @@ public class NetworkUtils {
     public static InputStream openStream(URL url) throws IOException {
         return openStream(url, CONNECT_TIMEOUT, READ_TIMEOUT);
     }
-    
+
     /**
      * Open a stream for the given URL with custom timeouts
      * @throws IOException
@@ -247,6 +247,8 @@ public class NetworkUtils {
     }
 
     public static File copyFileFromRemoteStream(RemoteInputStream ris, String ext) throws IOException {
+
+        LOG.info("Preparing input stream");
         InputStream istream = RemoteInputStreamClient.wrap(ris);
         File tempFile = File.createTempFile("sentFile_", ext);
         FileOutputStream ostream = new FileOutputStream(tempFile);
@@ -255,11 +257,12 @@ public class NetworkUtils {
         IOUtils.copyStream(istream, ostream);
 
         LOG.info("Finished writing file " + tempFile + " " + tempFile.length() + " bytes.");
-        
+
         return tempFile;
-    }    
+    }
 
     public static File copyFileFromRemoteStream(RemoteInputStream ris) throws IOException {
+        LOG.info("Copying file from input stream");
         return copyFileFromRemoteStream(ris, ".dat");
-    }    
+    }
 }

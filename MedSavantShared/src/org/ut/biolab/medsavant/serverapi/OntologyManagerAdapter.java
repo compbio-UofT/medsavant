@@ -35,6 +35,20 @@ import org.ut.biolab.medsavant.util.NetworkUtils;
  * @author tarkvara
  */
 public interface OntologyManagerAdapter extends Remote {
+
+
+    public static final String basePath = "http://medsavant.com/serve/ontology/";
+
+    public static final URL GO_OBO_URL = NetworkUtils.getKnownGoodURL(basePath + "gene_ontology.1_2.obo");
+    public static final URL HPO_OBO_URL = NetworkUtils.getKnownGoodURL(basePath + "human-phenotype-ontology.obo");
+    public static final URL OMIM_OBO_URL = NetworkUtils.getKnownGoodURL(basePath + "omim.obo");
+
+    public static final URL GO_TO_GENES_URL = NetworkUtils.getKnownGoodURL(basePath + "gene_association.goa_human.gz");
+    public static final URL HPO_TO_GENES_URL = NetworkUtils.getKnownGoodURL(basePath + "phenotype_to_genes.txt");
+    public static final URL OMIM_TO_HPO_URL = NetworkUtils.getKnownGoodURL(basePath + "phenotype_annotation.tab");
+
+
+    /*
     public static final URL GO_OBO_URL = NetworkUtils.getKnownGoodURL("http://geneontology.org/ontology/obo_format_1_2/gene_ontology.1_2.obo");
     public static final URL HPO_OBO_URL = NetworkUtils.getKnownGoodURL("http://compbio.charite.de/svn/hpo/trunk/src/ontology/human-phenotype-ontology.obo");
     public static final URL OMIM_OBO_URL = NetworkUtils.getKnownGoodURL("http://obo.svn.sourceforge.net/viewvc/obo/phenotype-commons/annotations/OMIM/omim.obo");
@@ -42,7 +56,8 @@ public interface OntologyManagerAdapter extends Remote {
     public static final URL GO_TO_GENES_URL = NetworkUtils.getKnownGoodURL("http://www.geneontology.org/gene-associations/gene_association.goa_human.gz");
     public static final URL HPO_TO_GENES_URL = NetworkUtils.getKnownGoodURL("http://compbio.charite.de/svn/hpo/trunk/src/annotation/phenotype_to_genes.txt");
     public static final URL OMIM_TO_HPO_URL = NetworkUtils.getKnownGoodURL("http://compbio.charite.de/svn/hpo/trunk/src/annotation/phenotype_annotation.tab");
-
+    *
+    */
     /**
      * As part of the maintenance process, populate the tables for the given ontology.
      *
@@ -71,7 +86,7 @@ public interface OntologyManagerAdapter extends Remote {
      * Get a list of all terms in the given ontology.
      */
     OntologyTerm[] getAllTerms(String sessID, OntologyType type) throws SQLException, RemoteException;
-    
+
     /**
      * Get the names of all genes corresponding to the given term.
      * @param sessID the login session
@@ -80,7 +95,7 @@ public interface OntologyManagerAdapter extends Remote {
      * @return genes corresponding to <code>term</code>
      */
     String[] getGenesForTerm(String sessID, OntologyTerm term, String refName) throws SQLException, RemoteException;
-    
+
     /**
      * Get the names of all genes corresponding to the given terms.  When loading a large number of terms, this can be more efficient
      * than calling <code>getGenesForTerm</code> separately for each term.
@@ -90,7 +105,7 @@ public interface OntologyManagerAdapter extends Remote {
      * @param refID the current reference
      * @return a map associating terms with their genes
      * @throws SQLException
-     * @throws RemoteException 
+     * @throws RemoteException
      */
     public Map<OntologyTerm, String[]> getGenesForTerms(String sessID, OntologyTerm[] terms, String refID) throws SQLException, RemoteException;
 

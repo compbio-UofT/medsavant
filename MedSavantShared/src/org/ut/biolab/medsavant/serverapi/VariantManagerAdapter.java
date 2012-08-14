@@ -47,6 +47,7 @@ import org.ut.biolab.medsavant.model.VariantComment;
 public interface VariantManagerAdapter extends Remote {
 
     public int uploadVariants(String sessID, RemoteInputStream[] fileStreams, String[] fileNames, int projID, int refID, String[][] variantTags, boolean includeHomoRef) throws RemoteException, IOException, Exception;
+    public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception;
     public void publishVariants(String sessID, int projID, int referenceID, int updateID) throws Exception;
     public void publishVariants(String sessID, int projID) throws Exception;
     public void cancelPublish(String sessID, int projID, int referenceID, int updateID) throws Exception;
@@ -66,7 +67,7 @@ public interface VariantManagerAdapter extends Remote {
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sessID, int projID, int refID, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException;
     public int getVariantCountInRange(String sessID, int projID, int refID, Condition[][] conditions, String chrom, long start, long end) throws SQLException, RemoteException;
     public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sessID, int projID, int refID, Condition[][] conditions, int binsize) throws SQLException, RemoteException;
-    public void uploadFileToVariantTable(String sessID, File file, String tableName) throws SQLException, RemoteException;
+    //public void uploadFileToVariantTable(String sessID, File file, String tableName) throws SQLException, IOException, RemoteException;
     public int getPatientCountWithVariantsInRange(String sessID, int projID, int refID, Condition[][] conditions, String chrom, int start, int end) throws SQLException, RemoteException;
     public void addConditionsToQuery(SelectQuery query, Condition[][] conditions) throws RemoteException;
     public Map<String, List<String>> getSavantBookmarkPositionsForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, List<String> dnaIDs, int limit) throws SQLException, RemoteException;

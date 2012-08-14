@@ -109,7 +109,7 @@ public class DefaultVariantTableSchema extends TableSchema {
     // default_variant.custom_info
     public static final int INDEX_OF_CUSTOM_INFO = 14;
     public static final ColumnType TYPE_OF_CUSTOM_INFO = ColumnType.VARCHAR;
-    public static final int LENGTH_OF_CUSTOM_INFO = 1000;
+    public static final int LENGTH_OF_CUSTOM_INFO = 10000;
     public static final String COLUMNNAME_OF_CUSTOM_INFO = "custom_info";
     // default_variant.aa
     public static final int INDEX_OF_AA = 15;
@@ -208,7 +208,7 @@ public class DefaultVariantTableSchema extends TableSchema {
         addColumn(COLUMNNAME_OF_VARIANT_TYPE, COLUMNNAME_OF_VARIANT_TYPE, ColumnType.VARCHAR, 10);
         addColumn(COLUMNNAME_OF_ZYGOSITY, COLUMNNAME_OF_ZYGOSITY, ColumnType.VARCHAR, 20);
         addColumn(COLUMNNAME_OF_GT, COLUMNNAME_OF_GT, ColumnType.VARCHAR, 10);
-        addColumn(COLUMNNAME_OF_CUSTOM_INFO, COLUMNNAME_OF_CUSTOM_INFO, ColumnType.VARCHAR, 500);
+        addColumn(COLUMNNAME_OF_CUSTOM_INFO, COLUMNNAME_OF_CUSTOM_INFO, ColumnType.VARCHAR, 10000);
         addColumn(COLUMNNAME_OF_AA, COLUMNNAME_OF_AA, ColumnType.VARCHAR, 500);
         addColumn(COLUMNNAME_OF_AC, COLUMNNAME_OF_AC, ColumnType.VARCHAR, 500);
         addColumn(COLUMNNAME_OF_AF, COLUMNNAME_OF_AF, ColumnType.VARCHAR, 500);
