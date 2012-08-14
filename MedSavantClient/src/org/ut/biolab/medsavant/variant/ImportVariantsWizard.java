@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.variant;
 
+import com.healthmarketscience.rmiio.DirectRemoteInputStream;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -36,6 +37,9 @@ import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.dialog.PageList;
 import com.jidesoft.wizard.*;
+import java.awt.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -45,6 +49,7 @@ import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
+import org.ut.biolab.medsavant.view.component.PathField;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -56,12 +61,16 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class ImportVariantsWizard extends WizardDialog {
 
     private static final Log LOG = LogFactory.getLog(ImportVariantsWizard.class);
-
     private List<VariantTag> variantTags;
     private File[] variantFiles;
     private boolean includeHomoRef = false;
-
     private JComboBox locationField;
+    private boolean uploadRequired;
+    private JPanel chooseContainer;
+    private JLabel chooseTitleLabel;
+    private JPanel filesOnMyComputerPanel;
+    private JPanel filesOnMedSavantServerPanel;
+    private JTextField serverPathField;
 
     public ImportVariantsWizard() {
 
@@ -73,6 +82,7 @@ public class ImportVariantsWizard extends WizardDialog {
         //add pages
         PageList model = new PageList();
         model.append(getWelcomePage());
+        model.append(getVCFSourcePage());
         model.append(getChooseFilesPage());
         model.append(getAddTagsPage());
         model.append(getQueuePage());
@@ -90,6 +100,66 @@ public class ImportVariantsWizard extends WizardDialog {
         return new Dimension(720, 600);
     }
 
+    private void setUploadRequired(boolean uploadRequired) {
+        this.uploadRequired = uploadRequired;
+
+        if (chooseContainer != null) {
+            this.chooseContainer.removeAll();
+
+            if (this.uploadRequired) {
+                chooseTitleLabel.setText("Choose the variant file(s) to be imported:");
+                this.chooseContainer.add(this.filesOnMyComputerPanel, BorderLayout.CENTER);
+            } else {
+                chooseTitleLabel.setText("Specify the full directory path containing variant file(s) to be imported:");
+                this.chooseContainer.add(this.filesOnMedSavantServerPanel, BorderLayout.CENTER);
+            }
+        }
+    }
+
+    private AbstractWizardPage getVCFSourcePage() {
+        return new DefaultWizardPage("Location of Files") {
+
+            private JRadioButton onMyComputerButton = new JRadioButton("my computer");
+            private JRadioButton onMedSavantServerButton = new JRadioButton("the MedSavant server");
+
+            {
+                ButtonGroup g = new ButtonGroup();
+                g.add(onMyComputerButton);
+                g.add(onMedSavantServerButton);
+
+                onMyComputerButton.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        setUploadRequired(onMyComputerButton.isSelected());
+                    }
+                });
+
+                onMedSavantServerButton.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        setUploadRequired(onMyComputerButton.isSelected());
+                    }
+                });
+
+                addText("The VCFs I want to import are on:");
+                addComponent(onMyComputerButton);
+                addComponent(onMedSavantServerButton);
+
+                onMyComputerButton.setSelected(true);
+
+
+            }
+
+            @Override
+            public void setupWizardButtons() {
+                fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
+                fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
+                fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+            }
+        };
+    }
 
     private AbstractWizardPage getWelcomePage() {
 
@@ -125,65 +195,48 @@ public class ImportVariantsWizard extends WizardDialog {
             public void setupWizardButtons() {
                 fireButtonEvent(ButtonEvent.HIDE_BUTTON, ButtonNames.FINISH);
                 fireButtonEvent(ButtonEvent.SHOW_BUTTON, ButtonNames.BACK);
-                if (variantFiles != null && variantFiles.length > 0) {
-                    fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+
+                if (uploadRequired) {
+                    if (variantFiles != null && variantFiles.length > 0) {
+                        fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                    } else {
+                        fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                    }
                 } else {
-                    fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                    if (serverPathField.getText().isEmpty()) {
+                        fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                    } else {
+                        fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                    }
                 }
             }
         };
 
-        page.addText("Choose the variant file(s) to be imported:");
+        chooseContainer = new JPanel();
+        chooseContainer = new JPanel();
+        chooseContainer.setLayout(new BorderLayout());
+        chooseTitleLabel = new JLabel();
+        filesOnMyComputerPanel = populateOnMyComputerPanel(page);// populateRepositoryPanel();
+        filesOnMedSavantServerPanel = populateOnServerPanel(page); //populateLocalPanel();
 
-        final JTextField outputFileField = new JTextField();
-        outputFileField.setEnabled(false);
-        JButton chooseFileButton = new JButton("...");
-        chooseFileButton.addActionListener(new ActionListener() {
+        page.addComponent(chooseTitleLabel);
+        page.addComponent(chooseContainer);
 
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                variantFiles = DialogUtils.chooseFilesForOpen("Import Variants", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz"}), null);
-                if (variantFiles == null || variantFiles.length == 0) {
-                    page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
-                } else {
-                    page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                }
-                String path = getPathString(variantFiles);
-                outputFileField.setText(path);
-                if (variantFiles.length > 0) {
-                    page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
-                }
-            }
-
-            private String getPathString(File[] files) {
-                if (files.length > 1) {
-                    return files.length + " files";
-                } else if (files.length == 1) {
-                    return files[0].getAbsolutePath();
-                } else {
-                    return "";
-                }
-            }
-        });
-        JPanel container = new JPanel();
-        ViewUtil.clear(container);
-        ViewUtil.applyHorizontalBoxLayout(container);
-
-        container.add(outputFileField);
-        container.add(chooseFileButton);
-
-        page.addComponent(container);
-        page.addText("Files can be in Variant Call Format (*.vcf) or BGZipped\nVCF (*.vcf.gz).\n\n");
+        page.addComponent(new JLabel("Files can be in Variant Call Format (*.vcf) or BGZipped\nVCF (*.vcf.gz).\n\n"));
 
         final JCheckBox homoRefBox = new JCheckBox("Include HomoRef variants (strongly discouraged)");
         homoRefBox.setOpaque(false);
         homoRefBox.addActionListener(new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 includeHomoRef = homoRefBox.isSelected();
             }
         });
         page.addComponent(homoRefBox);
+
+        setUploadRequired(true);
+
 
         return page;
 
@@ -336,12 +389,13 @@ public class ImportVariantsWizard extends WizardDialog {
     }
 
     private AbstractWizardPage getQueuePage() {
-        final DefaultWizardPage page = new DefaultWizardPage("Upload, Annotate, and Publish Variants") {
-            private final JLabel progressLabel = new JLabel("You are now ready to upload variants.");
+        final DefaultWizardPage page = new DefaultWizardPage("Transfer, Annotate, and Publish Variants") {
+
+            private final JLabel progressLabel = new JLabel("You are now ready to import variants.");
             private final JProgressBar progressBar = new JProgressBar();
-            private final JButton workButton = new JButton("Upload & Annotate");
+            private final JButton workButton = new JButton("Import");
             private final JButton publishButton = new JButton("Publish Variants");
-            private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after upload");
+            private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after import");
             private final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
             private final JProgressBar publishProgressBar = new JProgressBar();
 
@@ -349,24 +403,43 @@ public class ImportVariantsWizard extends WizardDialog {
                 addComponent(progressLabel);
                 addComponent(progressBar);
 
+
                 autoPublishVariants.setOpaque(false);
 
                 workButton.addActionListener(new ActionListener() {
+
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        new UpdateWorker("Uploading variants", ImportVariantsWizard.this, progressLabel, progressBar, workButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishButton) {
+
+                        progressBar.setIndeterminate(true);
+
+                        LOG.info("Starting import worker");
+
+                        new UpdateWorker("Importing variants", ImportVariantsWizard.this, progressLabel, progressBar, workButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishButton) {
+
                             @Override
                             protected Void doInBackground() throws Exception {
-                                int i = 0;
-                                RemoteInputStream[] streams = new RemoteInputStream[variantFiles.length];
-                                String[] fileNames = new String[variantFiles.length];
-                                for (File file : variantFiles) {
-                                    streams[i] = new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath())).export();
-                                    fileNames[i] = file.getName();
-                                    i++;
-                                }
 
-                                updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, streams, fileNames, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
+                                if (uploadRequired) {
+                                    int i = 0;
+                                    LOG.info("Creating input streams");
+                                    RemoteInputStream[] streams = new RemoteInputStream[variantFiles.length];
+                                    String[] fileNames = new String[variantFiles.length];
+                                    for (File file : variantFiles) {
+                                        LOG.info("Created input stream for file");
+                                        streams[i] = new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath())).export();
+                                        fileNames[i] = file.getName();
+                                        i++;
+                                    }
+
+                                    LOG.info("Sending input streams to server");
+                                    updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, streams, fileNames, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
+                                    LOG.info("Import complete");
+                                } else {
+                                    LOG.info("Importing variants stored on server");
+                                    updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
+                                    LOG.info("Done importing");
+                                }
                                 return null;
                             }
                         }.execute();
@@ -376,11 +449,18 @@ public class ImportVariantsWizard extends WizardDialog {
                 addComponent(ViewUtil.alignRight(workButton));
 
                 addComponent(autoPublishVariants);
+
+                JPanel p = ViewUtil.getClearPanel();
+                ViewUtil.applyHorizontalBoxLayout(p);
+
                 JLabel l = new JLabel("WARNING:");
                 l.setForeground(Color.red);
                 l.setFont(new Font(l.getFont().getFamily(), Font.BOLD, l.getFont().getSize()));
-                addComponent(l);
-                addText("All users logged into the system will be logged out\nat the time of publishing.");
+
+                p.add(l);
+                p.add(Box.createHorizontalStrut(5));
+                p.add(new JLabel("All users will be logged out upon publishing."));
+                addComponent(p);
 
                 addComponent(publishProgressLabel);
                 addComponent(publishProgressBar);
@@ -414,5 +494,81 @@ public class ImportVariantsWizard extends WizardDialog {
         }
 
         return result;
+    }
+
+    private JPanel populateOnServerPanel(final DefaultWizardPage page) {
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(p);
+
+        serverPathField = new JTextField();
+        ViewUtil.clear(serverPathField);
+        serverPathField.addCaretListener(new CaretListener() {
+
+            @Override
+            public void caretUpdate(CaretEvent ce) {
+                if (serverPathField.getText().isEmpty()) {
+                    page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                } else {
+                    page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                }
+            }
+        });
+        JPanel container = ViewUtil.getClearPanel();
+        ViewUtil.clear(container);
+        ViewUtil.applyHorizontalBoxLayout(container);
+
+        container.add(serverPathField);
+
+        p.add(ViewUtil.alignLeft(container));
+
+        return p;
+    }
+
+    private JPanel populateOnMyComputerPanel(final DefaultWizardPage page) {
+
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(p);
+
+        final JTextField outputFileField = new JTextField();
+        ViewUtil.clear(outputFileField);
+        outputFileField.setEnabled(false);
+        JButton chooseFileButton = new JButton("...");
+        chooseFileButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                variantFiles = DialogUtils.chooseFilesForOpen("Import Variants", new ExtensionsFileFilter(new String[]{"vcf", "vcf.gz"}), null);
+                if (variantFiles == null || variantFiles.length == 0) {
+                    page.fireButtonEvent(ButtonEvent.DISABLE_BUTTON, ButtonNames.NEXT);
+                } else {
+                    page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                }
+                String path = getPathString(variantFiles);
+                outputFileField.setText(path);
+                if (variantFiles.length > 0) {
+                    page.fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
+                }
+            }
+
+            private String getPathString(File[] files) {
+                if (files.length > 1) {
+                    return files.length + " files";
+                } else if (files.length == 1) {
+                    return files[0].getAbsolutePath();
+                } else {
+                    return "";
+                }
+            }
+        });
+        JPanel container = ViewUtil.getClearPanel();
+        ViewUtil.applyHorizontalBoxLayout(container);
+
+        container.add(outputFileField);
+        container.add(chooseFileButton);
+
+        p.add(ViewUtil.clear(ViewUtil.alignLeft(container)));
+
+
+        return p;
     }
 }

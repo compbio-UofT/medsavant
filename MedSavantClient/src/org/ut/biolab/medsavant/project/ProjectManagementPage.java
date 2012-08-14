@@ -25,6 +25,15 @@ import javax.swing.JPopupMenu;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,7 +61,7 @@ public class ProjectManagementPage extends SubSectionView {
     private static final Log LOG = LogFactory.getLog(ProjectManagementPage.class);
 
     private ProjectController controller = ProjectController.getInstance();
-    
+
     private SplitScreenView panel;
 
     public ProjectManagementPage(SectionView parent) {
@@ -133,7 +142,7 @@ public class ProjectManagementPage extends SubSectionView {
                                                                       MedSavantClient.PatientManager.getCustomPatientFields(LoginController.sessionId, projID),
                                                                       MedSavantClient.ProjectManager.getProjectDetails(LoginController.sessionId, projID));
                                 wiz.setVisible(true);
-                                
+
                             } finally {
                                 try {
                                     MedSavantClient.SettingsManager.releaseDBLock(LoginController.sessionId);
@@ -142,7 +151,7 @@ public class ProjectManagementPage extends SubSectionView {
                                 }
                             }
                         } else {
-                            DialogUtils.displayMessage("Cannot Modify Project", "Another user is making changes to the database. You must wait until this user has finished. ");
+                            DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
                         }
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Error getting database lock: %s", ex);
@@ -290,6 +299,57 @@ public class ProjectManagementPage extends SubSectionView {
             }
 
             details.add(ViewUtil.getKeyValuePairList(values));
+            try {
+                if (MedSavantClient.SettingsManager.getSetting(LoginController.sessionId, "db lock").equals("true")) {
+                    JPanel p = new JPanel();
+                    ViewUtil.applyHorizontalBoxLayout(p);
+                    p.add(ViewUtil.alignLeft(new JLabel("The database is locked. Administrators cannot make further changes.")));
+
+                    JButton b = new JButton("Unlock");
+                    b.addActionListener(new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            try {
+                                int result = DialogUtils.askYesNo("Warning", "Unlocking the database while another administrator is making changes can\n"
+                                        + "cause permanent damage. Only unlock if you are sure no one is in the process of\n"
+                                        + "making changes. Are you sure you want to proceed?");
+
+                                if (result == DialogUtils.YES) {
+                                    MedSavantClient.SettingsManager.releaseDBLock(LoginController.sessionId);
+                                    refreshSelectedProject();
+                                }
+                            } catch (Exception ex) {
+                            }
+                        }
+                    });
+                    p.add(b);
+                    details.add(Box.createVerticalStrut(10));
+                    details.add(p);
+                } else {
+                    JPanel p = new JPanel();
+                    ViewUtil.applyHorizontalBoxLayout(p);
+                    p.add(ViewUtil.alignLeft(new JLabel("The database is unlocked. Administrators can make changes.")));
+
+                    JButton b = new JButton("Lock");
+                    b.addActionListener(new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            try {
+                                MedSavantClient.SettingsManager.getDBLock(LoginController.sessionId);
+                                refreshSelectedProject();
+                            } catch (Exception ex) {
+                            }
+                        }
+                    });
+                    p.add(b);
+                    details.add(Box.createVerticalStrut(10));
+                    details.add(p);
+                }
+            } catch (Exception ex) {
+            }
+
 
             details.updateUI();
 

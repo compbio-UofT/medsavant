@@ -223,7 +223,7 @@ public class AddRemoveDatabaseDialog extends JDialog {
                 }
             }
         } else {
-            new IndeterminateProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. Please wait.</html>", dbName)) {
+            new IndeterminateProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. <br><br>Please wait. This process can take up to an hour.</html>", dbName)) {
                 @Override
                 public void run() {
                     try {
@@ -236,7 +236,7 @@ public class AddRemoveDatabaseDialog extends JDialog {
                         ClientMiscUtils.reportError("Database could not be created: %s\nPlease check the settings and try again.", ex);
                     }
                 }
-            }.setVisible(true);            
+            }.setVisible(true);
         }
     }//GEN-LAST:event_okButtonActionPerformed
 

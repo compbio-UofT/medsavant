@@ -25,8 +25,10 @@ import javax.swing.JProgressBar;
 import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.wizard.WizardDialog;
+import java.awt.Color;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
  * Code shared by VariantWorkers which update the variant tables, either by
@@ -38,7 +40,7 @@ import org.apache.commons.logging.LogFactory;
 public abstract class UpdateWorker extends VariantWorker {
 
     private static final Log LOG = LogFactory.getLog(UpdateWorker.class);
-    protected int updateID;
+    protected int updateID = -1;
     private final String publishText;
     private final JCheckBox autoPublishCheck;
     private final JLabel publishProgressLabel;
@@ -47,6 +49,7 @@ public abstract class UpdateWorker extends VariantWorker {
 
     protected UpdateWorker(String activity, WizardDialog wizard, JLabel progressLabel, JProgressBar progressBar, JButton workButton, JCheckBox autoPublishCheck, JLabel publishProgressLabel, JProgressBar publishProgressBar, JButton publishButton) {
         super(activity, wizard, progressLabel, progressBar, workButton);
+
         this.autoPublishCheck = autoPublishCheck;
         this.publishProgressLabel = publishProgressLabel;
         this.publishProgressBar = publishProgressBar;
@@ -61,11 +64,13 @@ public abstract class UpdateWorker extends VariantWorker {
         super.showSuccess(result);
 
         publishProgressLabel.setVisible(true);
-        publishProgressBar.setVisible(true);
-
         autoPublishCheck.setVisible(false);
 
         if (updateID != -1) {
+
+            publishProgressBar.setVisible(true);
+
+
             if (autoPublishCheck.isSelected()) {
                 new PublicationWorker(updateID, wizard, publishProgressLabel, publishProgressBar, publishButton).execute();
             } else {
@@ -83,6 +88,11 @@ public abstract class UpdateWorker extends VariantWorker {
                 }
                 wizard.getCurrentPage().fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
             }
+        } else {
+            publishButton.setEnabled(false);
+            publishProgressLabel.setText("There was a problem importing variants.");
+            publishProgressLabel.setForeground(Color.red);
+            wizard.getCurrentPage().fireButtonEvent(ButtonEvent.ENABLE_BUTTON, ButtonNames.NEXT);
         }
     }
 

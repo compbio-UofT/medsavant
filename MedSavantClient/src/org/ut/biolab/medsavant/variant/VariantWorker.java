@@ -72,13 +72,15 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
         this.progressBar = progressBar;
         this.workButton = workButton;
 
-        progressLabel.setText(String.format("%s variants...", activity));
+        progressLabel.setText(String.format("%s ...", activity));
 
+        /*
         try {
             MedSavantClient.VariantManager.registerProgressCallback(LoginController.sessionId, new ProgressCallback(progressLabel, progressBar));
         } catch (RemoteException ex) {
             LOG.error("Unable to register progress callback.", ex);
         }
+        */
 
 //        progressBar.setIndeterminate(true);
         // Convert our start button into a cancel button.
@@ -108,6 +110,7 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
         progressBar.setIndeterminate(false);
         progressBar.setValue(100);
         progressLabel.setText(String.format("%s complete.", activity));
+        workButton.setEnabled(false);
         wizard.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     }
 
@@ -144,6 +147,7 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    bar.setIndeterminate(false);
                     label.setText(activity);
                     bar.setValue((int)Math.round(fraction * 100.0));
                 }

@@ -63,7 +63,7 @@ class VariantFilesDetailedListEditor extends DetailedListEditor {
                             }
                         }
                     } else {
-                        DialogUtils.displayMessage("Cannot perform import", "Another user is making changes to the database. You must wait until this user has finished. ");
+                        DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
                     }
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Error getting database lock: %s", ex);
@@ -98,8 +98,8 @@ class VariantFilesDetailedListEditor extends DetailedListEditor {
                                 }
                             }
                         } else {
-                            DialogUtils.displayMessage("Cannot remove variant files", "Another user is making changes to the database. You must wait until this user has finished. ");
-                        }
+                            DialogUtils.displayMessage("Cannot Modify Project", "The database is currently locked.\nTo unlock, see the Projects page in the Administration section.");
+                       }
                     } catch (Exception ex) {
                         ClientMiscUtils.reportError("Error getting database lock: %s", ex);
                     }
