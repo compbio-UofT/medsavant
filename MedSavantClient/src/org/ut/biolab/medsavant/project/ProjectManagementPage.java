@@ -118,7 +118,7 @@ public class ProjectManagementPage extends SubSectionView {
         }
 
         @Override
-        public void editItems(Object[] items) {
+        public void editItem(Object[] items) {
             try {
                 String projName = (String)items[0];
                 int projID = MedSavantClient.ProjectManager.getProjectID(LoginController.sessionId, projName);

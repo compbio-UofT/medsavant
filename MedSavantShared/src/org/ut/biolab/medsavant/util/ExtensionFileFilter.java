@@ -1,6 +1,17 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 
 package org.ut.biolab.medsavant.util;
@@ -8,13 +19,13 @@ package org.ut.biolab.medsavant.util;
 import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
+
 /**
- *
- * Used for save dialogs. 
+ * Used for save dialogs.   Not to be confused with ExtensionsFileFilter, which is almost identical, but used for Open dialogs.
  * 
  * @author Andrew
  */
-public class ExtensionFileFilter extends FileFilter {
+public class ExtensionFileFilter extends FileFilter implements java.io.FileFilter {
 
     private final String extension;
     
@@ -26,10 +37,11 @@ public class ExtensionFileFilter extends FileFilter {
         return filters;
     }
 
-    public ExtensionFileFilter(String extension) {
-        this.extension = extension;
+    public ExtensionFileFilter(String ext) {
+        this.extension = ext;
     }
 
+    @Override
     public boolean accept(File f) {
         if (f.isDirectory()) { 
             return true; 
@@ -41,9 +53,9 @@ public class ExtensionFileFilter extends FileFilter {
 
     @Override
     public String getDescription() {
-        if(extension.equals("vcf")){
+        if (extension.equals("vcf")) {
             return "VCF files | " + getExtensionString();
-        } else if (extension.equals("svp")){
+        } else if (extension.equals("svp")) {
             return "Savant Project Files | " + getExtensionString();
         } else {
             return "*." + extension;

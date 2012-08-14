@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.ExtensionFileFilter;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
@@ -60,7 +61,7 @@ class SavedFiltersPanel extends MasterView {
      */
     private static List<String> getFilterList() {
         List<String> list = new ArrayList<String>();
-        File[] filterFiles = DirectorySettings.getFiltersDirectory().listFiles();
+        File[] filterFiles = DirectorySettings.getFiltersDirectory().listFiles(new ExtensionFileFilter("xml"));
         for (File f: filterFiles) {
             list.add(MiscUtils.getBaseName(f.getAbsolutePath()));
         }
@@ -79,6 +80,11 @@ class SavedFiltersEditor extends DetailedListEditor {
 
     @Override
     public boolean doesImplementDeleting() {
+        return true;
+    }
+
+    @Override
+    public boolean doesImplementLoading() {
         return true;
     }
 
@@ -122,6 +128,24 @@ class SavedFiltersEditor extends DetailedListEditor {
         }
     }
     
+    @Override
+    public void loadItems(List<Object[]> items) {
+        //warn of overwrite
+        if (!FilterController.getInstance().hasFiltersApplied() || DialogUtils.askYesNo("Confirm Load", "<html>Loading filters clears all existing filters. <br>Are you sure you want to continue?</html>") == DialogUtils.YES) {
+
+            try {
+                // The items in our list are the names of XML files in the Filters directory.
+                List<File> files = new ArrayList<File>();
+                for (Object[] row: items) {
+                    files.add(new File(DirectorySettings.getFiltersDirectory(), row[0] + ".xml"));
+                }
+                GeneticsFilterPage.getSearchBar().loadFiltersFromFiles(files);
+            } catch (Exception ex) {
+                ClientMiscUtils.reportError("Unable to load filters: %s", ex);
+            }
+        }
+    }
+
     private boolean validateName(String name) {
         File[] existingFilterSets = DirectorySettings.getFiltersDirectory().listFiles();
         for (File f: existingFilterSets) {

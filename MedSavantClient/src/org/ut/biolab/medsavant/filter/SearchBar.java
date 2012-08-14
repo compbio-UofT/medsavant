@@ -29,7 +29,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -90,57 +89,54 @@ public class SearchBar extends JPanel {
         createNewQueryPanel();
     }
 
-    private void loadFiltersFromFile(File file) throws Exception {
-
-        if (file == null) {
-            return;
-        }
-
-        //warn of overwrite
-        if (controller.hasFiltersApplied() && DialogUtils.askYesNo("Confirm Load", "<html>Loading filters clears all existing filters. <br>Are you sure you want to continue?</html>") == JOptionPane.NO_OPTION) {
-            return;
-        }
-
-        //read
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(file);
-
-        doc.getDocumentElement().normalize();
+    void loadFiltersFromFiles(Collection<File> files) throws Exception {
 
         List<List<FilterState>> states = new ArrayList<List<FilterState>>();
-        NodeList nodes = doc.getElementsByTagName("set");
-        for (int i = 0; i < nodes.getLength(); i++) {
 
-            Element set = (Element) nodes.item(i);
-            NodeList filters = set.getElementsByTagName("filter");
+        //read
+        DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        
+        for (File f: files) {
+            Document doc = docBuilder.parse(f);
 
-            List<FilterState> list = new ArrayList<FilterState>();
+            doc.getDocumentElement().normalize();
 
-            for (int j = 0; j < filters.getLength(); j++) {
+            NodeList nodes = doc.getElementsByTagName("set");
+            for (int i = 0; i < nodes.getLength(); i++) {
 
-                Element filter = (Element) filters.item(j);
+                Element set = (Element)nodes.item(i);
+                NodeList filters = set.getElementsByTagName("filter");
 
-                String name = filter.getAttribute("name");
-                String id = filter.getAttribute("id");
-                Filter.Type type = Filter.Type.valueOf(filter.getAttribute("type"));
+                List<FilterState> list = new ArrayList<FilterState>();
 
-                NodeList params = filter.getElementsByTagName("param");
-                Map<String, String> values = new HashMap<String, String>();
-                for (int k = 0; k < params.getLength(); k++) {
-                    Element e = (Element) params.item(k);
-                    values.put(e.getAttribute("key"), e.getAttribute("value"));
+                for (int j = 0; j < filters.getLength(); j++) {
+
+                    Element filter = (Element) filters.item(j);
+
+                    String name = filter.getAttribute("name");
+                    String id = filter.getAttribute("id");
+                    Filter.Type type = Filter.Type.valueOf(filter.getAttribute("type"));
+
+                    NodeList params = filter.getElementsByTagName("param");
+                    Map<String, String> values = new HashMap<String, String>();
+                    for (int k = 0; k < params.getLength(); k++) {
+                        Element e = (Element) params.item(k);
+                        values.put(e.getAttribute("key"), e.getAttribute("value"));
+                    }
+
+                    list.add(new FilterState(type, name, id, values));
                 }
 
-                list.add(new FilterState(type, name, id, values));
-            }
-
-            if (!list.isEmpty()) {
-                states.add(list);
+                if (!list.isEmpty()) {
+                    states.add(list);
+                }
             }
         }
 
         controller.removeAllFilters();
+        queryPanels.clear();
+        nextQueryID = 1;
+
         for (int i = 0; i < states.size(); i++) {
             QueryPanel qp = createNewQueryPanel();
             List<FilterState> filters = states.get(i);

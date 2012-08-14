@@ -62,7 +62,7 @@ public class NumericFilterView extends FilterView {
         public void keyReleased(KeyEvent e) {
             int key = e.getKeyCode();
             if (key == KeyEvent.VK_ENTER) {
-                Range acceptableRange = new Range(getNumber(fromBox.getText().replaceAll(",", "")), getNumber(toBox.getText().replaceAll(",", "")));
+                Range acceptableRange = new Range(getNumber(fromBox.getText()), getNumber(toBox.getText()));
                 acceptableRange.bound(overallMin, overallMax, false);
                 fromBox.setText(ViewUtil.numToString(acceptableRange.getMin()));
                 toBox.setText(ViewUtil.numToString(acceptableRange.getMax()));
@@ -187,7 +187,7 @@ public class NumericFilterView extends FilterView {
 
                 applyButton.setEnabled(false);
 
-                appliedRange = new Range(getNumber(fromBox.getText().replaceAll(",", "")), getNumber(toBox.getText().replaceAll(",", "")));
+                appliedRange = new Range(getNumber(fromBox.getText()), getNumber(toBox.getText()));
                 appliedRange.bound(overallMin, overallMax, true);
                 fromBox.setText(ViewUtil.numToString(appliedRange.getMin()));
                 toBox.setText(ViewUtil.numToString(appliedRange.getMax()));
@@ -278,8 +278,8 @@ public class NumericFilterView extends FilterView {
 
     private static double getNumber(String s) {
         try {
-            return Double.parseDouble(s);
-        } catch (NumberFormatException ex) {
+            return Double.parseDouble(s.replaceAll(",", ""));
+        } catch (NumberFormatException ignored) {
             return 0;
         }
     }

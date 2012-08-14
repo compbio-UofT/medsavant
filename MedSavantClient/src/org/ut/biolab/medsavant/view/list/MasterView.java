@@ -1,17 +1,31 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.list;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
@@ -68,11 +82,31 @@ public class MasterView extends JPanel {
 
         add(errorPanel, CARD_ERROR);
 
-        buttonPanel = ViewUtil.getClearPanel();
-        ViewUtil.applyHorizontalBoxLayout(buttonPanel);
-
-        buttonPanel.setBorder(ViewUtil.getMediumBorder());
-        buttonPanel.add(Box.createHorizontalGlue());
+        buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = GridBagConstraints.RELATIVE;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(3, 3, 3, 3);
+        
+        // Only for SavedFiltersPanel
+        if (detailedEditor.doesImplementLoading()) {
+            JButton loadButton = ViewUtil.getTexturedButton("Load", null);
+            ViewUtil.makeSmall(loadButton);
+            loadButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    detailedEditor.loadItems(selectionGrabber.getSelectedItems());
+                }
+            });
+            
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
+            buttonPanel.add(loadButton, gbc);
+            gbc.gridx = GridBagConstraints.RELATIVE;
+            gbc.gridy++;
+            gbc.gridwidth = 1;
+            gbc.weightx = 0.0;
+        }
 
         if (detailedEditor.doesImplementAdding()) {
 
@@ -88,8 +122,7 @@ public class MasterView extends JPanel {
                     }
                 }
             });
-            buttonPanel.add(butt);
-            buttonPanel.add(ViewUtil.getSmallSeparator());
+            buttonPanel.add(butt, gbc);
         }
 
         if (detailedEditor.doesImplementImporting()) {
@@ -103,8 +136,7 @@ public class MasterView extends JPanel {
                     refreshList();
                 }
             });
-            buttonPanel.add(butt);
-            buttonPanel.add(ViewUtil.getSmallSeparator());
+            buttonPanel.add(butt, gbc);
         }
 
         if (detailedEditor.doesImplementDeleting()) {
@@ -120,8 +152,7 @@ public class MasterView extends JPanel {
                     }
                 }
             });
-            buttonPanel.add(butt);
-            buttonPanel.add(ViewUtil.getSmallSeparator());
+            buttonPanel.add(butt, gbc);
         }
 
         if (detailedEditor.doesImplementEditing()) {
@@ -131,17 +162,15 @@ public class MasterView extends JPanel {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     if (selectionGrabber.getSelectedItems().size() > 0) {
-                        detailedEditor.editItems(selectionGrabber.getSelectedItems().get(0));
+                        detailedEditor.editItem(selectionGrabber.getSelectedItems().get(0));
                         refreshList();
                     } else {
-                        DialogUtils.displayMessage("Choose one item to edit");
+                        DialogUtils.displayMessage("Please choose one item to edit.");
                     }
                 }
             });
-            buttonPanel.add(butt);
+            buttonPanel.add(butt, gbc);
         }
-
-        buttonPanel.add(Box.createHorizontalGlue());
 
         showWaitCard();
         fetchList();

@@ -40,15 +40,25 @@ public class DetailedListEditor {
         return false;
     }
 
+    /**
+     * For the filter-set editor only.  Add a load button above the other buttons.
+     */
+    public boolean doesImplementLoading() {
+        return false;
+    }
+
     public void addItems() {
     }
 
     public void deleteItems(List<Object[]> items) {
     }
 
-    public void editItems(Object[] item) {
+    public void editItem(Object[] item) {
     }
 
     public void importItems() {
+    }
+    
+    public void loadItems(List<Object[]> item) {
     }
 }

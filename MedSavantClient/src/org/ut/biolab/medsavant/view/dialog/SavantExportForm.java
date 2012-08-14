@@ -320,7 +320,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Save Savant Project");
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
-        fc.addChoosableFileFilter(new ExtensionsFileFilter("svp"));
+        fc.addChoosableFileFilter(new ExtensionsFileFilter(new String[] { "svp" }));
         fc.setMultiSelectionEnabled(false);
 
         int result = fc.showDialog(null, null);
