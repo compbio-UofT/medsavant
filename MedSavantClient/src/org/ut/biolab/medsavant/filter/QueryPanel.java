@@ -120,6 +120,7 @@ public class QueryPanel extends CollapsiblePanes {
                         catHolders.add(new FieldFilterHolder(field, WhichTable.VARIANT, queryID));
                     }
                 }
+                panes.add(addFilterCategory(af.getProgram(), catHolders, false), BorderLayout.CENTER);
             }
 
             //tag filter
