@@ -72,7 +72,13 @@ public class SettingsManager extends MedSavantServerUnicastRemoteObject implemen
         query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(SettingsTableSchema.COLUMNNAME_OF_KEY), key));
 
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
-        return rs.next() ? rs.getString(1) : null;
+
+        if (rs.next()) {
+            String result = rs.getString(1);
+            return result;
+        } else {
+            return null;
+        }
     }
 
     @Override

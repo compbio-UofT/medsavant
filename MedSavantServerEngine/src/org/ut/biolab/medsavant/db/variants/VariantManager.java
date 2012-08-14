@@ -31,6 +31,9 @@ import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -281,24 +284,97 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private double DUMP_FRACTION = 0.1;             // Done twice.
 
     /*
-     * Start the upload process for new vcf files. Will result in the creation
-     * of a new, unpublished, up-to-date variant table.
+     *  Upload files from client to server and then perform variant import
      */
     @Override
     public int uploadVariants(String sessID, RemoteInputStream[] fileStreams, String[] fileNames, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception {
+
+        LOG.info("Importing variants by transferring from client");
+
         File[] vcfFiles = new File[fileStreams.length];
+
+        LOG.info("Beginning variant upload");
 
         double frac = 0.0;
         for (int i = 0; i < fileStreams.length; i++) {
             makeProgress(sessID, "Sending " + fileNames[i] + "...", frac);
 
+            LOG.info("Sending " + fileNames[i]);
             // The second parameter of copyFileFromRemoteStream is actually a file-extension, but we use it to make sure that the temp
             // file has the same type (.vcf or .vcf.gz) as the original file.
             vcfFiles[i] = NetworkUtils.copyFileFromRemoteStream(fileStreams[i], fileNames[i]);
             frac += SEND_FILES_FRACTION / fileStreams.length;
         }
 
-        LOG.info("Beginning new VCF upload");
+        return uploadVariants(sessID,vcfFiles,projID,refID,tags,includeHomoRef);
+    }
+
+
+    /*
+     * Use when variant files are already on the server. Performs variant import
+     */
+    @Override
+    public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception {
+
+        LOG.info("Importing variants already stored on server in dir " + dirContainingVCFs.getAbsolutePath());
+
+        if (!dirContainingVCFs.exists()) {
+            LOG.info("Directory from which to load variants does not exist, bailing out.");
+            return -1;
+        }
+
+        List<File> onlyVCFFiles = new ArrayList<File>();
+        File[] allFiles = dirContainingVCFs.listFiles();
+        for (File f : allFiles) {
+            if (f.getAbsolutePath().endsWith(".vcf") || f.getAbsolutePath().endsWith(".vcf.gz")) {
+                LOG.info("Found file " + f.getAbsolutePath());
+                onlyVCFFiles.add(f);
+            } else {
+                LOG.info("Rejecting file " + f.getAbsolutePath());
+            }
+        }
+
+        if (onlyVCFFiles.isEmpty()) {
+            LOG.info("Directory exists but contains no .vcf or .vcf.gz files.");
+            return -1;
+        }
+
+        /*File[] vcfFiles = dirContainingVCFs.listFiles(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File file, String string) {
+                String path = file.getAbsolutePath();
+                if (path.endsWith(".vcf") || path.endsWith(".vcf.gz")) {
+                    LOG.info("Found file " + path);
+                    return true;
+                } else {
+                    LOG.info("Rejecting file " + path);
+                    return false;
+                }
+            }
+
+        });
+        *
+        */
+
+        File[] vcfFiles = new File[onlyVCFFiles.size()];
+        for (int i = 0; i < onlyVCFFiles.size(); i++) {
+            vcfFiles[i] = onlyVCFFiles.get(i);
+        }
+
+        return uploadVariants(sessID,vcfFiles,projID,refID,tags,includeHomoRef);
+    }
+
+
+    /*
+     * Start the upload process for new vcf files. Will result in the creation
+     * of a new, unpublished, up-to-date variant table.
+     */
+    public int uploadVariants(String sessID, File[] vcfFiles, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception {
+
+        double frac = SEND_FILES_FRACTION;
+
+        LOG.info("Beginning variant import");
 
         String user = SessionController.getInstance().getUserForSession(sessID);
 
@@ -341,7 +417,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //upload dump to staging table
             LOG.info("Uploading variants to table: " + tableName);
-            makeProgress(sessID, "Uploading variants to table...", frac);
+            makeProgress(sessID, "Importing variants to table...", frac);
             uploadFileToVariantTable(sessID, existingVariantsFile, tableName);
             frac += LOAD_INTO_TABLE_FRACTION;
 
@@ -437,8 +513,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //add entries to file table
             LOG.info("Adding entries to file table");
-            for (int i = 0; i < fileNames.length; i++) {
-                addEntryToFileTable(sessID, updateID, i, fileNames[i]);
+            for (int i = 0; i < vcfFiles.length; i++) {
+                addEntryToFileTable(sessID, updateID, i, vcfFiles[i].getPath());
             }
 
             //cleanup
@@ -454,6 +530,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //set as pending
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateID, Status.PENDING);
+
+            LOG.info("Assigning update ID of " + updateID);
 
             return updateID;
 
@@ -587,8 +665,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
          * origin = new BufferedInputStream(fi, BUFFER); ZipEntry entry = new
          * ZipEntry(files[i]); out.putNextEntry(entry); int count; while ((count
          * = origin.read(data, 0, BUFFER)) != -1) { out.write(data, 0, count); }
-         * origin.close(); }
-        out.close();
+         * origin.close(); } out.close();
          */
 
         return (new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath()))).export();
@@ -719,7 +796,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         Condition[] dnaConditions = new Condition[dnaIDs.size()];
         int i = 0;
-        for (String id: dnaIDs) {
+        for (String id : dnaIDs) {
             dnaConditions[i++] = BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), id);
         }
 
@@ -1024,22 +1101,83 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         return results;
     }
 
-    @Override
-    public void uploadFileToVariantTable(String sid, File file, String tableName) throws SQLException {
+    private static String extractFileName (String fullName) {
+      Pattern p = Pattern.compile(".*?([^\\\\/]+)$");
+      Matcher m = p.matcher(fullName);
+
+      return (m.find()) ? m.group(1) : "";
+   }
+
+    public void uploadFileToVariantTable(String sid, File file, String tableName) throws SQLException, IOException {
 
         // TODO: for some reason the connection is closed going into this function
         Connection c = ConnectionController.connectPooled(sid);
 
-        String query = "LOAD DATA LOCAL INFILE '" + file.getAbsolutePath().replaceAll("\\\\", "/") + "' "
-                + "INTO TABLE " + tableName + " "
-                + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
-                + "LINES TERMINATED BY '\\r\\n';";
+        c.setAutoCommit(false);
 
-        System.out.println(query);
+        BufferedReader br = new BufferedReader(new FileReader(file));
 
-        Statement s = c.createStatement();
-        s.setQueryTimeout(60 * 60); // 1 hour
-        s.execute(query);
+        String line = "";
+        int chunkSize = 50000; // number of lines per chunk
+        int lineNumber = 0;
+
+        BufferedWriter bw = null;
+        String currentOutputPath = null;
+
+        boolean stateOpen = false;
+
+        while ((line = br.readLine()) != null) {
+            lineNumber++;
+
+            // start a new output file
+            if (lineNumber % chunkSize == 1) {
+                currentOutputPath = DirectorySettings.getTmpDirectory() + "/" + extractFileName(file.getAbsolutePath()) + "_" + (lineNumber / chunkSize);
+                bw = new BufferedWriter(new FileWriter(currentOutputPath));
+                stateOpen = true;
+            }
+
+            // write line to chunk file
+            bw.write(line + "\n");
+
+            // close and upload this output file
+            if (lineNumber % chunkSize == 0) {
+                bw.close();
+                String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
+                        + "INTO TABLE " + tableName + " "
+                        + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
+                        + "LINES TERMINATED BY '\\r\\n';";
+
+                System.out.println(query);
+                Statement s = c.createStatement();
+                s.setQueryTimeout(60 * 60); // 1 hour
+                s.execute(query);
+
+                new File(currentOutputPath).delete();
+                stateOpen = false;
+            }
+        }
+
+        // write the remaining open file
+        if (bw != null && stateOpen) {
+            bw.close();
+            String query = "LOAD DATA LOCAL INFILE '" + currentOutputPath.replaceAll("\\\\", "/") + "' "
+                    + "INTO TABLE " + tableName + " "
+                    + "FIELDS TERMINATED BY ',' ENCLOSED BY '\"' "
+                    + "LINES TERMINATED BY '\\r\\n';";
+
+            System.out.println(query);
+            Statement s = c.createStatement();
+            s.setQueryTimeout(60 * 60); // 1 hour
+            s.execute(query);
+
+            new File(currentOutputPath).delete();
+        }
+
+        LOG.info("Imported " + lineNumber + " lines of variants in total");
+
+        c.commit();
+        c.setAutoCommit(true);
+
         c.close();
     }
 
@@ -1531,8 +1669,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * q.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantStarredTableSchema.COLUMNNAME_OF_USER),
      * variant.getUser()));
      *
-     * c.createStatement().executeUpdate(q.toString());
-    }
+     * c.createStatement().executeUpdate(q.toString()); }
      */
     @Override
     public void removeVariantComments(String sessID, List<VariantComment> comments) throws SQLException {
@@ -1676,7 +1813,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         //generate conditions from dna ids
         Condition[] dnaIDConditions = new Condition[dnaIDs.size()];
         int i = 0;
-        for (String id: dnaIDs) {
+        for (String id : dnaIDs) {
             dnaIDConditions[i++] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), id);
         }
         Condition dnaCondition = ComboCondition.or(dnaIDConditions);

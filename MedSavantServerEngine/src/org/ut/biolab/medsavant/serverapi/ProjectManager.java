@@ -187,6 +187,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
         try {
             // TODO: should use column types from DefaultVariantTable instead of hard-coding them here.
+            // TODO: ditto, just spent 1hr not understanding why table values aren't the same as in DefaultVariantTable
             String query =
                     "CREATE TABLE `" + variantTableName + "` ("
                     + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID + "` int(11) NOT NULL,"
@@ -203,7 +204,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
                     + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_TYPE + "` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
                     + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_ZYGOSITY + "` varchar(20) COLLATE latin1_bin DEFAULT NULL,"
                     + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_GT + "` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO + "` varchar(1000) COLLATE latin1_bin DEFAULT NULL,";
+                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO + "` varchar(10000) COLLATE latin1_bin DEFAULT NULL,";
 
             //add custom vcf fields
             CustomField[] customFields = getCustomVariantFields(sessID, projID, refID, updID);
