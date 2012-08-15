@@ -29,6 +29,7 @@ import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.ProgressStatus;
 import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord.VariantType;
@@ -147,9 +148,15 @@ public class StringListFilterView extends TabularFilterView<String> {
         public Condition[] getConditions() throws SQLException, RemoteException {
             if (appliedValues.size() > 0) {
                 if (whichTable == WhichTable.VARIANT) {
-                    return new Condition[] {
-                        new InCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnName), appliedValues)
-                    };
+                    if (appliedValues.size() == 1) {
+                        return new Condition[] {
+                            BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnName), appliedValues.get(0))
+                        };
+                    } else {
+                        return new Condition[] {
+                            new InCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(columnName), appliedValues)
+                        };
+                    }
                 } else if (whichTable == WhichTable.PATIENT) {
                     return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName));
                 }

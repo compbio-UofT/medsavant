@@ -26,6 +26,7 @@ import com.healthmarketscience.sqlbuilder.InCondition;
 
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 
 
 /**
@@ -52,7 +53,15 @@ public abstract class Filter {
      */
     public Condition[] getDNAIDCondition(Collection<String> dnaIDs) {
         if (dnaIDs.size() > 0) {
-            return new Condition[] { new InCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIDs) };
+            if (dnaIDs.size() == 1) {
+                return new Condition[] {
+                    BinaryConditionMS.equalTo(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIDs.iterator().next())
+                };
+            } else {
+                return new Condition[] {
+                    new InCondition(ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIDs)
+                };
+            }
         }
         return FALSE_CONDITION;
     }
