@@ -27,12 +27,13 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.model.ProgressStatus;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord.VariantType;
 import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
-import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+import org.ut.biolab.medsavant.view.dialog.CancellableProgressDialog;
 
 
 /**
@@ -45,7 +46,7 @@ public class StringListFilterView extends TabularFilterView<String> {
     private final String columnName;
     private final String alias;
 
-    public StringListFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
+    public StringListFilterView(FilterState state, int queryID) throws Exception {
         this(WhichTable.valueOf(state.getValues().get("table")), state.getFilterID(), queryID, state.getName());
         String values = state.getValues().get("values");
         if (values != null) {
@@ -53,11 +54,11 @@ public class StringListFilterView extends TabularFilterView<String> {
         }
     }
 
-    public StringListFilterView(WhichTable t, String colName, int queryID, String alias) throws SQLException, RemoteException {
+    public StringListFilterView(WhichTable t, String colName, int queryID, String alias) throws Exception {
         this(t, colName, queryID, alias, false);
     }
 
-    protected StringListFilterView(WhichTable t, String colName, int queryID, String alias, boolean bool) throws SQLException, RemoteException {
+    protected StringListFilterView(WhichTable t, String colName, int queryID, String alias, boolean bool) throws Exception {
         super(alias, queryID);
 
         this.whichTable = t;
@@ -79,22 +80,20 @@ public class StringListFilterView extends TabularFilterView<String> {
         } else if (colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
             availableValues = Arrays.asList(ClientMiscUtils.GENDER_MALE, ClientMiscUtils.GENDER_FEMALE, ClientMiscUtils.GENDER_UNKNOWN);
         } else {
-            new IndeterminateProgressDialog("Generating List", "<html>Determining distinct values for field.<br>This may take a few minutes the first time.</html>") {
+            new CancellableProgressDialog("Generating List", "<html>Determining distinct values for field.<br>This may take a few minutes the first time.</html>") {
                 @Override
-                public void run() {
-                    try {
-                        availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId, whichTable.getName(), columnName, true);
-                        if (columnName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM)) {
-                            Collections.sort(availableValues, new ChromosomeComparator());
-                        }
-                        initContentPanel();
-                    } catch (Throwable ex) {
-                        ClientMiscUtils.reportError(String.format("Error getting distinct values for %s.%s: %%s", whichTable, columnName), ex);
+                public void run() throws InterruptedException, SQLException, RemoteException {
+                    availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId, whichTable.getName(), columnName, true);
+                    if (columnName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM)) {
+                        Collections.sort(availableValues, new ChromosomeComparator());
                     }
                 }
-            }.setVisible(true);
-            return;
-
+            
+                @Override
+                public ProgressStatus checkProgress() throws RemoteException {
+                    return MedSavantClient.DBUtils.checkProgress(LoginController.sessionId, cancelled);
+                }
+            }.showDialog();
         }
         initContentPanel();
     }

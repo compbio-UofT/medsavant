@@ -62,7 +62,7 @@ public class SavantExportForm extends javax.swing.JDialog {
     private JDialog progressDialog;
 
     /** Creates new form SavantExportForm */
-    public SavantExportForm() throws RemoteException, SQLException {
+    public SavantExportForm() throws InterruptedException, SQLException, RemoteException {
 
 
         //System.err.println("NOT IMPLEMENTED YET");
@@ -107,7 +107,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         checkBoxes.add(box);
     }
 
-    private void export() throws RemoteException, SQLException, IOException {
+    private void export() throws InterruptedException, IOException, SQLException, RemoteException {
         //get selected DNA IDs
         List<String> selectedIds = new ArrayList<String>();
         for (JCheckBox box : checkBoxes) {

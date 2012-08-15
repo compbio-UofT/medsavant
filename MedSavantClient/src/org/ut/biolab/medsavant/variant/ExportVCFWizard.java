@@ -59,7 +59,7 @@ public class ExportVCFWizard extends WizardDialog {
     private File variantFile = null;
     private JLabel completionLabel;
     
-    public ExportVCFWizard() throws RemoteException, SQLException {
+    public ExportVCFWizard() throws InterruptedException, SQLException, RemoteException {
         setTitle("Export VCF Wizard");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
@@ -76,7 +76,7 @@ public class ExportVCFWizard extends WizardDialog {
         setLocationRelativeTo(null);
     }
 
-    private AbstractDialogPage getWelcomePage() throws RemoteException, SQLException {
+    private AbstractDialogPage getWelcomePage() throws InterruptedException, SQLException, RemoteException {
         
         return new DefaultWizardPage("Begin") {
             {

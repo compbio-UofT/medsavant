@@ -21,7 +21,7 @@ import java.sql.SQLException;
 
 import org.ut.biolab.medsavant.model.Notification;
 import org.ut.biolab.medsavant.model.ProjectDetails;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 
 
 /**

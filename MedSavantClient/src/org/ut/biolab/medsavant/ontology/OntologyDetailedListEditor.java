@@ -22,7 +22,7 @@ import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+import org.ut.biolab.medsavant.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -70,7 +70,7 @@ class OntologyDetailedListEditor extends DetailedListEditor {
 
         if (result == DialogUtils.YES) {
 
-            new IndeterminateProgressDialog(caption, message) {
+            new ProgressDialog(caption, message) {
                 @Override
                 public void run() {
                     int numCouldntRemove = 0;

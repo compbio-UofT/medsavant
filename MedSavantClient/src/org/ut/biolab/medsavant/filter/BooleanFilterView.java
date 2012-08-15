@@ -15,10 +15,6 @@
  */
 package org.ut.biolab.medsavant.filter;
 
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-
-
 /**
  * Boolean filter as special case of string list with two items.
  *
@@ -26,11 +22,11 @@ import java.sql.SQLException;
  */
 public class BooleanFilterView extends StringListFilterView {
 
-    public BooleanFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
+    public BooleanFilterView(FilterState state, int queryID) throws Exception {
         super(state, queryID);
     }
 
-    public BooleanFilterView(WhichTable t, String colName, int queryID, String alias) throws SQLException, RemoteException {
+    public BooleanFilterView(WhichTable t, String colName, int queryID, String alias) throws Exception {
         super(t, colName, queryID, alias, true);
     }
 }

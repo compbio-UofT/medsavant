@@ -37,7 +37,7 @@ import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.serverapi.ProjectManagerAdapter;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.Controller;
-import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+import org.ut.biolab.medsavant.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -84,7 +84,7 @@ public class ProjectController extends Controller<ProjectEvent> {
 
     public void removeProject(final String projectName) {
 
-        new IndeterminateProgressDialog("Removing Project", projectName + " project is being removed.  Please wait.") {
+        new ProgressDialog("Removing Project", projectName + " project is being removed.  Please wait.") {
             @Override
             public void run() {
                 try {

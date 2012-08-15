@@ -473,7 +473,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
             throw new InterruptedException();
         }
 
-        private void fetchGenesForNodes() throws SQLException, RemoteException {
+        private void fetchGenesForNodes() throws InterruptedException, SQLException, RemoteException {
             OntologyTerm[] terms = new OntologyTerm[nodeStack.size()];
             for (int i = 0; i < terms.length; i++) {
                 terms[i] = nodeStack.get(i).term;

@@ -25,11 +25,9 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.clientapi.ClientCallbackAdapter;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.serverapi.SessionManagerAdapter;
 import org.ut.biolab.medsavant.server.mail.CryptoUtils;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 
 
 /**
@@ -83,11 +81,6 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
         return ConnectionController.getUserForSession(sid);
     }
 
-    @Override
-    public void registerCallback(String sessionId, final ClientCallbackAdapter cca) throws RemoteException {
-        ConnectionController.addCallback(sessionId, cca);
-    }
-
     public String getDatabaseForSession(String sid) {
         return ConnectionController.getDBName(sid);
     }
@@ -126,12 +119,7 @@ public class SessionController extends MedSavantServerUnicastRemoteObject implem
                 public void run() {
                     try {
                         System.out.print("Terminating session " + sid + "...");
-                        ClientCallbackAdapter ca = ConnectionController.getCallback(sid);
                         SessionController.getInstance().unregisterSession(sid);
-
-                        if (ca != null) {
-                            ca.sessionTerminated(message);
-                        }
                         System.out.println("Complete");
                     } catch (Exception ex) {
                         System.out.println("Failed");

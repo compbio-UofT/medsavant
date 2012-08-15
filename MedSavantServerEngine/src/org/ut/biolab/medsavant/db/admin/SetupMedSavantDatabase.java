@@ -32,7 +32,7 @@ import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.ontology.OntologyManager;
 import org.ut.biolab.medsavant.server.SessionController;
 import org.ut.biolab.medsavant.serverapi.*;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.NetworkUtils;
 
 /**

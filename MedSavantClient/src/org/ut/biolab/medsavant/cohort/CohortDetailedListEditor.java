@@ -22,7 +22,7 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+import org.ut.biolab.medsavant.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -62,7 +62,7 @@ public class CohortDetailedListEditor extends DetailedListEditor {
 
         if (result == DialogUtils.YES) {
 
-            new IndeterminateProgressDialog("Removing Cohort(s)", items.size() + " cohort(s) being removed.  Please wait.") {
+            new ProgressDialog("Removing Cohort(s)", items.size() + " cohort(s) being removed.  Please wait.") {
                 @Override
                 public void run() {
                     int numCouldntRemove = 0;

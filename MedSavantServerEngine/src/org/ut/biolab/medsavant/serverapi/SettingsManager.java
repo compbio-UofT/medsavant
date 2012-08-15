@@ -30,7 +30,7 @@ import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.db.Settings;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 
 
 /**

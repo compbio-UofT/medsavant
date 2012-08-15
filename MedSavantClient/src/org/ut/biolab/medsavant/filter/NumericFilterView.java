@@ -31,12 +31,13 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.model.ProgressStatus;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RangeCondition;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.DecimalRangeSlider;
-import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+import org.ut.biolab.medsavant.view.dialog.CancellableProgressDialog;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -98,7 +99,7 @@ public class NumericFilterView extends FilterView {
         } else if (col.equals("sb")) {
             initHelper(new Range(-100, 100));
         } else {
-            new IndeterminateProgressDialog("Generating List", "<html>Determining extreme values for field.<br>This may take a few minutes the first time.</html>") {
+            new CancellableProgressDialog("Generating List", "<html>Determining extreme values for field.<br>This may take a few minutes the first time.</html>") {
                 @Override
                 public void run() {
                     try {
@@ -106,6 +107,11 @@ public class NumericFilterView extends FilterView {
                     } catch (Throwable ex) {
                         ClientMiscUtils.reportError(String.format("Error getting extreme values for %s.%s: %%s", whichTable, columnName), ex);
                     }
+                }
+            
+                @Override
+                public ProgressStatus checkProgress() throws RemoteException {
+                    return MedSavantClient.DBUtils.checkProgress(LoginController.sessionId, cancelled);
                 }
             }.setVisible(true);
         }

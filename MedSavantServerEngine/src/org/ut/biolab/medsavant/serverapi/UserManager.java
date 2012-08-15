@@ -25,7 +25,7 @@ import java.util.List;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.model.UserLevel;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 
 
 /**

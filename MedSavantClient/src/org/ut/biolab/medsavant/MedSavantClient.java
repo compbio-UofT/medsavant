@@ -33,6 +33,7 @@ import org.ut.biolab.medsavant.serverapi.*;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 
+
 public class MedSavantClient implements MedSavantServerRegistry {
     private static final Log LOG = LogFactory.getLog(MedSavantClient.class);
 

@@ -93,7 +93,7 @@ public class ResultController {
         return filteredVariants;
     }
 
-    public List<Object[]> getFilteredVariantRecords(int start, int limit, Column[] order) throws RemoteException, SQLException {
+    public List<Object[]> getFilteredVariantRecords(int start, int limit, Column[] order) throws InterruptedException, SQLException, RemoteException {
         synchronized (recordsLock) {
             if (filterSetIDForRecords != filterController.getCurrentFilterSetID() || this.limit != limit || this.start != start ||
                     ProjectController.getInstance().getCurrentProjectID() != projectIDForRecords ||
@@ -112,7 +112,7 @@ public class ResultController {
         }
     }
 
-    private void updateFilteredVariantDBResults(int start, int limit, Column[] order) throws RemoteException, SQLException {
+    private void updateFilteredVariantDBResults(int start, int limit, Column[] order) throws InterruptedException, SQLException, RemoteException {
 
         filterSetIDForRecords = filterController.getCurrentFilterSetID();
 
@@ -127,7 +127,7 @@ public class ResultController {
     }
 
 
-    public int getFilteredVariantCount() throws RemoteException, SQLException {
+    public int getFilteredVariantCount() throws InterruptedException, SQLException, RemoteException {
         synchronized (filteredCountLock) {
             if (filteredVariantCount == -1 ||
                     filterSetIDForFilteredCount != filterController.getCurrentFilterSetID() ||

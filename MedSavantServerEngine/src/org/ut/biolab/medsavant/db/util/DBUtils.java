@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,8 +39,8 @@ import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.server.SessionController;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.serverapi.DBUtilsAdapter;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.MiscUtils;
 
 /**
@@ -208,13 +209,15 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
      * A return value of null indicates too many values.
      */
     @Override
-    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean cached) throws SQLException, RemoteException {
+    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean cacheing) throws InterruptedException, SQLException, RemoteException {
         LOG.info("Getting distinct values for " + tableName + "." + colName);
 
+        makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.0);
         List<String> result;
         String dbName = SessionController.getInstance().getDatabaseForSession(sessID);
-        if (cached && DistinctValuesCache.isCached(dbName, tableName, colName)) {
+        if (cacheing && DistinctValuesCache.isCached(dbName, tableName, colName)) {
             try {
+                makeProgress(sessID, "Using cached values...", 1.0);
                 result = DistinctValuesCache.getCachedStringList(dbName, tableName, colName);
                 return result;
             } catch (Exception ex) {
@@ -229,10 +232,12 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         query.setIsDistinct(true);
         query.addColumns(table.getDBColumn(colName));
 
-        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + (cached ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
+        makeProgress(sessID, "Querying database...", 0.2);
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + (cacheing ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
 
         result = new ArrayList<String>();
         while (rs.next()) {
+            makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.75);
             String val = rs.getString(1);
             if (val == null) {
                 result.add("");
@@ -241,13 +246,14 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
             }
         }
 
-        if (cached) {
+        if (cacheing) {
+            makeProgress(sessID, "Saving cached values...", 0.9);
             if (result.size() == DistinctValuesCache.CACHE_LIMIT) {
                 DistinctValuesCache.cacheResults(dbName, tableName, colName, null);
-                return null;
+                result = null;
             } else {
                 Collections.sort(result);
-                DistinctValuesCache.cacheResults(dbName, tableName, colName, (List)result);
+                DistinctValuesCache.cacheResults(dbName, tableName, colName, result);
             }
         }
 
@@ -255,31 +261,37 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     @Override
-    public Range getExtremeValuesForColumn(String sid, String tablename, String columnname) throws SQLException, RemoteException {
-        LOG.info("Getting extreme values for " + tablename + "." + columnname);
-        String dbName = SessionController.getInstance().getDatabaseForSession(sid);
-        if (DistinctValuesCache.isCached(dbName, tablename, columnname)) {
+    public Range getExtremeValuesForColumn(String sessID, String tabName, String colName) throws InterruptedException, SQLException, RemoteException {
+        LOG.info("Getting extreme values for " + tabName + "." + colName);
+        makeProgress(sessID, String.format("Retrieving extreme values for %s...", colName), 0.0);
+        String dbName = SessionController.getInstance().getDatabaseForSession(sessID);
+        if (DistinctValuesCache.isCached(dbName, tabName, colName)) {
             try {
-                Range result = DistinctValuesCache.getCachedRange(dbName, tablename, columnname);
+                Range result = DistinctValuesCache.getCachedRange(dbName, tabName, colName);
                 if (result != null) {
                     return result;
                 }
             } catch (Exception ex) {
-                LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tablename + "/" + columnname, ex);
+                LOG.warn("Unable to get cached extreme values for " + dbName + "/" + tabName + "/" + colName, ex);
             }
         }
 
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tabName);
 
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
-        query.addCustomColumns(FunctionCall.min().addColumnParams(table.getDBColumn(columnname)));
-        query.addCustomColumns(FunctionCall.max().addColumnParams(table.getDBColumn(columnname)));
+        query.addCustomColumns(FunctionCall.min().addColumnParams(table.getDBColumn(colName)));
+        query.addCustomColumns(FunctionCall.max().addColumnParams(table.getDBColumn(colName)));
 
-        ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
+        makeProgress(sessID, "Querying database...", 0.2);
+        ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
         rs.next();
 
-        Range result = new Range(rs.getDouble(1), rs.getDouble(2));
+        double min = rs.getDouble(1);
+        double max = rs.getDouble(2);
+        Range result = new Range(min, max);
+        makeProgress(sessID, "Saving cached values...", 0.9);
+        DistinctValuesCache.cacheResults(dbName, tabName, colName, Arrays.asList(min, max));
         return result;
     }
 

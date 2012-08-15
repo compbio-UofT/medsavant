@@ -276,7 +276,7 @@ public class OntologyWizard extends WizardDialog {
         }
     }
 
-    private void create() throws SQLException, IOException {
+    private void create() throws InterruptedException, SQLException, IOException {
         MedSavantClient.OntologyManager.addOntology(LoginController.sessionId, name, type, new URL(oboField.getText()), new URL(mappingField.getText()));
     }
 }

@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.db.variants.VariantManager;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.model.SimplePatient;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 
 
 /**

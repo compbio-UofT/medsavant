@@ -18,12 +18,9 @@ package org.ut.biolab.medsavant.ontology;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.healthmarketscience.sqlbuilder.Condition;
-import java.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -55,7 +52,7 @@ public class OntologyFilter extends RegionSetFilter {
     }
 
     @Override
-    public Condition[] getConditions() throws SQLException, RemoteException {
+    public Condition[] getConditions() throws InterruptedException, SQLException, RemoteException {
         Set<Gene> genes = new HashSet<Gene>();
         Map<OntologyTerm, String[]> allTermsGenes = MedSavantClient.OntologyManager.getGenesForTerms(LoginController.sessionId, appliedTerms.toArray(new OntologyTerm[0]), ReferenceController.getInstance().getCurrentReferenceName());
         for (String[] termGenes: allTermsGenes.values()) {

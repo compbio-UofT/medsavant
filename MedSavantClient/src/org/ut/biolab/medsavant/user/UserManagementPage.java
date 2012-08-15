@@ -30,7 +30,7 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+import org.ut.biolab.medsavant.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.list.DetailedView;
 import org.ut.biolab.medsavant.view.list.SimpleDetailedListModel;
@@ -120,7 +120,7 @@ public class UserManagementPage extends SubSectionView implements Listener<UserE
                     title = "Removing User";
                     message = "<html>User <i>" + name + "</i> being removed.  Please wait.</html>";
                 }
-                new IndeterminateProgressDialog(title, message) {
+                new ProgressDialog(title, message) {
 
                     int numCouldntRemove = 0;
 

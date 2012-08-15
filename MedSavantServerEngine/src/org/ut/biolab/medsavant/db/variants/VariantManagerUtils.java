@@ -16,7 +16,6 @@
 
 package org.ut.biolab.medsavant.db.variants;
 
-import au.com.bytecode.opencsv.CSVReader;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -25,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import au.com.bytecode.opencsv.CSVReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -47,8 +47,8 @@ public class VariantManagerUtils {
     private static final int MIN_SUBSET_SIZE = 100000000; //bytes = 100MB
     private static final int SUBSET_COMPRESSION = 1000; // times
 
-    public static void annotateTDF(String sid, String tdfFilename, String outputFilename, int[] annotationIds) throws Exception {
-        (new VariantAnnotator(tdfFilename, outputFilename, annotationIds)).annotate(sid);
+    public static void annotateTDF(String sid, String tdfFilename, String outputFilename, int[] annotationIds) throws IOException, SQLException {
+        new VariantAnnotator(tdfFilename, outputFilename, annotationIds).annotate(sid);
     }
 
     public static void appendToFile(String baseFilename, String appendingFilename) throws IOException {

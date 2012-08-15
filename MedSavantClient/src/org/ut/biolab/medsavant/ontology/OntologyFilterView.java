@@ -16,19 +16,18 @@
 
 package org.ut.biolab.medsavant.ontology;
 
-import org.ut.biolab.medsavant.filter.Filter;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.filter.Filter;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.*;
-import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
 import org.ut.biolab.medsavant.filter.FilterState;
 import org.ut.biolab.medsavant.filter.TabularFilterView;
+import org.ut.biolab.medsavant.view.dialog.CancellableProgressDialog;
 
 
 /**
@@ -42,7 +41,7 @@ public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
     /**
      * Constructor for loading a saved filter from a file.
      */
-    public OntologyFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
+    public OntologyFilterView(FilterState state, int queryID) throws Exception {
         this(OntologyFilter.filterIDToOntology(state.getFilterID()), queryID);
         String values = state.getValues().get("values");
         if (values != null) {
@@ -55,22 +54,22 @@ public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
     /**
      * Constructor for creating a fresh filter from a place-holder.
      */
-    public OntologyFilterView(OntologyType ont, int queryID) throws SQLException, RemoteException {
+    public OntologyFilterView(OntologyType ont, int queryID) throws Exception {
         super(OntologyFilter.ontologyToTitle(ont), queryID);
         ontology = ont;
-        new IndeterminateProgressDialog("Fetching Ontology", String.format("Retrieving list of %s ontology terms.", ontology)) {
+        new CancellableProgressDialog("Fetching Ontology", String.format("Retrieving list of %s ontology terms.", ontology)) {
             @Override
-            public void run() {
-                try {
-                    OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.sessionId, ontology);
-                    availableValues = Arrays.asList(terms);
-                    initContentPanel();
-                } catch (Throwable ex) {
-                    setVisible(false);
-                    ClientMiscUtils.reportError(String.format("Error getting ontology terms for %s: %%s", OntologyFilter.ontologyToTitle(ontology)), ex);
-                }
+            public void run() throws InterruptedException, SQLException, RemoteException {
+                OntologyTerm[] terms = MedSavantClient.OntologyManager.getAllTerms(LoginController.sessionId, ontology);
+                availableValues = Arrays.asList(terms);
             }
-        }.setVisible(true);
+
+            @Override
+            public ProgressStatus checkProgress() throws RemoteException {
+                return MedSavantClient.OntologyManager.checkProgress(LoginController.sessionId, cancelled);
+            }
+        }.showDialog();
+        initContentPanel();
     }
 
     public static FilterState wrapState(String title, OntologyType ont, List<OntologyTerm> applied) {

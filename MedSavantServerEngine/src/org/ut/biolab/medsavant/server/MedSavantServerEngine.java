@@ -31,7 +31,6 @@ import org.ut.biolab.medsavant.db.util.DBUtils;
 import org.ut.biolab.medsavant.db.variants.VariantManager;
 import org.ut.biolab.medsavant.ontology.OntologyManager;
 import org.ut.biolab.medsavant.serverapi.*;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 
 
 /**

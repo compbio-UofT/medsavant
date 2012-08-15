@@ -28,7 +28,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.clientapi.ClientCallbackAdapter;
 
 /**
  *
@@ -40,7 +39,6 @@ public class ConnectionController {
     private static final String DRIVER = "com.mysql.jdbc.Driver";
     private static final String PROPS = "enableQueryTimeouts=false";//"useCompression=true"; //"useCompression=true&enableQueryTimeouts=false";
     private static final Map<String, ConnectionPool> sessionPoolMap = new HashMap<String, ConnectionPool>();
-    private static final Map<String, ClientCallbackAdapter> sessionCallbackMap = new HashMap<String, ClientCallbackAdapter>();
 
     private static String dbHost;
     private static int dbPort = -1;
@@ -190,17 +188,5 @@ public class ConnectionController {
             }
         }
         return result;
-    }
-
-    public static void addCallback(String sid, ClientCallbackAdapter c){
-        sessionCallbackMap.put(sid, c);
-    }
-
-    public static void removeCallback(String sid){
-        sessionCallbackMap.remove(sid);
-    }
-
-    public static ClientCallbackAdapter getCallback(String sid) {
-        return sessionCallbackMap.get(sid);
     }
 }

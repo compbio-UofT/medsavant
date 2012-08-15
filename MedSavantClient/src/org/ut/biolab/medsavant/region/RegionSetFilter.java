@@ -16,7 +16,6 @@
 
 package org.ut.biolab.medsavant.region;
 
-import org.ut.biolab.medsavant.filter.Filter;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -27,6 +26,7 @@ import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.filter.Filter;
 import org.ut.biolab.medsavant.model.*;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;

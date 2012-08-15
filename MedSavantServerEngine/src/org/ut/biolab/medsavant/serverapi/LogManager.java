@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.logging.DBLogger;
 import org.ut.biolab.medsavant.model.AnnotationLog;
 import org.ut.biolab.medsavant.model.GeneralLog;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 
 
 /**

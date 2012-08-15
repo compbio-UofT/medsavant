@@ -20,8 +20,6 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
-import org.ut.biolab.medsavant.clientapi.ClientCallbackAdapter;
-
 
 /**
  *
@@ -32,6 +30,4 @@ public interface SessionManagerAdapter extends Remote {
     String registerNewSession(String user, String pass, String db) throws RemoteException, SQLException;
     void unregisterSession(String sessID) throws RemoteException, SQLException;
     void testConnection(String sessID) throws RemoteException, SQLException;    
-    void registerCallback(String sessID, ClientCallbackAdapter cca) throws RemoteException;
-    
 }

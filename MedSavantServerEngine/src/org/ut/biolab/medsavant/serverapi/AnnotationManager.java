@@ -58,7 +58,7 @@ import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.model.AnnotationDownloadInformation;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.DirectorySettings;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.NetworkUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

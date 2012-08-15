@@ -190,7 +190,7 @@ public class FilterController extends Controller<FilterEvent> {
         return qfs;
     }
 
-    public Condition[] getFilterConditions(int queryID) throws SQLException, RemoteException {
+    public Condition[] getFilterConditions(int queryID) throws InterruptedException, SQLException, RemoteException {
         List<Filter> filters = prioritizeFilters(getFilters(queryID));
         Condition[] conditions = new Condition[filters.size()];
         for (int i = 0; i < filters.size(); i++) {
@@ -199,7 +199,7 @@ public class FilterController extends Controller<FilterEvent> {
         return conditions;
     }
 
-    public Condition[][] getAllFilterConditions() throws SQLException, RemoteException {
+    public Condition[][] getAllFilterConditions() throws InterruptedException, SQLException, RemoteException {
         Object[] keys = filterMap.keySet().toArray();
         Condition[][] conditions = new Condition[keys.length][];
         for (int i = 0; i < keys.length; i++) {

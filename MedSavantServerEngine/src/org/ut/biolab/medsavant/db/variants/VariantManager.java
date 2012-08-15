@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.clientapi.ProgressCallbackAdapter;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantFileTableSchema;
@@ -69,7 +68,7 @@ import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.util.DirectorySettings;
 import org.ut.biolab.medsavant.util.IOUtils;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.util.NetworkUtils;
 
@@ -84,7 +83,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private static final int BIN_TOTAL_THRESHOLD = 10000;
     private static final int PATIENT_HEATMAP_THRESHOLD = 1000;
     private static VariantManager instance;
-    private Map<String, ProgressCallbackAdapter> callbacks = new HashMap<String, ProgressCallbackAdapter>();
 
     private VariantManager() throws RemoteException {
     }
@@ -287,7 +285,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      *  Upload files from client to server and then perform variant import
      */
     @Override
-    public int uploadVariants(String sessID, RemoteInputStream[] fileStreams, String[] fileNames, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception {
+    public int uploadVariants(String sessID, RemoteInputStream[] fileStreams, String[] fileNames, int projID, int refID, String[][] tags, boolean includeHomoRef) throws InterruptedException, IOException, SQLException {
 
         LOG.info("Importing variants by transferring from client");
 
@@ -370,7 +368,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      * Start the upload process for new vcf files. Will result in the creation
      * of a new, unpublished, up-to-date variant table.
      */
-    public int uploadVariants(String sessID, File[] vcfFiles, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception {
+    public int uploadVariants(String sessID, File[] vcfFiles, int projID, int refID, String[][] tags, boolean includeHomoRef) throws IOException, InterruptedException, SQLException {
 
         double frac = SEND_FILES_FRACTION;
 
@@ -535,9 +533,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             return updateID;
 
-        } catch (Exception e) {
+        } catch (IOException ex) {
             AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateID, Status.ERROR);
-            throw e;
+            throw ex;
+        } catch (SQLException ex) {
+            AnnotationLogManager.getInstance().setAnnotationLogStatus(sessID, updateID, Status.ERROR);
+            throw ex;
         }
     }
 
@@ -811,7 +812,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, CustomField column, boolean logBins) throws SQLException, RemoteException {
+    public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sid, int projectId, int referenceId, Condition[][] conditions, CustomField column, boolean logBins) throws InterruptedException, SQLException, RemoteException {
 
         //pick table from approximate or exact
         TableSchema table;
@@ -909,7 +910,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, int projectId, int referenceId, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically) throws SQLException, RemoteException {
+    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sid, int projectId, int referenceId, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically) throws InterruptedException, SQLException, RemoteException {
 
         //pick table from approximate or exact
         TableSchema table;
@@ -1117,7 +1118,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         BufferedReader br = new BufferedReader(new FileReader(file));
 
-        String line = "";
         int chunkSize = 50000; // number of lines per chunk
         int lineNumber = 0;
 
@@ -1126,6 +1126,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         boolean stateOpen = false;
 
+        String line;
         while ((line = br.readLine()) != null) {
             lineNumber++;
 
@@ -1841,18 +1842,5 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 BinaryCondition.equalTo(column, "C"),
                 BinaryCondition.equalTo(column, "G"),
                 BinaryCondition.equalTo(column, "T"));
-    }
-
-    @Override
-    public void registerProgressCallback(String sessID, ProgressCallbackAdapter callback) {
-        callbacks.put(sessID, callback);
-    }
-
-    public void makeProgress(String sessID, String activity, double fraction) throws RemoteException {
-        ProgressCallbackAdapter callback = callbacks.get(sessID);
-        if (callback != null) {
-            LOG.info(String.format("%s: %.2f", activity, fraction * 100.0));
-            callback.progress(activity, fraction);
-        }
     }
 }

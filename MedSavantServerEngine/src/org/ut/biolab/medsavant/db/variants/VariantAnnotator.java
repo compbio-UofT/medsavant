@@ -30,6 +30,7 @@ import org.broad.tabix.TabixReader.Iterator;
 import org.ut.biolab.medsavant.model.Annotation;
 import org.ut.biolab.medsavant.serverapi.AnnotationManager;
 import org.ut.biolab.medsavant.server.log.ServerLogger;
+import org.ut.biolab.medsavant.util.IOUtils;
 
 /**
  *
@@ -249,14 +250,14 @@ public class VariantAnnotator {
 
     }
 
-    public void annotate(String sid) throws Exception {
+    public void annotate(String sid) throws IOException, SQLException {
         ServerLogger.logByEmail("Annotation started", "Annotation of " + tdfFilename + " was started. " + annotationIds.length + " annotation(s) will be performed.\n\nYou will be notified again upon completion.");
 
         LOG.info("Annotation of " + tdfFilename + " was started. " + annotationIds.length + " annotation(s) will be performed.");
 
         // if no annotations to perform, copy input to output
         if (annotationIds.length == 0) {
-            copyFile(tdfFilename, outputFilename);
+            IOUtils.copyFile(new File(tdfFilename), new File(outputFilename));
             return;
         }
 
@@ -290,7 +291,7 @@ public class VariantAnnotator {
         }
 
         // copy the output file to the appropriate destination
-        copyFile(outFile.getAbsolutePath(), outputFilename);
+        IOUtils.copyFile(outFile, new File(outputFilename));
 
         // remove tmp files
         /*
@@ -319,7 +320,7 @@ public class VariantAnnotator {
 
         // skip to next chr
         String currentChr = currentPos.chrom;
-        String nextLineChr = currentPos.chrom;
+        String nextLineChr;
 
         LOG.info("Flushing remaining variants in " + currentPos.chrom);
 
@@ -580,40 +581,9 @@ public class VariantAnnotator {
         return result;
     }
 
-    private static void copyFile(String srFile, String dtFile) throws Exception {
-        File f1 = new File(srFile);
-        File f2 = new File(dtFile);
-        InputStream in = new FileInputStream(f1);
-
-        //For Append the file.
-        //  OutputStream out = new FileOutputStream(f2,true);
-
-        //For Overwrite the file.
-        OutputStream out = new FileOutputStream(f2);
-
-        byte[] buf = new byte[1024];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
-        in.close();
-        out.close();
-        System.out.println("File copied.");
-    }
-
     private static String[] copyArray(String[] inLine, String[] outLine) {
         Arrays.fill(outLine, null);
         System.arraycopy(inLine, 0, outLine, 0, inLine.length);
         return outLine;
     }
-
-
-    /**
-     * MAIN
-     */
-    /*public static void main(String[] args) throws Exception {
-        ServerLogger.setMailRecipient("marcfiume@gmail.com");
-        Annotate annot = new Annotate(variantFile.getAbsolutePath(), variantFile.getAbsolutePath() + ".annot", new int[]{3});
-        annot.annotate();
-    }*/
 }

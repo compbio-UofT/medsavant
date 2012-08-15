@@ -41,7 +41,7 @@ import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.model.*;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 
 /**
  *

@@ -23,8 +23,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -78,7 +76,7 @@ public class FilterHistoryPanel extends JPanel {
                     }
 
                     @Override
-                    protected Void doInBackground() throws RemoteException, SQLException {
+                    protected Void doInBackground() throws Exception {
                         int numLeft = ResultController.getInstance().getFilteredVariantCount();
                         addFilterSet(event.getFilter(), event.getType(), numLeft);
                         return null;

@@ -44,7 +44,7 @@ import org.ut.biolab.medsavant.importing.FileFormat;
 import org.ut.biolab.medsavant.importing.ImportDelimitedFile;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.NetworkUtils;
 
 

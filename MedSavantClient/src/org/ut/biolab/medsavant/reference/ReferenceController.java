@@ -26,7 +26,7 @@ import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.model.Reference;
 import org.ut.biolab.medsavant.serverapi.ReferenceManagerAdapter;
 import org.ut.biolab.medsavant.util.Controller;
-import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+import org.ut.biolab.medsavant.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 
@@ -121,7 +121,7 @@ public class ReferenceController extends Controller<ReferenceEvent> {
     }
 
     public void removeReference(final String refName) {
-        new IndeterminateProgressDialog("Removing Reference", "Reference " + refName + " is being removed. Please wait.") {
+        new ProgressDialog("Removing Reference", "Reference " + refName + " is being removed. Please wait.") {
             @Override
             public void run() {
                 try {

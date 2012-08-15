@@ -53,7 +53,7 @@ public class DistinctValuesCache {
         return getFile(getDirectory(dbName, tableName), columnName).exists();
     }
     
-    public static void cacheResults(String dbName, String tableName, String columnName, List<Object> result) {
+    public static void cacheResults(String dbName, String tableName, String columnName, List result) {
         File dir = getDirectory(dbName, tableName);
         if (!dir.exists() && !dir.mkdirs()) {
             LOG.error(String.format("Unable to create cache directory %s.", dir.getAbsolutePath()));

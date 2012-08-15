@@ -49,7 +49,7 @@ import org.ut.biolab.medsavant.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 
 /**
  *

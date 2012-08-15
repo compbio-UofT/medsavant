@@ -41,7 +41,7 @@ import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.PatientFormat;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 
 
 /**

@@ -25,7 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.settings.VersionSettings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+import org.ut.biolab.medsavant.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 /**
@@ -223,7 +223,7 @@ public class AddRemoveDatabaseDialog extends JDialog {
                 }
             }
         } else {
-            new IndeterminateProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. <br><br>Please wait. This process can take up to an hour.</html>", dbName)) {
+            new ProgressDialog("Creating Database", String.format("<html>Creating database <i>%s</i>. <br><br>Please wait. This process can take up to an hour.</html>", dbName)) {
                 @Override
                 public void run() {
                     try {

@@ -29,11 +29,11 @@ import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
-import org.ut.biolab.medsavant.login.LoginController;
-import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.filter.FilterEvent;
 import org.ut.biolab.medsavant.filter.WhichTable;
+import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
@@ -77,7 +77,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         return field;
     }
 
-    public ChartFrequencyMap generateCategoricalChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws SQLException, RemoteException {
+    public ChartFrequencyMap generateCategoricalChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws InterruptedException, SQLException, RemoteException {
 
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
         if (Thread.currentThread().isInterrupted()) {
@@ -157,7 +157,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         }
     }
 
-    public ChartFrequencyMap generateNumericChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws SQLException, RemoteException {
+    public ChartFrequencyMap generateNumericChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws InterruptedException, SQLException, RemoteException {
 
         ChartFrequencyMap chartMap = new ChartFrequencyMap();
 
@@ -253,12 +253,12 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         return chartMap;
     }
 
-    public ChartFrequencyMap generateChartMap(boolean isLogScaleX) throws SQLException, RemoteException {
+    public ChartFrequencyMap generateChartMap(boolean isLogScaleX) throws InterruptedException, SQLException, RemoteException {
         return generateChartMap(true, isLogScaleX);
     }
 
     @Override
-    public ChartFrequencyMap generateChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws SQLException, RemoteException {
+    public ChartFrequencyMap generateChartMap(boolean useFilteredCounts, boolean isLogScaleX) throws InterruptedException, SQLException, RemoteException {
 
         String cacheKey = ProjectController.getInstance().getCurrentProjectID()
                 + "_" + ReferenceController.getInstance().getCurrentReferenceID()
@@ -340,7 +340,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         return field.getColumnName();
     }
 
-    private List<String> getDNAIDs() throws SQLException, RemoteException {
+    private List<String> getDNAIDs() throws InterruptedException, SQLException, RemoteException {
         List<String> dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId,
                     ProjectController.getInstance().getCurrentVariantTableName(),
                     DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID, true);

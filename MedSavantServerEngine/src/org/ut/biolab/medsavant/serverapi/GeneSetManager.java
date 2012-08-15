@@ -32,7 +32,7 @@ import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.model.Block;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.GeneSet;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 
 
 /**

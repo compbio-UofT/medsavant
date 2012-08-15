@@ -26,6 +26,7 @@ import org.ut.biolab.medsavant.model.Ontology;
 
 import org.ut.biolab.medsavant.model.OntologyTerm;
 import org.ut.biolab.medsavant.model.OntologyType;
+import org.ut.biolab.medsavant.model.ProgressStatus;
 import org.ut.biolab.medsavant.util.NetworkUtils;
 
 
@@ -59,6 +60,11 @@ public interface OntologyManagerAdapter extends Remote {
     *
     */
     /**
+     * Check the status of a lengthy process, giving the user the option to cancel.
+     */
+    ProgressStatus checkProgress(String sessID, boolean userCancelled) throws RemoteException;
+
+    /**
      * As part of the maintenance process, populate the tables for the given ontology.
      *
      * @param sessID the login session
@@ -67,7 +73,7 @@ public interface OntologyManagerAdapter extends Remote {
      * @param oboData URL of OBO file containing the ontology
      * @param geneData URL of text file defining mapping between terms and genes (format may vary)
      */
-    void addOntology(String sessID, String ontName, OntologyType ont, URL oboData, URL mappingData) throws IOException, SQLException, RemoteException;
+    void addOntology(String sessID, String ontName, OntologyType ont, URL oboData, URL mappingData) throws IOException, InterruptedException, SQLException, RemoteException;
 
     /**
      * As part of the maintenance process, remove the tables for a given ontology.
@@ -75,17 +81,17 @@ public interface OntologyManagerAdapter extends Remote {
      * @param sessID the login session
      * @param ontName the ontology to be removed
      */
-    void removeOntology(String sessID, String ontName) throws IOException, SQLException, RemoteException;
+    void removeOntology(String sessID, String ontName) throws IOException, InterruptedException, SQLException, RemoteException;
 
     /**
      * Retrieve a list of all available ontologies.
      */
-    Ontology[] getOntologies(String sessID) throws SQLException, RemoteException;
+    Ontology[] getOntologies(String sessID) throws InterruptedException, SQLException, RemoteException;
 
     /**
      * Get a list of all terms in the given ontology.
      */
-    OntologyTerm[] getAllTerms(String sessID, OntologyType type) throws SQLException, RemoteException;
+    OntologyTerm[] getAllTerms(String sessID, OntologyType type) throws InterruptedException, SQLException, RemoteException;
 
     /**
      * Get the names of all genes corresponding to the given term.
@@ -94,7 +100,7 @@ public interface OntologyManagerAdapter extends Remote {
      * @param refName the reference being looked for
      * @return genes corresponding to <code>term</code>
      */
-    String[] getGenesForTerm(String sessID, OntologyTerm term, String refName) throws SQLException, RemoteException;
+    String[] getGenesForTerm(String sessID, OntologyTerm term, String refName) throws InterruptedException, SQLException, RemoteException;
 
     /**
      * Get the names of all genes corresponding to the given terms.  When loading a large number of terms, this can be more efficient
@@ -107,7 +113,7 @@ public interface OntologyManagerAdapter extends Remote {
      * @throws SQLException
      * @throws RemoteException
      */
-    public Map<OntologyTerm, String[]> getGenesForTerms(String sessID, OntologyTerm[] terms, String refID) throws SQLException, RemoteException;
+    Map<OntologyTerm, String[]> getGenesForTerms(String sessID, OntologyTerm[] terms, String refID) throws InterruptedException, SQLException, RemoteException;
 
     /**
      * Get a list of all terms of the given ontology corresponding to the given gene.
@@ -115,5 +121,5 @@ public interface OntologyManagerAdapter extends Remote {
      * @param geneName name of the gene being looked for
      * @return ontology terms corresponding to <code>gene</code>
      */
-    OntologyTerm[] getTermsForGene(String sessID, OntologyType ont, String geneName) throws SQLException, RemoteException;
+    OntologyTerm[] getTermsForGene(String sessID, OntologyType ont, String geneName) throws InterruptedException, SQLException, RemoteException;
 }

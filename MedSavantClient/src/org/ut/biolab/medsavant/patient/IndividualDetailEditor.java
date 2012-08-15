@@ -23,7 +23,7 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.view.dialog.IndeterminateProgressDialog;
+import org.ut.biolab.medsavant.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.view.list.DetailedListEditor;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 
@@ -75,7 +75,7 @@ class IndividualDetailEditor extends DetailedListEditor {
                 patients[index++] = id;
             }
 
-            new IndeterminateProgressDialog("Removing Patient(s)", patients.length + " patient(s) being removed. Please wait.") {
+            new ProgressDialog("Removing Patient(s)", patients.length + " patient(s) being removed. Please wait.") {
                 @Override
                 public void run() {
                     try {

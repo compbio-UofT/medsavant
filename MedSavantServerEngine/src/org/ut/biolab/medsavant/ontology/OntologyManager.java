@@ -40,7 +40,7 @@ import org.ut.biolab.medsavant.model.Ontology;
 import org.ut.biolab.medsavant.model.OntologyTerm;
 import org.ut.biolab.medsavant.model.OntologyType;
 import org.ut.biolab.medsavant.serverapi.OntologyManagerAdapter;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.util.RemoteFileCache;
 
@@ -126,12 +126,17 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     }
 
     @Override
-    public OntologyTerm[] getAllTerms(String sessID, OntologyType ont) throws SQLException {
+    public OntologyTerm[] getAllTerms(String sessID, OntologyType ont) throws InterruptedException, SQLException {
+        makeProgress(sessID, "Connecting...", 0.0);
         List<OntologyTerm> result = new ArrayList<OntologyTerm>();
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
+            double prog = 0.2;
+            makeProgress(sessID, "Executing query...", prog);
             ResultSet rs = conn.executePreparedQuery(ontologySchema.where(ONTOLOGY, ont.toString()).orderBy(ID).select(ID, NAME, DEF, ALT_IDS, PARENTS).toString());
             while (rs.next()) {
+                prog = 0.5 + prog * 0.5;    // Just for fun, to converge on 1.0
+                makeProgress(sessID, "Retrieving ontology terms...", prog);
                 result.add(new OntologyTerm(ont, rs.getString(1), rs.getString(2), rs.getString(3), StringUtils.split(rs.getString(4), ','), StringUtils.split(rs.getString(5), ',')));
             }
         } finally {

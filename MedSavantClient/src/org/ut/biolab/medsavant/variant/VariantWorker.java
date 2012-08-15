@@ -19,23 +19,16 @@ package org.ut.biolab.medsavant.variant;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.Serializable;
-import java.rmi.RemoteException;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import com.jidesoft.wizard.WizardDialog;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.clientapi.ProgressCallbackAdapter;
-import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
-import org.ut.biolab.medsavant.util.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
 
 
@@ -74,15 +67,6 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
 
         progressLabel.setText(String.format("%s ...", activity));
 
-        /*
-        try {
-            MedSavantClient.VariantManager.registerProgressCallback(LoginController.sessionId, new ProgressCallback(progressLabel, progressBar));
-        } catch (RemoteException ex) {
-            LOG.error("Unable to register progress callback.", ex);
-        }
-        */
-
-//        progressBar.setIndeterminate(true);
         // Convert our start button into a cancel button.
         workButton.setText("Cancel");
         if (workButton.getActionListeners().length > 0) {
@@ -131,27 +115,5 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
             progressLabel.setText(ex.getMessage());
         }
         LOG.error(activity + " failed.", ex);
-    }
-
-    private static class ProgressCallback extends MedSavantServerUnicastRemoteObject implements ProgressCallbackAdapter, Serializable {
-        private final JLabel label;
-        private final JProgressBar bar;
-
-        ProgressCallback(JLabel label, JProgressBar bar) throws RemoteException {
-            this.label = label;
-            this.bar = bar;
-        }
-
-        @Override
-        public void progress(final String activity, final double fraction) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    bar.setIndeterminate(false);
-                    label.setText(activity);
-                    bar.setValue((int)Math.round(fraction * 100.0));
-                }
-            });
-        }
     }
 }

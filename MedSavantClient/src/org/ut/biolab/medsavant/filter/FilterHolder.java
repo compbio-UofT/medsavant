@@ -19,8 +19,6 @@ package org.ut.biolab.medsavant.filter;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
@@ -110,7 +108,7 @@ public abstract class FilterHolder {
 
                 int result = DialogUtils.YES;
                 if (!acceptedBeingLong && editButton.isSelected() && longRunning) {
-                    result = DialogUtils.askYesNo("Warning", "This is a complex search condition that may take a long time to complete. Would you like to continue anyways?");
+                    result = DialogUtils.askYesNo("Warning", "<html>This is a complex search condition that may take a long time to complete.<br>Would you like to continue anyways?</html>");
                     if (result == DialogUtils.YES) {
                         acceptedBeingLong = true;
                     }
@@ -149,8 +147,12 @@ public abstract class FilterHolder {
             parent.toggleDetailVisibility(name);
             parent.invalidate();
             parent.repaint();
-        } catch (Exception e) {
-            DialogUtils.displayException("Problem displaying filter", "Problem getting values for filter " + name, e);
+        } catch (Exception ex) {
+            filterView = null;
+            editButton.setSelected(false);
+            if (!(ex instanceof InterruptedException)) {
+                DialogUtils.displayException("Problem displaying filter", "Problem getting values for filter " + name, ex);
+            }
         }
     }
 }
@@ -251,12 +253,12 @@ class OntologyFilterHolder extends FilterHolder {
     }
 
     @Override
-    public FilterView createFilterView() throws SQLException, RemoteException {
+    public FilterView createFilterView() throws Exception {
         return new OntologyFilterView(ontology, queryID);
     }
     
     @Override
-    public void loadFilterView(FilterState state) throws SQLException, RemoteException {
+    public void loadFilterView(FilterState state) throws Exception {
         filterView = new OntologyFilterView(state, queryID);
     }
 }

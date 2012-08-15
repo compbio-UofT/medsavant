@@ -30,7 +30,6 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 
-import org.ut.biolab.medsavant.clientapi.ProgressCallbackAdapter;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.Range;
@@ -63,8 +62,9 @@ public interface VariantManagerAdapter extends Remote {
     public int getVariantCount(String sessID, int projID, int refID) throws SQLException, RemoteException;
     public int getFilteredVariantCount(String sessID,int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException;
     public int getVariantCountForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException;
-    public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sessID, int projID, int refID, Condition[][] conditions, CustomField column, boolean logBins) throws SQLException, RemoteException;
+    public Map<Range, Long> getFilteredFrequencyValuesForNumericColumn(String sessID, int projID, int refID, Condition[][] conditions, CustomField column, boolean logBins) throws InterruptedException, SQLException, RemoteException;
     public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sessID, int projID, int refID, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException;
+    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sessID, int projID, int refID, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically) throws InterruptedException, SQLException, RemoteException;
     public int getVariantCountInRange(String sessID, int projID, int refID, Condition[][] conditions, String chrom, long start, long end) throws SQLException, RemoteException;
     public Map<String, Map<Range, Integer>> getChromosomeHeatMap(String sessID, int projID, int refID, Condition[][] conditions, int binsize) throws SQLException, RemoteException;
     //public void uploadFileToVariantTable(String sessID, File file, String tableName) throws SQLException, IOException, RemoteException;
@@ -85,8 +85,5 @@ public interface VariantManagerAdapter extends Remote {
     public void removeVariantComments(String sessID, List<VariantComment> comments) throws SQLException, RemoteException;
     public Map<SimplePatient, Integer> getPatientHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<SimplePatient> patients) throws SQLException, RemoteException;
     public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException;
-    public ScatterChartMap getFilteredFrequencyValuesForScatter(String sessID, int projID, int refID, Condition[][] conditions, String columnnameX, String columnnameY, boolean columnXCategorical, boolean columnYCategorical, boolean sortKaryotypically) throws SQLException, RemoteException;
-
-    public void registerProgressCallback(String sessID, ProgressCallbackAdapter callback) throws RemoteException;
 }
 
