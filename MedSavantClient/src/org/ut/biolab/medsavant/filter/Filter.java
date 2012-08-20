@@ -41,13 +41,13 @@ public abstract class Filter {
 
     public Filter() {
     }
-    
+
     public abstract String getName();
 
     public abstract String getID();
 
     public abstract Condition[] getConditions() throws InterruptedException, SQLException, RemoteException;
-    
+
     /**
      * Many filters need to make a filter based on a list of DNA IDs.
      */

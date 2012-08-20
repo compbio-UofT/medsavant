@@ -36,6 +36,7 @@ import com.jidesoft.chart.ChartType;
 import com.jidesoft.chart.Legend;
 import com.jidesoft.chart.axis.Axis;
 import com.jidesoft.chart.axis.CategoryAxis;
+import com.jidesoft.chart.event.*;
 import com.jidesoft.chart.model.ChartCategory;
 import com.jidesoft.chart.model.ChartPoint;
 import com.jidesoft.chart.model.DefaultChartModel;
@@ -43,10 +44,16 @@ import com.jidesoft.chart.model.Highlight;
 import com.jidesoft.chart.model.InvertibleTransform;
 import com.jidesoft.chart.render.AbstractPieSegmentRenderer;
 import com.jidesoft.chart.render.DefaultBarRenderer;
+import com.jidesoft.chart.render.DefaultPieSegmentRenderer;
 import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
+import com.jidesoft.range.Range;
+import java.awt.*;
+import java.awt.geom.Point2D;
+import java.util.List;
+import java.util.*;
 import net.ericaro.surfaceplotter.JSurfacePanel;
 import net.ericaro.surfaceplotter.Mapper;
 import net.ericaro.surfaceplotter.ProgressiveSurfaceModel;
@@ -106,6 +113,8 @@ public class SummaryChart extends JLayeredPane {
     private GridBagConstraints c;
     private WaitPanel waitPanel = new WaitPanel("Getting chart data");
     private boolean isScatter = false;
+
+    //private Stack<ZoomFrame> zoomStack = new Stack<ZoomFrame>();
     //private String scatterAliasX;
     //private String scatterAliasY;
 
@@ -276,7 +285,7 @@ public class SummaryChart extends JLayeredPane {
             }
         });
 
-        AbstractPieSegmentRenderer rpie = new RaisedPieSegmentRenderer();
+        AbstractPieSegmentRenderer rpie = new DefaultPieSegmentRenderer();
         chart.setPieSegmentRenderer(rpie);
 
         DefaultBarRenderer rbar = new DefaultBarRenderer();
@@ -331,7 +340,7 @@ public class SummaryChart extends JLayeredPane {
             chart.setHighlightStyle(h, new ChartStyle(color));
         }
 
-        CategoryAxis xaxis = new CategoryAxis(range, "Category");
+        final CategoryAxis xaxis = new CategoryAxis(range, "Category");
         chart.setXAxis(xaxis);
         if (this.isLogScaleY()) {
             chart.setYAxis(new Axis(new NumericRange(0, Math.log10(max) * 1.1), "log(Frequency)"));
@@ -353,6 +362,51 @@ public class SummaryChart extends JLayeredPane {
         if (isPie) {
             chart.setChartType(ChartType.PIE);
         }
+
+        // This adds zooming cababilities to bar charts, not great though
+        /*else {
+            RubberBandZoomer rubberBand = new RubberBandZoomer(chart);
+            chart.addDrawable(rubberBand);
+            chart.addMouseListener(rubberBand);
+            chart.addMouseMotionListener(rubberBand);
+
+            rubberBand.addZoomListener(new ZoomListener() {
+                public void zoomChanged(ChartSelectionEvent event) {
+                    if (event instanceof RectangleSelectionEvent) {
+                        Range<?> currentXRange = chart.getXAxis().getOutputRange();
+                        Range<?> currentYRange = chart.getYAxis().getOutputRange();
+                        ZoomFrame frame = new ZoomFrame(currentXRange, currentYRange);
+                        zoomStack.push(frame);
+                        Rectangle selection = (Rectangle) event.getLocation();
+                        Point topLeft = selection.getLocation();
+                        topLeft.x = (int) Math.floor(frame.getXRange().minimum());
+                        Point bottomRight = new Point(topLeft.x + selection.width, topLeft.y + selection.height);
+                        bottomRight.x = (int) Math.ceil(frame.getXRange().maximum());
+                        assert bottomRight.x >= topLeft.x;
+                        Point2D rp1 = chart.calculateUserPoint(topLeft);
+                        Point2D rp2 = chart.calculateUserPoint(bottomRight);
+                        if (rp1 != null && rp2 != null) {
+                            assert rp2.getX() >= rp1.getX();
+                            Range<?> xRange = new NumericRange(rp1.getX(), rp2.getX());
+                            assert rp1.getY() >= rp2.getY();
+                            Range<?> yRange = new NumericRange(rp2.getY(), rp1.getY());
+                            //chart.getXAxis().setRange(xRange);
+                            chart.getYAxis().setRange(yRange);
+                        }
+                    } else if (event instanceof PointSelectionEvent) {
+                        if (zoomStack.size() > 0) {
+                            ZoomFrame frame = zoomStack.pop();
+                            Range<?> xRange = frame.getXRange();
+                            Range<?> yRange = frame.getYRange();
+                            //chart.getXAxis().setRange(xRange);
+                            chart.getYAxis().setRange(yRange);
+                        }
+                    }
+                }
+            });
+        }
+        *
+        */
 
         for (int i = 1; i < this.getComponentCount(); i++) {
             this.remove(i);
@@ -634,13 +688,13 @@ public class SummaryChart extends JLayeredPane {
             }
 
             ScatterChartMap scatterMap =  MedSavantClient.VariantManager.getFilteredFrequencyValuesForScatter(
-                    LoginController.sessionId, 
-                    ProjectController.getInstance().getCurrentProjectID(), 
-                    ReferenceController.getInstance().getCurrentReferenceID(), 
-                    FilterController.getInstance().getAllFilterConditions(), 
-                    columnX, 
-                    columnY, 
-                    !mapGenerator.isNumeric() || mapGenerator.getTable() == WhichTable.PATIENT, 
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentProjectID(),
+                    ReferenceController.getInstance().getCurrentReferenceID(),
+                    FilterController.getInstance().getAllFilterConditions(),
+                    columnX,
+                    columnY,
+                    !mapGenerator.isNumeric() || mapGenerator.getTable() == WhichTable.PATIENT,
                     !mapGeneratorScatter.isNumeric() || mapGeneratorScatter.getTable() == WhichTable.PATIENT,
                     isSortedKaryotypically());
 

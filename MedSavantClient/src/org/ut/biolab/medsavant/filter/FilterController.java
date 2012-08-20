@@ -193,9 +193,12 @@ public class FilterController extends Controller<FilterEvent> {
     public Condition[] getFilterConditions(int queryID) throws InterruptedException, SQLException, RemoteException {
         List<Filter> filters = prioritizeFilters(getFilters(queryID));
         Condition[] conditions = new Condition[filters.size()];
+        System.out.println("Retrieved conditions:");
         for (int i = 0; i < filters.size(); i++) {
             conditions[i] = ComboCondition.or(filters.get(i).getConditions());
+            System.out.println(conditions[i]);
         }
+        System.out.println();
         return conditions;
     }
 

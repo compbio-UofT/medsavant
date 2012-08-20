@@ -1,6 +1,6 @@
 db.driver=com.mysql.jdbc.Driver
 db.host=localhost
-db.name=defaultMS
+db.name=forge_filtered
 db.port=5029
 general.autologin=false
 medsavant.version=1.0

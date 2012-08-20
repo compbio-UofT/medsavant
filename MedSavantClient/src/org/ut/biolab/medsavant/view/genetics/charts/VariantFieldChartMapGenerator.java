@@ -61,7 +61,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                 if (!filteredMapCache.isEmpty()) {
                     filteredMapCache.clear();
                 }
-            } 
+            }
         });
     }
 

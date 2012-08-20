@@ -36,9 +36,10 @@ public class IndividualListModel implements DetailedListModel {
                                                                 PatientFormat.ALIAS_OF_IDBIOMOM,
                                                                 PatientFormat.ALIAS_OF_IDBIODAD,
                                                                 PatientFormat.ALIAS_OF_GENDER,
-                                                                PatientFormat.ALIAS_OF_DNA_IDS };
-    private static final Class[] COLUMN_CLASSES = new Class[] { Integer.class, String.class, String.class, String.class, String.class, Integer.class, String.class };
-    private static final int[] HIDDEN_COLUMNS = new int[] { 0, 1, 3, 4, 5, 6 };
+                                                                PatientFormat.ALIAS_OF_DNA_IDS,
+                                                                PatientFormat.ALIAS_OF_PHENOTYPES };
+    private static final Class[] COLUMN_CLASSES = new Class[] { Integer.class, String.class, String.class, String.class, String.class, Integer.class, String.class, String.class };
+    private static final int[] HIDDEN_COLUMNS = new int[] { 0, 1, 3, 4, 5, 6, 7 };
 
     @Override
     public Object[][] getList(int limit) throws RemoteException, SQLException {

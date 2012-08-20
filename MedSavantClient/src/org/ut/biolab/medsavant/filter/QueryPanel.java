@@ -30,6 +30,7 @@ import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.CustomField;
+import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.model.OntologyType;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.plugin.PluginController;
@@ -98,7 +99,7 @@ public class QueryPanel extends CollapsiblePanes {
         panes.setOpaque(false);
         ViewUtil.applyVerticalBoxLayout(panes);
         panes.setBorder(null);
-        
+
         try {
             // Cohort filter
             List<FilterHolder> catHolders = new ArrayList<FilterHolder>();
@@ -120,15 +121,19 @@ public class QueryPanel extends CollapsiblePanes {
                         catHolders.add(new FieldFilterHolder(field, WhichTable.VARIANT, queryID));
                     }
                 }
-                panes.add(addFilterCategory(af.getProgram(), catHolders, false), BorderLayout.CENTER);
+
+                // force Tag filter into default variant conditions
+                if (af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_DEFAULT)) {
+                    //tag filter
+                    catHolders.add(new SimpleFilterHolder(TagFilterView.class, queryID));
+                }
+
+                String name = af.getProgram();
+                if (!name.toLowerCase().contains("conditions")) {
+                    name = name + " Conditions";
+                }
+                panes.add(addFilterCategory(name, catHolders, false), BorderLayout.CENTER);
             }
-
-            //tag filter
-            catHolders.add(new SimpleFilterHolder(TagFilterView.class, queryID));
-
-            //starred variants
-//            holders.add(new SimpleFilterPlaceholder(StarredFilterView.class));
-            panes.add(addFilterCategory("Variant Conditions", catHolders, false), BorderLayout.CENTER);
 
             // Ontology filters
             catHolders.add(new OntologyFilterHolder(OntologyType.GO, queryID));
@@ -149,7 +154,7 @@ public class QueryPanel extends CollapsiblePanes {
             }
 
             panes.add(addFilterCategory("Plugin Conditions", catHolders, false));
-            
+
 
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Unable to load filters: %s", ex);
@@ -157,7 +162,7 @@ public class QueryPanel extends CollapsiblePanes {
 
         return panes;
     }
-    
+
     private CollapsiblePane addFilterCategory(String title, List<FilterHolder> catHolders, boolean longRunning) throws PropertyVetoException {
 
         CollapsiblePane cPane = new CollapsiblePane(title);
@@ -179,7 +184,7 @@ public class QueryPanel extends CollapsiblePanes {
             filterHolders.put(h.getFilterID(), h);
         }
         catHolders.clear();
-        
+
         return cPane;
     }
 
@@ -195,12 +200,12 @@ public class QueryPanel extends CollapsiblePanes {
             throw new Exception(String.format("Unknown filter ID \"%s\"", state.getFilterID()));
         }
     }
-    
+
     private class FilterEventListener implements Listener<FilterEvent> {
         private final String baseTitle;
         private final CollapsiblePane collapsiblePane;
         private final KeyValuePairPanel keyValuePanel;
-        
+
         private FilterEventListener(CollapsiblePane cPane, KeyValuePairPanel kvp) {
             collapsiblePane = cPane;
             keyValuePanel = kvp;

@@ -223,6 +223,10 @@ public class AddPatientsForm extends JDialog {
 
                     CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
 
+                    for (CustomField f : fields) {
+                        System.out.println(f.getColumnName() + " " + f.getColumnType() + " " + f.getColumnLength());
+                    }
+
                     BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
                     CSVReader in = new CSVReader(bufferedReader);
 
@@ -231,6 +235,7 @@ public class AddPatientsForm extends JDialog {
                     List<CustomField> headerToField = new ArrayList<CustomField>();
                     for (String s : header) {
                         boolean found = false;
+                        //TODO: This is inefficient. Use a sorted data structure to do searches
                         for (CustomField f : fields) {
                             if (s.equals(f.getAlias())) {
                                 headerToField.add(f);

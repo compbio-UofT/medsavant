@@ -46,6 +46,7 @@ public class StringListFilterView extends TabularFilterView<String> {
     private final WhichTable whichTable;
     private final String columnName;
     private final String alias;
+    private final boolean allowInexactMatch;
 
     public StringListFilterView(FilterState state, int queryID) throws Exception {
         this(WhichTable.valueOf(state.getValues().get("table")), state.getFilterID(), queryID, state.getName());
@@ -66,6 +67,10 @@ public class StringListFilterView extends TabularFilterView<String> {
         this.columnName = colName;
         this.alias = alias;
 
+        this.allowInexactMatch = colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_PHENOTYPES);
+
+        System.out.println("colName=" + colName + " allowInexactMatch=" + allowInexactMatch);
+
         if (bool) {
             availableValues = Arrays.asList("True", "False");
         } else if (colName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_AC)) {
@@ -84,12 +89,12 @@ public class StringListFilterView extends TabularFilterView<String> {
             new CancellableProgressDialog("Generating List", "<html>Determining distinct values for field.<br>This may take a few minutes the first time.</html>") {
                 @Override
                 public void run() throws InterruptedException, SQLException, RemoteException {
-                    availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId, whichTable.getName(), columnName, true);
+                    availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId, whichTable.getName(), columnName, allowInexactMatch ,true);
                     if (columnName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM)) {
                         Collections.sort(availableValues, new ChromosomeComparator());
                     }
                 }
-            
+
                 @Override
                 public ProgressStatus checkProgress() throws RemoteException {
                     return MedSavantClient.DBUtils.checkProgress(LoginController.sessionId, cancelled);
@@ -146,6 +151,9 @@ public class StringListFilterView extends TabularFilterView<String> {
 
         @Override
         public Condition[] getConditions() throws SQLException, RemoteException {
+
+            System.out.println("Getting conditions for table " + whichTable + " column " + columnName);
+
             if (appliedValues.size() > 0) {
                 if (whichTable == WhichTable.VARIANT) {
                     if (appliedValues.size() == 1) {
@@ -158,9 +166,14 @@ public class StringListFilterView extends TabularFilterView<String> {
                         };
                     }
                 } else if (whichTable == WhichTable.PATIENT) {
-                    return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName));
+                    System.out.println("Returning getDNAIDCondition");
+                    return getDNAIDCondition(
+                            MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName, allowInexactMatch)
+                            );
                 }
             }
+
+            System.out.println("Returning false condition");
             return FALSE_CONDITION;
         }
     }

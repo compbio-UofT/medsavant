@@ -281,7 +281,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         for (int i = 0 ; i < values.length; i++) {
             kvp.addKey(values[i][0]);
-            kvp.setValue(values[i][0], values[i][1]);
+            kvp.setValue(values[i][0], "<html>" + values[i][1].replace(",", "<br>") + "</html>");
         }
 
         final String pedigreeKey = "Pedigree";
@@ -305,13 +305,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         });
 
-        if (graph != null) {
-            kvp.setValue(pedigreeKey,graph.getSize() + " people");
-        } else {
-            kvp.setValue(pedigreeKey,"Graph is null");
-        }
-
-        kvp.setAdditionalColumn(pedigreeKey,0, b);
+        kvp.setValue(pedigreeKey, b);
         kvp.setDetailComponent(pedigreeKey, pedigreeDetails);
         if (pedigreeShown) {
             kvp.toggleDetailVisibility(pedigreeKey);
@@ -474,6 +468,8 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
         protected File doInBackground() throws Exception {
 
             List<Object[]> results = MedSavantClient.PatientManager.getFamilyOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), patientID);
+
+
             familyID = MedSavantClient.PatientManager.getFamilyIDOfPatient(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), patientID);
 
             File outfile = new File(DirectorySettings.getTmpDirectory() ,"pedigree" + patientID + ".csv");
@@ -483,7 +479,8 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                 for (Object[] row : results) {
                     String[] srow = new String[row.length];
                     for (int i = 0; i < row.length; i++) {
-                        srow[i] = row[i].toString();
+                        String entry = row[i] == null ? "" : row[i].toString();
+                        srow[i] = entry;
                     }
                     w.writeNext(srow);
                 }

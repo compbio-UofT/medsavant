@@ -49,7 +49,7 @@ public abstract class FilterHolder {
     private final String filterID;
     protected final int queryID;
     protected FilterView filterView;
-    
+
     private KeyValuePairPanel parent;
     private JToggleButton editButton;
     private JButton clearButton;
@@ -94,7 +94,7 @@ public abstract class FilterHolder {
 
         kvp.setValue(name, detailString);
 
-        clearButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.DELETE));
+        clearButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CLEAR));
         clearButton.setVisible(false);
         kvp.setAdditionalColumn(name, 0, clearButton);
 
@@ -140,7 +140,7 @@ public abstract class FilterHolder {
             }
         });
     }
-    
+
     public void openFilterView() {
         try {
             parent.setDetailComponent(name, getFilterView());
@@ -176,7 +176,7 @@ class SimpleFilterHolder extends FilterHolder {
     public FilterView createFilterView() throws Exception {
         return (FilterView)viewClass.getDeclaredConstructor(int.class).newInstance(queryID);
     }
-    
+
     @Override
     public void loadFilterView(FilterState state) throws Exception {
         filterView = (FilterView)viewClass.getDeclaredConstructor(FilterState.class, int.class).newInstance(state, queryID);
@@ -221,7 +221,7 @@ class FieldFilterHolder extends FilterHolder {
         }
         // If nothing else claimed this, make it a StringListFilter.
         return new StringListFilterView(whichTable, colName, queryID, alias);
-        
+
     }
 
     @Override
@@ -256,7 +256,7 @@ class OntologyFilterHolder extends FilterHolder {
     public FilterView createFilterView() throws Exception {
         return new OntologyFilterView(ontology, queryID);
     }
-    
+
     @Override
     public void loadFilterView(FilterState state) throws Exception {
         filterView = new OntologyFilterView(state, queryID);
@@ -266,7 +266,7 @@ class OntologyFilterHolder extends FilterHolder {
 
 class PluginFilterHolder extends FilterHolder {
     private final MedSavantFilterPlugin plugin;
-    
+
     PluginFilterHolder(MedSavantFilterPlugin p, int queryID) {
         super(p.getTitle(), p.getDescriptor().getID(), queryID);
         plugin = p;
@@ -276,7 +276,7 @@ class PluginFilterHolder extends FilterHolder {
     public FilterView createFilterView() {
         return PluginFilterView.getFilterView(plugin, queryID);
     }
-    
+
     @Override
     public void loadFilterView(FilterState state) {
         PluginController pc = PluginController.getInstance();

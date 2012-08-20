@@ -84,6 +84,7 @@ public class SavantExportForm extends javax.swing.JDialog {
                 LoginController.sessionId,
                 ProjectController.getInstance().getCurrentPatientTableName(),
                 DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS,
+                false,
                 false);
         dnaIDs = new ArrayList<String>();
         for (String s : temp) {
