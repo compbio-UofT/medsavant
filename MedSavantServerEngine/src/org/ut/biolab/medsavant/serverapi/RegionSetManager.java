@@ -68,7 +68,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     }
 
     @Override
-    public void addRegionSet(String sessID, String regionSetName, int genomeID, RemoteInputStream remoteStream, char delim, FileFormat fileFormat, int numHeaderLines) throws IOException, SQLException, RemoteException {
+    public void addRegionSet(String sessID, String regionSetName, int genomeID, char delim, FileFormat fileFormat, int numHeaderLines, int fileID) throws IOException, SQLException, RemoteException {
 
         Connection conn = ConnectionController.connectPooled(sessID);
 
@@ -86,7 +86,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
             rs.next();
             int regionSetID = rs.getInt(1);
 
-            File f = NetworkUtils.copyFileFromRemoteStream(remoteStream);
+            File f = NetworkManager.getFileByTransferID(fileID);
             Iterator<String[]> i = ImportDelimitedFile.getFileIterator(f.getAbsolutePath(), delim, numHeaderLines, fileFormat);
 
             query = MedSavantDatabase.RegionSetMembershipTableSchema.preparedInsert(GENOME_ID, REGION_SET_ID, CHROM, START, END, DESCRIPTION);
@@ -130,7 +130,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     public List<RegionSet> getRegionSets(String sessID) throws SQLException {
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
-        
+
         try {
             SelectQuery query = MedSavantDatabase.RegionSetMembershipTableSchema.groupBy(REGION_SET_ID).leftJoin(MedSavantDatabase.RegionSetTableSchema, "region_set_id").select(REGION_SET_ID, "NAME", "COUNT(*)");
             LOG.info("getRegionSets: " + query);
@@ -149,7 +149,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     public List<GenomicRegion> getRegionsInSet(String sessID, RegionSet set, int limit) throws SQLException {
 
         Connection conn = ConnectionController.connectPooled(sessID);
-        
+
         try {
             SelectQuery query = MedSavantDatabase.RegionSetMembershipTableSchema.where(REGION_SET_ID, set.getID()).select(DESCRIPTION, CHROM, START, END);
             LOG.info("getRegionsInSet(" + set.getName() + "): " + query);
@@ -169,7 +169,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
     public List<GenomicRegion> getRegionsInSets(String sessID, Collection<RegionSet> sets, int limit) throws SQLException {
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
-        
+
         try {
             List<Integer> ids = new ArrayList<Integer>(sets.size());
             int maxRegions = 0;
@@ -199,6 +199,6 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
         } finally{
             conn.close();
         }
-  
+
     }
 }

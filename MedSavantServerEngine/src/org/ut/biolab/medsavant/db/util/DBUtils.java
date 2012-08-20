@@ -264,10 +264,11 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
             }
         }
 
-        Collections.sort(result);
 
         Set set = new HashSet(result);
         result = new ArrayList(set);
+        Collections.sort(result);
+
 
         if (cacheing) {
             makeProgress(sessID, "Saving cached values...", 0.9);
