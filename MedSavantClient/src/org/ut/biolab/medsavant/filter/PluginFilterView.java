@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.filter;
 
+import org.ut.biolab.medsavant.api.FilterStateAdapter;
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 
 
@@ -38,7 +39,7 @@ public class PluginFilterView {
             }
 
             @Override
-            public FilterState saveState() {
+            public FilterStateAdapter saveState() {
                 return plugin.saveState(queryID);
             }
         };

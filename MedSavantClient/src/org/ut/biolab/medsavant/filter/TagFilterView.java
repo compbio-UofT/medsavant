@@ -23,9 +23,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.*;
 
 import com.healthmarketscience.sqlbuilder.BinaryCondition;
@@ -35,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.FilterStateAdapter;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
@@ -63,8 +62,9 @@ public class TagFilterView extends FilterView {
 
     public TagFilterView(FilterState state, int queryID) {
         this(queryID);
-        if (state.getValues().get("variantTags") != null) {
-            applyFilter(stringToVariantTags(state.getValues().get("variantTags")));
+        List<String> values = state.getValues("value");
+        if (values != null) {
+            applyFilter(unwrapValues(values));
         }
     }
 
@@ -300,34 +300,26 @@ public class TagFilterView extends FilterView {
         return result;
     }
 
-    public static FilterState wrapState(List<VariantTag> applied) {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("variantTags", variantTagsToString(applied));
-        return new FilterState(Filter.Type.TAG, FILTER_NAME, FILTER_ID, map);
+    public static FilterStateAdapter wrapState(List<VariantTag> applied) {
+        FilterState state = new FilterState(Filter.Type.TAG, FILTER_NAME, FILTER_ID);
+        state.putValues(FilterState.VALUE_ELEMENT, wrapValues(applied));
+        return state;
     }
 
     @Override
-    public FilterState saveState() {
+    public FilterStateAdapter saveState() {
         return wrapState(appliedTags);
     }
-
-    private static String variantTagsToString(List<VariantTag> tags) {
-        String s = "";
-        for (VariantTag tag : tags) {
-            s += tag.key + ":::" + tag.value + ";;;";
+    
+    /**
+     * Take a list of strings which have been pulled in from the XML file and convert them into <c>VariantTag</c>s.
+     * @param strings
+     */
+    private List<VariantTag> unwrapValues(List<String> strings) {
+        List<VariantTag> tags = new ArrayList<VariantTag>(strings.size());
+        for (String s: strings) {
+            tags.add(VariantTag.fromString(s));
         }
-        return s;
-    }
-
-    private static List<VariantTag> stringToVariantTags(String s) {
-        List<VariantTag> list = new ArrayList<VariantTag>();
-        String[] pairs = s.split(";;;");
-        for (String x : pairs) {
-            String[] pair = x.split(":::");
-            if (pair.length == 2) {
-                list.add(new VariantTag(pair[0], pair[1]));
-            }
-        }
-        return list;
+        return tags;
     }
 }

@@ -23,6 +23,7 @@ import java.util.*;
 import com.healthmarketscience.sqlbuilder.Condition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.FilterStateAdapter;
 import org.ut.biolab.medsavant.filter.Filter;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.filter.FilterState;
@@ -46,9 +47,9 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
      */
     public CohortFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
         this(queryID);
-        String values = state.getValues().get("values");
+        List<String> values = state.getValues("value");
         if (values != null) {
-            setFilterValues(Arrays.asList(values.split(";;;")));
+            setFilterValues(values);
         }
     }
 
@@ -63,11 +64,13 @@ public class CohortFilterView extends TabularFilterView<Cohort> {
     }
 
     public static FilterState wrapState(Collection<Cohort> applied) {
-        return new FilterState(Filter.Type.COHORT, FILTER_NAME, FILTER_ID, wrapValues(applied));
+        FilterState state = new FilterState(Filter.Type.COHORT, FILTER_NAME, FILTER_ID);
+        state.putValues(FilterState.VALUE_ELEMENT, wrapValues(applied));
+        return state;
     }
 
     @Override
-    public FilterState saveState() {
+    public FilterStateAdapter saveState() {
         return wrapState(appliedValues);
     }
 

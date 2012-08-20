@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011-2012 University of Toronto
+ *    Copyright 2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,19 +16,38 @@
 
 package org.ut.biolab.medsavant.api;
 
-import java.util.Map;
-import org.ut.biolab.medsavant.filter.Filter;
-import org.ut.biolab.medsavant.filter.FilterState;
+import java.util.List;
 
 
 /**
+ * Gives MedSavant filter plugins access to the information stored within a <c>FilterState</c> object.
  *
- * @author Andrew
+ * @author tarkvara
  */
-public class FilterStateAdapter extends FilterState {
+public interface FilterStateAdapter {
+
+    /**
+     * Retrieve the value of a unique element.
+     */
+    public String getOneValue(String key);
+
+    /**
+     * Store an element which will be unique.  For instance, any filter will have a single &lt;table&gt; element.
+     */
+    public void putOneValue(String key, Object val);
+
+    /**
+     * Retrieve a list of non-unique elements.
+     */
+    public List<String> getValues(String key);
+
+    /**
+     * Store a list of elements which are not assumed to be unique.
+     */
+    public void putValues(String key, List<String> vals);
     
-    public FilterStateAdapter(MedSavantFilterPlugin p, Map<String, String> values){
-        super(Filter.Type.PLUGIN, p.getTitle(), p.getClass().getPackage().getName(), values);
-    }
-    
+    /**
+     * Generate an XML representation of the filter's state.
+     */
+    public String generateXML();
 }

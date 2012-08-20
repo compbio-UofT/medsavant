@@ -19,12 +19,15 @@ package org.ut.biolab.medsavant.region;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 
+import org.ut.biolab.medsavant.api.FilterStateAdapter;
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.filter.*;
+import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;
 
 
@@ -36,31 +39,74 @@ public class RegionSetFilterView extends TabularFilterView<RegionSet> {
 
     public static final String FILTER_NAME = "Region List";
     public static final String FILTER_ID = "region_list";
+    private static final String AD_HOC_REGION_SET_NAME = "Selected Regions";
 
-    private final RegionController controller;
+    private static RegionController controller = RegionController.getInstance();
 
     public RegionSetFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
         this(queryID);
-        String values = state.getValues().get("values");
-        if (values != null) {
-            setFilterValues(Arrays.asList(values.split(";;;")));
+        List<String> names = state.getValues("name");
+
+        // May also need to restore any ad-hoc region filters found in the file.
+        List<String> regStrs = state.getValues("region");
+        if (regStrs != null && regStrs.size() > 0) {
+            List<GenomicRegion> adHocRegions = new ArrayList<GenomicRegion>(regStrs.size());
+            for (String str: regStrs) {
+                adHocRegions.add(GenomicRegion.fromString(str));
+            }
+            availableValues.add(controller.createAdHocRegionSet(AD_HOC_REGION_SET_NAME, adHocRegions));
+            updateModel();
+            if (names == null) {
+                names = new ArrayList<String>(1);
+            }
+            names.add(AD_HOC_REGION_SET_NAME);
         }
+        if (names != null) {
+            setFilterValues(names);
+        }
+        
     }
 
     public RegionSetFilterView(int queryID) throws SQLException, RemoteException {
         super(FILTER_NAME, queryID);
-        controller = RegionController.getInstance();
         availableValues = new ArrayList<RegionSet>();
         availableValues.addAll(controller.getRegionSets());
         initContentPanel();
+        
+        // Make sure the filter's check-boxes get updated whenever region sets are added or removed.
+        controller.addListener(new Listener<RegionEvent>() {
+            @Override
+            public void handleEvent(RegionEvent event) {
+                updateModel();
+            }
+        });
     }
 
     public static FilterState wrapState(Collection<RegionSet> applied) {
-        return new FilterState(Filter.Type.REGION_LIST, FILTER_NAME, FILTER_ID, wrapValues(applied));
+        List<String> names = new ArrayList<String>();
+        List<GenomicRegion> adHocRegions = new ArrayList<GenomicRegion>();
+        if (applied != null && !applied.isEmpty()) {
+            names = new ArrayList<String>();
+            for (RegionSet regSet: applied) {
+                if (regSet instanceof AdHocRegionSet) {
+                    try {
+                        adHocRegions.addAll(controller.getRegionsInSet(regSet, Integer.MAX_VALUE));
+                    } catch (Exception ignored) {
+                        // The signature for getRegionsInSet throws SQLException and RemoteException, but these don't occur with local regions.
+                    }
+                } else {
+                    names.add(regSet.toString());
+                }
+            }
+        }
+        FilterState state = new FilterState(Filter.Type.REGION_LIST, FILTER_NAME, FILTER_ID);
+        state.putValues("name", names);
+        state.putValues("region", wrapValues(adHocRegions));
+        return state;
     }
 
     @Override
-    public FilterState saveState() {
+    public FilterStateAdapter saveState() {
         return wrapState(appliedValues);
     }
 

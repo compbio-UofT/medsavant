@@ -20,8 +20,6 @@ import java.awt.Dimension;
 import java.awt.event.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -29,6 +27,7 @@ import javax.swing.event.ChangeListener;
 import com.healthmarketscience.sqlbuilder.Condition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.FilterStateAdapter;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.ProgressStatus;
@@ -76,9 +75,9 @@ public class NumericFilterView extends FilterView {
     private JButton selectAll;
 
     public NumericFilterView(FilterState state, int queryID) throws SQLException, RemoteException {
-        this(WhichTable.valueOf(state.getValues().get("table")), state.getFilterID(), queryID, state.getName(), Boolean.valueOf(state.getValues().get("isDecimal")));
-        String minString = state.getValues().get("min");
-        String maxString = state.getValues().get("max");
+        this(WhichTable.valueOf(state.getOneValue(FilterState.TABLE_ELEMENT)), state.getFilterID(), queryID, state.getName(), Boolean.valueOf(state.getOneValue("isDecimal")));
+        String minString = state.getOneValue("min");
+        String maxString = state.getOneValue("max");
         if (minString != null && maxString != null) {
             applyFilter(Double.parseDouble(minString), Double.parseDouble(maxString));
         }
@@ -291,18 +290,18 @@ public class NumericFilterView extends FilterView {
     }
 
     public static FilterState wrapState(WhichTable t, String colName, String alias, Range r, boolean dec) {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("table", t.toString());
-        map.put("isDecimal", Boolean.toString(dec));
+        FilterState state = new FilterState(Filter.Type.NUMERIC, alias, colName);
+        state.putOneValue("table", t);
+        state.putOneValue("isDecimal", dec);
         if (r != null) {
-            map.put("min", Double.toString(r.getMin()));
-            map.put("max", Double.toString(r.getMax()));
+            state.putOneValue("min", r.getMin());
+            state.putOneValue("max", r.getMax());
         }
-        return new FilterState(Filter.Type.NUMERIC, alias, colName, map);        
+        return state;
     }
 
     @Override
-    public FilterState saveState() {
+    public FilterStateAdapter saveState() {
         return wrapState(whichTable, columnName, alias, appliedRange, isDecimal);
     }
 }

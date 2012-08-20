@@ -31,23 +31,27 @@ import javax.swing.text.Position;
 import com.jidesoft.list.FilterableCheckBoxList;
 import com.jidesoft.list.QuickListFilterField;
 import com.jidesoft.swing.SearchableUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 
 /**
- * Base class shared by StringListFilterView and OntologyFilterView, both of which consist of a table containing
+ * Base class shared by StringListFilterView, RegionSetFilterView, and OntologyFilterView, all of which consist of a table containing
  * checkable items.
  *
  * @author tarkvara
  */
 public abstract class TabularFilterView<T> extends FilterView {
 
+    private static final Log LOG = LogFactory.getLog(TabularFilterView.class);
     private static final int FIELD_WIDTH = 260;
 
     protected List<T> availableValues;
     protected List<T> appliedValues;
 
+    private QuickListFilterField field;
     protected FilterableCheckBoxList filterableList;
     protected JButton applyButton;
     private JButton selectAll;
@@ -80,7 +84,7 @@ public abstract class TabularFilterView<T> extends FilterView {
 
         AbstractListModel model = new SimpleListModel();
 
-        QuickListFilterField field = new QuickListFilterField(model);
+        field = new QuickListFilterField(model);
         field.setHintText("Type here to filter options");
 
         // the width of the field has to be less than the width
@@ -177,23 +181,19 @@ public abstract class TabularFilterView<T> extends FilterView {
     }
 
     public final void setFilterValues(Collection<String> list) {
-
-        ArrayList<Integer> indicesOfItemsFromListInFilterableList = new ArrayList<Integer>();
-        int[] indices = filterableList.getCheckBoxListSelectedIndices();
-        for (int i: indices) {
-            String option = filterableList.getModel().getElementAt(i).toString();
-            if (list.contains(option)) {
-                indicesOfItemsFromListInFilterableList.add(i);
+        int[] selectedIndices = new int[list.size()];
+        int i = 0;
+        for (String s: list) {
+            int j = 0;
+            for (T t: availableValues) {
+                if (t.toString().equals(s)) {
+                    break;
+                }
+                j++;
             }
+            selectedIndices[i++] = j;   // If element is not in availableValues, j will be > availableValues.size()
         }
-
-        int[] selectedIndices = new int[indicesOfItemsFromListInFilterableList.size()];
-        for (int i = 0; i < selectedIndices.length; i++) {
-            selectedIndices[i] = indicesOfItemsFromListInFilterableList.get(i);
-        }
-
         filterableList.setCheckBoxListSelectedIndices(selectedIndices);
-
         applyFilter();
     }
 
@@ -226,25 +226,18 @@ public abstract class TabularFilterView<T> extends FilterView {
         }
         filterableList.setCheckBoxListSelectedIndices(selected);
     }
-
-    public static Map<String, String> wrapValues(Collection applied) {
-        Map<String, String> map = new HashMap<String, String>();
-        if (applied != null && !applied.isEmpty()) {
-            StringBuilder values = new StringBuilder();
-            int i = 0;
-            for (Object val: applied) {
-                values.append(val.toString());
-                if (i++ != applied.size() - 1) {
-                    values.append(";;;");
-                }
-            }
-            map.put("values", values.toString());
-        }
-        return map;
+    
+    /**
+     * Update our list model when the available values list has changed.  It should be possible to get this working without resetting
+     * the whole model, but I couldn't get it to update correctly, hence the brute force approach.
+     */
+    protected void updateModel() {
+        field.setListModel(new SimpleListModel());
+        filterableList.setModel(field.getDisplayListModel());
+        LOG.info("Model updated, " + field.getDisplayListModel().getSize() + " of " + field.getListModel().getSize() + "(" + availableValues.size() + ") rows visible.");
     }
-
-
-    class SimpleListModel extends AbstractListModel {
+    
+    private class SimpleListModel extends AbstractListModel {
 
         @Override
         public int getSize() {

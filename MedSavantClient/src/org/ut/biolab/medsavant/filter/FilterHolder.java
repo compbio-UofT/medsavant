@@ -284,7 +284,7 @@ class PluginFilterHolder extends FilterHolder {
             MedSavantPlugin p = pc.getPlugin(desc.getID());
             if (p instanceof MedSavantFilterPlugin && ((MedSavantFilterPlugin)p).getTitle().equals(state.getName())) {
                 filterView = PluginFilterView.getFilterView((MedSavantFilterPlugin)p, queryID);
-                ((MedSavantFilterPlugin)p).loadState(state.getValues(), queryID);
+                ((MedSavantFilterPlugin)p).loadState(state, queryID);
             }
         }
     }

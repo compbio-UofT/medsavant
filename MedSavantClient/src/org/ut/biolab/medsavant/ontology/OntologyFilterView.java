@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.FilterStateAdapter;
 import org.ut.biolab.medsavant.filter.Filter;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.login.LoginController;
@@ -43,11 +44,9 @@ public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
      */
     public OntologyFilterView(FilterState state, int queryID) throws Exception {
         this(OntologyFilter.filterIDToOntology(state.getFilterID()), queryID);
-        String values = state.getValues().get("values");
+        List<String> values = state.getValues("value");
         if (values != null) {
-            List<String> l = new ArrayList<String>();
-            Collections.addAll(l, values.split(";;;"));
-            setFilterValues(l);
+            setFilterValues(values);
         }
     }
 
@@ -80,13 +79,14 @@ public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
         for (OntologyTerm t: applied) {
             termIDs.add(t.getID());
         }
-        Map<String, String> map = wrapValues(termIDs);
-        map.put("ontology", filterID);
-        return new FilterState(Filter.Type.ONTOLOGY, title, filterID, map);
+        
+        FilterState state = new FilterState(Filter.Type.ONTOLOGY, title, filterID);
+        state.putValues(FilterState.VALUE_ELEMENT, wrapValues(termIDs));
+        return state;
     }
 
     @Override
-    public FilterState saveState() {
+    public FilterStateAdapter saveState() {
         return wrapState(getTitle(), ontology, appliedValues);
     }
 

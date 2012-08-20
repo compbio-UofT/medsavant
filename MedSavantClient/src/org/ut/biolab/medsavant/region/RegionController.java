@@ -108,16 +108,4 @@ public class RegionController extends Controller<RegionEvent> {
         fireEvent(new RegionEvent(RegionEvent.Type.ADDED));
         return result;
     }
-
-    /**
-     * Class which wraps up a collection of GenomicRegions and makes them look like a RegionSet.
-     */
-    private class AdHocRegionSet extends RegionSet {
-        final List<GenomicRegion> regions;
-
-        AdHocRegionSet(String name, List<GenomicRegion> r) {
-            super(-1, name, r.size());
-            regions = r;
-        }
-    }
 }

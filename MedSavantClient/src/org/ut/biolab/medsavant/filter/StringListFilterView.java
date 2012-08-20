@@ -24,6 +24,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.InCondition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.api.FilterStateAdapter;
 import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
@@ -49,10 +50,10 @@ public class StringListFilterView extends TabularFilterView<String> {
     private final boolean allowInexactMatch;
 
     public StringListFilterView(FilterState state, int queryID) throws Exception {
-        this(WhichTable.valueOf(state.getValues().get("table")), state.getFilterID(), queryID, state.getName());
-        String values = state.getValues().get("values");
+        this(WhichTable.valueOf(state.getOneValue(FilterState.TABLE_ELEMENT)), state.getFilterID(), queryID, state.getName());
+        List<String> values = state.getValues(FilterState.VALUE_ELEMENT);
         if (values != null) {
-            setFilterValues(Arrays.asList(values.split(";;;")));
+            setFilterValues(values);
         }
     }
 
@@ -105,13 +106,14 @@ public class StringListFilterView extends TabularFilterView<String> {
     }
 
     public static FilterState wrapState(WhichTable t, String colName, String alias, Collection<String> applied) {
-        Map<String, String> map = wrapValues(applied);
-        map.put("table", t.toString());
-        return new FilterState(Filter.Type.STRING, alias, colName, map);
+        FilterState state = new FilterState(Filter.Type.STRING, alias, colName);
+        state.putOneValue(FilterState.TABLE_ELEMENT, t);
+        state.putValues(FilterState.VALUE_ELEMENT, wrapValues(applied));
+        return state;
     }
 
     @Override
-    public FilterState saveState() {
+    public FilterStateAdapter saveState() {
         return wrapState(whichTable, columnName, alias, appliedValues);
     }
 

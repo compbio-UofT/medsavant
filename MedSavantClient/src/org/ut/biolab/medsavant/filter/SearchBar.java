@@ -22,11 +22,6 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -91,47 +86,7 @@ public class SearchBar extends JPanel {
 
     void loadFiltersFromFiles(Collection<File> files) throws Exception {
 
-        List<List<FilterState>> states = new ArrayList<List<FilterState>>();
-
-        //read
-        DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        
-        for (File f: files) {
-            Document doc = docBuilder.parse(f);
-
-            doc.getDocumentElement().normalize();
-
-            NodeList nodes = doc.getElementsByTagName("set");
-            for (int i = 0; i < nodes.getLength(); i++) {
-
-                Element set = (Element)nodes.item(i);
-                NodeList filters = set.getElementsByTagName("filter");
-
-                List<FilterState> list = new ArrayList<FilterState>();
-
-                for (int j = 0; j < filters.getLength(); j++) {
-
-                    Element filter = (Element) filters.item(j);
-
-                    String name = filter.getAttribute("name");
-                    String id = filter.getAttribute("id");
-                    Filter.Type type = Filter.Type.valueOf(filter.getAttribute("type"));
-
-                    NodeList params = filter.getElementsByTagName("param");
-                    Map<String, String> values = new HashMap<String, String>();
-                    for (int k = 0; k < params.getLength(); k++) {
-                        Element e = (Element) params.item(k);
-                        values.put(e.getAttribute("key"), e.getAttribute("value"));
-                    }
-
-                    list.add(new FilterState(type, name, id, values));
-                }
-
-                if (!list.isEmpty()) {
-                    states.add(list);
-                }
-            }
-        }
+        List<List<FilterState>> states = FilterState.loadFiltersFromFiles(files);
 
         controller.removeAllFilters();
         queryPanels.clear();
@@ -140,12 +95,11 @@ public class SearchBar extends JPanel {
         for (int i = 0; i < states.size(); i++) {
             QueryPanel qp = createNewQueryPanel();
             List<FilterState> filters = states.get(i);
-            for (FilterState state : filters) {
+            for (FilterState state: filters) {
                 qp.loadFilterView(state);
             }
         }
         refreshSubPanels();
-
     }
 
     private void initComponents() {

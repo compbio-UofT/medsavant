@@ -16,7 +16,12 @@
 
 package org.ut.biolab.medsavant.filter;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import javax.swing.JPanel;
+
+import org.ut.biolab.medsavant.api.FilterStateAdapter;
 
 
 /**
@@ -37,11 +42,28 @@ public abstract class FilterView extends JPanel {
         return title;
     }
     
-    public abstract FilterState saveState();
+    public abstract FilterStateAdapter saveState();
 
     /**
      * Give derived classes a chance to clean up when the filter instance is being removed.
      */
     public void cleanup() {
     }
+
+    /**
+     * Many filters have a single parameter called "value", which can have multiple values.  This method packs them all into a string
+     * array, suitable for passing to the <c>FilterState</c> constructor.
+     *
+     * @param applied the values which are applied (e.g. ["chr1", "chr2"])
+     */
+    public static List<String> wrapValues(Collection applied) {
+        List<String> result = new ArrayList<String>();
+        if (applied != null && !applied.isEmpty()) {
+            for (Object val: applied) {
+                result.add(val.toString());
+            }
+        }
+        return result;
+    }
+
 }

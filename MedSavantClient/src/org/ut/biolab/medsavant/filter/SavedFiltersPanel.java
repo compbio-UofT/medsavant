@@ -93,7 +93,7 @@ class SavedFiltersEditor extends DetailedListEditor {
         if (FilterController.getInstance().hasFiltersApplied()) {
             String name = "Untitled";
             do {
-                name = DialogUtils.displayInputMessage("Name for Filter Set", "Choose a name for this saved filter set", name);
+                name = DialogUtils.displayInputMessage("Name for Current Filter Set", "Choose a name under which to store the current filters:", name);
                 if (name == null) {
                     return;     // User cancelled input dialog.
                 }

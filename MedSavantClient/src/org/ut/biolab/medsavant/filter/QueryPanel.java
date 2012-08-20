@@ -24,8 +24,8 @@ import javax.swing.*;
 
 import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
-import org.ut.biolab.medsavant.api.Listener;
 
+import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
