@@ -25,7 +25,7 @@ import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
  * @author mfiume
  */
 public class PatientFormat implements Serializable {
-    
+
     public static final String ALIAS_OF_PATIENT_ID = "Patient ID";
     public static final String ALIAS_OF_FAMILY_ID = "Family ID";
     public static final String ALIAS_OF_HOSPITAL_ID = "Hospital ID";
@@ -34,8 +34,9 @@ public class PatientFormat implements Serializable {
     public static final String ALIAS_OF_GENDER = "Gender";
     public static final String ALIAS_OF_AFFECTED = "Affected";
     public static final String ALIAS_OF_DNA_IDS = "DNA ID(s)";
-    public static final String ALIAS_OF_BAM_URL = "BAM URL(s)"; 
-    
+    public static final String ALIAS_OF_BAM_URL = "BAM URL(s)";
+    public static final String ALIAS_OF_PHENOTYPES = "Phenotypes";
+
     public static CustomField[] getDefaultAnnotationFormat() {
         return new CustomField[] {
             new CustomField(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID, "int(11)", true, ALIAS_OF_PATIENT_ID, ""),
@@ -46,7 +47,8 @@ public class PatientFormat implements Serializable {
             new CustomField(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER, "int(11)", true, ALIAS_OF_GENDER, ""),
             new CustomField(DefaultPatientTableSchema.COLUMNNAME_OF_AFFECTED, "int(1)", true, ALIAS_OF_AFFECTED, ""),
             new CustomField(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, "varchar(1000)", false, ALIAS_OF_DNA_IDS, ""),
-            new CustomField(DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, "varchar(5000)", false, ALIAS_OF_BAM_URL, "")
+            new CustomField(DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, "varchar(5000)", false, ALIAS_OF_BAM_URL, ""),
+            new CustomField(DefaultPatientTableSchema.COLUMNNAME_OF_PHENOTYPES, "varchar(10000)", true, ALIAS_OF_PHENOTYPES, "")
         };
     }
 }

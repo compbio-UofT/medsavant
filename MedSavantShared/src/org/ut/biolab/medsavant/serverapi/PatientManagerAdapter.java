@@ -46,7 +46,7 @@ public interface PatientManagerAdapter extends Remote {
     public void addPatient(String sessID, int projectId, List<CustomField> cols, List<String> values) throws SQLException, RemoteException;
     public Map<Object, List<String>> getDNAIDsForValues(String sessID, int projectId, String columnName) throws SQLException, RemoteException;
     public List<String> getDNAIDsWithValuesInRange(String sessID, int projectId, String columnName, Range r) throws SQLException, RemoteException;
-    public List<String> getDNAIDsForStringList(String sessID, TableSchema table, List<String> list, String columnname) throws SQLException, RemoteException;
+    public List<String> getDNAIDsForStringList(String sessID, TableSchema table, List<String> list, String columnname, boolean allowInexactMatch) throws SQLException, RemoteException;
     public void updateFields(String sessID, int projID, CustomField[] fields) throws SQLException, RemoteException;
     public List<Object> getValuesFromField(String sessID, int projectId, String columnNameA, String columnNameB, List<Object> values) throws SQLException, RemoteException;
     public List<String> getDNAIDsFromField(String sessID, int projID, String columnNameA, List<Object> values) throws SQLException, RemoteException;

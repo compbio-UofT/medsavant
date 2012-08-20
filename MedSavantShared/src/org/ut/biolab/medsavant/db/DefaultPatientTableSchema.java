@@ -82,6 +82,11 @@ public class DefaultPatientTableSchema extends TableSchema {
     public static final ColumnType TYPE_OF_BAM_URL = ColumnType.VARCHAR;
     public static final int LENGTH_OF_BAM_URL = 5000;
     public static final String COLUMNNAME_OF_BAM_URL = "bam_url";
+    // default_patient.phenotype_ids
+    public static final int INDEX_OF_PHENOTYPES = 9;
+    public static final ColumnType TYPE_OF_PHENOTYPES = ColumnType.VARCHAR;
+    public static final int LENGTH_OF_PHENOTYPES = 10000;
+    public static final String COLUMNNAME_OF_PHENOTYPES = "phenotypes";
 
     public static final int NUM_FIELDS = 8;
 
@@ -95,5 +100,6 @@ public class DefaultPatientTableSchema extends TableSchema {
         addColumn(COLUMNNAME_OF_AFFECTED, COLUMNNAME_OF_AFFECTED, ColumnType.INTEGER, 11);
         addColumn(COLUMNNAME_OF_DNA_IDS, COLUMNNAME_OF_DNA_IDS, ColumnType.VARCHAR, 1000);
         addColumn(COLUMNNAME_OF_BAM_URL, COLUMNNAME_OF_BAM_URL, ColumnType.VARCHAR, 5000);
+        addColumn(COLUMNNAME_OF_PHENOTYPES, COLUMNNAME_OF_PHENOTYPES, ColumnType.VARCHAR,10000);
     }
 }

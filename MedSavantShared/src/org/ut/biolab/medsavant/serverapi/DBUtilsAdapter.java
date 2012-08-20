@@ -34,15 +34,16 @@ import org.ut.biolab.medsavant.model.Range;
  * @author Andrew
  */
 public interface DBUtilsAdapter extends Remote {
-    
+
     /**
      * Check the status of a lengthy process, giving the user the option to cancel.
      */
     ProgressStatus checkProgress(String sessID, boolean userCancelled) throws RemoteException;
 
     public TableSchema importTableSchema(String sessID, String tableName) throws SQLException, RemoteException;
-    
+
     public List<String> getDistinctValuesForColumn(String sessID, String tableName, String columnName, boolean useCache) throws InterruptedException, SQLException, RemoteException;
+    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String columnName, boolean explodeCommaSeparated, boolean useCache) throws InterruptedException, SQLException, RemoteException;
     public Range getExtremeValuesForColumn(String sid, String tablename, String columnname) throws InterruptedException, SQLException, RemoteException;
     public Condition getRangeCondition(DbColumn col, Range r) throws RemoteException;
     public int getNumRecordsInTable(String sessID, String name) throws SQLException, RemoteException;

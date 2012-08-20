@@ -27,8 +27,8 @@ import org.ut.biolab.medsavant.format.AnnotationFormat.AnnotationType;
  */
 public class VariantFormat implements Serializable {
 
-    public static String ANNOTATION_FORMAT_DEFAULT = "default";
-    public static String ANNOTATION_FORMAT_CUSTOM_VCF = "custom vcf";
+    public static String ANNOTATION_FORMAT_DEFAULT = "Standard Variant Conditions";
+    public static String ANNOTATION_FORMAT_CUSTOM_VCF = "VCF Conditions";
 
     //default fields
     public static String ALIAS_OF_UPLOAD_ID = "Upload ID";
@@ -84,7 +84,7 @@ public class VariantFormat implements Serializable {
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO, "VARCHAR(500)", false, ALIAS_OF_CUSTOM_INFO, "")
         };
 
-        return new AnnotationFormat("default", "default", "0", "", true, true, AnnotationType.POSITION, fields);
+        return new AnnotationFormat(ANNOTATION_FORMAT_DEFAULT, ANNOTATION_FORMAT_DEFAULT, "0", "", true, true, AnnotationType.POSITION, fields);
     }
 
     public static AnnotationFormat getCustomFieldAnnotationFormat(CustomField[] customFields) {
