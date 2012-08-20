@@ -18,6 +18,8 @@ package org.ut.biolab.medsavant.model;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.StringUtils;
+
 
 /**
  *
@@ -46,9 +48,29 @@ public class RegionSet implements Serializable {
     public int getSize() {
         return size;
     }
-
+    
     @Override
     public String toString(){
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        boolean result = false;
+        if (o instanceof RegionSet) {
+            RegionSet that = (RegionSet)o;
+            result = id == that.id && StringUtils.equals(name, that.name) && size == that.size;
+        }
+        System.out.println(this + (result ? " = " : " ≠ ") + o);
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + this.id;
+        hash = 79 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 79 * hash + this.size;
+        return hash;
     }
 }

@@ -40,6 +40,41 @@ public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
         this.end = end;
     }
 
+    /**
+     * This toString method is used only when serialising a saved filter-state to XML.
+     */
+    @Override
+    public String toString() {
+        return String.format("%s%s:%d-%d", name != null ? name + " " : "", chrom, start, end);
+    }
+
+    /**
+     * The inverse of <c>toString</c>, used when loading a saved filter-state from XML.
+     */
+    public static GenomicRegion fromString(String str) {
+        String name = null, chrom = null;
+        int start = 0, end = 0;
+        
+        String[] strs = str.split(":");
+        if (strs.length == 2) {
+            int pos = strs[0].lastIndexOf(' ');
+            if (pos > 0) {
+                name = strs[0].substring(0, pos);
+                chrom = strs[0].substring(pos + 1);
+            } else {
+                // No name, just a chromosome.
+                chrom = strs[0];
+            }
+            
+            strs = strs[1].split("-");
+            if (strs.length == 2) {
+                start = Integer.valueOf(strs[0]);
+                end = Integer.valueOf(strs[1]);
+            }
+        }
+        return new GenomicRegion(name, chrom, start, end);
+    }
+
     public String getName() {
         return name;
     }
