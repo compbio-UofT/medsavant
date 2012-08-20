@@ -34,6 +34,7 @@ import org.ut.biolab.medsavant.model.Notification;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.PeriodicChecker;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -71,11 +72,28 @@ public class NotificationPanel extends JComponent {
         LoginController.getInstance().addListener(new PeriodicChecker(UPDATE_INTERVAL) {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    setNotifications(MedSavantClient.NotificationManager.getNotifications(LoginController.sessionId, LoginController.getInstance().getUserName()));
-                } catch (Exception ex) {
-                    setNotifications(null);
-                }
+                new MedSavantWorker<Notification[]>("Notifications") {
+
+                    @Override
+                    protected void showProgress(double fraction) {}
+
+                    @Override
+                    protected void showSuccess(Notification[] result) {
+                        setNotifications(result);
+                    }
+
+                    @Override
+                    protected void showFailure(Throwable ex) {
+                        LOG.error("Unable to get notifications.", ex);
+                        setNotifications(null);
+                    }
+
+                    @Override
+                    protected Notification[] doInBackground() throws Exception {
+                        return MedSavantClient.NotificationManager.getNotifications(LoginController.sessionId, LoginController.getInstance().getUserName());
+                    }
+                    
+                }.execute();
             }
 
             @Override
