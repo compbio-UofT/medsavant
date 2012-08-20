@@ -31,6 +31,7 @@ import javax.net.ssl.X509TrustManager;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
+import java.io.*;
 import net.sf.samtools.util.SeekableBufferedStream;
 import net.sf.samtools.util.SeekableFileStream;
 import net.sf.samtools.util.SeekableHTTPStream;
@@ -265,4 +266,7 @@ public class NetworkUtils {
         LOG.info("Copying file from input stream");
         return copyFileFromRemoteStream(ris, ".dat");
     }
+
+
+
 }
