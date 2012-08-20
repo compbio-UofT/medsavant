@@ -261,6 +261,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "`affected` int(1) unsigned DEFAULT NULL,"
                     + "`dna_ids` varchar(1000) COLLATE latin1_bin DEFAULT NULL,"
                     + "`bam_url` varchar(5000) COLLATE latin1_bin DEFAULT NULL,"
+                    + "`phenotypes` varchar(10000) COLLATE latin1_bin DEFAULT NULL,"
                     + "PRIMARY KEY (`patient_id`)"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 

@@ -757,10 +757,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         //try to get a reasonable approximation
-        if (tablenameSub != null && !forceExact) {
+        if (tablenameSub != null && !forceExact && conditions.length > 0) {
             int estimate = (int) (getNumFilteredVariantsHelper(sid, tablenameSub, conditions) * subMultiplier);
             if (estimate >= COUNT_ESTIMATE_THRESHOLD) {
-                return estimate;
+                return estimate; // TODO: this should be rounded instead of a precise one
             }
         }
 
@@ -776,9 +776,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
 
+        LOG.info(q);
+
         ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
 
         rs.next();
+
+        LOG.info("Number of variants remaining: " + rs.getInt(1));
+
         return rs.getInt(1);
     }
 
@@ -1118,7 +1123,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         BufferedReader br = new BufferedReader(new FileReader(file));
 
-        int chunkSize = 50000; // number of lines per chunk
+        int chunkSize = 100000; // number of lines per chunk (100K lines = ~50MB for a standard VCF file)
         int lineNumber = 0;
 
         BufferedWriter bw = null;

@@ -30,6 +30,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import com.mysql.jdbc.CommunicationsException;
+import java.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -48,8 +49,8 @@ import org.ut.biolab.medsavant.util.MiscUtils;
  * @author mfiume
  */
 public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUtilsAdapter {
-    private static final Log LOG = LogFactory.getLog(DBUtils.class);
 
+    private static final Log LOG = LogFactory.getLog(DBUtils.class);
     private static DBUtils instance;
 
     public static synchronized DBUtils getInstance() throws RemoteException {
@@ -65,7 +66,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     public static boolean fieldExists(String sid, String tableName, String fieldName) throws SQLException {
         ResultSet rs = ConnectionController.executeQuery(sid, "SHOW COLUMNS IN " + tableName);
 
-        while(rs.next()) {
+        while (rs.next()) {
             if (rs.getString(1).equals(fieldName)) {
                 return true;
             }
@@ -88,14 +89,14 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         int fpos = s.indexOf("(");
         int rpos = s.indexOf(")");
         int cpos = s.indexOf(",");
-        if(cpos != -1 && cpos < rpos){
+        if (cpos != -1 && cpos < rpos) {
             rpos = cpos;
         }
 
         if (fpos == -1) {
             return -1;
         } else {
-            return Integer.parseInt(s.substring(fpos+1,rpos));
+            return Integer.parseInt(s.substring(fpos + 1, rpos));
         }
     }
 
@@ -162,14 +163,16 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
     @Override
     public int getNumRecordsInTable(String sessID, String tablename) throws SQLException {
-        ResultSet rs =  ConnectionController.executeQuery(sessID, "SELECT COUNT(*) FROM `" + tablename + "`");
+        ResultSet rs = ConnectionController.executeQuery(sessID, "SELECT COUNT(*) FROM `" + tablename + "`");
         rs.next();
         return rs.getInt(1);
     }
 
     /**
-     * The message for a MySQL CommunicationsException contains a lot of junk (including
-     * a full stack-trace), but hidden inside is a useful message.  Extract it.
+     * The message for a MySQL CommunicationsException contains a lot of junk
+     * (including a full stack-trace), but hidden inside is a useful message.
+     * Extract it.
+     *
      * @param x the exception to be parsed.
      * @return text found on line starting with "MESSAGE: "
      */
@@ -188,8 +191,9 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     /**
-     * Sometimes Throwable.getMessage() returns a useless string (e.g. "null" for a NullPointerException).
-     * Return a string which is more meaningful to the end-user.
+     * Sometimes Throwable.getMessage() returns a useless string (e.g. "null"
+     * for a NullPointerException). Return a string which is more meaningful to
+     * the end-user.
      */
     public static String getMessage(Throwable t) {
         if (t instanceof CommunicationsException) {
@@ -197,7 +201,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
             int retPos = result.indexOf('\n');
             if (retPos > 0) {
                 result = result.substring(0, retPos);
-                result += extractMySQLMessage((CommunicationsException)t);
+                result += extractMySQLMessage((CommunicationsException) t);
             }
             return result;
         } else {
@@ -210,6 +214,14 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
      */
     @Override
     public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean cacheing) throws InterruptedException, SQLException, RemoteException {
+        return getDistinctValuesForColumn(sessID, tableName, colName, false, cacheing);
+    }
+
+    /**
+     * A return value of null indicates too many values.
+     */
+    @Override
+    public List<String> getDistinctValuesForColumn(String sessID, String tableName, String colName, boolean explodeCommaSeparatedValues, boolean cacheing) throws InterruptedException, SQLException, RemoteException {
         LOG.info("Getting distinct values for " + tableName + "." + colName);
 
         makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.0);
@@ -240,11 +252,22 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
             makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.75);
             String val = rs.getString(1);
             if (val == null) {
+                // TODO: appropriately handle NULL
                 result.add("");
             } else {
-                result.add(val);
+                if (explodeCommaSeparatedValues) {
+                    String[] vals = val.split(",");
+                    result.addAll(Arrays.asList(vals));
+                } else {
+                    result.add(val);
+                }
             }
         }
+
+        Collections.sort(result);
+
+        Set set = new HashSet(result);
+        result = new ArrayList(set);
 
         if (cacheing) {
             makeProgress(sessID, "Saving cached values...", 0.9);
@@ -252,7 +275,6 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
                 DistinctValuesCache.cacheResults(dbName, tableName, colName, null);
                 result = null;
             } else {
-                Collections.sort(result);
                 DistinctValuesCache.cacheResults(dbName, tableName, colName, result);
             }
         }
@@ -294,8 +316,6 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         DistinctValuesCache.cacheResults(dbName, tabName, colName, Arrays.asList(min, max));
         return result;
     }
-
-
 
     @Override
     public Condition getRangeCondition(DbColumn col, Range r) {

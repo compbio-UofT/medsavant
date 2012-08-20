@@ -77,7 +77,10 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
                 table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIOMOM),
                 table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIODAD),
                 table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER),
-                table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS));
+                table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS),
+                table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PHENOTYPES));
+
+        System.out.println(query);
 
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
@@ -90,7 +93,8 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
                 rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIOMOM),
                 rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIODAD),
                 rs.getInt(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER),
-                rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS)
+                rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS),
+                rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_PHENOTYPES)
             });
         }
         return result;
@@ -392,7 +396,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public List<String> getDNAIDsForStringList(String sessID, TableSchema table, List<String> list, String columnName) throws SQLException {
+    public List<String> getDNAIDsForStringList(String sessID, TableSchema table, List<String> list, String columnName, boolean allowInexactMatch) throws SQLException {
 
         DbColumn currentDNAID = table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS);
         DbColumn testColumn = table.getDBColumn(columnName);
@@ -404,7 +408,11 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         Condition[] conditions = new Condition[list.size()];
         for (int i = 0; i < list.size(); i++) {
-            conditions[i] = BinaryConditionMS.equalTo(testColumn, list.get(i));
+            if (allowInexactMatch) {
+                conditions[i] = BinaryConditionMS.like(testColumn, "%" + list.get(i) + "%");
+            } else {
+                conditions[i] = BinaryConditionMS.equalTo(testColumn, list.get(i));
+            }
         }
         q.addCondition(ComboCondition.or(conditions));
 
