@@ -56,13 +56,11 @@ public class RegionSet implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        boolean result = false;
         if (o instanceof RegionSet) {
             RegionSet that = (RegionSet)o;
-            result = id == that.id && StringUtils.equals(name, that.name) && size == that.size;
+            return id == that.id && StringUtils.equals(name, that.name) && size == that.size;
         }
-        System.out.println(this + (result ? " = " : " ≠ ") + o);
-        return result;
+        return false;
     }
 
     @Override
