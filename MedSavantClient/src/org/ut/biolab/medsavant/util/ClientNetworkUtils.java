@@ -16,22 +16,21 @@
 
 package org.ut.biolab.medsavant.util;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.SQLException;
+import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.api.Listener;
+import org.ut.biolab.medsavant.login.LoginController;
 
 /**
  *
  * @author Andrew
  */
 public class ClientNetworkUtils extends NetworkUtils {
-    
+
     /**
      * Download a file in the background.  Notification events will be sent to the
      * supplied listener.
@@ -80,5 +79,23 @@ public class ClientNetworkUtils extends NetworkUtils {
                 listener.handleEvent(e);
             }
         });
+    }
+
+
+    public static int copyFileToServer(File file) throws FileNotFoundException, IOException, SQLException {
+
+        int id = MedSavantClient.NetworkManager.openFileOnServer(LoginController.sessionId);
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String line = "";
+        int numLines = 0;
+        while ((line = br.readLine()) != null) {
+            numLines++;
+            MedSavantClient.NetworkManager.sendLineToServer(id, line);
+        }
+
+        br.close();
+        MedSavantClient.NetworkManager.closeFileOnServer(id);
+
+        return id;
     }
 }

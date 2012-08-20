@@ -42,6 +42,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
     public static CohortManagerAdapter CohortManager;
     public static GeneSetManagerAdapter GeneSetManager;
     public static LogManagerAdapter LogManager;
+    public static NetworkManagerAdapter NetworkManager;
     public static OntologyManagerAdapter OntologyManager;
     public static PatientManagerAdapter PatientManager;
     public static ProjectManagerAdapter ProjectManager;
@@ -134,6 +135,7 @@ public class MedSavantClient implements MedSavantServerRegistry {
         AnnotationManagerAdapter = (AnnotationManagerAdapter)registry.lookup(ANNOTATION_MANAGER);
         CohortManager = (CohortManagerAdapter) (registry.lookup(COHORT_MANAGER));
         LogManager = (LogManagerAdapter)registry.lookup(LOG_MANAGER);
+        NetworkManager = (NetworkManagerAdapter)registry.lookup(NETWORK_MANAGER);
         OntologyManager = (OntologyManagerAdapter)registry.lookup(ONTOLOGY_MANAGER);
         PatientManager = (PatientManagerAdapter)registry.lookup(PATIENT_MANAGER);
         ProjectManager = (ProjectManagerAdapter)registry.lookup(PROJECT_MANAGER);

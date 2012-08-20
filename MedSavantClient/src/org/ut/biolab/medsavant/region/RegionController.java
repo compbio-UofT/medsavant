@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.util.Controller;
  */
 public class RegionController extends Controller<RegionEvent> {
     private static RegionController instance;
-    
+
     private List<AdHocRegionSet> localRegionSets = new ArrayList<AdHocRegionSet>();
 
     public static RegionController getInstance() {
@@ -49,8 +49,8 @@ public class RegionController extends Controller<RegionEvent> {
         return instance;
     }
 
-    public void addRegionSet(String regionSetName, RemoteInputStream remoteStream, char delim, FileFormat fileFormat, int numHeaderLines) throws IOException, SQLException, RemoteException {
-        MedSavantClient.RegionSetManager.addRegionSet(LoginController.sessionId, regionSetName, ReferenceController.getInstance().getCurrentReferenceID(), remoteStream, delim, fileFormat, numHeaderLines);
+    public void addRegionSet(String regionSetName, char delim, FileFormat fileFormat, int numHeaderLines, int fileID) throws IOException, SQLException, RemoteException {
+        MedSavantClient.RegionSetManager.addRegionSet(LoginController.sessionId, regionSetName, ReferenceController.getInstance().getCurrentReferenceID(), delim, fileFormat, numHeaderLines, fileID);
         fireEvent(new RegionEvent(RegionEvent.Type.ADDED));
     }
 
@@ -72,7 +72,7 @@ public class RegionController extends Controller<RegionEvent> {
         }
         return MedSavantClient.RegionSetManager.getRegionsInSet(LoginController.sessionId, set, limit);
     }
-    
+
     public List<GenomicRegion> getRegionsInSets(Collection<RegionSet> sets) throws SQLException, RemoteException {
         // We make a copy of the sets because the original value may be a collection which we shouldn't modify.
         Set<RegionSet> setsSet = new HashSet<RegionSet>();
@@ -90,12 +90,12 @@ public class RegionController extends Controller<RegionEvent> {
         }
         return result;
     }
-    
+
     public void addToRegionSet(RegionSet set, String chrom, int start, int end, String desc) throws SQLException, RemoteException{
         MedSavantClient.RegionSetManager.addToRegionSet(LoginController.sessionId, set, Integer.MAX_VALUE, ReferenceController.getInstance().getCurrentReferenceID(), chrom, start, end, desc);
         fireEvent(new RegionEvent(RegionEvent.Type.ADDED));
     }
-    
+
     /**
      * Create a region-set which wraps the given regions.  Right, we only need one ad hoc region-set to exist at a time.
      *
