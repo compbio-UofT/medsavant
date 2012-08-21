@@ -11,8 +11,12 @@ import java.sql.SQLException;
  */
 public interface NetworkManagerAdapter extends Remote {
 
-    public int openFileOnServer(String sessID) throws IOException, RemoteException;
-    public void sendLineToServer(int fileIdentifier, String line) throws IOException, SQLException, RemoteException;
-    public void closeFileOnServer(int fileIdentifier) throws IOException, RemoteException;
+    public int openFileWriterOnServer(String sessID) throws IOException, RemoteException;
+    public void writeLineToServer(String sessID, int fileID, String line) throws IOException, SQLException, RemoteException;
+    public void closeFileWriterOnServer(String sessID, int fileID) throws IOException, RemoteException;
+
+    public void openFileReaderOnServer(String sessID, int fileID) throws IOException, RemoteException;
+    public String readLineFromServer(String sessID, int fileID) throws IOException, SQLException, RemoteException;
+    public void closeFileReaderOnServer(String sessID, int fileIdentifier) throws IOException, RemoteException;
 
 }

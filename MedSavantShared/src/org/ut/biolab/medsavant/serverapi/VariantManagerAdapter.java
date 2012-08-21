@@ -45,14 +45,14 @@ import org.ut.biolab.medsavant.model.VariantComment;
  */
 public interface VariantManagerAdapter extends Remote {
 
-    public int uploadVariants(String sessID, RemoteInputStream[] fileStreams, String[] fileNames, int projID, int refID, String[][] variantTags, boolean includeHomoRef) throws RemoteException, IOException, Exception;
+    public int uploadVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef) throws RemoteException, IOException, Exception;
     public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception;
     public void publishVariants(String sessID, int projID, int referenceID, int updateID) throws Exception;
     public void publishVariants(String sessID, int projID) throws Exception;
     public void cancelPublish(String sessID, int projID, int referenceID, int updateID) throws Exception;
     public int updateTable(String sessID, int projID, int refID, int[] annotIDs, CustomField[] variantFields) throws Exception;
     public int removeVariants(String sessID, int projID, int refID, List<SimpleVariantFile> files) throws Exception;
-    public RemoteInputStream exportVariants(String sessID, int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, IOException, InterruptedException;
+    public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, IOException, InterruptedException;
 
     public TableSchema getCustomTableSchema(String sessID, int projID, int refID) throws SQLException, RemoteException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, int start, int limit) throws SQLException, RemoteException;
