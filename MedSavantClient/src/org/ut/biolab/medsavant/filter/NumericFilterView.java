@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.filter;
 
+import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import java.awt.Dimension;
 import java.awt.event.*;
 import java.rmi.RemoteException;
@@ -25,6 +26,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.healthmarketscience.sqlbuilder.Condition;
+import com.healthmarketscience.sqlbuilder.SqlObject;
+import com.healthmarketscience.sqlbuilder.UnaryCondition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.FilterStateAdapter;
@@ -34,6 +37,7 @@ import org.ut.biolab.medsavant.model.ProgressStatus;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RangeCondition;
 import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.DecimalRangeSlider;
 import org.ut.biolab.medsavant.view.dialog.CancellableProgressDialog;
@@ -107,7 +111,7 @@ public class NumericFilterView extends FilterView {
                         ClientMiscUtils.reportError(String.format("Error getting extreme values for %s.%s: %%s", whichTable, columnName), ex);
                     }
                 }
-            
+
                 @Override
                 public ProgressStatus checkProgress() throws RemoteException {
                     return MedSavantClient.DBUtils.checkProgress(LoginController.sessionId, cancelled);
@@ -208,9 +212,17 @@ public class NumericFilterView extends FilterView {
                             double min = appliedRange.getMin();
                             double max = appliedRange.getMax();
                             if (isDecimal) {
-                                return new Condition[] { new RangeCondition(variantSchema.getDBColumn(columnName), min, max) };
+                                if (overallMin == min) {
+                                    return new Condition[] { UnaryCondition.isNull(variantSchema.getDBColumn(columnName)), new RangeCondition(variantSchema.getDBColumn(columnName), min, max) };
+                                } else {
+                                    return new Condition[] { new RangeCondition(variantSchema.getDBColumn(columnName), min, max) };
+                                }
                             } else {
-                                return new Condition[] { new RangeCondition(variantSchema.getDBColumn(columnName), (int)Math.floor(min), (int)Math.ceil(max)) };
+                                if (overallMin == min) {
+                                    return new Condition[] { UnaryCondition.isNull(variantSchema.getDBColumn(columnName)), new RangeCondition(variantSchema.getDBColumn(columnName), (int)Math.floor(min), (int)Math.ceil(max)) };
+                                } else {
+                                    return new Condition[] { new RangeCondition(variantSchema.getDBColumn(columnName), (int)Math.floor(min), (int)Math.ceil(max)) };
+                                }
                             }
                         } else {
                             return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsWithValuesInRange(

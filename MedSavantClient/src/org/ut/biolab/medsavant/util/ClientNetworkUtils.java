@@ -84,18 +84,29 @@ public class ClientNetworkUtils extends NetworkUtils {
 
     public static int copyFileToServer(File file) throws FileNotFoundException, IOException, SQLException {
 
-        int id = MedSavantClient.NetworkManager.openFileOnServer(LoginController.sessionId);
+        int id = MedSavantClient.NetworkManager.openFileWriterOnServer(LoginController.sessionId);
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line = "";
         int numLines = 0;
         while ((line = br.readLine()) != null) {
             numLines++;
-            MedSavantClient.NetworkManager.sendLineToServer(id, line);
+            MedSavantClient.NetworkManager.writeLineToServer(LoginController.sessionId, id, line);
         }
 
         br.close();
-        MedSavantClient.NetworkManager.closeFileOnServer(id);
+        MedSavantClient.NetworkManager.closeFileWriterOnServer(LoginController.sessionId, id);
 
         return id;
+    }
+
+    public static void copyFileFromServer(int fileID, String absolutePath) throws IOException, SQLException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(new File(absolutePath)));
+        MedSavantClient.NetworkManager.openFileReaderOnServer(LoginController.sessionId, fileID);
+        String line = "";
+        while ((line = MedSavantClient.NetworkManager.readLineFromServer(LoginController.sessionId, fileID)) != null) {
+            bw.write(line + "\n");
+        }
+        MedSavantClient.NetworkManager.closeFileReaderOnServer(LoginController.sessionId, fileID);
+        bw.close();
     }
 }

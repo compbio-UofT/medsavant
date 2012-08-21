@@ -48,6 +48,7 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.view.component.PathField;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -423,17 +424,15 @@ public class ImportVariantsWizard extends WizardDialog {
                                 if (uploadRequired) {
                                     int i = 0;
                                     LOG.info("Creating input streams");
-                                    RemoteInputStream[] streams = new RemoteInputStream[variantFiles.length];
-                                    String[] fileNames = new String[variantFiles.length];
+                                    int[] fileIds = new int[variantFiles.length];
                                     for (File file : variantFiles) {
                                         LOG.info("Created input stream for file");
-                                        streams[i] = new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath())).export();
-                                        fileNames[i] = file.getName();
+                                        fileIds[i] = ClientNetworkUtils.copyFileToServer(file);
                                         i++;
                                     }
 
                                     LOG.info("Sending input streams to server");
-                                    updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, streams, fileNames, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
+                                    updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, fileIds, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
                                     LOG.info("Import complete");
                                 } else {
                                     LOG.info("Importing variants stored on server");

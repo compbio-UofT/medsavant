@@ -15,20 +15,16 @@
  */
 package org.ut.biolab.medsavant.region;
 
-import com.healthmarketscience.rmiio.DirectRemoteInputStream;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.*;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import javax.swing.*;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.healthmarketscience.rmiio.exporter.DefaultRemoteStreamExporter;
 import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
@@ -40,13 +36,9 @@ import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
 import java.awt.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.genemania.type.CombiningMethod;
-import org.jsoup.nodes.Element;
 
 import org.ut.biolab.medsavant.geneset.GeneSetController;
 import org.ut.biolab.medsavant.importing.BEDFormat;
@@ -59,13 +51,8 @@ import org.ut.biolab.medsavant.util.*;
 import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.component.ListViewTablePanel;
 import org.ut.biolab.medsavant.view.component.PartSelectorPanel;
-import org.ut.biolab.medsavant.view.genetics.inspector.GeneInspector;
-import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
-import org.ut.biolab.medsavant.view.genetics.variantinfo.EntrezButton;
-import org.ut.biolab.medsavant.view.genetics.variantinfo.GeneManiaInfoSubPanel;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.GeneSetFetcher;
 import org.ut.biolab.medsavant.view.genetics.variantinfo.GenemaniaInfoRetriever;
-import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -369,14 +356,17 @@ public class RegionWizard extends WizardDialog {
 
             {
 
-
-
                 card1b = setUpSettingsPanel(card1);
                 JPanel card2 = new JPanel();
                 card1.add(card1a, "Query");
                 card1.add(card1b, "Settings");
                 tabbedPane.addTab("Query genes", card1);
                 tabbedPane.addTab("Select genes", card2);
+
+                tabbedPane.setPreferredSize(new Dimension(400,400));
+                tabbedPane.setMinimumSize(new Dimension(400,400));
+                tabbedPane.setMaximumSize(new Dimension(400,400));
+
                 tabbedPane.setEnabledAt(1, false);
                 recommendedGenes = new ListViewTablePanel(new Object[0][0], COLUMN_NAMES, COLUMN_CLASSES, new int[0]);
                 recommendedGenes.setFontSize(10);
@@ -426,7 +416,7 @@ public class RegionWizard extends WizardDialog {
                 PartSelectorPanel selector = new PartSelectorPanel(recommendedGenes, finalSelectedGenes);
                 selector.setBackground(Color.WHITE);
                 card2.add(selector);
-                addComponent(tabbedPane);
+                addComponent(ViewUtil.getClearBorderedScrollPane(tabbedPane));
             }
 
             @Override

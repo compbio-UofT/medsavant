@@ -53,7 +53,7 @@ public class ExportVCF {
 
     public static void exportVCF(File file, MedSavantWorker worker) throws Exception {
 
-        RemoteInputStream ris = MedSavantClient.VariantManager.exportVariants(
+        int fileID = MedSavantClient.VariantManager.exportVariants(
                 LoginController.sessionId,
                 ProjectController.getInstance().getCurrentProjectID(),
                 ReferenceController.getInstance().getCurrentReferenceID(),
@@ -62,9 +62,8 @@ public class ExportVCF {
             throw new InterruptedException();
         }
         worker.showProgress(0.5);
-        //copy stream to file
-        File tempFile = ClientNetworkUtils.copyFileFromRemoteStream(ris);
-        BufferedReader in = new BufferedReader(new FileReader(tempFile));
+
+        ClientNetworkUtils.copyFileFromServer(fileID,file.getAbsolutePath());
 
         //maintain lists of chrs, dnaids, ...
         Map<String, BufferedWriter> out = new HashMap<String, BufferedWriter>();
@@ -80,6 +79,8 @@ public class ExportVCF {
         }
         int infoMin = DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO+1;
         int infoMax = table.getNumFields();
+
+        BufferedReader in = new BufferedReader(new FileReader(file));
 
         double numSteps = ReferenceController.getInstance().getChromosomes().length * 6;
         String line;
