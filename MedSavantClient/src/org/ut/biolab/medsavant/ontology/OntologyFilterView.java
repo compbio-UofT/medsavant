@@ -71,23 +71,26 @@ public class OntologyFilterView extends TabularFilterView<OntologyTerm> {
         initContentPanel();
     }
 
-    public static FilterState wrapState(String title, OntologyType ont, List<OntologyTerm> applied) {
+    public static FilterState wrapState(String title, OntologyType ont, List<OntologyTerm> applied, boolean shortForm) {
         String filterID = OntologyFilter.ontologyToFilterID(ont);
 
         // Can't use wrapValues directly on applied, because OntologyTerm.toString() includes the description.
-        List<String> termIDs = new ArrayList<String>();
-        for (OntologyTerm t: applied) {
-            termIDs.add(t.getID());
+        List values = applied;
+        if (shortForm) {
+            values = new ArrayList();
+            for (OntologyTerm t: applied) {
+                values.add(t.getID());
+            }
         }
         
         FilterState state = new FilterState(Filter.Type.ONTOLOGY, title, filterID);
-        state.putValues(FilterState.VALUE_ELEMENT, wrapValues(termIDs));
+        state.putValues(FilterState.VALUE_ELEMENT, wrapValues(values));
         return state;
     }
 
     @Override
     public FilterStateAdapter saveState() {
-        return wrapState(getTitle(), ontology, appliedValues);
+        return wrapState(getTitle(), ontology, appliedValues, true);
     }
 
     @Override

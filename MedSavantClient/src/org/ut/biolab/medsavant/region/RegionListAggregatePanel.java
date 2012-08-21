@@ -148,7 +148,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
         JPopupMenu menu = new JPopupMenu();
 
         TableModel model = tablePanel.getTable().getModel();
-        final int[] selRows = TableModelWrapperUtils.getActualRowsAt(model, tablePanel.getTable().getSelectedRows(), false);
+        final int[] selRows = tablePanel.getTable().getSelectedRows();
 
         JMenuItem posItem = new JMenuItem(String.format("<html>Filter by %s</html>", selRows.length == 1 ? "Region <i>" + model.getValueAt(selRows[0], 0) + "</i>" : "Selected Regions"));
         posItem.addActionListener(new ActionListener() {

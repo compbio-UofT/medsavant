@@ -179,7 +179,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
         JPopupMenu menu = new JPopupMenu();
 
         SortableTreeTableModel model = (SortableTreeTableModel)tree.getModel();
-        final int[] selRows = TableModelWrapperUtils.getActualRowsAt(model, tree.getSelectedRows(), false);
+        final int[] selRows = tree.getSelectedRows();
 
         JMenuItem posItem = new JMenuItem(String.format("<html>Filter by %s</html>", selRows.length == 1 ? "Ontology Term <i>" + model.getValueAt(selRows[0], 0) + "</i>" : "Selected Ontology Terms"));
         posItem.addActionListener(new ActionListener() {
@@ -195,7 +195,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
                 }
 
                 OntologyType ont = terms.get(0).getOntology();
-                GeneticsFilterPage.getSearchBar().loadFilters(OntologyFilterView.wrapState(OntologyFilter.ontologyToTitle(ont), ont, terms));
+                GeneticsFilterPage.getSearchBar().loadFilters(OntologyFilterView.wrapState(OntologyFilter.ontologyToTitle(ont), ont, terms, false));
             }
 
         });
