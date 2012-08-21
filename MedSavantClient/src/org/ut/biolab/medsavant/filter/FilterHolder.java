@@ -206,18 +206,13 @@ class FieldFilterHolder extends FilterHolder {
         String alias = field.getAlias();
         switch (field.getColumnType()) {
             case INTEGER:
-                if (!colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID)) {
+                if (!colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID) && !colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
                     return new NumericFilterView(whichTable, colName, queryID, alias, false);
                 }
                 break;
             case FLOAT:
             case DECIMAL:
                 return new NumericFilterView(whichTable, colName, queryID, alias, true);
-            case BOOLEAN:
-                if (!colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
-                    return new BooleanFilterView(whichTable, colName, queryID, alias);
-                }
-                break;
         }
         // If nothing else claimed this, make it a StringListFilter.
         return new StringListFilterView(whichTable, colName, queryID, alias);
