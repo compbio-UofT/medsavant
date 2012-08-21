@@ -16,10 +16,7 @@
 
 package org.ut.biolab.medsavant.serverapi;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,7 +41,10 @@ import org.ut.biolab.medsavant.util.DirectorySettings;
 public class NetworkManager extends MedSavantServerUnicastRemoteObject implements NetworkManagerAdapter {
 
     private static final HashMap<Integer, BufferedWriter> writerMap = new HashMap<Integer,BufferedWriter>();
-    private static final HashMap<Integer, String> fileNameMap = new HashMap<Integer,String>();
+    private static final HashMap<Integer, BufferedReader> readerMap = new HashMap<Integer,BufferedReader>();
+
+    private static final HashMap<Integer, String> inboundFileNameMap = new HashMap<Integer,String>();
+    private static final HashMap<Integer, String> outboundFileNameMap = new HashMap<Integer,String>();
 
     private static NetworkManager instance;
     private static int counter = 0;
@@ -61,7 +61,7 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public int openFileOnServer(String sessID) throws RemoteException, IOException {
+    public int openFileWriterOnServer(String sessID) throws RemoteException, IOException {
 
         int fileID = counter;
         counter++;
@@ -73,24 +73,49 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
         BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
 
         writerMap.put(fileID, bw);
-        fileNameMap.put(fileID,outFile.getAbsolutePath());
+        inboundFileNameMap.put(fileID,outFile.getAbsolutePath());
 
         return fileID;
     }
 
     @Override
-    public void sendLineToServer(int fileIdentifier, String line) throws SQLException, RemoteException, IOException {
+    public void writeLineToServer(String sessID, int fileIdentifier, String line) throws SQLException, RemoteException, IOException {
         writerMap.get(fileIdentifier).write(line + "\n");
     }
 
     @Override
-    public void closeFileOnServer(int fileIdentifier) throws RemoteException, IOException {
+    public void closeFileWriterOnServer(String sessID, int fileIdentifier) throws RemoteException, IOException {
         writerMap.get(fileIdentifier).close();
         writerMap.remove(fileIdentifier);
     }
 
     public static File getFileByTransferID(int id) {
-        return new File(fileNameMap.get(id));
+        return new File(inboundFileNameMap.get(id));
+    }
+
+    public int registerFileForTransferToClient(File file) {
+        int fileID = counter;
+        counter++;
+        outboundFileNameMap.put(fileID,file.getAbsolutePath());
+        return fileID;
+    }
+
+    @Override
+    public void openFileReaderOnServer(String sessID, int fileID) throws IOException, RemoteException {
+        // TODO: for security purposes, make the key a combination of sessID x fileID
+        BufferedReader br = new BufferedReader(new FileReader(outboundFileNameMap.get(fileID)));
+        readerMap.put(fileID, br);
+    }
+
+    @Override
+    public String readLineFromServer(String sessID, int fileID) throws IOException, SQLException, RemoteException {
+        // TODO: for security purposes, fetch reader by sessID x fileID
+        return readerMap.get(fileID).readLine();
+    }
+
+    @Override
+    public void closeFileReaderOnServer(String sessID, int fileID) throws IOException, RemoteException {
+        readerMap.get(fileID).close();
     }
 
 }

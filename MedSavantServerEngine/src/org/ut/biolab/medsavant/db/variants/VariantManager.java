@@ -16,7 +16,6 @@
 package org.ut.biolab.medsavant.db.variants;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Connection;
@@ -26,8 +25,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
@@ -69,6 +66,7 @@ import org.ut.biolab.medsavant.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.util.DirectorySettings;
 import org.ut.biolab.medsavant.util.IOUtils;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
+import org.ut.biolab.medsavant.serverapi.NetworkManager;
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.util.NetworkUtils;
 
@@ -285,23 +283,19 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
      *  Upload files from client to server and then perform variant import
      */
     @Override
-    public int uploadVariants(String sessID, RemoteInputStream[] fileStreams, String[] fileNames, int projID, int refID, String[][] tags, boolean includeHomoRef) throws InterruptedException, IOException, SQLException {
+    public int uploadVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] tags, boolean includeHomoRef) throws InterruptedException, IOException, SQLException {
 
         LOG.info("Importing variants by transferring from client");
 
-        File[] vcfFiles = new File[fileStreams.length];
+        File[] vcfFiles = new File[fileIDs.length];
 
         LOG.info("Beginning variant upload");
 
         double frac = 0.0;
-        for (int i = 0; i < fileStreams.length; i++) {
-            makeProgress(sessID, "Sending " + fileNames[i] + "...", frac);
-
-            LOG.info("Sending " + fileNames[i]);
-            // The second parameter of copyFileFromRemoteStream is actually a file-extension, but we use it to make sure that the temp
-            // file has the same type (.vcf or .vcf.gz) as the original file.
-            vcfFiles[i] = NetworkUtils.copyFileFromRemoteStream(fileStreams[i], fileNames[i]);
-            frac += SEND_FILES_FRACTION / fileStreams.length;
+        int i = 0;
+        for (int id : fileIDs) {
+            vcfFiles[i] = NetworkManager.getFileByTransferID(id);
+            i++;
         }
 
         return uploadVariants(sessID,vcfFiles,projID,refID,tags,includeHomoRef);
@@ -336,24 +330,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Directory exists but contains no .vcf or .vcf.gz files.");
             return -1;
         }
-
-        /*File[] vcfFiles = dirContainingVCFs.listFiles(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File file, String string) {
-                String path = file.getAbsolutePath();
-                if (path.endsWith(".vcf") || path.endsWith(".vcf.gz")) {
-                    LOG.info("Found file " + path);
-                    return true;
-                } else {
-                    LOG.info("Rejecting file " + path);
-                    return false;
-                }
-            }
-
-        });
-        *
-        */
 
         File[] vcfFiles = new File[onlyVCFFiles.size()];
         for (int i = 0; i < onlyVCFFiles.size(); i++) {
@@ -626,7 +602,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public RemoteInputStream exportVariants(String sessID, int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, IOException, InterruptedException {
+    public int exportVariants(String sessID, int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException, IOException, InterruptedException {
 
         //generate directory
         File baseDir = DirectorySettings.generateDateStampDirectory(new File("."));
@@ -652,24 +628,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         ConnectionController.executeQuery(sessID, queryString);
         System.out.println("done: " + (System.nanoTime() - start));
 
-
-        /*
-         * //zip int BUFFER = 2048; BufferedInputStream origin = null;
-         * ZipOutputStream out = new ZipOutputStream(new
-         * BufferedOutputStream(new FileOutputStream("c:\\zip\\myfigs.zip")));
-         * byte data[] = new byte[BUFFER];
-         *
-         * File f = new File("."); String files[] = f.list();
-         *
-         * for (int i=0; i<files.length; i++) { System.out.println("Adding:
-         * "+files[i]); FileInputStream fi = new FileInputStream(files[i]);
-         * origin = new BufferedInputStream(fi, BUFFER); ZipEntry entry = new
-         * ZipEntry(files[i]); out.putNextEntry(entry); int count; while ((count
-         * = origin.read(data, 0, BUFFER)) != -1) { out.write(data, 0, count); }
-         * origin.close(); } out.close();
-         */
-
-        return (new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath()))).export();
+        // add file to map and send the id back
+        int fileID = NetworkManager.getInstance().registerFileForTransferToClient(file);
+        return fileID;
     }
 
     @Override
