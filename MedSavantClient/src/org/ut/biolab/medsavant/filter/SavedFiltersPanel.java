@@ -93,9 +93,13 @@ class SavedFiltersEditor extends DetailedListEditor {
         if (FilterController.getInstance().hasFiltersApplied()) {
             String name = "Untitled";
             do {
-                name = DialogUtils.displayInputMessage("Name for Current Filter Set", "Choose a name under which to store the current filters:", name);
+                name = DialogUtils.displayInputMessage("Name for Current Filter Set", "Choose a name for saving the current filter set:", name);
                 if (name == null) {
                     return;     // User cancelled input dialog.
+                }
+                // If there's no extension, add ".xml".
+                if (name.indexOf('.') < 0) {
+                    name += ".xml";
                 }
             } while (!validateName(name));
             try {
@@ -158,7 +162,7 @@ class SavedFiltersEditor extends DetailedListEditor {
 
     private void saveFilterSet(String name) throws Exception {
 
-        File file = new File(DirectorySettings.getFiltersDirectory(), name + ".xml");
+        File file = new File(DirectorySettings.getFiltersDirectory(), name);
 
         BufferedWriter out = new BufferedWriter(new FileWriter(file, false));
         out.write("<filters>\n");
