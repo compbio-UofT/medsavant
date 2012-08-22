@@ -66,9 +66,7 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
         int fileID = counter;
         counter++;
 
-        String filename = "sentFile_" + fileID;
-        File dir = DirectorySettings.getTmpDirectory();
-        File outFile = new File(dir,filename);
+        File outFile = File.createTempFile("sentfile",".medsavant",DirectorySettings.getTmpDirectory());
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
 
