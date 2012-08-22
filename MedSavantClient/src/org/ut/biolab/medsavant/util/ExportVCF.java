@@ -19,8 +19,6 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.db.ColumnType;

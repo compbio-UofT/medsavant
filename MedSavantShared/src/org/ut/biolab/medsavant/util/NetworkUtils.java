@@ -16,11 +16,7 @@
 
 package org.ut.biolab.medsavant.util;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.*;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -29,9 +25,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-import com.healthmarketscience.rmiio.RemoteInputStreamClient;
-import java.io.*;
 import net.sf.samtools.util.SeekableBufferedStream;
 import net.sf.samtools.util.SeekableFileStream;
 import net.sf.samtools.util.SeekableHTTPStream;
@@ -246,27 +239,4 @@ public class NetworkUtils {
         }
         return result;
     }
-
-    public static File copyFileFromRemoteStream(RemoteInputStream ris, String ext) throws IOException {
-
-        LOG.info("Preparing input stream");
-        InputStream istream = RemoteInputStreamClient.wrap(ris);
-        File tempFile = File.createTempFile("sentFile_", ext);
-        FileOutputStream ostream = new FileOutputStream(tempFile);
-        LOG.info("Writing file " + tempFile);
-
-        IOUtils.copyStream(istream, ostream);
-
-        LOG.info("Finished writing file " + tempFile + " " + tempFile.length() + " bytes.");
-
-        return tempFile;
-    }
-
-    public static File copyFileFromRemoteStream(RemoteInputStream ris) throws IOException {
-        LOG.info("Copying file from input stream");
-        return copyFileFromRemoteStream(ris, ".dat");
-    }
-
-
-
 }

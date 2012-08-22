@@ -23,8 +23,6 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-
 import org.ut.biolab.medsavant.importing.FileFormat;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.RegionSet;

@@ -15,17 +15,16 @@
  */
 package org.ut.biolab.medsavant.region;
 
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.*;
 import javax.swing.*;
 
-import com.healthmarketscience.rmiio.exporter.DefaultRemoteStreamExporter;
 import com.jidesoft.dialog.ButtonEvent;
 import com.jidesoft.dialog.ButtonNames;
 import com.jidesoft.dialog.PageList;
@@ -34,8 +33,6 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
-import java.awt.*;
-import java.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.genemania.type.CombiningMethod;
@@ -373,7 +370,7 @@ public class RegionWizard extends WizardDialog {
                 card1a.setLayout(new BoxLayout(card1a, BoxLayout.PAGE_AXIS));
                 card1a.add(new JLabel("Query GeneMANIA for Related Genes"), Component.LEFT_ALIGNMENT);
                 selectedGenesPanelForGeneMania = new ListViewTablePanel(new Object[0][0], COLUMN_NAMES, COLUMN_CLASSES, new int[0]);
-                selectedGenesPanelForGeneMania.getTable().setModel(selectedGenesPanel.getTable().getModel());;
+                selectedGenesPanelForGeneMania.getTable().setModel(selectedGenesPanel.getTable().getModel());
                 card1a.add(selectedGenesPanelForGeneMania);
                 progressMessage.setVisible(false);
                 card1a.add(progressMessage);
@@ -385,6 +382,7 @@ public class RegionWizard extends WizardDialog {
                 settingsButton = new JButton("Settings");
                 genemaniaButton.addActionListener(new ActionListener() {
 
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         genemaniaButton.setEnabled(false);
                         settingsButton.setEnabled(false);
@@ -399,7 +397,7 @@ public class RegionWizard extends WizardDialog {
                     }
                 });
                 settingsButton.addActionListener(new ActionListener() {
-
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         ((CardLayout) card1.getLayout()).show(card1, "Settings");
                     }
@@ -458,7 +456,7 @@ public class RegionWizard extends WizardDialog {
         final JCheckBox coloc;
         final JCheckBox gi;
         final JCheckBox other;
-        final JCheckBox path;
+        final JCheckBox pathCheck;
         final JCheckBox pi;
         final JCheckBox predict;
         final JCheckBox spd;
@@ -489,7 +487,7 @@ public class RegionWizard extends WizardDialog {
         spd = new JCheckBox();
         gi = new JCheckBox();
         coloc = new JCheckBox();
-        path = new JCheckBox();
+        pathCheck = new JCheckBox();
         predict = new JCheckBox();
         pi = new JCheckBox();
         other = new JCheckBox();
@@ -505,7 +503,7 @@ public class RegionWizard extends WizardDialog {
 
         relatedGenesLimit.setColumns(3);
         relatedGenesLimit.addActionListener(new java.awt.event.ActionListener() {
-
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 genemania.setGeneLimit(Integer.parseInt(relatedGenesLimit.getText()));
 
@@ -518,7 +516,7 @@ public class RegionWizard extends WizardDialog {
         rankBy.setText("Rank by");
 
         ActionListener scoringActionPerformed = new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 if (evt.getActionCommand().equals("genemaniaScore")) {
                     rankByVarFreq = false;
@@ -542,10 +540,10 @@ public class RegionWizard extends WizardDialog {
         networks.setText("Networks");
 
         ActionListener networksActionPerformed = new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 Set<String> networksSelected = new HashSet<String>();
-                JCheckBox[] networkButtons = {coexp, spd, gi, coloc, path, predict, pi, other};
+                JCheckBox[] networkButtons = {coexp, spd, gi, coloc, pathCheck, predict, pi, other};
                 for (int i = 0; i < networkButtons.length; i++) {
                     if (networkButtons[i].isSelected()) {
                         networksSelected.add(networkButtons[i].getActionCommand());
@@ -567,8 +565,8 @@ public class RegionWizard extends WizardDialog {
         coloc.setText("Co-localization");
         coloc.addActionListener(networksActionPerformed);
 
-        path.setText("Pathway interactions");
-        path.addActionListener(networksActionPerformed);
+        pathCheck.setText("Pathway interactions");
+        pathCheck.addActionListener(networksActionPerformed);
 
         predict.setText("Predicted");
         predict.addActionListener(networksActionPerformed);
@@ -585,7 +583,7 @@ public class RegionWizard extends WizardDialog {
         equal.setBorder(javax.swing.BorderFactory.createTitledBorder("Equal weighting"));
 
         ActionListener combiningMethodActionPerformed = new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 int indexOfCombiningMethod = 0;
                 Enumeration<AbstractButton> buttonEnum = buttonGroup2.getElements();
@@ -650,7 +648,7 @@ public class RegionWizard extends WizardDialog {
 
         okButton.setText("OK");
         okButton.addActionListener(new ActionListener() {
-
+            @Override
             public void actionPerformed(ActionEvent ae) {
                 ((CardLayout) parent.getLayout()).show(parent, "Query");
             }
@@ -659,9 +657,9 @@ public class RegionWizard extends WizardDialog {
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(panel);
         panel.setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addGap(28, 28, 28).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(gi).addComponent(coexp)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(path).addComponent(coloc)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(spd).addComponent(pi)).addGap(10, 10, 10).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(other).addComponent(predict))).addGroup(layout.createSequentialGroup().addGap(20, 20, 20).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(networkWeighting).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false).addComponent(equal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(geneOntology, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(queryDependent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(networks).addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup().addComponent(rankBy).addGap(44, 44, 44).addComponent(varFreq).addGap(18, 18, 18).addComponent(genemaniaScore)).addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup().addComponent(limitTo).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(relatedGenesLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(relatedGenes)))).addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup().addContainerGap().addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE))).addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addGap(28, 28, 28).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(gi).addComponent(coexp)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(pathCheck).addComponent(coloc)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(spd).addComponent(pi)).addGap(10, 10, 10).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(other).addComponent(predict))).addGroup(layout.createSequentialGroup().addGap(20, 20, 20).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(networkWeighting).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false).addComponent(equal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(geneOntology, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(queryDependent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(networks).addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup().addComponent(rankBy).addGap(44, 44, 44).addComponent(varFreq).addGap(18, 18, 18).addComponent(genemaniaScore)).addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup().addComponent(limitTo).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(relatedGenesLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(relatedGenes)))).addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup().addContainerGap().addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE))).addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
         layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(limitTo).addComponent(relatedGenesLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(relatedGenes)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(rankBy).addComponent(varFreq).addComponent(genemaniaScore)).addGap(26, 26, 26).addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(networks).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(coexp).addComponent(coloc).addComponent(spd).addComponent(predict)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(gi).addComponent(path).addComponent(pi).addComponent(other)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(networkWeighting).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(equal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(geneOntology, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(queryDependent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(okButton).addContainerGap()));
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(limitTo).addComponent(relatedGenesLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(relatedGenes)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(rankBy).addComponent(varFreq).addComponent(genemaniaScore)).addGap(26, 26, 26).addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(networks).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(coexp).addComponent(coloc).addComponent(spd).addComponent(predict)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(gi).addComponent(pathCheck).addComponent(pi).addComponent(other)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(networkWeighting).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(equal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(geneOntology, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(queryDependent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(okButton).addContainerGap()));
         return panel;
     }
 
@@ -770,7 +768,6 @@ public class RegionWizard extends WizardDialog {
             fileFormat = new BEDFormat();
             path = tempFile.getAbsolutePath();
         }
-        LOG.info("Sending direct input stream for region set over " + DefaultRemoteStreamExporter.PORT_PROPERTY);
 
         int transferID = ClientNetworkUtils.copyFileToServer(new File(path));
 
