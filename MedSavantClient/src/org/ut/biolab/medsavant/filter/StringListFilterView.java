@@ -68,9 +68,7 @@ public class StringListFilterView extends TabularFilterView<String> {
         this.columnName = colName;
         this.alias = alias;
 
-        this.allowInexactMatch = colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_PHENOTYPES);
-
-        System.out.println("colName=" + colName + " allowInexactMatch=" + allowInexactMatch);
+        allowInexactMatch = colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_PHENOTYPES);
 
         if (bool) {
             availableValues = Arrays.asList("True", "False");
@@ -154,8 +152,6 @@ public class StringListFilterView extends TabularFilterView<String> {
         @Override
         public Condition[] getConditions() throws SQLException, RemoteException {
 
-            System.out.println("Getting conditions for table " + whichTable + " column " + columnName);
-
             if (appliedValues.size() > 0) {
                 if (whichTable == WhichTable.VARIANT) {
                     if (appliedValues.size() == 1) {
@@ -168,14 +164,12 @@ public class StringListFilterView extends TabularFilterView<String> {
                         };
                     }
                 } else if (whichTable == WhichTable.PATIENT) {
-                    System.out.println("Returning getDNAIDCondition");
-                    return getDNAIDCondition(
-                            MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.sessionId, ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName, allowInexactMatch)
-                            );
+                    return getDNAIDCondition(MedSavantClient.PatientManager.getDNAIDsForStringList(LoginController.sessionId,
+                                             ProjectController.getInstance().getCurrentPatientTableSchema(), appliedValues, columnName,
+                                             allowInexactMatch));
                 }
             }
 
-            System.out.println("Returning false condition");
             return FALSE_CONDITION;
         }
     }

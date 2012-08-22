@@ -56,8 +56,8 @@ public class AggregatesStatsPanel extends JPanel {
         add(toolBarPanel, BorderLayout.NORTH);
 
         AggregatePanelGenerator gen = (AggregatePanelGenerator)generatorCombo.getSelectedItem();
-        JPanel p = gen.getPanel();
-        gen.run(false);
+        AggregatePanel p = gen.getPanel();
+        p.recalculate();
         
         add(p);
         validate();
@@ -116,14 +116,12 @@ public class AggregatesStatsPanel extends JPanel {
         add(toolBarPanel, BorderLayout.NORTH);   
     }
     
-    public void update(boolean update, boolean loaded) {
-        if (update) {
+    public void update(boolean forceUpdate) {
+        if (forceUpdate) {
             for (int i = 0; i < generatorCombo.getItemCount(); i++) {
                 ((AggregatePanelGenerator)generatorCombo.getItemAt(i)).setUpdateRequired(true);
             }
         }
-        if (loaded) {
-            ((AggregatePanelGenerator)generatorCombo.getSelectedItem()).run(update);
-        }
+        ((AggregatePanelGenerator)generatorCombo.getSelectedItem()).updateIfRequired();
     }
 }

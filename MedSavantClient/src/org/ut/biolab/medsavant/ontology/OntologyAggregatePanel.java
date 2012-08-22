@@ -43,6 +43,7 @@ import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.OntologyTerm;
 import org.ut.biolab.medsavant.model.OntologyType;
+import org.ut.biolab.medsavant.model.ProgressStatus;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
@@ -57,6 +58,9 @@ import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
 public class OntologyAggregatePanel extends AggregatePanel {
 
     private static final Log LOG = LogFactory.getLog(OntologyAggregatePanel.class);
+    
+    /** Percentage of total fetch operation which is devoted to retrieving terms. */
+    private static final double TERMS_PERCENT = 10.0;
 
     private JComboBox chooser;
     private JProgressBar progress;
@@ -119,7 +123,6 @@ public class OntologyAggregatePanel extends AggregatePanel {
                 }
             }
         });
-
     }
 
     @Override
@@ -136,16 +139,28 @@ public class OntologyAggregatePanel extends AggregatePanel {
             if (termFetcher == null) {
                 tree.setModel(new OntologyTreeModel(null));
 
-                progress.setIndeterminate(true);
-                progress.setVisible(true);
                 termFetcher = new MedSavantWorker<OntologyTerm[]>(pageName) {
                     @Override
                     protected OntologyTerm[] doInBackground() throws Exception {
+                        showProgress(0.0);
                         return MedSavantClient.OntologyManager.getAllTerms(LoginController.sessionId, ((OntologyListItem)chooser.getSelectedItem()).getType());
                     }
 
                     @Override
-                    protected void showProgress(double fraction) {
+                    protected void showProgress(double fract) {
+                        if (fract == 1.0) {
+                            // Next stage will be indeterminate in duration.
+                            progress.setIndeterminate(true);
+                        } else {
+                            if (fract == 0.0) {
+                                progress.setIndeterminate(false);
+                                startProgressTimer();
+                            } 
+
+                            double prog = fract * TERMS_PERCENT;
+                            progress.setValue((int)prog);
+                            progress.setString(String.format("%.1f%%", prog));
+                        }
                     }
 
                     @Override
@@ -153,7 +168,13 @@ public class OntologyAggregatePanel extends AggregatePanel {
                         tree.setModel(new OntologyTreeModel(result));
                         TableColumn col = tree.getColumnModel().getColumn(3);
                         col.setCellRenderer(new NodeProgressRenderer());
-                        progress.setVisible(false);
+                    }
+                    
+                    @Override
+                    protected ProgressStatus checkProgress() throws RemoteException {
+                        ProgressStatus stat = MedSavantClient.OntologyManager.checkProgress(LoginController.sessionId, false);
+                        LOG.info("OntologyManager returned status " + stat);
+                        return stat;
                     }
                 };
 
@@ -226,7 +247,6 @@ public class OntologyAggregatePanel extends AggregatePanel {
                 }
                 variantFetcher = new VariantFetcher(this);
                 variantFetcher.execute();
-
             }
         }
 
@@ -393,11 +413,11 @@ public class OntologyAggregatePanel extends AggregatePanel {
                     bar.setStringPainted(false);
                     bar.setVisible(true);
                 } else {
-                    double prog = 1.0 - (double)node.uncountedGenes.size() / node.totalGenes;
+                    double prog = (1.0 - (double)node.uncountedGenes.size() / node.totalGenes) * 100.0;
                     label.setText("≥ " + val);
                     bar.setIndeterminate(false);
-                    bar.setValue((int)(prog * 100.0));
-                    bar.setString(String.format("%.1f%%", prog * 100.0));
+                    bar.setValue((int)prog);
+                    bar.setString(String.format("%.1f%%", prog));
                     bar.setStringPainted(true);
                     bar.setVisible(true);
                 }
@@ -421,6 +441,9 @@ public class OntologyAggregatePanel extends AggregatePanel {
             }
         }
 
+        /**
+         * It's hard to get a valid progress percentage for the process as a whole, 
+         */
         @Override
         protected void showProgress(double fraction) {
         }
@@ -433,6 +456,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
         protected Void doInBackground() throws Exception {
             while (!isCancelled()) {
                 do {
+                    progress.setVisible(true);
                     while (!nodeStack.empty() && !isCancelled()) {
                         synchronized (nodeStack) {
                             fetchGenesForNodes();
@@ -466,6 +490,7 @@ public class OntologyAggregatePanel extends AggregatePanel {
                         }
                     }
                 } while (!geneStack.empty() && !isCancelled());
+                progress.setVisible(false);
                 synchronized (nodeStack) {
                     nodeStack.wait();
                 }

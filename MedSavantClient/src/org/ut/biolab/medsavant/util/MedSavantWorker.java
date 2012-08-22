@@ -16,8 +16,16 @@
 
 package org.ut.biolab.medsavant.util;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.concurrent.ExecutionException;
 import javax.swing.SwingWorker;
+import javax.swing.Timer;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.ut.biolab.medsavant.model.ProgressStatus;
 
 
 /**
@@ -26,8 +34,10 @@ import javax.swing.SwingWorker;
  * @author tarkvara
  */
 public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
+    private static final Log LOG = LogFactory.getLog(MedSavantWorker.class);
     
     private String pageName;
+    private Timer progressTimer;
     
     /**
      * 
@@ -40,6 +50,9 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
     
     @Override
     public void done() {
+        if (progressTimer != null) {
+            progressTimer.stop();
+        }
         showProgress(1.0);
         if (!isCancelled()) {
             try {
@@ -58,9 +71,9 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
 
     /**
      * Show progress during a lengthy operation.  As a special case, pass 1.0 to remove the progress display.
-     * @param fraction the fraction completed (1.0 to indicate full completion; -1.0 as special flag to indicate indeterminate progress-bar).
+     * @param fract the fraction completed (1.0 to indicate full completion; -1.0 as special flag to indicate indeterminate progress-bar).
      */
-    protected abstract void showProgress(double fraction);
+    protected abstract void showProgress(double fract);
     
     /**
      * Called when the worker has successfully completed its task.
@@ -76,5 +89,32 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
         if (!(t instanceof InterruptedException)) {
             ClientMiscUtils.reportError("Exception thrown by background task: %s", t);
         }
+    }
+    
+    /**
+     * Base-class does no progress checking.
+     */
+    protected ProgressStatus checkProgress() throws Exception {
+        return null;
+    }
+
+    /**
+     * Workers which want intermittent progress checks should start a timer which will call checkProgress and showProgress intermittently.
+     */
+    protected void startProgressTimer() {
+        progressTimer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    ProgressStatus status = checkProgress();
+                    if (status != null) {
+                        showProgress(status.fractionCompleted);
+                    }
+                } catch (Exception ex) {
+                    LOG.info("Ignoring exception thrown while checking for progress.", ex);
+                }
+            }
+        });
+        progressTimer.start();
     }
 }

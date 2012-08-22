@@ -78,7 +78,7 @@ public class SearchableTablePanel extends JPanel {
     private int[] hiddenColumns;
     private DataRetriever retriever;
     private int totalNumRows;
-    private GetDataSwingWorker worker;
+    private GetDataWorker worker;
     private JButton exportButton;
     private List<Integer> selectedRows;
     private static Color SELECTED_COLOUR = new Color(244, 237, 147);
@@ -96,7 +96,7 @@ public class SearchableTablePanel extends JPanel {
         if (worker != null) {
             worker.cancel(true);
         }
-        worker = new GetDataSwingWorker(pageName, newData);
+        worker = new GetDataWorker(pageName, newData);
         worker.execute();
     }
 
@@ -118,11 +118,11 @@ public class SearchableTablePanel extends JPanel {
         this.exportButton.setVisible(b);
     }
 
-    private class GetDataSwingWorker extends MedSavantWorker<List<Object[]>> {
+    private class GetDataWorker extends MedSavantWorker<List<Object[]>> {
 
         boolean update;
 
-        protected GetDataSwingWorker(String pageName, boolean newData) {
+        protected GetDataWorker(String pageName, boolean newData) {
             super(pageName);
             this.update = newData;
         }

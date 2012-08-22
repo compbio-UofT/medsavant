@@ -132,6 +132,7 @@ public class OntologySubInspector extends SubInspector implements GeneSelectionC
         linkButton.setEnabled(false);   // Due to lack of an initially-selected term.
         if (g != null) {
             new MedSavantWorker<OntologyTerm[]>("Ontology") {
+
                 @Override
                 protected void showProgress(double fraction) {
                 }

@@ -32,8 +32,6 @@ public abstract class AggregatePanelGenerator {
     public AggregatePanel getPanel() {
         if (panel == null) {
             panel = generatePanel();
-        } else {
-            panel.recalculate();
         }
         return panel;
     }
@@ -43,8 +41,11 @@ public abstract class AggregatePanelGenerator {
      */
     public abstract AggregatePanel generatePanel();
 
-    public void run(boolean reset) {
-        if (reset || updateRequired) {
+    /**
+     * If the <code>updateRequired</code> flag has been set, tell the panel to recalculate.
+     */
+    public void updateIfRequired() {
+        if (updateRequired) {
             panel.recalculate();
         }
     }

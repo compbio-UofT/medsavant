@@ -28,8 +28,6 @@ import java.util.TreeMap;
 import javax.swing.*;
 import javax.swing.table.TableModel;
 
-import com.jidesoft.grid.TableModelWrapperUtils;
-
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.aggregate.AggregatePanel;
 import org.ut.biolab.medsavant.filter.*;
@@ -52,6 +50,11 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class RegionListAggregatePanel extends AggregatePanel {
 
+    private static final int VARIANT_COLUMN = 4;
+    private static final int PATIENT_COLUMN = 5;
+
+    private static final int LIMIT = 10000;
+
     private final JComboBox regionSetCombo;
     private final JPanel mainPanel;
     private MedSavantWorker regionFetcher;
@@ -60,9 +63,6 @@ public class RegionListAggregatePanel extends AggregatePanel {
     private List<GenomicRegion> currentRegions;
     private final TreeMap<GenomicRegion, Integer> patientCounts;
     private final JProgressBar progress;
-
-    private int numbersRetrieved;
-    private int limit = 10000;
 
     public RegionListAggregatePanel(String page) {
         super(page);
@@ -130,7 +130,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
         tablePanel = new SearchableTablePanel(pageName,
                                         new String[] { "Name", "Chromosome", "Start", "End", "Variants", "Patients" },
                                         new Class[] { String.class, String.class, Integer.class, Integer.class, Integer.class, Integer.class },
-                                        new int[0], limit, new AggregationRetriever());
+                                        new int[0], LIMIT, new AggregationRetriever());
 
         tablePanel.getTable().addMouseListener(new MouseAdapter() {
             @Override
@@ -191,13 +191,17 @@ public class RegionListAggregatePanel extends AggregatePanel {
             variantCounts.put(r, null);
             patientCounts.put(r, null);
         }
+        JTable t = tablePanel.getTable();
+        for (int i = 0; i < t.getRowCount(); i++) {
+            t.setValueAt("", i, VARIANT_COLUMN);
+            t.setValueAt("", i, PATIENT_COLUMN);
+        }
     }
 
     private void initGeneTable(List<GenomicRegion> genes) {
         currentRegions = genes;
         resetCounts();
-        numbersRetrieved = 0;
-        updateProgress();
+        updateProgress(0.0);
 
         showShowCard();
 
@@ -205,7 +209,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
 
         int i = 0;
         for (GenomicRegion r : variantCounts.keySet()) {
-            if (i >= limit) break;
+            if (i >= LIMIT) break;
             data.add(new Object[] {
                 r.getName(), r.getChrom(), r.getStart(), r.getEnd(), variantCounts.get(r), patientCounts.get(r)
             });
@@ -224,20 +228,16 @@ public class RegionListAggregatePanel extends AggregatePanel {
         return -1;
     }
 
-    public synchronized void updateVariantCount(GenomicRegion reg, int value) {
+    public void updateVariantCount(GenomicRegion reg, int value) {
         variantCounts.put(reg, value);
         int row = findRow(reg);
-        tablePanel.getTable().setValueAt(new Integer(value), row, 4);
-        numbersRetrieved++;
-        updateProgress();
+        tablePanel.getTable().setValueAt(new Integer(value), row, VARIANT_COLUMN);
     }
 
-    public synchronized void updatePatientCount(GenomicRegion reg, int value) {
+    public void updatePatientCount(GenomicRegion reg, int value) {
         patientCounts.put(reg, value);
         int row = findRow(reg);
-        tablePanel.getTable().setValueAt(new Integer(value), row, 5);
-        numbersRetrieved++;
-        updateProgress();
+        tablePanel.getTable().setValueAt(new Integer(value), row, PATIENT_COLUMN);
     }
 
     public void updateRegionSetCombo(List<RegionSet> sets) {
@@ -253,8 +253,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
             regionFetcher.cancel(true);
         }
 
-        numbersRetrieved = 0;
-        updateProgress();
+        updateProgress(0.0);
 
         showWaitCard();
 
@@ -263,7 +262,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
 
             @Override
             protected List<GenomicRegion> doInBackground() throws Exception {
-                return RegionController.getInstance().getRegionsInSet(regionSet, limit);
+                return RegionController.getInstance().getRegionsInSet(regionSet, LIMIT);
             }
 
             @Override
@@ -278,54 +277,44 @@ public class RegionListAggregatePanel extends AggregatePanel {
         regionFetcher.execute();
     }
 
-    private void updateProgress() {
-        int value = 0;
-        if (variantCounts.size() != 0) {
-            value = numbersRetrieved * 50 / Math.min(variantCounts.keySet().size(), limit);
-        }
-        value = Math.min(value, 100);
-        progress.setValue(value);
-        progress.setString(value + "% done ");
-        tablePanel.setExportButtonEnabled(value == 100);
+    private void updateProgress(double prog) {
+        progress.setValue((int)prog);
+        progress.setString(String.format("%.1f%%", prog));
+        progress.setVisible(true);
+        tablePanel.setExportButtonEnabled(prog == 1.0);
     }
 
     private class AggregationRetriever extends DataRetriever<Object[]> {
 
         @Override
         public List<Object[]> retrieve(int start, int limit) throws Exception {
-            for (int i = 0; i < Math.min(currentRegions.size(), limit); i++) {
-                GenomicRegion r = currentRegions.get(i);
+            int max = Math.min(currentRegions.size(), limit);
+            for (int i = 0; i < max; i++) {
+                GenomicRegion reg = currentRegions.get(i);
                 int recordsInRegion = MedSavantClient.VariantManager.getVariantCountInRange(
                         LoginController.sessionId,
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         FilterController.getInstance().getAllFilterConditions(),
-                        r.getChrom(),
-                        r.getStart(),
-                        r.getEnd());
-                if (Thread.interrupted()) {
-                    throw new InterruptedException();
-                }
-                updateVariantCount(r, recordsInRegion);
-            }
-
-            //compute patient field
-            for (int i = 0; i < Math.min(currentRegions.size(), limit); i++) {
-                GenomicRegion r = currentRegions.get(i);
-                int recordsInRegion = MedSavantClient.VariantManager.getPatientCountWithVariantsInRange(
+                        reg.getChrom(),
+                        reg.getStart(),
+                        reg.getEnd());
+                updateVariantCount(reg, recordsInRegion);
+                updateProgress(100.0 * (i + 0.5) / max);
+                recordsInRegion = MedSavantClient.VariantManager.getPatientCountWithVariantsInRange(
                         LoginController.sessionId,
                         ProjectController.getInstance().getCurrentProjectID(),
                         ReferenceController.getInstance().getCurrentReferenceID(),
                         FilterController.getInstance().getAllFilterConditions(),
-                        r.getChrom(),
-                        r.getStart(),
-                        r.getEnd());
+                        reg.getChrom(),
+                        reg.getStart(),
+                        reg.getEnd());
+                updatePatientCount(reg, recordsInRegion);
                 if (Thread.interrupted()) {
                     throw new InterruptedException();
                 }
-                updatePatientCount(r, recordsInRegion);
+                updateProgress(100.0 * (i + 1.0) / max);
             }
-
             // All the data has been applied, so there's no reason to apply it again.
             return null;
         }
@@ -337,8 +326,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
 
         @Override
         public void retrievalComplete() {
-            // 
-            //xxx
+            progress.setVisible(false);
         }
     }
 }

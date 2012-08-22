@@ -37,7 +37,6 @@ public class AggregatePage extends SubSectionView {
 
     private JPanel panel;
     private AggregatesStatsPanel statsPanel;
-    private boolean isLoaded = false;
 
     public AggregatePage(SectionView parent) {
         super(parent, "Enrichment");
@@ -46,7 +45,7 @@ public class AggregatePage extends SubSectionView {
             public void handleEvent(FilterEvent event) {
                 ThreadController.getInstance().cancelWorkers(pageName);
                 if (statsPanel != null) {
-                    statsPanel.update(true, isLoaded);
+                    statsPanel.update(true);
                 }
             }
         });
@@ -54,7 +53,7 @@ public class AggregatePage extends SubSectionView {
             @Override
             public void handleEvent(ReferenceEvent evt) {
                 if (evt.getType() == ReferenceEvent.Type.CHANGED && statsPanel != null) {
-                    statsPanel.update(true, isLoaded);
+                    statsPanel.update(true);
                 }
             }
         });
@@ -70,7 +69,7 @@ public class AggregatePage extends SubSectionView {
             panel.add(statsPanel, BorderLayout.CENTER);
         }
         if (statsPanel != null) {
-            statsPanel.update(update, isLoaded);
+            statsPanel.update(update);
         }
         return panel;
     }
@@ -78,20 +77,5 @@ public class AggregatePage extends SubSectionView {
     @Override
     public Component[] getSubSectionMenuComponents() {
         return null;
-    }
-
-    @Override
-    public void viewDidLoad() {
-        super.viewDidLoad();
-        isLoaded = true;
-        if (statsPanel != null) {
-            statsPanel.update(false, isLoaded);
-        }
-    }
-
-    @Override
-    public void viewDidUnload() {
-        isLoaded = false;
-        super.viewDidUnload();
     }
 }
