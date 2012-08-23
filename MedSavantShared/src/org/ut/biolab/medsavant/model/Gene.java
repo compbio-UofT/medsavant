@@ -15,8 +15,16 @@
  */
 package org.ut.biolab.medsavant.model;
 
+import java.io.IOException;
 import java.io.Serializable;
-
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 /**
  * All the information contained in a single record from a gene-set.  In it's current incarnation, these correspond to transcripts
  * rather than genes.
@@ -81,6 +89,17 @@ public class Gene implements Serializable, Comparable<Gene> {
     public String getTranscript() {
         return transcript;
     }
+    
+    public String getDescription() throws MalformedURLException, IOException{
+        String baseURLp1 = "http://www.genenames.org/cgi-bin/quick_search.pl?.cgifields=type&type=equal&num=50&search=";
+        String baseURLp2 = "&submit=Submit";
+        URL url = new URL (baseURLp1 + name +baseURLp2);
+        Document doc = Jsoup.parse(url, 20*1000);
+        Elements tableClass = doc.select("table.quick_search");
+        Element e = tableClass.select("tr:has(td)").first();
+        String description = e.select("td:has(a) + td").text();
+        return description;
+    }
 
     @Override
     public String toString() {
@@ -123,4 +142,5 @@ public class Gene implements Serializable, Comparable<Gene> {
         hash = 11 * hash + (this.transcript != null ? this.transcript.hashCode() : 0);
         return hash;
     }
+
 }
