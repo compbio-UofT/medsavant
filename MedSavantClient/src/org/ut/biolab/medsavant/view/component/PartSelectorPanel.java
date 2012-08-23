@@ -101,11 +101,27 @@ public class PartSelectorPanel extends JPanel {
     
     private void moveSelectedItems(ListViewTablePanel fromList, ListViewTablePanel toList) {
         int[] rows = fromList.getSelectedRows();
-        for (int row: rows) {
-            toList.addRow(fromList.getRowData(row));
+        Object[][] oldFromData = fromList.getData();
+        Object[][] oldToData = toList.getData();
+
+        Object[][] newToData = new Object[oldToData.length + rows.length][];
+        System.arraycopy(oldToData, 0, newToData, 0, oldToData.length);
+        int i = oldToData.length;
+        for (int r: rows) {
+            newToData[i++] = oldFromData[r];
+            oldFromData[r] = null;
         }
-        for (int i = rows.length - 1; i >= 0; i--) {
-            fromList.removeRow(rows[i]);
+        toList.updateData(newToData);
+        toList.updateView();
+        
+        Object[][] newFromData = new Object[oldFromData.length - rows.length][];
+        i = 0; 
+        for (Object[] fromRow: oldFromData) {
+            if (fromRow != null) {
+                newFromData[i++] = fromRow;
+            }
         }
+        fromList.updateData(newFromData);
+        fromList.updateView();
     }
 }

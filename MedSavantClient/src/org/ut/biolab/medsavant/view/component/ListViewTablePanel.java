@@ -149,6 +149,10 @@ public class ListViewTablePanel extends JPanel {
         return table;
     }
 
+    public final synchronized Object[][] getData() {
+        return data;
+    }
+
     public final synchronized void updateData(Object[][] newData) {
         data = newData;
         model.fireTableDataChanged();
@@ -218,8 +222,10 @@ public class ListViewTablePanel extends JPanel {
         table.setSelectionMode(selectionMode);
     }
 
+    /**
+     * Base class does nothing, but derived class may want to override this.
+     */
     public void forceRefreshData() {
-        //override this in parent
     }
 
     public void setFontSize(float newSize) {
