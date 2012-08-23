@@ -76,7 +76,7 @@ public class SearchableTablePanel extends JPanel {
     private final JButton gotoLast;
     private ColumnChooser columnChooser;
     private int[] hiddenColumns;
-    private DataRetriever retriever;
+    private DataRetriever<Object[]> retriever;
     private int totalNumRows;
     private GetDataWorker worker;
     private JButton exportButton;
@@ -208,29 +208,29 @@ public class SearchableTablePanel extends JPanel {
             for (Object[] r: pageData) {
                 v.add(new java.util.Vector(Arrays.asList(r)));
             }
-
-            gotoFirst.setEnabled(true);
-            gotoPrevious.setEnabled(true);
-            gotoNext.setEnabled(true);
-            gotoLast.setEnabled(true);
-
-            if (pageNum == 1 || pageNum == 0) {
-                gotoFirst.setEnabled(false);
-                gotoPrevious.setEnabled(false);
-            }
-            if (pageNum == getTotalNumPages() || pageNum == 0) {
-                gotoNext.setEnabled(false);
-                gotoLast.setEnabled(false);
-            }
-
-            pageText.setText(Integer.toString(getPageNumber()));
-            pageLabel2.setText(" of " + ViewUtil.numToString(getTotalNumPages()));
-            int start = getTotalNumPages() == 0 ? 0 : (getPageNumber() - 1) * getRowsPerPage() + 1;
-            int end = getTotalNumPages() == 0 ? 0 : Math.min(start + getRowsPerPage() - 1, getTotalRowCount());
-            amountLabel.setText("  Showing " + ViewUtil.numToString(start) + " - " + ViewUtil.numToString(end) + " of " + ViewUtil.numToString(getTotalRowCount()));
-
-            model.fireTableDataChanged();
         }
+
+        gotoFirst.setEnabled(true);
+        gotoPrevious.setEnabled(true);
+        gotoNext.setEnabled(true);
+        gotoLast.setEnabled(true);
+
+        if (pageNum == 1 || pageNum == 0) {
+            gotoFirst.setEnabled(false);
+            gotoPrevious.setEnabled(false);
+        }
+        if (pageNum == getTotalNumPages() || pageNum == 0) {
+            gotoNext.setEnabled(false);
+            gotoLast.setEnabled(false);
+        }
+
+        pageText.setText(Integer.toString(getPageNumber()));
+        pageLabel2.setText(" of " + ViewUtil.numToString(getTotalNumPages()));
+        int start = getTotalNumPages() == 0 ? 0 : (getPageNumber() - 1) * getRowsPerPage() + 1;
+        int end = getTotalNumPages() == 0 ? 0 : Math.min(start + getRowsPerPage() - 1, getTotalRowCount());
+        amountLabel.setText("  Showing " + ViewUtil.numToString(start) + " - " + ViewUtil.numToString(end) + " of " + ViewUtil.numToString(getTotalRowCount()));
+
+        model.fireTableDataChanged();
     }
 
     private void setTableModel(List<Object[]> data, String[] columnNames, Class[] columnClasses) {

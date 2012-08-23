@@ -49,7 +49,7 @@ public class RegionDetailedView extends DetailedTableView<RegionSet> {
 
             @Override
             protected List<GenomicRegion> doInBackground() throws Exception {
-                return controller.getRegionsInSet(selected.get(0), Integer.MAX_VALUE);
+                return controller.getRegionsInSet(selected.get(0));
             }
 
             @Override

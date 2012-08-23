@@ -28,6 +28,9 @@ import java.util.TreeMap;
 import javax.swing.*;
 import javax.swing.table.TableModel;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.aggregate.AggregatePanel;
 import org.ut.biolab.medsavant.filter.*;
@@ -50,10 +53,10 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  */
 public class RegionListAggregatePanel extends AggregatePanel {
 
+    private static final Log LOG = LogFactory.getLog(RegionListAggregatePanel.class);
+
     private static final int VARIANT_COLUMN = 4;
     private static final int PATIENT_COLUMN = 5;
-
-    private static final int LIMIT = 10000;
 
     private final JComboBox regionSetCombo;
     private final JPanel mainPanel;
@@ -130,7 +133,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
         tablePanel = new SearchableTablePanel(pageName,
                                         new String[] { "Name", "Chromosome", "Start", "End", "Variants", "Patients" },
                                         new Class[] { String.class, String.class, Integer.class, Integer.class, Integer.class, Integer.class },
-                                        new int[0], LIMIT, new AggregationRetriever());
+                                        new int[0], Integer.MAX_VALUE, new AggregationRetriever());
 
         tablePanel.getTable().addMouseListener(new MouseAdapter() {
             @Override
@@ -207,13 +210,10 @@ public class RegionListAggregatePanel extends AggregatePanel {
 
         List<Object[]> data = new ArrayList<Object[]>();
 
-        int i = 0;
         for (GenomicRegion r : variantCounts.keySet()) {
-            if (i >= LIMIT) break;
             data.add(new Object[] {
                 r.getName(), r.getChrom(), r.getStart(), r.getEnd(), variantCounts.get(r), patientCounts.get(r)
             });
-            i++;
         }
         tablePanel.applyData(data);
         tablePanel.forceRefreshData();
@@ -262,7 +262,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
 
             @Override
             protected List<GenomicRegion> doInBackground() throws Exception {
-                return RegionController.getInstance().getRegionsInSet(regionSet, LIMIT);
+                return RegionController.getInstance().getRegionsInSet(regionSet);
             }
 
             @Override

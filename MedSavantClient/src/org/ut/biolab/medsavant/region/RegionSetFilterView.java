@@ -90,7 +90,7 @@ public class RegionSetFilterView extends TabularFilterView<RegionSet> {
             for (RegionSet regSet: applied) {
                 if (regSet instanceof AdHocRegionSet) {
                     try {
-                        adHocRegions.addAll(controller.getRegionsInSet(regSet, Integer.MAX_VALUE));
+                        adHocRegions.addAll(controller.getRegionsInSet(regSet));
                     } catch (Exception ignored) {
                         // The signature for getRegionsInSet throws SQLException and RemoteException, but these don't occur with local regions.
                     }
