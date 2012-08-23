@@ -39,6 +39,13 @@ import org.xml.sax.SAXException;
  * @author khushi
  */
 public class GenemaniaInfoRetriever {
+
+    public static class NoRelatedGenesInfoException extends Exception {
+
+        public NoRelatedGenesInfoException() {
+            super("No network information found for this gene(s) in GeneMANIA");
+        }
+    }
     private List<String> genes;
     private final String DATA_PATH= DirectorySettings.getCacheDirectory().getAbsolutePath()+"\\" + "gmdata";
     private final int DEFAULT_GENE_LIMIT = 50;
@@ -92,7 +99,7 @@ public class GenemaniaInfoRetriever {
         this.combiningMethod = cm;
     }
 
-    public List<String> getRelatedGeneNamesByScore() throws ApplicationException, DataStoreException{
+    public List<String> getRelatedGeneNamesByScore() throws ApplicationException, DataStoreException, NoRelatedGenesInfoException{
         List<String> geneNames = new ArrayList<String>();
         Iterator<Gene> itr = getRelatedGenesByScore().iterator();
         while (itr.hasNext()){
@@ -101,7 +108,7 @@ public class GenemaniaInfoRetriever {
         return geneNames;
      }
 
-    public List<Gene> getRelatedGenesByScore() throws ApplicationException, DataStoreException{
+    public List<Gene> getRelatedGenesByScore() throws ApplicationException, DataStoreException, NoRelatedGenesInfoException{
         options =runGeneManiaAlgorithm();
         final Map<Gene, Double> scores = options.getScores();
 	ArrayList<Gene> relatedGenes = new ArrayList<Gene>(scores.keySet());
@@ -113,10 +120,14 @@ public class GenemaniaInfoRetriever {
         return relatedGenes;
     }
 
+    public NetworkUtils getNetworkUtils(){
+        return networkUtils;
+    }
     public CyNetwork getGraph(){
         EdgeAttributeProvider provider = createEdgeAttributeProvider(data, options);
         
         CyNetwork network = cytoscapeUtils.createNetwork(data, getNextNetworkName(human), options, provider);
+       
         computeGraphCache(network, options,networks.keySet());
 		
 		
@@ -282,7 +293,7 @@ public class GenemaniaInfoRetriever {
 		};
 	}
 	
-    private SearchOptions runGeneManiaAlgorithm() throws ApplicationException, DataStoreException{
+    private SearchOptions runGeneManiaAlgorithm() throws ApplicationException, DataStoreException, NoRelatedGenesInfoException{
                 RelatedGenesEngineRequestDto request = createRequest();
 		response = runQuery(request);
 
@@ -316,10 +327,12 @@ public class GenemaniaInfoRetriever {
 		return request;
 	}
 
-    private EnrichmentEngineResponseDto computeEnrichment(EnrichmentEngineRequestDto request) throws ApplicationException {
+    private EnrichmentEngineResponseDto computeEnrichment(EnrichmentEngineRequestDto request) throws ApplicationException, NoRelatedGenesInfoException {
 		if (request == null) {
 			return null;
 		}
+                if(request.getNodes().size() ==0)
+                    throw new NoRelatedGenesInfoException();
 		return mania.computeEnrichment(request);
 	}
     private RelatedGenesEngineRequestDto createRequest() throws ApplicationException {

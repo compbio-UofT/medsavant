@@ -1,4 +1,4 @@
-/*
+  /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -62,7 +62,10 @@ public class EntrezButton extends JButton{
     private URL getURL() throws MalformedURLException, UnsupportedEncodingException, IOException{
         String baseUrl2 = "http://www.ncbi.nlm.nih.gov";
         Element link = getParsedLink();
-        return new URL(baseUrl2 + link.select("a").attr("href"));
+        if(link==null)
+            return new URL("http://www.ncbi.nlm.nih.gov/gene?term=" +URLEncoder.encode(geneName, charset));
+        String urlSuffix = link.select("a").attr("href");
+        return new URL(baseUrl2 + urlSuffix);
     }
     
     public Element getParsedLink() throws MalformedURLException, UnsupportedEncodingException, IOException{

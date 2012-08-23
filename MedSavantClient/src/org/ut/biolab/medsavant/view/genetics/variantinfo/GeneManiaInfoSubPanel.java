@@ -15,6 +15,12 @@
  */
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
+import cytoscape.CyNetwork;
+import cytoscape.Cytoscape;
+import cytoscape.layout.CyLayoutAlgorithm;
+import cytoscape.layout.CyLayouts;
+import cytoscape.view.CyNetworkView;
+import cytoscape.view.NetworkViewManager;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,9 +32,11 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.event.InternalFrameAdapter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.genemania.plugin.cytoscape2.layout.FilteredLayout;
 import org.genemania.type.CombiningMethod;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -42,6 +50,7 @@ import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.view.genetics.inspector.GeneInspector;
 import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
+import org.ut.biolab.medsavant.view.genetics.variantinfo.GenemaniaInfoRetriever.NoRelatedGenesInfoException;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -94,7 +103,8 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     private Thread genemaniaAlgorithmThread;
     private boolean dataPresent;
     private int currSizeOfArray;
-
+    private JPanel graph;
+    
     public GeneManiaInfoSubPanel() {
         name = "Related Genes";
         dataPresent = true;
@@ -148,7 +158,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         pMessagePanel.add(progressMessage);
         settingsPanel.setLayout(new BorderLayout());
         settingsPanel.add(settingsButton, BorderLayout.EAST);
-
+        graph = new JPanel();
         p.add(kvpPanel);
         p.add(currGenePanel);
         p.add(pMessagePanel);
@@ -156,6 +166,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
 
         //p.add(new javax.swing.JSeparator(JSeparator.HORIZONTAL));
         p.add(settingsPanel);
+        p.add(graph);
         return p;
     }
 
@@ -431,7 +442,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         okButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                closeSettingsActionPerformed(ae);
+                closeSettingsActionPerformed();
             }
         });
 
@@ -458,20 +469,20 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         return networksSelected;
     }
 
-    private void closeSettingsActionPerformed(ActionEvent evt) {
+    private void closeSettingsActionPerformed() {
         settingsPanel.removeAll();
-        p.invalidate();
-        p.updateUI();
         settingsPanel.setLayout(new BorderLayout());
         settingsPanel.add(settingsButton, BorderLayout.EAST);
         p.invalidate();
         p.updateUI();
+        System.out.println(geneLimitDifference);
         if (geneLimitDifference > 0) {
             System.out.println(geneLimitDifference);
             System.out.println(currSizeOfArray);
             for (int i = currSizeOfArray; i > currSizeOfArray - geneLimitDifference; i--) {
                 kvp.removeBottomRow(Integer.toString(i));
             }
+            currSizeOfArray -=geneLimitDifference;
             kvpPanel.invalidate();
             kvpPanel.updateUI();
         } else if (updateQueryNeeded) {
@@ -492,6 +503,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
 
         }
     }
+    
 
     private void updateRelatedGenesPanel(Gene g) {
         gene = g;
@@ -546,9 +558,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                     kvp.addKey(Integer.toString(i));
                                     JLabel geneName = new JLabel(currGene.getName());
                                     EntrezButton geneLinkButton = new EntrezButton(currGene.getName());
-                                    Element e = geneLinkButton.getParsedLink().select("p.desc").first();
-                                    String description = e.ownText().replaceAll("and ", "").replaceAll(" \\[\\]", "");
-                                    geneName.setToolTipText(description);
+                                    geneName.setToolTipText(currGene.getDescription());
                                     kvp.setValue(Integer.toString(i), geneName);
                                     JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
                                     geneInspectorButton.setToolTipText("Inspect this gene");
@@ -608,59 +618,68 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                 while (itr.hasNext()) {
                                     currGene = itr.next();
                                     final org.ut.biolab.medsavant.model.Gene finalGene = new GeneSetFetcher().getGene(currGene);
-                                    kvp.addKey(Integer.toString(i));
-                                    kvp.setValue(Integer.toString(i), currGene);
-                                    JButton geneLinkButton = new EntrezButton(currGene);
-                                    JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
-                                    geneInspectorButton.setToolTipText("Inspect this gene");
-                                    geneInspectorButton.addActionListener(new ActionListener() {
+                                    if (finalGene != null) {
+                                        kvp.addKey(Integer.toString(i));
+                                        
+                                        EntrezButton geneLinkButton = new EntrezButton(currGene);
+                                        JLabel geneName = new JLabel(currGene);
+                                        geneName.setToolTipText(finalGene.getDescription());
+                                        kvp.setValue(Integer.toString(i), geneName);
+                                        JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
+                                        geneInspectorButton.setToolTipText("Inspect this gene");
+                                        geneInspectorButton.addActionListener(new ActionListener() {
 
-                                        @Override
-                                        public void actionPerformed(ActionEvent ae) {
-                                            GeneInspector.getInstance().setGene(finalGene);
-                                            InspectorPanel.getInstance().switchToGeneInspector();
-                                        }
-                                    });
-                                    final JPopupMenu regionSets = new JPopupMenu();
-                                    final RegionController regionController = RegionController.getInstance();
-                                    for (RegionSet s : regionController.getRegionSets()) {
-                                        final RegionSet finalRegionSet = s;
-                                        JMenuItem menuItem = new JMenuItem(s.getName());
-                                        menuItem.addActionListener(new ActionListener() {
-
+                                            @Override
                                             public void actionPerformed(ActionEvent ae) {
-                                                try {
-                                                    regionController.addToRegionSet(finalRegionSet, finalGene.getChrom(), finalGene.getStart(), finalGene.getEnd(), finalGene.getName());
-                                                    DialogUtils.displayMessage(String.format("Successfully added %s to %s list", finalGene.getName(), finalRegionSet.getName()));
-                                                } catch (SQLException ex) {
-                                                    Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, ex);
-                                                } catch (RemoteException e) {
-                                                    Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, e);
-                                                }
+                                                GeneInspector.getInstance().setGene(finalGene);
+                                                InspectorPanel.getInstance().switchToGeneInspector();
                                             }
                                         });
-                                        regionSets.add(menuItem);
-                                    }
-                                    final JLabel addToRegionListButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
-                                    addToRegionListButton.setToolTipText("Add to Region List");
-                                    addToRegionListButton.addMouseListener(new MouseAdapter() {
+                                        final JPopupMenu regionSets = new JPopupMenu();
+                                        final RegionController regionController = RegionController.getInstance();
+                                        for (RegionSet s : regionController.getRegionSets()) {
+                                            final RegionSet finalRegionSet = s;
+                                            JMenuItem menuItem = new JMenuItem(s.getName());
+                                            menuItem.addActionListener(new ActionListener() {
 
-                                        @Override
-                                        public void mouseClicked(MouseEvent e) {
-                                            regionSets.show(addToRegionListButton, 0, addToRegionListButton.getHeight());
+                                                public void actionPerformed(ActionEvent ae) {
+                                                    try {
+                                                        regionController.addToRegionSet(finalRegionSet, finalGene.getChrom(), finalGene.getStart(), finalGene.getEnd(), finalGene.getName());
+                                                        DialogUtils.displayMessage(String.format("Successfully added %s to %s list", finalGene.getName(), finalRegionSet.getName()));
+                                                    } catch (SQLException ex) {
+                                                        Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, ex);
+                                                    } catch (RemoteException e) {
+                                                        Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, e);
+                                                    }
+                                                }
+                                            });
+                                            regionSets.add(menuItem);
                                         }
-                                    });
-                                    kvp.setAdditionalColumn(Integer.toString(i), 0, geneInspectorButton);
-                                    kvp.setAdditionalColumn(Integer.toString(i), 1, addToRegionListButton);
-                                    kvp.setAdditionalColumn(Integer.toString(i), 2, geneLinkButton);
-                                    i++;
+                                        final JLabel addToRegionListButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+                                        addToRegionListButton.setToolTipText("Add to Region List");
+                                        addToRegionListButton.addMouseListener(new MouseAdapter() {
+
+                                            @Override
+                                            public void mouseClicked(MouseEvent e) {
+                                                regionSets.show(addToRegionListButton, 0, addToRegionListButton.getHeight());
+                                            }
+                                        });
+                                        kvp.setAdditionalColumn(Integer.toString(i), 0, geneInspectorButton);
+                                        kvp.setAdditionalColumn(Integer.toString(i), 1, addToRegionListButton);
+                                        kvp.setAdditionalColumn(Integer.toString(i), 2, geneLinkButton);
+                                        i++;
+                                    }
                                 }
                                 currSizeOfArray = i - 1;
                             }
                         }
 
                     } catch (InterruptedException e) {
-                    } catch (Exception ex) {
+                    } catch(NoRelatedGenesInfoException e){
+                         progressMessage.setText(e.getMessage());
+                            setMsgOff = false;
+                    } 
+                    catch (Exception ex) {
                         ClientMiscUtils.reportError("Error retrieving data from GeneMANIA: %s", ex);
                     } finally {
                         progressBar.setIndeterminate(false);
@@ -669,6 +688,12 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                         if (setMsgOff) {
                             progressMessage.setVisible(false);
                         }
+                        System.out.println("got here");
+                        graph.removeAll();
+                        graph.add(buildGraph());
+                        System.out.println("got through");
+                        graph.invalidate();
+                        graph.updateUI();
                     }
 
                 }
@@ -679,11 +704,106 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         } else {
             genemaniaAlgorithmThread.interrupt();
             genemaniaAlgorithmThread = new Thread(r);
+            
         }
         //}
 
 
         genemaniaAlgorithmThread.start();
-
+       
     }
+    public JPanel buildGraph(){
+        CyNetwork network = genemania.getGraph();
+        //System.out.println("Nodes " + network.getNodeCount());
+       // System.out.println("Edges " + network.getEdgeCount());
+        for (int i = 0; i < network.getEdgeCount(); i++) {
+            //System.out.println(network.getEdge(i));
+            
+        }
+        
+                CytoscapeUtils cy = new CytoscapeUtils(genemania.getNetworkUtils());
+                Cytoscape.firePropertyChange(Cytoscape.NETWORK_MODIFIED, null, null);
+		Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null, null);
+                CyNetworkView view = cy.getNetworkView(network);
+		CyLayoutAlgorithm layout = CyLayouts.getLayout(FilteredLayout.ID);
+		if (layout == null) {
+			layout = CyLayouts.getDefaultLayout();
+		}
+		layout.doLayout(view); 
+                //NetworkViewManager viewManager = Cytoscape.getDesktop().getNetworkViewManager();
+		//JInternalFrame frame = viewManager.getInternalFrame(view);
+                JPanel p = new JPanel();
+                p.add(view.getComponent());
+                return p;
+    }
+    /*
+    private JComponent getFrameFromView(CyNetworkView view) {
+        final JInternalFrame iframe = new JInternalFrame(view.getTitle(), true, true, true, true);
+		
+
+		// code added to support layered canvas for each CyNetworkView
+		if (view instanceof DGraphView) {
+			final InternalFrameComponent internalFrameComp = 
+				new InternalFrameComponent(iframe.getLayeredPane(), (DGraphView) view);
+
+			iframe.getContentPane().add(internalFrameComp);
+			
+		} else {
+			logger.info("NetworkViewManager.createContainer() - DGraphView not found!");
+			iframe.getContentPane().add(view.getComponent());
+		}
+
+		iframe.pack();
+
+		int x = 0;
+		int y = 0;
+		JInternalFrame refFrame = null;
+		JInternalFrame[] allFrames = desktopPane.getAllFrames();
+
+		if (allFrames.length > 1) {
+			refFrame = allFrames[0];
+		}
+
+		if (refFrame != null) {
+			x = refFrame.getLocation().x + 20;
+			y = refFrame.getLocation().y + 20;
+		}
+
+		if (x > (desktopPane.getWidth() - MINIMUM_WIN_WIDTH)) {
+			x = desktopPane.getWidth() - MINIMUM_WIN_WIDTH;
+		}
+
+		if (y > (desktopPane.getHeight() - MINIMUM_WIN_HEIGHT)) {
+			y = desktopPane.getHeight() - MINIMUM_WIN_HEIGHT;
+		}
+
+		if (x < 0) {
+			x = 0;
+		}
+
+		if (y < 0) {
+			y = 0;
+		}
+
+		iframe.setBounds(x, y, 400, 400);
+
+		// maximize the frame if the specified property is set
+		try {
+			String max = CytoscapeInit.getProperties().getProperty("maximizeViewOnCreate");
+
+			if ((max != null) && Boolean.parseBoolean(max))
+				iframe.setMaximum(true);
+		} catch (PropertyVetoException pve) {
+			//logger.warn("Unable to maximize internal frame: "+pve.getMessage());
+		}
+
+		iframe.setVisible(true);
+		//iframe.addInternalFrameListener(this);
+		iframe.setResizable(true);
+
+                return iframe;
+    }
+    * 
+    */
+    
 }

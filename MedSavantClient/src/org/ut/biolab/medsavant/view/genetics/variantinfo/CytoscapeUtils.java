@@ -177,7 +177,7 @@ public class CytoscapeUtils {
 		mapping.putMapValue(0, 64);
 		return new BasicCalculator("Dynamic calculator", mapping, type); //$NON-NLS-1$
 	}
-    private CyNetworkView getNetworkView(CyNetwork network) {
+    public CyNetworkView getNetworkView(CyNetwork network) {
 		String id = network.getIdentifier();
 		if (!Cytoscape.viewExists(id)) {
 			return Cytoscape.createNetworkView(network);
@@ -228,7 +228,8 @@ public class CytoscapeUtils {
 
 		decorateNodes(currentNetwork, options);
 		return currentNetwork;
-	}private String serializeAnnotations(SearchOptions options) {
+	}
+    private String serializeAnnotations(SearchOptions options) {
 		StringWriter writer = new StringWriter();
 		
 		JsonFactory jsonFactory = new MappingJsonFactory();
