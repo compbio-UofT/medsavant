@@ -88,167 +88,12 @@ public class SearchableTablePanel extends JPanel {
 
     public enum TableSelectionType {DISABLED, CELL, ROW}
 
-    public SortableTable getTable() {
-        return table;
-    }
-
-    private synchronized void updateView(boolean newData) {
-        if (worker != null) {
-            worker.cancel(true);
-        }
-        worker = new GetDataWorker(pageName, newData);
-        worker.execute();
-    }
-
-    public void setTableHeaderVisible(boolean b) {
-        if (!b) {
-            table.setTableHeader(null);
-        }
-    }
-
-    public void setBottomBarVisible(boolean b) {
-        this.bottomPanel.setVisible(b);
-    }
-
-    public void setChooseColumnsButtonVisible(boolean b) {
-        this.chooseColumnButton.setVisible(b);
-    }
-
-    public void setExportButtonVisible(boolean b) {
-        this.exportButton.setVisible(b);
-    }
-
-    private class GetDataWorker extends MedSavantWorker<List<Object[]>> {
-
-        boolean update;
-
-        protected GetDataWorker(String pageName, boolean newData) {
-            super(pageName);
-            this.update = newData;
-        }
-
-        @Override
-        protected List<Object[]> doInBackground() throws Exception {
-            if (update) {
-                setTotalRowCount(retriever.getTotalNum());
-                pageNum = 1;
-            }
-            return retriever.retrieve((pageNum-1) * getRowsPerPage(), getRowsPerPage());
-        }
-
-        @Override
-        protected void showProgress(double fraction) {
-            //do nothing
-        }
-
-        @Override
-        protected void showSuccess(List<Object[]> result) {
-            applyData(result);
-            retriever.retrievalComplete();
-        }
-    }
-
-    /**
-     * Initialise the table to an empty state.
-     */
-    private void initEmpty() {
-        model = new GenericTableModel(new Object[0][0], columnNames, columnClasses);
-
-        gotoFirst.setEnabled(false);
-        gotoPrevious.setEnabled(false);
-        gotoNext.setEnabled(false);
-        gotoLast.setEnabled(false);
-
-        pageText.setText("0");
-        pageLabel2.setText(" of 0");
-        amountLabel.setText("  Showing 0 - 0 of 0");
-
-        int[] columns = new int[columnNames.length];
-        for (int i = 0; i < columns.length; i++) {
-            columns[i] = i;
-        }
-        filterField.setTableModel(model);
-        filterField.setColumnIndices(columns);
-        filterField.setObjectConverterManagerEnabled(true);
-
-        //table.setModel(model);
-        table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
-        columnChooser.hideColumns(table, hiddenColumns);
-
-        int[] favColumns = new int[columnNames.length - hiddenColumns.length];
-        int pos = 0;
-        for (int i = 0; i < columnNames.length; i++) {
-            boolean hidden = false;
-            for (int j = 0; j < hiddenColumns.length; j++) {
-                if (hiddenColumns[j] == i) {
-                    hidden = true;
-                    break;
-                }
-            }
-            if (!hidden) {
-                favColumns[pos] = i;
-                pos++;
-            }
-        }
-        columnChooser.setFavoriteColumns(favColumns);
-    }
-
-    /**
-     * Brute-force replacement of current table data with the given data, blowing away the current table selection.
-     *
-     * @param pageData the new data
-     */
-    @SuppressWarnings("UseOfObsoleteCollectionType")
-    public synchronized void applyData(List<Object[]> pageData) {
-
-        if (pageData != null) {
-            // We can't call setDataVector directly because that blows away any custom table renderers we've set.
-            java.util.Vector v = model.getDataVector();
-            v.removeAllElements();
-            for (Object[] r: pageData) {
-                v.add(new java.util.Vector(Arrays.asList(r)));
-            }
-        }
-
-        gotoFirst.setEnabled(true);
-        gotoPrevious.setEnabled(true);
-        gotoNext.setEnabled(true);
-        gotoLast.setEnabled(true);
-
-        if (pageNum == 1 || pageNum == 0) {
-            gotoFirst.setEnabled(false);
-            gotoPrevious.setEnabled(false);
-        }
-        if (pageNum == getTotalNumPages() || pageNum == 0) {
-            gotoNext.setEnabled(false);
-            gotoLast.setEnabled(false);
-        }
-
-        pageText.setText(Integer.toString(getPageNumber()));
-        pageLabel2.setText(" of " + ViewUtil.numToString(getTotalNumPages()));
-        int start = getTotalNumPages() == 0 ? 0 : (getPageNumber() - 1) * getRowsPerPage() + 1;
-        int end = getTotalNumPages() == 0 ? 0 : Math.min(start + getRowsPerPage() - 1, getTotalRowCount());
-        amountLabel.setText("  Showing " + ViewUtil.numToString(start) + " - " + ViewUtil.numToString(end) + " of " + ViewUtil.numToString(getTotalRowCount()));
-
-        model.fireTableDataChanged();
-    }
-
-    private void setTableModel(List<Object[]> data, String[] columnNames, Class[] columnClasses) {
-        if (data == null) {
-            this.data = new ArrayList<Object[]>();
-        } else {
-            this.data = data;
-        }
-        this.columnNames = columnNames;
-        this.columnClasses = columnClasses;
-    }
-
-    public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns, int defaultRowsRetrieved, DataRetriever retriever) {
+    public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns, int defaultRowsRetrieved, DataRetriever<Object[]> retriever) {
         this(pageName, columnNames, columnClasses, hiddenColumns, true, true, ROWSPERPAGE_2, true, TableSelectionType.ROW, defaultRowsRetrieved, retriever);
     }
 
     public SearchableTablePanel(String pageName, String[] columnNames, Class[] columnClasses, int[] hiddenColumns,
-        boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, TableSelectionType selectionType, int defaultRowsRetrieved, DataRetriever retriever) {
+        boolean allowSearch, boolean allowSort, int defaultRows, boolean allowPages, TableSelectionType selectionType, int defaultRowsRetrieved, DataRetriever<Object[]> retriever) {
 
         this.pageName = pageName;
         this.rowsPerPageX = defaultRows;
@@ -487,6 +332,155 @@ public class SearchableTablePanel extends JPanel {
         add(tablePanel,BorderLayout.CENTER);
 
         initEmpty();
+    }
+
+    public SortableTable getTable() {
+        return table;
+    }
+
+    private synchronized void updateView(boolean newData) {
+        if (worker != null) {
+            worker.cancel(true);
+        }
+        worker = new GetDataWorker(pageName, newData);
+        worker.execute();
+    }
+
+    public void setBottomBarVisible(boolean b) {
+        this.bottomPanel.setVisible(b);
+    }
+
+    public void setChooseColumnsButtonVisible(boolean b) {
+        this.chooseColumnButton.setVisible(b);
+    }
+
+    public void setExportButtonVisible(boolean b) {
+        this.exportButton.setVisible(b);
+    }
+
+    private class GetDataWorker extends MedSavantWorker<List<Object[]>> {
+
+        boolean update;
+
+        protected GetDataWorker(String pageName, boolean newData) {
+            super(pageName);
+            this.update = newData;
+        }
+
+        @Override
+        protected List<Object[]> doInBackground() throws Exception {
+            if (update) {
+                setTotalRowCount(retriever.getTotalNum());
+                pageNum = 1;
+            }
+            return retriever.retrieve((pageNum-1) * getRowsPerPage(), getRowsPerPage());
+        }
+
+        @Override
+        protected void showProgress(double fraction) {
+            //do nothing
+        }
+
+        @Override
+        protected void showSuccess(List<Object[]> result) {
+            applyData(result);
+            retriever.retrievalComplete();
+        }
+    }
+
+    /**
+     * Initialise the table to an empty state.
+     */
+    private void initEmpty() {
+        model = new GenericTableModel(new Object[0][0], columnNames, columnClasses);
+
+        gotoFirst.setEnabled(false);
+        gotoPrevious.setEnabled(false);
+        gotoNext.setEnabled(false);
+        gotoLast.setEnabled(false);
+
+        pageText.setText("0");
+        pageLabel2.setText(" of 0");
+        amountLabel.setText("  Showing 0 - 0 of 0");
+
+        int[] columns = new int[columnNames.length];
+        for (int i = 0; i < columns.length; i++) {
+            columns[i] = i;
+        }
+        filterField.setTableModel(model);
+        filterField.setColumnIndices(columns);
+        filterField.setObjectConverterManagerEnabled(true);
+
+        //table.setModel(model);
+        table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
+        columnChooser.hideColumns(table, hiddenColumns);
+
+        int[] favColumns = new int[columnNames.length - hiddenColumns.length];
+        int pos = 0;
+        for (int i = 0; i < columnNames.length; i++) {
+            boolean hidden = false;
+            for (int j = 0; j < hiddenColumns.length; j++) {
+                if (hiddenColumns[j] == i) {
+                    hidden = true;
+                    break;
+                }
+            }
+            if (!hidden) {
+                favColumns[pos] = i;
+                pos++;
+            }
+        }
+        columnChooser.setFavoriteColumns(favColumns);
+    }
+
+    /**
+     * Brute-force replacement of current table data with the given data, blowing away the current table selection.
+     *
+     * @param pageData the new data
+     */
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    public synchronized void applyData(List<Object[]> pageData) {
+
+        if (pageData != null) {
+            // We can't call setDataVector directly because that blows away any custom table renderers we've set.
+            java.util.Vector v = model.getDataVector();
+            v.removeAllElements();
+            for (Object[] r: pageData) {
+                v.add(new java.util.Vector(Arrays.asList(r)));
+            }
+        }
+
+        gotoFirst.setEnabled(true);
+        gotoPrevious.setEnabled(true);
+        gotoNext.setEnabled(true);
+        gotoLast.setEnabled(true);
+
+        if (pageNum == 1 || pageNum == 0) {
+            gotoFirst.setEnabled(false);
+            gotoPrevious.setEnabled(false);
+        }
+        if (pageNum == getTotalNumPages() || pageNum == 0) {
+            gotoNext.setEnabled(false);
+            gotoLast.setEnabled(false);
+        }
+
+        pageText.setText(Integer.toString(getPageNumber()));
+        pageLabel2.setText(" of " + ViewUtil.numToString(getTotalNumPages()));
+        int start = getTotalNumPages() == 0 ? 0 : (getPageNumber() - 1) * getRowsPerPage() + 1;
+        int end = getTotalNumPages() == 0 ? 0 : Math.min(start + getRowsPerPage() - 1, getTotalRowCount());
+        amountLabel.setText("  Showing " + ViewUtil.numToString(start) + " - " + ViewUtil.numToString(end) + " of " + ViewUtil.numToString(getTotalRowCount()));
+
+        model.fireTableDataChanged();
+    }
+
+    private void setTableModel(List<Object[]> data, String[] columnNames, Class[] columnClasses) {
+        if (data == null) {
+            this.data = new ArrayList<Object[]>();
+        } else {
+            this.data = data;
+        }
+        this.columnNames = columnNames;
+        this.columnClasses = columnClasses;
     }
 
     public void setNumRowsPerPage(int num) {
