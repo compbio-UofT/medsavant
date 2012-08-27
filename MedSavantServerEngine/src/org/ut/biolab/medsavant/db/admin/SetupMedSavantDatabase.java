@@ -285,7 +285,6 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + ") ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
             conn.executeUpdate(MedSavantDatabase.GeneSetTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
-
             conn.executeUpdate(MedSavantDatabase.OntologyTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
             conn.executeUpdate(MedSavantDatabase.OntologyInfoTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
 
@@ -296,13 +295,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                     + "PRIMARY KEY (`setting_key`)"
                     + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
 
-            conn.executeUpdate(
-                    "CREATE TABLE `" + MedSavantDatabase.VarianttagTableSchema.getTableName() + "` ("
-                      + "`upload_id` int(11) NOT NULL,"
-                      + "`tagkey` varchar(500) COLLATE latin1_bin NOT NULL,"
-                      + "`tagvalue` varchar(1000) COLLATE latin1_bin NOT NULL DEFAULT ''"
-                        + ") ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin"
-                    );
+            conn.executeUpdate(MedSavantDatabase.VariantTagTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
 
             conn.executeUpdate(
                     "CREATE TABLE `" + MedSavantDatabase.VariantStarredTableSchema.getTableName() + "` ("

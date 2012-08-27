@@ -49,7 +49,7 @@ public class ExportVCF {
     private static int INTERMEDIATE_INDEX_FILTER = 8;
     private static int INTERMEDIATE_INDEX_CUSTOM = 9; //and on
 
-    public static void exportVCF(File file, MedSavantWorker worker) throws Exception {
+    public static void exportVCF(File destFile, MedSavantWorker worker) throws Exception {
 
         int fileID = MedSavantClient.VariantManager.exportVariants(
                 LoginController.sessionId,
@@ -61,7 +61,7 @@ public class ExportVCF {
         }
         worker.showProgress(0.5);
 
-        ClientNetworkUtils.copyFileFromServer(fileID,file.getAbsolutePath());
+        ClientNetworkUtils.copyFileFromServer(fileID, destFile);
 
         //maintain lists of chrs, dnaids, ...
         Map<String, BufferedWriter> out = new HashMap<String, BufferedWriter>();
@@ -78,7 +78,7 @@ public class ExportVCF {
         int infoMin = DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO+1;
         int infoMax = table.getNumFields();
 
-        BufferedReader in = new BufferedReader(new FileReader(file));
+        BufferedReader in = new BufferedReader(new FileReader(destFile));
 
         double numSteps = ReferenceController.getInstance().getChromosomes().length * 6;
         String line;
@@ -116,7 +116,7 @@ public class ExportVCF {
             BufferedWriter writer = out.get(cleanField(record[DefaultVariantTableSchema.INDEX_OF_CHROM]));
             if (writer == null) {
                 String chrom = cleanField(record[DefaultVariantTableSchema.INDEX_OF_CHROM]);
-                File f = new File(DirectorySettings.getTmpDirectory() + File.separator + file.getName() + chrom);
+                File f = new File(DirectorySettings.getTmpDirectory() + File.separator + destFile.getName() + chrom);
                 writer = new BufferedWriter(new FileWriter(f, false));
                 out.put(chrom, writer);
                 chrs.add(chrom);
@@ -138,7 +138,7 @@ public class ExportVCF {
 
         //concatenate separate chrom files in proper order
         Collections.sort(chrs, new ChromosomeComparator());
-        File temp1 = new File(DirectorySettings.getTmpDirectory() + File.separator + file.getName() + "_complete");
+        File temp1 = new File(DirectorySettings.getTmpDirectory() + File.separator + destFile.getName() + "_complete");
         for (int i = 0; i < files.size(); i++) {
             copyFile(files.get(chrs.get(i)), temp1, i != 0);
             if (worker.isCancelled()) {
@@ -148,7 +148,7 @@ public class ExportVCF {
         }
 
         //merge vcf to remove duplicates
-        mergeVCF(temp1, file, dnaIds, customColumnNames);
+        mergeVCF(temp1, destFile, dnaIds, customColumnNames);
         worker.showProgress(1.0);
     }
 

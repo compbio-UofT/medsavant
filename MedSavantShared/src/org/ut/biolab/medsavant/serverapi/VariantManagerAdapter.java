@@ -31,11 +31,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.Column;
 
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.model.Range;
-import org.ut.biolab.medsavant.model.ScatterChartMap;
-import org.ut.biolab.medsavant.model.SimplePatient;
-import org.ut.biolab.medsavant.model.SimpleVariantFile;
-import org.ut.biolab.medsavant.model.VariantComment;
+import org.ut.biolab.medsavant.model.*;
 
 
 /**
@@ -43,6 +39,11 @@ import org.ut.biolab.medsavant.model.VariantComment;
  * @author mfiume
  */
 public interface VariantManagerAdapter extends Remote {
+
+    /**
+     * Check the status of a lengthy process, giving the user the option to cancel.
+     */
+    ProgressStatus checkProgress(String sessID, boolean userCancelled) throws RemoteException;
 
     public int uploadVariants(String sessID, int[] fileIDs, int projID, int refID, String[][] variantTags, boolean includeHomoRef) throws RemoteException, IOException, Exception;
     public int uploadVariants(String sessID, File dirContainingVCFs, int projID, int refID, String[][] tags, boolean includeHomoRef) throws RemoteException, IOException, Exception;

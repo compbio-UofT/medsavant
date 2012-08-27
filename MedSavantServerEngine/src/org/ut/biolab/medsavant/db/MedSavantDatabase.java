@@ -670,36 +670,12 @@ public class MedSavantDatabase {
         }
     }
 
-    public static class VarianttagTableSchema extends TableSchema {
-
-        public static final String TABLE_NAME = "variant_tag";
-
-        public VarianttagTableSchema(DbSchema s) {
-            super(s.addTable(TABLE_NAME));
-            addColumns();
-        }
-        // variant_tag.upload_id
-        public static final int INDEX_OF_UPLOAD_ID = 0;
-        public static final ColumnType TYPE_OF_UPLOAD_ID = ColumnType.INTEGER;
-        public static final int LENGTH_OF_UPLOAD_ID = 11;
-        public static final String COLUMNNAME_OF_UPLOAD_ID = "upload_id";
-        // variant_tag.key
-        public static final int INDEX_OF_TAGKEY = 1;
-        public static final ColumnType TYPE_OF_TAGKEY = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_TAGKEY = 500;
-        public static final String COLUMNNAME_OF_TAGKEY = "tagkey";
-        // variant_tag.value
-        public static final int INDEX_OF_TAGVALUE = 2;
-        public static final ColumnType TYPE_OF_TAGVALUE = ColumnType.VARCHAR;
-        public static final int LENGTH_OF_TAGVALUE = 1000;
-        public static final String COLUMNNAME_OF_TAGVALUE = "tagvalue";
-
-        private void addColumns() {
-            addColumn(COLUMNNAME_OF_UPLOAD_ID, COLUMNNAME_OF_UPLOAD_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_TAGKEY, COLUMNNAME_OF_TAGKEY, ColumnType.VARCHAR, 500);
-            addColumn(COLUMNNAME_OF_TAGVALUE, COLUMNNAME_OF_TAGVALUE, ColumnType.VARCHAR, 1000);
-        }
+    public interface VariantTagColumns {
+        static final ColumnDef UPLOAD_ID = new ColumnDef.Integer("upload_id");
+        static final ColumnDef TAGKEY = new ColumnDef("tagkey", ColumnType.VARCHAR, 500);
+        static final ColumnDef TAGVALUE = new ColumnDef("tagvalue", ColumnType.VARCHAR, 1000);
     }
+
 
     public static class SettingsTableSchema extends TableSchema {
 
@@ -839,7 +815,7 @@ public class MedSavantDatabase {
     public static final VariantPendingUpdateTableSchema VariantpendingupdateTableSchema = new VariantPendingUpdateTableSchema(schema);
     public static final VariantTablemapTableSchema VarianttablemapTableSchema = new VariantTablemapTableSchema(schema);
     public static final VariantFormatTableSchema VariantformatTableSchema = new VariantFormatTableSchema(schema);
-    public static final VarianttagTableSchema VarianttagTableSchema = new VarianttagTableSchema(schema);
+    public static final TableSchema VariantTagTableSchema = new TableSchema(schema, "variant_tag", VariantTagColumns.class);
     public static final VariantStarredTableSchema VariantStarredTableSchema = new VariantStarredTableSchema(schema);
     public static final VariantFileTableSchema VariantFileTableSchema = new VariantFileTableSchema(schema);
 }

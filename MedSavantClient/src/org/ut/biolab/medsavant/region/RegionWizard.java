@@ -773,7 +773,7 @@ public class RegionWizard extends WizardDialog {
         }
     }
 
-    private void createList() throws SQLException, IOException {
+    private void createList() throws SQLException, IOException, InterruptedException {
         if (!importing) {
             File tempFile = File.createTempFile("genes", ".bed");
             FileWriter output = new FileWriter(tempFile);

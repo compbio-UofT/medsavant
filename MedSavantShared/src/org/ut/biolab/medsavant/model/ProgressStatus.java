@@ -20,13 +20,13 @@ import java.io.Serializable;
 
 
 /**
- * Represents the status of a length process.
+ * Represents the status of a lengthy process.
  *
  * @author tarkvara
  */
 public class ProgressStatus implements Serializable {
     
-    public static final ProgressStatus CANCELLED = new ProgressStatus("Cancelled", 1.0);
+    public static final ProgressStatus CANCELLED = new ProgressStatus("Cancelled by user", 1.0);
 
     /**
      * A progress message indicating the operation currently in process (e.g.&nbsp;"Loading…").

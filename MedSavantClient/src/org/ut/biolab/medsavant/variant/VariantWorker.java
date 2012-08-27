@@ -75,6 +75,7 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
         workButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                VariantWorker.this.progressBar.setIndeterminate(true);
                 VariantWorker.this.workButton.setText("Cancelling...");
                 VariantWorker.this.workButton.setEnabled(false);
                 cancel(true);
@@ -111,9 +112,9 @@ public abstract class VariantWorker extends MedSavantWorker<Void> {
         } else {
             // Failure
             ClientMiscUtils.checkSQLException(ex);
-            progressLabel.setForeground(Color.red);
+            progressLabel.setForeground(Color.RED);
             progressLabel.setText(ex.getMessage());
+            LOG.error(activity + " failed.", ex);
         }
-        LOG.error(activity + " failed.", ex);
     }
 }

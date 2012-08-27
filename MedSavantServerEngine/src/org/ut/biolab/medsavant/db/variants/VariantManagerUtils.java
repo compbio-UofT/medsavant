@@ -43,9 +43,7 @@ public class VariantManagerUtils {
 
     private static final Log LOG = LogFactory.getLog(VariantManagerUtils.class);
     private static final int OUTPUT_LINES_LIMIT = 1000000;
-    //private static final int MAX_SUBSET_SIZE = 100000000; //bytes = 100MB
-    private static final int MIN_SUBSET_SIZE = 100000000; //bytes = 100MB
-    private static final int SUBSET_COMPRESSION = 1000; // times
+    private static final int MIN_SUBSET_SIZE = 1000000; // 100000000; //bytes = 100MB
 
     public static void annotateTDF(String sid, String tdfFilename, String outputFilename, int[] annotationIds) throws IOException, SQLException {
         new VariantAnnotator(tdfFilename, outputFilename, annotationIds).annotate(sid);

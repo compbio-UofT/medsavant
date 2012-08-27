@@ -54,17 +54,25 @@ public abstract class MedSavantWorker<T> extends SwingWorker<T, Object> {
             progressTimer.stop();
         }
         showProgress(1.0);
-        if (!isCancelled()) {
-            try {
+        try {
+            if (!isCancelled()) {
                 showSuccess(get()); 
-            } catch (InterruptedException x) {
-                showFailure(x);
-            } catch (ExecutionException x) {
-                showFailure(x.getCause());
-            } finally {
-                // Succeed or fail, we want to remove the worker from our page.
-                ThreadController.getInstance().removeWorker(pageName, this);
+            } else {
+                // Send the server one last checkProgress call so that server knows that we've cancelled.
+                try {
+                    checkProgress();
+                } catch (Exception ex) {
+                    LOG.info("Ignoring exception thrown while cancelling.", ex);
+                }
+                throw new InterruptedException();
             }
+        } catch (InterruptedException x) {
+            showFailure(x);
+        } catch (ExecutionException x) {
+            showFailure(x.getCause());
+        } finally {
+            // Succeed or fail, we want to remove the worker from our page.
+            ThreadController.getInstance().removeWorker(pageName, this);
         }
     }
     

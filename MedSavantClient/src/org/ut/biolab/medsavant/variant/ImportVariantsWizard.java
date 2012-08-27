@@ -13,6 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.variant;
 
 import java.awt.*;
@@ -21,6 +22,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,9 +39,11 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.model.ProgressStatus;
 import org.ut.biolab.medsavant.model.VariantTag;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
+import org.ut.biolab.medsavant.serverapi.VariantManagerAdapter;
 import org.ut.biolab.medsavant.util.ClientNetworkUtils;
 import org.ut.biolab.medsavant.util.ExtensionsFileFilter;
 import org.ut.biolab.medsavant.view.images.IconFactory;
@@ -53,6 +57,9 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class ImportVariantsWizard extends WizardDialog {
 
     private static final Log LOG = LogFactory.getLog(ImportVariantsWizard.class);
+    
+    private static VariantManagerAdapter manager = MedSavantClient.VariantManager;
+
     private List<VariantTag> variantTags;
     private File[] variantFiles;
     private boolean includeHomoRef = false;
@@ -92,18 +99,18 @@ public class ImportVariantsWizard extends WizardDialog {
         return new Dimension(720, 600);
     }
 
-    private void setUploadRequired(boolean uploadRequired) {
-        this.uploadRequired = uploadRequired;
+    private void setUploadRequired(boolean req) {
+        uploadRequired = req;
 
         if (chooseContainer != null) {
-            this.chooseContainer.removeAll();
+            chooseContainer.removeAll();
 
-            if (this.uploadRequired) {
+            if (uploadRequired) {
                 chooseTitleLabel.setText("Choose the variant file(s) to be imported:");
-                this.chooseContainer.add(this.filesOnMyComputerPanel, BorderLayout.CENTER);
+                chooseContainer.add(filesOnMyComputerPanel, BorderLayout.CENTER);
             } else {
                 chooseTitleLabel.setText("Specify the full directory path containing variant file(s) to be imported:");
-                this.chooseContainer.add(this.filesOnMedSavantServerPanel, BorderLayout.CENTER);
+                chooseContainer.add(filesOnMedSavantServerPanel, BorderLayout.CENTER);
             }
         }
     }
@@ -111,8 +118,8 @@ public class ImportVariantsWizard extends WizardDialog {
     private AbstractWizardPage getVCFSourcePage() {
         return new DefaultWizardPage("Location of Files") {
 
-            private JRadioButton onMyComputerButton = new JRadioButton("my computer");
-            private JRadioButton onMedSavantServerButton = new JRadioButton("the MedSavant server");
+            private JRadioButton onMyComputerButton = new JRadioButton("This computer");
+            private JRadioButton onMedSavantServerButton = new JRadioButton("The MedSavant server");
 
             {
                 ButtonGroup g = new ButtonGroup();
@@ -355,8 +362,8 @@ public class ImportVariantsWizard extends WizardDialog {
 
     private void addDefaultTags(List<VariantTag> variantTags, JTextArea ta) {
 
-        VariantTag tag1 = new VariantTag("Uploader", LoginController.getInstance().getUserName());
-        VariantTag tag2 = new VariantTag("Upload Date", (new Date()).toString());
+        VariantTag tag1 = new VariantTag(VariantTag.UPLOADER, LoginController.getInstance().getUserName());
+        VariantTag tag2 = new VariantTag(VariantTag.UPLOAD_DATE, (new Date()).toString());
         variantTags.add(tag1);
         variantTags.add(tag2);
         ta.append(tag1.toString() + "\n");
@@ -382,6 +389,8 @@ public class ImportVariantsWizard extends WizardDialog {
 
     private AbstractWizardPage getQueuePage() {
         final DefaultWizardPage page = new DefaultWizardPage("Transfer, Annotate, and Publish Variants") {
+            private static final double UPLOAD_FILES_PERCENT = 20.0;
+            private static final double UPDATE_DATABASE_PERCENT = 80.0;
 
             private final JLabel progressLabel = new JLabel("You are now ready to import variants.");
             private final JProgressBar progressBar = new JProgressBar();
@@ -390,6 +399,7 @@ public class ImportVariantsWizard extends WizardDialog {
             private final JCheckBox autoPublishVariants = new JCheckBox("Automatically publish variants after import");
             private final JLabel publishProgressLabel = new JLabel("Ready to publish variants.");
             private final JProgressBar publishProgressBar = new JProgressBar();
+            private boolean inUploading = false;
 
             {
                 addComponent(progressLabel);
@@ -403,34 +413,66 @@ public class ImportVariantsWizard extends WizardDialog {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
 
-                        progressBar.setIndeterminate(true);
-
                         LOG.info("Starting import worker");
 
                         new UpdateWorker("Importing variants", ImportVariantsWizard.this, progressLabel, progressBar, workButton, autoPublishVariants, publishProgressLabel, publishProgressBar, publishButton) {
+                            private int fileIndex = 0;
 
                             @Override
                             protected Void doInBackground() throws Exception {
-
+                                progressBar.setValue(0);
+                                startProgressTimer();
                                 if (uploadRequired) {
-                                    int i = 0;
+                                    inUploading = true;
                                     LOG.info("Creating input streams");
-                                    int[] fileIds = new int[variantFiles.length];
-                                    for (File file : variantFiles) {
+                                    int[] transferIDs = new int[variantFiles.length];
+                                    for (File file: variantFiles) {
                                         LOG.info("Created input stream for file");
-                                        fileIds[i] = ClientNetworkUtils.copyFileToServer(file);
-                                        i++;
+                                        progressLabel.setText("Uploading " + file.getName() + "...");
+                                        transferIDs[fileIndex] = ClientNetworkUtils.copyFileToServer(file);
+                                        fileIndex++;
                                     }
-
-                                    LOG.info("Sending input streams to server");
-                                    updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, fileIds, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
+                                    inUploading = false;
+                                    updateID = manager.uploadVariants(LoginController.sessionId, transferIDs, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
                                     LOG.info("Import complete");
                                 } else {
                                     LOG.info("Importing variants stored on server");
-                                    updateID = MedSavantClient.VariantManager.uploadVariants(LoginController.sessionId, new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
+                                    progressLabel.setText("Importing variants stored on server...");
+                                    updateID = manager.uploadVariants(LoginController.sessionId, new File(serverPathField.getText()), ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID(), tagsToStringArray(variantTags), includeHomoRef);
                                     LOG.info("Done importing");
                                 }
                                 return null;
+                            }
+                            
+                            @Override
+                            protected void showProgress(double fract) {
+                                double prog;
+                                if (uploadRequired) {
+                                    if (inUploading) {
+                                        // The fraction will be a percentage of the current file.  We have multiple files making up
+                                        // the UPLOAD_FILES_PERCENT.
+                                        prog = UPLOAD_FILES_PERCENT * (fileIndex + fract) / variantFiles.length;
+                                    } else {
+                                        prog = UPLOAD_FILES_PERCENT + fract * UPDATE_DATABASE_PERCENT;
+                                    }
+                                } else {
+                                    prog = fract * 100.0;
+                                }
+                                progressBar.setValue((int)prog);
+                            }
+
+                            @Override
+                            protected ProgressStatus checkProgress() throws RemoteException {
+                                ProgressStatus stat;
+                                if (inUploading) {
+                                    stat = MedSavantClient.NetworkManager.checkProgress(LoginController.sessionId, isCancelled());
+                                } else {
+                                    stat = manager.checkProgress(LoginController.sessionId, isCancelled());
+                                }
+                                if (stat != null) {
+                                    progressLabel.setText(stat.message);
+                                }
+                                return stat;
                             }
                         }.execute();
                     }

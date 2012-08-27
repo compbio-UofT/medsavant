@@ -24,13 +24,14 @@ import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.login.LoginController;
+import org.ut.biolab.medsavant.serverapi.NetworkManagerAdapter;
 
 /**
  *
  * @author Andrew
  */
 public class ClientNetworkUtils extends NetworkUtils {
-
+    
     /**
      * Download a file in the background.  Notification events will be sent to the
      * supplied listener.
@@ -82,31 +83,58 @@ public class ClientNetworkUtils extends NetworkUtils {
     }
 
 
-    public static int copyFileToServer(File file) throws FileNotFoundException, IOException, SQLException {
+    public static int copyFileToServer(File file) throws IOException, InterruptedException {
+        NetworkManagerAdapter netMgr = MedSavantClient.NetworkManager;
+        int streamID = -1;
+        InputStream stream = null;
 
-        int id = MedSavantClient.NetworkManager.openFileWriterOnServer(LoginController.sessionId);
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String line = "";
-        int numLines = 0;
-        while ((line = br.readLine()) != null) {
-            numLines++;
-            MedSavantClient.NetworkManager.writeLineToServer(LoginController.sessionId, id, line);
+        try {
+            streamID = netMgr.openWriterOnServer(LoginController.sessionId, file.getName(), file.length());
+            stream = new FileInputStream(file);
+
+            int numBytes;
+            byte[] buf = null;
+            while ((numBytes = Math.min(stream.available(), NetworkManagerAdapter.BLOCK_SIZE)) > 0) {
+                if (buf == null || numBytes != buf.length) {
+                    buf = new byte[numBytes];
+                }
+                stream.read(buf);
+                netMgr.writeToServer(LoginController.sessionId, streamID, buf);
+            }
+        } finally {
+            if (streamID >= 0) {
+                netMgr.closeWriterOnServer(LoginController.sessionId, streamID);
+            }
+            if (stream != null) {
+                stream.close();
+            }
         }
 
-        br.close();
-        MedSavantClient.NetworkManager.closeFileWriterOnServer(LoginController.sessionId, id);
-
-        return id;
+        return streamID;
     }
 
-    public static void copyFileFromServer(int fileID, String absolutePath) throws IOException, SQLException {
-        BufferedWriter bw = new BufferedWriter(new FileWriter(new File(absolutePath)));
-        MedSavantClient.NetworkManager.openFileReaderOnServer(LoginController.sessionId, fileID);
-        String line = "";
-        while ((line = MedSavantClient.NetworkManager.readLineFromServer(LoginController.sessionId, fileID)) != null) {
-            bw.write(line + "\n");
+    /**
+     * Copy a file from the server.  The provided <code>streamID</code> will have been assigned during an earlier server call, so
+     * this method is not responsible for opening the stream.
+     *
+     * @param streamID assigned by server
+     * @param destFile path to file where we're dumping server output
+     */
+    public static void copyFileFromServer(int streamID, File destFile) throws IOException, InterruptedException {
+        NetworkManagerAdapter netMgr = MedSavantClient.NetworkManager;
+
+        OutputStream stream = null;
+        try {
+            stream = new FileOutputStream(destFile);
+            byte[] buf;
+            while ((buf = netMgr.readFromServer(LoginController.sessionId, streamID)) != null) {
+                stream.write(buf);
+            }
+        } finally {
+            netMgr.closeReaderOnServer(LoginController.sessionId, streamID);
+            if (stream != null) {
+                stream.close();
+            }
         }
-        MedSavantClient.NetworkManager.closeFileReaderOnServer(LoginController.sessionId, fileID);
-        bw.close();
     }
 }

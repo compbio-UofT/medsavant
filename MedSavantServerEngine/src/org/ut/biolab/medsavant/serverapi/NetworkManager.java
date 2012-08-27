@@ -1,5 +1,5 @@
 /*
- *    Copyright 2011-2012 University of Toronto
+ *    Copyright 2012 University of Toronto
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,18 +18,8 @@ package org.ut.biolab.medsavant.serverapi;
 
 import java.io.*;
 import java.rmi.RemoteException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.ut.biolab.medsavant.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.db.connection.PooledConnection;
-import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.DirectorySettings;
 
@@ -40,14 +30,12 @@ import org.ut.biolab.medsavant.util.DirectorySettings;
  */
 public class NetworkManager extends MedSavantServerUnicastRemoteObject implements NetworkManagerAdapter {
 
-    private static final HashMap<Integer, BufferedWriter> writerMap = new HashMap<Integer,BufferedWriter>();
-    private static final HashMap<Integer, BufferedReader> readerMap = new HashMap<Integer,BufferedReader>();
-
-    private static final HashMap<Integer, String> inboundFileNameMap = new HashMap<Integer,String>();
-    private static final HashMap<Integer, String> outboundFileNameMap = new HashMap<Integer,String>();
-
     private static NetworkManager instance;
-    private static int counter = 0;
+
+    private int counter = 0;
+    private final HashMap<String, InboundStreamInfo> inboundMap = new HashMap<String, InboundStreamInfo>();
+    private final HashMap<String, OutboundStreamInfo> outboundMap = new HashMap<String, OutboundStreamInfo>();
+    private byte[] outboundBuffer = new byte[BLOCK_SIZE];
 
     public static synchronized NetworkManager getInstance() throws RemoteException {
         if (instance == null) {
@@ -56,64 +44,128 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
         return instance;
     }
 
-
     private NetworkManager() throws RemoteException {
     }
 
     @Override
-    public int openFileWriterOnServer(String sessID) throws RemoteException, IOException {
+    public int openWriterOnServer(String sessID, String name, long fileLen) throws IOException {
 
-        int fileID = counter;
+        int transferID = counter;
         counter++;
 
-        File outFile = File.createTempFile("sentfile",".medsavant",DirectorySettings.getTmpDirectory());
+        File outFile = File.createTempFile("sentfile", ".medsavant", DirectorySettings.getTmpDirectory());
+        inboundMap.put(sessID + transferID, new InboundStreamInfo(outFile, name, fileLen));
 
-        BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
-
-        writerMap.put(fileID, bw);
-        inboundFileNameMap.put(fileID,outFile.getAbsolutePath());
-
-        return fileID;
+        return transferID;
     }
 
     @Override
-    public void writeLineToServer(String sessID, int fileIdentifier, String line) throws SQLException, RemoteException, IOException {
-        writerMap.get(fileIdentifier).write(line + "\n");
+    public void writeToServer(String sessID, int transferID, byte[] buf) throws IOException, InterruptedException {
+        InboundStreamInfo info = inboundMap.get(sessID + transferID);
+        info.stream.write(buf);
+        info.bytesWritten += buf.length;
+        makeProgress(sessID, String.format("Copying %s to server...", info.sourceName), (double)info.bytesWritten / info.length);
     }
 
+    /**
+     * Close the stream.  We keep the <code>StreamInfo</code> around because we may still want to get the transfer ID.
+     * @param sessID uniquely identifies the client
+     * @param transferID identifies the stream which is being closed
+     * @throws IOException 
+     */
     @Override
-    public void closeFileWriterOnServer(String sessID, int fileIdentifier) throws RemoteException, IOException {
-        writerMap.get(fileIdentifier).close();
-        writerMap.remove(fileIdentifier);
+    public void closeWriterOnServer(String sessID, int transferID) throws IOException {
+        InboundStreamInfo info = inboundMap.get(sessID + transferID);
+        info.stream.close();
+        info.stream = null;
     }
 
-    public static File getFileByTransferID(int id) {
-        return new File(inboundFileNameMap.get(id));
+    /**
+     * Get the path to the local file corresponding to the given transfer.
+     * @param sessID uniquely identifies the client
+     * @param transferID identifies the transfer whose name we want
+     */
+    public File getFileByTransferID(String sessID, int transferID) {
+        return inboundMap.get(sessID + transferID).file;
     }
 
-    public int registerFileForTransferToClient(File file) {
-        int fileID = counter;
+    /**
+     * Get the name of the remote source file corresponding to the given transfer.
+     * @param sessID uniquely identifies the client
+     * @param transferID identifies the transfer whose name we want
+     */
+    public String getSourceNameByTransferID(String sessID, int transferID) {
+        return inboundMap.get(sessID + transferID).sourceName;
+    }
+
+    public int openReaderOnServer(String sessID, File f) throws IOException {
+        int transferID = counter;
         counter++;
-        outboundFileNameMap.put(fileID,file.getAbsolutePath());
-        return fileID;
+
+        outboundMap.put(sessID + transferID, new OutboundStreamInfo(f));
+
+        return transferID;
     }
 
     @Override
-    public void openFileReaderOnServer(String sessID, int fileID) throws IOException, RemoteException {
-        // TODO: for security purposes, make the key a combination of sessID x fileID
-        BufferedReader br = new BufferedReader(new FileReader(outboundFileNameMap.get(fileID)));
-        readerMap.put(fileID, br);
+    public byte[] readFromServer(String sessID, int transferID) throws IOException, InterruptedException {
+        OutboundStreamInfo info = outboundMap.get(sessID + transferID);
+        int numBytes = info.stream.available();
+        if (numBytes > 0) {
+            if (numBytes != outboundBuffer.length) {
+                outboundBuffer = new byte[numBytes];
+            }
+            info.stream.read(outboundBuffer);
+            info.bytesRead += outboundBuffer.length;
+            makeProgress(sessID, "Copying from server...", (double)info.bytesRead / info.length);
+            return outboundBuffer;
+        }
+        return null;
     }
 
+    /**
+     * Close the stream.  We don't need the <code>StreamInfo</code> any more, so we remove it from the map.
+     * @param sessID uniquely identifies the client
+     * @param transferID identifies the stream which is being closed
+     */
     @Override
-    public String readLineFromServer(String sessID, int fileID) throws IOException, SQLException, RemoteException {
-        // TODO: for security purposes, fetch reader by sessID x fileID
-        return readerMap.get(fileID).readLine();
+    public void closeReaderOnServer(String sessID, int transferID) throws IOException {
+        OutboundStreamInfo info = outboundMap.remove(sessID + transferID);
+        info.stream.close();
     }
 
-    @Override
-    public void closeFileReaderOnServer(String sessID, int fileID) throws IOException, RemoteException {
-        readerMap.get(fileID).close();
+    /**
+     * Keeps track of all information about a given stream transmitting data from client to local file.
+     */
+    private class InboundStreamInfo {
+        final File file;
+        final String sourceName;
+        final long length;
+        OutputStream stream;
+        long bytesWritten = 0;
+        
+        InboundStreamInfo(File f, String name, long len) throws FileNotFoundException {
+            file = f;
+            sourceName = name;
+            length = len;
+            stream = new FileOutputStream(f);
+        }
     }
 
+
+    /**
+     * Keeps track of all information about a given stream being transmitted from local file to client.
+     */
+    private class OutboundStreamInfo {
+        final File file;
+        final long length;
+        InputStream stream;
+        long bytesRead = 0;
+        
+        OutboundStreamInfo(File f) throws FileNotFoundException {
+            file = f;
+            length = f.length();
+            stream = new FileInputStream(f);
+        }
+    }
 }

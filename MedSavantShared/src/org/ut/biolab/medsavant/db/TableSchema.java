@@ -149,10 +149,10 @@ public class TableSchema implements Serializable {
         return getDBColumnByAlias(dbNameToAlias.get(columnname));
     }
     
-    public DbColumn getDBColumn(int index) {
-        return table.getColumns().get(index);
+    public DbColumn getDBColumn(ColumnDef def) {
+        return getDBColumn(def.name);
     }
-
+    
     public int getFieldIndexInDB(String dbName) {
         assert (dbNameToIndex.containsKey(dbName));
         return dbNameToIndex.get(dbName);

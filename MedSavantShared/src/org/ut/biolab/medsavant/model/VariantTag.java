@@ -21,6 +21,10 @@ package org.ut.biolab.medsavant.model;
  * @author mfiume
  */
 public class VariantTag {
+
+    // A few default tag-keys.
+    public static final String UPLOAD_DATE = "Upload Date";
+    public static final String UPLOADER = "Uploader";
     
     public final String key;
     public final String value;

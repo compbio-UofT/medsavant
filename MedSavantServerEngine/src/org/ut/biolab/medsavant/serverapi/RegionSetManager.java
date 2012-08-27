@@ -85,7 +85,7 @@ public class RegionSetManager extends MedSavantServerUnicastRemoteObject impleme
             rs.next();
             int regionSetID = rs.getInt(1);
 
-            File f = NetworkManager.getFileByTransferID(fileID);
+            File f = NetworkManager.getInstance().getFileByTransferID(sessID, fileID);
             Iterator<String[]> i = ImportDelimitedFile.getFileIterator(f.getAbsolutePath(), delim, numHeaderLines, fileFormat);
 
             query = MedSavantDatabase.RegionSetMembershipTableSchema.preparedInsert(GENOME_ID, REGION_SET_ID, CHROM, START, END, DESCRIPTION);

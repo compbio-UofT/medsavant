@@ -45,6 +45,7 @@ import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtils;
+import org.ut.biolab.medsavant.db.variants.VariantManager;
 import org.ut.biolab.medsavant.db.variants.VariantManagerUtils;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.ProjectDetails;
@@ -329,6 +330,13 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addCondition(BinaryCondition.equalTo(table.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_UPDATE_ID), updID));
 
         ConnectionController.executeUpdate(sessID, query.toString());
+    }
+
+    public float getMultiplier(String sid, String table, String subTable) throws SQLException, RemoteException{
+        int numerator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, table, new Condition[0][]);
+        int denominator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, subTable, new Condition[0][]);
+        if (denominator == 0) denominator = 1;
+        return (float)numerator / (float)denominator;
     }
 
     @Override
