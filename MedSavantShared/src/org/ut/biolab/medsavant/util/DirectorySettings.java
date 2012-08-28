@@ -68,7 +68,7 @@ public class DirectorySettings {
      */
     public static File generateDateStampDirectory(File parent) throws IOException {
         Calendar today = new GregorianCalendar();
-        String dateStamp = today.get(Calendar.YEAR) + "-" + today.get(Calendar.MONTH) + "-" + today.get(Calendar.DAY_OF_MONTH) + "-" + today.get(Calendar.HOUR_OF_DAY) + "-" + today.get(Calendar.MINUTE);
+        String dateStamp = today.get(Calendar.YEAR) + "-" + (today.get(Calendar.MONTH) + 1) + "-" + today.get(Calendar.DAY_OF_MONTH) + "-" + today.get(Calendar.HOUR_OF_DAY) + "-" + today.get(Calendar.MINUTE);
         File dir = new File(parent.getCanonicalFile(), dateStamp);
         dir.mkdirs();
         return dir;

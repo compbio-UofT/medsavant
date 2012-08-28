@@ -19,10 +19,7 @@ import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
@@ -30,7 +27,6 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSchema;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbSpec;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 import com.mysql.jdbc.CommunicationsException;
-import java.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -120,7 +116,7 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
     }
 
     @Override
-    public TableSchema importTableSchema(String sessionId, String tablename) throws SQLException, RemoteException {
+    public TableSchema importTableSchema(String sessionId, String tablename) throws SQLException {
 
         DbSpec spec = new DbSpec();
         DbSchema schema = spec.addDefaultSchema();

@@ -71,7 +71,6 @@ public class MedSavantServerUnicastRemoteObject extends UnicastRemoteObject {
      * @param userCancelled tells server that client wants to cancel
      */
     public ProgressStatus checkProgress(String sessID, boolean userCancelled) {
-        System.out.println("checkProgress(" + userCancelled + ")");
         synchronized (sessionProgresses) {
             if (userCancelled) {
                 LOG.info("Setting progress-status to CANCELLED.");

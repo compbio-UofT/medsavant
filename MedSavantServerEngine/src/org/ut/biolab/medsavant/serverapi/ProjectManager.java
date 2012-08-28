@@ -228,7 +228,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException{
+    public void addTableToMap(String sessID, int projID, int refID, int updID, boolean published, String tableName, int[] annotationIDs, String subTableName) throws SQLException, RemoteException{
 
 
         TableSchema variantTableMap = MedSavantDatabase.VarianttablemapTableSchema;
@@ -240,6 +240,12 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_PUBLISHED), published);
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_TABLENAME), tableName);
         query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME), subTableName);
+        
+        float subMultiplier = 1.0f;
+        if (subTableName != null) {
+            subMultiplier = getMultiplier(sessID, tableName, subTableName);
+        }
+        query.addColumn(variantTableMap.getDBColumn(VariantTablemapTableSchema.COLUMNNAME_OF_SUBSET_MULTIPLIER), subMultiplier);
 
 
         // add annotation ids
@@ -332,7 +338,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         ConnectionController.executeUpdate(sessID, query.toString());
     }
 
-    public float getMultiplier(String sid, String table, String subTable) throws SQLException, RemoteException{
+    private float getMultiplier(String sid, String table, String subTable) throws SQLException, RemoteException {
         int numerator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, table, new Condition[0][]);
         int denominator = VariantManager.getInstance().getNumFilteredVariantsHelper(sid, subTable, new Condition[0][]);
         if (denominator == 0) denominator = 1;

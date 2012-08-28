@@ -20,8 +20,12 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.DirectorySettings;
+import org.ut.biolab.medsavant.util.MiscUtils;
 
 
 /**
@@ -29,6 +33,8 @@ import org.ut.biolab.medsavant.util.DirectorySettings;
  * @author mfiume
  */
 public class NetworkManager extends MedSavantServerUnicastRemoteObject implements NetworkManagerAdapter {
+
+    private static final Log LOG = LogFactory.getLog(NetworkManager.class);
 
     private static NetworkManager instance;
 
@@ -53,7 +59,8 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
         int transferID = counter;
         counter++;
 
-        File outFile = File.createTempFile("sentfile", ".medsavant", DirectorySettings.getTmpDirectory());
+        String ext = MiscUtils.getExtension(name);
+        File outFile = File.createTempFile("sentfile", "." + ext, DirectorySettings.getTmpDirectory());
         inboundMap.put(sessID + transferID, new InboundStreamInfo(outFile, name, fileLen));
 
         return transferID;
@@ -64,7 +71,7 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
         InboundStreamInfo info = inboundMap.get(sessID + transferID);
         info.stream.write(buf);
         info.bytesWritten += buf.length;
-        makeProgress(sessID, String.format("Copying %s to server...", info.sourceName), (double)info.bytesWritten / info.length);
+        makeProgress(sessID, String.format("Uploading %s to server...", info.sourceName), (double)info.bytesWritten / info.length);
     }
 
     /**
@@ -117,7 +124,7 @@ public class NetworkManager extends MedSavantServerUnicastRemoteObject implement
             }
             info.stream.read(outboundBuffer);
             info.bytesRead += outboundBuffer.length;
-            makeProgress(sessID, "Copying from server...", (double)info.bytesRead / info.length);
+            makeProgress(sessID, "Downloading from server...", (double)info.bytesRead / info.length);
             return outboundBuffer;
         }
         return null;

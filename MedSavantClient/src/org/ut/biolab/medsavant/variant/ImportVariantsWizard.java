@@ -428,7 +428,7 @@ public class ImportVariantsWizard extends WizardDialog {
                                     int[] transferIDs = new int[variantFiles.length];
                                     for (File file: variantFiles) {
                                         LOG.info("Created input stream for file");
-                                        progressLabel.setText("Uploading " + file.getName() + "...");
+                                        progressLabel.setText("Uploading " + file.getName() + " to server...");
                                         transferIDs[fileIndex] = ClientNetworkUtils.copyFileToServer(file);
                                         fileIndex++;
                                     }

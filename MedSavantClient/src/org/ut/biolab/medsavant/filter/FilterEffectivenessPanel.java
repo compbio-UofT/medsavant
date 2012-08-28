@@ -99,7 +99,7 @@ public class FilterEffectivenessPanel extends JLayeredPane {
             public void handleEvent(FilterEvent event) {
                 showWaitCard();
 
-                new MedSavantWorker<Integer>("Filter") {
+                new MedSavantWorker<Integer>("Filters") {
 
                     @Override
                     protected Integer doInBackground() throws Exception {
@@ -146,7 +146,7 @@ public class FilterEffectivenessPanel extends JLayeredPane {
     private void setMaxValues() {
         labelVariantsRemaining.setText("Calculating...");
 
-        new MedSavantWorker<Integer>("Filter") {
+        new MedSavantWorker<Integer>("Filters") {
             @Override
             protected void showProgress(double fraction) {
             }

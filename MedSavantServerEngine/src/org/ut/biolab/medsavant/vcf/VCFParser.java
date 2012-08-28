@@ -16,20 +16,11 @@
 
 package org.ut.biolab.medsavant.vcf;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
-import au.com.bytecode.opencsv.CSVReader;
+import net.sf.samtools.util.BlockCompressedInputStream;
 
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord.Zygosity;
@@ -44,17 +35,18 @@ public class VCFParser {
     private static final String COMMENT_SPLITTER = "=";
     private static final String COMMENT_CHARS = "##";
 
-    public static VCFHeader parseVCFHeader(CSVReader r) throws IOException {
-        String[] nextLine;
+    public static VCFHeader parseVCFHeader(BufferedReader r) throws IOException {
+        String nextLineString;
         while (true) {
-            if ((nextLine = r.readNext()) == null) {
+            if ((nextLineString = r.readLine()) == null) {
                 break;
             }
             // a comment line
+            String[] nextLine = nextLineString.split("\t");
             if (nextLine[0].startsWith(COMMENT_CHARS)) {
                 //do nothing
-            } // header line
-            else if (nextLine[0].startsWith(HEADER_CHARS)) {
+            } else if (nextLine[0].startsWith(HEADER_CHARS)) {
+                // header line
                 return parseHeader(nextLine);
             } // a data line
         }
@@ -62,7 +54,7 @@ public class VCFParser {
         return null;
     }
 
-    public static int parseVariantsFromReader(CSVReader r, int outputLinesLimit, File outfile, int updateId, int fileId) throws IOException {
+    public static int parseVariantsFromReader(BufferedReader r, int outputLinesLimit, File outfile, int updateId, int fileId) throws IOException {
         return parseVariantsFromReader(r, null, outputLinesLimit, outfile, updateId, fileId, false);
     }
 
@@ -78,15 +70,15 @@ public class VCFParser {
      * @return number of lines written to outfile
      * @throws IOException
      */
-    public static int parseVariantsFromReader(CSVReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId, boolean includeHomoRef) throws IOException {
+    public static int parseVariantsFromReader(BufferedReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId, boolean includeHomoRef) throws IOException {
         return parseVariantsFromReader(r, header, outputLinesLimit, outfile, updateId, fileId, includeHomoRef, 0);
     }
 
-    public static int parseVariantsFromReader(CSVReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId, boolean includeHomoRef, int variantIdOffset) throws IOException {
+    public static int parseVariantsFromReader(BufferedReader r, VCFHeader header, int outputLinesLimit, File outfile, int updateId, int fileId, boolean includeHomoRef, int variantIdOffset) throws IOException {
 
         System.out.println("Starting to parse variants from reader");
 
-        String[] nextLine;
+        String nextLineString;
         int numRecords = 0;
 
 
@@ -99,30 +91,28 @@ public class VCFParser {
             if (numLinesWritten >= outputLinesLimit) {
                 break;
             }
-            if ((nextLine = r.readNext()) == null) {
+            if ((nextLineString = r.readLine()) == null) {
+                System.out.println("reader returned null after " + numLinesWritten + " lines.");
                 break;
             }
+            String[] nextLine = nextLineString.split("\t");
 
-            // a comment line
             if (nextLine[0].startsWith(COMMENT_CHARS)) {
+                // a comment line
                 //do nothing
-            } // header line
-            else if (nextLine[0].startsWith(HEADER_CHARS)) {
+            } else if (nextLine[0].startsWith(HEADER_CHARS)) {
+                // header line
                 if (header == null) {
                     header = parseHeader(nextLine);
                 }
-            } // a data line
-            else {
+            } else {
+                // a data line
                 List<VariantRecord> records = null;
                 try {
                     records = parseRecord(nextLine, header);
-                } catch (NullPointerException e) {
-                    System.out.println("Next line: " + nextLine);
-                    throw e;
-                } catch (Exception e) {
-                    System.out.println("Line: " + nextLine[0] + ", " + nextLine[1] + ", ...");
-                    e.printStackTrace();
-                    throw new NullPointerException();
+                } catch (Exception ex) {
+                    System.out.println("Next line: " + nextLineString);
+                    throw new IOException(ex);
                 }
                 //add records to tdf
                 for (VariantRecord v : records) {
@@ -144,22 +134,17 @@ public class VCFParser {
     }
 
     public static void parseVariants(File vcffile, File outfile, int updateId, int fileId) throws FileNotFoundException, IOException {
-        CSVReader r = openFile(vcffile);
+        BufferedReader r = openFile(vcffile);
         parseVariantsFromReader(r, Integer.MAX_VALUE, outfile, updateId, fileId);
         r.close();
     }
 
-    private static CSVReader openFile(File vcffile) throws FileNotFoundException, IOException {
-
-        Reader reader;
-        if (vcffile.getAbsolutePath().endsWith(".gz") || vcffile.getAbsolutePath().endsWith(".zip")) {
-            FileInputStream fin = new FileInputStream(vcffile.getAbsolutePath());
-            reader = new InputStreamReader(new GZIPInputStream(fin));
+    static BufferedReader openFile(File vcf) throws FileNotFoundException, IOException {
+        if (vcf.getAbsolutePath().endsWith(".gz")) {
+            return new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(vcf)));
         } else {
-            reader = new FileReader(vcffile);
+            return new BufferedReader(new FileReader(vcf));
         }
-
-        return new CSVReader(reader, '\t');
     }
 
     private static VCFHeader parseHeader(String[] headerLine) {
@@ -177,15 +162,6 @@ public class VCFParser {
             }
         }
 
-        return result;
-    }
-
-    private static String[] parseComment(String commentLine) {
-        commentLine = commentLine.replaceFirst(COMMENT_CHARS, "");
-        int indexOfSplit = commentLine.indexOf(COMMENT_SPLITTER);
-        String[] result = new String[2];
-        result[0] = commentLine.substring(0, indexOfSplit);
-        result[1] = commentLine.substring(indexOfSplit + 1);
         return result;
     }
 

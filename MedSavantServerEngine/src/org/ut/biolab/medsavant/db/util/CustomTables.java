@@ -15,14 +15,14 @@
  */
 package org.ut.biolab.medsavant.db.util;
 
-import org.ut.biolab.medsavant.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.serverapi.CustomTablesAdapter;
 
 /**
@@ -43,7 +43,8 @@ public class CustomTables extends MedSavantServerUnicastRemoteObject implements 
         return instance;
     }
 
-    private CustomTables() throws RemoteException {super();}
+    private CustomTables() throws RemoteException {
+    }
 
     @Override
     public TableSchema getCustomTableSchema(String sid, String tablename) throws SQLException, RemoteException {

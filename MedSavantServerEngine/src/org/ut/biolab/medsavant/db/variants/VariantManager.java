@@ -60,6 +60,7 @@ import org.ut.biolab.medsavant.util.ChromosomeComparator;
 import org.ut.biolab.medsavant.util.DirectorySettings;
 import org.ut.biolab.medsavant.util.IOUtils;
 import org.ut.biolab.medsavant.util.MiscUtils;
+import org.ut.biolab.medsavant.vcf.VCFIterator;
 
 
 /**
@@ -225,7 +226,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Adding custom vcf fields");
             makeProgress(sessID, "Adding custom VCF fields...", fract);
             String vcfAnnotatedVariants = sortedVariants + "_vcf";
-            VariantManagerUtils.addCustomVcfFields(sortedVariants, vcfAnnotatedVariants, variantFields, DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO); //last of the default fields
+            VariantManagerUtils.addCustomVCFFields(sortedVariants, vcfAnnotatedVariants, variantFields, DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO); //last of the default fields
             fract += CUSTOM_FIELD_FRACTION;
 
             //annotate
@@ -264,7 +265,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //upload to staging table
             LOG.info("Uploading variants to table: " + tableName);
-            makeProgress(sessID, "Uploading to table...", fract);
+            makeProgress(sessID, "Loading data into table...", fract);
             uploadFileToVariantTable(sessID, new File(outputFilenameMerged), tableName);
             fract += LOAD_TABLE_FRACTION;
 
@@ -276,12 +277,10 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             fract += SUBSET_FRACTION;
 
             LOG.info("Importing to: " + tableNameSub);
-            makeProgress(sessID, "Uploading to subset table...", fract);
+            makeProgress(sessID, "Loading data into subset table...", fract);
             uploadFileToVariantTable(sessID, subFile, tableNameSub);
             fract += LOAD_TABLE_FRACTION;
             
-            projMgr.addSubsetInfoToMap(sessID, projID, refID, updateId, tableNameSub, projMgr.getMultiplier(sessID, tableName, tableNameSub));
-
             //add entries to tablemap
             projMgr.addTableToMap(sessID, projID, refID, updateId, false, tableName, annotIDs, tableNameSub);
 
@@ -346,25 +345,17 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             return -1;
         }
 
-        List<File> onlyVCFFiles = new ArrayList<File>();
-        File[] allFiles = dirContainingVCFs.listFiles();
-        for (File f : allFiles) {
-            if (f.getAbsolutePath().endsWith(".vcf") || f.getAbsolutePath().endsWith(".vcf.gz")) {
-                LOG.info("Found file " + f.getAbsolutePath());
-                onlyVCFFiles.add(f);
-            } else {
-                LOG.info("Rejecting file " + f.getAbsolutePath());
+        File[] vcfFiles = dirContainingVCFs.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                String name = file.getName();
+                return name.endsWith(".vcf") || name.endsWith(".vcf.gz");
             }
-        }
+        });
 
-        if (onlyVCFFiles.isEmpty()) {
+        if (vcfFiles.length == 0) {
             LOG.info("Directory exists but contains no .vcf or .vcf.gz files.");
             return -1;
-        }
-
-        File[] vcfFiles = new File[onlyVCFFiles.size()];
-        for (int i = 0; i < onlyVCFFiles.size(); i++) {
-            vcfFiles[i] = onlyVCFFiles.get(i);
         }
 
         return uploadVariants(sessID, vcfFiles, null, projID, refID, tags, includeHomoRef);
@@ -425,8 +416,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             fract += CUSTOM_FIELD_FRACTION;
 
             //upload dump to staging table
-            LOG.info("Uploading variants to table: " + tableName);
-            makeProgress(sessID, "Importing variants to table...", fract);
+            LOG.info("Loading data into table: " + tableName);
+            makeProgress(sessID, "Loading data into table...", fract);
             uploadFileToVariantTable(sessID, existingVariantsFile, tableName);
             fract += LOAD_TABLE_FRACTION;
 
@@ -450,7 +441,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 if (customFields.length > 0) {
                     String customFieldFilename = currentFilename + "_vcf";
                     filesUsed.add(customFieldFilename);
-                    VariantManagerUtils.addCustomVcfFields(currentFilename, customFieldFilename, customFields, DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO); //last of the default fields
+                    VariantManagerUtils.addCustomVCFFields(currentFilename, customFieldFilename, customFields, DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO); //last of the default fields
                     currentFilename = customFieldFilename;
                 }
 
@@ -498,8 +489,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 }
 
                 //upload to staging table
-                LOG.info("Loading into table: " + tableName);
-                makeProgress(sessID, "Loading into table...", fract);
+                LOG.info("Loading data into table: " + tableName);
+                makeProgress(sessID, "Loading data into table...", fract);
                 uploadFileToVariantTable(sessID, new File(currentFilename), tableName);
                 fract += LOAD_TABLE_FRACTION;
 
@@ -520,9 +511,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             //upload to sub table
             LOG.info("Loading into subset table: " + tableNameSub);
-            makeProgress(sessID, "Loading into subset table...", fract);
+            makeProgress(sessID, "Loading data into subset table...", fract);
             uploadFileToVariantTable(sessID, subDump, tableNameSub);
-            projMgr.addSubsetInfoToMap(sessID, projID, refID, updateID, tableNameSub, projMgr.getMultiplier(sessID, tableName, tableNameSub));
             fract += LOAD_TABLE_FRACTION;
 
             //add entries to tablemap
@@ -622,7 +612,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             VariantManagerUtils.generateSubset(existingVariantsFile, subFile);
             LOG.info("Importing to: " + tableNameSub);
             uploadFileToVariantTable(sessID, subFile, tableNameSub);
-            projMgr.addSubsetInfoToMap(sessID, projID, refID, updateId, tableNameSub, projMgr.getMultiplier(sessID, tableName, tableNameSub));
 
             //get annotation ids
             AnnotationManager annotMgr = AnnotationManager.getInstance();

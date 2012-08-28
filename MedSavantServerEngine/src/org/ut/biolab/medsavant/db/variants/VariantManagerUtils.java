@@ -19,19 +19,14 @@ package org.ut.biolab.medsavant.db.variants;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
-import au.com.bytecode.opencsv.CSVReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.vcf.VCFHeader;
-import org.ut.biolab.medsavant.vcf.VCFParser;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 
 
@@ -193,7 +188,7 @@ public class VariantManagerUtils {
         LOG.info("Size of " + fn + ": " + ((new File(fn)).length()));
     }
 
-    public static void addCustomVcfFields(String infile, String outfile, CustomField[] customFields, int customInfoIndex) throws FileNotFoundException, IOException {
+    public static void addCustomVCFFields(String infile, String outfile, CustomField[] customFields, int customInfoIndex) throws FileNotFoundException, IOException {
 
         System.out.println("Adding custom VCF fields infile=" + infile + " oufile=" + outfile + " customInfoIndex=" + customInfoIndex);
 
@@ -222,77 +217,6 @@ public class VariantManagerUtils {
         } catch (SQLException e) {
             throw new SQLException("Error adding tags", e);
         }
-    }
-
-    public static void checkInterrupt() throws InterruptedException {
-        if (Thread.interrupted()) {
-            throw new InterruptedException();
-        }
-    }
-
-    /*
-     * Given vcf files, parse out the relevant information and concatenate to
-     * create a single, ready-to-use csv.
-     */
-    public static File parseVCFs(File[] vcfFiles, File tmpDir, int updateId, boolean includeHomoRef) throws IOException, InterruptedException, ParseException {
-
-        boolean variantFound = false;
-        File outfile = new File(tmpDir, "1_tmp.tdf");
-
-        //add files to staging table
-        for (int i = 0; i < vcfFiles.length; i++) {
-
-            //create temp file
-            VariantManagerUtils.checkInterrupt();
-            int lastChunkWritten = 0;
-            int iteration = 0;
-
-            //create csv reader
-            Reader reader;
-            if (vcfFiles[i].getAbsolutePath().endsWith(".gz") || vcfFiles[i].getAbsolutePath().endsWith(".zip")) {
-                FileInputStream fin = new FileInputStream(vcfFiles[i].getAbsolutePath());
-                reader = new InputStreamReader(new GZIPInputStream(fin));
-            } else {
-                reader = new FileReader(vcfFiles[i]);
-            }
-            CSVReader r = new CSVReader(reader, '\t');
-
-            //CSVReader r = new CSVReader(new FileReader(vcfFiles[i]), VCFParser.defaultDelimiter);
-            if (r == null) {
-                throw new FileNotFoundException();
-            }
-
-            //get header
-            VCFHeader header = VCFParser.parseVCFHeader(r);
-
-            while (iteration == 0 || lastChunkWritten >= OUTPUT_LINES_LIMIT) {
-
-                iteration++;
-
-                //parse vcf file
-                VariantManagerUtils.checkInterrupt();
-                System.out.println("Current file: " + vcfFiles[i].getName());
-                lastChunkWritten = VCFParser.parseVariantsFromReader(r, header, OUTPUT_LINES_LIMIT, outfile, updateId, i, includeHomoRef);
-                if (lastChunkWritten > 0) {
-                    variantFound = true;
-                }
-            }
-
-            try {
-                r.close();
-            } catch (IOException ex) {}
-
-            //cleanup
-            //outfile.delete();
-            System.gc();
-        }
-
-        //make sure files weren't all empty
-        if (!variantFound) {
-            throw new ParseException("No variants were found. Ensure that your files are in the correct format. ", 0);
-        }
-
-        return outfile;
     }
 
     public static int determineStepForSubset(long length) {
