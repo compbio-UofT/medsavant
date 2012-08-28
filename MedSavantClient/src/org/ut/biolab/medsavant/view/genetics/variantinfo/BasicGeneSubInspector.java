@@ -16,11 +16,16 @@
 
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -36,6 +41,7 @@ public class BasicGeneSubInspector extends SubInspector implements GeneSelection
     private static String KEY_CHROM = "Chrom";
     private static String KEY_START = "Start";
     private static String KEY_END = "End";
+    private static String KEY_DESCRIPTION = "Description";
     private KeyValuePairPanel panel;
 
     public BasicGeneSubInspector() {
@@ -78,6 +84,7 @@ public class BasicGeneSubInspector extends SubInspector implements GeneSelection
             panel.addKey(KEY_CHROM);
             panel.addKey(KEY_START);
             panel.addKey(KEY_END);
+            panel.addKey(KEY_DESCRIPTION);
         }
         return panel;
     }
@@ -102,6 +109,13 @@ public class BasicGeneSubInspector extends SubInspector implements GeneSelection
         panel.setValue(KEY_CHROM, g.getChrom());
         panel.setValue(KEY_START, ViewUtil.numToString(g.getStart()));
         panel.setValue(KEY_END, ViewUtil.numToString(g.getEnd()));
+        try {
+            String s =ClientMiscUtils.breakString(g.getDescription(), "", 45);
+            panel.setValue(KEY_DESCRIPTION, new JLabel(s));
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+            panel.setValue(KEY_DESCRIPTION, "");
+        }
     }
 
     @Override

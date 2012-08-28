@@ -22,10 +22,10 @@ import cytoscape.layout.CyLayouts;
 import cytoscape.view.CyNetworkView;
 import cytoscape.view.NetworkViewManager;
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.Font;
+import java.awt.event.*;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
@@ -104,7 +104,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     private boolean dataPresent;
     private int currSizeOfArray;
     private JPanel graph;
-    
+
     public GeneManiaInfoSubPanel() {
         name = "Related Genes";
         dataPresent = true;
@@ -195,8 +195,8 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         geneLimit.setText(Integer.toString(GENE_LIMIT_DEFAULT));
         currSizeOfArray = GENE_LIMIT_DEFAULT;
         varFreq = new javax.swing.JRadioButton();
-        varFreq.setSelected(true);
         genemaniaScore = new javax.swing.JRadioButton();
+        genemaniaScore.setSelected(true);
         coexp = new javax.swing.JCheckBox();
         coexp.setActionCommand("Co-expression");
         coexp.setSelected(true);
@@ -296,19 +296,33 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         limitTo.setText("Limit to");
 
         geneLimit.setColumns(3);
-        geneLimit.addActionListener(new java.awt.event.ActionListener() {
+        geneLimit.addKeyListener(new KeyListener() {
 
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                if (glimit != Integer.parseInt(geneLimit.getText())) {
-                    if (glimit > Integer.parseInt(geneLimit.getText())) {
-                        geneLimitDifference = currSizeOfArray - Integer.parseInt(geneLimit.getText());
-                    } else {
-                        updateQueryNeeded = true;
+            @Override
+            public void keyTyped(KeyEvent ke) {
+                
+            }
+
+            @Override
+            public void keyPressed(KeyEvent ke) {
+                
+            }
+
+            @Override
+            public void keyReleased(KeyEvent ke) {
+                if (!KeyEvent.getKeyText(ke.getKeyCode()).equals("Backspace")) {
+                    if (glimit != Integer.parseInt(geneLimit.getText())) {
+                        if (glimit > Integer.parseInt(geneLimit.getText())) {
+                            geneLimitDifference = currSizeOfArray - Integer.parseInt(geneLimit.getText());
+                        } else {
+                            updateQueryNeeded = true;
+                        }
+                        setGeneLimit();
                     }
-                    setGeneLimit();
                 }
             }
         });
+        
 
         relatedGenes.setText("related genes.");
 
@@ -439,6 +453,8 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                 queryDependentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(automatic));
 
         okButton.setText("OK");
+        for (ActionListener a:okButton.getActionListeners())
+            okButton.removeActionListener(a);
         okButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
@@ -482,7 +498,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
             for (int i = currSizeOfArray; i > currSizeOfArray - geneLimitDifference; i--) {
                 kvp.removeBottomRow(Integer.toString(i));
             }
-            currSizeOfArray -=geneLimitDifference;
+            currSizeOfArray -= geneLimitDifference;
             kvpPanel.invalidate();
             kvpPanel.updateUI();
         } else if (updateQueryNeeded) {
@@ -503,7 +519,6 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
 
         }
     }
-    
 
     private void updateRelatedGenesPanel(Gene g) {
         gene = g;
@@ -518,10 +533,15 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         progressBar.setIndeterminate(true);
         progressMessage.setText("Querying GeneMANIA for related genes");
 
+        final Object lock = new Object();
+
         Runnable r = new Runnable() {
 
             @Override
             public void run() {
+
+
+
                 boolean setMsgOff = true;
                 if (!Thread.interrupted()) {
                     try {
@@ -540,8 +560,21 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                             progressMessage.setText(message);
                             setMsgOff = false;
                         }
-                        GeneSetFetcher geneSetFetcher = new GeneSetFetcher();
+                        GeneSetFetcher geneSetFetcher = GeneSetFetcher.getInstance();
                         if (genemania.getGenes().size() > 0) {
+                            int i = 1;
+                            String zero = Integer.toString(0);
+                            Font HEADER_FONT = new Font("Arial", Font.BOLD, 10);
+                            kvp.addKey(zero);
+                            JLabel geneHeader = new JLabel("Gene".toUpperCase());
+                            geneHeader.setFont(HEADER_FONT);
+                            kvp.setValue(zero, geneHeader);
+                            JLabel varFreqHeader = new JLabel("<html>VARIATION<br>FREQUENCY<br>(var/kb)</html>");
+                            varFreqHeader.setFont(HEADER_FONT);
+                            kvp.setAdditionalColumn(zero, 0, varFreqHeader);
+                            JLabel genemaniaHeader = new JLabel("<html>GENEMANIA<br>SCORE</html>");
+                            genemaniaHeader.setFont(HEADER_FONT);
+                            kvp.setAdditionalColumn(zero, 1, genemaniaHeader);
                             if (rankByVarFreq) {
                                 Iterator<org.ut.biolab.medsavant.model.Gene> itr = geneSetFetcher.getGenesByNumVariants(genemania.getRelatedGeneNamesByScore()).iterator();
                                 org.ut.biolab.medsavant.model.Gene currGene;
@@ -551,15 +584,15 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                     throw new InterruptedException();
                                 }
 
-                                int i = 1;
+
                                 while (itr.hasNext()) {
                                     currGene = itr.next();
                                     final org.ut.biolab.medsavant.model.Gene finalGene = currGene;
                                     kvp.addKey(Integer.toString(i));
                                     JLabel geneName = new JLabel(currGene.getName());
                                     EntrezButton geneLinkButton = new EntrezButton(currGene.getName());
-                                    geneName.setToolTipText(currGene.getDescription());
                                     kvp.setValue(Integer.toString(i), geneName);
+                                    kvp.setAdditionalColumn(Integer.toString(i), 0, new JLabel(Double.toString(GeneSetFetcher.getInstance().getNormalizedVariantCount(currGene))));
                                     JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
                                     geneInspectorButton.setToolTipText("Inspect this gene");
                                     geneInspectorButton.addActionListener(new ActionListener() {
@@ -599,9 +632,9 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                             regionSets.show(addToRegionListButton, 0, addToRegionListButton.getHeight());
                                         }
                                     });
-                                    kvp.setAdditionalColumn(Integer.toString(i), 0, geneInspectorButton);
-                                    kvp.setAdditionalColumn(Integer.toString(i), 1, addToRegionListButton);
-                                    kvp.setAdditionalColumn(Integer.toString(i), 2, geneLinkButton);
+                                    kvp.setAdditionalColumn(Integer.toString(i), 2, geneInspectorButton);
+                                    kvp.setAdditionalColumn(Integer.toString(i), 3, addToRegionListButton);
+                                    kvp.setAdditionalColumn(Integer.toString(i), 4, geneLinkButton);
                                     i++;
                                 }
                                 currSizeOfArray = i - 1;
@@ -614,17 +647,18 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                     throw new InterruptedException();
                                 }
 
-                                int i = 1;
+                                System.out.println("start populating table" + System.currentTimeMillis());
+
                                 while (itr.hasNext()) {
                                     currGene = itr.next();
-                                    final org.ut.biolab.medsavant.model.Gene finalGene = new GeneSetFetcher().getGene(currGene);
+                                    final org.ut.biolab.medsavant.model.Gene finalGene = GeneSetFetcher.getInstance().getGene(currGene);
                                     if (finalGene != null) {
                                         kvp.addKey(Integer.toString(i));
-                                        
+                                        System.err.println("get link out button" + System.currentTimeMillis());
                                         EntrezButton geneLinkButton = new EntrezButton(currGene);
                                         JLabel geneName = new JLabel(currGene);
-                                        geneName.setToolTipText(finalGene.getDescription());
                                         kvp.setValue(Integer.toString(i), geneName);
+                                        System.err.println("get inspector button" + System.currentTimeMillis());
                                         JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
                                         geneInspectorButton.setToolTipText("Inspect this gene");
                                         geneInspectorButton.addActionListener(new ActionListener() {
@@ -636,6 +670,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                             }
                                         });
                                         final JPopupMenu regionSets = new JPopupMenu();
+                                        System.err.println("get region sets" + System.currentTimeMillis());
                                         final RegionController regionController = RegionController.getInstance();
                                         for (RegionSet s : regionController.getRegionSets()) {
                                             final RegionSet finalRegionSet = s;
@@ -670,16 +705,18 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                         i++;
                                     }
                                 }
+                                System.err.println("done thread" + System.currentTimeMillis());
+
                                 currSizeOfArray = i - 1;
                             }
+
                         }
 
                     } catch (InterruptedException e) {
-                    } catch(NoRelatedGenesInfoException e){
-                         progressMessage.setText(e.getMessage());
-                            setMsgOff = false;
-                    } 
-                    catch (Exception ex) {
+                    } catch (NoRelatedGenesInfoException e) {
+                        progressMessage.setText(e.getMessage());
+                        setMsgOff = false;
+                    } catch (Exception ex) {
                         ClientMiscUtils.reportError("Error retrieving data from GeneMANIA: %s", ex);
                     } finally {
                         progressBar.setIndeterminate(false);
@@ -688,14 +725,19 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                         if (setMsgOff) {
                             progressMessage.setVisible(false);
                         }
-                        System.out.println("got here");
-                        graph.removeAll();
-                        graph.add(buildGraph());
-                        System.out.println("got through");
-                        graph.invalidate();
-                        graph.updateUI();
+//                        System.out.println("got here");
+//                        graph.removeAll();
+//                        graph.add(buildGraph());
+//                        System.out.println("got through");
+//                        graph.invalidate();
+//                        graph.updateUI();
+                        System.err.println("done finally" + System.currentTimeMillis());
                     }
 
+                }
+
+                synchronized (lock) {
+                    lock.notify();
                 }
             }
         };
@@ -704,106 +746,124 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         } else {
             genemaniaAlgorithmThread.interrupt();
             genemaniaAlgorithmThread = new Thread(r);
-            
+
         }
+
+        final Runnable geneDescriptionFetcher = new Runnable() {
+
+            @Override
+            public void run() {
+                for (int j = 1; j <= currSizeOfArray; j++) {
+                    try {
+                        String geneName = kvp.getValue(Integer.toString(j));
+                        Gene gene = GeneSetFetcher.getInstance().getGene(geneName);
+                        String d = gene.getDescription();
+                        kvp.setToolTipForValue(Integer.toString(j), d);
+                    } catch (Exception e) {
+                        //do nothing (don't set tool tip to anything)
+                    }
+                }
+            }
+        };
         //}
 
 
         genemaniaAlgorithmThread.start();
-       
+
+        Runnable r2 = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    synchronized (lock) {
+                        lock.wait();
+                        Thread toolTipGenerator = new Thread(geneDescriptionFetcher);
+                        toolTipGenerator.start();
+                    }
+                } catch (Exception e) {
+                }
+            }
+        };
+        
+        Thread t2 = new Thread(r2);
+        t2.start();
+
+
+
     }
-    public JPanel buildGraph(){
+
+    // final static Object lock;
+    public JPanel buildGraph() {
         CyNetwork network = genemania.getGraph();
         //System.out.println("Nodes " + network.getNodeCount());
-       // System.out.println("Edges " + network.getEdgeCount());
+        // System.out.println("Edges " + network.getEdgeCount());
         for (int i = 0; i < network.getEdgeCount(); i++) {
             //System.out.println(network.getEdge(i));
-            
         }
-        
-                CytoscapeUtils cy = new CytoscapeUtils(genemania.getNetworkUtils());
-                Cytoscape.firePropertyChange(Cytoscape.NETWORK_MODIFIED, null, null);
-		Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null, null);
-                CyNetworkView view = cy.getNetworkView(network);
-		CyLayoutAlgorithm layout = CyLayouts.getLayout(FilteredLayout.ID);
-		if (layout == null) {
-			layout = CyLayouts.getDefaultLayout();
-		}
-		layout.doLayout(view); 
-                //NetworkViewManager viewManager = Cytoscape.getDesktop().getNetworkViewManager();
-		//JInternalFrame frame = viewManager.getInternalFrame(view);
-                JPanel p = new JPanel();
-                p.add(view.getComponent());
-                return p;
+
+        CytoscapeUtils cy = new CytoscapeUtils(genemania.getNetworkUtils());
+        Cytoscape.firePropertyChange(Cytoscape.NETWORK_MODIFIED, null, null);
+        Cytoscape.firePropertyChange(Cytoscape.ATTRIBUTES_CHANGED, null, null);
+        CyNetworkView view = cy.getNetworkView(network);
+        CyLayoutAlgorithm layout = CyLayouts.getLayout(FilteredLayout.ID);
+        if (layout == null) {
+            layout = CyLayouts.getDefaultLayout();
+        }
+        layout.doLayout(view);
+        //NetworkViewManager viewManager = Cytoscape.getDesktop().getNetworkViewManager();
+        //JInternalFrame frame = viewManager.getInternalFrame(view);
+        JPanel p = new JPanel();
+        p.add(view.getComponent());
+        return p;
     }
     /*
-    private JComponent getFrameFromView(CyNetworkView view) {
-        final JInternalFrame iframe = new JInternalFrame(view.getTitle(), true, true, true, true);
-		
-
-		// code added to support layered canvas for each CyNetworkView
-		if (view instanceof DGraphView) {
-			final InternalFrameComponent internalFrameComp = 
-				new InternalFrameComponent(iframe.getLayeredPane(), (DGraphView) view);
-
-			iframe.getContentPane().add(internalFrameComp);
-			
-		} else {
-			logger.info("NetworkViewManager.createContainer() - DGraphView not found!");
-			iframe.getContentPane().add(view.getComponent());
-		}
-
-		iframe.pack();
-
-		int x = 0;
-		int y = 0;
-		JInternalFrame refFrame = null;
-		JInternalFrame[] allFrames = desktopPane.getAllFrames();
-
-		if (allFrames.length > 1) {
-			refFrame = allFrames[0];
-		}
-
-		if (refFrame != null) {
-			x = refFrame.getLocation().x + 20;
-			y = refFrame.getLocation().y + 20;
-		}
-
-		if (x > (desktopPane.getWidth() - MINIMUM_WIN_WIDTH)) {
-			x = desktopPane.getWidth() - MINIMUM_WIN_WIDTH;
-		}
-
-		if (y > (desktopPane.getHeight() - MINIMUM_WIN_HEIGHT)) {
-			y = desktopPane.getHeight() - MINIMUM_WIN_HEIGHT;
-		}
-
-		if (x < 0) {
-			x = 0;
-		}
-
-		if (y < 0) {
-			y = 0;
-		}
-
-		iframe.setBounds(x, y, 400, 400);
-
-		// maximize the frame if the specified property is set
-		try {
-			String max = CytoscapeInit.getProperties().getProperty("maximizeViewOnCreate");
-
-			if ((max != null) && Boolean.parseBoolean(max))
-				iframe.setMaximum(true);
-		} catch (PropertyVetoException pve) {
-			//logger.warn("Unable to maximize internal frame: "+pve.getMessage());
-		}
-
-		iframe.setVisible(true);
-		//iframe.addInternalFrameListener(this);
-		iframe.setResizable(true);
-
-                return iframe;
-    }
-    * 
-    */
-    
+     * private JComponent getFrameFromView(CyNetworkView view) { final
+     * JInternalFrame iframe = new JInternalFrame(view.getTitle(), true, true,
+     * true, true);
+     *
+     *
+     * // code added to support layered canvas for each CyNetworkView if (view
+     * instanceof DGraphView) { final InternalFrameComponent internalFrameComp =
+     * new InternalFrameComponent(iframe.getLayeredPane(), (DGraphView) view);
+     *
+     * iframe.getContentPane().add(internalFrameComp);
+     *
+     * } else { logger.info("NetworkViewManager.createContainer() - DGraphView
+     * not found!"); iframe.getContentPane().add(view.getComponent()); }
+     *
+     * iframe.pack();
+     *
+     * int x = 0; int y = 0; JInternalFrame refFrame = null; JInternalFrame[]
+     * allFrames = desktopPane.getAllFrames();
+     *
+     * if (allFrames.length > 1) { refFrame = allFrames[0]; }
+     *
+     * if (refFrame != null) { x = refFrame.getLocation().x + 20; y =
+     * refFrame.getLocation().y + 20; }
+     *
+     * if (x > (desktopPane.getWidth() - MINIMUM_WIN_WIDTH)) { x =
+     * desktopPane.getWidth() - MINIMUM_WIN_WIDTH; }
+     *
+     * if (y > (desktopPane.getHeight() - MINIMUM_WIN_HEIGHT)) { y =
+     * desktopPane.getHeight() - MINIMUM_WIN_HEIGHT; }
+     *
+     * if (x < 0) { x = 0; }
+     *
+     * if (y < 0) { y = 0; }
+     *
+     * iframe.setBounds(x, y, 400, 400);
+     *
+     * // maximize the frame if the specified property is set try { String max
+     * = CytoscapeInit.getProperties().getProperty("maximizeViewOnCreate");
+     *
+     * if ((max != null) && Boolean.parseBoolean(max)) iframe.setMaximum(true);
+     * } catch (PropertyVetoException pve) { //logger.warn("Unable to maximize
+     * internal frame: "+pve.getMessage()); }
+     *
+     * iframe.setVisible(true); //iframe.addInternalFrameListener(this);
+     * iframe.setResizable(true);
+     *
+     * return iframe; }
+     *
+     */
 }

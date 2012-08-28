@@ -36,8 +36,8 @@ import org.ut.biolab.medsavant.util.ClientMiscUtils;
 public class GeneSetFetcher {
 
     Map<String, Gene> geneDictionary;
-
-    public GeneSetFetcher() {
+    private static GeneSetFetcher instance;
+    private GeneSetFetcher() {
         geneDictionary = new HashMap<String, Gene>();
         try {
             initializeGeneDictionary();
@@ -46,6 +46,13 @@ public class GeneSetFetcher {
         }
     }
 
+    public static GeneSetFetcher getInstance(){
+        if(instance == null){
+            instance = new GeneSetFetcher();
+        }
+        return instance;
+    }
+    
     public Map<String, Gene> getGeneDictionary() {
         return geneDictionary;
     }
@@ -62,18 +69,14 @@ public class GeneSetFetcher {
             @Override
             public int compare (Gene gene1, Gene gene2) {
                 try {
-                    int numVariantsInGene1 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getAllFilterConditions(), gene1.getChrom(), gene1.getStart(), gene1.getEnd());
-                    int numVariantsInGene2 = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getAllFilterConditions(), gene2.getChrom(), gene2.getStart(), gene2.getEnd());
-                    int gene1Length = gene1.getEnd()-gene1.getStart();
-                    double normalizedVarFreq1 = numVariantsInGene1/gene1Length;
-                    int gene2Length = gene2.getEnd()-gene2.getStart();
-                    double normalizedVarFreq2 = numVariantsInGene2/gene2Length;
+                    double normalizedVarFreq1 = getNormalizedVariantCount(gene1);
+                    double normalizedVarFreq2 = getNormalizedVariantCount(gene2);
                     if (normalizedVarFreq1 == normalizedVarFreq2) {
                         return 0;
                     } else if (normalizedVarFreq1 < normalizedVarFreq2) {
-                        return -1;
+                        return 1;
                     }
-                    return 1;
+                    return -1;
                 } catch (Exception ex) {
                     ClientMiscUtils.reportError("Unable to initialise gene dictionary: %s", ex);
                     return 0;
@@ -83,6 +86,12 @@ public class GeneSetFetcher {
         return genes;
     }
 
+    public double getNormalizedVariantCount(Gene gene) throws SQLException, RemoteException, InterruptedException{
+        double varCount = MedSavantClient.VariantManager.getVariantCountInRange(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID() , FilterController.getInstance().getAllFilterConditions(), gene.getChrom(), gene.getStart(), gene.getEnd());
+        double length = gene.getEnd()-gene.getStart();
+        return ClientMiscUtils.round((varCount/length)*1000.00, 4);
+    }
+    
     public List<Gene> getGenes(List<String> geneNames) {
         List<Gene> genes = new ArrayList<Gene>();
         Iterator<String> itr = geneNames.iterator();

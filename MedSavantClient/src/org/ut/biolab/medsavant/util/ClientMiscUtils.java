@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -167,5 +168,36 @@ public class ClientMiscUtils extends MiscUtils {
         float y = (float)(box.getY() + (box.getHeight() + metrics.getAscent() - metrics.getDescent()) / 2.0);
 
         g2.drawString(message, x, y);
+    }
+    
+    /**
+     * Creates html representation of a given string that includes line breaks 
+     */
+    public static String breakString(String remainingStr, String soFar, int maxLineLength) {
+        if (remainingStr.length() < maxLineLength) 
+                return "<html>" +soFar + remainingStr +"</html>";
+        int endIndex; 
+        if(maxLineLength> remainingStr.length())
+            endIndex = remainingStr.length();
+        else
+            endIndex = maxLineLength;
+        int indexOfBreak = remainingStr.substring(0, endIndex).lastIndexOf(" ");
+
+        if (indexOfBreak == -1) {
+                return breakString(remainingStr.substring(maxLineLength), soFar += remainingStr.substring(0, maxLineLength) + "<br>-", maxLineLength);
+        } else {
+            soFar += remainingStr.substring(0, indexOfBreak) + "<br>";
+            return breakString(remainingStr.substring(indexOfBreak)
+            ,soFar, maxLineLength);
+        }
+    }
+    
+    /**
+     * Rounds a double up safely
+     */
+    public static double round(double unrounded, int precision){
+        BigDecimal bd = new BigDecimal(unrounded);
+        BigDecimal rounded = bd.setScale(precision, BigDecimal.ROUND_HALF_UP);
+        return rounded.doubleValue();
     }
 }

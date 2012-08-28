@@ -100,23 +100,29 @@ public class GenemaniaInfoRetriever {
     }
 
     public List<String> getRelatedGeneNamesByScore() throws ApplicationException, DataStoreException, NoRelatedGenesInfoException{
+        System.err.println("getting NAMES" + System.currentTimeMillis());
         List<String> geneNames = new ArrayList<String>();
         Iterator<Gene> itr = getRelatedGenesByScore().iterator();
         while (itr.hasNext()){
             geneNames.add(itr.next().getSymbol());
         }
+        System.err.println("got NAMES" + System.currentTimeMillis());
         return geneNames;
-     }
+    }
 
     public List<Gene> getRelatedGenesByScore() throws ApplicationException, DataStoreException, NoRelatedGenesInfoException{
+        System.err.println("getting related genes"+ System.currentTimeMillis());
         options =runGeneManiaAlgorithm();
+        System.err.println("done running algorithm"+ System.currentTimeMillis());
         final Map<Gene, Double> scores = options.getScores();
 	ArrayList<Gene> relatedGenes = new ArrayList<Gene>(scores.keySet());
-	Collections.sort(relatedGenes, new Comparator<Gene>() {
+	System.err.println("sorting genes by score"+ System.currentTimeMillis());
+        Collections.sort(relatedGenes, new Comparator<Gene>() {
 		public int compare(Gene gene1, Gene gene2) {
 			return -Double.compare(scores.get(gene1), scores.get(gene2));
 		}
 	});
+        System.err.println("got related genes"+ System.currentTimeMillis());
         return relatedGenes;
     }
 

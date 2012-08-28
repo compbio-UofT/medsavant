@@ -300,7 +300,7 @@ public class RegionWizard extends WizardDialog {
                             progressMessage.setText(message);
                             setMsgOff = false;
                         }
-                        GeneSetFetcher geneSetFetcher = new GeneSetFetcher();
+                        GeneSetFetcher geneSetFetcher = GeneSetFetcher.getInstance();
                         if (genemania.getGenes().size() > 0) {
                             if (rankByVarFreq) {
                                 Iterator<org.ut.biolab.medsavant.model.Gene> itr = geneSetFetcher.getGenesByNumVariants(genemania.getRelatedGeneNamesByScore()).iterator();
@@ -326,7 +326,7 @@ public class RegionWizard extends WizardDialog {
                                 int i = 1;
                                 while (itr.hasNext()) {
                                     currGene = itr.next();
-                                    final org.ut.biolab.medsavant.model.Gene finalGene = new GeneSetFetcher().getGene(currGene);
+                                    final org.ut.biolab.medsavant.model.Gene finalGene = GeneSetFetcher.getInstance().getGene(currGene);
                                     recommendedGenes.addRow(new Object[]{finalGene.getName(), finalGene.getChrom(), finalGene.getStart(), finalGene.getEnd()});
                                     i++;
                                 }

@@ -331,6 +331,15 @@ public class KeyValuePairPanel extends JPanel {
         JLabel c = new JLabel(value); // horizontal padding
         setValue(key, c);
     }
+    
+    public void setToolTipForValue(String key, String toolTipText){
+        if (isKeysVisible) {
+            keyKeyComponentMap.get(key).setToolTipText(toolTipText);
+        }
+        else{
+            keyValueComponentMap.get(key).setToolTipText(toolTipText);
+        }
+    }
 
     private JComponent getNullLabel() {
         //JPanel p = ViewUtil.getClearPanel();
