@@ -54,11 +54,11 @@ public class ListViewTablePanel extends JPanel {
     private float fontSize = 14.0f;
 
     public ListViewTablePanel(Object[][] data, String[] columnNames, Class[] columnClasses, int[] hiddenColumns) {
-        this(data, columnNames, columnClasses, hiddenColumns, true, true, true, true, true);
+        this(data, columnNames, columnClasses, hiddenColumns, true, true, true, true);
     }
 
     public ListViewTablePanel(Object[][] data, String[] columnNames, Class[] columnClasses, int[] hiddenColumns,
-        boolean allowSearch, boolean allowSort, boolean allowPages, boolean allowSelection, boolean allowHideShow) {
+        boolean allowSearch, boolean allowSort, boolean allowPages, boolean allowSelection) {
 
 
         this.hiddenColumns = hiddenColumns;
@@ -132,7 +132,7 @@ public class ListViewTablePanel extends JPanel {
         if (allowSearch) {
             fieldPanel.add(filterField, gbc);
         }
-        if (allowHideShow) {
+        if (columnNames.length > 1) {
             JButton chooseColumnButton = new JButton("<html><center><font size=\"-2\">Show/Hide<br>Fields</font></center></html>");
             chooseColumnButton.addMouseListener(new MouseAdapter() {
                 @Override
