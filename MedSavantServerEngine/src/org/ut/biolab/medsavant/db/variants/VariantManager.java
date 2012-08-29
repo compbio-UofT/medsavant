@@ -1780,6 +1780,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
+        q.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
         q.addCondition(ComboCondition.and(new Condition[]{dnaCondition, c}));
         q.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
 
