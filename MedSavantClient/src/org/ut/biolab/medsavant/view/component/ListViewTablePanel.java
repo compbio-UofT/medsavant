@@ -15,15 +15,13 @@
  */
 package org.ut.biolab.medsavant.view.component;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellRenderer;
 
@@ -32,7 +30,6 @@ import com.jidesoft.grid.AutoResizePopupMenuCustomizer;
 import com.jidesoft.grid.FilterableTableModel;
 import com.jidesoft.grid.QuickTableFilterField;
 import com.jidesoft.grid.SortableTable;
-import com.jidesoft.grid.TableColumnChooserPopupMenuCustomizer;
 import com.jidesoft.grid.TableHeaderPopupMenuInstaller;
 import com.jidesoft.grid.TableModelWrapperUtils;
 
@@ -57,11 +54,11 @@ public class ListViewTablePanel extends JPanel {
     private float fontSize = 14.0f;
 
     public ListViewTablePanel(Object[][] data, String[] columnNames, Class[] columnClasses, int[] hiddenColumns) {
-        this(data, columnNames, columnClasses, hiddenColumns, true, true, true, true);
+        this(data, columnNames, columnClasses, hiddenColumns, true, true, true, true, true);
     }
 
     public ListViewTablePanel(Object[][] data, String[] columnNames, Class[] columnClasses, int[] hiddenColumns,
-        boolean allowSearch, boolean allowSort, boolean allowPages, boolean allowSelection) {
+        boolean allowSearch, boolean allowSort, boolean allowPages, boolean allowSelection, boolean allowHideShow) {
 
 
         this.hiddenColumns = hiddenColumns;
@@ -112,7 +109,7 @@ public class ListViewTablePanel extends JPanel {
         //column chooser
         TableHeaderPopupMenuInstaller installer = new TableHeaderPopupMenuInstaller(table);
         installer.addTableHeaderPopupMenuCustomizer(new AutoResizePopupMenuCustomizer());
-        columnChooser = new ColumnChooser();
+        columnChooser = new ColumnChooser(table);
         installer.addTableHeaderPopupMenuCustomizer(columnChooser);
 
         AutoFilterTableHeader header = new AutoFilterTableHeader(table);
@@ -124,18 +121,34 @@ public class ListViewTablePanel extends JPanel {
         filterField = new QuickTableFilterField(model);
         filterField.setHintText("Type to search");
 
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout(3, 3));
         fieldPanel = ViewUtil.getClearPanel();
-        this.setOpaque(false);
+        fieldPanel.setLayout(new GridBagLayout());
+        setOpaque(false);
 
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         if (allowSearch) {
-            fieldPanel.add(filterField);
+            fieldPanel.add(filterField, gbc);
+        }
+        if (allowHideShow) {
+            JButton chooseColumnButton = new JButton("<html><center><font size=\"-2\">Show/Hide<br>Fields</font></center></html>");
+            chooseColumnButton.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    columnChooser.showDialog();
+                }
+            });
+            gbc.weightx = 0.0;
+            gbc.fill = GridBagConstraints.NONE;
+            fieldPanel.add(chooseColumnButton, gbc);
         }
 
         setTableModel(data, columnNames, columnClasses);
 
         if (allowSort) {
-            this.add(fieldPanel, BorderLayout.NORTH);
+            add(fieldPanel, BorderLayout.NORTH);
         }
 
         JScrollPane jsp = new JScrollPane(table);
@@ -188,7 +201,7 @@ public class ListViewTablePanel extends JPanel {
             filterField.setObjectConverterManagerEnabled(true);
 
             table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
-            columnChooser.hideColumns(table, hiddenColumns);
+            columnChooser.hideColumns(hiddenColumns);
 
             int[] favColumns = new int[columnNames.length - hiddenColumns.length];
             int pos = 0;
@@ -255,14 +268,5 @@ public class ListViewTablePanel extends JPanel {
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public Object[] getRowData(int i) {
         return ((java.util.Vector)model.getDataVector().elementAt(i)).toArray();
-    }
-
-    private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
-
-        public void hideColumns(JTable table, int[] indices) {
-            for (int i: indices) {
-                hideColumn(table, i);
-            }
-        }
     }
 }

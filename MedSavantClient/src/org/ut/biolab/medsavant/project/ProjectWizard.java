@@ -64,7 +64,7 @@ public class ProjectWizard extends WizardDialog {
 
     private static final Log LOG = LogFactory.getLog(ProjectWizard.class);
     private static final String PAGENAME_NAME = "Project Name";
-    private static final String PAGENAME_PATIENTS = "Patients";
+    private static final String PAGENAME_PATIENTS = "Individuals";
     private static final String PAGENAME_VCF = "Custom VCF Fields";
     private static final String PAGENAME_REF = "Reference";
     private static final String PAGENAME_COMPLETE = "Complete";
@@ -206,7 +206,7 @@ public class ProjectWizard extends WizardDialog {
             }
         };
 
-        page.addText("Add relevant fields for patients. ");
+        page.addText("Add relevant fields for individuals. ");
 
         JScrollPane scrollpane = new JScrollPane();
         scrollpane.setPreferredSize(new Dimension(300, 250));
@@ -620,7 +620,7 @@ public class ProjectWizard extends WizardDialog {
             return true;
         } else {
             DialogUtils.displayError(
-                    "Patient table format contains errors\n"
+                    "Individuals table format contains errors\n"
                     + "Name cannot only contain letters, numbers and underscores. \n"
                     + "Type must be in format: COLUMNTYPE(LENGTH)");
             return false;

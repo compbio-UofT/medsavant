@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -148,11 +147,11 @@ public class AddPatientsForm extends JDialog {
 
     private void generateTemplate() throws SQLException, RemoteException {
 
-        File file = DialogUtils.chooseFileForSave("Export Patients", "template.csv", ExtensionFileFilter.createFilters(new String[]{"csv"}), null);
+        File file = DialogUtils.chooseFileForSave("Export Individuals", "template.csv", ExtensionFileFilter.createFilters(new String[]{"csv"}), null);
         if (file == null) return;
 
         progressBar.setIndeterminate(true);
-        progressMessage.setText("Exporting Patients");
+        progressMessage.setText("Exporting individuals...");
 
         CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
         List<Object[]> patients = MedSavantClient.PatientManager.getPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
@@ -181,8 +180,8 @@ public class AddPatientsForm extends JDialog {
             writer.close();
             progressMessage.setText("Export successful");
         } catch (IOException ex) {
-            LOG.error("Error exporting patients.", ex);
-            progressMessage.setText("Error exporting patients");
+            LOG.error("Error exporting individuals.", ex);
+            progressMessage.setText("Error exporting individuals");
         }
         progressBar.setIndeterminate(false);
         progressBar.setValue(0);
@@ -198,12 +197,9 @@ public class AddPatientsForm extends JDialog {
     private void importFile() throws SQLException, RemoteException {
 
         //Warn that data will be replaced
-        if (JOptionPane.NO_OPTION == JOptionPane.showConfirmDialog(
-                null,
-                "<html>Importing patients will REPLACE all existing patients.<br>Are you sure you want to do this?</html>",
-                "Confirm",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE)) return;
+        if (DialogUtils.askYesNo("Confirm", "<html>Importing individuals will REPLACE all existing individuals.<br>Are you sure you want to do this?</html>") == DialogUtils.NO) {
+            return;
+        }
 
         //remove current data
         MedSavantClient.PatientManager.clearPatients(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
@@ -212,7 +208,7 @@ public class AddPatientsForm extends JDialog {
         if (file == null) return;
 
         progressBar.setIndeterminate(true);
-        progressMessage.setText("Importing Patients");
+        progressMessage.setText("Importing individuals...");
         setButtonsEnabled(false);
 
         Thread t = new Thread() {
@@ -244,12 +240,8 @@ public class AddPatientsForm extends JDialog {
                             }
                         }
                         if (!found) {
-                            JOptionPane.showMessageDialog(
-                                        null,
-                                        "<HTML>The headers in this file do not match those in the database.<BR>Please regenerate the template file.</HTML>",
-                                        "Error",
-                                        JOptionPane.ERROR_MESSAGE);
-                            progressMessage.setText("Error importing patients");
+                            DialogUtils.displayError("<HTML>The headers in this file do not match those in the database.<BR>Please regenerate the template file.</HTML>");
+                            progressMessage.setText("Error importing individuals");
                             progressBar.setIndeterminate(false);
                             progressBar.setValue(0);
                             setButtonsEnabled(true);
@@ -284,8 +276,8 @@ public class AddPatientsForm extends JDialog {
                     progressMessage.setText("Import successful");
                 } catch (Exception ex) {
                     ClientMiscUtils.checkSQLException(ex);
-                    LOG.error("Error importing patients.", ex);
-                    progressMessage.setText("Error importing patients");
+                    LOG.error("Error importing individuals.", ex);
+                    progressMessage.setText("Error importing individuals");
                 } finally {
                     setButtonsEnabled(true);
                     progressBar.setIndeterminate(false);
@@ -462,7 +454,7 @@ public class AddPatientsForm extends JDialog {
         try {
             addPatient();
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Error adding patient: %s", ex);
+            ClientMiscUtils.reportError("Error adding individual: %s", ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 

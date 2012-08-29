@@ -131,7 +131,7 @@ public class RegionListAggregatePanel extends AggregatePanel {
 
     private void createSearchableTable() {
         tablePanel = new SearchableTablePanel(pageName,
-                new String[] { "Name", "Chromosome", "Start", "End", "Variants", "Patients" },
+                new String[] { "Name", "Chromosome", "Start", "End", "Variants", "Individuals" },
                 new Class[] { String.class, String.class, Integer.class, Integer.class, Integer.class, Integer.class },
                 new int[0], true, true, Integer.MAX_VALUE, false, SearchableTablePanel.TableSelectionType.ROW, Integer.MAX_VALUE,
                 new AggregationRetriever());

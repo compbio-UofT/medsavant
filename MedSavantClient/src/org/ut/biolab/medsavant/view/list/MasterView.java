@@ -208,6 +208,7 @@ public class MasterView extends JPanel {
                 return detailedModel.getList(LIMIT);
             }
 
+            @Override
             protected void showProgress(double ignored) {
             }
 

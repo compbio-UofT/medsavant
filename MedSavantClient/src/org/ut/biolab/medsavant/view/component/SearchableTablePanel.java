@@ -35,7 +35,6 @@ import org.apache.commons.logging.LogFactory;
 import org.ut.biolab.medsavant.util.DataRetriever;
 import org.ut.biolab.medsavant.util.ExportTable;
 import org.ut.biolab.medsavant.util.MedSavantWorker;
-import org.ut.biolab.medsavant.view.MedSavantFrame;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -149,7 +148,7 @@ public class SearchableTablePanel extends JPanel {
         //column chooser
         TableHeaderPopupMenuInstaller installer = new TableHeaderPopupMenuInstaller(table);
         installer.addTableHeaderPopupMenuCustomizer(new AutoResizePopupMenuCustomizer());
-        columnChooser = new ColumnChooser();
+        columnChooser = new ColumnChooser(table);
         installer.addTableHeaderPopupMenuCustomizer(columnChooser);
 
         AutoFilterTableHeader header = new AutoFilterTableHeader(table);
@@ -166,7 +165,7 @@ public class SearchableTablePanel extends JPanel {
             filterField.setHintText("Type to search");
         }
 
-        this.setLayout(new BorderLayout(3, 3));
+        setLayout(new BorderLayout(3, 3));
         fieldPanel = ViewUtil.getClearPanel();
 
         if (allowSearch) {
@@ -413,7 +412,7 @@ public class SearchableTablePanel extends JPanel {
 
         //table.setModel(model);
         table.setModel(new FilterableTableModel(filterField.getDisplayTableModel()));
-        columnChooser.hideColumns(table, hiddenColumns);
+        columnChooser.hideColumns(hiddenColumns);
 
         int[] favColumns = new int[columnNames.length - hiddenColumns.length];
         int pos = 0;
@@ -573,24 +572,6 @@ public class SearchableTablePanel extends JPanel {
 
     public void setExportButtonEnabled(boolean enable) {
         exportButton.setEnabled(enable);
-    }
-
-    private class ColumnChooser extends TableColumnChooserPopupMenuCustomizer {
-
-        public void hideColumns(JTable table, int[] indices) {
-            for (int i : indices) {
-                hideColumn(table, i);
-            }
-        }
-
-        public void showDialog() {
-            TableColumnChooserDialog dialog = super.createTableColumnChooserDialog(MedSavantFrame.getInstance(), "Choose fields to display", table);
-            dialog.setPreferredSize(new Dimension(300,500));
-            dialog.setSize(new Dimension(300,500));
-            dialog.setLocationRelativeTo(null);
-            dialog.setVisible(true);
-        }
-
     }
 
     public int getActualRowAt(int row) {

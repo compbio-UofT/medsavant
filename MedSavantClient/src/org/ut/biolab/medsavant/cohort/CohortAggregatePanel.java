@@ -381,7 +381,7 @@ public class CohortAggregatePanel extends AggregatePanel {
                 case 0:
                     return "Cohort Name";
                 case 1:
-                    return "Patient Id";
+                    return "Individual Id";
                 case 2:
                     return "Count";
             }

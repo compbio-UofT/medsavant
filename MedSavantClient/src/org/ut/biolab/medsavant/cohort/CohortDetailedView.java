@@ -41,6 +41,7 @@ import org.ut.biolab.medsavant.view.component.StripyTable;
 import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.list.DetailedView;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
 /**
@@ -104,6 +105,7 @@ class CohortDetailedView extends DetailedView {
             return patientList;
         }
 
+        @Override
         protected void showProgress(double ignored) {
         }
 
@@ -123,7 +125,7 @@ class CohortDetailedView extends DetailedView {
         }
 
         JPanel p = new JPanel();
-        p.setBackground(Color.white);
+        p.setBackground(Color.WHITE);
         p.setBorder(ViewUtil.getBigBorder());
         ViewUtil.applyVerticalBoxLayout(p);
 
@@ -187,18 +189,18 @@ class CohortDetailedView extends DetailedView {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int[] rows = list.getSelectedRows();
-                int[] patientIds = new int[rows.length];
+                int[] patientIDs = new int[rows.length];
                 for (int i = 0; i < rows.length; i++) {
-                    patientIds[i] = ((SimplePatient) list.getModel().getValueAt(rows[i], 0)).getId();
+                    patientIDs[i] = ((SimplePatient) list.getModel().getValueAt(rows[i], 0)).getId();
                 }
-                if (patientIds != null && patientIds.length > 0) {
+                if (patientIDs != null && patientIDs.length > 0) {
 
-                    if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(null, "Are you sure you want to remove these individual(s)?", "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+                    if (DialogUtils.askYesNo("Confirm", "Are you sure you want to remove these individual(s)?") == DialogUtils.NO) {
                         return;
                     }
 
                     try {
-                        MedSavantClient.CohortManager.removePatientsFromCohort(LoginController.sessionId, patientIds, cohorts[0].getId());
+                        MedSavantClient.CohortManager.removePatientsFromCohort(LoginController.sessionId, patientIDs, cohorts[0].getId());
                     } catch (Exception ex) {
                         LOG.error("Error removing patients from cohort.", ex);
                     }

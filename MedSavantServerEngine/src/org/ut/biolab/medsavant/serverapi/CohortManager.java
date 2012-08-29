@@ -155,7 +155,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
         String patientTablename = rs.getString(1);
 
         //get field lists
-        TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(sessID,patientTablename);
+        TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(sessID, patientTablename);
         SelectQuery query2 = new SelectQuery();
         query2.addFromTable(cohortMembershipTable.getTable());
         query2.addFromTable(patientTable.getTable());
@@ -203,16 +203,16 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     }
 
     @Override
-    public void removePatientsFromCohort(String sid, int[] patientIds, int cohortId) throws SQLException {
+    public void removePatientsFromCohort(String sessID, int[] patIDs, int cohID) throws SQLException {
 
         TableSchema table = MedSavantDatabase.CohortmembershipTableSchema;
 
-        Connection c = ConnectionController.connectPooled(sid);
+        Connection c = ConnectionController.connectPooled(sessID);
         c.setAutoCommit(false);
 
-        for (int id : patientIds) {
+        for (int id : patIDs) {
             DeleteQuery query = new DeleteQuery(table.getTable());
-            query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
+            query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohID));
             query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), id));
             c.createStatement().executeUpdate(query.toString());
         }

@@ -15,20 +15,15 @@
  */
 package org.ut.biolab.medsavant.view.genetics.charts;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.swing.*;
 
 import com.jidesoft.chart.Chart;
@@ -36,7 +31,6 @@ import com.jidesoft.chart.ChartType;
 import com.jidesoft.chart.Legend;
 import com.jidesoft.chart.axis.Axis;
 import com.jidesoft.chart.axis.CategoryAxis;
-import com.jidesoft.chart.event.*;
 import com.jidesoft.chart.model.ChartCategory;
 import com.jidesoft.chart.model.ChartPoint;
 import com.jidesoft.chart.model.DefaultChartModel;
@@ -45,15 +39,9 @@ import com.jidesoft.chart.model.InvertibleTransform;
 import com.jidesoft.chart.render.AbstractPieSegmentRenderer;
 import com.jidesoft.chart.render.DefaultBarRenderer;
 import com.jidesoft.chart.render.DefaultPieSegmentRenderer;
-import com.jidesoft.chart.render.RaisedPieSegmentRenderer;
 import com.jidesoft.chart.style.ChartStyle;
 import com.jidesoft.range.CategoryRange;
 import com.jidesoft.range.NumericRange;
-import com.jidesoft.range.Range;
-import java.awt.*;
-import java.awt.geom.Point2D;
-import java.util.List;
-import java.util.*;
 import net.ericaro.surfaceplotter.JSurfacePanel;
 import net.ericaro.surfaceplotter.Mapper;
 import net.ericaro.surfaceplotter.ProgressiveSurfaceModel;

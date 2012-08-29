@@ -111,7 +111,7 @@ public class QueryPanel extends CollapsiblePanes {
                     catHolders.add(new FieldFilterHolder(field, WhichTable.PATIENT, queryID));
                 }
             }
-            panes.add(addFilterCategory("Patient Conditions", catHolders, false), BorderLayout.CENTER);
+            panes.add(addFilterCategory("Conditions on Individuals", catHolders, false), BorderLayout.CENTER);
 
             // Add from variant table
             AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();

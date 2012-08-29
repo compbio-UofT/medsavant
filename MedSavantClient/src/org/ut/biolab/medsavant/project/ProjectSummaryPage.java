@@ -97,7 +97,7 @@ public class ProjectSummaryPage extends SubSectionView {
 
     private CollapsiblePane createPatientSummary() {
 
-        CollapsiblePane p = new CollapsiblePane("Patients");
+        CollapsiblePane p = new CollapsiblePane("Individuals");
         p.setCollapsible(false);
 
         p.getContentPane().setLayout(new BorderLayout());
@@ -119,7 +119,7 @@ public class ProjectSummaryPage extends SubSectionView {
             }
         };
 
-        String key = "Patients";
+        String key = "Individuals";
 
         kvp.addKey(key);
         kvp.setValue(key, checkException(key,pFetcher));

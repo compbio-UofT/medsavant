@@ -48,7 +48,7 @@ class IndividualDetailEditor extends DetailedListEditor {
         try {
             new AddPatientsForm().setVisible(true);
         } catch (Exception ex) {
-            ClientMiscUtils.reportError("Unable to present Add Patient form: %s", ex);
+            ClientMiscUtils.reportError("Unable to present Add Individual form: %s", ex);
         }
     }
 
@@ -75,7 +75,7 @@ class IndividualDetailEditor extends DetailedListEditor {
                 patients[index++] = id;
             }
 
-            new ProgressDialog("Removing Patient(s)", patients.length + " patient(s) being removed. Please wait.") {
+            new ProgressDialog("Removing Individual(s)", patients.length + " individual(s) being removed. Please wait.") {
                 @Override
                 public void run() {
                     try {
@@ -83,10 +83,10 @@ class IndividualDetailEditor extends DetailedListEditor {
                                 LoginController.sessionId,
                                 ProjectController.getInstance().getCurrentProjectID(),
                                 patients);
-                        DialogUtils.displayMessage("Successfully removed " + items.size() + " patient(s)");
+                        DialogUtils.displayMessage("Successfully removed " + items.size() + " individual(s)");
                     } catch (Exception ex) {
                         setVisible(false);
-                        ClientMiscUtils.reportError("Error removing patient(s): %s", ex);
+                        ClientMiscUtils.reportError("Error removing individual(s): %s", ex);
                     }
 
                 }

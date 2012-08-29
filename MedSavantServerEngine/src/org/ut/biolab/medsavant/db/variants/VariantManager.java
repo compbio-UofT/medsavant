@@ -801,19 +801,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         String name = ProjectManager.getInstance().getVariantTableName(sessID, projID, refID, true);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, name);
-
-        Condition[] dnaConditions = new Condition[dnaIDs.size()];
-        int i = 0;
-        for (String id : dnaIDs) {
-            dnaConditions[i++] = BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), id);
-        }
+        Condition dnaCondition = new InCondition(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIDs);
 
         Condition[] c1 = new Condition[conditions.length];
-        for (i = 0; i < conditions.length; i++) {
+        for (int i = 0; i < conditions.length; i++) {
             c1[i] = ComboCondition.and(conditions[i]);
         }
 
-        Condition[] finalCondition = new Condition[]{ComboCondition.and(ComboCondition.or(dnaConditions), ComboCondition.or(c1))};
+        Condition[] finalCondition = new Condition[]{ComboCondition.and(dnaCondition, ComboCondition.or(c1))};
 
         return getFilteredVariantCount(sessID, projID, refID, new Condition[][]{finalCondition});
     }
@@ -1739,60 +1734,56 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public Map<String, Integer> getDNAIDHeatMap(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException {
 
-        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sessID, projID, refID, true);
-        String tablename = (String) variantTableInfo[0];
-        String tablenameSub = (String) variantTableInfo[1];
-        float multiplier = (Float) variantTableInfo[2];
+        Map<String, Integer> dnaIDMap = new HashMap<String, Integer>();
 
-        TableSchema subTable = CustomTables.getInstance().getCustomTableSchema(sessID, tablenameSub);
-        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
+        if (!dnaIDs.isEmpty()) {
+            Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sessID, projID, refID, true);
+            String tablename = (String) variantTableInfo[0];
+            String tablenameSub = (String) variantTableInfo[1];
+            float multiplier = (Float) variantTableInfo[2];
 
-        Map<String, Integer> dnaIdMap = new HashMap<String, Integer>();
+            TableSchema subTable = CustomTables.getInstance().getCustomTableSchema(sessID, tablenameSub);
+            TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
 
-        //combine conditions
-        Condition[] c1 = new Condition[conditions.length];
-        for (int i = 0; i < conditions.length; i++) {
-            c1[i] = ComboCondition.and(conditions[i]);
-        }
-        Condition c2 = ComboCondition.or(c1);
+            //combine conditions
+            Condition[] c1 = new Condition[conditions.length];
+            for (int i = 0; i < conditions.length; i++) {
+                c1[i] = ComboCondition.and(conditions[i]);
+            }
+            Condition c2 = ComboCondition.or(c1);
 
-        // Try sub table first.
-        getDNAIDHeatMapHelper(sessID, subTable, multiplier, dnaIDs, c2, true, dnaIdMap);
+            // Try sub table first.
+            getDNAIDHeatMapHelper(sessID, subTable, multiplier, dnaIDs, c2, true, dnaIDMap);
 
-        // Determine dnaIDs with no value yet.
-        List<String> dnaIds2 = new ArrayList<String>();
-        for (String dnaId : dnaIDs) {
-            if (!dnaIdMap.containsKey(dnaId)) {
-                dnaIds2.add(dnaId);
+            // Determine dnaIDs with no value yet.
+            List<String> dnaIDs2 = new ArrayList<String>();
+            for (String id : dnaIDs) {
+                if (!dnaIDMap.containsKey(id)) {
+                    dnaIDs2.add(id);
+                }
+            }
+
+            //get remaining dna ids from actual table
+            if (!dnaIDs2.isEmpty()) {
+                getDNAIDHeatMapHelper(sessID, table, 1, dnaIDs2, c2, false, dnaIDMap);
             }
         }
 
-        //get remaining dna ids from actual table
-        if (!dnaIds2.isEmpty()) {
-            getDNAIDHeatMapHelper(sessID, table, 1, dnaIds2, c2, false, dnaIdMap);
-        }
-
-        return dnaIdMap;
+        return dnaIDMap;
     }
 
-    private void getDNAIDHeatMapHelper(String sid, TableSchema table, float multiplier, Collection<String> dnaIDs, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException {
+    private void getDNAIDHeatMapHelper(String sessID, TableSchema table, float multiplier, Collection<String> dnaIDs, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException {
 
         //generate conditions from dna ids
-        Condition[] dnaIDConditions = new Condition[dnaIDs.size()];
-        int i = 0;
-        for (String id : dnaIDs) {
-            dnaIDConditions[i++] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), id);
-        }
-        Condition dnaCondition = ComboCondition.or(dnaIDConditions);
+        Condition dnaCondition = new InCondition(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIDs);
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
-        q.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
         q.addCondition(ComboCondition.and(new Condition[]{dnaCondition, c}));
         q.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
 
-        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
 
         while (rs.next()) {
             int value = (int) (rs.getInt(1) * multiplier);

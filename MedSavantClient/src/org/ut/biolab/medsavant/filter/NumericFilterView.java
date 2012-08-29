@@ -16,7 +16,6 @@
 
 package org.ut.biolab.medsavant.filter;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
 import java.awt.Dimension;
 import java.awt.event.*;
 import java.rmi.RemoteException;
@@ -26,7 +25,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.healthmarketscience.sqlbuilder.Condition;
-import com.healthmarketscience.sqlbuilder.SqlObject;
 import com.healthmarketscience.sqlbuilder.UnaryCondition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -37,7 +35,6 @@ import org.ut.biolab.medsavant.model.ProgressStatus;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.model.RangeCondition;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.component.DecimalRangeSlider;
 import org.ut.biolab.medsavant.view.dialog.CancellableProgressDialog;

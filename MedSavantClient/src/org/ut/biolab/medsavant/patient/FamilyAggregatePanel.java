@@ -297,26 +297,25 @@ public class FamilyAggregatePanel extends AggregatePanel implements PedigreeFiel
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (overNode != null) {
-                    String hospitalId = (String)overNode.getId();
-                    Integer patientId = Integer.parseInt((String)overNode.getUserData(PATIENT_ID));
+                    int patID = Integer.parseInt((String)overNode.getUserData(PATIENT_ID));
                     if (SwingUtilities.isRightMouseButton(e)) {
-                        int[] patientIds;
+                        int[] patIDs;
                         if (selectedNodes != null && !selectedNodes.isEmpty()) {
-                            patientIds = new int[selectedNodes.size()];
+                            patIDs = new int[selectedNodes.size()];
                             for(int i = 0; i < selectedNodes.size(); i++) {
-                                patientIds[i] = selectedNodes.get(i);
+                                patIDs[i] = selectedNodes.get(i);
                             }
                         } else {
-                            patientIds = new int[]{patientId};
+                            patIDs = new int[]{patID};
                         }
-                        JPopupMenu popup = org.ut.biolab.medsavant.patient.PatientUtils.createPopup(patientIds);
+                        JPopupMenu popup = org.ut.biolab.medsavant.patient.PatientUtils.createPopup(patIDs);
                         popup.show(e.getComponent(), e.getX(), e.getY());
                     } else if (SwingUtilities.isLeftMouseButton(e)) {
-                        if (!selectedNodes.contains(patientId)) {
-                            selectedNodes.add(patientId);
+                        if (!selectedNodes.contains(patID)) {
+                            selectedNodes.add(patID);
                             overNodeView.setBorderColor(ViewUtil.detailSelectedBackground);
                         } else {
-                            selectedNodes.remove(patientId);
+                            selectedNodes.remove(patID);
                             overNodeView.setBorderColor(Color.black);
                         }
                     }
