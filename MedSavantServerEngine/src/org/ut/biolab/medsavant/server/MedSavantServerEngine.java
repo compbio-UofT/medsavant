@@ -116,6 +116,13 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
             String host = "localhost";
             int port = 5029;
 
+            // print usage
+            if (args.length > 0 && args[0].equals("--help")) {
+                System.out.println("java -jar -Djava.rmi.server.hostname=<hostname> MedSavantServerEngine.jar [-l RMI_PORT] [-h DATABASE_HOST] [-p DATABASE_PORT] [-u DATABASE_ROOT_USER]");
+                return;
+            }
+
+
             while ((c = g.getopt()) != -1) {
                 switch (c) {
                     case 'h':
@@ -139,6 +146,8 @@ public class MedSavantServerEngine extends MedSavantServerUnicastRemoteObject im
                         System.out.print("getopt() returned " + c + "\n");
                 }
             }
+
+
 
             new MedSavantServerEngine(host,port,user);
         } catch (Exception e) {
