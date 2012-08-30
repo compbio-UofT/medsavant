@@ -108,7 +108,7 @@ public class SearchSubInspector extends SubInspector implements VariantSelection
 
 
         p.add(buttonPanel);
-        p.add(ViewUtil.center(searchContainer));
+        p.add(ViewUtil.centerHorizontally(searchContainer));
 
         return p;
     }

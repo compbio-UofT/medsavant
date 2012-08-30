@@ -453,7 +453,16 @@ public class ViewUtil {
                 );
     }
 
-    public static JPanel center(JComponent c) {
+    public static JPanel centerVertically(JComponent c) {
+        JPanel p = ViewUtil.getClearPanel();
+        ViewUtil.applyVerticalBoxLayout(p);
+        p.add(Box.createHorizontalGlue());
+        p.add(c);
+        p.add(Box.createHorizontalGlue());
+        return p;
+    }
+
+    public static JPanel centerHorizontally(JComponent c) {
         JPanel p = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(p);
         p.add(Box.createHorizontalGlue());

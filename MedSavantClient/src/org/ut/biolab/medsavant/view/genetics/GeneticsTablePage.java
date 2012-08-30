@@ -58,7 +58,7 @@ public class GeneticsTablePage extends SubSectionView {
             public void handleEvent(FilterEvent event) {
                 updateContents();
             }
-            
+
         });
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override
@@ -87,7 +87,7 @@ public class GeneticsTablePage extends SubSectionView {
                 ThreadController.getInstance().cancelWorkers(pageName);
                 setPanel();
             } else {
-                tablePanel.updateIfRequired();
+                tablePanel.update();
                 genomeContainer.updateIfRequired();
             }
         } catch (Exception ex) {
@@ -123,7 +123,7 @@ public class GeneticsTablePage extends SubSectionView {
     @Override
     public void viewDidLoad() {
         super.viewDidLoad();
-        tablePanel.updateIfRequired();
+        tablePanel.update();
         genomeContainer.updateIfRequired();
     }
 
@@ -143,7 +143,7 @@ public class GeneticsTablePage extends SubSectionView {
         tablePanel.setUpdateRequired(true);
         genomeContainer.setUpdateRequired(true);
         if (loaded) {
-            tablePanel.updateIfRequired();
+            tablePanel.update();
             genomeContainer.updateIfRequired();
         }
     }

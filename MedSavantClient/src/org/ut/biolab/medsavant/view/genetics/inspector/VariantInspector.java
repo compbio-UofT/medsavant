@@ -62,9 +62,9 @@ public class VariantInspector extends CollapsibleInspector implements VariantSel
         h2.setMinimumSize(new Dimension(190,300));
         h2.setBackground(Color.red);
 
-        messagePanel.add(ViewUtil.center(h1));
+        messagePanel.add(ViewUtil.centerHorizontally(h1));
         messagePanel.add(Box.createVerticalStrut(10));
-        messagePanel.add(ViewUtil.center(h2));
+        messagePanel.add(ViewUtil.centerHorizontally(h2));
 
         this.setMessage(messagePanel);
 

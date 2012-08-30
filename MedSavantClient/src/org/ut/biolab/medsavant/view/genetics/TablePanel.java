@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.GridBagConstraints;
@@ -32,6 +31,12 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -57,6 +62,7 @@ import org.ut.biolab.medsavant.util.*;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
+import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
 /**
@@ -64,17 +70,25 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  * @author mfiume
  */
 public class TablePanel extends JLayeredPane {
+
     private static final Log LOG = LogFactory.getLog(TablePanel.class);
-    private SearchableTablePanel tablePanel;
+
+
     private WaitPanel waitPanel;
-    private boolean init = false;
+    private boolean tableInitialized = false;
     private boolean updateRequired = true;
     private final Object updateLock = new Object();
     private String pageName;
     private GridBagConstraints c;
     private Map<Integer, List<VariantComment>> starMap = new HashMap<Integer, List<VariantComment>>();
     private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
+    private final JPanel activePanel;
 
+    private final JPanel summaryContainer;
+    private final JPanel tableContainer;
+    private SearchableTablePanel searchableTablePanel;
+
+    private final MedSavantWorker tableInitializer;
 
     public TablePanel(String page) {
 
@@ -90,16 +104,28 @@ public class TablePanel extends JLayeredPane {
         c.weightx = 1.0;
         c.weighty = 1.0;
 
+        summaryContainer = new JPanel();
+        summaryContainer.setLayout(new BorderLayout());
+
+        tableContainer = new JPanel();
+        tableContainer.setLayout(new BorderLayout());
+
+        activePanel = new JPanel();
+        activePanel.setLayout(new BorderLayout());
+        add(activePanel, c, JLayeredPane.DEFAULT_LAYER);
+
         waitPanel = new WaitPanel("Generating List View");
 
         add(waitPanel, c, JLayeredPane.MODAL_LAYER);
 
         showWaitCard();
 
-        MedSavantWorker worker = new MedSavantWorker(pageName) {
+        tableInitializer = new MedSavantWorker(pageName) {
 
             @Override
             protected Object doInBackground() throws Exception {
+
+                LOG.info("INITIALIZING TABLE BY THREAD");
 
                 List<String> fieldNames = new ArrayList<String>();
                 final List<Class> fieldClasses = new ArrayList<Class>();
@@ -147,15 +173,14 @@ public class TablePanel extends JLayeredPane {
 
                     @Override
                     public List<Object[]> retrieve(int start, int limit) {
-                        showWaitCard();
+                        LOG.info("Retrieving data for TablePanel");
                         try {
                             List<Object[]> result = ResultController.getInstance().getFilteredVariantRecords(start, limit, null);
                             //checkStarring(result);
-                            showShowCard();
                             return result;
                         } catch (Exception ex) {
                             LOG.error("Error retrieving data.", ex);
-                            showShowCard();
+                            setActivePanel(true);
                             return null;
                         }
                     }
@@ -169,12 +194,12 @@ public class TablePanel extends JLayeredPane {
                         } catch (Exception ex) {
                             LOG.error("Error getting total number.", ex);
                         }
-                        showShowCard();
                         return result;
                     }
 
                     @Override
                     public void retrievalComplete() {
+                        showShowCard();
                         synchronized (updateLock) {
                             updateRequired = false;
                         }
@@ -247,25 +272,25 @@ public class TablePanel extends JLayeredPane {
                             Object[] row = rows.get(0);
 
                             VariantRecord r = new VariantRecord(
-                                    (Integer)   row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID],
-                                    (Integer)   row[DefaultVariantTableSchema.INDEX_OF_FILE_ID],
-                                    (Integer)   row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID],
-                                    (Integer)   ReferenceController.getInstance().getCurrentReferenceID(),
-                                    (Integer)   0, // pipeline ID
-                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_DNA_ID],
-                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_CHROM],
-                                    (Integer)   row[DefaultVariantTableSchema.INDEX_OF_POSITION], // TODO: this should be a long
-                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_DBSNP_ID],
-                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_REF],
-                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_ALT],
-                                    (Float)     row[DefaultVariantTableSchema.INDEX_OF_QUAL],
-                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_FILTER],
-                                    (String)    row[DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO],
+                                    (Integer) row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID],
+                                    (Integer) row[DefaultVariantTableSchema.INDEX_OF_FILE_ID],
+                                    (Integer) row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID],
+                                    (Integer) ReferenceController.getInstance().getCurrentReferenceID(),
+                                    (Integer) 0, // pipeline ID
+                                    (String) row[DefaultVariantTableSchema.INDEX_OF_DNA_ID],
+                                    (String) row[DefaultVariantTableSchema.INDEX_OF_CHROM],
+                                    (Integer) row[DefaultVariantTableSchema.INDEX_OF_POSITION], // TODO: this should be a long
+                                    (String) row[DefaultVariantTableSchema.INDEX_OF_DBSNP_ID],
+                                    (String) row[DefaultVariantTableSchema.INDEX_OF_REF],
+                                    (String) row[DefaultVariantTableSchema.INDEX_OF_ALT],
+                                    (Float) row[DefaultVariantTableSchema.INDEX_OF_QUAL],
+                                    (String) row[DefaultVariantTableSchema.INDEX_OF_FILTER],
+                                    (String) row[DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO],
                                     new Object[]{});
 
-                            String type = (String)row[DefaultVariantTableSchema.INDEX_OF_VARIANT_TYPE];
-                            String zygosity = (String)row[DefaultVariantTableSchema.INDEX_OF_ZYGOSITY];
-                            String genotype = ((String)row[DefaultVariantTableSchema.INDEX_OF_GT]);
+                            String type = (String) row[DefaultVariantTableSchema.INDEX_OF_VARIANT_TYPE];
+                            String zygosity = (String) row[DefaultVariantTableSchema.INDEX_OF_ZYGOSITY];
+                            String genotype = ((String) row[DefaultVariantTableSchema.INDEX_OF_GT]);
 
                             r.setType(VariantRecord.VariantType.valueOf(type));
                             r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
@@ -290,7 +315,7 @@ public class TablePanel extends JLayeredPane {
                             return;
                         }
 
-                        SortableTable table = tablePanel.getTable();
+                        SortableTable table = searchableTablePanel.getTable();
                         int numSelected = table.getSelectedRows().length;
                         if (numSelected == 1) {
                             int r = table.rowAtPoint(e.getPoint());
@@ -316,30 +341,46 @@ public class TablePanel extends JLayeredPane {
 
             @Override
             protected void showSuccess(Object result) {
-                tablePanel = (SearchableTablePanel) result;
-                remove(tablePanel);
-                add(tablePanel, c, JLayeredPane.DEFAULT_LAYER);
-                showShowCard();
-                updateIfRequired();
-                init = true;
+                LOG.info("DONE INITING TABLE");
+                tableContainer.removeAll();
+                searchableTablePanel = (SearchableTablePanel)result;
+                tableContainer.add(searchableTablePanel,BorderLayout.CENTER);
+                tableContainer.updateUI();
+                tableInitialized = true;
+                updateRequired = true;
+                updateTableIfRequired();
             }
         };
-        worker.execute();
-
     }
 
     private void showWaitCard() {
-        waitPanel.setVisible(true);
-        setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
-        waitPanel.repaint();
+        LOG.info("WAITING...");
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                waitPanel.setVisible(true);
+                setLayer(waitPanel, JLayeredPane.MODAL_LAYER);
+                waitPanel.repaint();
+            }
+        });
     }
 
     private void showShowCard() {
-        waitPanel.setVisible(false);
+         LOG.info("SHOWING...");
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                waitPanel.setVisible(false);
+                activePanel.repaint();
+            }
+        });
+
     }
 
     public boolean isInit() {
-        return init;
+        return tableInitialized;
     }
 
     void setUpdateRequired(boolean b) {
@@ -350,27 +391,101 @@ public class TablePanel extends JLayeredPane {
         listeners.add(l);
     }
 
-    public void updateIfRequired() {
-        if (tablePanel == null) {
+    public void update() {
+        LOG.info("Showing wait card");
+
+        showWaitCard();
+
+        boolean tableIsShowing = false;
+        /*try {
+            tableIsShowing = ResultController.getInstance().getFilteredVariantCount() < 1000000;
+        } catch (Exception ex) {
+        }
+        * 
+        */
+        if (tableIsShowing) {
+            updateRequired = true;
+            updateTableIfRequired();
+        } else {
+            updateSummary();
+            setActivePanel(false);
+            showShowCard();
+        }
+    }
+
+    private void updateSummary() {
+        try {
+            int numPassingVariants = ResultController.getInstance().getFilteredVariantCount();
+
+            final JPanel blockPanel = new JPanel();
+            ViewUtil.applyVerticalBoxLayout(blockPanel);
+
+
+            JButton b = ViewUtil.getSoftButton("Load Spreadsheet");
+
+            b.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+
+                    showWaitCard();
+                    setActivePanel(true);
+
+                    if (!tableInitialized) {
+                        tableInitializer.execute();
+                    } else {
+                        updateTableIfRequired();
+                    }
+                }
+            });
+
+
+            blockPanel.add(ViewUtil.centerHorizontally(new JLabel(ViewUtil.numToString(numPassingVariants) + " match your search conditions")));
+            blockPanel.add(Box.createVerticalStrut(5));
+            blockPanel.add(ViewUtil.centerHorizontally(b));
+
+            JPanel centered = ViewUtil.getClearPanel();
+            ViewUtil.applyVerticalBoxLayout(centered);
+            centered.add(Box.createVerticalGlue());
+            centered.add(blockPanel);
+            centered.add(Box.createVerticalGlue());
+
+            summaryContainer.removeAll();
+            summaryContainer.add(ViewUtil.centerHorizontally(centered),BorderLayout.CENTER);
+
+        } catch (Exception ex) {
+            LOG.error(TablePanel.class, ex);
+        }
+
+    }
+
+    public void updateTableIfRequired() {
+        LOG.info("A");
+        if (searchableTablePanel == null) {
+            LOG.info("B");
             return;
         }
+        LOG.info("C");
         synchronized (updateLock) {
+            LOG.info("D");
             if (updateRequired) {
-                tablePanel.forceRefreshData();
+                LOG.info("E");
+                searchableTablePanel.forceRefreshData();
             }
         }
+        LOG.info("F");
     }
 
     private JPopupMenu createPopupSingle() {
 
         JPopupMenu menu = new JPopupMenu();
 
-        TableModel model = tablePanel.getTable().getModel();
-        int r = TableModelWrapperUtils.getActualRowAt(model, tablePanel.getTable().getSelectedRow());
+        TableModel model = searchableTablePanel.getTable().getModel();
+        int r = TableModelWrapperUtils.getActualRowAt(model, searchableTablePanel.getTable().getSelectedRow());
 
-        String chrom = (String)model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
-        int pos = (Integer)model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
-        String alt = (String)model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_ALT);
+        String chrom = (String) model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
+        int pos = (Integer) model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
+        String alt = (String) model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_ALT);
 
         //Filter by position
         JMenuItem posItem = new JMenuItem("Filter by Position");
@@ -385,7 +500,21 @@ public class TablePanel extends JLayeredPane {
         return menu;
     }
 
+    private void setActivePanel(boolean showTable) {
+
+        final JPanel p = showTable ? this.tableContainer : this.summaryContainer;
+
+        LOG.info("Setting panel to " + (showTable ? "this.searchableTablePanel" : "this.summaryPanel"));
+
+        activePanel.removeAll();
+        activePanel.add(p, BorderLayout.CENTER);
+        activePanel.updateUI();
+
+
+    }
+
     private class PopupActionListener implements ActionListener {
+
         private final String chrom;
         private final int pos;
         private final String alt;
@@ -413,7 +542,7 @@ public class TablePanel extends JLayeredPane {
 
                 GeneticsFilterPage.getSearchBar().loadFilters(chromState, posState, altState);
             } else {
-                GeneticsFilterPage.getSearchBar().loadFilters(chromState, posState);                    
+                GeneticsFilterPage.getSearchBar().loadFilters(chromState, posState);
             }
         }
     }
@@ -423,72 +552,61 @@ public class TablePanel extends JLayeredPane {
 
         JMenuItem posItem = new JMenuItem("Filter by Selected Positions");
         posItem.addActionListener(new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent ae) {
                 ThreadController.getInstance().cancelWorkers(pageName);
 
                 List<GenomicRegion> regions = new ArrayList<GenomicRegion>();
-                TableModel model = tablePanel.getTable().getModel();
-                int[] selRows = TableModelWrapperUtils.getActualRowsAt(model, tablePanel.getTable().getSelectedRows(), false);
-                for (int r: selRows) {
-                    String chrom = (String)model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
-                    int pos = (Integer)model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
+                TableModel model = searchableTablePanel.getTable().getModel();
+                int[] selRows = TableModelWrapperUtils.getActualRowsAt(model, searchableTablePanel.getTable().getSelectedRows(), false);
+                for (int r : selRows) {
+                    String chrom = (String) model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
+                    int pos = (Integer) model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
                     regions.add(new GenomicRegion(null, chrom, pos, pos));
                 }
-                
+
                 RegionSet r = RegionController.getInstance().createAdHocRegionSet("Selected Variant Positions", regions);
                 GeneticsFilterPage.getSearchBar().loadFilters(RegionSetFilterView.wrapState(Arrays.asList(r)));
             }
-            
         });
         menu.add(posItem);
 
         return menu;
     }
 
-/*
-    private void checkStarring(List<Object[]> variants) {
-
-        List<Integer> selected = new ArrayList<Integer>();
-        starMap.clear();
-
-        try {
-            Set<StarredVariant> starred = MedSavantClient.VariantManager.getStarredVariants(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), ReferenceController.getInstance().getCurrentReferenceID());
-
-            for (int i = 0; i < variants.size(); i++) {
-                Object[] row = variants.get(i);
-                StarredVariant current = new StarredVariant(
-                        (Integer) row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID],
-                        (Integer) row[DefaultVariantTableSchema.INDEX_OF_FILE_ID],
-                        (Integer) row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID],
-                        null,
-                        null,
-                        null);
-                if (starred.contains(current)) {
-
-                    selected.add(i);
-                    if (starMap.get(i) == null) {
-                        starMap.put(i, new ArrayList<StarredVariant>());
-                    }
-
-                    Object[] arr = starred.toArray();
-                    for (Object a : arr) {
-                        StarredVariant sv = (StarredVariant) a;
-                        if (sv.getUploadId() == current.getUploadId() && sv.getFileId() == current.getFileId() && sv.getVariantId() == current.getVariantId()) {
-                            starMap.get(i).add(sv);
-                        }
-                    }
-
-                }
-            }
-
-        } catch (Exception ex) {
-            LOG.error("Error checking stars.", ex);
-        }
-
-        tablePanel.setSelectedRows(selected);
-    }
-*/
+    /*
+     * private void checkStarring(List<Object[]> variants) {
+     *
+     * List<Integer> selected = new ArrayList<Integer>(); starMap.clear();
+     *
+     * try { Set<StarredVariant> starred =
+     * MedSavantClient.VariantManager.getStarredVariants(LoginController.sessionId,
+     * ProjectController.getInstance().getCurrentProjectID(),
+     * ReferenceController.getInstance().getCurrentReferenceID());
+     *
+     * for (int i = 0; i < variants.size(); i++) { Object[] row =
+     * variants.get(i); StarredVariant current = new StarredVariant( (Integer)
+     * row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID], (Integer)
+     * row[DefaultVariantTableSchema.INDEX_OF_FILE_ID], (Integer)
+     * row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID], null, null, null); if
+     * (starred.contains(current)) {
+     *
+     * selected.add(i); if (starMap.get(i) == null) { starMap.put(i, new
+     * ArrayList<StarredVariant>()); }
+     *
+     * Object[] arr = starred.toArray(); for (Object a : arr) { StarredVariant
+     * sv = (StarredVariant) a; if (sv.getUploadId() == current.getUploadId() &&
+     * sv.getFileId() == current.getFileId() && sv.getVariantId() ==
+     * current.getVariantId()) { starMap.get(i).add(sv); } }
+     *
+     * }
+     * }
+     *
+     * } catch (Exception ex) { LOG.error("Error checking stars.", ex); }
+     *
+     * tablePanel.setSelectedRows(selected); }
+     */
     private boolean isStarredByUser(int row) {
         if (!starMap.containsKey(row)) {
             return false;

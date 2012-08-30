@@ -81,11 +81,11 @@ public class FilterEffectivenessPanel extends JLayeredPane {
 
         JPanel infoPanel = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(infoPanel);
-        infoPanel.add(ViewUtil.center(labelVariantsRemaining));
+        infoPanel.add(ViewUtil.centerHorizontally(labelVariantsRemaining));
 
         JLabel l = ViewUtil.getWhiteLabel("of all variants pass search conditions");
         ViewUtil.makeSmall(l);
-        infoPanel.add(ViewUtil.center(l));
+        infoPanel.add(ViewUtil.centerHorizontally(l));
         infoPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());
 
         panel.add(infoPanel,BorderLayout.NORTH);
