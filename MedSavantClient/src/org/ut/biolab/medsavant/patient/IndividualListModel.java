@@ -40,6 +40,8 @@ public class IndividualListModel implements DetailedListModel {
                                                                 PatientFormat.ALIAS_OF_PHENOTYPES };
     private static final Class[] COLUMN_CLASSES = new Class[] { Integer.class, String.class, String.class, String.class, String.class, Integer.class, String.class, String.class };
     private static final int[] HIDDEN_COLUMNS = new int[] { 0, 1, 3, 4, 5, 6, 7 };
+    static final int NAME_INDEX = 2;        // Hospital ID is the closest we have to a name.
+    static final int KEY_INDEX = 0;         // Patient ID as unique key.
 
     @Override
     public Object[][] getList(int limit) throws RemoteException, SQLException {

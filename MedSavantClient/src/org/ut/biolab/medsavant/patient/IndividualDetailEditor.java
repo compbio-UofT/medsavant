@@ -55,14 +55,10 @@ class IndividualDetailEditor extends DetailedListEditor {
     @Override
     public void deleteItems(final List<Object[]> items) {
 
-        int keyIndex = 0;
-        int nameIndex = 3;
-
         int result;
 
         if (items.size() == 1) {
-            String name = (String) items.get(0)[nameIndex];
-            result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This cannot be undone.</html>", name);
+            result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This cannot be undone.</html>", items.get(0)[IndividualListModel.NAME_INDEX]);
         } else {
             result = DialogUtils.askYesNo("Confirm", "Are you sure you want to remove these %d individuals?\nThis cannot be undone.", items.size());
         }
@@ -71,8 +67,7 @@ class IndividualDetailEditor extends DetailedListEditor {
             final int[] patients = new int[items.size()];
             int index = 0;
             for (Object[] v : items) {
-                int id = (Integer) v[keyIndex];
-                patients[index++] = id;
+                patients[index++] = (Integer)v[IndividualListModel.KEY_INDEX];
             }
 
             new ProgressDialog("Removing Individual(s)", patients.length + " individual(s) being removed. Please wait.") {
@@ -83,6 +78,7 @@ class IndividualDetailEditor extends DetailedListEditor {
                                 LoginController.sessionId,
                                 ProjectController.getInstance().getCurrentProjectID(),
                                 patients);
+                        setVisible(false);
                         DialogUtils.displayMessage("Successfully removed " + items.size() + " individual(s)");
                     } catch (Exception ex) {
                         setVisible(false);
