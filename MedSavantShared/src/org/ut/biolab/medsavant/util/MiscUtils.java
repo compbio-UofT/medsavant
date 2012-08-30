@@ -227,6 +227,8 @@ public class MiscUtils {
             return "Null pointer exception";
         } else if (t instanceof FileNotFoundException) {
             return String.format("File %s not found", t.getMessage());
+        } else if (t instanceof ArrayIndexOutOfBoundsException) {
+            return "Array index out of bounds";
         } else  {
             return t.getMessage();
         }
