@@ -22,7 +22,7 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
-import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.OntologyType;
 import org.ut.biolab.medsavant.ontology.OntologyFilter;
@@ -206,7 +206,7 @@ class FieldFilterHolder extends FilterHolder {
         String alias = field.getAlias();
         switch (field.getColumnType()) {
             case INTEGER:
-                if (!colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID) && !colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
+                if (!colName.equals(BasicPatientColumns.PATIENT_ID.getColumnName()) && !colName.equals(BasicPatientColumns.GENDER.getColumnName())) {
                     return new NumericFilterView(whichTable, colName, queryID, alias, false);
                 }
                 break;

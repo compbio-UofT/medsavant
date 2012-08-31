@@ -16,20 +16,22 @@
 
 package org.ut.biolab.medsavant.db;
 
+import java.io.Serializable;
+
 
 /**
  * Small class which simplifies the process of defining a table schema's columns.
  * 
  * @author tarkvara
  */
-public class ColumnDef {
-    public final String name;
-    public final ColumnType type;
-    public final int length;
-    public final String defaultValue;
-    public final boolean autoIncrement;
-    public final boolean nonNull;
-    public final boolean primaryKey;
+public class ColumnDef implements Serializable {
+    protected final String name;
+    protected final ColumnType type;
+    protected final int length;
+    protected final String defaultValue;
+    protected final boolean autoIncrement;
+    protected final boolean nonNull;
+    protected final boolean primaryKey;
     
     /**
      * Construct a generic not-null column.  No auto-increment or indexing.
@@ -51,15 +53,15 @@ public class ColumnDef {
         defaultValue = dflt;
     }
 
-    public static class Integer extends ColumnDef {
-        public Integer(String n) {
-            super(n, ColumnType.INTEGER, 11);
-        }
+    public int getColumnLength() {
+        return length;
     }
 
-    public static class Boolean extends ColumnDef {
-        public Boolean(String n) {
-            super(n, ColumnType.INTEGER, 1);
-        }
+    public String getColumnName() {
+        return name;
+    }
+
+    public ColumnType getColumnType() {
+        return type;
     }
 }

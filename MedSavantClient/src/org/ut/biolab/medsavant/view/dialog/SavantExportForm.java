@@ -37,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.filter.FilterController;
-import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -83,7 +83,7 @@ public class SavantExportForm extends javax.swing.JDialog {
         List<String> temp = MedSavantClient.DBUtils.getDistinctValuesForColumn(
                 LoginController.sessionId,
                 ProjectController.getInstance().getCurrentPatientTableName(),
-                DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS,
+                BasicPatientColumns.DNA_IDS.getColumnName(),
                 false,
                 false);
         dnaIDs = new ArrayList<String>();
@@ -134,7 +134,7 @@ public class SavantExportForm extends javax.swing.JDialog {
                 -1);
 
         //get BAM files
-        List<String> bamFiles = MedSavantClient.PatientManager.getValuesFromDNAIDs(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, selectedIds);
+        List<String> bamFiles = MedSavantClient.PatientManager.getValuesFromDNAIDs(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), BasicPatientColumns.BAM_URL.getColumnName(), selectedIds);
 
         //genome version
         String genomeName = ReferenceController.getInstance().getCurrentReferenceName();

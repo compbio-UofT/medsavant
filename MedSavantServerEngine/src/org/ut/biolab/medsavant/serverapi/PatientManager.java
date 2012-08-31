@@ -34,11 +34,11 @@ import org.ut.biolab.medsavant.db.*;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.PatientFormatTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.PatientTablemapTableSchema;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
+import org.ut.biolab.medsavant.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtils;
 import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.format.PatientFormat;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
@@ -48,7 +48,7 @@ import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
  *
  * @author Andrew
  */
-public class PatientManager extends MedSavantServerUnicastRemoteObject implements PatientManagerAdapter {
+public class PatientManager extends MedSavantServerUnicastRemoteObject implements PatientManagerAdapter, BasicPatientColumns {
 
     private static PatientManager instance;
 
@@ -71,14 +71,14 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addColumns(
-                table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID),
-                table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID),
-                table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID),
-                table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIOMOM),
-                table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIODAD),
-                table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER),
-                table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS),
-                table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PHENOTYPES));
+                table.getDBColumn(PATIENT_ID),
+                table.getDBColumn(FAMILY_ID),
+                table.getDBColumn(HOSPITAL_ID),
+                table.getDBColumn(IDBIOMOM),
+                table.getDBColumn(IDBIODAD),
+                table.getDBColumn(GENDER),
+                table.getDBColumn(DNA_IDS),
+                table.getDBColumn(PHENOTYPES));
 
         System.out.println(query);
 
@@ -87,14 +87,14 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         List<Object[]> result = new ArrayList<Object[]>();
         while (rs.next()) {
             result.add(new Object[] {
-                rs.getInt(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID),
-                rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID),
-                rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID),
-                rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIOMOM),
-                rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIODAD),
-                rs.getInt(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER),
-                rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS),
-                rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_PHENOTYPES)
+                rs.getInt(1),
+                rs.getString(2),
+                rs.getString(3),
+                rs.getString(4),
+                rs.getString(5),
+                rs.getInt(6),
+                rs.getString(7),
+                rs.getString(8)
             });
         }
         return result;
@@ -135,7 +135,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.addAllColumns();
-        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID), patientId));
+        query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(PATIENT_ID), patientId));
 
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
@@ -165,7 +165,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         List<String> result = new ArrayList<String>();
 
-        for (CustomField af : PatientFormat.getDefaultAnnotationFormat()) {
+        for (CustomField af: BASIC_PATIENT_FIELDS) {
             result.add(af.getAlias());
         }
 
@@ -177,7 +177,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public CustomField[] getPatientFields(String sessID, int projID) throws SQLException {
-        CustomField[] defaultFields = PatientFormat.getDefaultAnnotationFormat();
+        CustomField[] defaultFields = BASIC_PATIENT_FIELDS;
         CustomField[] customFields = getCustomPatientFields(sessID, projID);
         CustomField[] result = new CustomField[defaultFields.length + customFields.length];
         System.arraycopy(defaultFields, 0, result, 0, defaultFields.length);
@@ -231,61 +231,47 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
 
     @Override
-    public void createPatientTable(String sid, int projectid, CustomField[] fields) throws SQLException {
+    public void createPatientTable(String sessID, int projID, CustomField[] fields) throws SQLException {
 
-        String patientTableName = DBSettings.createPatientTableName(projectid);
-        Connection c = ConnectionController.connectPooled(sid);
-
-
-        //create basic fields
-        String query =
-                "CREATE TABLE `" + patientTableName + "` ("
-                + "`" + DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID + "` int(11) unsigned NOT NULL AUTO_INCREMENT,"
-                + "`" + DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID + "` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID + "` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultPatientTableSchema.COLUMNNAME_OF_IDBIOMOM + "` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultPatientTableSchema.COLUMNNAME_OF_IDBIODAD + "` varchar(100) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultPatientTableSchema.COLUMNNAME_OF_GENDER + "` int(11) unsigned DEFAULT NULL,"
-                + "`" + DefaultPatientTableSchema.COLUMNNAME_OF_AFFECTED + "` int(11) unsigned DEFAULT NULL,"
-                + "`" + DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS + "` varchar(1000) COLLATE latin1_bin DEFAULT NULL,"
-                + "`" + DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL + "` varchar(5000) COLLATE latin1_bin DEFAULT NULL,";
-
-        for (CustomField field : fields) {
-            query += field.generateSchema();
+        // Create basic fields.
+        String tableName = DBSettings.createPatientTableName(projID);
+        TableSchema patientSchema = new TableSchema(MedSavantDatabase.schema, tableName, BasicPatientColumns.class);
+        for (CustomField field: fields) {
+            patientSchema.addColumn(field.getColumnName(), field.getColumnType(), field.getColumnLength());
         }
 
-        query += "PRIMARY KEY (`" + DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID + "`)"
-                + ") ENGINE=MyISAM;";
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
+        try {
+            conn.executeUpdate(patientSchema.getCreateQuery() + " ENGINE=MyISAM;");
 
-        //create patientFormatTable
-        c.createStatement().execute(query);
 
-        //add to tablemap
-        TableSchema patientMapTable = MedSavantDatabase.PatienttablemapTableSchema;
-        InsertQuery query1 = new InsertQuery(patientMapTable.getTable());
-        query1.addColumn(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid);
-        query1.addColumn(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PATIENT_TABLENAME), patientTableName);
-        c.createStatement().executeUpdate(query1.toString());
+            //add to tablemap
+            TableSchema patientMapTable = MedSavantDatabase.PatienttablemapTableSchema;
+            InsertQuery query1 = new InsertQuery(patientMapTable.getTable());
+            query1.addColumn(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PROJECT_ID), projID);
+            query1.addColumn(patientMapTable.getDBColumn(PatientTablemapTableSchema.COLUMNNAME_OF_PATIENT_TABLENAME), tableName);
+            conn.executeUpdate(query1.toString());
 
-        //populate format patientFormatTable
-        TableSchema patientFormatTable = MedSavantDatabase.PatientformatTableSchema;
-        c.setAutoCommit(false);
-        for (int i = 0; i < fields.length; i++) {
-            CustomField a = fields[i];
-            InsertQuery query2 = new InsertQuery(patientFormatTable.getTable());
-            query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projectid);
-            query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), i);
-            query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), a.getColumnName());
-            query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), a.getSQLFieldTypeString());
-            query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (a.isFilterable() ? "1" : "0"));
-            query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS), a.getAlias());
-            query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), a.getDescription());
-            c.createStatement().executeUpdate(query2.toString());
+            //populate format patientFormatTable
+            TableSchema patientFormatTable = MedSavantDatabase.PatientformatTableSchema;
+            conn.setAutoCommit(false);
+            for (int i = 0; i < fields.length; i++) {
+                CustomField a = fields[i];
+                InsertQuery query2 = new InsertQuery(patientFormatTable.getTable());
+                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projID);
+                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), i);
+                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), a.getColumnName());
+                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), a.getTypeString());
+                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (a.isFilterable() ? "1" : "0"));
+                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS), a.getAlias());
+                query2.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), a.getDescription());
+                conn.createStatement().executeUpdate(query2.toString());
+            }
+            conn.commit();
+        } finally {
+            conn.setAutoCommit(true);
+            conn.close();
         }
-        c.commit();
-        c.setAutoCommit(true);
-        c.close();
-
     }
 
     @Override
@@ -294,20 +280,23 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         String tablename = getPatientTableName(sid,projectId);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid,tablename);
 
-        Connection c = ConnectionController.connectPooled(sid);
-        c.setAutoCommit(false);
-        for (int id : patientIds) {
-            //remove all references
-            CohortManager.getInstance().removePatientReferences(sid,projectId, id);
+        PooledConnection conn = ConnectionController.connectPooled(sid);
+        try {
+            conn.setAutoCommit(false);
+            for (int id : patientIds) {
+                //remove all references
+                CohortManager.getInstance().removePatientReferences(sid,projectId, id);
 
-            //remove from patient patientFormatTable
-            DeleteQuery query = new DeleteQuery(table.getTable());
-            query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID), id));
-            c.createStatement().executeUpdate(query.toString());
+                //remove from patient patientFormatTable
+                DeleteQuery query = new DeleteQuery(table.getTable());
+                query.addCondition(BinaryConditionMS.equalTo(table.getDBColumn(PATIENT_ID), id));
+                conn.createStatement().executeUpdate(query.toString());
+            }
+            conn.commit();
+        } finally {
+            conn.setAutoCommit(true);
+            conn.close();
         }
-        c.commit();
-        c.setAutoCommit(true);
-        c.close();
     }
 
     @Override
@@ -318,7 +307,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         InsertQuery query = new InsertQuery(table.getTable());
         for (int i = 0; i < Math.min(cols.size(), values.size()); i++) {
-            query.addColumn(new DbColumn(table.getTable(), cols.get(i).getColumnName(), cols.get(i).getSQLFieldTypeString(), 100), values.get(i));
+            query.addColumn(new DbColumn(table.getTable(), cols.get(i).getColumnName(), cols.get(i).getTypeString(), 100), values.get(i));
         }
 
         ConnectionController.executeUpdate(sid,  query.toString());
@@ -331,7 +320,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID,tablename);
 
-        DbColumn currentDNAID = table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS);
+        DbColumn currentDNAID = table.getDBColumn(DNA_IDS);
         DbColumn testColumn = table.getDBColumn(columnName);
 
         SelectQuery q = new SelectQuery();
@@ -346,7 +335,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
             Object o = rs.getObject(columnName);
             if (o == null) o = "";
             if (map.get(o) == null) map.put(o, new ArrayList<String>());
-            String dnaIdsString = rs.getString(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS);
+            String dnaIdsString = rs.getString(DNA_IDS.getColumnName());
             if (dnaIdsString == null) continue;
             String[] dnaIds = dnaIdsString.split(",");
             for (String id : dnaIds) {
@@ -365,7 +354,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
 
-        DbColumn currentDNAID = table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS);
+        DbColumn currentDNAID = table.getDBColumn(DNA_IDS);
         DbColumn testColumn = table.getDBColumn(columnName);
 
         SelectQuery q = new SelectQuery();
@@ -398,7 +387,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<String> getDNAIDsForStringList(String sessID, TableSchema table, List<String> list, String columnName, boolean allowInexactMatch) throws SQLException {
 
-        DbColumn currentDNAID = table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS);
+        DbColumn currentDNAID = table.getDBColumn(DNA_IDS);
         DbColumn testColumn = table.getDBColumn(columnName);
 
         SelectQuery q = new SelectQuery();
@@ -474,7 +463,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_PROJECT_ID), projID);
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_POSITION), tempPos++);
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), f.getColumnName());
-                q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), f.getSQLFieldTypeString());
+                q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), f.getTypeString());
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (f.isFilterable() ? "1" : "0"));
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_ALIAS), f.getAlias());
                 q.addColumn(patientFormatTable.getDBColumn(PatientFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), f.getDescription());
@@ -490,13 +479,12 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         TableSchema patientTable = CustomTables.getInstance().getCustomTableSchema(sessID,tablename, true);
         List<DbColumn> columns = patientTable.getColumns();
-        List<DbColumn> defaultColumns = MedSavantDatabase.DefaultPatientTableSchema.getColumns();
         c.setAutoCommit(false);
         int i = 0;
         for (DbColumn col : columns) {
             boolean isDefault = false;
-            for (DbColumn a : defaultColumns) {
-                if (col.getColumnNameSQL().equals(a.getColumnNameSQL())) {
+            for (CustomField a: BasicPatientColumns.BASIC_PATIENT_FIELDS) {
+                if (col.getColumnNameSQL().equals(a.getColumnName())) {
                     isDefault = true;
                 }
             }
@@ -545,7 +533,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
     @Override
     public List<String> getDNAIDsFromField(String sessID, int projID, String columnNameA, List<Object> values) throws SQLException, RemoteException {
 
-        List<Object> l1 = getValuesFromField(sessID,projID, columnNameA, DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, values);
+        List<Object> l1 = getValuesFromField(sessID,projID, columnNameA, DNA_IDS.getColumnName(), values);
         List<String> result = new ArrayList<String>();
         for (Object o : l1) {
             String[] dnaIds = ((String) o).split(",");
@@ -568,7 +556,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         query.addColumns(table.getDBColumn(columnNameB));
         Condition[] conditions = new Condition[ids.size()];
         for (int i = 0; i < ids.size(); i++) {
-            conditions[i] = BinaryCondition.like(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS), "%" + ids.get(i) + "%");
+            conditions[i] = BinaryCondition.like(table.getDBColumn(DNA_IDS), "%" + ids.get(i) + "%");
         }
         query.addCondition(ComboCondition.or(conditions));
 
@@ -593,16 +581,14 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
 
-        query.addColumns(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID));
+        query.addColumns(table.getDBColumn(HOSPITAL_ID));
+        query.addColumns(table.getDBColumn(IDBIOMOM));
+        query.addColumns(table.getDBColumn(IDBIODAD));
+        query.addColumns(table.getDBColumn(PATIENT_ID));
+        query.addColumns(table.getDBColumn(GENDER));
+        query.addColumns(table.getDBColumn(AFFECTED));
 
-        // TODO: replace with OO names
-        query.addColumns(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIOMOM));
-        query.addColumns(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIODAD));
-        query.addColumns(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID));
-        query.addColumns(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER));
-        query.addColumns(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_AFFECTED));
-
-        query.addCondition(BinaryCondition.equalTo(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID), famID));
+        query.addCondition(BinaryCondition.equalTo(table.getDBColumn(FAMILY_ID), famID));
 
         String s = query.toString();
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString());
@@ -641,8 +627,8 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         SelectQuery q1 = new SelectQuery();
         q1.addFromTable(table.getTable());
-        q1.addColumns(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID));
-        q1.addCondition(BinaryCondition.equalTo(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID), patID));
+        q1.addColumns(table.getDBColumn(FAMILY_ID));
+        q1.addCondition(BinaryCondition.equalTo(table.getDBColumn(PATIENT_ID), patID));
 
         ResultSet rs1 = ConnectionController.executeQuery(sessID, q1.toString());
 
@@ -661,7 +647,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         SelectQuery q1 = new SelectQuery();
         q1.addFromTable(table.getTable());
-        q1.addColumns(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID));
+        q1.addColumns(table.getDBColumn(FAMILY_ID));
 
         q1.setIsDistinct(true);
 
@@ -687,9 +673,9 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         SelectQuery q1 = new SelectQuery();
         q1.addFromTable(table.getTable());
-        q1.addColumns(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID));
-        q1.addColumns(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS));
-        q1.addCondition(BinaryCondition.equalTo(table.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID), famID));
+        q1.addColumns(table.getDBColumn(HOSPITAL_ID));
+        q1.addColumns(table.getDBColumn(DNA_IDS));
+        q1.addCondition(BinaryCondition.equalTo(table.getDBColumn(FAMILY_ID), famID));
 
 
         ResultSet rs1 = ConnectionController.executeQuery(sessID, q1.toString());

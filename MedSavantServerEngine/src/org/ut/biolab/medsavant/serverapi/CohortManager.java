@@ -30,7 +30,7 @@ import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.CohortTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.CohortMembershipTableSchema;
@@ -49,7 +49,7 @@ import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
  *
  * @author Andrew
  */
-public class CohortManager extends MedSavantServerUnicastRemoteObject implements CohortManagerAdapter {
+public class CohortManager extends MedSavantServerUnicastRemoteObject implements CohortManagerAdapter, BasicPatientColumns {
 
     private static CohortManager instance;
 
@@ -75,10 +75,10 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
         query.addFromTable(patientTable.getTable());
         query.addColumns(
                 cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID),
-                patientTable.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID),
-                patientTable.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS));
+                patientTable.getDBColumn(HOSPITAL_ID),
+                patientTable.getDBColumn(DNA_IDS));
         query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
-        query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID)));
+        query.addCondition(BinaryConditionMS.equalTo(cohortTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(PATIENT_ID)));
 
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString());
 
@@ -91,7 +91,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
 
     @Override
     public List<String> getDNAIDsForCohort(String sessID, int cohortId) throws SQLException, RemoteException {
-        List<String> list = getIndividualFieldFromCohort(sessID, cohortId, DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS);
+        List<String> list = getIndividualFieldFromCohort(sessID, cohortId, DNA_IDS.getColumnName());
         List<String> result = new ArrayList<String>();
         for (String s : list) {
             if (s == null) continue;
@@ -109,9 +109,9 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
     public List<String> getDNAIDsForCohorts(String sessID, int projID, Collection<String> cohNames) throws SQLException, RemoteException {
         
         String selQuery = String.format("SELECT %s FROM %s WHERE %s = ANY (SELECT %s FROM %s JOIN %s USING (%s) WHERE %s IN ('%s'))",
-                DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS,
+                DNA_IDS.getColumnName(),
                 PatientManager.getInstance().getPatientTableName(sessID, projID),
-                DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID,
+                PATIENT_ID.getColumnName(),
                 CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID,
                 CohortMembershipTableSchema.TABLE_NAME,
                 CohortTableSchema.TABLE_NAME,
@@ -161,7 +161,7 @@ public class CohortManager extends MedSavantServerUnicastRemoteObject implements
         query2.addFromTable(patientTable.getTable());
         query2.addColumns(patientTable.getDBColumn(columnName));
         query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_COHORT_ID), cohortId));
-        query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID)));
+        query2.addCondition(BinaryConditionMS.equalTo(cohortMembershipTable.getDBColumn(CohortMembershipTableSchema.COLUMNNAME_OF_PATIENT_ID), patientTable.getDBColumn(PATIENT_ID)));
 
         rs = ConnectionController.executeQuery(sessID, query2.toString());
 

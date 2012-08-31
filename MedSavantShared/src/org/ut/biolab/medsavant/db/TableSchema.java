@@ -41,14 +41,7 @@ import org.ut.biolab.medsavant.util.BinaryConditionMS;
 public class TableSchema implements Serializable {
     private static final Log LOG = LogFactory.getLog(TableSchema.class);
 
-    private final LinkedHashMap<String,String> dbNameToAlias;
-    private final LinkedHashMap<Integer,String> indexToDBName;
-    private final LinkedHashMap<Integer,ColumnType> indexToColumnType;
-    private final LinkedHashMap<DbColumn,Integer> columnToIndex;
-    private final LinkedHashMap<String,DbColumn> aliasToColumn;
-    private final LinkedHashMap<Integer,DbColumn> indexToColumn;
-    private final LinkedHashMap<String,Integer> dbNameToIndex;
-    private final LinkedHashMap<String, String> aliasToDBName;
+    private final LinkedHashMap<String, DbColumn> nameToColumn;
 
     private final DbTable table;
     protected SelectQuery selectQuery;
@@ -57,14 +50,7 @@ public class TableSchema implements Serializable {
     public TableSchema(DbTable t) {
         this.table = t;
         
-        dbNameToAlias = new LinkedHashMap<String,String>();
-        indexToDBName = new LinkedHashMap<Integer,String>();
-        indexToColumnType = new LinkedHashMap<Integer,ColumnType>();
-        columnToIndex = new LinkedHashMap<DbColumn,Integer>();
-        aliasToColumn = new LinkedHashMap<String,DbColumn>();
-        indexToColumn = new LinkedHashMap<Integer,DbColumn>();
-        dbNameToIndex = new LinkedHashMap<String,Integer>();
-        aliasToDBName = new LinkedHashMap<String,String>();
+        nameToColumn = new LinkedHashMap<String, DbColumn>();
     }
 
     /**
@@ -79,19 +65,9 @@ public class TableSchema implements Serializable {
         Field[] fields = columnsClass.getDeclaredFields();
         for (Field f: fields) {
             try {
-                ColumnDef col = (ColumnDef)f.get(null);
-                DbColumn dbc = addColumn(col.name, col.name, col.type, col.length);
-                if (col.defaultValue != null) {
-                    dbc.setDefaultValue(col.defaultValue);
-                }
-                if (col.autoIncrement) {
-                    autoIncrements.add(dbc);
-                }
-                if (col.nonNull) {
-                    dbc.notNull();
-                }
-                if (col.primaryKey) {
-                    dbc.primaryKey();
+                Object fieldValue = f.get(null);
+                if (fieldValue instanceof ColumnDef) {
+                    addColumn((ColumnDef)fieldValue);
                 }
             } catch (Exception ex) {
                 LOG.error("Unable to get column definition for " + f, ex);
@@ -99,87 +75,44 @@ public class TableSchema implements Serializable {
         }
     }
 
-    private DbColumn addColumn(int index, String dbName, String alias, ColumnType t, int length) {
-        assert (!indexToDBName.containsKey(index));
+    public final DbColumn addColumn(String dbName, ColumnType t, int length) {
         DbColumn c = table.addColumn(dbName, t.toString(), length);
-        dbNameToAlias.put(dbName,alias);
-        indexToDBName.put(index, dbName);
-        aliasToColumn.put(alias, c);
-        columnToIndex.put(c,index);
-        indexToColumnType.put(index, t);
-        indexToColumn.put(index, c);
-        dbNameToIndex.put(dbName, index);
-        aliasToDBName.put(alias,dbName);
+        nameToColumn.put(dbName, c);
         return c;
     }
 
-    public final DbColumn addColumn(String dbName, String alias, ColumnType t, int length) {
-        return addColumn(getNumFields() + 1,dbName,alias,t,length);
-    }
-
-    public List<String> getFieldAliases() {
-        return new ArrayList<String>(this.aliasToDBName.keySet());
+    public final DbColumn addColumn(ColumnDef col) {
+        DbColumn dbc = addColumn(col.name, col.type, col.length);
+        if (col.defaultValue != null) {
+            dbc.setDefaultValue(col.defaultValue);
+        }
+        if (col.autoIncrement) {
+            autoIncrements.add(dbc);
+        }
+        if (col.nonNull) {
+            dbc.notNull();
+        }
+        if (col.primaryKey) {
+            dbc.primaryKey();
+        }
+        return dbc;
     }
 
     public int getNumFields() {
-        return indexToDBName.keySet().size();
+        return nameToColumn.size();
     }
 
-    public ColumnType getColumnType(int index) {
-        assert (indexToColumnType.containsKey(index));
-        return indexToColumnType.get(index);
-    }
-
-    public int getColumnIndex(DbColumn c) {
-        assert (columnToIndex.containsKey(c));
-        return columnToIndex.get(c);
-    }
-
-    public ColumnType getColumnType(DbColumn c) {
-        return this.getColumnType(this.getColumnIndex(c));
-    }
-
-    public DbColumn getDBColumnByAlias(String alias) {
-        assert (aliasToColumn.containsKey(alias));
-        return aliasToColumn.get(alias);
-    }
-    
-    public DbColumn getDBColumn(String columnname) {
-        assert (dbNameToAlias.containsKey(columnname));
-        return getDBColumnByAlias(dbNameToAlias.get(columnname));
+    public DbColumn getDBColumn(String name) {
+        return nameToColumn.get(name);
     }
     
     public DbColumn getDBColumn(ColumnDef def) {
         return getDBColumn(def.name);
     }
     
-    public int getFieldIndexInDB(String dbName) {
-        assert (dbNameToIndex.containsKey(dbName));
-        return dbNameToIndex.get(dbName);
-    }
-    
-    public int getFieldIndexByAlias(String alias) {
-        return getFieldIndexInDB(getDBName(alias));
-    }
-
-    public String getFieldAlias(String dbName) {
-        assert (dbNameToAlias.containsKey(dbName));
-        return dbNameToAlias.get(dbName);
-    }
-
-    public String getDBName(String alias) {
-        assert (aliasToDBName.containsKey(alias));
-        return aliasToDBName.get(alias);
-    }
-
-    public String getDBName(int index) {
-        assert (indexToDBName.containsKey(index));
-        return indexToDBName.get(index);
-    }
-
     public List<DbColumn> getColumns() {
         // IMPORTANT: this assumes the values returned are in order of insert (LinkedHashMap)
-        return new ArrayList<DbColumn>(indexToColumn.values());
+        return new ArrayList<DbColumn>(nameToColumn.values());
     }
     
     public DbTable getTable() {

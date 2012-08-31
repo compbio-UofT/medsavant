@@ -45,24 +45,23 @@ import com.jidesoft.range.NumericRange;
 import net.ericaro.surfaceplotter.JSurfacePanel;
 import net.ericaro.surfaceplotter.Mapper;
 import net.ericaro.surfaceplotter.ProgressiveSurfaceModel;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.filter.FilterController;
-import org.ut.biolab.medsavant.util.ThreadController;
-import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.filter.WhichTable;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.model.ScatterChartMap;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
-import org.ut.biolab.medsavant.util.MedSavantWorker;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
+import org.ut.biolab.medsavant.util.MedSavantWorker;
+import org.ut.biolab.medsavant.util.ThreadController;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -627,7 +626,7 @@ public class SummaryChart extends JLayeredPane {
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectID(),
                     generator.getFilterId());
-            if (generator.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
+            if (generator.getFilterId().equals(BasicPatientColumns.GENDER.getColumnName())) {
                 map = ClientMiscUtils.modifyGenderMap(map);
             }
 
@@ -704,8 +703,8 @@ public class SummaryChart extends JLayeredPane {
         public void showSuccess(ScatterChartMap result) {
             if (mapGenerator.isNumeric()
                     && mapGeneratorScatter.isNumeric()
-                    && !mapGenerator.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)
-                    && !mapGeneratorScatter.getFilterId().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
+                    && !mapGenerator.getFilterId().equals(BasicPatientColumns.GENDER.getColumnName())
+                    && !mapGeneratorScatter.getFilterId().equals(BasicPatientColumns.GENDER.getColumnName())) {
                 drawSurface(result);
             } else {
                 drawScatterChart(result);

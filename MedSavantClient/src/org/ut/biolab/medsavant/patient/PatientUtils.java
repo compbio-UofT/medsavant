@@ -23,10 +23,9 @@ import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.filter.StringListFilterView;
 import org.ut.biolab.medsavant.filter.WhichTable;
-import org.ut.biolab.medsavant.format.PatientFormat;
 import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
 
 
@@ -34,7 +33,7 @@ import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
  *
  * @author Andrew
  */
-public class PatientUtils {
+public class PatientUtils implements BasicPatientColumns {
 
     public static JPopupMenu createPopup(final String famID) {
         JPopupMenu popupMenu = new JPopupMenu();
@@ -43,7 +42,7 @@ public class PatientUtils {
         filter1Item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                GeneticsFilterPage.getSearchBar().loadFilters(StringListFilterView.wrapState(WhichTable.PATIENT, DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID, PatientFormat.ALIAS_OF_FAMILY_ID, Arrays.asList(famID)));
+                GeneticsFilterPage.getSearchBar().loadFilters(StringListFilterView.wrapState(WhichTable.PATIENT, FAMILY_ID.getColumnName(), ALIAS_OF_FAMILY_ID, Arrays.asList(famID)));
             }
         });
         popupMenu.add(filter1Item);
@@ -67,7 +66,7 @@ public class PatientUtils {
                 for (int id: patIDs) {
                     patientIDStrings.add(Integer.toString(id));
                 }
-                GeneticsFilterPage.getSearchBar().loadFilters(StringListFilterView.wrapState(WhichTable.PATIENT, DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID, PatientFormat.ALIAS_OF_PATIENT_ID, patientIDStrings));
+                GeneticsFilterPage.getSearchBar().loadFilters(StringListFilterView.wrapState(WhichTable.PATIENT, PATIENT_ID.getColumnName(), ALIAS_OF_PATIENT_ID, patientIDStrings));
             }
         });
         popupMenu.add(filter1Item);

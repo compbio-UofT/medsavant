@@ -73,7 +73,7 @@ public class VariantFormat implements Serializable {
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID, "VARCHAR(10)", true, ALIAS_OF_DNA_ID, ""),
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM, "VARCHAR(5)", true, ALIAS_OF_CHROM, ""),
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION, "INT(11)", true, ALIAS_OF_POSITION, ""),
-            new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID, "(VARCHAR(45)", false, ALIAS_OF_DBSNP_ID, ""),
+            new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID, "VARCHAR(45)", false, ALIAS_OF_DBSNP_ID, ""),
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_REF, "VARCHAR(30)", true, ALIAS_OF_REF, ""),
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_ALT, "VARCHAR(30)", true, ALIAS_OF_ALT, ""),
             new CustomField(DefaultVariantTableSchema.COLUMNNAME_OF_QUAL, "FLOAT(10,0)", true, ALIAS_OF_QUAL, ""),

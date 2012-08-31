@@ -129,19 +129,10 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
 
         while (rs.next()) {
             table.addColumn(rs.getString(1), getColumnTypeString(rs.getString(2)), getColumnLength(rs.getString(2)));
-            ts.addColumn(rs.getString(1), rs.getString(1), ColumnType.fromString(getColumnTypeString(rs.getString(2))), getColumnLength(rs.getString(2)));
+            ts.addColumn(rs.getString(1), ColumnType.fromString(getColumnTypeString(rs.getString(2))), getColumnLength(rs.getString(2)));
         }
 
         return ts;
-    }
-
-    //Returns 0 based position
-    public static int getIndexOfField(TableSchema t, String columnname) throws SQLException {
-        return t.getFieldIndexInDB(columnname) - 1;
-    }
-
-    public static int getIndexOfField(String sessID, String tableName, String colName) throws SQLException, RemoteException {
-        return getIndexOfField(instance.importTableSchema(sessID, tableName), colName);
     }
 
     public static void dropTable(String sessID, String tableName) throws SQLException {

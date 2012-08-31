@@ -184,7 +184,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             variantTableName += "_sub";
         }
 
-        Connection conn = ConnectionController.connectPooled(sessID);
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
 
         try {
             // TODO: should use column types from DefaultVariantTable instead of hard-coding them here.
@@ -220,7 +220,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
             query = query.substring(0, query.length() - 1); //remove last comma
             query += ") ENGINE=BRIGHTHOUSE;";
-            conn.createStatement().execute(query);
+            conn.executeUpdate(query);
         } finally {
             conn.close();
         }
@@ -542,7 +542,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_UPDATE_ID), updateId);
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_POSITION), i);
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_NAME), f.getColumnName());
-            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), f.getSQLFieldTypeString());
+            insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_COLUMN_TYPE), f.getTypeString());
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_FILTERABLE), (f.isFilterable() ? "1" : "0"));
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_ALIAS), f.getAlias());
             insertQuery.addColumn(table.getDBColumn(VariantFormatTableSchema.COLUMNNAME_OF_DESCRIPTION), f.getDescription());

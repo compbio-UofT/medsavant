@@ -48,9 +48,9 @@ import pedviz.view.symbols.SymbolSexMale;
 import pedviz.view.symbols.SymbolSexUndesignated;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
-import org.ut.biolab.medsavant.format.PatientFormat;
 import org.ut.biolab.medsavant.model.Cohort;
 import org.ut.biolab.medsavant.settings.DirectorySettings;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
@@ -250,9 +250,11 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                 values[i][1] = result[i].toString();
 
                 //special case for gender
-                if (values[i][0].equals(PatientFormat.ALIAS_OF_GENDER)) {
+                if (values[i][0].equals(BasicPatientColumns.ALIAS_OF_GENDER)) {
                     String s;
-                    if (result[i] instanceof Long || result[i] instanceof Integer) {
+                    if (result[i] instanceof Integer) {
+                        s = ClientMiscUtils.genderToString((Integer)result[i]);
+                    } else if (result[i] instanceof Long) {
                         s = ClientMiscUtils.genderToString(ClientMiscUtils.safeLongToInt((Long)result[i]));
                     } else {
                         s = ClientMiscUtils.GENDER_UNKNOWN;
@@ -261,7 +263,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
                 }
 
                 //special case for affected
-                if (values[i][0].equals(PatientFormat.ALIAS_OF_AFFECTED)) {
+                if (values[i][0].equals(BasicPatientColumns.ALIAS_OF_AFFECTED)) {
                     String s;
                     if (result[i] instanceof Boolean) {
                         Boolean b = (Boolean) result[i];

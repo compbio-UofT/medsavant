@@ -219,10 +219,6 @@ public class AddPatientsForm extends JDialog {
 
                     CustomField[] fields = MedSavantClient.PatientManager.getPatientFields(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID());
 
-                    for (CustomField f : fields) {
-                        System.out.println(f.getColumnName() + " " + f.getColumnType() + " " + f.getColumnLength());
-                    }
-
                     BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
                     CSVReader in = new CSVReader(bufferedReader);
 

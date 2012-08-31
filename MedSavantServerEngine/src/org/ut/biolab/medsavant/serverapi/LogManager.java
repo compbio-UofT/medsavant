@@ -77,10 +77,10 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
         List<GeneralLog> result = new ArrayList<GeneralLog>();
         while(rs.next()) {
             result.add(new GeneralLog(
-                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_USER)),
-                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_EVENT)),
-                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION)),
-                    rs.getTimestamp(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP))));
+                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_USER),
+                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_EVENT),
+                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION),
+                    rs.getTimestamp(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP)));
         }
         return result;
     }
@@ -98,11 +98,11 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
         ResultSet rs = ConnectionController.executeQuery(sid, query.toString() + " LIMIT " + start + "," + limit);
 
         List<GeneralLog> result = new ArrayList<GeneralLog>();
-        while(rs.next()) {
+        while (rs.next()) {
             result.add(new GeneralLog(
-                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_EVENT)),
-                    rs.getString(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION)),
-                    rs.getTimestamp(table.getFieldAlias(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP))));
+                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_EVENT),
+                    rs.getString(ServerLogTableSchema.COLUMNNAME_OF_DESCRIPTION),
+                    rs.getTimestamp(ServerLogTableSchema.COLUMNNAME_OF_TIMESTAMP)));
         }
         return result;
     }

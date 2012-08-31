@@ -867,23 +867,23 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sid, int projectId, int referenceId, Condition[][] conditions, String columnAlias) throws SQLException, RemoteException {
+    public Map<String, Integer> getFilteredFrequencyValuesForCategoricalColumn(String sessID, int projID, int refID, Condition[][] conditions, String colName) throws SQLException, RemoteException {
 
         //pick table from approximate or exact
         TableSchema table;
-        int total = getFilteredVariantCount(sid, projectId, referenceId, conditions);
-        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sid, projectId, referenceId, true);
+        int total = getFilteredVariantCount(sessID, projID, refID, conditions);
+        Object[] variantTableInfo = ProjectManager.getInstance().getVariantTableInfo(sessID, projID, refID, true);
         String tablename = (String) variantTableInfo[0];
         String tablenameSub = (String) variantTableInfo[1];
         float multiplier = (Float) variantTableInfo[2];
         if (total >= BIN_TOTAL_THRESHOLD) {
-            table = CustomTables.getInstance().getCustomTableSchema(sid, tablenameSub);
+            table = CustomTables.getInstance().getCustomTableSchema(sessID, tablenameSub);
         } else {
-            table = CustomTables.getInstance().getCustomTableSchema(sid, tablename);
+            table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
             multiplier = 1;
         }
 
-        DbColumn column = table.getDBColumnByAlias(columnAlias);
+        DbColumn column = table.getDBColumn(colName);
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
@@ -896,7 +896,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             q.addCondition(createNucleotideCondition(column));
         }
 
-        ResultSet rs = ConnectionController.executeQuery(sid, q.toString());
+        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
 
         Map<String, Integer> map = new HashMap<String, Integer>();
 
@@ -1416,7 +1416,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             } else {
 
                 orConditions[i] = ComboCondition.and(new Condition[]{
-                            BinaryCondition.equalTo(table.getDBColumn(VariantTagColumns.TAGKEY.name), variantTags[i][0]),
+                            BinaryCondition.equalTo(table.getDBColumn(VariantTagColumns.TAGKEY), variantTags[i][0]),
                             BinaryCondition.equalTo(table.getDBColumn(VariantTagColumns.TAGVALUE), variantTags[i][1])});
                 seenConditions.add(strRepresentation);
             }

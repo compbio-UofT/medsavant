@@ -194,36 +194,36 @@ public class DefaultVariantTableSchema extends TableSchema {
 
 
     private void addColumns() {
-        addColumn(COLUMNNAME_OF_UPLOAD_ID, COLUMNNAME_OF_UPLOAD_ID, ColumnType.INTEGER, 11);
-        addColumn(COLUMNNAME_OF_FILE_ID, COLUMNNAME_OF_FILE_ID, ColumnType.INTEGER, 11);
-        addColumn(COLUMNNAME_OF_VARIANT_ID, COLUMNNAME_OF_VARIANT_ID, ColumnType.INTEGER, 11);
-        addColumn(COLUMNNAME_OF_DNA_ID, COLUMNNAME_OF_DNA_ID, ColumnType.VARCHAR, 100);
-        addColumn(COLUMNNAME_OF_CHROM, COLUMNNAME_OF_CHROM, ColumnType.VARCHAR, 5);
-        addColumn(COLUMNNAME_OF_POSITION, COLUMNNAME_OF_POSITION, ColumnType.INTEGER, 11);
-        addColumn(COLUMNNAME_OF_DBSNP_ID, COLUMNNAME_OF_DBSNP_ID, ColumnType.VARCHAR, 45);
-        addColumn(COLUMNNAME_OF_REF, COLUMNNAME_OF_REF, ColumnType.VARCHAR, 30);
-        addColumn(COLUMNNAME_OF_ALT, COLUMNNAME_OF_ALT, ColumnType.VARCHAR, 30);
-        addColumn(COLUMNNAME_OF_QUAL, COLUMNNAME_OF_QUAL, ColumnType.FLOAT, 10);
-        addColumn(COLUMNNAME_OF_FILTER, COLUMNNAME_OF_FILTER, ColumnType.VARCHAR, 500);
-        addColumn(COLUMNNAME_OF_VARIANT_TYPE, COLUMNNAME_OF_VARIANT_TYPE, ColumnType.VARCHAR, 10);
-        addColumn(COLUMNNAME_OF_ZYGOSITY, COLUMNNAME_OF_ZYGOSITY, ColumnType.VARCHAR, 20);
-        addColumn(COLUMNNAME_OF_GT, COLUMNNAME_OF_GT, ColumnType.VARCHAR, 10);
-        addColumn(COLUMNNAME_OF_CUSTOM_INFO, COLUMNNAME_OF_CUSTOM_INFO, ColumnType.VARCHAR, 10000);
-        addColumn(COLUMNNAME_OF_AA, COLUMNNAME_OF_AA, ColumnType.VARCHAR, 500);
-        addColumn(COLUMNNAME_OF_AC, COLUMNNAME_OF_AC, ColumnType.VARCHAR, 500);
-        addColumn(COLUMNNAME_OF_AF, COLUMNNAME_OF_AF, ColumnType.VARCHAR, 500);
-        addColumn(COLUMNNAME_OF_AN, COLUMNNAME_OF_AN, ColumnType.INTEGER, 11);
-        addColumn(COLUMNNAME_OF_BQ, COLUMNNAME_OF_BQ, ColumnType.FLOAT, -1);
-        addColumn(COLUMNNAME_OF_CIGAR, COLUMNNAME_OF_CIGAR, ColumnType.VARCHAR, 500);
-        addColumn(COLUMNNAME_OF_DB, COLUMNNAME_OF_DB, ColumnType.INTEGER, 1);
-        addColumn(COLUMNNAME_OF_DP, COLUMNNAME_OF_DP, ColumnType.INTEGER, 11);
-        addColumn(COLUMNNAME_OF_END, COLUMNNAME_OF_END, ColumnType.VARCHAR, 500);
-        addColumn(COLUMNNAME_OF_H2, COLUMNNAME_OF_H2, ColumnType.INTEGER, 1);
-        addColumn(COLUMNNAME_OF_MQ, COLUMNNAME_OF_MQ, ColumnType.VARCHAR, 500);
-        addColumn(COLUMNNAME_OF_MQ0, COLUMNNAME_OF_MQ0, ColumnType.VARCHAR, 500);
-        addColumn(COLUMNNAME_OF_NS, COLUMNNAME_OF_NS, ColumnType.INTEGER, 11);
-        addColumn(COLUMNNAME_OF_SB, COLUMNNAME_OF_SB, ColumnType.VARCHAR, 500);
-        addColumn(COLUMNNAME_OF_SOMATIC, COLUMNNAME_OF_SOMATIC, ColumnType.INTEGER, 1);
-        addColumn(COLUMNNAME_OF_VALIDATED, COLUMNNAME_OF_VALIDATED, ColumnType.INTEGER, 1);
+        addColumn(COLUMNNAME_OF_UPLOAD_ID, ColumnType.INTEGER, 11);
+        addColumn(COLUMNNAME_OF_FILE_ID, ColumnType.INTEGER, 11);
+        addColumn(COLUMNNAME_OF_VARIANT_ID, ColumnType.INTEGER, 11);
+        addColumn(COLUMNNAME_OF_DNA_ID, ColumnType.VARCHAR, 100);
+        addColumn(COLUMNNAME_OF_CHROM, ColumnType.VARCHAR, 5);
+        addColumn(COLUMNNAME_OF_POSITION, ColumnType.INTEGER, 11);
+        addColumn(COLUMNNAME_OF_DBSNP_ID, ColumnType.VARCHAR, 45);
+        addColumn(COLUMNNAME_OF_REF, ColumnType.VARCHAR, 30);
+        addColumn(COLUMNNAME_OF_ALT, ColumnType.VARCHAR, 30);
+        addColumn(COLUMNNAME_OF_QUAL, ColumnType.FLOAT, 10);
+        addColumn(COLUMNNAME_OF_FILTER, ColumnType.VARCHAR, 500);
+        addColumn(COLUMNNAME_OF_VARIANT_TYPE, ColumnType.VARCHAR, 10);
+        addColumn(COLUMNNAME_OF_ZYGOSITY, ColumnType.VARCHAR, 20);
+        addColumn(COLUMNNAME_OF_GT, ColumnType.VARCHAR, 10);
+        addColumn(COLUMNNAME_OF_CUSTOM_INFO, ColumnType.VARCHAR, 10000);
+        addColumn(COLUMNNAME_OF_AA, ColumnType.VARCHAR, 500);
+        addColumn(COLUMNNAME_OF_AC, ColumnType.VARCHAR, 500);
+        addColumn(COLUMNNAME_OF_AF, ColumnType.VARCHAR, 500);
+        addColumn(COLUMNNAME_OF_AN, ColumnType.INTEGER, 11);
+        addColumn(COLUMNNAME_OF_BQ, ColumnType.FLOAT, -1);
+        addColumn(COLUMNNAME_OF_CIGAR, ColumnType.VARCHAR, 500);
+        addColumn(COLUMNNAME_OF_DB, ColumnType.INTEGER, 1);
+        addColumn(COLUMNNAME_OF_DP, ColumnType.INTEGER, 11);
+        addColumn(COLUMNNAME_OF_END, ColumnType.VARCHAR, 500);
+        addColumn(COLUMNNAME_OF_H2, ColumnType.INTEGER, 1);
+        addColumn(COLUMNNAME_OF_MQ, ColumnType.VARCHAR, 500);
+        addColumn(COLUMNNAME_OF_MQ0, ColumnType.VARCHAR, 500);
+        addColumn(COLUMNNAME_OF_NS, ColumnType.INTEGER, 11);
+        addColumn(COLUMNNAME_OF_SB, ColumnType.VARCHAR, 500);
+        addColumn(COLUMNNAME_OF_SOMATIC, ColumnType.INTEGER, 1);
+        addColumn(COLUMNNAME_OF_VALIDATED, ColumnType.INTEGER, 1);
     }
 }

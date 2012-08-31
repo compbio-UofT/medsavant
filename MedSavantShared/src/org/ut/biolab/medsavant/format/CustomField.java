@@ -13,11 +13,13 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.format;
 
 import java.io.Serializable;
 import java.sql.Date;
 
+import org.ut.biolab.medsavant.db.ColumnDef;
 import org.ut.biolab.medsavant.db.ColumnType;
 
 
@@ -25,33 +27,38 @@ import org.ut.biolab.medsavant.db.ColumnType;
  *
  * @author Andrew
  */
-public class CustomField implements Serializable {
+public class CustomField extends ColumnDef implements Serializable {
 
-    private String columnName;
-    private String columnType;
-    private boolean filterable;
-    private String alias;
-    private String description;
-    private ColumnType fieldType;
+    private final boolean filterable;
+    private final String alias;
+    private final String description;
 
-    public CustomField(String name, String type, boolean filterable, String alias, String description) {
-        this.columnName = name;
-        this.columnType = type;
+    /**
+     * Construct a new custom field definition.  Extends the basic <code>ColumnDef</code> class by adding a couple of human-friendly
+     * presentation fields.
+     *
+     * @param name column name
+     * @param type SQL type string (i.e. "VARCHAR(100)")
+     * @param filterable true if it should show up in our filters
+     * @param alias human-friendly name
+     * @param description human-friendly description (not currently used)
+     */
+    public CustomField(String name, String typeStr, boolean filterable, String alias, String description) {
+        super(name, ColumnType.fromString(typeStr), extractColumnLength(typeStr));
         this.filterable = filterable;
         this.alias = alias;
         this.description = description;
-        setColumnType(columnType);
     }
+    
+    public CustomField(String n, ColumnType t, int l, boolean autoInc, boolean notNull, boolean indexed, String dflt, boolean filterable, String alias, String description) {
+        super(n, t, l, autoInc, notNull, indexed, dflt);
+        this.filterable = filterable;
+        this.alias = alias;
+        this.description = description;
+    }
+
     public String getAlias() {
         return alias;
-    }
-
-    public String getColumnName() {
-        return columnName;
-    }
-
-    public String getSQLFieldTypeString() {
-        return columnType;
     }
 
     public String getDescription() {
@@ -62,16 +69,8 @@ public class CustomField implements Serializable {
         return filterable;
     }
 
-    private void setColumnType(String type){
-        fieldType = ColumnType.fromString(type);
-    }
-
-    public ColumnType getColumnType(){
-        return fieldType;
-    }
-
     public Class getColumnClass(){
-        switch(fieldType){
+        switch (type){
             case BOOLEAN:
                 return Boolean.class;
             case INTEGER:
@@ -88,46 +87,76 @@ public class CustomField implements Serializable {
         }
     }
 
-    public String getColumnLength(){
-        int posLeft = columnType.indexOf("(");
-        if(posLeft == -1){
-            return "";
-        }
-        int posRight = columnType.indexOf(")");
-        return columnType.substring(posLeft+1, posRight);
-    }
-
     public String generateSchema(){
         return generateSchema(false);
     }
 
     public String generateSchema(boolean forceLowerCase){
-        return "`" + (forceLowerCase ? columnName.toLowerCase() : columnName) + "` " + columnType + " DEFAULT NULL,";
+        return "`" + (forceLowerCase ? name.toLowerCase() : name) + "` " + getTypeString() + " DEFAULT NULL,";
+    }
+
+    /**
+     * Get the SQL string describing this type.  For now, this ignores the auto-increment, non-null, primary-key, and default fields.
+     * Also, since we don't have any ColumnDefs which specify a precision, we don't handle FLOATs and DECIMALs quite right.
+     * @return 
+     */
+    public String getTypeString() {
+        switch (type) {
+            case VARCHAR:
+                return "varchar(" + length + ")";
+            case BOOLEAN:
+                return "int(1)";
+            case INTEGER:
+                return "int(" + length + ")";
+            case FLOAT:
+                // TODO: Honour the length field, and supply a precision.
+                return "float";
+            case DECIMAL:
+                // TODO: Honour the length field, and supply a precision.
+                return "decimal";
+        }
+        return type.toString();
     }
 
     public boolean isNumeric() {
-        return fieldType.isNumeric();
+        return type.isNumeric();
     }
 
+    private static int extractColumnLength(String typeStr) {
+        int posLeft = typeStr.indexOf('(');
+        if (posLeft == -1) {
+            return 0;
+        }
+        typeStr = typeStr.substring(posLeft + 1);
+        int posRight = typeStr.indexOf(')');
+        typeStr = typeStr.substring(0, posRight);
+        posRight = typeStr.indexOf(',');
+        if (posRight >= 0) {
+            typeStr = typeStr.substring(0, posRight);
+        }
+        return Integer.parseInt(typeStr);
+    }
+
+
     @Override
-    public String toString(){
+    public String toString() {
         return alias;
     }
 
     @Override
     public boolean equals(Object o){
-        if(o == null || !o.getClass().equals(CustomField.class)) return false;
+        if (o == null || !o.getClass().equals(CustomField.class)) {
+            return false;
+        }
         CustomField other = (CustomField)o;
-        return this.getColumnName().equals(other.getColumnName()) &&
-                this.getSQLFieldTypeString().equals(other.getSQLFieldTypeString());
+        return name.equals(other.name) && type == other.type && length == other.length;
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + (this.columnName != null ? this.columnName.hashCode() : 0);
-        hash = 89 * hash + (this.description != null ? this.description.hashCode() : 0);
+        hash = 89 * hash + (name != null ? name.hashCode() : 0);
+        hash = 89 * hash + (description != null ? description.hashCode() : 0);
         return hash;
     }
-
 }

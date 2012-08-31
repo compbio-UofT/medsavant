@@ -13,6 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.charts;
 
 import java.sql.SQLException;
@@ -27,7 +28,7 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.db.ColumnType;
-import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.filter.FilterEvent;
@@ -39,6 +40,7 @@ import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+
 
 /**
  *
@@ -108,7 +110,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                     ProjectController.getInstance().getCurrentProjectID(),
                     field.getColumnName());
 
-            if (field.getColumnName().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
+            if (field.getColumnName().equals(BasicPatientColumns.GENDER.getColumnName())) {
                 map = ClientMiscUtils.modifyGenderMap(map);
             }
 
@@ -280,7 +282,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         ChartFrequencyMap chartMap;
 
 
-        if (isNumeric() && !field.getColumnName().equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
+        if (isNumeric() && !field.getColumnName().equals(BasicPatientColumns.GENDER.getColumnName())) {
 
             /*String tablename = null;
             if (whichTable == Table.VARIANT) {

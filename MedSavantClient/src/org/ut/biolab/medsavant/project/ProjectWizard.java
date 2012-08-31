@@ -41,10 +41,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.format.PatientFormat;
 import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Annotation;
@@ -60,7 +59,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author Andrew
  */
-public class ProjectWizard extends WizardDialog {
+public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
 
     private static final Log LOG = LogFactory.getLog(ProjectWizard.class);
     private static final String PAGENAME_NAME = "Project Name";
@@ -238,18 +237,18 @@ public class ProjectWizard extends WizardDialog {
         patientFormatModel.addColumn("Alias");
         patientFormatModel.addColumn("Description");
 
-        patientFormatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID, DefaultPatientTableSchema.TYPE_OF_FAMILY_ID + getLengthString(DefaultPatientTableSchema.LENGTH_OF_FAMILY_ID), true, PatientFormat.ALIAS_OF_FAMILY_ID, ""});
-        patientFormatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_HOSPITAL_ID, DefaultPatientTableSchema.TYPE_OF_HOSPITAL_ID + getLengthString(DefaultPatientTableSchema.LENGTH_OF_HOSPITAL_ID), true, PatientFormat.ALIAS_OF_HOSPITAL_ID, ""});
-        patientFormatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_IDBIOMOM, DefaultPatientTableSchema.TYPE_OF_IDBIOMOM + getLengthString(DefaultPatientTableSchema.LENGTH_OF_IDBIOMOM), true, PatientFormat.ALIAS_OF_IDBIOMOM, ""});
-        patientFormatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_IDBIODAD, DefaultPatientTableSchema.TYPE_OF_IDBIODAD + getLengthString(DefaultPatientTableSchema.LENGTH_OF_IDBIODAD), true, PatientFormat.ALIAS_OF_IDBIODAD, ""});
-        patientFormatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_GENDER, DefaultPatientTableSchema.TYPE_OF_GENDER + getLengthString(DefaultPatientTableSchema.LENGTH_OF_GENDER), true, PatientFormat.ALIAS_OF_GENDER, ""});
-        patientFormatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_AFFECTED, DefaultPatientTableSchema.TYPE_OF_AFFECTED + getLengthString(DefaultPatientTableSchema.LENGTH_OF_AFFECTED), true, PatientFormat.ALIAS_OF_AFFECTED, ""});
-        patientFormatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_DNA_IDS, DefaultPatientTableSchema.TYPE_OF_DNA_IDS + getLengthString(DefaultPatientTableSchema.LENGTH_OF_DNA_IDS), true, PatientFormat.ALIAS_OF_DNA_IDS, ""});
-        patientFormatModel.addRow(new Object[]{DefaultPatientTableSchema.COLUMNNAME_OF_BAM_URL, DefaultPatientTableSchema.TYPE_OF_BAM_URL + getLengthString(DefaultPatientTableSchema.LENGTH_OF_BAM_URL), true, PatientFormat.ALIAS_OF_BAM_URL, ""});
+        patientFormatModel.addRow(new Object[]{BasicPatientColumns.FAMILY_ID.getColumnName(), BasicPatientColumns.FAMILY_ID.getTypeString(), true, BasicPatientColumns.ALIAS_OF_FAMILY_ID, ""});
+        patientFormatModel.addRow(new Object[]{BasicPatientColumns.HOSPITAL_ID.getColumnName(), BasicPatientColumns.HOSPITAL_ID.getTypeString(), true, BasicPatientColumns.ALIAS_OF_HOSPITAL_ID, ""});
+        patientFormatModel.addRow(new Object[]{BasicPatientColumns.IDBIOMOM.getColumnName(), BasicPatientColumns.IDBIOMOM.getTypeString(), true, BasicPatientColumns.ALIAS_OF_IDBIOMOM, ""});
+        patientFormatModel.addRow(new Object[]{BasicPatientColumns.IDBIODAD.getColumnName(), BasicPatientColumns.IDBIODAD.getTypeString(), true, BasicPatientColumns.ALIAS_OF_IDBIODAD, ""});
+        patientFormatModel.addRow(new Object[]{BasicPatientColumns.GENDER.getColumnName(), BasicPatientColumns.GENDER.getTypeString(), true, BasicPatientColumns.ALIAS_OF_GENDER, ""});
+        patientFormatModel.addRow(new Object[]{BasicPatientColumns.AFFECTED.getColumnName(), BasicPatientColumns.AFFECTED.getTypeString(), true, BasicPatientColumns.ALIAS_OF_AFFECTED, ""});
+        patientFormatModel.addRow(new Object[]{BasicPatientColumns.DNA_IDS.getColumnName(), BasicPatientColumns.DNA_IDS.getTypeString(), true, BasicPatientColumns.ALIAS_OF_DNA_IDS, ""});
+        patientFormatModel.addRow(new Object[]{BasicPatientColumns.BAM_URL.getColumnName(), BasicPatientColumns.BAM_URL.getTypeString(), true, BasicPatientColumns.ALIAS_OF_BAM_URL, ""});
 
         if (modify) {
             for (CustomField f : patientFields) {
-                patientFormatModel.addRow(new Object[]{f.getColumnName(), f.getSQLFieldTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
+                patientFormatModel.addRow(new Object[]{f.getColumnName(), f.getTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
             }
         }
 
@@ -275,7 +274,7 @@ public class ProjectWizard extends WizardDialog {
             @Override
             public void mouseReleased(MouseEvent e) {
                 int row = table.getSelectedRow();
-                if (row >= DefaultPatientTableSchema.NUM_FIELDS) {
+                if (row >= BasicPatientColumns.BASIC_PATIENT_FIELDS.length) {
                     patientFormatModel.removeRow(row);
                 }
                 table.setModel(patientFormatModel);
@@ -333,7 +332,7 @@ public class ProjectWizard extends WizardDialog {
                         LoginController.sessionId, projectID, firstRef,
                         manager.getNewestUpdateID(LoginController.sessionId, projectID, firstRef, false));
                 for (CustomField f : fields) {
-                    variantFormatModel.addRow(new Object[]{f.getColumnName().toUpperCase(), f.getSQLFieldTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
+                    variantFormatModel.addRow(new Object[]{f.getColumnName().toUpperCase(), f.getTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
                 }
             } catch (SQLException ex) {
                 LOG.error("Error getting reference IDs for project.", ex);

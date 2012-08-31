@@ -25,13 +25,13 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
 
-import org.ut.biolab.medsavant.project.ProjectController;
+import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.db.ColumnType;
-import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.VariantFormat;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.view.genetics.charts.SummaryChart.ChartAxis;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -39,7 +39,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class ChartView extends JPanel {
+public class ChartView extends JPanel implements BasicPatientColumns {
 
     private SummaryChart sc;
     private JComboBox chartChooser1;
@@ -251,10 +251,10 @@ public class ChartView extends JPanel {
             ColumnType type = field.getColumnType();
             if (field.isFilterable() &&
                         (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER)) && 
-                        !(field.getColumnName().equals(DefaultPatientTableSchema.COLUMNNAME_OF_PATIENT_ID) || 
-                            field.getColumnName().equals(DefaultPatientTableSchema.COLUMNNAME_OF_FAMILY_ID) ||
-                            field.getColumnName().equals(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIOMOM) ||
-                            field.getColumnName().equals(DefaultPatientTableSchema.COLUMNNAME_OF_IDBIODAD))) {
+                        !(field.getColumnName().equals(PATIENT_ID.getColumnName()) || 
+                            field.getColumnName().equals(FAMILY_ID.getColumnName()) ||
+                            field.getColumnName().equals(IDBIOMOM.getColumnName()) ||
+                            field.getColumnName().equals(IDBIODAD.getColumnName()))) {
                 addCMG(VariantFieldChartMapGenerator.createPatientChart(field));
             }
         }

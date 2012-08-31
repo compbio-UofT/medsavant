@@ -25,7 +25,7 @@ import com.healthmarketscience.sqlbuilder.InCondition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.FilterStateAdapter;
-import org.ut.biolab.medsavant.db.DefaultPatientTableSchema;
+import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.ProgressStatus;
@@ -68,7 +68,7 @@ public class StringListFilterView extends TabularFilterView<String> {
         this.columnName = colName;
         this.alias = alias;
 
-        allowInexactMatch = colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_PHENOTYPES);
+        allowInexactMatch = colName.equals(BasicPatientColumns.PHENOTYPES.getColumnName());
 
         if (bool) {
             availableValues = Arrays.asList("True", "False");
@@ -82,7 +82,7 @@ public class StringListFilterView extends TabularFilterView<String> {
             availableValues = Arrays.asList(VariantType.SNP.toString(), VariantType.Insertion.toString(), VariantType.Deletion.toString(), VariantType.Various.toString(), VariantType.Unknown.toString());
         } else if (colName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ZYGOSITY)) {
             availableValues = Arrays.asList(Zygosity.HomoRef.toString(), Zygosity.HomoAlt.toString(), Zygosity.Hetero.toString(), Zygosity.HeteroTriallelic.toString());
-        } else if (colName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)) {
+        } else if (colName.equals(BasicPatientColumns.GENDER.getColumnName())) {
             availableValues = Arrays.asList(ClientMiscUtils.GENDER_MALE, ClientMiscUtils.GENDER_FEMALE, ClientMiscUtils.GENDER_UNKNOWN);
         } else {
             new CancellableProgressDialog("Generating List", "<html>Determining distinct values for field.<br>This may take a few minutes the first time.</html>") {
@@ -123,7 +123,7 @@ public class StringListFilterView extends TabularFilterView<String> {
 
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
         for (int i : indices) {
-            if (columnName.equals(DefaultPatientTableSchema.COLUMNNAME_OF_GENDER)){
+            if (columnName.equals(BasicPatientColumns.GENDER.getColumnName())){
                 appliedValues.add(Integer.toString(ClientMiscUtils.stringToGender(filterableList.getModel().getElementAt(i).toString())));
             } else {
                 appliedValues.add(filterableList.getModel().getElementAt(i).toString());

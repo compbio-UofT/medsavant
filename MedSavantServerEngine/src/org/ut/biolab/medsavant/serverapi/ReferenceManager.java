@@ -185,7 +185,7 @@ public class ReferenceManager extends MedSavantServerUnicastRemoteObject impleme
             SelectQuery q1 = new SelectQuery();
             q1.addFromTable(annotationTable.getTable());
             q1.addAllColumns();
-            q1.addCondition(BinaryConditionMS.equalTo(annotationTable.getDBColumn(AnnotationColumns.REFERENCE_ID.name), refID));
+            q1.addCondition(BinaryConditionMS.equalTo(annotationTable.getDBColumn(AnnotationColumns.REFERENCE_ID), refID));
             ResultSet rs = conn.executeQuery(q1.toString());
             if (rs.next()) {
                 return false;

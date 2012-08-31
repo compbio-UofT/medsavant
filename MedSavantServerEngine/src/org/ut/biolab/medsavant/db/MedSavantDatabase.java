@@ -70,14 +70,14 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_TYPE = "type";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_ANNOTATION_ID, COLUMNNAME_OF_ANNOTATION_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PROGRAM, COLUMNNAME_OF_PROGRAM, ColumnType.VARCHAR, 100);
-            addColumn(COLUMNNAME_OF_VERSION, COLUMNNAME_OF_VERSION, ColumnType.VARCHAR, 100);
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PATH, COLUMNNAME_OF_PATH, ColumnType.VARCHAR, 500);
-            addColumn(COLUMNNAME_OF_HAS_REF, COLUMNNAME_OF_HAS_REF, ColumnType.INTEGER, 1);
-            addColumn(COLUMNNAME_OF_HAS_ALT, COLUMNNAME_OF_HAS_ALT, ColumnType.INTEGER, 1);
-            addColumn(COLUMNNAME_OF_TYPE, COLUMNNAME_OF_TYPE, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_ANNOTATION_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PROGRAM, ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_VERSION, ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PATH, ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_HAS_REF, ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_HAS_ALT, ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_TYPE, ColumnType.INTEGER, 11);
         }
     }
 
@@ -126,13 +126,13 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_DESCRIPTION = "description";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_ANNOTATION_ID, COLUMNNAME_OF_ANNOTATION_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_POSITION, COLUMNNAME_OF_POSITION, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_COLUMN_NAME, COLUMNNAME_OF_COLUMN_NAME, ColumnType.VARCHAR, 200);
-            addColumn(COLUMNNAME_OF_COLUMN_TYPE, COLUMNNAME_OF_COLUMN_TYPE, ColumnType.VARCHAR, 45);
-            addColumn(COLUMNNAME_OF_FILTERABLE, COLUMNNAME_OF_FILTERABLE, ColumnType.INTEGER, 1);
-            addColumn(COLUMNNAME_OF_ALIAS, COLUMNNAME_OF_ALIAS, ColumnType.VARCHAR, 200);
-            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_ANNOTATION_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_POSITION, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_COLUMN_NAME, ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_COLUMN_TYPE, ColumnType.VARCHAR, 45);
+            addColumn(COLUMNNAME_OF_FILTERABLE, ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_ALIAS, ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, 500);
         }
     }
 
@@ -141,11 +141,11 @@ public class MedSavantDatabase {
         static final ColumnDef ANNOTATION_ID = new ColumnDef("annotation_id", ColumnType.INTEGER, 11, true, true, true, null);
         static final ColumnDef PROGRAM = new ColumnDef("program", ColumnType.VARCHAR, 100);
         static final ColumnDef VERSION = new ColumnDef("version", ColumnType.VARCHAR, 100, true, false, true, null);
-        static final ColumnDef REFERENCE_ID = new ColumnDef.Integer("reference_id");
+        static final ColumnDef REFERENCE_ID = new ColumnDef("reference_id", ColumnType.INTEGER, 11);
         static final ColumnDef PATH = new ColumnDef("path", ColumnType.VARCHAR, 500);
-        static final ColumnDef HAS_REF = new ColumnDef.Boolean("has_ref");
-        static final ColumnDef HAS_ALT = new ColumnDef.Boolean("has_alt");
-        static final ColumnDef TYPE = new ColumnDef.Integer("type");
+        static final ColumnDef HAS_REF = new ColumnDef("has_ref", ColumnType.BOOLEAN, 1);
+        static final ColumnDef HAS_ALT = new ColumnDef("has_alt", ColumnType.BOOLEAN, 1);
+        static final ColumnDef TYPE = new ColumnDef("type", ColumnType.INTEGER, 11);
     }
 
     public interface AnnotationFormatColumns {
@@ -154,7 +154,7 @@ public class MedSavantDatabase {
         static final ColumnDef POSITION = new ColumnDef("position", ColumnType.INTEGER, 11, true, true, true, null);
         static final ColumnDef COLUMN_NAME = new ColumnDef("column_name", ColumnType.VARCHAR, 200);
         static final ColumnDef COLUMN_TYPE = new ColumnDef("column_type", ColumnType.VARCHAR, 45);
-        static final ColumnDef FILTERABLE = new ColumnDef.Boolean("filterable");
+        static final ColumnDef FILTERABLE = new ColumnDef("filterable", ColumnType.BOOLEAN, 1);
         static final ColumnDef ALIAS = new ColumnDef("alias", ColumnType.VARCHAR, 200);
         static final ColumnDef DESCRIPTION = new ColumnDef("description", ColumnType.VARCHAR, 500);
     }
@@ -194,11 +194,11 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_CENTROMERE_POS = "centromere_pos";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_CONTIG_ID, COLUMNNAME_OF_CONTIG_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_CONTIG_NAME, COLUMNNAME_OF_CONTIG_NAME, ColumnType.VARCHAR, 100);
-            addColumn(COLUMNNAME_OF_CONTIG_LENGTH, COLUMNNAME_OF_CONTIG_LENGTH, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_CENTROMERE_POS, COLUMNNAME_OF_CENTROMERE_POS, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_CONTIG_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_CONTIG_NAME, ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_CONTIG_LENGTH, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_CENTROMERE_POS, ColumnType.INTEGER, 11);
         }
     }
 
@@ -227,9 +227,9 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_NAME = "name";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_COHORT_ID, COLUMNNAME_OF_COHORT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_NAME, COLUMNNAME_OF_NAME, ColumnType.VARCHAR, 255);
+            addColumn(COLUMNNAME_OF_COHORT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_NAME, ColumnType.VARCHAR, 255);
         }
     }
 
@@ -253,8 +253,8 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_PATIENT_ID = "patient_id";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_COHORT_ID, COLUMNNAME_OF_COHORT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PATIENT_ID, COLUMNNAME_OF_PATIENT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_COHORT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PATIENT_ID, ColumnType.INTEGER, 11);
         }
     }
 
@@ -264,10 +264,10 @@ public class MedSavantDatabase {
         static final ColumnDef TYPE = new ColumnDef("type", ColumnType.VARCHAR, 30);
         static final ColumnDef NAME = new ColumnDef("name", ColumnType.VARCHAR, 30);
         static final ColumnDef CHROM = new ColumnDef("chrom", ColumnType.VARCHAR, 30);
-        static final ColumnDef START = new ColumnDef.Integer("start");
-        static final ColumnDef END = new ColumnDef.Integer("end");
-        static final ColumnDef CODING_START = new ColumnDef.Integer("codingStart");
-        static final ColumnDef CODING_END = new ColumnDef.Integer("codingEnd");
+        static final ColumnDef START = new ColumnDef("start", ColumnType.INTEGER, 11);
+        static final ColumnDef END = new ColumnDef("end", ColumnType.INTEGER, 11);
+        static final ColumnDef CODING_START = new ColumnDef("codingStart", ColumnType.INTEGER, 11);
+        static final ColumnDef CODING_END = new ColumnDef("codingEnd", ColumnType.INTEGER, 11);
         static final ColumnDef EXON_STARTS = new ColumnDef("exonStarts", ColumnType.VARCHAR, 9000);
         static final ColumnDef EXON_ENDS = new ColumnDef("exonEnds", ColumnType.VARCHAR, 9000);
         static final ColumnDef TRANSCRIPT = new ColumnDef("transcript", ColumnType.VARCHAR, 30);
@@ -337,13 +337,13 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_DESCRIPTION = "description";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_POSITION, COLUMNNAME_OF_POSITION, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_COLUMN_NAME, COLUMNNAME_OF_COLUMN_NAME, ColumnType.VARCHAR, 200);
-            addColumn(COLUMNNAME_OF_COLUMN_TYPE, COLUMNNAME_OF_COLUMN_TYPE, ColumnType.VARCHAR, 45);
-            addColumn(COLUMNNAME_OF_FILTERABLE, COLUMNNAME_OF_FILTERABLE, ColumnType.INTEGER, 1);
-            addColumn(COLUMNNAME_OF_ALIAS, COLUMNNAME_OF_ALIAS, ColumnType.VARCHAR, 200);
-            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_POSITION, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_COLUMN_NAME, ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_COLUMN_TYPE, ColumnType.VARCHAR, 45);
+            addColumn(COLUMNNAME_OF_FILTERABLE, ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_ALIAS, ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, 500);
         }
     }
 
@@ -367,8 +367,8 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_PATIENT_TABLENAME = "patient_tablename";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PATIENT_TABLENAME, COLUMNNAME_OF_PATIENT_TABLENAME, ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PATIENT_TABLENAME, ColumnType.VARCHAR, 100);
         }
     }
 
@@ -392,8 +392,8 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_NAME = "name";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_NAME, COLUMNNAME_OF_NAME, ColumnType.VARCHAR, 50);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_NAME, ColumnType.VARCHAR, 50);
         }
     }
 
@@ -422,9 +422,9 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_URL = "url";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_NAME, COLUMNNAME_OF_NAME, ColumnType.VARCHAR, 50);
-            addColumn(COLUMNNAME_OF_URL, COLUMNNAME_OF_URL, ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_NAME, ColumnType.VARCHAR, 50);
+            addColumn(COLUMNNAME_OF_URL, ColumnType.VARCHAR, 200);
         }
     }
 
@@ -436,11 +436,11 @@ public class MedSavantDatabase {
 
     public interface RegionSetMembershipColumns {
 
-        static final ColumnDef REGION_SET_ID = new ColumnDef.Integer("region_set_id");
-        static final ColumnDef GENOME_ID = new ColumnDef.Integer("genome_id");
+        static final ColumnDef REGION_SET_ID = new ColumnDef("region_set_id", ColumnType.INTEGER, 11);
+        static final ColumnDef GENOME_ID = new ColumnDef("genome_id", ColumnType.INTEGER, 11);
         static final ColumnDef CHROM = new ColumnDef("chrom", ColumnType.VARCHAR, 30);
-        static final ColumnDef START = new ColumnDef.Integer("start");
-        static final ColumnDef END = new ColumnDef.Integer("end");
+        static final ColumnDef START = new ColumnDef("start", ColumnType.INTEGER, 11);
+        static final ColumnDef END = new ColumnDef("end", ColumnType.INTEGER, 11);
         static final ColumnDef DESCRIPTION = new ColumnDef("description", ColumnType.VARCHAR, 255);
     }
 
@@ -479,11 +479,11 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_TIMESTAMP = "timestamp";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_ID, COLUMNNAME_OF_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_USER, COLUMNNAME_OF_USER, ColumnType.VARCHAR, 50);
-            addColumn(COLUMNNAME_OF_EVENT, COLUMNNAME_OF_EVENT, ColumnType.VARCHAR, 50);
-            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, -1);
-            addColumn(COLUMNNAME_OF_TIMESTAMP, COLUMNNAME_OF_TIMESTAMP, ColumnType.DATE, -1);
+            addColumn(COLUMNNAME_OF_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_USER, ColumnType.VARCHAR, 50);
+            addColumn(COLUMNNAME_OF_EVENT, ColumnType.VARCHAR, 50);
+            addColumn(COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, -1);
+            addColumn(COLUMNNAME_OF_TIMESTAMP, ColumnType.DATE, -1);
         }
     }
 
@@ -532,13 +532,13 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_USER = "user";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_UPLOAD_ID, COLUMNNAME_OF_UPLOAD_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_ACTION, COLUMNNAME_OF_ACTION, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_STATUS, COLUMNNAME_OF_STATUS, ColumnType.INTEGER, 5);
-            addColumn(COLUMNNAME_OF_TIMESTAMP, COLUMNNAME_OF_TIMESTAMP, ColumnType.DATE, -1);
-            addColumn(COLUMNNAME_OF_USER, COLUMNNAME_OF_USER, ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_UPLOAD_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_ACTION, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_STATUS, ColumnType.INTEGER, 5);
+            addColumn(COLUMNNAME_OF_TIMESTAMP, ColumnType.DATE, -1);
+            addColumn(COLUMNNAME_OF_USER, ColumnType.VARCHAR, 200);
         }
     }
 
@@ -592,14 +592,14 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_SUBSET_MULTIPLIER = "subset_multiplier";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_UPDATE_ID, COLUMNNAME_OF_UPDATE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_PUBLISHED, COLUMNNAME_OF_PUBLISHED, ColumnType.BOOLEAN, 1);
-            addColumn(COLUMNNAME_OF_VARIANT_TABLENAME, COLUMNNAME_OF_VARIANT_TABLENAME, ColumnType.VARCHAR, 100);
-            addColumn(COLUMNNAME_OF_ANNOTATION_IDS, COLUMNNAME_OF_ANNOTATION_IDS, ColumnType.VARCHAR, 500);
-            addColumn(COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME, COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME, ColumnType.VARCHAR, 100);
-            addColumn(COLUMNNAME_OF_SUBSET_MULTIPLIER, COLUMNNAME_OF_SUBSET_MULTIPLIER, ColumnType.FLOAT, -1);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_UPDATE_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_PUBLISHED, ColumnType.BOOLEAN, 1);
+            addColumn(COLUMNNAME_OF_VARIANT_TABLENAME, ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_ANNOTATION_IDS, ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_VARIANT_SUBSET_TABLENAME, ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_SUBSET_MULTIPLIER, ColumnType.FLOAT, -1);
         }
     }
 
@@ -658,20 +658,20 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_DESCRIPTION = "description";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_UPDATE_ID, COLUMNNAME_OF_UPDATE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_POSITION, COLUMNNAME_OF_POSITION, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_COLUMN_NAME, COLUMNNAME_OF_COLUMN_NAME, ColumnType.VARCHAR, 200);
-            addColumn(COLUMNNAME_OF_COLUMN_TYPE, COLUMNNAME_OF_COLUMN_TYPE, ColumnType.VARCHAR, 45);
-            addColumn(COLUMNNAME_OF_FILTERABLE, COLUMNNAME_OF_FILTERABLE, ColumnType.INTEGER, 1);
-            addColumn(COLUMNNAME_OF_ALIAS, COLUMNNAME_OF_ALIAS, ColumnType.VARCHAR, 200);
-            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_UPDATE_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_POSITION, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_COLUMN_NAME, ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_COLUMN_TYPE, ColumnType.VARCHAR, 45);
+            addColumn(COLUMNNAME_OF_FILTERABLE, ColumnType.INTEGER, 1);
+            addColumn(COLUMNNAME_OF_ALIAS, ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, 500);
         }
     }
 
     public interface VariantTagColumns {
-        static final ColumnDef UPLOAD_ID = new ColumnDef.Integer("upload_id");
+        static final ColumnDef UPLOAD_ID = new ColumnDef("upload_id", ColumnType.INTEGER, 11);
         static final ColumnDef TAGKEY = new ColumnDef("tagkey", ColumnType.VARCHAR, 500);
         static final ColumnDef TAGVALUE = new ColumnDef("tagvalue", ColumnType.VARCHAR, 1000);
     }
@@ -697,8 +697,8 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_VALUE = "setting_value";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_KEY, COLUMNNAME_OF_KEY, ColumnType.VARCHAR, 100);
-            addColumn(COLUMNNAME_OF_VALUE, COLUMNNAME_OF_VALUE, ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_KEY, ColumnType.VARCHAR, 100);
+            addColumn(COLUMNNAME_OF_VALUE, ColumnType.VARCHAR, 100);
         }
     }
 
@@ -752,14 +752,14 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_TIMESTAMP = "timestamp";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_PROJECT_ID, COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_REFERENCE_ID, COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_UPLOAD_ID, COLUMNNAME_OF_UPLOAD_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_FILE_ID, COLUMNNAME_OF_FILE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_VARIANT_ID, COLUMNNAME_OF_VARIANT_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_USER, COLUMNNAME_OF_USER, ColumnType.VARCHAR, 200);
-            addColumn(COLUMNNAME_OF_DESCRIPTION, COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, 500);
-            addColumn(COLUMNNAME_OF_TIMESTAMP, COLUMNNAME_OF_TIMESTAMP, ColumnType.DATE, -1);
+            addColumn(COLUMNNAME_OF_PROJECT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_REFERENCE_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_UPLOAD_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_FILE_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_VARIANT_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_USER, ColumnType.VARCHAR, 200);
+            addColumn(COLUMNNAME_OF_DESCRIPTION, ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_TIMESTAMP, ColumnType.DATE, -1);
         }
     }
 
@@ -788,9 +788,9 @@ public class MedSavantDatabase {
         public static final String COLUMNNAME_OF_FILE_NAME = "file_name";
 
         private void addColumns() {
-            addColumn(COLUMNNAME_OF_UPLOAD_ID, COLUMNNAME_OF_UPLOAD_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_FILE_ID, COLUMNNAME_OF_FILE_ID, ColumnType.INTEGER, 11);
-            addColumn(COLUMNNAME_OF_FILE_NAME, COLUMNNAME_OF_FILE_NAME, ColumnType.VARCHAR, 500);
+            addColumn(COLUMNNAME_OF_UPLOAD_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_FILE_ID, ColumnType.INTEGER, 11);
+            addColumn(COLUMNNAME_OF_FILE_NAME, ColumnType.VARCHAR, 500);
         }
     }
     public static final DbSchema schema = (new DbSpec()).addDefaultSchema();
@@ -799,7 +799,6 @@ public class MedSavantDatabase {
     public static final ChromosomeTableSchema ChromosomeTableSchema = new ChromosomeTableSchema(schema);
     public static final CohortTableSchema CohortTableSchema = new CohortTableSchema(schema);
     public static final CohortMembershipTableSchema CohortmembershipTableSchema = new CohortMembershipTableSchema(schema);
-    public static final DefaultPatientTableSchema DefaultPatientTableSchema = new DefaultPatientTableSchema(schema);
     public static final DefaultVariantTableSchema DefaultVariantTableSchema = new DefaultVariantTableSchema(schema);
     public static final TableSchema GeneSetTableSchema = new TableSchema(schema, "genes", GeneSetColumns.class);
     public static final TableSchema OntologyInfoTableSchema = new TableSchema(schema, "ontology_info", OntologyInfoColumns.class);

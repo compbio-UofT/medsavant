@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.util;
 
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -72,8 +73,9 @@ public class ExportVCF {
         //info fields
         TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
         String[] customColumnNames = new String[table.getNumFields() - DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO - 1];
+        List<DbColumn> allColumns = table.getColumns();
         for (int i = DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO+2; i <= table.getNumFields(); i++) {
-            customColumnNames[i-2-DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO] = table.getDBName(i).toUpperCase();
+            customColumnNames[i-2-DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO] = allColumns.get(i).getColumnNameSQL().toUpperCase();
         }
         int infoMin = DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO+1;
         int infoMax = table.getNumFields();

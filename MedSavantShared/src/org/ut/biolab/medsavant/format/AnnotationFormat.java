@@ -59,7 +59,7 @@ public class AnnotationFormat implements Serializable {
         for(int i = 0; i < fields.length; i++){
             CustomField field = fields[i];
             String columnName = field.getColumnName();
-            String columnType = field.getSQLFieldTypeString();
+            String columnType = field.getTypeString();
             result += "`" + columnName + "` " + columnType + " DEFAULT NULL,";
         }
 

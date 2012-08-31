@@ -38,7 +38,7 @@ public enum ColumnType {
             case FLOAT:
                 return "float";
             case BOOLEAN:
-                return "bool";
+                return "tinyint";
             case VARCHAR:
                 return "varchar";
             case DECIMAL:

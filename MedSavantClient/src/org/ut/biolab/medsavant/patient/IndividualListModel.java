@@ -20,7 +20,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.format.PatientFormat;
+import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.view.list.DetailedListModel;
@@ -29,15 +29,15 @@ import org.ut.biolab.medsavant.view.list.DetailedListModel;
  *
  * @author mfiume
  */
-public class IndividualListModel implements DetailedListModel {
-    private static final String[] COLUMN_NAMES = new String[] { PatientFormat.ALIAS_OF_PATIENT_ID,
-                                                                PatientFormat.ALIAS_OF_FAMILY_ID,
-                                                                PatientFormat.ALIAS_OF_HOSPITAL_ID,
-                                                                PatientFormat.ALIAS_OF_IDBIOMOM,
-                                                                PatientFormat.ALIAS_OF_IDBIODAD,
-                                                                PatientFormat.ALIAS_OF_GENDER,
-                                                                PatientFormat.ALIAS_OF_DNA_IDS,
-                                                                PatientFormat.ALIAS_OF_PHENOTYPES };
+public class IndividualListModel implements DetailedListModel, BasicPatientColumns {
+    private static final String[] COLUMN_NAMES = new String[] { ALIAS_OF_PATIENT_ID,
+                                                                ALIAS_OF_FAMILY_ID,
+                                                                ALIAS_OF_HOSPITAL_ID,
+                                                                ALIAS_OF_IDBIOMOM,
+                                                                ALIAS_OF_IDBIODAD,
+                                                                ALIAS_OF_GENDER,
+                                                                ALIAS_OF_DNA_IDS,
+                                                                ALIAS_OF_PHENOTYPES };
     private static final Class[] COLUMN_CLASSES = new Class[] { Integer.class, String.class, String.class, String.class, String.class, Integer.class, String.class, String.class };
     private static final int[] HIDDEN_COLUMNS = new int[] { 0, 1, 3, 4, 5, 6, 7 };
     static final int NAME_INDEX = 2;        // Hospital ID is the closest we have to a name.

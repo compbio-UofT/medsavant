@@ -455,7 +455,7 @@ public class MiscUtils {
             return 0.05;
 
             //boolean fields
-        } else if ((field.getColumnType() == ColumnType.INTEGER && Integer.parseInt(field.getColumnLength()) == 1) || field.getColumnType() == ColumnType.BOOLEAN) {
+        } else if ((field.getColumnType() == ColumnType.INTEGER && field.getColumnLength() == 1) || field.getColumnType() == ColumnType.BOOLEAN) {
 
             return 1;
 
