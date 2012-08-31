@@ -22,9 +22,9 @@ import java.awt.event.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -759,7 +759,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
     private class CheckListItem extends JPanel {
 
         private final Reference reference;
-        private final Map<Integer, Boolean> annIDsMap = new HashMap<Integer, Boolean>();
+        private final Set<Integer> selectedAnnotations = new HashSet<Integer>();
         private final JCheckBox checkBox;
         private final List<JCheckBox> annBoxes = new ArrayList<JCheckBox>();
 
@@ -779,7 +779,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
                     boolean selected = checkBox.isSelected();
-                    for (JCheckBox annBox : annBoxes) {
+                    for (JCheckBox annBox: annBoxes) {
                         annBox.setEnabled(selected);
                     }
                 }
@@ -796,7 +796,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
             p.add(Box.createHorizontalGlue());
             add(p);
 
-            for (final Annotation a : annotations) {
+            for (final Annotation a: annotations) {
 
                 //make sure annotation is for this reference
                 if (a.getReferenceID() != reference.getID()) {
@@ -807,19 +807,21 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
                 b1.setMaximumSize(new Dimension(1000, 20));
                 b1.setBackground(Color.white);
                 b1.addItemListener(new ItemListener() {
-
                     @Override
                     public void itemStateChanged(ItemEvent e) {
-                        annIDsMap.put(a.getID(), b1.isSelected());
+                        if (b1.isSelected()) {
+                            selectedAnnotations.add(a.getID());
+                        } else {
+                            selectedAnnotations.remove(a.getID());
+                        }
                     }
                 });
                 annBoxes.add(b1);
                 b1.setEnabled(selected);
                 b1.setSelected(false);
-                annIDsMap.put(a.getID(), false);
                 if (pd != null && ArrayUtils.contains(pd.getAnnotationIDs(), a.getID())) {
                     b1.setSelected(true);
-                    annIDsMap.put(a.getID(), true);
+                    selectedAnnotations.add(a.getID());
                 }
 
                 JPanel p1 = new JPanel();
@@ -829,7 +831,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
                 p1.add(Box.createHorizontalStrut(30));
                 p1.add(b1);
                 p1.add(Box.createHorizontalGlue());
-                this.add(p1);
+                add(p1);
             }
         }
 
@@ -846,10 +848,10 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
         }
 
         public int[] getAnnotationIDs() {
-            int[] result = new int[annIDsMap.size()];
+            int[] result = new int[selectedAnnotations.size()];
             int i = 0;
-            for (Integer key : annIDsMap.keySet()) {
-                result[i++] = key;
+            for (Integer ann: selectedAnnotations) {
+                result[i++] = ann;
             }
             return result;
         }
