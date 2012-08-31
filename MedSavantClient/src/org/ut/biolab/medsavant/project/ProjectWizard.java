@@ -51,6 +51,7 @@ import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.model.Reference;
 import org.ut.biolab.medsavant.reference.NewReferenceDialog;
 import org.ut.biolab.medsavant.serverapi.ProjectManagerAdapter;
+import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.variant.UpdateWorker;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -73,7 +74,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
     private final int projectID;
     private final String originalProjectName;
     private String projectName;
-    private CustomField[] patientFields;
+    private CustomField[] customFields;
     private final ProjectDetails[] projectDetails;
     private DefaultTableModel patientFormatModel;
     private DefaultTableModel variantFormatModel;
@@ -90,7 +91,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
         this.projectID = projID;
         this.originalProjectName = projName;
         this.projectName = projName;
-        this.patientFields = fields;
+        this.customFields = fields;
         this.projectDetails = details;
         PAGENAME_CREATE = "Modify";
         manager = MedSavantClient.ProjectManager;
@@ -129,17 +130,21 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String pagename = getCurrentPage().getTitle();
-                if (pagename.equals(PAGENAME_NAME) && validateProjectName()) {
-                    setCurrentPage(PAGENAME_PATIENTS);
-                } else if (pagename.equals(PAGENAME_PATIENTS) && validatePatientFormatModel()) {
-                    setCurrentPage(PAGENAME_VCF);
-                } else if (pagename.equals(PAGENAME_VCF) && validateVariantFormatModel()) {
-                    setCurrentPage(PAGENAME_REF);
-                } else if (pagename.equals(PAGENAME_REF) && validateReferences()) {
-                    setCurrentPage(PAGENAME_CREATE);
-                } else if (pagename.equals(PAGENAME_CREATE)) {
-                    setCurrentPage(PAGENAME_COMPLETE);
+                try {
+                    String pagename = getCurrentPage().getTitle();
+                    if (pagename.equals(PAGENAME_NAME) && validateProjectName()) {
+                        setCurrentPage(PAGENAME_PATIENTS);
+                    } else if (pagename.equals(PAGENAME_PATIENTS) && validatePatientFormatModel()) {
+                        setCurrentPage(PAGENAME_VCF);
+                    } else if (pagename.equals(PAGENAME_VCF) && validateVariantFormatModel()) {
+                        setCurrentPage(PAGENAME_REF);
+                    } else if (pagename.equals(PAGENAME_REF) && validateReferences()) {
+                        setCurrentPage(PAGENAME_CREATE);
+                    } else if (pagename.equals(PAGENAME_CREATE)) {
+                        setCurrentPage(PAGENAME_COMPLETE);
+                    }
+                } catch (Exception ex) {
+                    ClientMiscUtils.reportError("Unable to proceed: %s", ex);
                 }
             }
         });
@@ -245,9 +250,10 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
         patientFormatModel.addRow(new Object[]{BasicPatientColumns.AFFECTED.getColumnName(), BasicPatientColumns.AFFECTED.getTypeString(), true, BasicPatientColumns.ALIAS_OF_AFFECTED, ""});
         patientFormatModel.addRow(new Object[]{BasicPatientColumns.DNA_IDS.getColumnName(), BasicPatientColumns.DNA_IDS.getTypeString(), true, BasicPatientColumns.ALIAS_OF_DNA_IDS, ""});
         patientFormatModel.addRow(new Object[]{BasicPatientColumns.BAM_URL.getColumnName(), BasicPatientColumns.BAM_URL.getTypeString(), true, BasicPatientColumns.ALIAS_OF_BAM_URL, ""});
+        patientFormatModel.addRow(new Object[]{BasicPatientColumns.PHENOTYPES.getColumnName(), BasicPatientColumns.PHENOTYPES.getTypeString(), true, BasicPatientColumns.ALIAS_OF_PHENOTYPES, ""});
 
         if (modify) {
-            for (CustomField f : patientFields) {
+            for (CustomField f : customFields) {
                 patientFormatModel.addRow(new Object[]{f.getColumnName(), f.getTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
             }
         }
@@ -614,8 +620,8 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
     private boolean validatePatientFormatModel() {
         // 8 is the number of standard patientFields
         List<CustomField> fields = new ArrayList<CustomField>();
-        if (validateFormatModel(fields, patientFormatModel, 8)) {
-            patientFields = fields.toArray(new CustomField[0]);
+        if (validateFormatModel(fields, patientFormatModel, BasicPatientColumns.BASIC_PATIENT_FIELDS.length - 1)) {
+            customFields = fields.toArray(new CustomField[0]);
             return true;
         } else {
             DialogUtils.displayError(
@@ -677,7 +683,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
 
     private void createNewProject() throws Exception {
         //create project
-        int projID = ProjectController.getInstance().addProject(projectName, patientFields);
+        int projID = ProjectController.getInstance().addProject(projectName, customFields);
 
         //add references and annotations
         for (CheckListItem cli : checkListItems) {
@@ -707,7 +713,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns {
 
         if (modifyPatientFields) {
             //modify patientFields
-            MedSavantClient.PatientManager.updateFields(LoginController.sessionId, projectID, patientFields);
+            MedSavantClient.PatientManager.updateFields(LoginController.sessionId, projectID, customFields);
         }
 
         if (modifyVariants) {
