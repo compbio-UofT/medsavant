@@ -63,8 +63,6 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
 
     private static final Log LOG = LogFactory.getLog(GeneManiaInfoSubPanel.class);
     private final String name;
-    private final int GENE_LIMIT_DEFAULT = 10;
-    private final CombiningMethod[] combiningMethods = {CombiningMethod.AVERAGE, CombiningMethod.BP, CombiningMethod.MF, CombiningMethod.CC, CombiningMethod.AUTOMATIC};
     private GenemaniaInfoRetriever genemania;
     private JLabel l;
     private JPanel p;
@@ -73,33 +71,11 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     private KeyValuePairPanel kvp;
     private JPanel kvpPanel;
     private JPanel settingsPanel;
-    private boolean updateQueryNeeded;
     private JButton settingsButton;
-    private JTextField geneLimit;
-    private int glimit;
-    private ButtonGroup buttonGroup1;
-    private ButtonGroup buttonGroup2;
-    private JCheckBox coexp;
-    private JCheckBox coloc;
-    private JCheckBox gi;
-    private JCheckBox other;
-    private JCheckBox path;
-    private JCheckBox pi;
-    private JCheckBox predict;
-    private JCheckBox spd;
     private Gene gene;
-    private JRadioButton automatic;
-    private JRadioButton average;
-    private JRadioButton bp;
-    private JRadioButton cc;
-    private JRadioButton genemaniaScore;
-    private JRadioButton mf;
-    private JRadioButton varFreq;
-    private JButton okButton;
+    private GeneManiaSettingsDialog genemaniaSettings;
     private boolean rankByVarFreq;
-    private CombiningMethod combiningMethod;
-    private Set<String> networksSelected;
-    private int geneLimitDifference;
+
     private Thread genemaniaAlgorithmThread;
     private boolean dataPresent;
     private int currSizeOfArray;
@@ -108,6 +84,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     public GeneManiaInfoSubPanel() {
         name = "Related Genes";
         dataPresent = true;
+        
     }
 
     @Override
@@ -121,17 +98,13 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         p = ViewUtil.getClearPanel();
         try {
             genemania = new GenemaniaInfoRetriever();
+            genemaniaSettings  = new GeneManiaSettingsDialog(genemania);
         } catch (Exception ex) {
             progressMessage = new JLabel("<html><center>" + ex.getMessage() + "<br>Please try again after data has been downloaded.</center></html>", SwingConstants.CENTER);
             p.add(progressMessage);
             dataPresent = false;
             return p;
         }
-        initializeSettingsComponents();
-        setGeneLimit();
-        setRankingMethod();
-        setCombiningMethod();
-        setNetworks();
         kvp = new KeyValuePairPanel(2);
         kvp.setKeysVisible(false);
         kvpPanel = new JPanel();
@@ -150,7 +123,9 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
 
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                button_settingsActionPerformed();
+                genemaniaSettings.showSettings();
+                if (genemaniaSettings.getUpdateQueryNeeded())
+                    updateRelatedGenesPanel(gene);
             }
         });
         l = new JLabel("Selected gene: ");
@@ -170,342 +145,6 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         return p;
     }
 
-    private void setNetworks() {
-        networksSelected = getNetworksSelection();
-        genemania.setNetworks(networksSelected);
-    }
-
-    private void setCombiningMethod() {
-        combiningMethod = combiningMethods[getSelectionFromButtonGroup(buttonGroup2)];
-        genemania.setCombiningMethod(combiningMethod);
-    }
-
-    private void setRankingMethod() {
-        if (getSelectionFromButtonGroup(buttonGroup1) == 0) {
-            rankByVarFreq = true;
-        } else {
-            rankByVarFreq = false;
-        }
-    }
-
-    private void initializeSettingsComponents() {
-        buttonGroup1 = new javax.swing.ButtonGroup();
-        buttonGroup2 = new javax.swing.ButtonGroup();
-        geneLimit = new javax.swing.JTextField();
-        geneLimit.setText(Integer.toString(GENE_LIMIT_DEFAULT));
-        currSizeOfArray = GENE_LIMIT_DEFAULT;
-        varFreq = new javax.swing.JRadioButton();
-        genemaniaScore = new javax.swing.JRadioButton();
-        genemaniaScore.setSelected(true);
-        coexp = new javax.swing.JCheckBox();
-        coexp.setActionCommand("Co-expression");
-        coexp.setSelected(true);
-        spd = new javax.swing.JCheckBox();
-        spd.setSelected(true);
-        spd.setActionCommand("Shared protein domains");
-
-        gi = new javax.swing.JCheckBox();
-        gi.setActionCommand("Genetic interactions");
-
-        gi.setSelected(true);
-        coloc = new javax.swing.JCheckBox();
-        coloc.setActionCommand("Co-localization");
-
-        coloc.setSelected(true);
-        path = new javax.swing.JCheckBox();
-        path.setSelected(true);
-        path.setActionCommand("Pathway");
-
-        predict = new javax.swing.JCheckBox();
-        predict.setSelected(true);
-        predict.setActionCommand("Predicted");
-
-        pi = new javax.swing.JCheckBox();
-        pi.setSelected(true);
-        pi.setActionCommand("Physical interactions");
-
-        other = new javax.swing.JCheckBox();
-        other.setSelected(true);
-        other.setActionCommand("Other");
-
-        average = new javax.swing.JRadioButton();
-        average.setSelected(true);
-        bp = new javax.swing.JRadioButton();
-        mf = new javax.swing.JRadioButton();
-        cc = new javax.swing.JRadioButton();
-        automatic = new javax.swing.JRadioButton();
-        okButton = new javax.swing.JButton();
-
-    }
-
-    private void setGeneLimit() {
-        glimit = Integer.parseInt(geneLimit.getText());
-        genemania.setGeneLimit(glimit + 1);
-    }
-
-    private int getSelectionFromButtonGroup(ButtonGroup bg) {
-        int selection = 0;
-        Enumeration<AbstractButton> buttonEnum = bg.getElements();
-        while (buttonEnum.hasMoreElements()) {
-            if (buttonEnum.nextElement().isSelected()) {
-                break;
-            }
-            selection++;
-        }
-        return selection;
-    }
-
-    private void button_settingsActionPerformed() {
-        settingsPanel.removeAll();
-        JPanel equal;
-
-        JPanel geneOntology;
-
-
-        JSeparator jSeparator1;
-        JSeparator jSeparator2;
-        JSeparator jSeparator3;
-        JLabel limitTo;
-
-        JLabel networkWeighting;
-        JLabel networks;
-
-
-        JPanel queryDependent;
-        JLabel rankBy;
-        JLabel relatedGenes;
-
-        updateQueryNeeded = false;
-        geneLimitDifference = -1;
-
-
-        limitTo = new javax.swing.JLabel();
-        relatedGenes = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
-        rankBy = new javax.swing.JLabel();
-        jSeparator2 = new javax.swing.JSeparator();
-        networks = new javax.swing.JLabel();
-        jSeparator3 = new javax.swing.JSeparator();
-        networkWeighting = new javax.swing.JLabel();
-        equal = new javax.swing.JPanel();
-        geneOntology = new javax.swing.JPanel();
-        queryDependent = new javax.swing.JPanel();
-
-
-        limitTo.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        limitTo.setText("Limit to");
-
-        geneLimit.setColumns(3);
-        geneLimit.addKeyListener(new KeyListener() {
-
-            @Override
-            public void keyTyped(KeyEvent ke) {
-                
-            }
-
-            @Override
-            public void keyPressed(KeyEvent ke) {
-                
-            }
-
-            @Override
-            public void keyReleased(KeyEvent ke) {
-                if (!KeyEvent.getKeyText(ke.getKeyCode()).equals("Backspace")) {
-                    if (glimit != Integer.parseInt(geneLimit.getText())) {
-                        if (glimit > Integer.parseInt(geneLimit.getText())) {
-                            geneLimitDifference = currSizeOfArray - Integer.parseInt(geneLimit.getText());
-                        } else {
-                            updateQueryNeeded = true;
-                        }
-                        setGeneLimit();
-                    }
-                }
-            }
-        });
-        
-
-        relatedGenes.setText("related genes.");
-
-        rankBy.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        rankBy.setText("Rank by");
-
-        ActionListener scoringActionPerformed = new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                if ((evt.getActionCommand().equals("genemaniaScore") && rankByVarFreq) || (!rankByVarFreq && evt.getActionCommand().equals("varFreq"))) {
-                    updateQueryNeeded = true;
-                    setRankingMethod();
-                }
-            }
-        };
-
-        buttonGroup1.add(varFreq);
-        varFreq.setText("Variation Frequency");
-        varFreq.setActionCommand("varFreq");
-        varFreq.addActionListener(scoringActionPerformed);
-
-        buttonGroup1.add(genemaniaScore);
-        genemaniaScore.setText("GeneMANIA Score");
-        genemaniaScore.setActionCommand("genemaniaScore");
-        genemaniaScore.addActionListener(scoringActionPerformed);
-
-        networks.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        networks.setText("Networks");
-
-        ActionListener networksActionPerformed = new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                if (!networksSelected.equals(getNetworksSelection())) {
-                    updateQueryNeeded = true;
-                    setNetworks();
-                }
-            }
-        };
-
-        coexp.setText("Co-expression");
-        coexp.addActionListener(networksActionPerformed);
-
-        spd.setText("Shared Protein Domains");
-        spd.addActionListener(networksActionPerformed);
-
-        gi.setText("Genetic interactions");
-        gi.addActionListener(networksActionPerformed);
-
-        coloc.setText("Co-localization");
-        coloc.addActionListener(networksActionPerformed);
-
-        path.setText("Pathway interactions");
-        path.addActionListener(networksActionPerformed);
-
-        predict.setText("Predicted");
-        predict.addActionListener(networksActionPerformed);
-
-        pi.setText("Physical interactions");
-        pi.addActionListener(networksActionPerformed);
-
-        other.setText("Other");
-        other.addActionListener(networksActionPerformed);
-
-        networkWeighting.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        networkWeighting.setText("Network weighting");
-
-        equal.setBorder(javax.swing.BorderFactory.createTitledBorder("Equal weighting"));
-
-        ActionListener combiningMethodActionPerformed = new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                if (!combiningMethod.getCode().equals(combiningMethods[getSelectionFromButtonGroup(buttonGroup1)].getCode())) {
-                    updateQueryNeeded = true;
-                    setCombiningMethod();
-                }
-            }
-        };
-
-        buttonGroup2.add(average);
-        average.setText("Equal by network");
-        average.setActionCommand("average");
-        average.addActionListener(combiningMethodActionPerformed);
-
-        javax.swing.GroupLayout equalLayout = new javax.swing.GroupLayout(equal);
-        equal.setLayout(equalLayout);
-
-        equalLayout.setHorizontalGroup(
-                equalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(equalLayout.createSequentialGroup().addContainerGap().addComponent(average).addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-        equalLayout.setVerticalGroup(
-                equalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(average));
-
-        geneOntology.setBorder(javax.swing.BorderFactory.createTitledBorder("Gene Ontology (GO)- based weighting"));
-
-        buttonGroup2.add(bp);
-        bp.setText("Biological process based");
-        bp.setActionCommand("bp");
-        bp.addActionListener(combiningMethodActionPerformed);
-
-        buttonGroup2.add(mf);
-        mf.setText("Molecular function based");
-        mf.setActionCommand("mf");
-        mf.addActionListener(combiningMethodActionPerformed);
-
-        buttonGroup2.add(cc);
-        cc.setText("Cellular component based");
-        cc.setActionCommand("cc");
-        cc.addActionListener(combiningMethodActionPerformed);
-
-        javax.swing.GroupLayout geneOntologyLayout = new javax.swing.GroupLayout(geneOntology);
-        geneOntology.setLayout(geneOntologyLayout);
-        geneOntologyLayout.setHorizontalGroup(
-                geneOntologyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(geneOntologyLayout.createSequentialGroup().addContainerGap().addGroup(geneOntologyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(bp).addComponent(mf).addComponent(cc)).addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-        geneOntologyLayout.setVerticalGroup(
-                geneOntologyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(geneOntologyLayout.createSequentialGroup().addComponent(bp, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(mf).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(cc)));
-
-        queryDependent.setBorder(javax.swing.BorderFactory.createTitledBorder("Query-dependent weighting"));
-
-        buttonGroup2.add(automatic);
-        automatic.setText("Automatically selected weighting method");
-        automatic.setActionCommand("automatic");
-        automatic.addActionListener(combiningMethodActionPerformed);
-
-        javax.swing.GroupLayout queryDependentLayout = new javax.swing.GroupLayout(queryDependent);
-        queryDependent.setLayout(queryDependentLayout);
-        queryDependentLayout.setHorizontalGroup(
-                queryDependentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(queryDependentLayout.createSequentialGroup().addContainerGap().addComponent(automatic).addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-        queryDependentLayout.setVerticalGroup(
-                queryDependentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(automatic));
-
-        okButton.setText("OK");
-        for (ActionListener a:okButton.getActionListeners())
-            okButton.removeActionListener(a);
-        okButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent ae) {
-                closeSettingsActionPerformed();
-            }
-        });
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(settingsPanel);
-        settingsPanel.setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false).addComponent(jSeparator1).addComponent(queryDependent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(equal, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(jSeparator3, javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(networkWeighting).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addComponent(limitTo).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(geneLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)).addComponent(rankBy)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(varFreq).addComponent(relatedGenes).addComponent(genemaniaScore))).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(coexp).addComponent(gi).addComponent(path).addComponent(pi)).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(predict)).addComponent(coloc).addComponent(spd).addComponent(other))).addComponent(networks)).addComponent(geneOntology, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(jSeparator2)).addGap(0, 0, Short.MAX_VALUE)).addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup().addGap(0, 0, Short.MAX_VALUE).addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))).addContainerGap()));
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[]{genemaniaScore, varFreq});
-
-        layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(limitTo).addComponent(geneLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(relatedGenes)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false).addGroup(layout.createSequentialGroup().addComponent(varFreq).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(genemaniaScore).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)).addGroup(layout.createSequentialGroup().addComponent(rankBy, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGap(39, 39, 39))).addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE).addGap(1, 1, 1).addComponent(networks).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(coexp).addComponent(spd)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false).addComponent(gi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(coloc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(path).addComponent(predict)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(pi).addComponent(other)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(networkWeighting).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(equal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(geneOntology, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(queryDependent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(okButton).addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-
-    }
-
-    private Set<String> getNetworksSelection() {
-        Set<String> networksSelected = new HashSet<String>();
-        JCheckBox[] networkButtons = {coexp, spd, gi, coloc, path, predict, pi, other};
-        for (int i = 0; i < networkButtons.length; i++) {
-            if (networkButtons[i].isSelected()) {
-                networksSelected.add(networkButtons[i].getActionCommand());
-            }
-        }
-        return networksSelected;
-    }
-
-    private void closeSettingsActionPerformed() {
-        settingsPanel.removeAll();
-        settingsPanel.setLayout(new BorderLayout());
-        settingsPanel.add(settingsButton, BorderLayout.EAST);
-        p.invalidate();
-        p.updateUI();
-        System.out.println(geneLimitDifference);
-        if (geneLimitDifference > 0) {
-            System.out.println(geneLimitDifference);
-            System.out.println(currSizeOfArray);
-            for (int i = currSizeOfArray; i > currSizeOfArray - geneLimitDifference; i--) {
-                kvp.removeBottomRow(Integer.toString(i));
-            }
-            currSizeOfArray -= geneLimitDifference;
-            kvpPanel.invalidate();
-            kvpPanel.updateUI();
-        } else if (updateQueryNeeded) {
-            updateRelatedGenesPanel(gene);
-        }
-    }
-
     @Override
     public void geneSelectionChanged(Gene g) {
         if (g == null || !dataPresent) {
@@ -519,7 +158,35 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
 
         }
     }
+    private JPopupMenu getRegionSetsMenu(Gene gene) {
+        final JPopupMenu regionSets = new JPopupMenu();
+        final RegionController regionController = RegionController.getInstance();
+        final Gene g = gene;
+        try {
+            for (RegionSet s : regionController.getRegionSets()) {
+                final RegionSet finalRegionSet = s;
+                JMenuItem menuItem = new JMenuItem(s.getName());
+                menuItem.addActionListener(new ActionListener() {
 
+                    public void actionPerformed(ActionEvent ae) {
+                        try {
+                            regionController.addToRegionSet(finalRegionSet, g.getChrom(), g.getStart(), g.getEnd(), g.getName());
+                            DialogUtils.displayMessage(String.format("Successfully added %s to %s list", g.getName(), finalRegionSet.getName()));
+                        } catch (SQLException ex) {
+                            Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (RemoteException e) {
+                            Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, e);
+                        }
+                    }
+                });
+                regionSets.add(menuItem);
+            }
+        } catch (Exception ex) {
+            return new JPopupMenu();
+        }
+        return regionSets;
+    }
+    
     private void updateRelatedGenesPanel(Gene g) {
         gene = g;
         kvpPanel.removeAll();
@@ -574,7 +241,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                             kvp.setAdditionalColumn(zero, 0, varFreqHeader);
                             JLabel genemaniaHeader = new JLabel("<html>GENEMANIA<br>SCORE</html>");
                             genemaniaHeader.setFont(HEADER_FONT);
-                            kvp.setAdditionalColumn(zero, 1, genemaniaHeader);
+                            //kvp.setAdditionalColumn(zero, 1, genemaniaHeader);
                             if (rankByVarFreq) {
                                 Iterator<org.ut.biolab.medsavant.model.Gene> itr = geneSetFetcher.getGenesByNumVariants(genemania.getRelatedGeneNamesByScore()).iterator();
                                 org.ut.biolab.medsavant.model.Gene currGene;
@@ -583,16 +250,14 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                 if (Thread.interrupted()) {
                                     throw new InterruptedException();
                                 }
-
-
-                                while (itr.hasNext()) {
+                            while (itr.hasNext()) {
                                     currGene = itr.next();
                                     final org.ut.biolab.medsavant.model.Gene finalGene = currGene;
                                     kvp.addKey(Integer.toString(i));
                                     JLabel geneName = new JLabel(currGene.getName());
                                     EntrezButton geneLinkButton = new EntrezButton(currGene.getName());
                                     kvp.setValue(Integer.toString(i), geneName);
-                                    kvp.setAdditionalColumn(Integer.toString(i), 0, new JLabel(Double.toString(GeneSetFetcher.getInstance().getNormalizedVariantCount(currGene))));
+                                    
                                     JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
                                     geneInspectorButton.setToolTipText("Inspect this gene");
                                     geneInspectorButton.addActionListener(new ActionListener() {
@@ -603,33 +268,14 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                             InspectorPanel.getInstance().switchToGeneInspector();
                                         }
                                     });
-                                    final JPopupMenu regionSets = new JPopupMenu();
-                                    final RegionController regionController = RegionController.getInstance();
-                                    for (RegionSet s : regionController.getRegionSets()) {
-                                        final RegionSet finalRegionSet = s;
-                                        JMenuItem menuItem = new JMenuItem(s.getName());
-                                        menuItem.addActionListener(new ActionListener() {
-
-                                            public void actionPerformed(ActionEvent ae) {
-                                                try {
-                                                    regionController.addToRegionSet(finalRegionSet, finalGene.getChrom(), finalGene.getStart(), finalGene.getEnd(), finalGene.getName());
-                                                    DialogUtils.displayMessage(String.format("Successfully added %s to %s list", finalGene.getName(), finalRegionSet.getName()));
-                                                } catch (SQLException ex) {
-                                                    Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, ex);
-                                                } catch (RemoteException e) {
-                                                    Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, e);
-                                                }
-                                            }
-                                        });
-                                        regionSets.add(menuItem);
-                                    }
+                                    
                                     final JLabel addToRegionListButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
                                     addToRegionListButton.setToolTipText("Add to Region List");
                                     addToRegionListButton.addMouseListener(new MouseAdapter() {
 
                                         @Override
                                         public void mouseClicked(MouseEvent e) {
-                                            regionSets.show(addToRegionListButton, 0, addToRegionListButton.getHeight());
+                                            getRegionSetsMenu(finalGene).show(addToRegionListButton, 0, addToRegionListButton.getHeight());
                                         }
                                     });
                                     kvp.setAdditionalColumn(Integer.toString(i), 2, geneInspectorButton);
@@ -669,39 +315,19 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                                 InspectorPanel.getInstance().switchToGeneInspector();
                                             }
                                         });
-                                        final JPopupMenu regionSets = new JPopupMenu();
                                         System.err.println("get region sets" + System.currentTimeMillis());
-                                        final RegionController regionController = RegionController.getInstance();
-                                        for (RegionSet s : regionController.getRegionSets()) {
-                                            final RegionSet finalRegionSet = s;
-                                            JMenuItem menuItem = new JMenuItem(s.getName());
-                                            menuItem.addActionListener(new ActionListener() {
-
-                                                public void actionPerformed(ActionEvent ae) {
-                                                    try {
-                                                        regionController.addToRegionSet(finalRegionSet, finalGene.getChrom(), finalGene.getStart(), finalGene.getEnd(), finalGene.getName());
-                                                        DialogUtils.displayMessage(String.format("Successfully added %s to %s list", finalGene.getName(), finalRegionSet.getName()));
-                                                    } catch (SQLException ex) {
-                                                        Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, ex);
-                                                    } catch (RemoteException e) {
-                                                        Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, e);
-                                                    }
-                                                }
-                                            });
-                                            regionSets.add(menuItem);
-                                        }
                                         final JLabel addToRegionListButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
                                         addToRegionListButton.setToolTipText("Add to Region List");
                                         addToRegionListButton.addMouseListener(new MouseAdapter() {
 
                                             @Override
                                             public void mouseClicked(MouseEvent e) {
-                                                regionSets.show(addToRegionListButton, 0, addToRegionListButton.getHeight());
+                                                getRegionSetsMenu(finalGene).show(addToRegionListButton, 0, addToRegionListButton.getHeight());
                                             }
                                         });
-                                        kvp.setAdditionalColumn(Integer.toString(i), 0, geneInspectorButton);
-                                        kvp.setAdditionalColumn(Integer.toString(i), 1, addToRegionListButton);
-                                        kvp.setAdditionalColumn(Integer.toString(i), 2, geneLinkButton);
+                                        kvp.setAdditionalColumn(Integer.toString(i), 2, geneInspectorButton);
+                                        kvp.setAdditionalColumn(Integer.toString(i), 3, addToRegionListButton);
+                                        kvp.setAdditionalColumn(Integer.toString(i), 4, geneLinkButton);
                                         i++;
                                     }
                                 }
@@ -725,12 +351,12 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                         if (setMsgOff) {
                             progressMessage.setVisible(false);
                         }
-//                        System.out.println("got here");
-//                        graph.removeAll();
-//                        graph.add(buildGraph());
-//                        System.out.println("got through");
-//                        graph.invalidate();
-//                        graph.updateUI();
+                        System.out.println("got here");
+                        graph.removeAll();
+                        graph.add(buildGraph());
+                        System.out.println("got through");
+                        graph.invalidate();
+                        graph.updateUI();
                         System.err.println("done finally" + System.currentTimeMillis());
                     }
 
@@ -778,7 +404,26 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                     synchronized (lock) {
                         lock.wait();
                         Thread toolTipGenerator = new Thread(geneDescriptionFetcher);
+                        Thread varFreqCalculator = new Thread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                System.out.println("THIS IS THE CURRSIZEOFARRAY: "+ currSizeOfArray);
+                                for(int i= 1; i<=currSizeOfArray; i++){
+                                    try {
+                                        String geneName = kvp.getValue(Integer.toString(i));
+                                        Gene gene = GeneSetFetcher.getInstance().getGene(geneName);
+                                        kvp.setAdditionalColumn(Integer.toString(i), 0, new JLabel(Double.toString(GeneSetFetcher.getInstance().getNormalizedVariantCount(gene))));
+                                        kvp.invalidate();
+                                        kvp.updateUI();
+                                    } catch (Exception ex) {
+                                        //don't put in any variation frequency
+                                    } 
+                                }
+                            }
+                        });
                         toolTipGenerator.start();
+                        varFreqCalculator.start();
                     }
                 } catch (Exception e) {
                 }
@@ -795,10 +440,10 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     // final static Object lock;
     public JPanel buildGraph() {
         CyNetwork network = genemania.getGraph();
-        //System.out.println("Nodes " + network.getNodeCount());
-        // System.out.println("Edges " + network.getEdgeCount());
+        System.out.println("Nodes " + network.getNodeCount());
+         System.out.println("Edges " + network.getEdgeCount());
         for (int i = 0; i < network.getEdgeCount(); i++) {
-            //System.out.println(network.getEdge(i));
+            System.out.println(network.getEdge(i));
         }
 
         CytoscapeUtils cy = new CytoscapeUtils(genemania.getNetworkUtils());

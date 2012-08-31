@@ -7,6 +7,7 @@ package org.ut.biolab.medsavant.view.genetics.variantinfo;
 import cytoscape.CyEdge;
 import cytoscape.CyNetwork;
 import cytoscape.CyNode;
+import cytoscape.CytoscapeVersion;
 import java.awt.Color;
 import java.io.File;
 import java.util.*;
@@ -22,6 +23,10 @@ import org.genemania.exception.ApplicationException;
 import org.genemania.exception.DataStoreException;
 import org.genemania.plugin.*;
 import org.genemania.plugin.cytoscape.NullCytoscapeUtils;
+import org.genemania.plugin.cytoscape2.CompatibilityImpl;
+import org.genemania.plugin.cytoscape2.CytoscapeUtilsImpl;
+import org.genemania.plugin.cytoscape2.support.Compatibility;
+import org.genemania.plugin.cytoscape26.Cy26Compatibility;
 import org.genemania.plugin.data.Colour;
 import org.genemania.plugin.data.DataSet;
 import org.genemania.plugin.data.DataSetManager;
@@ -39,6 +44,19 @@ import org.xml.sax.SAXException;
  * @author khushi
  */
 public class GenemaniaInfoRetriever {
+
+    private Compatibility createCompatibility(CytoscapeVersion cytoscapeVersion) {
+        String[] parts = cytoscapeVersion.getMajorVersion().split("[.]");
+		if (!parts[0].equals("2")) {
+			throw new RuntimeException("This plugin is only compatible with Cytoscape 2.X");
+		}
+		
+		int minorVersion = Integer.parseInt(parts[1]);
+		if (minorVersion < 8) {
+			return new Cy26Compatibility();
+		}
+		return new CompatibilityImpl();
+    }
 
     public static class NoRelatedGenesInfoException extends Exception {
 
@@ -131,8 +149,9 @@ public class GenemaniaInfoRetriever {
     }
     public CyNetwork getGraph(){
         EdgeAttributeProvider provider = createEdgeAttributeProvider(data, options);
-        
-        CyNetwork network = cytoscapeUtils.createNetwork(data, getNextNetworkName(human), options, provider);
+        Compatibility compatibility = createCompatibility(new CytoscapeVersion());
+        CytoscapeUtilsImpl cy = new CytoscapeUtilsImpl(networkUtils, compatibility);
+        CyNetwork network = cy.createNetwork(data, getNextNetworkName(human), options, provider);
        
         computeGraphCache(network, options,networks.keySet());
 		
