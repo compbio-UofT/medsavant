@@ -27,7 +27,6 @@ import java.util.Map;
 
 import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
-import com.healthmarketscience.sqlbuilder.dbspec.Column;
 
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.format.CustomField;
@@ -57,8 +56,7 @@ public interface VariantManagerAdapter extends Remote {
     public TableSchema getCustomTableSchema(String sessID, int projID, int refID) throws SQLException, RemoteException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, int start, int limit) throws SQLException, RemoteException;
     public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit) throws SQLException, RemoteException;
-    public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit, Column[] order) throws SQLException, RemoteException;
-    public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit, Column[] order, Column[] columns) throws SQLException, RemoteException;
+    public List<Object[]> getVariants(String sessID,int projID, int refID, Condition[][] conditions, int start, int limit, String[] orderByCols) throws SQLException, RemoteException;
     public int getVariantCount(String sessID, int projID, int refID) throws SQLException, RemoteException;
     public int getFilteredVariantCount(String sessID,int projID, int refID, Condition[][] conditions) throws SQLException, RemoteException;
     public int getVariantCountForDNAIDs(String sessID, int projID, int refID, Condition[][] conditions, Collection<String> dnaIDs) throws SQLException, RemoteException;

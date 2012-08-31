@@ -16,17 +16,16 @@
 
 package org.ut.biolab.medsavant.controller;
 
-import org.ut.biolab.medsavant.filter.FilterController;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
 
-import com.healthmarketscience.sqlbuilder.dbspec.Column;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
+import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.filter.FilterEvent;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -93,14 +92,14 @@ public class ResultController {
         return filteredVariants;
     }
 
-    public List<Object[]> getFilteredVariantRecords(int start, int limit, Column[] order) throws InterruptedException, SQLException, RemoteException {
+    public List<Object[]> getFilteredVariantRecords(int start, int limit, String[] orderByCols) throws InterruptedException, SQLException, RemoteException {
         synchronized (recordsLock) {
             if (filterSetIDForRecords != filterController.getCurrentFilterSetID() || this.limit != limit || this.start != start ||
                     ProjectController.getInstance().getCurrentProjectID() != projectIDForRecords ||
                     ReferenceController.getInstance().getCurrentReferenceID() != referenceIDForRecords ||
                     !SettingsController.getInstance().getDBName().equals(dbNameForRecords)) {
                 long then = System.currentTimeMillis();
-                updateFilteredVariantDBResults(start, limit, order);
+                updateFilteredVariantDBResults(start, limit, orderByCols);
                 LOG.info("Query for " + start + ", " + limit + " took " + (System.currentTimeMillis() - then) + "ms to return " + filteredVariants.size() + " records.");
                 this.limit = limit;
                 this.start = start;
@@ -112,7 +111,7 @@ public class ResultController {
         }
     }
 
-    private void updateFilteredVariantDBResults(int start, int limit, Column[] order) throws InterruptedException, SQLException, RemoteException {
+    private void updateFilteredVariantDBResults(int start, int limit, String[] orderByCols) throws InterruptedException, SQLException, RemoteException {
 
         filterSetIDForRecords = filterController.getCurrentFilterSetID();
 
@@ -123,7 +122,7 @@ public class ResultController {
                 FilterController.getInstance().getAllFilterConditions(),
                 start,
                 limit,
-                order);
+                orderByCols);
     }
 
 

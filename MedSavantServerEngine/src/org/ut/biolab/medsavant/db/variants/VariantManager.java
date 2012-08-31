@@ -690,24 +690,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     }
 
     @Override
-    public List<Object[]> getVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order) throws SQLException, RemoteException {
-        return getVariants(sessionId, projectId, referenceId, conditions, start, limit, order, null);
-    }
-
-    @Override
-    public List<Object[]> getVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions, int start, int limit, Column[] order, Column[] columns) throws SQLException, RemoteException {
-
+    public List<Object[]> getVariants(String sessionId, int projectId, int referenceId, Condition[][] conditions, int start, int limit, String[] orderByCols) throws SQLException, RemoteException {
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessionId, ProjectManager.getInstance().getVariantTableName(sessionId, projectId, referenceId, true));
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
-        if (columns == null) {
-            query.addAllColumns();
-        } else {
-            query.addColumns(columns);
-        }
+        query.addAllColumns();
         addConditionsToQuery(query, conditions);
-        if (order != null) {
-            query.addOrderings(order);
+        if (orderByCols != null) {
+            query.addCustomOrderings((Object[])orderByCols);
         }
 
         String queryString = query.toString();
@@ -718,7 +708,6 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 queryString += " LIMIT " + limit;
             }
         }
-        System.out.println(queryString);
         ResultSet rs = ConnectionController.executeQuery(sessionId, queryString);
 
         ResultSetMetaData rsMetaData = rs.getMetaData();
