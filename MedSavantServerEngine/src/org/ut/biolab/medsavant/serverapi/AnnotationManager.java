@@ -13,6 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.serverapi;
 
 import java.io.*;
@@ -43,6 +44,8 @@ import com.healthmarketscience.sqlbuilder.DeleteQuery;
 import com.healthmarketscience.sqlbuilder.InsertQuery;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
 import com.healthmarketscience.sqlbuilder.SelectQuery;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.AnnotationColumns;
@@ -51,16 +54,15 @@ import org.ut.biolab.medsavant.db.MedSavantDatabase.AnnotationTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.ReferenceTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantTablemapTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.AnnotationFormat.AnnotationType;
 import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.logging.DBLogger;
 import org.ut.biolab.medsavant.model.Annotation;
-import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.model.AnnotationDownloadInformation;
+import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
 import org.ut.biolab.medsavant.util.DirectorySettings;
-import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
 import org.ut.biolab.medsavant.util.NetworkUtils;
 
 
@@ -69,6 +71,8 @@ import org.ut.biolab.medsavant.util.NetworkUtils;
  * @author mfiume
  */
 public class AnnotationManager extends MedSavantServerUnicastRemoteObject implements AnnotationManagerAdapter, AnnotationColumns {
+
+    private static final Log LOG = LogFactory.getLog(AnnotationManager.class);
 
     private static AnnotationManager instance;
 
@@ -89,44 +93,39 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
     @Override
     public boolean installAnnotationForProject(String sessID, int projectID, AnnotationDownloadInformation info) {
 
-        System.out.println("Installing annotation " + info);
+        LOG.info("Installing annotation " + info);
 
-        System.out.print("Checking if annotation exists locally ...");
-        System.out.flush();
+        LOG.info("Checking if annotation exists locally...");
         try {
             if (!checkIfAnnotationIsInstalled(sessID, info)) {
-                System.out.println("NO");
-                System.out.print("Downloading annotation, be patient ...");
-                System.out.flush();
+                LOG.info("... NO");
+                LOG.info("Downloading annotation, be patient...");
                 File zip = downloadAnnotation(info); // TODO: check for null zip file
-                System.out.println("DONE");
+                LOG.info("... DONE");
                 installZipForProject(sessID, projectID, zip);
                 return true;
             } else {
-                System.out.println("YES");
+                LOG.info("... YES");
                 return false;
             }
-        } catch (Exception e) {
-            System.err.println("Problem installing annotation");
-            e.printStackTrace();
+        } catch (Exception ex) {
+            LOG.error("Problem installing annotation", ex);
         }
         return false;
     }
 
     private static void installZipForProject(String sessionID, int projectID, File zip) throws IOException, ParserConfigurationException, SAXException, SQLException {
-        System.out.print("Installing zip...");
-        System.out.flush();
+        LOG.info("Installing zip...");
         File dir = unpackAnnotationZip(zip);
-        System.out.println("DONE");
+        LOG.info("... DONE");
 
-        System.out.print("Parsing format...");
-        System.out.flush();
+        LOG.info("Parsing format...");
         AnnotationFormat format = parseFormat(getTabixFile(dir), getFormatFile(dir));
-        System.out.println("DONE");
+        LOG.info("... DONE");
 
-        System.out.println("FORMAT: " + format);
+        LOG.info("FORMAT: " + format);
 
-        System.out.println("TODO: register this annotation in the table");
+        LOG.info("TODO: register this annotation in the table");
 
         int id = addAnnotation(
                 sessionID,
@@ -149,7 +148,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         conn.commit();
         conn.setAutoCommit(true);
 
-        System.out.println("Installed to " + dir.getAbsolutePath());
+        LOG.info("Installed to " + dir.getAbsolutePath());
     }
 
     public static void addAnnotationFormat(String sessionID, int annotationId, int position, String columnName, String columnType, boolean isFilterable, String alias, String description) throws SQLException {
@@ -169,7 +168,7 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
 
     public static int addAnnotation(String sessionId, String program, String version, int referenceid, String path, boolean hasRef, boolean hasAlt, int type) throws SQLException {
 
-        DBLogger.log("Adding annotation...");
+        LOG.info("Adding annotation...");
 
         TableSchema table = MedSavantDatabase.AnnotationTableSchema;
         InsertQuery query = new InsertQuery(table.getTable());
@@ -402,29 +401,17 @@ public class AnnotationManager extends MedSavantServerUnicastRemoteObject implem
         br.close();
     }
 
-    public static File downloadAnnotation(AnnotationDownloadInformation adi) {
+    public static File downloadAnnotation(AnnotationDownloadInformation adi) throws MalformedURLException, IOException {
 
-
-        URL u = null;
-        try {
-            u = new URL(adi.getUrl());
-        } catch (MalformedURLException ex) {
-            ex.printStackTrace();
-        }
+        URL u = new URL(adi.getURL());
 
         File targetDir = getInstallationDirectory(adi.getProgramName(), adi.getProgramVersion(), adi.getReference());
 
         targetDir.mkdirs();
-        try {
-            String targetFileName = "tmp.zip";
-            NetworkUtils.downloadFile(u, targetDir, targetFileName);
+        String targetFileName = "tmp.zip";
+        NetworkUtils.downloadFile(u, targetDir, targetFileName);
 
-            return new File(targetDir, targetFileName);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        return null;
+        return new File(targetDir, targetFileName);
     }
 
     /**

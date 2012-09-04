@@ -16,17 +16,18 @@
 
 package org.ut.biolab.medsavant.serverapi;
 
-import com.healthmarketscience.sqlbuilder.*;
 import java.rmi.RemoteException;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.OrderObject.Dir;
-import java.sql.Date;
-import java.util.logging.Level;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.ProjectTableSchema;
@@ -35,7 +36,6 @@ import org.ut.biolab.medsavant.db.MedSavantDatabase.ServerLogTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
-import org.ut.biolab.medsavant.logging.DBLogger;
 import org.ut.biolab.medsavant.model.AnnotationLog;
 import org.ut.biolab.medsavant.model.GeneralLog;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
@@ -48,7 +48,8 @@ import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
  */
 public class LogManager extends MedSavantServerUnicastRemoteObject implements LogManagerAdapter {
 
-    public final String SERVER_UNAME = "server";
+    private static final Log LOG = LogFactory.getLog(LogManager.class);
+    private static final String SERVER_UNAME = "server";
 
     private static LogManager instance;
 
@@ -211,7 +212,7 @@ public class LogManager extends MedSavantServerUnicastRemoteObject implements Lo
             ConnectionController.executeUpdate(sessID, query.toString());
 
         } catch (SQLException ex) {
-            DBLogger.log(ex.getLocalizedMessage(), Level.SEVERE);
+            LOG.error("Error writing to server log.", ex);
         }
     }
 

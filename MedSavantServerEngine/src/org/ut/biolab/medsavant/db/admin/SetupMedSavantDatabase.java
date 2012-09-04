@@ -78,9 +78,9 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         populateGenes(sessID);
 
         OntologyManager ontMgr = OntologyManager.getInstance();
-        ontMgr.addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, OntologyManagerAdapter.GO_OBO_URL, OntologyManagerAdapter.GO_TO_GENES_URL);
-        ontMgr.addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, OntologyManagerAdapter.HPO_OBO_URL, OntologyManagerAdapter.HPO_TO_GENES_URL);
-        ontMgr.addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, OntologyManagerAdapter.OMIM_OBO_URL, OntologyManagerAdapter.OMIM_TO_HPO_URL);
+//        ontMgr.addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, OntologyManagerAdapter.GO_OBO_URL, OntologyManagerAdapter.GO_TO_GENES_URL);
+//        ontMgr.addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, OntologyManagerAdapter.HPO_OBO_URL, OntologyManagerAdapter.HPO_TO_GENES_URL);
+//        ontMgr.addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, OntologyManagerAdapter.OMIM_OBO_URL, OntologyManagerAdapter.OMIM_TO_HPO_URL);
 
         // Grant permissions to everybody else.
         for (String user: userMgr.getUserNames(sessID)) {

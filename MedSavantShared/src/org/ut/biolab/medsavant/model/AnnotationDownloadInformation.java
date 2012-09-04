@@ -1,3 +1,19 @@
+/*
+ *    Copyright 2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package org.ut.biolab.medsavant.model;
 
 import java.io.File;
@@ -7,18 +23,18 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
-import org.ut.biolab.medsavant.util.DirectorySettings;
-import org.ut.biolab.medsavant.util.NetworkUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import org.ut.biolab.medsavant.util.DirectorySettings;
+import org.ut.biolab.medsavant.util.NetworkUtils;
+
 
 /**
  *
@@ -26,11 +42,11 @@ import org.xml.sax.SAXException;
  */
 public class AnnotationDownloadInformation implements Serializable {
 
-    String name;
-    String version;
-    String description;
-    String url;
+    private final String name;
+    private final String version;
     private final String reference;
+    private final String description;
+    private final String url;
 
     public AnnotationDownloadInformation(String name, String version, String reference, String description, String url) {
         this.name = name;
@@ -48,7 +64,7 @@ public class AnnotationDownloadInformation implements Serializable {
         return name;
     }
 
-    public String getUrl() {
+    public String getURL() {
         return url;
     }
 
@@ -71,19 +87,12 @@ public class AnnotationDownloadInformation implements Serializable {
      */
     private static final String databaseURL = "http://genomesavant.com/medsavant/serve/annotation/annotation.xml";
 
-    private static File downloadAnnotationDatabase() {
+    private static File downloadAnnotationDatabase() throws IOException {
 
         String targetFileName = "AnnotationDatabase.xml";
         File targetDir = DirectorySettings.getTmpDirectory();
-        try {
-            NetworkUtils.downloadFile(new URL(databaseURL), targetDir, targetFileName);
-            File f = new File(targetDir, targetFileName);
-            return f;
-        } catch (IOException ex) {
-            Logger.getLogger(AnnotationDownloadInformation.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return null;
+        NetworkUtils.downloadFile(new URL(databaseURL), targetDir, targetFileName);
+        return new File(targetDir, targetFileName);
     }
 
     public static List<AnnotationDownloadInformation> getDownloadableAnnotations(String versionName) throws XMLStreamException, FileNotFoundException, ParserConfigurationException, SAXException, IOException {
