@@ -63,10 +63,12 @@ public class ThreadController {
     public synchronized void cancelWorkers(String page) {
         List<MedSavantWorker> list = workers.get(page);
         if (list != null) {
-            for (MedSavantWorker worker : list) {
+            // We null out the map entry because MedSavantWorker.done() calls removeWorker(), which will try to concurrently modify
+            // the list we're iterating over.
+            workers.put(page, null);
+            for (MedSavantWorker worker: list) {
                 worker.cancel(true);
             }
-            workers.put(page, null);
         }
     }
 }
