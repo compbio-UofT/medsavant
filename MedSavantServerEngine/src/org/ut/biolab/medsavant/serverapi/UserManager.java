@@ -22,6 +22,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.model.UserLevel;
@@ -33,6 +36,8 @@ import org.ut.biolab.medsavant.server.MedSavantServerUnicastRemoteObject;
  * @author mfiume
  */
 public class UserManager extends MedSavantServerUnicastRemoteObject implements UserManagerAdapter {
+
+    private static final Log LOG = LogFactory.getLog(UserManager.class);
 
     private static UserManager instance;
 
@@ -105,7 +110,7 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             String dbName = ConnectionController.getDBName(sessID);
-            System.out.println("Granting " + level + " privileges to " + name + " on " + dbName + "...");
+            LOG.info("Granting " + level + " privileges to " + name + " on " + dbName + "...");
             switch (level) {
                 case ADMIN:
                     conn.executePreparedUpdate("GRANT CREATE, CREATE TEMPORARY TABLES, CREATE USER, DELETE, DROP, FILE, GRANT OPTION, INSERT, SELECT, UPDATE ON *.* TO ?@'localhost'", name);
@@ -127,7 +132,8 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
                     conn.executePreparedUpdate("GRANT SELECT (user, Create_tmp_table_priv) ON mysql.db TO ?@'localhost'", name);
                     break;
             }
-            System.out.println("... granted.");
+            conn.executePreparedUpdate(String.format("GRANT INSERT on %s.server_log TO ?@'localhost'", dbName), name);
+            LOG.info("... granted.");
         } finally {
             conn.close();
         }
