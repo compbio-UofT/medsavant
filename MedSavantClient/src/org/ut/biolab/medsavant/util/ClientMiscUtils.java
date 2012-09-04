@@ -23,6 +23,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.math.BigDecimal;
+import java.rmi.ConnectException;
+import java.rmi.NoSuchObjectException;
+import java.rmi.UnmarshalException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -91,10 +94,19 @@ public class ClientMiscUtils extends MiscUtils {
     /**
      * Displays an error message to the user appropriately.
      *
-     * @param ex
+     * @param message human-readable message, may include a %s specification
+     * @param t error being reported
      */
     public static void reportError(String message, Throwable t) {
-        message = String.format(message, getMessage(t));
+        if (t instanceof ConnectException) {
+            message = String.format(message, "server refused connection");
+        } else if (t instanceof UnmarshalException) {
+            message = String.format(message, "connection to server lost");
+        } else if (t instanceof NoSuchObjectException) {
+            message = String.format(message, "server has been restarted");
+        } else {
+            message = String.format(message, getMessage(t));
+        }
         LOG.error(message, t);
         if (!checkSQLException(t)) {
             DialogUtils.displayException("MedSavant", message, t);
