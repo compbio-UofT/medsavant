@@ -30,7 +30,6 @@ import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.model.OntologyType;
 import org.ut.biolab.medsavant.plugin.MedSavantPlugin;
 import org.ut.biolab.medsavant.plugin.PluginController;
@@ -123,7 +122,7 @@ public class QueryPanel extends CollapsiblePanes {
                 }
 
                 // force Tag filter into default variant conditions
-                if (af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_DEFAULT)) {
+                if (af.getProgram().equals(AnnotationFormat.ANNOTATION_FORMAT_DEFAULT)) {
                     //tag filter
                     catHolders.add(new SimpleFilterHolder(TagFilterView.class, queryID));
                 }

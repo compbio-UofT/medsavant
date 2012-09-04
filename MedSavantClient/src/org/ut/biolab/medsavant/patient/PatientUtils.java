@@ -23,7 +23,7 @@ import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import org.ut.biolab.medsavant.db.BasicPatientColumns;
+import org.ut.biolab.medsavant.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.filter.StringListFilterView;
 import org.ut.biolab.medsavant.filter.WhichTable;
 import org.ut.biolab.medsavant.view.genetics.GeneticsFilterPage;
@@ -42,7 +42,7 @@ public class PatientUtils implements BasicPatientColumns {
         filter1Item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                GeneticsFilterPage.getSearchBar().loadFilters(StringListFilterView.wrapState(WhichTable.PATIENT, FAMILY_ID.getColumnName(), ALIAS_OF_FAMILY_ID, Arrays.asList(famID)));
+                GeneticsFilterPage.getSearchBar().loadFilters(StringListFilterView.wrapState(WhichTable.PATIENT, FAMILY_ID.getColumnName(), FAMILY_ID.getAlias(), Arrays.asList(famID)));
             }
         });
         popupMenu.add(filter1Item);
@@ -66,7 +66,7 @@ public class PatientUtils implements BasicPatientColumns {
                 for (int id: patIDs) {
                     patientIDStrings.add(Integer.toString(id));
                 }
-                GeneticsFilterPage.getSearchBar().loadFilters(StringListFilterView.wrapState(WhichTable.PATIENT, PATIENT_ID.getColumnName(), ALIAS_OF_PATIENT_ID, patientIDStrings));
+                GeneticsFilterPage.getSearchBar().loadFilters(StringListFilterView.wrapState(WhichTable.PATIENT, PATIENT_ID.getColumnName(), PATIENT_ID.getAlias(), patientIDStrings));
             }
         });
         popupMenu.add(filter1Item);

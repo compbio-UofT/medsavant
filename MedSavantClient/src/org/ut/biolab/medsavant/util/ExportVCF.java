@@ -15,17 +15,18 @@
  */
 package org.ut.biolab.medsavant.util;
 
-import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.db.ColumnType;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -36,7 +37,7 @@ import org.ut.biolab.medsavant.settings.DirectorySettings;
  *
  * @author Andrew
  */
-public class ExportVCF {
+public class ExportVCF implements BasicVariantColumns {
 
     //important locations in intermediate file created pre-merge
     private static int INTERMEDIATE_INDEX_DNA_ID = 0;
@@ -72,12 +73,12 @@ public class ExportVCF {
 
         //info fields
         TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
-        String[] customColumnNames = new String[table.getNumFields() - DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO - 1];
+        String[] customColumnNames = new String[table.getNumFields() - REQUIRED_VARIANT_FIELDS.length - 1];
         List<DbColumn> allColumns = table.getColumns();
-        for (int i = DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO+2; i <= table.getNumFields(); i++) {
-            customColumnNames[i-2-DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO] = allColumns.get(i).getColumnNameSQL().toUpperCase();
+        for (int i = REQUIRED_VARIANT_FIELDS.length + 2; i <= table.getNumFields(); i++) {
+            customColumnNames[i - 2 - REQUIRED_VARIANT_FIELDS.length] = allColumns.get(i).getColumnNameSQL().toUpperCase();
         }
-        int infoMin = DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO+1;
+        int infoMin = REQUIRED_VARIANT_FIELDS.length + 1;
         int infoMax = table.getNumFields();
 
         BufferedReader in = new BufferedReader(new FileReader(destFile));
@@ -91,22 +92,22 @@ public class ExportVCF {
             String row = "";
 
             //dna id
-            String dnaId = cleanField(record[DefaultVariantTableSchema.INDEX_OF_DNA_ID]);
+            String dnaId = cleanField(record[BasicVariantColumns.INDEX_OF_DNA_ID]);
             row += dnaId + "\t";
             dnaIds.add(dnaId);
 
             //genotype
-            row += cleanField(record[DefaultVariantTableSchema.INDEX_OF_GT]) + "\t";
+            row += cleanField(record[BasicVariantColumns.INDEX_OF_GT]) + "\t";
 
             //default fields
             row +=
-                    cleanField(record[DefaultVariantTableSchema.INDEX_OF_CHROM]) + "\t" +
-                    cleanField(record[DefaultVariantTableSchema.INDEX_OF_POSITION]) + "\t" +
-                    parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_DBSNP_ID])) + "\t" +
-                    parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_REF])) + "\t" +
-                    parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_ALT])) + "\t" +
-                    parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_QUAL])) + "\t" +
-                    parseMandatoryField(cleanField(record[DefaultVariantTableSchema.INDEX_OF_FILTER])) + "\t";
+                    cleanField(record[BasicVariantColumns.INDEX_OF_CHROM]) + "\t" +
+                    cleanField(record[BasicVariantColumns.INDEX_OF_POSITION]) + "\t" +
+                    parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_DBSNP_ID])) + "\t" +
+                    parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_REF])) + "\t" +
+                    parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_ALT])) + "\t" +
+                    parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_QUAL])) + "\t" +
+                    parseMandatoryField(cleanField(record[BasicVariantColumns.INDEX_OF_FILTER])) + "\t";
 
             //extra fields
             for (int j = infoMin; j < infoMax; j++) {
@@ -115,9 +116,9 @@ public class ExportVCF {
             }
 
             //get writer for chrom, or create
-            BufferedWriter writer = out.get(cleanField(record[DefaultVariantTableSchema.INDEX_OF_CHROM]));
+            BufferedWriter writer = out.get(cleanField(record[BasicVariantColumns.INDEX_OF_CHROM]));
             if (writer == null) {
-                String chrom = cleanField(record[DefaultVariantTableSchema.INDEX_OF_CHROM]);
+                String chrom = cleanField(record[BasicVariantColumns.INDEX_OF_CHROM]);
                 File f = new File(DirectorySettings.getTmpDirectory() + File.separator + destFile.getName() + chrom);
                 writer = new BufferedWriter(new FileWriter(f, false));
                 out.put(chrom, writer);

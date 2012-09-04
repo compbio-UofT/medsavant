@@ -24,12 +24,11 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbTable;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.TableSchema;
+import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.CustomField;
-import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.reference.ReferenceController;
@@ -39,6 +38,7 @@ import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.Controller;
 import org.ut.biolab.medsavant.view.dialog.ProgressDialog;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
+
 
 /**
  *
@@ -184,8 +184,8 @@ public class ProjectController extends Controller<ProjectEvent> {
         if (currentAnnotationFormats == null) {
             int[] annotIDs = MedSavantClient.AnnotationManagerAdapter.getAnnotationIDs(LoginController.sessionId, this.currentProjectID, ReferenceController.getInstance().getCurrentReferenceID());
             AnnotationFormat[] af = new AnnotationFormat[annotIDs.length+2];
-            af[0] = VariantFormat.getDefaultAnnotationFormat();
-            af[1] = VariantFormat.getCustomFieldAnnotationFormat(
+            af[0] = AnnotationFormat.getDefaultAnnotationFormat();
+            af[1] = AnnotationFormat.getCustomFieldAnnotationFormat(
                     manager.getCustomVariantFields(
                         LoginController.sessionId,
                         currentProjectID,

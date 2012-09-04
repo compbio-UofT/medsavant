@@ -25,8 +25,8 @@ import com.healthmarketscience.sqlbuilder.InCondition;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.FilterStateAdapter;
-import org.ut.biolab.medsavant.db.BasicPatientColumns;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.format.BasicPatientColumns;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.ProgressStatus;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -42,7 +42,7 @@ import org.ut.biolab.medsavant.view.dialog.CancellableProgressDialog;
  *
  * @author Andrew
  */
-public class StringListFilterView extends TabularFilterView<String> {
+public class StringListFilterView extends TabularFilterView<String> implements BasicPatientColumns, BasicVariantColumns {
 
     private final WhichTable whichTable;
     private final String columnName;
@@ -68,28 +68,28 @@ public class StringListFilterView extends TabularFilterView<String> {
         this.columnName = colName;
         this.alias = alias;
 
-        allowInexactMatch = colName.equals(BasicPatientColumns.PHENOTYPES.getColumnName());
+        allowInexactMatch = colName.equals(PHENOTYPES.getColumnName());
 
         if (bool) {
             availableValues = Arrays.asList("True", "False");
-        } else if (colName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_AC)) {
+        } else if (colName.equals(AC.getColumnName())) {
             availableValues = Arrays.asList("1", "2");
-        } else if (colName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_AF)) {
+        } else if (colName.equals(AF.getColumnName())) {
             availableValues = Arrays.asList("0.50", "1.00");
-        } else if (colName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF) || colName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT)) {
+        } else if (colName.equals(REF.getColumnName()) || colName.equals(ALT.getColumnName())) {
             availableValues = Arrays.asList("A", "C", "G", "T");
-        } else if (colName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_TYPE)) {
+        } else if (colName.equals(VARIANT_TYPE.getColumnName())) {
             availableValues = Arrays.asList(VariantType.SNP.toString(), VariantType.Insertion.toString(), VariantType.Deletion.toString(), VariantType.Various.toString(), VariantType.Unknown.toString());
-        } else if (colName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ZYGOSITY)) {
+        } else if (colName.equals(ZYGOSITY.getColumnName())) {
             availableValues = Arrays.asList(Zygosity.HomoRef.toString(), Zygosity.HomoAlt.toString(), Zygosity.Hetero.toString(), Zygosity.HeteroTriallelic.toString());
-        } else if (colName.equals(BasicPatientColumns.GENDER.getColumnName())) {
+        } else if (colName.equals(GENDER.getColumnName())) {
             availableValues = Arrays.asList(ClientMiscUtils.GENDER_MALE, ClientMiscUtils.GENDER_FEMALE, ClientMiscUtils.GENDER_UNKNOWN);
         } else {
             new CancellableProgressDialog("Generating List", "<html>Determining distinct values for field.<br>This may take a few minutes the first time.</html>") {
                 @Override
                 public void run() throws InterruptedException, SQLException, RemoteException {
                     availableValues = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId, whichTable.getName(), columnName, allowInexactMatch ,true);
-                    if (columnName.equals(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM)) {
+                    if (columnName.equals(CHROM.getColumnName())) {
                         Collections.sort(availableValues, new ChromosomeComparator());
                     }
                 }
@@ -123,7 +123,7 @@ public class StringListFilterView extends TabularFilterView<String> {
 
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
         for (int i : indices) {
-            if (columnName.equals(BasicPatientColumns.GENDER.getColumnName())){
+            if (columnName.equals(GENDER.getColumnName())){
                 appliedValues.add(Integer.toString(ClientMiscUtils.stringToGender(filterableList.getModel().getElementAt(i).toString())));
             } else {
                 appliedValues.add(filterableList.getModel().getElementAt(i).toString());

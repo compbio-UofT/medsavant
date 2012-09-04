@@ -22,7 +22,7 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.api.MedSavantFilterPlugin;
-import org.ut.biolab.medsavant.db.BasicPatientColumns;
+import org.ut.biolab.medsavant.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.OntologyType;
 import org.ut.biolab.medsavant.ontology.OntologyFilter;

@@ -25,7 +25,7 @@ import java.util.Map;
 import com.healthmarketscience.sqlbuilder.ComboCondition;
 import com.healthmarketscience.sqlbuilder.Condition;
 
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.filter.Filter;
 import org.ut.biolab.medsavant.model.*;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -53,7 +53,7 @@ public abstract class RegionSetFilter extends Filter {
 
                 //add chrom condition
                 tmp[0] = BinaryConditionMS.equalTo(
-                        ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM),
+                        ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.CHROM),
                         chrom);
 
                 //create range conditions
@@ -61,7 +61,7 @@ public abstract class RegionSetFilter extends Filter {
                 Condition[] rangeConditions = new Condition[ranges.size()];
                 for (int j = 0; j < ranges.size(); j++) {
                     rangeConditions[j] = new RangeCondition(
-                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION),
+                            ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(BasicVariantColumns.POSITION),
                             (long)ranges.get(j).getMin(),
                             (long)ranges.get(j).getMax());
                 }

@@ -29,7 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.api.Listener;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.login.LoginEvent;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -211,8 +211,8 @@ public class FilterController extends Controller<FilterEvent> {
     private List<Filter> prioritizeFilters(List<Filter> filters) {
 
         List<Filter> result = new ArrayList<Filter>();
-        addFiltersToList(filters, result, DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
-        addFiltersToList(filters, result, DefaultVariantTableSchema.COLUMNNAME_OF_POSITION);
+        addFiltersToList(filters, result, BasicVariantColumns.CHROM.getColumnName());
+        addFiltersToList(filters, result, BasicVariantColumns.POSITION.getColumnName());
         for (Filter f : filters) {
             result.add(f);
         }
@@ -221,9 +221,9 @@ public class FilterController extends Controller<FilterEvent> {
     }
 
     //add anything from filters with filterId to list
-    private void addFiltersToList(List<Filter> filters, List<Filter> list, String filterId) {
+    private void addFiltersToList(List<Filter> filters, List<Filter> list, String filtID) {
         for (int i = filters.size()-1; i >= 0; i--) {
-            if (filters.get(i).getID().equals(filterId)) {
+            if (filters.get(i).getID().equals(filtID)) {
                 list.add(filters.remove(i));
             }
         }

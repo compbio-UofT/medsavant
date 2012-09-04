@@ -32,7 +32,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.PatientFormatTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.PatientTablemapTableSchema;
@@ -179,41 +179,22 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
 
     public String createVariantTable(String sessID, int projID, int refID, int updID, int[] annIDs, boolean staging, boolean sub) throws RemoteException, SQLException {
 
-        String variantTableName = DBSettings.getVariantTableName(projID, refID, updID);
+        // Create basic fields.
+        String tableName = DBSettings.getVariantTableName(projID, refID, updID);
         if (sub) {
-            variantTableName += "_sub";
+            tableName += "_sub";
+        }
+        TableSchema variantSchema = new TableSchema(MedSavantDatabase.schema, tableName, BasicVariantColumns.REQUIRED_VARIANT_FIELDS);
+        for (CustomField field: getCustomVariantFields(sessID, projID, refID, updID)) {
+            variantSchema.addColumn(field.getColumnName(), field.getColumnType(), field.getColumnLength());
         }
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
 
         try {
-            // TODO: should use column types from DefaultVariantTable instead of hard-coding them here.
-            // TODO: ditto, just spent 1hr not understanding why table values aren't the same as in DefaultVariantTable
-            String query =
-                    "CREATE TABLE `" + variantTableName + "` ("
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID + "` int(11) NOT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID + "` int(11) NOT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID + "` int(11) NOT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID + "` varchar(100) COLLATE latin1_bin NOT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CHROM + "` varchar(5) COLLATE latin1_bin NOT NULL DEFAULT '',"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_POSITION + "` int(11) NOT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID + "` varchar(45) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_REF + "` varchar(30) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_ALT + "` varchar(30) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_QUAL + "` float(10,0) DEFAULT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_FILTER + "` varchar(500) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_TYPE + "` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_ZYGOSITY + "` varchar(20) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_GT + "` varchar(10) COLLATE latin1_bin DEFAULT NULL,"
-                    + "`" + DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO + "` varchar(10000) COLLATE latin1_bin DEFAULT NULL,";
+            String query = variantSchema.getCreateQuery().toString();
 
-            //add custom vcf fields
-            CustomField[] customFields = getCustomVariantFields(sessID, projID, refID, updID);
-            for (CustomField f : customFields) {
-                query += f.generateSchema(true);
-            }
-
-            //add each annotation
+            // Add each annotation
             for (int ann : annIDs) {
                 query += getAnnotationSchema(sessID, ann);
             }
@@ -224,7 +205,7 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         } finally {
             conn.close();
         }
-        return variantTableName;
+        return tableName;
     }
 
     @Override

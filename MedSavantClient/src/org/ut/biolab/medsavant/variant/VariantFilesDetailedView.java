@@ -30,7 +30,7 @@ import com.jidesoft.pane.CollapsiblePane;
 import com.jidesoft.pane.CollapsiblePanes;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.SimpleVariantFile;
 import org.ut.biolab.medsavant.project.ProjectController;
@@ -43,7 +43,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author abrook
  */
-class VariantFilesDetailedView extends DetailedView {
+class VariantFilesDetailedView extends DetailedView implements BasicVariantColumns {
 
     private final JPanel details;
     private final JPanel content;
@@ -174,8 +174,8 @@ class VariantFilesDetailedView extends DetailedView {
                 public void actionPerformed(ActionEvent e) {
 
                     Condition[] conditions = new Condition[files.length];
-                    DbColumn upload = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID);
-                    DbColumn file = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID);
+                    DbColumn upload = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(UPLOAD_ID);
+                    DbColumn file = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(FILE_ID);
                     for (int i = 0; i < files.length; i++) {
                         conditions[i] = ComboCondition.and(
                                 BinaryCondition.equalTo(upload, files[i].getUploadId()),

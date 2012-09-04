@@ -799,7 +799,6 @@ public class MedSavantDatabase {
     public static final ChromosomeTableSchema ChromosomeTableSchema = new ChromosomeTableSchema(schema);
     public static final CohortTableSchema CohortTableSchema = new CohortTableSchema(schema);
     public static final CohortMembershipTableSchema CohortmembershipTableSchema = new CohortMembershipTableSchema(schema);
-    public static final DefaultVariantTableSchema DefaultVariantTableSchema = new DefaultVariantTableSchema(schema);
     public static final TableSchema GeneSetTableSchema = new TableSchema(schema, "genes", GeneSetColumns.class);
     public static final TableSchema OntologyInfoTableSchema = new TableSchema(schema, "ontology_info", OntologyInfoColumns.class);
     public static final TableSchema OntologyTableSchema = new TableSchema(schema, "ontology", OntologyColumns.class);

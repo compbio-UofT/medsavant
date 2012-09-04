@@ -32,7 +32,7 @@ import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantFileTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.VariantPendingUpdateTableSchema;
@@ -67,7 +67,7 @@ import org.ut.biolab.medsavant.vcf.VCFIterator;
  *
  * @author Andrew
  */
-public class VariantManager extends MedSavantServerUnicastRemoteObject implements VariantManagerAdapter {
+public class VariantManager extends MedSavantServerUnicastRemoteObject implements VariantManagerAdapter, BasicVariantColumns {
 
     private static final Log LOG = LogFactory.getLog(VariantManager.class);
     private static final int COUNT_ESTIMATE_THRESHOLD = 1000;
@@ -226,7 +226,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Adding custom vcf fields");
             makeProgress(sessID, "Adding custom VCF fields...", fract);
             String vcfAnnotatedVariants = sortedVariants + "_vcf";
-            VariantManagerUtils.addCustomVCFFields(sortedVariants, vcfAnnotatedVariants, variantFields, DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO); //last of the default fields
+            VariantManagerUtils.addCustomVCFFields(sortedVariants, vcfAnnotatedVariants, variantFields, REQUIRED_VARIANT_FIELDS.length); //last of the default fields
             fract += CUSTOM_FIELD_FRACTION;
 
             //annotate
@@ -441,7 +441,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 if (customFields.length > 0) {
                     String customFieldFilename = currentFilename + "_vcf";
                     filesUsed.add(customFieldFilename);
-                    VariantManagerUtils.addCustomVCFFields(currentFilename, customFieldFilename, customFields, DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO); //last of the default fields
+                    VariantManagerUtils.addCustomVCFFields(currentFilename, customFieldFilename, customFields, REQUIRED_VARIANT_FIELDS.length); //last of the default fields
                     currentFilename = customFieldFilename;
                 }
 
@@ -586,8 +586,8 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             String conditions = "";
             for (int i = 0; i < files.size(); i++) {
                 conditions +=
-                        "!(" + DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID + "=" + files.get(i).getUploadId()
-                        + " AND " + DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID + "=" + files.get(i).getFileId() + ")";
+                        "!(" + UPLOAD_ID.getColumnName() + "=" + files.get(i).getUploadId()
+                        + " AND " + FILE_ID.getColumnName() + "=" + files.get(i).getFileId() + ")";
                 if (i != files.size() - 1) {
                     conditions += " AND ";
                 }
@@ -660,7 +660,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         query.addFromTable(table.getTable());
         query.addAllColumns();
         addConditionsToQuery(query, conditions);
-        query.addOrderings(new Column[]{table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION)});
+        query.addOrderings(table.getDBColumn(POSITION));
         String intoString =
                 "INTO OUTFILE \"" + file.getAbsolutePath().replaceAll("\\\\", "/") + "\""
                 + " FIELDS TERMINATED BY ',' ENCLOSED BY '\"'"
@@ -790,7 +790,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         String name = ProjectManager.getInstance().getVariantTableName(sessID, projID, refID, true);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, name);
-        Condition dnaCondition = new InCondition(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIDs);
+        Condition dnaCondition = new InCondition(table.getDBColumn(DNA_ID.getColumnName()), dnaIDs);
 
         Condition[] c1 = new Condition[conditions.length];
         for (int i = 0; i < conditions.length; i++) {
@@ -881,7 +881,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         addConditionsToQuery(q, conditions);
         q.addGroupings(column);
 
-        if (column.getColumnNameSQL().equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT) || column.getColumnNameSQL().equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)) {
+        if (column.getColumnNameSQL().equals(ALT.getColumnName()) || column.getColumnNameSQL().equals(REF.getColumnName())) {
             q.addCondition(createNucleotideCondition(column));
         }
 
@@ -938,11 +938,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         q.addCustomColumns(FunctionCall.countAll());
         addConditionsToQuery(q, conditions);
 
-        if (columnnameX.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT) || columnnameX.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)) {
+        if (columnnameX.equals(ALT.getColumnName()) || columnnameX.equals(REF.getColumnName())) {
             q.addCondition(createNucleotideCondition(columnX));
         }
 
-        if (columnnameY.equals(DefaultVariantTableSchema.COLUMNNAME_OF_ALT) || columnnameY.equals(DefaultVariantTableSchema.COLUMNNAME_OF_REF)) {
+        if (columnnameY.equals(ALT.getColumnName()) || columnnameY.equals(REF.getColumnName())) {
             q.addCondition(createNucleotideCondition(columnY));
         }
 
@@ -1015,9 +1015,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sid, name);
 
         Condition[] rangeConditions = new Condition[]{
-            BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom),
-            BinaryCondition.greaterThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), start, true),
-            BinaryCondition.lessThan(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), end, false)
+            BinaryCondition.equalTo(table.getDBColumn(CHROM), chrom),
+            BinaryCondition.greaterThan(table.getDBColumn(POSITION), start, true),
+            BinaryCondition.lessThan(table.getDBColumn(POSITION), end, false)
         };
 
         Condition[] c1 = new Condition[conditions.length];
@@ -1052,12 +1052,12 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         SelectQuery queryBase = new SelectQuery();
         queryBase.addFromTable(table.getTable());
 
-        queryBase.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
+        queryBase.addColumns(table.getDBColumn(CHROM));
 
-        String roundFunction = "ROUND(" + DefaultVariantTableSchema.COLUMNNAME_OF_POSITION + "/" + binsize + ",0)";
+        String roundFunction = "ROUND(" + POSITION.getColumnName() + "/" + binsize + ",0)";
 
         queryBase.addCustomColumns(FunctionCall.countAll());
-        queryBase.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM));
+        queryBase.addGroupings(table.getDBColumn(CHROM));
 
 
         addConditionsToQuery(queryBase, conditions);
@@ -1182,13 +1182,13 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         TableSchema table = getCustomTableSchema(sid, projectId, referenceId);
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
-        q.addCustomColumns("COUNT(DISTINCT " + DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID + ")");
+        q.addCustomColumns("COUNT(DISTINCT " + DNA_ID.getColumnName() + ")");
         addConditionsToQuery(q, conditions);
 
         Condition[] cond = new Condition[3];
-        cond[0] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM), chrom);
-        cond[1] = new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), start);
-        cond[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION), end);
+        cond[0] = new BinaryCondition(BinaryCondition.Op.EQUAL_TO, table.getDBColumn(CHROM), chrom);
+        cond[1] = new BinaryCondition(BinaryCondition.Op.GREATER_THAN_OR_EQUAL_TO, table.getDBColumn(POSITION), start);
+        cond[2] = new BinaryCondition(BinaryCondition.Op.LESS_THAN, table.getDBColumn(POSITION), end);
         q.addCondition(ComboCondition.and(cond));
 
         String query = q.toString();
@@ -1219,14 +1219,11 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         TableSchema table = getCustomTableSchema(sessID, projID, refID);
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
-        query.addColumns(
-                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID),
-                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM),
-                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION));
+        query.addColumns(table.getDBColumn(DNA_ID), table.getDBColumn(CHROM), table.getDBColumn(POSITION));
         addConditionsToQuery(query, conditions);
         Condition[] dnaIdConditions = new Condition[dnaIds.size()];
         for (int i = 0; i < dnaIds.size(); i++) {
-            dnaIdConditions[i] = BinaryConditionMS.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIds.get(i));
+            dnaIdConditions[i] = BinaryConditionMS.equalTo(table.getDBColumn(DNA_ID), dnaIds.get(i));
             results.put(dnaIds.get(i), new ArrayList<String>());
         }
         query.addCondition(ComboCondition.or(dnaIdConditions));
@@ -1255,9 +1252,9 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
-        q.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+        q.addColumns(table.getDBColumn(DNA_ID));
         q.addCustomColumns(FunctionCall.countAll());
-        q.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+        q.addGroupings(table.getDBColumn(DNA_ID));
         addConditionsToQuery(q, conditions);
 
         Map<String, String> patientToDNAIDMap = PatientManager.getInstance().getDNAIDsForFamily(sessID, projID, famID);
@@ -1284,7 +1281,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
 
             int i = 0;
             for (String dnaID : dnaIDs) {
-                dnaIDConditions[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaID);
+                dnaIDConditions[i] = BinaryCondition.equalTo(table.getDBColumn(DNA_ID), dnaID);
                 i++;
             }
 
@@ -1436,9 +1433,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         SelectQuery query = new SelectQuery();
         query.addFromTable(table.getTable());
         query.setIsDistinct(true);
-        query.addColumns(
-                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID),
-                table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID));
+        query.addColumns(table.getDBColumn(UPLOAD_ID), table.getDBColumn(FILE_ID));
 
         ResultSet idRs = ConnectionController.executeQuery(sessID, query.toString());
 
@@ -1764,14 +1759,14 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
     private void getDNAIDHeatMapHelper(String sessID, TableSchema table, float multiplier, Collection<String> dnaIDs, Condition c, boolean useThreshold, Map<String, Integer> map) throws SQLException {
 
         //generate conditions from dna ids
-        Condition dnaCondition = new InCondition(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID), dnaIDs);
+        Condition dnaCondition = new InCondition(table.getDBColumn(DNA_ID), dnaIDs);
 
         SelectQuery q = new SelectQuery();
         q.addFromTable(table.getTable());
         q.addCustomColumns(FunctionCall.countAll());
-        q.addColumns(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+        q.addColumns(table.getDBColumn(DNA_ID));
         q.addCondition(ComboCondition.and(new Condition[]{dnaCondition, c}));
-        q.addGroupings(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID));
+        q.addGroupings(table.getDBColumn(DNA_ID));
 
         ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
 

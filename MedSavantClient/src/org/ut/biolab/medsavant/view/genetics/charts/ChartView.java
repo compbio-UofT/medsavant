@@ -25,12 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
 
-import org.ut.biolab.medsavant.db.BasicPatientColumns;
 import org.ut.biolab.medsavant.db.ColumnType;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.format.BasicPatientColumns;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
-import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.view.genetics.charts.SummaryChart.ChartAxis;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
@@ -39,7 +38,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class ChartView extends JPanel implements BasicPatientColumns {
+public class ChartView extends JPanel implements BasicPatientColumns, BasicVariantColumns {
 
     private SummaryChart sc;
     private JComboBox chartChooser1;
@@ -64,7 +63,7 @@ public class ChartView extends JPanel implements BasicPatientColumns {
         initCards();
         initBottomBar();
         init = true;
-        chartChooser1.setSelectedItem(VariantFormat.ALIAS_OF_DNA_ID);
+        chartChooser1.setSelectedItem(DNA_ID.getAlias());
     }
 
     private void initToolBar() {
@@ -75,7 +74,7 @@ public class ChartView extends JPanel implements BasicPatientColumns {
         chartChooser1 = new JComboBox() {
             @Override
             public void addItem(Object anObject) {
-                int size = ((DefaultComboBoxModel) dataModel).getSize();
+                int size = ((DefaultComboBoxModel)dataModel).getSize();
                 Object obj;
                 boolean added = false;
                 for (int i=0; i<size; i++) {
@@ -99,9 +98,9 @@ public class ChartView extends JPanel implements BasicPatientColumns {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!init) return;
-                String alias = (String) chartChooser1.getSelectedItem();
+                String alias = (String)chartChooser1.getSelectedItem();
                 ChartMapGenerator cmg = mapGenerators.get(alias);
-                if (alias.equals(VariantFormat.ALIAS_OF_CHROM)) {
+                if (alias.equals(CHROM.getAlias())) {
                     bSort.setEnabled(false);
                     sc.setIsSortedKaryotypically(true);
                 } else if (cmg.isNumeric()) {
@@ -141,7 +140,7 @@ public class ChartView extends JPanel implements BasicPatientColumns {
         chartChooser2 = new JComboBox() {
             @Override
             public void addItem(Object anObject) {
-                int size = ((DefaultComboBoxModel) dataModel).getSize();
+                int size = ((DefaultComboBoxModel)dataModel).getSize();
                 Object obj;
                 boolean added = false;
                 for (int i=0; i<size; i++) {
@@ -239,10 +238,10 @@ public class ChartView extends JPanel implements BasicPatientColumns {
                 ColumnType type = field.getColumnType();
                 if (field.isFilterable() && 
                         (type.equals(ColumnType.VARCHAR) || type.equals(ColumnType.BOOLEAN) || type.equals(ColumnType.DECIMAL) || type.equals(ColumnType.FLOAT) || type.equals(ColumnType.INTEGER)) && 
-                        !(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID) || 
-                            field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID) || 
-                            field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID) || 
-                            field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID))) {
+                        !(field.getColumnName().equals(FILE_ID.getColumnName())) || 
+                            field.getColumnName().equals(UPLOAD_ID.getColumnName()) || 
+                            field.getColumnName().equals(DBSNP_ID.getColumnName()) || 
+                            field.getColumnName().equals(VARIANT_ID.getColumnName())) {
                     addCMG(VariantFieldChartMapGenerator.createVariantChart(field));
                 }
             }

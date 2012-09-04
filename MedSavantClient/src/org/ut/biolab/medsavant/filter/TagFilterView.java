@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.FilterStateAdapter;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.VariantTag;
@@ -212,7 +212,7 @@ public class TagFilterView extends FilterView {
                                          true));
 
                                 for (int i = 0; i < uploadIDs.size(); i++) {
-                                    uploadIDConditions[i] = BinaryCondition.equalTo(table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID), uploadIDs.get(i));
+                                    uploadIDConditions[i] = BinaryCondition.equalTo(table.getDBColumn(BasicVariantColumns.UPLOAD_ID), uploadIDs.get(i));
                                 }
 
                                 return new Condition[] {ComboCondition.or(uploadIDConditions) };

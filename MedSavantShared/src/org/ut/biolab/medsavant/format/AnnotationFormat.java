@@ -18,11 +18,16 @@ package org.ut.biolab.medsavant.format;
 
 import java.io.Serializable;
 
+
+
 /**
  *
  * @author Andrew
  */
 public class AnnotationFormat implements Serializable {
+
+    public static final String ANNOTATION_FORMAT_DEFAULT = "Standard Variant Conditions";
+    public static final String ANNOTATION_FORMAT_CUSTOM_VCF = "VCF Conditions";
 
     private final String program;
     private final String version;
@@ -150,5 +155,11 @@ public class AnnotationFormat implements Serializable {
         return "AnnotationFormat{" + "program=" + program + ", version=" + version + ", referenceName=" + referenceName + ", path=" + path + ", hasRef=" + hasRef + ", hasAlt=" + hasAlt + ", fields=" + fields + ", type=" + type + '}';
     }
 
+    public static AnnotationFormat getDefaultAnnotationFormat() {
+        return new AnnotationFormat(ANNOTATION_FORMAT_DEFAULT, ANNOTATION_FORMAT_DEFAULT, "0", "", true, true, AnnotationType.POSITION, BasicVariantColumns.REQUIRED_VARIANT_FIELDS);
+    }
 
+    public static AnnotationFormat getCustomFieldAnnotationFormat(CustomField[] customFields) {
+        return new AnnotationFormat(ANNOTATION_FORMAT_CUSTOM_VCF, ANNOTATION_FORMAT_CUSTOM_VCF, "0", "", true, true, AnnotationType.POSITION, customFields);
+    }
 }

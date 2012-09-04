@@ -37,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.filter.FilterController;
-import org.ut.biolab.medsavant.db.BasicPatientColumns;
+import org.ut.biolab.medsavant.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Chromosome;
 import org.ut.biolab.medsavant.project.ProjectController;

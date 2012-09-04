@@ -37,12 +37,11 @@ import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.filter.*;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.format.AnnotationFormat;
-import org.ut.biolab.medsavant.format.VariantFormat;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.GenomicRegion;
 import org.ut.biolab.medsavant.model.Range;
@@ -64,7 +63,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-public class TablePanel extends JLayeredPane {
+public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
     private static final Log LOG = LogFactory.getLog(TablePanel.class);
 
@@ -146,15 +145,15 @@ public class TablePanel extends JLayeredPane {
                         }
 
                         //only show some vcf fields
-                        if (!(af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_DEFAULT)
-                                && !(field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID)
-                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID)
-                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID)
-                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_FILTER)
-                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_QUAL)
-                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_GT)
-                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_DBSNP_ID)
-                                || field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_CUSTOM_INFO)))) {
+                        if (!(af.getProgram().equals(AnnotationFormat.ANNOTATION_FORMAT_DEFAULT)
+                                && !(field.getColumnName().equals(UPLOAD_ID.getColumnName()))
+                                || field.getColumnName().equals(FILE_ID.getColumnName())
+                                || field.getColumnName().equals(VARIANT_ID.getColumnName())
+                                || field.getColumnName().equals(FILTER.getColumnName())
+                                || field.getColumnName().equals(QUAL.getColumnName())
+                                || field.getColumnName().equals(GT.getColumnName())
+                                || field.getColumnName().equals(DBSNP_ID.getColumnName())
+                                || field.getColumnName().equals(CUSTOM_INFO.getColumnName()))) {
                             //|| af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_CUSTOM_VCF))) {
                             hiddenColumns.add(fieldNames.size() - 1);
                         }
@@ -236,13 +235,13 @@ public class TablePanel extends JLayeredPane {
                         if (selRows.length > 0) {
                             int rowToFetch = selRows[0];
 
-                            int uploadID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID);
-                            int fileID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_FILE_ID);
-                            int variantID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, DefaultVariantTableSchema.INDEX_OF_VARIANT_ID);
+                            int uploadID = (Integer)stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_UPLOAD_ID);
+                            int fileID = (Integer)stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_FILE_ID);
+                            int variantID = (Integer)stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_VARIANT_ID);
 
-                            DbColumn uIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_UPLOAD_ID);
-                            DbColumn fIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_FILE_ID);
-                            DbColumn vIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_VARIANT_ID);
+                            DbColumn uIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(UPLOAD_ID);
+                            DbColumn fIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(FILE_ID);
+                            DbColumn vIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(VARIANT_ID);
 
                             Condition[][] conditions = new Condition[1][3];
                             conditions[0][0] = BinaryConditionMS.equalTo(uIDcol, uploadID);
@@ -267,31 +266,31 @@ public class TablePanel extends JLayeredPane {
                             Object[] row = rows.get(0);
 
                             VariantRecord r = new VariantRecord(
-                                    (Integer) row[DefaultVariantTableSchema.INDEX_OF_UPLOAD_ID],
-                                    (Integer) row[DefaultVariantTableSchema.INDEX_OF_FILE_ID],
-                                    (Integer) row[DefaultVariantTableSchema.INDEX_OF_VARIANT_ID],
-                                    (Integer) ReferenceController.getInstance().getCurrentReferenceID(),
-                                    (Integer) 0, // pipeline ID
-                                    (String) row[DefaultVariantTableSchema.INDEX_OF_DNA_ID],
-                                    (String) row[DefaultVariantTableSchema.INDEX_OF_CHROM],
-                                    (Integer) row[DefaultVariantTableSchema.INDEX_OF_POSITION], // TODO: this should be a long
-                                    (String) row[DefaultVariantTableSchema.INDEX_OF_DBSNP_ID],
-                                    (String) row[DefaultVariantTableSchema.INDEX_OF_REF],
-                                    (String) row[DefaultVariantTableSchema.INDEX_OF_ALT],
-                                    (Float) row[DefaultVariantTableSchema.INDEX_OF_QUAL],
-                                    (String) row[DefaultVariantTableSchema.INDEX_OF_FILTER],
-                                    (String) row[DefaultVariantTableSchema.INDEX_OF_CUSTOM_INFO],
+                                    (Integer)row[INDEX_OF_UPLOAD_ID],
+                                    (Integer)row[INDEX_OF_FILE_ID],
+                                    (Integer)row[INDEX_OF_VARIANT_ID],
+                                    (Integer)ReferenceController.getInstance().getCurrentReferenceID(),
+                                    (Integer)0, // pipeline ID
+                                    (String)row[INDEX_OF_DNA_ID],
+                                    (String)row[INDEX_OF_CHROM],
+                                    (Integer)row[INDEX_OF_POSITION],
+                                    (String)row[INDEX_OF_DBSNP_ID],
+                                    (String)row[INDEX_OF_REF],
+                                    (String)row[INDEX_OF_ALT],
+                                    (Float)row[INDEX_OF_QUAL],
+                                    (String)row[INDEX_OF_FILTER],
+                                    (String)row[INDEX_OF_CUSTOM_INFO],
                                     new Object[]{});
 
-                            String type = (String) row[DefaultVariantTableSchema.INDEX_OF_VARIANT_TYPE];
-                            String zygosity = (String) row[DefaultVariantTableSchema.INDEX_OF_ZYGOSITY];
-                            String genotype = ((String) row[DefaultVariantTableSchema.INDEX_OF_GT]);
+                            String type = (String)row[INDEX_OF_VARIANT_TYPE];
+                            String zygosity = (String)row[INDEX_OF_ZYGOSITY];
+                            String genotype = (String)row[INDEX_OF_GT];
 
                             r.setType(VariantRecord.VariantType.valueOf(type));
                             r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
                             r.setGenotype(genotype);
 
-                            for (VariantSelectionChangedListener l : listeners) {
+                            for (VariantSelectionChangedListener l: listeners) {
                                 l.variantSelectionChanged(r);
                             }
                         }
@@ -478,9 +477,9 @@ public class TablePanel extends JLayeredPane {
         TableModel model = searchableTablePanel.getTable().getModel();
         int r = TableModelWrapperUtils.getActualRowAt(model, searchableTablePanel.getTable().getSelectedRow());
 
-        String chrom = (String) model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
-        int pos = (Integer) model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
-        String alt = (String) model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_ALT);
+        String chrom = (String)model.getValueAt(r, INDEX_OF_CHROM);
+        int pos = (Integer)model.getValueAt(r, INDEX_OF_POSITION);
+        String alt = (String)model.getValueAt(r, INDEX_OF_ALT);
 
         //Filter by position
         JMenuItem posItem = new JMenuItem("Filter by Position");
@@ -525,15 +524,12 @@ public class TablePanel extends JLayeredPane {
             ThreadController.getInstance().cancelWorkers(pageName);
 
             TableSchema schema = ProjectController.getInstance().getCurrentVariantTableSchema();
-            DbColumn chromColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
-            FilterState chromState = StringListFilterView.wrapState(WhichTable.VARIANT, chromColumn.getName(), VariantFormat.ALIAS_OF_CHROM, Arrays.asList(chrom));
+            FilterState chromState = StringListFilterView.wrapState(WhichTable.VARIANT, CHROM.getColumnName(), CHROM.getAlias(), Arrays.asList(chrom));
 
-            DbColumn posColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION);
-            FilterState posState = NumericFilterView.wrapState(WhichTable.VARIANT, posColumn.getName(), VariantFormat.ALIAS_OF_POSITION, new Range(pos, pos), false);
+            FilterState posState = NumericFilterView.wrapState(WhichTable.VARIANT, POSITION.getColumnName(), POSITION.getAlias(), new Range(pos, pos), false);
 
             if (alt != null) {
-                DbColumn altColumn = schema.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_ALT);
-                FilterState altState = StringListFilterView.wrapState(WhichTable.VARIANT, altColumn.getName(), VariantFormat.ALIAS_OF_ALT, Arrays.asList(alt));
+                FilterState altState = StringListFilterView.wrapState(WhichTable.VARIANT, ALT.getColumnName(), ALT.getAlias(), Arrays.asList(alt));
 
                 GeneticsFilterPage.getSearchBar().loadFilters(chromState, posState, altState);
             } else {
@@ -556,8 +552,8 @@ public class TablePanel extends JLayeredPane {
                 TableModel model = searchableTablePanel.getTable().getModel();
                 int[] selRows = TableModelWrapperUtils.getActualRowsAt(model, searchableTablePanel.getTable().getSelectedRows(), false);
                 for (int r : selRows) {
-                    String chrom = (String) model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_CHROM);
-                    int pos = (Integer) model.getValueAt(r, DefaultVariantTableSchema.INDEX_OF_POSITION);
+                    String chrom = (String) model.getValueAt(r, INDEX_OF_CHROM);
+                    int pos = (Integer) model.getValueAt(r, INDEX_OF_POSITION);
                     regions.add(new GenomicRegion(null, chrom, pos, pos));
                 }
 

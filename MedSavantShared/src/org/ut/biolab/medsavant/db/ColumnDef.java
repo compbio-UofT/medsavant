@@ -53,6 +53,7 @@ public class ColumnDef implements Serializable {
         defaultValue = dflt;
     }
 
+    
     public int getColumnLength() {
         return length;
     }

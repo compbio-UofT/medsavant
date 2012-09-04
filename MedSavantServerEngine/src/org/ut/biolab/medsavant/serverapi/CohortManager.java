@@ -30,7 +30,7 @@ import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import org.ut.biolab.medsavant.db.BasicPatientColumns;
+import org.ut.biolab.medsavant.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.db.MedSavantDatabase;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.CohortTableSchema;
 import org.ut.biolab.medsavant.db.MedSavantDatabase.CohortMembershipTableSchema;

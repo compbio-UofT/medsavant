@@ -75,6 +75,20 @@ public class TableSchema implements Serializable {
         }
     }
 
+    /**
+     * Define a table-schema using a list of column-defs.
+     * @param s the database schema
+     * @param name name for the new table
+     * @param cols a list of column-defs.
+     */
+    public TableSchema(DbSchema s, String name, ColumnDef[] cols) {
+        this(s.addTable(name));
+        autoIncrements = new ArrayList<DbColumn>();
+        for (ColumnDef c: cols) {
+            addColumn(c);
+        }
+    }
+
     public final DbColumn addColumn(String dbName, ColumnType t, int length) {
         DbColumn c = table.addColumn(dbName, t.toString(), length);
         nameToColumn.put(dbName, c);

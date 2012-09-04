@@ -25,7 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.model.Range;
@@ -58,8 +58,8 @@ public abstract class RangeFilter extends Filter {
     public Condition[] getConditions() {
         Condition[] conditions = new Condition[ranges.getSize()];
         TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
-        DbColumn posCol = table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_POSITION);
-        DbColumn chrCol = table.getDBColumn(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM);
+        DbColumn posCol = table.getDBColumn(BasicVariantColumns.POSITION);
+        DbColumn chrCol = table.getDBColumn(BasicVariantColumns.CHROM);
         Object[] chrs = ranges.getChrs();
         int pos = 0;
         for (Object o : chrs) {

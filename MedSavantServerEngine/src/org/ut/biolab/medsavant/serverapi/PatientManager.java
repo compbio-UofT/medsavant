@@ -16,6 +16,7 @@
 
 package org.ut.biolab.medsavant.serverapi;
 
+import org.ut.biolab.medsavant.format.BasicPatientColumns;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -165,7 +166,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         List<String> result = new ArrayList<String>();
 
-        for (CustomField af: BASIC_PATIENT_FIELDS) {
+        for (CustomField af: REQUIRED_PATIENT_FIELDS) {
             result.add(af.getAlias());
         }
 
@@ -177,7 +178,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
     @Override
     public CustomField[] getPatientFields(String sessID, int projID) throws SQLException {
-        CustomField[] defaultFields = BASIC_PATIENT_FIELDS;
+        CustomField[] defaultFields = REQUIRED_PATIENT_FIELDS;
         CustomField[] customFields = getCustomPatientFields(sessID, projID);
         CustomField[] result = new CustomField[defaultFields.length + customFields.length];
         System.arraycopy(defaultFields, 0, result, 0, defaultFields.length);
@@ -483,7 +484,7 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         int i = 0;
         for (DbColumn col : columns) {
             boolean isDefault = false;
-            for (CustomField a: BasicPatientColumns.BASIC_PATIENT_FIELDS) {
+            for (CustomField a: BasicPatientColumns.REQUIRED_PATIENT_FIELDS) {
                 if (col.getColumnNameSQL().equals(a.getColumnName())) {
                     isDefault = true;
                 }

@@ -49,11 +49,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
-import org.ut.biolab.medsavant.db.BasicPatientColumns;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.filter.WhichTable;
+import org.ut.biolab.medsavant.format.BasicPatientColumns;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.ScatterChartEntry;
 import org.ut.biolab.medsavant.model.ScatterChartMap;
@@ -69,7 +69,7 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
  *
  * @author mfiume
  */
-public class SummaryChart extends JLayeredPane {
+public class SummaryChart extends JLayeredPane implements BasicPatientColumns, BasicVariantColumns {
     private static final Log LOG = LogFactory.getLog(SummaryChart.class);
 
     public boolean doesCompareToOriginal() {
@@ -281,14 +281,14 @@ public class SummaryChart extends JLayeredPane {
         rpie.setSelectionColor(Color.gray);
         rbar.setSelectionColor(Color.gray);
 
-        if (this.isSortedKaryotypically()) {
+        if (isSortedKaryotypically()) {
             filteredChartMap.sortKaryotypically();
             if (this.showComparedToOriginal) {
                 unfilteredChartMap.sortKaryotypically();
             }
         }
 
-        if (this.isSorted() && !mapGenerator.isNumeric() && !this.isSortedKaryotypically()) {
+        if (isSorted() && !mapGenerator.isNumeric() && !isSortedKaryotypically()) {
             filteredChartMap.sortNumerically();
             if (this.showComparedToOriginal) {
                 chartMaps[1].sortNumerically();
@@ -626,7 +626,7 @@ public class SummaryChart extends JLayeredPane {
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectID(),
                     generator.getFilterId());
-            if (generator.getFilterId().equals(BasicPatientColumns.GENDER.getColumnName())) {
+            if (generator.getFilterId().equals(GENDER.getColumnName())) {
                 map = ClientMiscUtils.modifyGenderMap(map);
             }
 
@@ -668,10 +668,10 @@ public class SummaryChart extends JLayeredPane {
             String columnX = mapGenerator.getFilterId();
             String columnY = mapGeneratorScatter.getFilterId();
             if (mapGenerator.getTable() == WhichTable.PATIENT) {
-                columnX = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
+                columnX = DNA_ID.getColumnName();
             }
             if (mapGeneratorScatter.getTable() == WhichTable.PATIENT) {
-                columnY = DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID;
+                columnY = DNA_ID.getColumnName();
             }
 
             ScatterChartMap scatterMap =  MedSavantClient.VariantManager.getFilteredFrequencyValuesForScatter(
@@ -703,8 +703,8 @@ public class SummaryChart extends JLayeredPane {
         public void showSuccess(ScatterChartMap result) {
             if (mapGenerator.isNumeric()
                     && mapGeneratorScatter.isNumeric()
-                    && !mapGenerator.getFilterId().equals(BasicPatientColumns.GENDER.getColumnName())
-                    && !mapGeneratorScatter.getFilterId().equals(BasicPatientColumns.GENDER.getColumnName())) {
+                    && !mapGenerator.getFilterId().equals(GENDER.getColumnName())
+                    && !mapGeneratorScatter.getFilterId().equals(GENDER.getColumnName())) {
                 drawSurface(result);
             } else {
                 drawScatterChart(result);

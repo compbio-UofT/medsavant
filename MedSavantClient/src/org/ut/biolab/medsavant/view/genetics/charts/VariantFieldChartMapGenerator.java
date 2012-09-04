@@ -28,11 +28,11 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.api.Listener;
 import org.ut.biolab.medsavant.db.ColumnType;
-import org.ut.biolab.medsavant.db.BasicPatientColumns;
-import org.ut.biolab.medsavant.db.DefaultVariantTableSchema;
 import org.ut.biolab.medsavant.filter.FilterController;
 import org.ut.biolab.medsavant.filter.FilterEvent;
 import org.ut.biolab.medsavant.filter.WhichTable;
+import org.ut.biolab.medsavant.format.BasicPatientColumns;
+import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Range;
@@ -46,7 +46,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author mfiume
  */
-public class VariantFieldChartMapGenerator implements ChartMapGenerator {
+public class VariantFieldChartMapGenerator implements ChartMapGenerator, BasicPatientColumns, BasicVariantColumns {
 
     private final CustomField field;
     private final WhichTable whichTable;
@@ -110,7 +110,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
                     ProjectController.getInstance().getCurrentProjectID(),
                     field.getColumnName());
 
-            if (field.getColumnName().equals(BasicPatientColumns.GENDER.getColumnName())) {
+            if (field.getColumnName().equals(GENDER.getColumnName())) {
                 map = ClientMiscUtils.modifyGenderMap(map);
             }
 
@@ -142,7 +142,7 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
         }
 
         //sort results
-        if (whichTable == WhichTable.VARIANT && field.getColumnName().equals(DefaultVariantTableSchema.COLUMNNAME_OF_CHROM)) {
+        if (whichTable == WhichTable.VARIANT && field.getColumnName().equals(CHROM.getColumnName())) {
             chartMap.sortKaryotypically();
         } else {
             chartMap.sort();
@@ -345,11 +345,11 @@ public class VariantFieldChartMapGenerator implements ChartMapGenerator {
     private List<String> getDNAIDs() throws InterruptedException, SQLException, RemoteException {
         List<String> dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId,
                     ProjectController.getInstance().getCurrentVariantTableName(),
-                    DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID, true);
+                    DNA_ID.getColumnName(), true);
         if (dnaIDs == null) {
             dnaIDs = MedSavantClient.DBUtils.getDistinctValuesForColumn(LoginController.sessionId,
                     ProjectController.getInstance().getCurrentVariantSubTableName(),
-                    DefaultVariantTableSchema.COLUMNNAME_OF_DNA_ID, false);
+                    DNA_ID.getColumnName(), false);
         }
         return dnaIDs;
     }
