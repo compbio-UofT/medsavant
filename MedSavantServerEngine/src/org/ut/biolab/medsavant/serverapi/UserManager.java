@@ -132,7 +132,6 @@ public class UserManager extends MedSavantServerUnicastRemoteObject implements U
                     conn.executePreparedUpdate("GRANT SELECT (user, Create_tmp_table_priv) ON mysql.db TO ?@'localhost'", name);
                     break;
             }
-            conn.executePreparedUpdate(String.format("GRANT INSERT on %s.server_log TO ?@'localhost'", dbName), name);
             LOG.info("... granted.");
         } finally {
             conn.close();

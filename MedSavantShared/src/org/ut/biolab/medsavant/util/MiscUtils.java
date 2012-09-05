@@ -230,7 +230,12 @@ public class MiscUtils {
         } else if (t instanceof ArrayIndexOutOfBoundsException) {
             return "Array index out of bounds";
         } else  {
-            return t.getMessage();
+            // Occasional
+            String result = t.getMessage();
+            if (result == null) {
+                result = t.getClass().getSimpleName();
+            }
+            return result;
         }
     }
 
