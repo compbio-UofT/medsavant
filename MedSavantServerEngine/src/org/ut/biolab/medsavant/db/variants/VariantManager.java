@@ -226,7 +226,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             LOG.info("Adding custom vcf fields");
             makeProgress(sessID, "Adding custom VCF fields...", fract);
             String vcfAnnotatedVariants = sortedVariants + "_vcf";
-            VariantManagerUtils.addCustomVCFFields(sortedVariants, vcfAnnotatedVariants, variantFields, REQUIRED_VARIANT_FIELDS.length); //last of the default fields
+            VariantManagerUtils.addCustomVCFFields(sortedVariants, vcfAnnotatedVariants, variantFields, INDEX_OF_CUSTOM_INFO); //last of the default fields
             fract += CUSTOM_FIELD_FRACTION;
 
             //annotate
@@ -441,7 +441,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
                 if (customFields.length > 0) {
                     String customFieldFilename = currentFilename + "_vcf";
                     filesUsed.add(customFieldFilename);
-                    VariantManagerUtils.addCustomVCFFields(currentFilename, customFieldFilename, customFields, REQUIRED_VARIANT_FIELDS.length); //last of the default fields
+                    VariantManagerUtils.addCustomVCFFields(currentFilename, customFieldFilename, customFields, INDEX_OF_CUSTOM_INFO); //last of the default fields
                     currentFilename = customFieldFilename;
                 }
 

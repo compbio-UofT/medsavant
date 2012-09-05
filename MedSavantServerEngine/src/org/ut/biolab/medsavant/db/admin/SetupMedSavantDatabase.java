@@ -106,9 +106,9 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     }
 
 
-    private void createTables(String sessionId) throws SQLException {
+    private void createTables(String sessID) throws SQLException, RemoteException {
 
-        PooledConnection conn = ConnectionController.connectPooled(sessionId);
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
 
         try {
             conn.executeUpdate(
@@ -121,6 +121,10 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
                       + "PRIMARY KEY (`id`)"
                     + ") ENGINE=MyISAM;"
                     );
+            String[] users = UserManager.getInstance().getUserNames(sessID);
+            for (String u: users) {
+                conn.executePreparedUpdate(String.format("GRANT INSERT ON %s TO ?", MedSavantDatabase.ServerlogTableSchema.getTableName()), u);
+            }
 
             conn.executeUpdate(MedSavantDatabase.RegionSetTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
             conn.executeUpdate(MedSavantDatabase.RegionSetMembershipTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");

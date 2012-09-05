@@ -47,6 +47,7 @@ import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtils;
 import org.ut.biolab.medsavant.db.variants.VariantManager;
 import org.ut.biolab.medsavant.db.variants.VariantManagerUtils;
+import org.ut.biolab.medsavant.format.AnnotationFormat;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.ProjectDetails;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
@@ -185,23 +186,20 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
             tableName += "_sub";
         }
         TableSchema variantSchema = new TableSchema(MedSavantDatabase.schema, tableName, BasicVariantColumns.REQUIRED_VARIANT_FIELDS);
-        for (CustomField field: getCustomVariantFields(sessID, projID, refID, updID)) {
-            variantSchema.addColumn(field.getColumnName(), field.getColumnType(), field.getColumnLength());
+        for (CustomField f: getCustomVariantFields(sessID, projID, refID, updID)) {
+            variantSchema.addColumn(f);
         }
 
         PooledConnection conn = ConnectionController.connectPooled(sessID);
 
         try {
-            String query = variantSchema.getCreateQuery().toString();
-
-            // Add each annotation
-            for (int ann : annIDs) {
-                query += getAnnotationSchema(sessID, ann);
+            for (int ann: annIDs) {
+                AnnotationFormat annFmt = AnnotationManager.getInstance().getAnnotationFormat(sessID, ann);
+                for (CustomField f: annFmt.getCustomFields()) {
+                    variantSchema.addColumn(f);
+                }
             }
-
-            query = query.substring(0, query.length() - 1); //remove last comma
-            query += ") ENGINE=BRIGHTHOUSE;";
-            conn.executeUpdate(query);
+            conn.executeUpdate(variantSchema.getCreateQuery() + " ENGINE=BRIGHTHOUSE DEFAULT CHARSET=latin1 COLLATE=latin1_bin;");
         } finally {
             conn.close();
         }
@@ -243,10 +241,6 @@ public class ProjectManager extends MedSavantServerUnicastRemoteObject implement
         }
 
         ConnectionController.executeUpdate(sessID, query.toString());
-    }
-
-    private static String getAnnotationSchema(String sessID, int annotationID) throws RemoteException, SQLException {
-        return AnnotationManager.getInstance().getAnnotationFormat(sessID, annotationID).generateSchema();
     }
 
     /*

@@ -57,20 +57,6 @@ public class AnnotationFormat implements Serializable {
         this.type = type;
     }
 
-    public String generateSchema(){
-        String result = "";
-
-        //add custom columns
-        for(int i = 0; i < fields.length; i++){
-            CustomField field = fields[i];
-            String columnName = field.getColumnName();
-            String columnType = field.getTypeString();
-            result += "`" + columnName + "` " + columnType + " DEFAULT NULL,";
-        }
-
-        return result;
-    }
-
     public int getNumNonDefaultFields(){
         return fields.length;
     }

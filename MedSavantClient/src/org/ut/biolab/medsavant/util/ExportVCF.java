@@ -73,12 +73,12 @@ public class ExportVCF implements BasicVariantColumns {
 
         //info fields
         TableSchema table = ProjectController.getInstance().getCurrentVariantTableSchema();
-        String[] customColumnNames = new String[table.getNumFields() - REQUIRED_VARIANT_FIELDS.length - 1];
+        String[] customColumnNames = new String[table.getNumFields() - INDEX_OF_CUSTOM_INFO - 1];
         List<DbColumn> allColumns = table.getColumns();
-        for (int i = REQUIRED_VARIANT_FIELDS.length + 2; i <= table.getNumFields(); i++) {
-            customColumnNames[i - 2 - REQUIRED_VARIANT_FIELDS.length] = allColumns.get(i).getColumnNameSQL().toUpperCase();
+        for (int i = INDEX_OF_CUSTOM_INFO + 2; i <= table.getNumFields(); i++) {
+            customColumnNames[i - 2 - INDEX_OF_CUSTOM_INFO] = allColumns.get(i).getColumnNameSQL().toUpperCase();
         }
-        int infoMin = REQUIRED_VARIANT_FIELDS.length + 1;
+        int infoMin = INDEX_OF_CUSTOM_INFO + 1;
         int infoMax = table.getNumFields();
 
         BufferedReader in = new BufferedReader(new FileReader(destFile));
