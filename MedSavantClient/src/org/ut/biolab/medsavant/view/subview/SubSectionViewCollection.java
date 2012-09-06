@@ -42,7 +42,8 @@ public class SubSectionViewCollection extends SubSectionView {
     private final ButtonGroup buttonGroup;
     private JPanel contentPanel;
     private SubSectionView currentView;
-
+    private String firstPageName;
+    boolean firstPageShown = false;
 
     public SubSectionViewCollection(SectionView parent, String page) {
         super(parent, page);
@@ -141,7 +142,7 @@ public class SubSectionViewCollection extends SubSectionView {
         buttonGroup.add(button);
         menuComponents.add(button);
 
-        if (this.subsectionMap.keySet().size() == 1) {
+        if (subsectionMap.keySet().size() == 1) {
             button.setSelected(true);
             firstPageName = v.getPageName();
         }
@@ -168,7 +169,7 @@ public class SubSectionViewCollection extends SubSectionView {
         if (currentView != null) {
             currentView.viewDidUnload();
         }
-        currentView = this.subsectionMap.get(pageName);
+        currentView = subsectionMap.get(pageName);
         contentPanel.removeAll();
         contentPanel.add(currentView.getView(false),BorderLayout.CENTER);
         contentPanel.updateUI();
@@ -180,15 +181,15 @@ public class SubSectionViewCollection extends SubSectionView {
         return panel;
     }
 
-    private String firstPageName;
-    boolean firstPageShown = false;
     @Override
     public void viewDidLoad() {
-        if (!firstPageShown) {
-            this.setPage(firstPageName);
+        if (!firstPageShown && firstPageName != null) {
+            setPage(firstPageName);
             firstPageShown = true;
         }
-        currentView.viewDidLoad();
+        if (currentView != null) {
+            currentView.viewDidLoad();
+        }
     }
 
     @Override
