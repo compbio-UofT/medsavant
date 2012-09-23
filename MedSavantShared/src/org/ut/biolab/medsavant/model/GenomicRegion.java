@@ -27,7 +27,7 @@ import org.ut.biolab.medsavant.util.ChromosomeComparator;
  * @author mfiume
  */
 public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
-    
+
     private final String name;
     private final String chrom;
     private final int start;
@@ -54,7 +54,7 @@ public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
     public static GenomicRegion fromString(String str) {
         String name = null, chrom = null;
         int start = 0, end = 0;
-        
+
         String[] strs = str.split(":");
         if (strs.length == 2) {
             int pos = strs[0].lastIndexOf(' ');
@@ -65,7 +65,7 @@ public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
                 // No name, just a chromosome.
                 chrom = strs[0];
             }
-            
+
             strs = strs[1].split("-");
             if (strs.length == 2) {
                 start = Integer.valueOf(strs[0]);
@@ -86,13 +86,13 @@ public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
     public int getStart() {
         return start;
     }
-    
+
     public int getEnd() {
         return end;
     }
-    
+
     public static Map<String, List<Range>> mergeGenomicRegions(Collection<GenomicRegion> regions) {
-        
+
         //separate by chr
         Map<String, List<Range>> chrMap = new HashMap<String, List<Range>>();
         for (GenomicRegion r: regions) {
@@ -103,15 +103,19 @@ public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
                 chrMap.get(r.getChrom()).add(new Range(r.getStart(), r.getEnd()));
             }
         }
-        
+
         //sort by start position
         Map<String, List<Range>> result = new HashMap<String, List<Range>>();
         for (String chrom: chrMap.keySet()) {
             List<Range> list = chrMap.get(chrom);
             result.put(chrom, Range.merge(list));
         }
-        
+
         return result;
+    }
+
+    public int getLength() {
+        return this.getEnd()-this.getStart()+1;
     }
 
     @Override
@@ -127,4 +131,6 @@ public class GenomicRegion implements Serializable, Comparable<GenomicRegion> {
         }
         return name.compareTo(t.name);
     }
+
+
 }

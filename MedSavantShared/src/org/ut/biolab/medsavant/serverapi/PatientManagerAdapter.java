@@ -60,4 +60,5 @@ public interface PatientManagerAdapter extends Remote {
     public List<String> parseDNAIDs(String s) throws RemoteException;
     public List<String> getDNAIDsForHPOID(String sessID, int pid, String id) throws SQLException, RemoteException;
     public boolean hasOptionalField(String sessID, int pid, String fieldName) throws SQLException, RemoteException;
+    public String getReadAlignmentPathForDNAID(String sessID, int pid, String dnaID) throws SQLException, RemoteException;
 }
