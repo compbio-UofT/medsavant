@@ -740,4 +740,28 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         String tableName = getPatientTableName(sessID, pid);
         return DBUtils.fieldExists(sessID, tableName, MedSavantDatabaseExtras.OPTIONAL_PATIENT_FIELD_HPO);
     }
+
+    @Override
+    public String getReadAlignmentPathForDNAID(String sessID, int projID, String dnaID) throws SQLException, RemoteException {
+
+        String tablename = getPatientTableName(sessID, projID);
+        TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
+
+        SelectQuery q1 = new SelectQuery();
+        q1.addFromTable(table.getTable());
+        q1.addColumns(table.getDBColumn(BAM_URL));
+        q1.addCondition(BinaryCondition.like(table.getDBColumn(DNA_IDS), dnaID));
+
+        ResultSet rs1 = ConnectionController.executeQuery(sessID, q1.toString());
+
+        String bamURL = null;
+
+        //List<String> ids = new ArrayList<String>();
+        while (rs1.next()) {
+            bamURL = rs1.getString(1);
+            if (bamURL.equals("")) { bamURL = null; }
+        }
+
+        return bamURL;
+    }
 }
