@@ -77,8 +77,9 @@ public class GeneInspector extends CollapsibleInspector {
 
 
         addSubInspector(new BasicGeneSubInspector());
-        addSubInspector(new GeneManiaInfoSubPanel());
         addSubInspector(new OntologySubInspector());
+        addSubInspector(new GeneManiaInfoSubPanel());
+
     }
 
     @Override

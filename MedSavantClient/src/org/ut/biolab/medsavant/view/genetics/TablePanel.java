@@ -32,6 +32,8 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
+import java.awt.Color;
+import java.awt.Dimension;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -55,6 +57,8 @@ import org.ut.biolab.medsavant.region.RegionSetFilterView;
 import org.ut.biolab.medsavant.util.*;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
+import org.ut.biolab.medsavant.view.genetics.charts.Ring;
+import org.ut.biolab.medsavant.view.genetics.charts.RingChart;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
@@ -66,8 +70,6 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
 public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
     private static final Log LOG = LogFactory.getLog(TablePanel.class);
-
-
     private WaitPanel waitPanel;
     private boolean tableInitialized = false;
     private boolean updateRequired = true;
@@ -77,12 +79,12 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     private Map<Integer, List<VariantComment>> starMap = new HashMap<Integer, List<VariantComment>>();
     private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
     private final JPanel activePanel;
-
     private final JPanel summaryContainer;
     private final JPanel tableContainer;
     private SearchableTablePanel searchableTablePanel;
-
     private final MedSavantWorker tableInitializer;
+    private boolean isTableShowing;
+    private RingChart ringChart;
 
     public TablePanel(String page) {
 
@@ -108,14 +110,13 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         activePanel.setLayout(new BorderLayout());
         add(activePanel, c, JLayeredPane.DEFAULT_LAYER);
 
-        waitPanel = new WaitPanel("Generating List View");
+        waitPanel = new WaitPanel("Retrieving variants");
 
         add(waitPanel, c, JLayeredPane.MODAL_LAYER);
 
         showWaitCard();
 
         tableInitializer = new MedSavantWorker(pageName) {
-
             @Override
             protected Object doInBackground() throws Exception {
 
@@ -144,6 +145,24 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                                 break;
                         }
 
+                        // hide all but some VCF fields
+                        if (af.getProgram().equals(AnnotationFormat.ANNOTATION_FORMAT_DEFAULT) &&
+                                field.getColumnName().equals(CHROM.getColumnName())
+                                || field.getColumnName().equals(POSITION.getColumnName())
+                                || field.getColumnName().equals(DNA_ID.getColumnName())
+                                || field.getColumnName().equals(ZYGOSITY.getColumnName())
+                                || field.getColumnName().equals(REF.getColumnName())
+                                || field.getColumnName().equals(ALT.getColumnName())
+                                || field.getColumnName().equals(QUAL.getColumnName())
+                                || field.getColumnName().equals(DBSNP_ID.getColumnName())
+                                | field.getColumnName().equals(VARIANT_TYPE.getColumnName())
+                                ) {
+                            // do nothing
+                        } else {
+                            hiddenColumns.add(fieldNames.size() - 1);
+                        }
+
+                        /*
                         //only show some vcf fields
                         if (!(af.getProgram().equals(AnnotationFormat.ANNOTATION_FORMAT_DEFAULT)
                                 && !(field.getColumnName().equals(UPLOAD_ID.getColumnName()))
@@ -157,6 +176,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                             //|| af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_CUSTOM_VCF))) {
                             hiddenColumns.add(fieldNames.size() - 1);
                         }
+                        */
                     }
                 }
                 if (isCancelled()) {
@@ -164,7 +184,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                 }
 
                 final DataRetriever<Object[]> retriever = new DataRetriever<Object[]>() {
-
                     @Override
                     public List<Object[]> retrieve(int start, int limit) {
                         LOG.info("Retrieving data for TablePanel");
@@ -201,7 +220,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                 };
 
                 final SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames.toArray(new String[0]), fieldClasses.toArray(new Class[0]), MiscUtils.toIntArray(hiddenColumns), 1000, retriever) {
-
                     @Override
                     public String getToolTip(int actualRow) {
                         if (starMap.get(actualRow) != null && !starMap.get(actualRow).isEmpty()) {
@@ -223,7 +241,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                 };
 
                 stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-
                     @Override
                     public void valueChanged(ListSelectionEvent e) {
 
@@ -235,9 +252,9 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                         if (selRows.length > 0) {
                             int rowToFetch = selRows[0];
 
-                            int uploadID = (Integer)stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_UPLOAD_ID);
-                            int fileID = (Integer)stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_FILE_ID);
-                            int variantID = (Integer)stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_VARIANT_ID);
+                            int uploadID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_UPLOAD_ID);
+                            int fileID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_FILE_ID);
+                            int variantID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_VARIANT_ID);
 
                             DbColumn uIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(UPLOAD_ID);
                             DbColumn fIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(FILE_ID);
@@ -266,31 +283,31 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                             Object[] row = rows.get(0);
 
                             VariantRecord r = new VariantRecord(
-                                    (Integer)row[INDEX_OF_UPLOAD_ID],
-                                    (Integer)row[INDEX_OF_FILE_ID],
-                                    (Integer)row[INDEX_OF_VARIANT_ID],
-                                    (Integer)ReferenceController.getInstance().getCurrentReferenceID(),
-                                    (Integer)0, // pipeline ID
-                                    (String)row[INDEX_OF_DNA_ID],
-                                    (String)row[INDEX_OF_CHROM],
-                                    (Integer)row[INDEX_OF_POSITION],
-                                    (String)row[INDEX_OF_DBSNP_ID],
-                                    (String)row[INDEX_OF_REF],
-                                    (String)row[INDEX_OF_ALT],
-                                    (Float)row[INDEX_OF_QUAL],
-                                    (String)row[INDEX_OF_FILTER],
-                                    (String)row[INDEX_OF_CUSTOM_INFO],
+                                    (Integer) row[INDEX_OF_UPLOAD_ID],
+                                    (Integer) row[INDEX_OF_FILE_ID],
+                                    (Integer) row[INDEX_OF_VARIANT_ID],
+                                    (Integer) ReferenceController.getInstance().getCurrentReferenceID(),
+                                    (Integer) 0, // pipeline ID
+                                    (String) row[INDEX_OF_DNA_ID],
+                                    (String) row[INDEX_OF_CHROM],
+                                    (Integer) row[INDEX_OF_POSITION],
+                                    (String) row[INDEX_OF_DBSNP_ID],
+                                    (String) row[INDEX_OF_REF],
+                                    (String) row[INDEX_OF_ALT],
+                                    (Float) row[INDEX_OF_QUAL],
+                                    (String) row[INDEX_OF_FILTER],
+                                    (String) row[INDEX_OF_CUSTOM_INFO],
                                     new Object[]{});
 
-                            String type = (String)row[INDEX_OF_VARIANT_TYPE];
-                            String zygosity = (String)row[INDEX_OF_ZYGOSITY];
-                            String genotype = (String)row[INDEX_OF_GT];
+                            String type = (String) row[INDEX_OF_VARIANT_TYPE];
+                            String zygosity = (String) row[INDEX_OF_ZYGOSITY];
+                            String genotype = (String) row[INDEX_OF_GT];
 
                             r.setType(VariantRecord.VariantType.valueOf(type));
                             r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
                             r.setGenotype(genotype);
 
-                            for (VariantSelectionChangedListener l: listeners) {
+                            for (VariantSelectionChangedListener l : listeners) {
                                 l.variantSelectionChanged(r);
                             }
                         }
@@ -300,7 +317,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                 stp.setExportButtonVisible(false);
 
                 stp.getTable().addMouseListener(new MouseAdapter() {
-
                     @Override
                     public void mouseReleased(MouseEvent e) {
 
@@ -337,8 +353,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             protected void showSuccess(Object result) {
                 LOG.info("DONE INITING TABLE");
                 tableContainer.removeAll();
-                searchableTablePanel = (SearchableTablePanel)result;
-                tableContainer.add(searchableTablePanel,BorderLayout.CENTER);
+                searchableTablePanel = (SearchableTablePanel) result;
+                tableContainer.add(searchableTablePanel, BorderLayout.CENTER);
                 tableContainer.updateUI();
                 tableInitialized = true;
                 updateRequired = true;
@@ -348,9 +364,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     }
 
     private void showWaitCard() {
-        LOG.info("WAITING...");
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 waitPanel.setVisible(true);
@@ -361,9 +375,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     }
 
     private void showShowCard() {
-         LOG.info("SHOWING...");
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 waitPanel.setVisible(false);
@@ -377,35 +389,26 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         return tableInitialized;
     }
 
-    void setUpdateRequired(boolean b) {
+    void queueUpdate(boolean b) {
         updateRequired = b;
+        this.updateIfNecessary();
+    }
+
+    void setIsTableShowing(boolean b) {
+        isTableShowing = b;
+        this.updateIfNecessary();
     }
 
     public static void addVariantSelectionChangedListener(VariantSelectionChangedListener l) {
         listeners.add(l);
     }
 
-    public void update() {
-        LOG.info("Showing wait card");
-
-        showWaitCard();
-
-        boolean tableIsShowing = false;
-        /*try {
-            tableIsShowing = ResultController.getInstance().getFilteredVariantCount() < 1000000;
-        } catch (Exception ex) {
-        }
-        * 
-        */
-        if (tableIsShowing) {
-            updateRequired = true;
-            updateTableIfRequired();
-        } else {
-            updateSummary();
-            setActivePanel(false);
-            showShowCard();
+    public void updateIfNecessary() {
+        if (this.updateRequired && this.isTableShowing) {
+            forceTableRefresh();
         }
     }
+    //int lastNumPassingVariants = -1;
 
     private void updateSummary() {
         try {
@@ -414,11 +417,38 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             final JPanel blockPanel = new JPanel();
             ViewUtil.applyVerticalBoxLayout(blockPanel);
 
+            ringChart = new RingChart();
+            int ringDiameter = 300;
+            ringChart.setMinimumSize(new Dimension(ringDiameter, ringDiameter));
+            ringChart.setMaximumSize(new Dimension(ringDiameter, ringDiameter));
+            ringChart.setPreferredSize(new Dimension(ringDiameter, ringDiameter));
+            Vector<Ring> rings = new Vector<Ring>();
+            Ring r1 = new Ring();
+            r1.addItem("Pass all filters", numPassingVariants, new Color(72, 181, 249));
+            r1.addItem("Don't pass filters", ResultController.getInstance().getTotalVariantCount() - numPassingVariants, Color.gray);
+            rings.add(r1);
+
+            /*
+             if (lastNumPassingVariants != -1) {
+             if (numPassingVariants < lastNumPassingVariants) {
+             Ring r2 = new Ring();
+             r2.addItem("Passed last filter", numPassingVariants, Color.green);
+             r2.addItem("Didn't pass last filter", lastNumPassingVariants-numPassingVariants, Color.gray);
+             rings.add(r2);
+             }
+             }
+
+             lastNumPassingVariants = numPassingVariants;
+             */
+
+            ringChart.setRings(rings);
+
+
+
 
             JButton b = ViewUtil.getSoftButton("Load Spreadsheet");
 
             b.addActionListener(new ActionListener() {
-
                 @Override
                 public void actionPerformed(ActionEvent ae) {
 
@@ -434,7 +464,12 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             });
 
 
-            blockPanel.add(ViewUtil.centerHorizontally(new JLabel(ViewUtil.numToString(numPassingVariants) + " match your search conditions")));
+            FilterEffectivenessPanel fep = new FilterEffectivenessPanel();
+            fep.updateNumRemaining();
+
+            blockPanel.add(ViewUtil.centerHorizontally(ringChart));
+            blockPanel.add(Box.createVerticalStrut(5));
+            blockPanel.add(fep);
             blockPanel.add(Box.createVerticalStrut(5));
             blockPanel.add(ViewUtil.centerHorizontally(b));
 
@@ -444,8 +479,9 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             centered.add(blockPanel);
             centered.add(Box.createVerticalGlue());
 
+
             summaryContainer.removeAll();
-            summaryContainer.add(ViewUtil.centerHorizontally(centered),BorderLayout.CENTER);
+            summaryContainer.add(ViewUtil.centerHorizontally(centered), BorderLayout.CENTER);
 
         } catch (Exception ex) {
             LOG.error(TablePanel.class, ex);
@@ -477,9 +513,9 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         TableModel model = searchableTablePanel.getTable().getModel();
         int r = TableModelWrapperUtils.getActualRowAt(model, searchableTablePanel.getTable().getSelectedRow());
 
-        String chrom = (String)model.getValueAt(r, INDEX_OF_CHROM);
-        int pos = (Integer)model.getValueAt(r, INDEX_OF_POSITION);
-        String alt = (String)model.getValueAt(r, INDEX_OF_ALT);
+        String chrom = (String) model.getValueAt(r, INDEX_OF_CHROM);
+        int pos = (Integer) model.getValueAt(r, INDEX_OF_POSITION);
+        String alt = (String) model.getValueAt(r, INDEX_OF_ALT);
 
         //Filter by position
         JMenuItem posItem = new JMenuItem("Filter by Position");
@@ -503,8 +539,13 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         activePanel.removeAll();
         activePanel.add(p, BorderLayout.CENTER);
         activePanel.updateUI();
+    }
 
-
+    private void forceTableRefresh() {
+        showWaitCard();
+        updateSummary();
+        setActivePanel(false);
+        showShowCard();
     }
 
     private class PopupActionListener implements ActionListener {
@@ -543,7 +584,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
         JMenuItem posItem = new JMenuItem("Filter by Selected Positions");
         posItem.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 ThreadController.getInstance().cancelWorkers(pageName);

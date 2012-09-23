@@ -106,7 +106,7 @@ public class SearchBar extends JPanel {
         setOpaque(false);
         setLayout(new GridBagLayout());
 
-        FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel();
+        FilterEffectivenessPanel effectivenessPanel = new FilterEffectivenessPanel(Color.white);
 
         queryPanelContainer = ViewUtil.getClearPanel();
         queryPanelContainer.setLayout(new BoxLayout(queryPanelContainer, BoxLayout.Y_AXIS));
@@ -151,7 +151,7 @@ public class SearchBar extends JPanel {
 
         savedFiltersPanel = new SavedFiltersPanel();
         savedFiltersPanel.setVisible(false);
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -171,7 +171,7 @@ public class SearchBar extends JPanel {
         gbc.gridx++;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         add(savedFiltersButton, gbc);
-        
+
         gbc.gridx = 0;
         gbc.gridy++;
         add(historyPanel, gbc);

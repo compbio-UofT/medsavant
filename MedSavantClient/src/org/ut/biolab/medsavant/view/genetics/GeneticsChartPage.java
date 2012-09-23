@@ -44,7 +44,7 @@ public class GeneticsChartPage extends SubSectionView {
     private boolean isLoaded = false;
 
     public GeneticsChartPage(SectionView parent) {
-        super(parent, "Chart");
+        super(parent, "Trends");
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
             public void handleEvent(FilterEvent event) {

@@ -46,7 +46,7 @@
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <Component id="geneLimit" min="-2" pref="40" max="-2" attributes="0"/>
+                                      <Component id="geneLimit" min="-2" pref="60" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="relatedGenes" min="-2" max="-2" attributes="0"/>
                                   </Group>

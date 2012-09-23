@@ -37,7 +37,6 @@ import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.util.PeekingPanel;
 
-
 /**
  *
  * @author mfiume
@@ -46,8 +45,6 @@ public class GeneticsTablePage extends SubSectionView {
 
     private JPanel panel;
     private TablePanel tablePanel;
-    private GenomeContainer genomeContainer;
-    private PeekingPanel genomeView;
     private Component[] settingComponents;
     private PeekingPanel detailView;
 
@@ -56,15 +53,14 @@ public class GeneticsTablePage extends SubSectionView {
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
             public void handleEvent(FilterEvent event) {
-                updateContents();
+                queueTableUpdate();
             }
-
         });
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
             @Override
             public void handleEvent(ReferenceEvent event) {
                 if (event.getType() == ReferenceEvent.Type.CHANGED) {
-                    updateContents();
+                    queueTableUpdate();
                 }
             }
         });
@@ -73,9 +69,8 @@ public class GeneticsTablePage extends SubSectionView {
     @Override
     public Component[] getSubSectionMenuComponents() {
         if (settingComponents == null) {
-            settingComponents = new Component[2];
+            settingComponents = new Component[1];
             settingComponents[0] = PeekingPanel.getCheckBoxForPanel(detailView, "Inspector");
-            settingComponents[1] = PeekingPanel.getCheckBoxForPanel(genomeView, "Browser");
         }
         return settingComponents;
     }
@@ -86,10 +81,16 @@ public class GeneticsTablePage extends SubSectionView {
             if (panel == null || update) {
                 ThreadController.getInstance().cancelWorkers(pageName);
                 setPanel();
-            } else {
-                tablePanel.update();
-                genomeContainer.updateIfRequired();
             }
+
+            /*else {
+             tablePanel.update();
+             genomeContainer.updateIfRequired();
+             }
+             */
+
+            return panel;
+
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error generating genome view: %s", ex);
         }
@@ -101,50 +102,36 @@ public class GeneticsTablePage extends SubSectionView {
         panel.setLayout(new BorderLayout());
 
         Chromosome[] chroms = MedSavantClient.ReferenceManager.getChromosomes(LoginController.sessionId, ReferenceController.getInstance().getCurrentReferenceID());
-        genomeContainer = new GenomeContainer(pageName, chroms);
-
-        genomeView = new PeekingPanel("Genome", BorderLayout.SOUTH, genomeContainer, false, 225);
-        genomeView.setToggleBarVisible(false);
 
         JTabbedPane inspectorPanel = InspectorPanel.getInstance();
 
         detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, 380);
         detailView.setToggleBarVisible(false);
 
-        panel.add(genomeView, BorderLayout.NORTH);
         panel.add(detailView, BorderLayout.EAST);
 
         tablePanel = new TablePanel(pageName);
         panel.add(tablePanel, BorderLayout.CENTER);
     }
 
-
-
     @Override
     public void viewDidLoad() {
         super.viewDidLoad();
-        tablePanel.update();
-        genomeContainer.updateIfRequired();
+        tablePanel.updateIfNecessary();
+        tablePanel.setIsTableShowing(true);
     }
 
     @Override
     public void viewDidUnload() {
-        if (tablePanel != null && !tablePanel.isInit()) {
-            setUpdateRequired(true);
-        }
         super.viewDidUnload();
+        tablePanel.setIsTableShowing(false);
     }
 
-    public void updateContents() {
+    public void queueTableUpdate() {
         ThreadController.getInstance().cancelWorkers(pageName);
-        if (tablePanel == null || genomeContainer == null) {
+        if (tablePanel == null) {
             return;
         }
-        tablePanel.setUpdateRequired(true);
-        genomeContainer.setUpdateRequired(true);
-        if (loaded) {
-            tablePanel.update();
-            genomeContainer.updateIfRequired();
-        }
+        tablePanel.queueUpdate(true);
     }
 }

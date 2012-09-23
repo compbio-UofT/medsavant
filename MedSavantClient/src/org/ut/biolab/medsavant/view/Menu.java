@@ -20,7 +20,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.*;
 
 import org.ut.biolab.medsavant.api.Listener;
@@ -55,8 +57,11 @@ public class Menu extends JPanel {
     private final JPanel sectionMenu;
     private JPanel previousSectionPanel;
 
+    Map<SubSectionView,SubSectionButton> map;
 
     public Menu(JPanel panel) {
+
+        resetMap();
 
         sectionButtons = new ButtonGroup();
 
@@ -109,6 +114,7 @@ public class Menu extends JPanel {
                     contentContainer.removeAll();
                     ViewController.getInstance().changeSubSectionTo(null);
                     currentView = null;
+                    resetMap();
                 }
             }
         });
@@ -129,6 +135,7 @@ public class Menu extends JPanel {
         return secondaryMenu;
     }
 
+
     public void addSection(SectionView section) {
 
         JPanel sectionPanel = ViewUtil.getClearPanel();
@@ -142,9 +149,11 @@ public class Menu extends JPanel {
         for (SubSectionView v : section.getSubSections()) {
             subSectionViews.add(v);
 
-            HoverButton subSectionButton = new SubSectionButton(v, subSectionsGroup);
+            SubSectionButton subSectionButton = new SubSectionButton(v, subSectionsGroup);
             sectionPanel.add(subSectionButton);
             subSectionsGroup.add(subSectionButton);
+
+            map.put(v,subSectionButton);
         }
 
         sectionButtons.add(sectionButton);
@@ -171,7 +180,11 @@ public class Menu extends JPanel {
         }
     }
 
-    void setContentTo(SubSectionView v, boolean update) {
+    public void switchToSubSection(SubSectionView view){
+        map.get(view).subSectionClicked();
+    }
+
+    public void setContentTo(SubSectionView v, boolean update) {
         currentView = v;
         contentContainer.removeAll();
         contentContainer.add(v.getView(update || v.isUpdateRequired()), BorderLayout.CENTER);
@@ -217,6 +230,10 @@ public class Menu extends JPanel {
         secondaryMenu.add(sectionDetailedMenu);
 
         primaryMenu.add(primaryGlue);
+    }
+
+    private void resetMap() {
+        map = new HashMap<SubSectionView,SubSectionButton>();
     }
 
     class SectionButton extends HoverButton {
@@ -268,7 +285,7 @@ public class Menu extends JPanel {
             });
         }
 
-        private void subSectionClicked() {
+        public void subSectionClicked() {
             group.setSelected(getModel(), true);
             setContentTo(view, false);
         }

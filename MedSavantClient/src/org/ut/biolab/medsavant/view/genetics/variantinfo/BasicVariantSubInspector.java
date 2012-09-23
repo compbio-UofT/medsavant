@@ -13,7 +13,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
 import java.awt.Component;
@@ -25,14 +24,22 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
+import org.ut.biolab.medsavant.MedSavantClient;
 
 import org.ut.biolab.medsavant.geneset.GeneSetController;
+import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
+import org.ut.biolab.medsavant.project.ProjectController;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
+import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
 import org.ut.biolab.medsavant.view.genetics.inspector.GeneInspector;
 import org.ut.biolab.medsavant.view.genetics.inspector.InspectorPanel;
@@ -40,6 +47,12 @@ import org.ut.biolab.medsavant.view.genetics.inspector.VariantInspector;
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+import org.ut.biolab.medsavant.view.variants.BrowserPage;
+import savant.api.data.DataFormat;
+import savant.controller.LocationController;
+import savant.controller.TrackController;
+import savant.util.Range;
+import savant.view.swing.Savant;
 
 /**
  *
@@ -48,7 +61,6 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class BasicVariantSubInspector extends SubInspector implements VariantSelectionChangedListener {
 
     private static String KEY_DNAID = "DNA ID";
-    private static String KEY_CHROM = "Chrom";
     private static String KEY_POSITION = "Position";
     private static String KEY_GENES = "Genes";
     private static String KEY_REF = "Reference";
@@ -57,12 +69,11 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
     private static String KEY_DBSNP = "dbSNP ID";
     private static String KEY_TYPE = "Type";
     private static String KEY_ZYGOSITY = "Zygosity";
-
-
     private static String KEY_INFO = "Info";
     private Collection<Gene> genes;
     private KeyValuePairPanel p;
     private JComboBox geneBox;
+    private VariantRecord selectedVariant;
 
     public BasicVariantSubInspector() {
         VariantInspector.addVariantSelectionChangedListener(this);
@@ -79,7 +90,6 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
         if (p == null) {
             p = new KeyValuePairPanel(4);
             p.addKey(KEY_DNAID);
-            p.addKey(KEY_CHROM);
             p.addKey(KEY_POSITION);
             p.addKey(KEY_REF);
             p.addKey(KEY_ALT);
@@ -99,10 +109,48 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
             geneBox.setMaximumSize(new Dimension(geneDropdownWidth, 30));
             p.setValue(KEY_GENES, geneBox);
 
+            JButton genomeBrowserButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BROWSER));
+            genomeBrowserButton.setToolTipText("View region in genome browser");
+            genomeBrowserButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    LocationController.getInstance().setLocation(selectedVariant.getChrom(), new Range((int) (selectedVariant.getPosition() - 20), (int) (selectedVariant.getPosition() + 21)));
+                    ViewController.getInstance().getMenu().switchToSubSection(BrowserPage.getInstance());
+                }
+            });
+
+            JButton bamButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BAMFILE));
+            bamButton.setToolTipText("<html>Load read alignments for this<br/> sample in genome browser</html>");
+            bamButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+
+                    String dnaID = selectedVariant.getDnaID();
+                    String bamPath;
+                    try {
+                        bamPath = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
+                                LoginController.sessionId,
+                                ProjectController.getInstance().getCurrentProjectID(),
+                                dnaID);
+                        if (bamPath != null && !bamPath.equals("")) {
+                            /*int response = DialogUtils.askYesNo("Load Read Alignments",
+                             "<html>The read alignments for this sample<br>"
+                             + "are available. Would you like to load them<br>"
+                             + "as a track in the genome browser?</html>");*/
+                            int response = DialogUtils.YES;
+                            if (response == DialogUtils.YES) {
+                                BrowserPage.addTrackFromURLString(bamPath, DataFormat.ALIGNMENT);
+                            }
+                        }
+                    } catch (Exception ex) {
+                        Logger.getLogger(BasicVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            });
+
             JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
             geneInspectorButton.setToolTipText("Inspect this gene");
             geneInspectorButton.addActionListener(new ActionListener() {
-
                 @Override
                 public void actionPerformed(ActionEvent ae) {
                     GeneInspector.getInstance().setGene((Gene) (geneBox).getSelectedItem());
@@ -119,7 +167,6 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
             ViewUtil.makeSmall(button);
             button.setToolTipText("Toggle Info");
             button.addActionListener(new ActionListener() {
-
                 @Override
                 public void actionPerformed(ActionEvent ae) {
                     p.toggleDetailVisibility(KEY_INFO);
@@ -131,12 +178,15 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
 
             int col = 0;
 
-            p.setAdditionalColumn(KEY_DNAID, col, getCopyButton(KEY_DNAID));
-            p.setAdditionalColumn(KEY_DBSNP, col, getCopyButton(KEY_DBSNP));
+            p.setAdditionalColumn(KEY_DNAID, col, KeyValuePairPanel.getCopyButton(KEY_DNAID,p));
+            p.setAdditionalColumn(KEY_DBSNP, col, KeyValuePairPanel.getCopyButton(KEY_DBSNP,p));
+            p.setAdditionalColumn(KEY_POSITION, col, KeyValuePairPanel.getCopyButton(KEY_POSITION,p));
             p.setAdditionalColumn(KEY_QUAL, col, getChartButton(KEY_QUAL));
 
             col++;
             p.setAdditionalColumn(KEY_DBSNP, col, getNCBIButton(KEY_DBSNP));
+            p.setAdditionalColumn(KEY_POSITION, col, genomeBrowserButton);
+            p.setAdditionalColumn(KEY_DNAID, col, bamButton);
 
         }
         return p;
@@ -160,29 +210,50 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
 
     @Override
     public void variantSelectionChanged(VariantRecord r) {
-        if (p == null) {
-            return;
+        try {
+            if (p == null) {
+                return;
+            }
+            if (r == null) {
+                // TODO show other card
+                return;
+            }
+
+            selectedVariant = r;
+
+            p.setValue(KEY_DNAID, r.getDnaID());
+            p.setValue(KEY_POSITION, r.getChrom() + ":"  + ViewUtil.numToString(r.getPosition()));
+            p.setValue(KEY_REF, r.getRef());
+            p.setValue(KEY_ALT, r.getAlt());
+
+            p.setValue(KEY_TYPE, checkNull(r.getType()));
+            p.setValue(KEY_ZYGOSITY, checkNull(r.getZygosity()));
+
+            p.setValue(KEY_QUAL, ViewUtil.numToString(r.getQual()));
+            p.setValue(KEY_DBSNP, checkNull(r.getDbSNPID()));
+
+            p.setDetailComponent(KEY_INFO, getInfoKVPPanel(r.getCustomInfo()));
+
+            String bamPath = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
+                    LoginController.sessionId,
+                    ProjectController.getInstance().getCurrentProjectID(),
+                    r.getDnaID());
+
+            JButton bamButton = (JButton) p.getAdditionalColumn(KEY_DNAID, 1).getComponent(0);
+            if (bamPath != null && !bamPath.equals("")) {
+                bamButton.setVisible(true);
+            } else {
+                bamButton.setVisible(false);
+            }
+
+        } catch (Exception ex) {
+            Logger.getLogger(BasicVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
         }
-        if (r == null) {
-            // TODO show other card
-            return;
-        }
 
-        p.setValue(KEY_DNAID, r.getDnaID());
-        p.setValue(KEY_CHROM, r.getChrom());
-        p.setValue(KEY_POSITION, ViewUtil.numToString(r.getPosition()));
-        p.setValue(KEY_REF, r.getRef());
-        p.setValue(KEY_ALT, r.getAlt());
-
-        p.setValue(KEY_TYPE, checkNull(r.getType()));
-        p.setValue(KEY_ZYGOSITY, checkNull(r.getZygosity()));
-
-        p.setValue(KEY_QUAL, ViewUtil.numToString(r.getQual()));
-        p.setValue(KEY_DBSNP, checkNull(r.getDbSNPID()));
-
-        p.setDetailComponent(KEY_INFO, getInfoKVPPanel(r.getCustomInfo()));
 
         generateGeneIntersections(r);
+
+
 
     }
 
@@ -207,38 +278,21 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
             }
 
             /*if (g0 != null) {
-                GeneInspector.getInstance().setGene(g0);
-            }
-            */
+             GeneInspector.getInstance().setGene(g0);
+             }
+             */
         } catch (Exception ex) {
             ClientMiscUtils.reportError("Error fetching genes: %s", ex);
         }
     }
 
-    private Component getCopyButton(final String key) {
-        JButton button = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.COPY));
-        button.setToolTipText("Copy " + key);
-        button.addActionListener(new ActionListener() {
 
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                String selection = p.getValue(key);
-                StringSelection data = new StringSelection(selection);
-                Clipboard clipboard =
-                        Toolkit.getDefaultToolkit().getSystemClipboard();
-                clipboard.setContents(data, data);
-                DialogUtils.displayMessage("Copied \"" + selection + "\" to clipboard.");
-            }
-        });
-        return button;
-    }
 
     private Component getFilterButton(final String key) {
 
         JButton button = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.FILTER));
         button.setToolTipText("Filter " + key);
         button.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
             }
@@ -250,7 +304,6 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
         final JToggleButton button = ViewUtil.getTexturedToggleButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.CHART_SMALL));
         button.setToolTipText("Chart " + key);
         button.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent ae) {
                 p.toggleDetailVisibility(key);
@@ -265,7 +318,6 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
         //LinkButton ncbiButton = new LinkButton("NCBI");
         ncbiButton.setToolTipText("Lookup " + key + " at NCBI");
         ncbiButton.addActionListener(new ActionListener() {
-
             String baseUrl = "http://www.ncbi.nlm.nih.gov/SNP/snp_ref.cgi?searchType=adhoc_search&rs=";
 
             @Override

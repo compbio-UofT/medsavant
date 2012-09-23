@@ -49,7 +49,7 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class QueryPanel extends CollapsiblePanes {
 
     static final Color INACTIVE_KEY_COLOR = Color.GRAY;
-    static final Color ACTIVE_KEY_COLOR = Color.RED;
+    static final Color ACTIVE_KEY_COLOR = Color.red;
 
     private int queryID;
 

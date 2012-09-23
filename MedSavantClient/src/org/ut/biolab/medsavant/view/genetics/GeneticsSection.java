@@ -32,6 +32,7 @@ import org.ut.biolab.medsavant.view.manage.PluginPage;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionViewCollection;
+import org.ut.biolab.medsavant.view.variants.BrowserPage;
 
 
 /**
@@ -51,7 +52,7 @@ public class GeneticsSection extends SectionView {
     @Override
     public SubSectionView[] getSubSections() {
 
-        SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this, "Plugins");
+        SubSectionViewCollection variantCollectionPlugins = new SubSectionViewCollection(this, "Analytics");
 
         PluginController pc = PluginController.getInstance();
         pc.loadPlugins(DirectorySettings.getPluginsDirectory());
@@ -63,6 +64,7 @@ public class GeneticsSection extends SectionView {
 
         return new SubSectionView[] {
             new GeneticsTablePage(this),
+            new BrowserPage(this),
             new GeneticsChartPage(this),
             new AggregatePage(this),
             variantCollectionPlugins

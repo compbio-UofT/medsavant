@@ -157,7 +157,7 @@ public class GenomeContainer extends JLayeredPane {
     GetNumVariantsSwingWorker gnv = new GetNumVariantsSwingWorker(pageName);
     gnv.execute();
     }*/
-    void setUpdateRequired(boolean b) {
+    public void setUpdateRequired(boolean b) {
         updateRequired = b;
     }
 

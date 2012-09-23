@@ -16,6 +16,8 @@
 package org.ut.biolab.medsavant.view.component;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -25,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
+import org.ut.biolab.medsavant.view.images.IconFactory;
+import org.ut.biolab.medsavant.view.util.DialogUtils;
 
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 
@@ -50,6 +54,7 @@ public class KeyValuePairPanel extends JPanel {
     private JPanel kvpPanel;
     private JPanel toolbar;
     private boolean isKeysVisible = true;
+    private int maxValueLength = 15;
 
     public KeyValuePairPanel() {
         this(0);
@@ -141,7 +146,8 @@ public class KeyValuePairPanel extends JPanel {
 
         JComponent c = (JComponent) keyValueComponentMap.get(key).getComponent(0);
         if (c instanceof JLabel) {
-            return ((JLabel) keyValueComponentMap.get(key).getComponent(0)).getText();
+            // the text of the label may be truncated, use the tooltip instead
+            return ((JLabel) keyValueComponentMap.get(key).getComponent(0)).getToolTipText();
         } else {
             System.err.println("WARNING: accessing string value of non-string label");
             return c.toString();
@@ -321,6 +327,10 @@ public class KeyValuePairPanel extends JPanel {
         p.getParent().repaint();
     }
 
+    public void setMaxValueLength(int max) {
+        maxValueLength = max;
+    }
+
     public void setValue(String key, String value) {
 
         if (value.equals(NULL_VALUE)) {
@@ -328,10 +338,12 @@ public class KeyValuePairPanel extends JPanel {
             return;
         }
 
-        JLabel c = new JLabel(value); // horizontal padding
+
+        JLabel c = new JLabel(ViewUtil.ellipsize(value,maxValueLength)); // horizontal padding
+        c.setToolTipText(value);
         setValue(key, c);
     }
-    
+
     public void setToolTipForValue(String key, String toolTipText){
         if (isKeysVisible) {
             keyKeyComponentMap.get(key).setToolTipText(toolTipText);
@@ -406,5 +418,22 @@ public class KeyValuePairPanel extends JPanel {
 
     public JComponent getAdditionalColumn(String key, int index) {
         return this.keySettingsMap.get(key)[index];
+    }
+
+        public static Component getCopyButton(final String key, final KeyValuePairPanel p) {
+        JButton button = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.COPY));
+        button.setToolTipText("Copy " + key);
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                String selection = p.getValue(key);
+                StringSelection data = new StringSelection(selection);
+                Clipboard clipboard =
+                        Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(data, data);
+                DialogUtils.displayMessage("Copied \"" + selection + "\" to clipboard.");
+            }
+        });
+        return button;
     }
 }

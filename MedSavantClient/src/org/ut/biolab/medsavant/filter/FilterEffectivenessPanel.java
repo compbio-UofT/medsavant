@@ -13,11 +13,11 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.filter;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
@@ -43,17 +43,19 @@ import org.ut.biolab.medsavant.view.util.WaitPanel;
 public class FilterEffectivenessPanel extends JLayeredPane {
 
     private static final Log LOG = LogFactory.getLog(FilterEffectivenessPanel.class);
-
     int numLeft = 1;
     int numTotal = 1;
     private int waitCounter = 0;
-
-    private final ProgressPanel progressPanel;
+    //private final ProgressPanel progressPanel;
     private final JLabel labelVariantsRemaining;
     private WaitPanel waitPanel;
     private JPanel panel;
 
     public FilterEffectivenessPanel() {
+        this(Color.black);
+    }
+
+    public FilterEffectivenessPanel(Color foregroundColor) {
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -64,6 +66,9 @@ public class FilterEffectivenessPanel extends JLayeredPane {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
 
+        this.setPreferredSize(new Dimension(250, 60));
+        this.setMaximumSize(new Dimension(250, 60));
+
         setLayout(new GridBagLayout());
 
         waitPanel = new WaitPanel("Applying Filters");
@@ -73,55 +78,32 @@ public class FilterEffectivenessPanel extends JLayeredPane {
         panel = ViewUtil.getClearPanel();
         panel.setLayout(new BorderLayout());
         panel.setBorder(ViewUtil.getMediumBorder());
-        panel.setPreferredSize(waitPanel.getPreferredSize());
+        //panel.setPreferredSize(waitPanel.getPreferredSize());
         add(panel, gbc, JLayeredPane.DEFAULT_LAYER);
 
         labelVariantsRemaining = ViewUtil.getDetailTitleLabel("");
-        labelVariantsRemaining.setForeground(Color.white);
+        labelVariantsRemaining.setForeground(foregroundColor);
 
         JPanel infoPanel = ViewUtil.getClearPanel();
         ViewUtil.applyVerticalBoxLayout(infoPanel);
         infoPanel.add(ViewUtil.centerHorizontally(labelVariantsRemaining));
 
-        JLabel l = ViewUtil.getWhiteLabel("of all variants pass search conditions");
+        JLabel l = new JLabel("of all variants pass search conditions");
+        l.setForeground(foregroundColor);
         ViewUtil.makeSmall(l);
         infoPanel.add(ViewUtil.centerHorizontally(l));
         infoPanel.setBorder(ViewUtil.getMediumTopHeavyBorder());
 
-        panel.add(infoPanel,BorderLayout.NORTH);
+        panel.add(infoPanel, BorderLayout.NORTH);
 
-        progressPanel = new ProgressPanel();
+        //progressPanel = new ProgressPanel();
         //pp.setBorder(ViewUtil.getBigBorder());
-        panel.add(progressPanel, BorderLayout.SOUTH);
+        //panel.add(progressPanel, BorderLayout.SOUTH);
 
         FilterController.getInstance().addListener(new Listener<FilterEvent>() {
             @Override
             public void handleEvent(FilterEvent event) {
-                showWaitCard();
-
-                new MedSavantWorker<Integer>("Filters") {
-
-                    @Override
-                    protected Integer doInBackground() throws Exception {
-                        return ResultController.getInstance().getFilteredVariantCount();
-                    }
-
-                    @Override
-                    protected void showProgress(double fraction) {
-                    }
-
-                    @Override
-                    protected void showSuccess(Integer result) {
-                        showShowCard();
-                        setNumLeft(result);
-                    }
-
-                    @Override
-                    protected void showFailure(Throwable ex) {
-                        showShowCard();
-                        LOG.error("Error getting filtered variant count.", ex);
-                    }
-                }.execute();
+                updateNumRemaining();
             }
         });
         ReferenceController.getInstance().addListener(new Listener<ReferenceEvent>() {
@@ -136,11 +118,38 @@ public class FilterEffectivenessPanel extends JLayeredPane {
         setMaxValues();
     }
 
+    public void updateNumRemaining() {
+        showWaitCard();
+
+        new MedSavantWorker<Integer>("Filters") {
+            @Override
+            protected Integer doInBackground() throws Exception {
+                return ResultController.getInstance().getFilteredVariantCount();
+            }
+
+            @Override
+            protected void showProgress(double fraction) {
+            }
+
+            @Override
+            protected void showSuccess(Integer result) {
+                showShowCard();
+                setNumLeft(result);
+            }
+
+            @Override
+            protected void showFailure(Throwable ex) {
+                showShowCard();
+                LOG.error("Error getting filtered variant count.", ex);
+            }
+        }.execute();
+    }
+
     private void setNumLeft(int num) {
         numLeft = num;
         refreshProgressLabel();
 
-        progressPanel.animateToValue(num);
+        //progressPanel.animateToValue(num);
     }
 
     private void setMaxValues() {
@@ -154,8 +163,8 @@ public class FilterEffectivenessPanel extends JLayeredPane {
             @Override
             protected void showSuccess(Integer result) {
                 numTotal = result;
-                progressPanel.setMaxValue(numTotal);
-                progressPanel.setToValue(numTotal);
+                //progressPanel.setMaxValue(numTotal);
+                //progressPanel.setToValue(numTotal);
                 setNumLeft(numTotal);
             }
 

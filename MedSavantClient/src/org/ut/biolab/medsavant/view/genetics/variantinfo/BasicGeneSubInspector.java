@@ -13,9 +13,10 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
@@ -27,9 +28,13 @@ import org.ut.biolab.medsavant.model.event.GeneSelectionChangedListener;
 import org.ut.biolab.medsavant.model.event.VariantSelectionChangedListener;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.vcf.VariantRecord;
+import org.ut.biolab.medsavant.view.ViewController;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
+import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
-
+import org.ut.biolab.medsavant.view.variants.BrowserPage;
+import savant.controller.LocationController;
+import savant.util.Range;
 
 /**
  *
@@ -38,11 +43,12 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 public class BasicGeneSubInspector extends SubInspector implements GeneSelectionChangedListener, VariantSelectionChangedListener {
 
     private static String KEY_NAME = "Name";
-    private static String KEY_CHROM = "Chrom";
-    private static String KEY_START = "Start";
-    private static String KEY_END = "End";
-    private static String KEY_DESCRIPTION = "Description";
+    private static String KEY_POSITION = "Position";
+    //private static String KEY_START = "Start";
+    //private static String KEY_END = "End";
+    //private static String KEY_DESCRIPTION = "Description";
     private KeyValuePairPanel panel;
+    private Gene selectedGene;
 
     public BasicGeneSubInspector() {
         //VariantInspector.addVariantSelectionChangedListener(this);
@@ -61,30 +67,41 @@ public class BasicGeneSubInspector extends SubInspector implements GeneSelection
             panel.addKey(KEY_NAME);
 
             /*JButton filterButton2 = ViewUtil.getTexturedButton("Card", IconFactory.getInstance().getIcon(IconFactory.StandardIcon.LINKOUT));
-            filterButton2.setToolTipText("Lookup Gene Card");
-            panel.setAdditionalColumn(KEY_NAME, 1, filterButton2);
+             filterButton2.setToolTipText("Lookup Gene Card");
+             panel.setAdditionalColumn(KEY_NAME, 1, filterButton2);
 
-            filterButton2.addActionListener(new ActionListener() {
+             filterButton2.addActionListener(new ActionListener() {
 
-                String baseUrl = "http://www.genecards.org/cgi-bin/carddisp.pl?gene=";
+             String baseUrl = "http://www.genecards.org/cgi-bin/carddisp.pl?gene=";
 
+             @Override
+             public void actionPerformed(ActionEvent ae) {
+             try {
+             String geneName = panel.getValue(KEY_NAME);
+             URL url = new URL(baseUrl + URLEncoder.encode(geneName, charset));
+
+             java.awt.Desktop.getDesktop().browse(url.toURI());
+             } catch (Exception ex) {
+             DialogUtils.displayError("Problem launching website.");
+             }
+             }
+             });*/
+
+            panel.addKey(KEY_POSITION);
+            //panel.addKey(KEY_DESCRIPTION);
+
+            JButton genomeBrowserButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BROWSER));
+            genomeBrowserButton.setToolTipText("View region in genome browser");
+            genomeBrowserButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    try {
-                        String geneName = panel.getValue(KEY_NAME);
-                        URL url = new URL(baseUrl + URLEncoder.encode(geneName, charset));
-
-                        java.awt.Desktop.getDesktop().browse(url.toURI());
-                    } catch (Exception ex) {
-                        DialogUtils.displayError("Problem launching website.");
-                    }
+                    LocationController.getInstance().setLocation(selectedGene.getChrom(), new Range((int) (selectedGene.getCodingStart() - 20), (int) (selectedGene.getCodingEnd() + 21)));
+                    ViewController.getInstance().getMenu().switchToSubSection(BrowserPage.getInstance());
                 }
-            });*/
+            });
 
-            panel.addKey(KEY_CHROM);
-            panel.addKey(KEY_START);
-            panel.addKey(KEY_END);
-            panel.addKey(KEY_DESCRIPTION);
+            panel.setAdditionalColumn(KEY_POSITION, 0, KeyValuePairPanel.getCopyButton(KEY_POSITION, panel));
+            panel.setAdditionalColumn(KEY_POSITION, 1, genomeBrowserButton);
         }
         return panel;
     }
@@ -103,23 +120,24 @@ public class BasicGeneSubInspector extends SubInspector implements GeneSelection
             return;
         }
 
+        selectedGene = g;
+
         panel.setValue(KEY_NAME, g.getName());
         JButton filterButton2 = new EntrezButton(g.getName());
         panel.setAdditionalColumn(KEY_NAME, 1, filterButton2);
-        panel.setValue(KEY_CHROM, g.getChrom());
-        panel.setValue(KEY_START, ViewUtil.numToString(g.getStart()));
-        panel.setValue(KEY_END, ViewUtil.numToString(g.getEnd()));
+        panel.setValue(KEY_POSITION, g.getChrom() + ":" + ViewUtil.numToString(g.getStart()) + "-" + ViewUtil.numToString(g.getEnd()));
         try {
-            String s =ClientMiscUtils.breakString(g.getDescription(), "", 45);
-            panel.setValue(KEY_DESCRIPTION, new JLabel(s));
-        } catch (Exception e){
+            String s = ClientMiscUtils.breakString(g.getDescription(), "", 45);
+            panel.getComponent(KEY_NAME).setToolTipText(s);
+        } catch (Exception e) {
             System.out.println(e.getMessage());
-            panel.setValue(KEY_DESCRIPTION, "");
+            panel.getComponent(KEY_NAME).setToolTipText("");
         }
     }
 
     @Override
     public void variantSelectionChanged(VariantRecord r) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
+
 }

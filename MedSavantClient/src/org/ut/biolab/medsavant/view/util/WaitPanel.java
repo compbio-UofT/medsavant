@@ -8,6 +8,12 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -28,7 +34,6 @@ public class WaitPanel extends JPanel {
         if(c == null) c = Color.white;
         this.setBackground(new Color(c.getRed(), c.getGreen(), c.getBlue(), 215));
 
-
         this.setOpaque(false);
         this.setBorder(ViewUtil.getHugeBorder());
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
@@ -43,6 +48,55 @@ public class WaitPanel extends JPanel {
         this.add(ViewUtil.getCenterAlignedComponent(statusLabel));
         this.add(prog);
         this.add(Box.createVerticalGlue());
+
+        // intercept events so that the underlayers can't access them
+        this.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent me) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent me) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent me) {
+            }
+
+        });
+
+        this.addMouseWheelListener(new MouseWheelListener() {
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent mwe) {
+            }
+
+        });
+
+        this.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent ke) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent ke) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent ke) {
+            }
+
+        });
 
     }
 

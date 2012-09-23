@@ -75,7 +75,6 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     private Gene gene;
     private GeneManiaSettingsDialog genemaniaSettings;
     private boolean rankByVarFreq;
-
     private Thread genemaniaAlgorithmThread;
     private boolean dataPresent;
     private int currSizeOfArray;
@@ -84,7 +83,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     public GeneManiaInfoSubPanel() {
         name = "Related Genes";
         dataPresent = true;
-        
+
     }
 
     @Override
@@ -98,7 +97,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         p = ViewUtil.getClearPanel();
         try {
             genemania = new GenemaniaInfoRetriever();
-            genemaniaSettings  = new GeneManiaSettingsDialog(genemania);
+            genemaniaSettings = new GeneManiaSettingsDialog(genemania);
         } catch (Exception ex) {
             progressMessage = new JLabel("<html><center>" + ex.getMessage() + "<br>Please try again after data has been downloaded.</center></html>", SwingConstants.CENTER);
             p.add(progressMessage);
@@ -120,12 +119,12 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
         settingsButton = new JButton("Settings");
         settingsButton.addActionListener(new java.awt.event.ActionListener() {
-
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 genemaniaSettings.showSettings();
-                if (genemaniaSettings.getUpdateQueryNeeded())
+                if (genemaniaSettings.getUpdateQueryNeeded()) {
                     updateRelatedGenesPanel(gene);
+                }
             }
         });
         l = new JLabel("Selected gene: ");
@@ -133,7 +132,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         pMessagePanel.add(progressMessage);
         settingsPanel.setLayout(new BorderLayout());
         settingsPanel.add(settingsButton, BorderLayout.EAST);
-        graph = new JPanel();
+        graph = ViewUtil.getClearPanel();
         p.add(kvpPanel);
         p.add(currGenePanel);
         p.add(pMessagePanel);
@@ -158,6 +157,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
 
         }
     }
+
     private JPopupMenu getRegionSetsMenu(Gene gene) {
         final JPopupMenu regionSets = new JPopupMenu();
         final RegionController regionController = RegionController.getInstance();
@@ -167,7 +167,6 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                 final RegionSet finalRegionSet = s;
                 JMenuItem menuItem = new JMenuItem(s.getName());
                 menuItem.addActionListener(new ActionListener() {
-
                     public void actionPerformed(ActionEvent ae) {
                         try {
                             regionController.addToRegionSet(finalRegionSet, g.getChrom(), g.getStart(), g.getEnd(), g.getName());
@@ -186,7 +185,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         }
         return regionSets;
     }
-    
+
     private void updateRelatedGenesPanel(Gene g) {
         gene = g;
         kvpPanel.removeAll();
@@ -203,7 +202,6 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         final Object lock = new Object();
 
         Runnable r = new Runnable() {
-
             @Override
             public void run() {
 
@@ -250,34 +248,33 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                 if (Thread.interrupted()) {
                                     throw new InterruptedException();
                                 }
-                            while (itr.hasNext()) {
+                                while (itr.hasNext()) {
                                     currGene = itr.next();
                                     final org.ut.biolab.medsavant.model.Gene finalGene = currGene;
                                     kvp.addKey(Integer.toString(i));
                                     JLabel geneName = new JLabel(currGene.getName());
                                     EntrezButton geneLinkButton = new EntrezButton(currGene.getName());
                                     kvp.setValue(Integer.toString(i), geneName);
-                                    
+
                                     JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
                                     geneInspectorButton.setToolTipText("Inspect this gene");
                                     geneInspectorButton.addActionListener(new ActionListener() {
-
                                         @Override
                                         public void actionPerformed(ActionEvent ae) {
                                             GeneInspector.getInstance().setGene(finalGene);
                                             InspectorPanel.getInstance().switchToGeneInspector();
                                         }
                                     });
-                                    
-                                    final JLabel addToRegionListButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
-                                    addToRegionListButton.setToolTipText("Add to Region List");
-                                    addToRegionListButton.addMouseListener(new MouseAdapter() {
 
+                                    final JButton addToRegionListButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADDKVP));
+                                    addToRegionListButton.setToolTipText("Add to Region List");
+                                    addToRegionListButton.addActionListener(new ActionListener() {
                                         @Override
-                                        public void mouseClicked(MouseEvent e) {
+                                        public void actionPerformed(ActionEvent ae) {
                                             getRegionSetsMenu(finalGene).show(addToRegionListButton, 0, addToRegionListButton.getHeight());
                                         }
                                     });
+
                                     kvp.setAdditionalColumn(Integer.toString(i), 2, geneInspectorButton);
                                     kvp.setAdditionalColumn(Integer.toString(i), 3, addToRegionListButton);
                                     kvp.setAdditionalColumn(Integer.toString(i), 4, geneLinkButton);
@@ -308,7 +305,6 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                         JButton geneInspectorButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.INSPECTOR));
                                         geneInspectorButton.setToolTipText("Inspect this gene");
                                         geneInspectorButton.addActionListener(new ActionListener() {
-
                                             @Override
                                             public void actionPerformed(ActionEvent ae) {
                                                 GeneInspector.getInstance().setGene(finalGene);
@@ -316,12 +312,11 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                             }
                                         });
                                         System.err.println("get region sets" + System.currentTimeMillis());
-                                        final JLabel addToRegionListButton = ViewUtil.createIconButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADD));
+                                        final JButton addToRegionListButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.ADDKVP));
                                         addToRegionListButton.setToolTipText("Add to Region List");
-                                        addToRegionListButton.addMouseListener(new MouseAdapter() {
-
+                                        addToRegionListButton.addActionListener(new ActionListener() {
                                             @Override
-                                            public void mouseClicked(MouseEvent e) {
+                                            public void actionPerformed(ActionEvent e) {
                                                 getRegionSetsMenu(finalGene).show(addToRegionListButton, 0, addToRegionListButton.getHeight());
                                             }
                                         });
@@ -376,7 +371,6 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         }
 
         final Runnable geneDescriptionFetcher = new Runnable() {
-
             @Override
             public void run() {
                 for (int j = 1; j <= currSizeOfArray; j++) {
@@ -397,7 +391,6 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         genemaniaAlgorithmThread.start();
 
         Runnable r2 = new Runnable() {
-
             @Override
             public void run() {
                 try {
@@ -405,11 +398,10 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                         lock.wait();
                         Thread toolTipGenerator = new Thread(geneDescriptionFetcher);
                         Thread varFreqCalculator = new Thread(new Runnable() {
-
                             @Override
                             public void run() {
-                                System.out.println("THIS IS THE CURRSIZEOFARRAY: "+ currSizeOfArray);
-                                for(int i= 1; i<=currSizeOfArray; i++){
+                                System.out.println("THIS IS THE CURRSIZEOFARRAY: " + currSizeOfArray);
+                                for (int i = 1; i <= currSizeOfArray; i++) {
                                     try {
                                         String geneName = kvp.getValue(Integer.toString(i));
                                         Gene gene = GeneSetFetcher.getInstance().getGene(geneName);
@@ -418,7 +410,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                                         kvp.updateUI();
                                     } catch (Exception ex) {
                                         //don't put in any variation frequency
-                                    } 
+                                    }
                                 }
                             }
                         });
@@ -429,7 +421,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                 }
             }
         };
-        
+
         Thread t2 = new Thread(r2);
         t2.start();
 
@@ -441,7 +433,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     public JPanel buildGraph() {
         CyNetwork network = genemania.getGraph();
         System.out.println("Nodes " + network.getNodeCount());
-         System.out.println("Edges " + network.getEdgeCount());
+        System.out.println("Edges " + network.getEdgeCount());
         for (int i = 0; i < network.getEdgeCount(); i++) {
             System.out.println(network.getEdge(i));
         }

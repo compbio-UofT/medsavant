@@ -79,4 +79,6 @@ public class GeneticsFilterPage extends SubSectionView {
     public static SearchBar getSearchBar() {
         return panel;
     }
+
+
 }

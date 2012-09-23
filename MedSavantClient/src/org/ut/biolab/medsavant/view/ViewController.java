@@ -136,6 +136,8 @@ public class ViewController {
         return peekingPanel.isExpanded();
     }
 
+    public Menu getMenu() { return menu; }
+
     private static class SidePanel extends JPanel {
 
         public SidePanel() {

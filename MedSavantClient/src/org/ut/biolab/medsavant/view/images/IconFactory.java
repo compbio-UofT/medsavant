@@ -40,6 +40,9 @@ public class IconFactory {
     }
 
     public enum StandardIcon {
+        ADDKVP,
+        BROWSER,
+        BAMFILE,
         INSPECTOR,
         CLEAR,
         GOOGLE_LOGO,
@@ -83,6 +86,12 @@ public class IconFactory {
 
     public ImageIcon getIcon(StandardIcon icon) {
         switch (icon) {
+            case ADDKVP:
+                return getIcon(iconroot + "icon_add.png");
+            case BROWSER:
+                return getIcon(iconroot + "icon_gbrowse.png");
+            case BAMFILE:
+                return getIcon(iconroot + "icon_bam.png");
             case INSPECTOR:
                 return getIcon(iconroot + "inspector2.png");
             case CLEAR:
