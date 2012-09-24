@@ -114,13 +114,14 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
         add(waitPanel, c, JLayeredPane.MODAL_LAYER);
 
-        showWaitCard();
+        //showWaitCard();
 
         tableInitializer = new MedSavantWorker(pageName) {
             @Override
             protected Object doInBackground() throws Exception {
 
                 LOG.info("INITIALIZING TABLE BY THREAD");
+                System.out.println("Initializing table by thread");
 
                 List<String> fieldNames = new ArrayList<String>();
                 final List<Class> fieldClasses = new ArrayList<Class>();
@@ -212,6 +213,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
                     @Override
                     public void retrievalComplete() {
+                        LOG.info("Done retrieving data for TablePanel");
                         showShowCard();
                         synchronized (updateLock) {
                             updateRequired = false;
@@ -361,6 +363,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                 updateTableIfRequired();
             }
         };
+        tableInitializer.execute();
     }
 
     private void showWaitCard() {
@@ -452,12 +455,18 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
 
+                    System.err.println("User requested load of spreadsheet");
+
+                    updateRequired = true;
+
                     showWaitCard();
                     setActivePanel(true);
 
                     if (!tableInitialized) {
+                        System.err.println("Initializing table");
                         tableInitializer.execute();
                     } else {
+                        System.err.println("Updating table");
                         updateTableIfRequired();
                     }
                 }

@@ -35,31 +35,31 @@ public class ThreadController {
 
     private static ThreadController instance;
     private Map<String, List<MedSavantWorker>> workers = new HashMap<String, List<MedSavantWorker>>();
-       
+
     public static ThreadController getInstance() {
         if (instance == null) {
             instance = new ThreadController();
         }
         return instance;
     }
-    
+
     public synchronized void addWorker(String page, MedSavantWorker worker) {
         List<MedSavantWorker> list = workers.get(page);
         if (list == null) {
             workers.put(page, list = new ArrayList<MedSavantWorker>());
         }
         list.add(worker);
-        LOG.info(page + " now has " + list.size() + " workers.");
+        //LOG.info(page + " now has " + list.size() + " workers.");
     }
-    
+
     public synchronized void removeWorker(String page, MedSavantWorker worker) {
         List<MedSavantWorker> list = workers.get(page);
         if (list != null) {
             list.remove(worker);
-            LOG.info(page + " now has " + list.size() + " workers.");
+            //LOG.info(page + " now has " + list.size() + " workers.");
         }
     }
-    
+
     public synchronized void cancelWorkers(String page) {
         List<MedSavantWorker> list = workers.get(page);
         if (list != null) {
