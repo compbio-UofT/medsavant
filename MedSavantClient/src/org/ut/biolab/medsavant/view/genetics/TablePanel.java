@@ -15,15 +15,14 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.List;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -34,14 +33,11 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.controller.ResultController;
-import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.filter.*;
 import org.ut.biolab.medsavant.format.BasicVariantColumns;
 import org.ut.biolab.medsavant.format.CustomField;
@@ -73,16 +69,14 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     private static final Log LOG = LogFactory.getLog(TablePanel.class);
     private WaitPanel waitPanel;
     private boolean updateRequired = true;
-    private final Object updateLock = new Object();
     private String pageName;
-    private GridBagConstraints c;
     private Map<Integer, List<VariantComment>> starMap = new HashMap<Integer, List<VariantComment>>();
     private static List<VariantSelectionChangedListener> listeners = new ArrayList<VariantSelectionChangedListener>();
     private final JPanel activePanel;
     private final JPanel summaryContainer;
     private final JPanel tableContainer;
     private SearchableTablePanel searchableTablePanel;
-    private boolean isTableShowing;
+    private boolean tableShowing;
     private RingChart ringChart;
 
     public TablePanel(String page) {
@@ -90,14 +84,14 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         pageName = page;
         setLayout(new GridBagLayout());
 
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = 1;
-        c.gridheight = 1;
-        c.fill = GridBagConstraints.BOTH;
-        c.weightx = 1.0;
-        c.weighty = 1.0;
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
 
         summaryContainer = new JPanel();
         summaryContainer.setLayout(new BorderLayout());
@@ -107,15 +101,15 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
         activePanel = new JPanel();
         activePanel.setLayout(new BorderLayout());
-        add(activePanel, c, JLayeredPane.DEFAULT_LAYER);
+        add(activePanel, gbc, JLayeredPane.DEFAULT_LAYER);
 
         waitPanel = new WaitPanel("Retrieving variants");
 
-        add(waitPanel, c, JLayeredPane.MODAL_LAYER);
+        add(waitPanel, gbc, JLayeredPane.MODAL_LAYER);
     }
 
     private void showWaitCard() {
-        SwingUtilities.invokeLater(new Runnable() {
+        MiscUtils.invokeLaterIfNecessary(new Runnable() {
             @Override
             public void run() {
                 waitPanel.setVisible(true);
@@ -126,7 +120,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     }
 
     private void showShowCard() {
-        SwingUtilities.invokeLater(new Runnable() {
+        MiscUtils.invokeLaterIfNecessary(new Runnable() {
             @Override
             public void run() {
                 waitPanel.setVisible(false);
@@ -136,24 +130,22 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
     }
 
-    void queueUpdate(boolean b) {
-        updateRequired = b;
-        updateIfNecessary();
+    void queueUpdate() {
+        updateRequired = true;
+        if (tableShowing) {
+            forceTableRefresh();
+        }
     }
 
-    void setIsTableShowing(boolean b) {
-        isTableShowing = b;
-        updateIfNecessary();
+    void setTableShowing(boolean b) {
+        tableShowing = b;
+        if (b && updateRequired) {
+            forceTableRefresh();
+        }
     }
 
     public static void addVariantSelectionChangedListener(VariantSelectionChangedListener l) {
         listeners.add(l);
-    }
-
-    public void updateIfNecessary() {
-        if (updateRequired && isTableShowing) {
-            forceTableRefresh();
-        }
     }
 
     private void updateSummary() {
@@ -223,10 +215,8 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         if (searchableTablePanel == null) {
             return;
         }
-        synchronized (updateLock) {
-            if (updateRequired) {
-                searchableTablePanel.forceRefreshData();
-            }
+        if (updateRequired) {
+            searchableTablePanel.forceRefreshData();
         }
     }
 
@@ -260,7 +250,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
         activePanel.removeAll();
         activePanel.add(p, BorderLayout.CENTER);
-        activePanel.updateUI();
     }
 
     private void forceTableRefresh() {
@@ -286,7 +275,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         public void actionPerformed(ActionEvent e) {
             ThreadController.getInstance().cancelWorkers(pageName);
 
-            TableSchema schema = ProjectController.getInstance().getCurrentVariantTableSchema();
             FilterState chromState = StringListFilterView.wrapState(WhichTable.VARIANT, CHROM.getColumnName(), CHROM.getAlias(), Arrays.asList(chrom));
 
             FilterState posState = NumericFilterView.wrapState(WhichTable.VARIANT, POSITION.getColumnName(), POSITION.getAlias(), new Range(pos, pos), false);
@@ -465,6 +453,19 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                     }
                     return null;
                 }
+                
+                /**
+                 * Hack to make sure that WaitPanel is drawn when appropriate.  This shouldn't be necessary; the fact that the
+                 * WaitPanel is in the layer in front of the spreadsheet should be enough to prevent it from being over-painted.
+                 */
+                @Override
+                public void paintComponent(Graphics g) {
+                    if (waitPanel.isVisible()) {
+                        waitPanel.repaint();
+                    } else {
+                        super.paintComponent(g);
+                    }
+                }
             };
 
             searchableTablePanel.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -571,46 +572,43 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
             tableContainer.removeAll();
             tableContainer.add(searchableTablePanel, BorderLayout.CENTER);
-            tableContainer.updateUI();
             updateRequired = true;
             updateTableIfRequired();
         }
+    }
 
-        private class TableDataRetriever extends DataRetriever<Object[]> {
-            @Override
-            public List<Object[]> retrieve(int start, int limit) {
-                LOG.info("Retrieving data for TablePanel");
-                try {
-                    List<Object[]> result = ResultController.getInstance().getFilteredVariantRecords(start, limit, null);
-                    //checkStarring(result);
-                    return result;
-                } catch (Exception ex) {
-                    LOG.error("Error retrieving data.", ex);
-                    setActivePanel(true);
-                    return null;
-                }
-            }
-
-            @Override
-            public int getTotalNum() {
-                showWaitCard();
-                int result = 0;
-                try {
-                    result = ResultController.getInstance().getFilteredVariantCount();
-                } catch (Exception ex) {
-                    LOG.error("Error getting total number.", ex);
-                }
+    private class TableDataRetriever extends DataRetriever<Object[]> {
+        @Override
+        public List<Object[]> retrieve(int start, int limit) {
+            LOG.info("Retrieving data for TablePanel");
+            try {
+                List<Object[]> result = ResultController.getInstance().getFilteredVariantRecords(start, limit, null);
+                //checkStarring(result);
                 return result;
+            } catch (Exception ex) {
+                LOG.error("Error retrieving data.", ex);
+                setActivePanel(true);
+                return null;
             }
+        }
 
-            @Override
-            public void retrievalComplete() {
-                LOG.info("Done retrieving data for TablePanel");
-                showShowCard();
-                synchronized (updateLock) {
-                    updateRequired = false;
-                }
+        @Override
+        public int getTotalNum() {
+            showWaitCard();
+            int result = 0;
+            try {
+                result = ResultController.getInstance().getFilteredVariantCount();
+            } catch (Exception ex) {
+                LOG.error("Error getting total number.", ex);
             }
+            return result;
+        }
+
+        @Override
+        public void retrievalComplete() {
+            LOG.info("Done retrieving data for TablePanel");
+            showShowCard();
+            updateRequired = false;
         }
     }
 }

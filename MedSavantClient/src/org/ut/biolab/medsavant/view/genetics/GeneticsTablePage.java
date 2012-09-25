@@ -117,14 +117,13 @@ public class GeneticsTablePage extends SubSectionView {
     @Override
     public void viewDidLoad() {
         super.viewDidLoad();
-        tablePanel.updateIfNecessary();
-        tablePanel.setIsTableShowing(true);
+        tablePanel.setTableShowing(true);
     }
 
     @Override
     public void viewDidUnload() {
         super.viewDidUnload();
-        tablePanel.setIsTableShowing(false);
+        tablePanel.setTableShowing(false);
     }
 
     public void queueTableUpdate() {
@@ -132,6 +131,6 @@ public class GeneticsTablePage extends SubSectionView {
         if (tablePanel == null) {
             return;
         }
-        tablePanel.queueUpdate(true);
+        tablePanel.queueUpdate();
     }
 }

@@ -1,13 +1,24 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ *    Copyright 2011-2012 University of Toronto
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.util;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -20,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
+
 /**
  *
  * @author mfiume
@@ -31,26 +43,28 @@ public class WaitPanel extends JPanel {
     public WaitPanel(String message) {
 
         Color c = getBackground();
-        if(c == null) c = Color.white;
-        this.setBackground(new Color(c.getRed(), c.getGreen(), c.getBlue(), 215));
+        if (c == null) {
+            c = Color.WHITE;
+        }
+        setBackground(new Color(c.getRed(), c.getGreen(), c.getBlue(), 215));
 
-        this.setOpaque(false);
-        this.setBorder(ViewUtil.getHugeBorder());
-        this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+        setOpaque(false);
+        setBorder(ViewUtil.getHugeBorder());
+        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         prog = new JProgressBar();
         prog.setIndeterminate(true);
         prog.setMaximumSize(new Dimension(200,25));
 
         statusLabel = new JLabel("");
 
-        this.add(Box.createVerticalGlue());
-        this.add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel(message, Color.BLACK)));
-        this.add(ViewUtil.getCenterAlignedComponent(statusLabel));
-        this.add(prog);
-        this.add(Box.createVerticalGlue());
+        add(Box.createVerticalGlue());
+        add(ViewUtil.getCenterAlignedComponent(ViewUtil.getDialogLabel(message, Color.BLACK)));
+        add(ViewUtil.getCenterAlignedComponent(statusLabel));
+        add(prog);
+        add(Box.createVerticalGlue());
 
         // intercept events so that the underlayers can't access them
-        this.addMouseListener(new MouseListener() {
+        addMouseListener(new MouseListener() {
 
             @Override
             public void mouseClicked(MouseEvent me) {
@@ -74,7 +88,7 @@ public class WaitPanel extends JPanel {
 
         });
 
-        this.addMouseWheelListener(new MouseWheelListener() {
+        addMouseWheelListener(new MouseWheelListener() {
 
             @Override
             public void mouseWheelMoved(MouseWheelEvent mwe) {
@@ -100,17 +114,15 @@ public class WaitPanel extends JPanel {
 
     }
 
+    @Override
     public void paintComponent(Graphics g){
-
-        g.setColor(this.getBackground());
-        Rectangle r = this.getBounds();
-        g.fillRect(r.x, r.y, r.width, r.height);
-
+        g.setColor(getBackground());
+        g.fillRect(0, 0, getWidth(), getHeight());
         super.paintComponent(g);
     }
 
     public synchronized void setStatus(String status) {
-        this.statusLabel.setText(status);
+        statusLabel.setText(status);
     }
 
     public void setComplete() {
@@ -121,5 +133,4 @@ public class WaitPanel extends JPanel {
     public void setIndeterminate() {
         prog.setIndeterminate(true);
     }
-
 }
