@@ -58,7 +58,7 @@ public interface BasicVariantColumns {
     public static final CustomField VARIANT_TYPE = new CustomField("variant_type", ColumnType.VARCHAR, 10, false, false, false, null, true, "Variant Type", "");
     public static final CustomField ZYGOSITY = new CustomField("zygosity", ColumnType.VARCHAR, 20, false, false, false, null, true, "Zygosity", "");
     public static final CustomField GT = new CustomField("gt", ColumnType.VARCHAR, 10, false, false, false, null, true, "Genotype", "");
-    public static final CustomField CUSTOM_INFO = new CustomField("custom_info", ColumnType.VARCHAR, 10000, false, false, false, null, true, "Custom Info", "");
+    public static final CustomField CUSTOM_INFO = new CustomField("custom_info", ColumnType.VARCHAR, 10000, false, false, false, null, false, "Custom Info", "");
     
     // The following commonly-used VCF fields are not part of the required set.
     public static final CustomField AA = new CustomField("aa", ColumnType.VARCHAR, 500, false, false, false, null, true, "Ancestral Allele", "");
