@@ -16,6 +16,8 @@
 package org.ut.biolab.medsavant.view.genetics;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -32,8 +34,8 @@ import com.healthmarketscience.sqlbuilder.Condition;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
 import com.jidesoft.grid.SortableTable;
 import com.jidesoft.grid.TableModelWrapperUtils;
-import java.awt.Color;
-import java.awt.Dimension;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -59,7 +61,6 @@ import org.ut.biolab.medsavant.vcf.VariantRecord;
 import org.ut.biolab.medsavant.view.component.SearchableTablePanel;
 import org.ut.biolab.medsavant.view.genetics.charts.Ring;
 import org.ut.biolab.medsavant.view.genetics.charts.RingChart;
-import org.ut.biolab.medsavant.view.util.DialogUtils;
 import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.util.WaitPanel;
 
@@ -71,7 +72,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
     private static final Log LOG = LogFactory.getLog(TablePanel.class);
     private WaitPanel waitPanel;
-    private boolean tableInitialized = false;
     private boolean updateRequired = true;
     private final Object updateLock = new Object();
     private String pageName;
@@ -82,14 +82,13 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     private final JPanel summaryContainer;
     private final JPanel tableContainer;
     private SearchableTablePanel searchableTablePanel;
-    private final MedSavantWorker tableInitializer;
     private boolean isTableShowing;
     private RingChart ringChart;
 
     public TablePanel(String page) {
 
-        this.pageName = page;
-        this.setLayout(new GridBagLayout());
+        pageName = page;
+        setLayout(new GridBagLayout());
 
         c = new GridBagConstraints();
         c.gridx = 0;
@@ -113,257 +112,6 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         waitPanel = new WaitPanel("Retrieving variants");
 
         add(waitPanel, c, JLayeredPane.MODAL_LAYER);
-
-        //showWaitCard();
-
-        tableInitializer = new MedSavantWorker(pageName) {
-            @Override
-            protected Object doInBackground() throws Exception {
-
-                LOG.info("INITIALIZING TABLE BY THREAD");
-                System.out.println("Initializing table by thread");
-
-                List<String> fieldNames = new ArrayList<String>();
-                final List<Class> fieldClasses = new ArrayList<Class>();
-                List<Integer> hiddenColumns = new ArrayList<Integer>();
-
-                AnnotationFormat[] afs = ProjectController.getInstance().getCurrentAnnotationFormats();
-                for (AnnotationFormat af : afs) {
-                    for (CustomField field : af.getCustomFields()) {
-                        fieldNames.add(field.getAlias());
-                        switch (field.getColumnType()) {
-                            case INTEGER:
-                            case BOOLEAN:
-                                fieldClasses.add(Integer.class);
-                                break;
-                            case FLOAT:
-                            case DECIMAL:
-                                fieldClasses.add(Double.class);
-                                break;
-                            case VARCHAR:
-                            default:
-                                fieldClasses.add(String.class);
-                                break;
-                        }
-
-                        // hide all but some VCF fields
-                        if (af.getProgram().equals(AnnotationFormat.ANNOTATION_FORMAT_DEFAULT) &&
-                                field.getColumnName().equals(CHROM.getColumnName())
-                                || field.getColumnName().equals(POSITION.getColumnName())
-                                || field.getColumnName().equals(DNA_ID.getColumnName())
-                                || field.getColumnName().equals(ZYGOSITY.getColumnName())
-                                || field.getColumnName().equals(REF.getColumnName())
-                                || field.getColumnName().equals(ALT.getColumnName())
-                                || field.getColumnName().equals(QUAL.getColumnName())
-                                || field.getColumnName().equals(DBSNP_ID.getColumnName())
-                                | field.getColumnName().equals(VARIANT_TYPE.getColumnName())
-                                ) {
-                            // do nothing
-                        } else {
-                            hiddenColumns.add(fieldNames.size() - 1);
-                        }
-
-                        /*
-                        //only show some vcf fields
-                        if (!(af.getProgram().equals(AnnotationFormat.ANNOTATION_FORMAT_DEFAULT)
-                                && !(field.getColumnName().equals(UPLOAD_ID.getColumnName()))
-                                || field.getColumnName().equals(FILE_ID.getColumnName())
-                                || field.getColumnName().equals(VARIANT_ID.getColumnName())
-                                || field.getColumnName().equals(FILTER.getColumnName())
-                                || field.getColumnName().equals(QUAL.getColumnName())
-                                || field.getColumnName().equals(GT.getColumnName())
-                                || field.getColumnName().equals(DBSNP_ID.getColumnName())
-                                || field.getColumnName().equals(CUSTOM_INFO.getColumnName()))) {
-                            //|| af.getProgram().equals(VariantFormat.ANNOTATION_FORMAT_CUSTOM_VCF))) {
-                            hiddenColumns.add(fieldNames.size() - 1);
-                        }
-                        */
-                    }
-                }
-                if (isCancelled()) {
-                    throw new InterruptedException();
-                }
-
-                final DataRetriever<Object[]> retriever = new DataRetriever<Object[]>() {
-                    @Override
-                    public List<Object[]> retrieve(int start, int limit) {
-                        LOG.info("Retrieving data for TablePanel");
-                        try {
-                            List<Object[]> result = ResultController.getInstance().getFilteredVariantRecords(start, limit, null);
-                            //checkStarring(result);
-                            return result;
-                        } catch (Exception ex) {
-                            LOG.error("Error retrieving data.", ex);
-                            setActivePanel(true);
-                            return null;
-                        }
-                    }
-
-                    @Override
-                    public int getTotalNum() {
-                        showWaitCard();
-                        int result = 0;
-                        try {
-                            result = ResultController.getInstance().getFilteredVariantCount();
-                        } catch (Exception ex) {
-                            LOG.error("Error getting total number.", ex);
-                        }
-                        return result;
-                    }
-
-                    @Override
-                    public void retrievalComplete() {
-                        LOG.info("Done retrieving data for TablePanel");
-                        showShowCard();
-                        synchronized (updateLock) {
-                            updateRequired = false;
-                        }
-                    }
-                };
-
-                final SearchableTablePanel stp = new SearchableTablePanel(pageName, fieldNames.toArray(new String[0]), fieldClasses.toArray(new Class[0]), MiscUtils.toIntArray(hiddenColumns), 1000, retriever) {
-                    @Override
-                    public String getToolTip(int actualRow) {
-                        if (starMap.get(actualRow) != null && !starMap.get(actualRow).isEmpty()) {
-                            String s = "<HTML>";
-                            List<VariantComment> starred = starMap.get(actualRow);
-                            for (int i = 0; i < starred.size(); i++) {
-                                VariantComment current = starred.get(i);
-                                s += "\"" + ClientMiscUtils.addBreaksToString(current.getDescription(), 100) + "\"<BR>";
-                                s += "- " + current.getUser() + ", " + current.getTimestamp().toString();
-                                if (i != starred.size() - 1) {
-                                    s += "<BR>----------<BR>";
-                                }
-                            }
-                            s += "</HTML>";
-                            return s;
-                        }
-                        return null;
-                    }
-                };
-
-                stp.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-                    @Override
-                    public void valueChanged(ListSelectionEvent e) {
-
-                        if (e.getValueIsAdjusting()) {
-                            return;
-                        }
-
-                        int[] selRows = stp.getTable().getSelectedRows();
-                        if (selRows.length > 0) {
-                            int rowToFetch = selRows[0];
-
-                            int uploadID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_UPLOAD_ID);
-                            int fileID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_FILE_ID);
-                            int variantID = (Integer) stp.getTable().getModel().getValueAt(rowToFetch, INDEX_OF_VARIANT_ID);
-
-                            DbColumn uIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(UPLOAD_ID);
-                            DbColumn fIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(FILE_ID);
-                            DbColumn vIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(VARIANT_ID);
-
-                            Condition[][] conditions = new Condition[1][3];
-                            conditions[0][0] = BinaryConditionMS.equalTo(uIDcol, uploadID);
-                            conditions[0][1] = BinaryConditionMS.equalTo(fIDcol, fileID);
-                            conditions[0][2] = BinaryConditionMS.equalTo(vIDcol, variantID);
-
-
-                            List<Object[]> rows;
-                            try {
-                                rows = MedSavantClient.VariantManager.getVariants(
-                                        LoginController.sessionId,
-                                        ProjectController.getInstance().getCurrentProjectID(),
-                                        ReferenceController.getInstance().getCurrentReferenceID(),
-                                        conditions,
-                                        0, 1);
-
-                            } catch (Exception ex) {
-                                DialogUtils.displayError("Error", "There was a problem retriving variant results");
-                                return;
-                            }
-
-                            Object[] row = rows.get(0);
-
-                            VariantRecord r = new VariantRecord(
-                                    (Integer) row[INDEX_OF_UPLOAD_ID],
-                                    (Integer) row[INDEX_OF_FILE_ID],
-                                    (Integer) row[INDEX_OF_VARIANT_ID],
-                                    (Integer) ReferenceController.getInstance().getCurrentReferenceID(),
-                                    (Integer) 0, // pipeline ID
-                                    (String) row[INDEX_OF_DNA_ID],
-                                    (String) row[INDEX_OF_CHROM],
-                                    (Integer) row[INDEX_OF_POSITION],
-                                    (String) row[INDEX_OF_DBSNP_ID],
-                                    (String) row[INDEX_OF_REF],
-                                    (String) row[INDEX_OF_ALT],
-                                    (Float) row[INDEX_OF_QUAL],
-                                    (String) row[INDEX_OF_FILTER],
-                                    (String) row[INDEX_OF_CUSTOM_INFO],
-                                    new Object[]{});
-
-                            String type = (String) row[INDEX_OF_VARIANT_TYPE];
-                            String zygosity = (String) row[INDEX_OF_ZYGOSITY];
-                            String genotype = (String) row[INDEX_OF_GT];
-
-                            r.setType(VariantRecord.VariantType.valueOf(type));
-                            r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
-                            r.setGenotype(genotype);
-
-                            for (VariantSelectionChangedListener l : listeners) {
-                                l.variantSelectionChanged(r);
-                            }
-                        }
-                    }
-                });
-
-                stp.setExportButtonVisible(false);
-
-                stp.getTable().addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseReleased(MouseEvent e) {
-
-                        //check for right click
-                        if (!SwingUtilities.isRightMouseButton(e)) {
-                            return;
-                        }
-
-                        SortableTable table = searchableTablePanel.getTable();
-                        int numSelected = table.getSelectedRows().length;
-                        if (numSelected == 1) {
-                            int r = table.rowAtPoint(e.getPoint());
-                            if (r < 0 || r >= table.getRowCount()) {
-                                return;
-                            }
-                            JPopupMenu popup = createPopupSingle();
-                            popup.show(e.getComponent(), e.getX(), e.getY());
-                        } else if (numSelected > 1) {
-                            JPopupMenu popup = createPopupMultiple();
-                            popup.show(e.getComponent(), e.getX(), e.getY());
-                        }
-                    }
-                });
-
-                return stp;
-            }
-
-            @Override
-            protected void showProgress(double fraction) {
-                //do nothing
-            }
-
-            @Override
-            protected void showSuccess(Object result) {
-                LOG.info("DONE INITING TABLE");
-                tableContainer.removeAll();
-                searchableTablePanel = (SearchableTablePanel) result;
-                tableContainer.add(searchableTablePanel, BorderLayout.CENTER);
-                tableContainer.updateUI();
-                tableInitialized = true;
-                updateRequired = true;
-                updateTableIfRequired();
-            }
-        };
-        tableInitializer.execute();
     }
 
     private void showWaitCard() {
@@ -388,18 +136,14 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
     }
 
-    public boolean isInit() {
-        return tableInitialized;
-    }
-
     void queueUpdate(boolean b) {
         updateRequired = b;
-        this.updateIfNecessary();
+        updateIfNecessary();
     }
 
     void setIsTableShowing(boolean b) {
         isTableShowing = b;
-        this.updateIfNecessary();
+        updateIfNecessary();
     }
 
     public static void addVariantSelectionChangedListener(VariantSelectionChangedListener l) {
@@ -407,11 +151,10 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     }
 
     public void updateIfNecessary() {
-        if (this.updateRequired && this.isTableShowing) {
+        if (updateRequired && isTableShowing) {
             forceTableRefresh();
         }
     }
-    //int lastNumPassingVariants = -1;
 
     private void updateSummary() {
         try {
@@ -425,29 +168,11 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
             ringChart.setMinimumSize(new Dimension(ringDiameter, ringDiameter));
             ringChart.setMaximumSize(new Dimension(ringDiameter, ringDiameter));
             ringChart.setPreferredSize(new Dimension(ringDiameter, ringDiameter));
-            Vector<Ring> rings = new Vector<Ring>();
             Ring r1 = new Ring();
             r1.addItem("Pass all filters", numPassingVariants, new Color(72, 181, 249));
             r1.addItem("Don't pass filters", ResultController.getInstance().getTotalVariantCount() - numPassingVariants, Color.gray);
-            rings.add(r1);
 
-            /*
-             if (lastNumPassingVariants != -1) {
-             if (numPassingVariants < lastNumPassingVariants) {
-             Ring r2 = new Ring();
-             r2.addItem("Passed last filter", numPassingVariants, Color.green);
-             r2.addItem("Didn't pass last filter", lastNumPassingVariants-numPassingVariants, Color.gray);
-             rings.add(r2);
-             }
-             }
-
-             lastNumPassingVariants = numPassingVariants;
-             */
-
-            ringChart.setRings(rings);
-
-
-
+            ringChart.setRings(Arrays.asList(r1));
 
             JButton b = ViewUtil.getSoftButton("Load Spreadsheet");
 
@@ -455,18 +180,14 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
 
-                    System.err.println("User requested load of spreadsheet");
-
                     updateRequired = true;
 
                     showWaitCard();
                     setActivePanel(true);
 
-                    if (!tableInitialized) {
-                        System.err.println("Initializing table");
-                        tableInitializer.execute();
+                    if (searchableTablePanel == null) {
+                        new TableInitializer().execute();
                     } else {
-                        System.err.println("Updating table");
                         updateTableIfRequired();
                     }
                 }
@@ -499,20 +220,14 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
     }
 
     public void updateTableIfRequired() {
-        LOG.info("A");
         if (searchableTablePanel == null) {
-            LOG.info("B");
             return;
         }
-        LOG.info("C");
         synchronized (updateLock) {
-            LOG.info("D");
             if (updateRequired) {
-                LOG.info("E");
                 searchableTablePanel.forceRefreshData();
             }
         }
-        LOG.info("F");
     }
 
     private JPopupMenu createPopupSingle() {
@@ -541,9 +256,7 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
 
     private void setActivePanel(boolean showTable) {
 
-        final JPanel p = showTable ? this.tableContainer : this.summaryContainer;
-
-        LOG.info("Setting panel to " + (showTable ? "this.searchableTablePanel" : "this.summaryPanel"));
+        JPanel p = showTable ? tableContainer : summaryContainer;
 
         activePanel.removeAll();
         activePanel.add(p, BorderLayout.CENTER);
@@ -671,6 +384,233 @@ public class TablePanel extends JLayeredPane implements BasicVariantColumns {
         }
         if (index != -1) {
             list.remove(index);
+        }
+    }
+
+    private class TableInitializer extends MedSavantWorker<AnnotationFormat[]> {
+
+        private TableInitializer() {
+            super(pageName);
+        }
+
+        @Override
+        protected AnnotationFormat[] doInBackground() throws SQLException, RemoteException {
+            return ProjectController.getInstance().getCurrentAnnotationFormats();
+        }
+
+        @Override
+        protected void showProgress(double fraction) {
+            //do nothing
+        }
+
+        @Override
+        protected void showSuccess(AnnotationFormat[] result) {
+            List<String> fieldNames = new ArrayList<String>();
+            List<Class> fieldClasses = new ArrayList<Class>();
+            List<Integer> hiddenColumns = new ArrayList<Integer>();
+
+            for (AnnotationFormat af: result) {
+                for (CustomField field: af.getCustomFields()) {
+                    fieldNames.add(field.getAlias());
+                    switch (field.getColumnType()) {
+                        case INTEGER:
+                        case BOOLEAN:
+                            fieldClasses.add(Integer.class);
+                            break;
+                        case FLOAT:
+                        case DECIMAL:
+                            fieldClasses.add(Double.class);
+                            break;
+                        case VARCHAR:
+                        default:
+                            fieldClasses.add(String.class);
+                            break;
+                    }
+
+                    // hide all but some VCF fields
+                    if (af.getProgram().equals(AnnotationFormat.ANNOTATION_FORMAT_DEFAULT) &&
+                            field.getColumnName().equals(CHROM.getColumnName())
+                            || field.getColumnName().equals(POSITION.getColumnName())
+                            || field.getColumnName().equals(DNA_ID.getColumnName())
+                            || field.getColumnName().equals(ZYGOSITY.getColumnName())
+                            || field.getColumnName().equals(REF.getColumnName())
+                            || field.getColumnName().equals(ALT.getColumnName())
+                            || field.getColumnName().equals(QUAL.getColumnName())
+                            || field.getColumnName().equals(DBSNP_ID.getColumnName())
+                            | field.getColumnName().equals(VARIANT_TYPE.getColumnName())
+                            ) {
+                        // do nothing
+                    } else {
+                        hiddenColumns.add(fieldNames.size() - 1);
+                    }
+                }
+            }
+
+            searchableTablePanel = new SearchableTablePanel(pageName, fieldNames.toArray(new String[0]), fieldClasses.toArray(new Class[0]), MiscUtils.toIntArray(hiddenColumns), 1000, new TableDataRetriever()) {
+                @Override
+                public String getToolTip(int actualRow) {
+                    if (starMap.get(actualRow) != null && !starMap.get(actualRow).isEmpty()) {
+                        String s = "<HTML>";
+                        List<VariantComment> starred = starMap.get(actualRow);
+                        for (int i = 0; i < starred.size(); i++) {
+                            VariantComment current = starred.get(i);
+                            s += "\"" + ClientMiscUtils.addBreaksToString(current.getDescription(), 100) + "\"<BR>";
+                            s += "- " + current.getUser() + ", " + current.getTimestamp().toString();
+                            if (i != starred.size() - 1) {
+                                s += "<BR>----------<BR>";
+                            }
+                        }
+                        s += "</HTML>";
+                        return s;
+                    }
+                    return null;
+                }
+            };
+
+            searchableTablePanel.getTable().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+
+                    if (e.getValueIsAdjusting()) {
+                        return;
+                    }
+
+                    SortableTable t = searchableTablePanel.getTable();
+                    int[] selRows = t.getSelectedRows();
+                    if (selRows.length > 0) {
+                        int rowToFetch = selRows[0];
+
+                        int uploadID = (Integer)t.getModel().getValueAt(rowToFetch, INDEX_OF_UPLOAD_ID);
+                        int fileID = (Integer)t.getModel().getValueAt(rowToFetch, INDEX_OF_FILE_ID);
+                        int variantID = (Integer)t.getModel().getValueAt(rowToFetch, INDEX_OF_VARIANT_ID);
+
+                        DbColumn uIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(UPLOAD_ID);
+                        DbColumn fIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(FILE_ID);
+                        DbColumn vIDcol = ProjectController.getInstance().getCurrentVariantTableSchema().getDBColumn(VARIANT_ID);
+
+                        Condition[][] conditions = new Condition[1][3];
+                        conditions[0][0] = BinaryConditionMS.equalTo(uIDcol, uploadID);
+                        conditions[0][1] = BinaryConditionMS.equalTo(fIDcol, fileID);
+                        conditions[0][2] = BinaryConditionMS.equalTo(vIDcol, variantID);
+
+
+                        List<Object[]> rows;
+                        try {
+                            rows = MedSavantClient.VariantManager.getVariants(
+                                    LoginController.sessionId,
+                                    ProjectController.getInstance().getCurrentProjectID(),
+                                    ReferenceController.getInstance().getCurrentReferenceID(),
+                                    conditions,
+                                    0, 1);
+
+                        } catch (Exception ex) {
+                            ClientMiscUtils.reportError("There was a problem retrieving variant results: %s", ex);
+                            return;
+                        }
+
+                        Object[] row = rows.get(0);
+
+                        VariantRecord r = new VariantRecord(
+                                (Integer)row[INDEX_OF_UPLOAD_ID],
+                                (Integer)row[INDEX_OF_FILE_ID],
+                                (Integer)row[INDEX_OF_VARIANT_ID],
+                                (Integer)ReferenceController.getInstance().getCurrentReferenceID(),
+                                (Integer)0, // pipeline ID
+                                (String)row[INDEX_OF_DNA_ID],
+                                (String)row[INDEX_OF_CHROM],
+                                (Integer)row[INDEX_OF_POSITION],
+                                (String)row[INDEX_OF_DBSNP_ID],
+                                (String)row[INDEX_OF_REF],
+                                (String)row[INDEX_OF_ALT],
+                                (Float)row[INDEX_OF_QUAL],
+                                (String)row[INDEX_OF_FILTER],
+                                (String)row[INDEX_OF_CUSTOM_INFO],
+                                new Object[]{});
+
+                        String type = (String) row[INDEX_OF_VARIANT_TYPE];
+                        String zygosity = (String)row[INDEX_OF_ZYGOSITY];
+                        String genotype = (String)row[INDEX_OF_GT];
+
+                        r.setType(VariantRecord.VariantType.valueOf(type));
+                        r.setZygosity(VariantRecord.Zygosity.valueOf(zygosity));
+                        r.setGenotype(genotype);
+
+                        for (VariantSelectionChangedListener l: listeners) {
+                            l.variantSelectionChanged(r);
+                        }
+                    }
+                }
+            });
+
+            searchableTablePanel.setExportButtonVisible(false);
+
+            searchableTablePanel.getTable().addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+
+                    //check for right click
+                    if (!SwingUtilities.isRightMouseButton(e)) {
+                        return;
+                    }
+
+                    SortableTable table = searchableTablePanel.getTable();
+                    int numSelected = table.getSelectedRows().length;
+                    if (numSelected == 1) {
+                        int r = table.rowAtPoint(e.getPoint());
+                        if (r < 0 || r >= table.getRowCount()) {
+                            return;
+                        }
+                        JPopupMenu popup = createPopupSingle();
+                        popup.show(e.getComponent(), e.getX(), e.getY());
+                    } else if (numSelected > 1) {
+                        JPopupMenu popup = createPopupMultiple();
+                        popup.show(e.getComponent(), e.getX(), e.getY());
+                    }
+                }
+            });
+
+            tableContainer.removeAll();
+            tableContainer.add(searchableTablePanel, BorderLayout.CENTER);
+            tableContainer.updateUI();
+            updateRequired = true;
+            updateTableIfRequired();
+        }
+
+        private class TableDataRetriever extends DataRetriever<Object[]> {
+            @Override
+            public List<Object[]> retrieve(int start, int limit) {
+                LOG.info("Retrieving data for TablePanel");
+                try {
+                    List<Object[]> result = ResultController.getInstance().getFilteredVariantRecords(start, limit, null);
+                    //checkStarring(result);
+                    return result;
+                } catch (Exception ex) {
+                    LOG.error("Error retrieving data.", ex);
+                    setActivePanel(true);
+                    return null;
+                }
+            }
+
+            @Override
+            public int getTotalNum() {
+                showWaitCard();
+                int result = 0;
+                try {
+                    result = ResultController.getInstance().getFilteredVariantCount();
+                } catch (Exception ex) {
+                    LOG.error("Error getting total number.", ex);
+                }
+                return result;
+            }
+
+            @Override
+            public void retrievalComplete() {
+                LOG.info("Done retrieving data for TablePanel");
+                showShowCard();
+                synchronized (updateLock) {
+                    updateRequired = false;
+                }
+            }
         }
     }
 }
