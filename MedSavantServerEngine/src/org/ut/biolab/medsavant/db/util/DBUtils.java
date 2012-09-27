@@ -212,13 +212,12 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         LOG.info("Getting distinct values for " + tableName + "." + colName);
 
         makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.0);
-        List<String> result;
+
         String dbName = SessionController.getInstance().getDatabaseForSession(sessID);
         if (cacheing && DistinctValuesCache.isCached(dbName, tableName, colName)) {
             try {
                 makeProgress(sessID, "Using cached values...", 1.0);
-                result = DistinctValuesCache.getCachedStringList(dbName, tableName, colName);
-                return result;
+                return DistinctValuesCache.getCachedStringList(dbName, tableName, colName);
             } catch (Exception ex) {
                 LOG.warn("Unable to get cached distinct values for " + dbName + "/" + tableName + "/" + colName, ex);
             }
@@ -234,28 +233,25 @@ public class DBUtils extends MedSavantServerUnicastRemoteObject implements DBUti
         makeProgress(sessID, "Querying database...", 0.2);
         ResultSet rs = ConnectionController.executeQuery(sessID, query.toString() + (cacheing ? " LIMIT " + DistinctValuesCache.CACHE_LIMIT : ""));
 
-        result = new ArrayList<String>();
+        Set<String> set = new HashSet<String>();
         while (rs.next()) {
             makeProgress(sessID, String.format("Retrieving distinct values for %s...", colName), 0.75);
             String val = rs.getString(1);
             if (val == null) {
-                // TODO: appropriately handle NULL
-                result.add("");
+                // We treat nulls and empty strings as being interchangeable.
+                set.add("");
             } else {
                 if (explodeCommaSeparatedValues) {
                     String[] vals = val.split(",");
-                    result.addAll(Arrays.asList(vals));
+                    set.addAll(Arrays.asList(vals));
                 } else {
-                    result.add(val);
+                    set.add(val);
                 }
             }
         }
 
-
-        Set set = new HashSet(result);
-        result = new ArrayList(set);
+        List<String> result = new ArrayList<String>(set);
         Collections.sort(result);
-
 
         if (cacheing) {
             makeProgress(sessID, "Saving cached values...", 0.9);

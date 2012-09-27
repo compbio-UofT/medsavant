@@ -398,10 +398,16 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
 
         Condition[] conditions = new Condition[list.size()];
         for (int i = 0; i < list.size(); i++) {
-            if (allowInexactMatch) {
-                conditions[i] = BinaryConditionMS.like(testColumn, "%" + list.get(i) + "%");
+            String val = list.get(i);
+            if (val.length() == 0) {
+                // Users are humans (not computer programmers), so we treat empty strings as equivalent to null.
+                conditions[i] = ComboCondition.or(BinaryCondition.equalTo(testColumn, ""), UnaryCondition.isNull(testColumn));
             } else {
-                conditions[i] = BinaryConditionMS.equalTo(testColumn, list.get(i));
+                if (allowInexactMatch) {
+                    conditions[i] = BinaryConditionMS.like(testColumn, "%" + val + "%");
+                } else {
+                    conditions[i] = BinaryConditionMS.equalTo(testColumn, val);
+                }
             }
         }
         q.addCondition(ComboCondition.or(conditions));

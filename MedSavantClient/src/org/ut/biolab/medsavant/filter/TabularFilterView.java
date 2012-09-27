@@ -209,7 +209,7 @@ public abstract class TabularFilterView<T> extends FilterView {
 
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
         for (int i: indices) {
-            appliedValues.add((T)filterableList.getModel().getElementAt(i));
+            appliedValues.add(availableValues.get(i));
         }
     }
 
@@ -246,7 +246,11 @@ public abstract class TabularFilterView<T> extends FilterView {
 
         @Override
         public Object getElementAt(int i) {
-            return availableValues.get(i);
+            T val = availableValues.get(i);
+            if (val instanceof String && ((String)val).length() == 0) {
+                return "(null)";
+            }
+            return val;
         }
     }
 }

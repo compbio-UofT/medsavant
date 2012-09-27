@@ -124,9 +124,9 @@ public class StringListFilterView extends TabularFilterView<String> implements B
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
         for (int i : indices) {
             if (columnName.equals(GENDER.getColumnName())){
-                appliedValues.add(Integer.toString(ClientMiscUtils.stringToGender(filterableList.getModel().getElementAt(i).toString())));
+                appliedValues.add(Integer.toString(ClientMiscUtils.stringToGender(availableValues.get(i))));
             } else {
-                appliedValues.add(filterableList.getModel().getElementAt(i).toString());
+                appliedValues.add(availableValues.get(i));
             }
         }
 
