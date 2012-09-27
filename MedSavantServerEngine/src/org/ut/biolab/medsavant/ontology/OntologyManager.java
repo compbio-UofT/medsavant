@@ -222,7 +222,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                     result.add(new OntologyTerm(ont, rs.getString(1), rs.getString(2), rs.getString(3), StringUtils.split(rs.getString(4), ','), StringUtils.split(rs.getString(5), ',')));
                 }
             } else {
-                ResultSet rs = conn.executePreparedQuery("SELECT id,ontology.name,def,alt_ids,parents,type FROM ontology LEFT JOIN ontology_info ON ontology = ontology_info.name WHERE INSTR(genes, ?)", "|" + geneName + "|");
+                ResultSet rs = conn.executePreparedQuery("SELECT id,ontology.name,def,alt_ids,parents,type FROM ontology RIGHT JOIN ontology_info ON ontology = ontology_info.name WHERE INSTR(genes, ?)", "|" + geneName + "|");
                 while (rs.next()) {
                     result.add(new OntologyTerm(OntologyType.valueOf(rs.getString(6)), rs.getString(1), rs.getString(2), rs.getString(3), StringUtils.split(rs.getString(4), ','), StringUtils.split(rs.getString(5), ',')));
                 }
