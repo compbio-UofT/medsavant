@@ -16,7 +16,6 @@
 
 package org.ut.biolab.medsavant.serverapi;
 
-import org.ut.biolab.medsavant.format.BasicPatientColumns;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -39,6 +38,7 @@ import org.ut.biolab.medsavant.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.db.util.CustomTables;
 import org.ut.biolab.medsavant.db.util.DBSettings;
 import org.ut.biolab.medsavant.db.util.DBUtils;
+import org.ut.biolab.medsavant.format.BasicPatientColumns;
 import org.ut.biolab.medsavant.format.CustomField;
 import org.ut.biolab.medsavant.model.Range;
 import org.ut.biolab.medsavant.util.BinaryConditionMS;
@@ -747,19 +747,21 @@ public class PatientManager extends MedSavantServerUnicastRemoteObject implement
         String tablename = getPatientTableName(sessID, projID);
         TableSchema table = CustomTables.getInstance().getCustomTableSchema(sessID, tablename);
 
-        SelectQuery q1 = new SelectQuery();
-        q1.addFromTable(table.getTable());
-        q1.addColumns(table.getDBColumn(BAM_URL));
-        q1.addCondition(BinaryCondition.like(table.getDBColumn(DNA_IDS), dnaID));
+        SelectQuery q = new SelectQuery();
+        q.addFromTable(table.getTable());
+        q.addColumns(table.getDBColumn(BAM_URL));
+        q.addCondition(BinaryCondition.like(table.getDBColumn(DNA_IDS), dnaID));
 
-        ResultSet rs1 = ConnectionController.executeQuery(sessID, q1.toString());
+        ResultSet rs = ConnectionController.executeQuery(sessID, q.toString());
 
         String bamURL = null;
 
         //List<String> ids = new ArrayList<String>();
-        while (rs1.next()) {
-            bamURL = rs1.getString(1);
-            if (bamURL.equals("")) { bamURL = null; }
+        while (rs.next()) {
+            bamURL = rs.getString(1);
+            if ("".equals(bamURL)) {
+                bamURL = null;
+            }
         }
 
         return bamURL;
