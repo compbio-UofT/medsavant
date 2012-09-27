@@ -283,7 +283,7 @@ public class IndividualDetailedView extends DetailedView implements PedigreeFiel
 
         for (int i = 0 ; i < values.length; i++) {
             kvp.addKey(values[i][0]);
-            kvp.setValue(values[i][0], "<html>" + values[i][1].replace(",", "<br>") + "</html>");
+            kvp.setValue(values[i][0], values[i][1], true);
         }
 
         final String pedigreeKey = "Pedigree";

@@ -216,7 +216,7 @@ public class QueryPanel extends CollapsiblePanes {
             Filter changedFilter = event.getFilter();
 
             if (keyValuePanel.containsKey(changedFilter.getName())) {
-                Component xButton = ((JPanel)keyValuePanel.getAdditionalColumn(changedFilter.getName(), 0)).getComponent(0);
+                JComponent xButton = keyValuePanel.getAdditionalColumn(changedFilter.getName(), 0);
                 switch (event.getType()) {
                     case ADDED:
                     case MODIFIED:

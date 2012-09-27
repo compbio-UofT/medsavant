@@ -13,25 +13,18 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
-import org.ut.biolab.medsavant.MedSavantClient;
 
+import org.ut.biolab.medsavant.MedSavantClient;
 import org.ut.biolab.medsavant.geneset.GeneSetController;
 import org.ut.biolab.medsavant.login.LoginController;
 import org.ut.biolab.medsavant.model.Gene;
@@ -50,9 +43,8 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
 import org.ut.biolab.medsavant.view.variants.BrowserPage;
 import savant.api.data.DataFormat;
 import savant.controller.LocationController;
-import savant.controller.TrackController;
 import savant.util.Range;
-import savant.view.swing.Savant;
+
 
 /**
  *
@@ -60,21 +52,24 @@ import savant.view.swing.Savant;
  */
 public class BasicVariantSubInspector extends SubInspector implements VariantSelectionChangedListener {
 
-    private static String KEY_DNAID = "DNA ID";
-    private static String KEY_POSITION = "Position";
-    private static String KEY_GENES = "Genes";
-    private static String KEY_REF = "Reference";
-    private static String KEY_ALT = "Alternate";
-    private static String KEY_QUAL = "Quality";
-    private static String KEY_DBSNP = "dbSNP ID";
-    private static String KEY_TYPE = "Type";
-    private static String KEY_ZYGOSITY = "Zygosity";
-    private static String KEY_INFO = "Info";
+    private static final String KEY_DNAID = "DNA ID";
+    private static final String KEY_POSITION = "Position";
+    private static final String KEY_GENES = "Genes";
+    private static final String KEY_REF = "Reference";
+    private static final String KEY_ALT = "Alternate";
+    private static final String KEY_QUAL = "Quality";
+    private static final String KEY_DBSNP = "dbSNP ID";
+    private static final String KEY_TYPE = "Type";
+    private static final String KEY_ZYGOSITY = "Zygosity";
+    private static final String KEY_INFO = "Info";
+    private static final String URL_CHARSET = "UTF-8";
+
     private Collection<Gene> genes;
     private KeyValuePairPanel p;
     private JComboBox geneBox;
     private VariantRecord selectedVariant;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public BasicVariantSubInspector() {
         VariantInspector.addVariantSelectionChangedListener(this);
     }
@@ -83,7 +78,6 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
     public String getName() {
         return "Variant Details";
     }
-    static String charset = "UTF-8";
 
     @Override
     public JPanel getInfoPanel() {
@@ -103,10 +97,6 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
 
             geneBox = new JComboBox();
             ViewUtil.makeSmall(geneBox);
-            int geneDropdownWidth = 130;
-            geneBox.setMinimumSize(new Dimension(geneDropdownWidth, 30));
-            geneBox.setPreferredSize(new Dimension(geneDropdownWidth, 30));
-            geneBox.setMaximumSize(new Dimension(geneDropdownWidth, 30));
             p.setValue(KEY_GENES, geneBox);
 
             JButton genomeBrowserButton = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.BROWSER));
@@ -143,7 +133,7 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
                             }
                         }
                     } catch (Exception ex) {
-                        Logger.getLogger(BasicVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+                        ClientMiscUtils.reportError("Unable to load BAM file: %s", ex);
                     }
                 }
             });
@@ -210,51 +200,50 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
 
     @Override
     public void variantSelectionChanged(VariantRecord r) {
+        if (p == null) {
+            return;
+        }
+        if (r == null) {
+            // TODO show other card
+            return;
+        }
+
+        selectedVariant = r;
+
+        p.setValue(KEY_DNAID, r.getDnaID());
+        p.setValue(KEY_POSITION, r.getChrom() + ":"  + ViewUtil.numToString(r.getPosition()));
+        p.setValue(KEY_REF, r.getRef());
+        p.setValue(KEY_ALT, r.getAlt());
+
+        p.setValue(KEY_TYPE, checkNull(r.getType()));
+        p.setValue(KEY_ZYGOSITY, checkNull(r.getZygosity()));
+
+        p.setValue(KEY_QUAL, ViewUtil.numToString(r.getQual()));
+        p.setValue(KEY_DBSNP, checkNull(r.getDbSNPID()));
+        p.ellipsifyValues(InspectorPanel.INSPECTOR_INNER_WIDTH);
+
+        KeyValuePairPanel infoPanel = getInfoKVPPanel(r.getCustomInfo());
+        infoPanel.ellipsifyValues(InspectorPanel.INSPECTOR_INNER_WIDTH);
+        p.setDetailComponent(KEY_INFO, infoPanel);
+
         try {
-            if (p == null) {
-                return;
-            }
-            if (r == null) {
-                // TODO show other card
-                return;
-            }
-
-            selectedVariant = r;
-
-            p.setValue(KEY_DNAID, r.getDnaID());
-            p.setValue(KEY_POSITION, r.getChrom() + ":"  + ViewUtil.numToString(r.getPosition()));
-            p.setValue(KEY_REF, r.getRef());
-            p.setValue(KEY_ALT, r.getAlt());
-
-            p.setValue(KEY_TYPE, checkNull(r.getType()));
-            p.setValue(KEY_ZYGOSITY, checkNull(r.getZygosity()));
-
-            p.setValue(KEY_QUAL, ViewUtil.numToString(r.getQual()));
-            p.setValue(KEY_DBSNP, checkNull(r.getDbSNPID()));
-
-            p.setDetailComponent(KEY_INFO, getInfoKVPPanel(r.getCustomInfo()));
-
             String bamPath = MedSavantClient.PatientManager.getReadAlignmentPathForDNAID(
                     LoginController.sessionId,
                     ProjectController.getInstance().getCurrentProjectID(),
                     r.getDnaID());
 
-            JButton bamButton = (JButton) p.getAdditionalColumn(KEY_DNAID, 1).getComponent(0);
+            JButton bamButton = (JButton)p.getAdditionalColumn(KEY_DNAID, 1);
             if (bamPath != null && !bamPath.equals("")) {
                 bamButton.setVisible(true);
             } else {
                 bamButton.setVisible(false);
             }
-
         } catch (Exception ex) {
-            Logger.getLogger(BasicVariantSubInspector.class.getName()).log(Level.SEVERE, null, ex);
+            ClientMiscUtils.reportError("Unable to get BAM path for DNA ID: %s", ex);
         }
 
-
+        
         generateGeneIntersections(r);
-
-
-
     }
 
     private void generateGeneIntersections(VariantRecord r) {
@@ -323,10 +312,10 @@ public class BasicVariantSubInspector extends SubInspector implements VariantSel
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
-                    URL url = new URL(baseUrl + URLEncoder.encode(p.getValue(key), charset));
+                    URL url = new URL(baseUrl + URLEncoder.encode(p.getValue(key), URL_CHARSET));
                     java.awt.Desktop.getDesktop().browse(url.toURI());
                 } catch (Exception ex) {
-                    DialogUtils.displayError("Problem launching website.");
+                    ClientMiscUtils.reportError("Problem launching NCBI website: %s", ex);
                 }
             }
         });

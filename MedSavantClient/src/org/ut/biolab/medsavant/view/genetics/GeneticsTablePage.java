@@ -105,7 +105,7 @@ public class GeneticsTablePage extends SubSectionView {
 
         JTabbedPane inspectorPanel = InspectorPanel.getInstance();
 
-        detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, 380);
+        detailView = new PeekingPanel("Detail", BorderLayout.WEST, inspectorPanel, false, InspectorPanel.INSPECTOR_WIDTH);
         detailView.setToggleBarVisible(false);
 
         panel.add(detailView, BorderLayout.EAST);

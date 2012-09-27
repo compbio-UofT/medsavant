@@ -13,24 +13,23 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package org.ut.biolab.medsavant.view.component;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
+
 import org.ut.biolab.medsavant.view.images.IconFactory;
 import org.ut.biolab.medsavant.view.util.DialogUtils;
-
 import org.ut.biolab.medsavant.view.util.ViewUtil;
+
 
 /**
  *
@@ -38,56 +37,49 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  */
 public class KeyValuePairPanel extends JPanel {
 
-    public static String NULL_VALUE = "<NONE>";
+    public static final String NULL_VALUE = "<NONE>";
+    public static final Font KEY_FONT = new Font("Arial", Font.BOLD, 10);
+
     private Map<String, JLabel> keyKeyComponentMap;
     private Map<String, JPanel> keyValueComponentMap;
     private Map<String, JPanel> keyDetailComponentMap;
-    private final Map<String, JComponent[]> keySettingsMap;
+    private final Map<String, JPanel[]> keyExtraComponentsMap;
     private final int additionalColumns;
     private final ArrayList<GridBagConstraints> columnConstraints;
-    //private final GridBagConstraints withinValueConstraints;
-    private boolean isShowingMore = false;
-    private static final String KEY_MORE = "More";
+    private boolean showingMore = false;
     private List<String> keysInMoreSection;
     private boolean newRowsGoIntoMoreSection;
     private final GridBagConstraints keyDetailConstraints;
     private JPanel kvpPanel;
     private JPanel toolbar;
-    private boolean isKeysVisible = true;
-    private int maxValueLength = 15;
+    private boolean keysVisible = true;
 
     public KeyValuePairPanel() {
         this(0);
-    }
-    public static final Font KEY_FONT = new Font("Arial", Font.BOLD, 10);
-
-    public static JLabel getKeyLabel(String s) {
-        JLabel l = new JLabel(s.toUpperCase());
-        l.setFont(KEY_FONT);
-        return l;
     }
 
     public KeyValuePairPanel(int additionalColumns) {
         this(additionalColumns, false);
     }
 
-    public KeyValuePairPanel(int additionalColumns, boolean widelist) {
+    @SuppressWarnings("LeakingThisInConstructor")
+    public KeyValuePairPanel(int addCols, boolean widelist) {
 
-        this.setOpaque(false);
+        setOpaque(false);
 
         ViewUtil.applyVerticalBoxLayout(this);
         kvpPanel = ViewUtil.getClearPanel();
         toolbar = ViewUtil.getClearPanel();
         ViewUtil.applyHorizontalBoxLayout(toolbar);
 
-        this.add(kvpPanel);
-        this.add(toolbar);
+        add(kvpPanel);
+        add(toolbar);
 
-        this.additionalColumns = additionalColumns;
+        additionalColumns = addCols;
         keyKeyComponentMap = new HashMap<String, JLabel>();
         keyValueComponentMap = new HashMap<String, JPanel>();
         keyDetailComponentMap = new HashMap<String, JPanel>();
-        keySettingsMap = new HashMap<String, JComponent[]>();
+        keyExtraComponentsMap = new HashMap<String, JPanel[]>();
 
         columnConstraints = new ArrayList<GridBagConstraints>();
         keysInMoreSection = new ArrayList<String>();
@@ -138,16 +130,27 @@ public class KeyValuePairPanel extends JPanel {
         kvpPanel.setLayout(new GridBagLayout());
     }
 
+    public static JLabel getKeyLabel(String s) {
+        JLabel l = new JLabel(s.toUpperCase());
+        l.setFont(KEY_FONT);
+        return l;
+    }
+
+
     public JComponent getComponent(String key) {
-        return (JComponent) keyValueComponentMap.get(key).getComponent(0);
+        JPanel valuePanel = keyValueComponentMap.get(key);
+        if (valuePanel.getComponentCount() > 0) {
+            return (JComponent)valuePanel.getComponent(0);
+        }
+        return null;
     }
 
     public String getValue(String key) {
 
-        JComponent c = (JComponent) keyValueComponentMap.get(key).getComponent(0);
+        JComponent c = getComponent(key);
         if (c instanceof JLabel) {
             // the text of the label may be truncated, use the tooltip instead
-            return ((JLabel) keyValueComponentMap.get(key).getComponent(0)).getToolTipText();
+            return ((JLabel)c).getToolTipText();
         } else {
             System.err.println("WARNING: accessing string value of non-string label");
             return c.toString();
@@ -196,26 +199,26 @@ public class KeyValuePairPanel extends JPanel {
     }
 
     public void setKeysVisible(boolean b) {
-        this.isKeysVisible = b;
+        keysVisible = b;
         resetKeyVisibility();
     }
 
     private void resetKeyVisibility() {
-        for (String key : this.keyKeyComponentMap.keySet()) {
-            this.keyKeyComponentMap.get(key).setVisible(isKeysVisible);
+        for (String key : keyKeyComponentMap.keySet()) {
+            keyKeyComponentMap.get(key).setVisible(keysVisible);
         }
     }
 
     public void toggleMoreVisibility() {
-        setMoreVisibility(!isShowingMore);
+        setMoreVisibility(!showingMore);
     }
 
     private void setMoreVisibility(boolean b) {
-        isShowingMore = b;
-        for (String key : this.keysInMoreSection) {
-            keyKeyComponentMap.get(key).setVisible(b && this.isKeysVisible);
+        showingMore = b;
+        for (String key: keysInMoreSection) {
+            keyKeyComponentMap.get(key).setVisible(b && keysVisible);
             keyValueComponentMap.get(key).setVisible(b);
-            for (JComponent c : keySettingsMap.get(key)) {
+            for (JComponent c: keyExtraComponentsMap.get(key)) {
                 c.setVisible(b);
             }
             // close opened sub components in more if closing more
@@ -230,8 +233,7 @@ public class KeyValuePairPanel extends JPanel {
     }
 
     public void addKey(final String key, boolean showExpand) {
-
-        Color rowColor = Color.white;
+        Color rowColor = Color.WHITE;
         if (keyKeyComponentMap.size() % 2 == 0) {
             rowColor = ViewUtil.getAlternateRowColor();
         }
@@ -243,8 +245,6 @@ public class KeyValuePairPanel extends JPanel {
         JPanel valuePanel = new JPanel();
         valuePanel.setBackground(rowColor);
         ViewUtil.applyHorizontalBoxLayout(valuePanel);
-
-        JComponent[] extraComponents = new JComponent[additionalColumns];
 
         int i = 0;
 
@@ -279,12 +279,13 @@ public class KeyValuePairPanel extends JPanel {
         keyPanel.add(keyLabel);
         keyPanel.add(Box.createHorizontalGlue());
 
-        keyLabel.setVisible(isKeysVisible);
+        keyLabel.setVisible(keysVisible);
 
         kvpPanel.add(keyPanel, incrementConstraintRow(i++));
         kvpPanel.add(valuePanel, incrementConstraintRow(i++));
 
-        for (int j = 0; j < this.additionalColumns; j++) {
+        JPanel[] extraComponents = new JPanel[additionalColumns];
+        for (int j = 0; j < additionalColumns; j++) {
             JPanel panel = new JPanel();
             panel.setBackground(rowColor);
             ViewUtil.applyHorizontalBoxLayout(panel);
@@ -293,9 +294,7 @@ public class KeyValuePairPanel extends JPanel {
             kvpPanel.add(extraComponents[j], incrementConstraintRow(i++));
         }
 
-        /**
-         * add hidden panel
-         */
+        // add hidden panel
         keyDetailConstraints.gridy++;
         keyDetailConstraints.gridy++;
 
@@ -308,14 +307,14 @@ public class KeyValuePairPanel extends JPanel {
 
 
         // update all constraints to skip a line
-        for (int k = 0; k < 2 + this.additionalColumns; k++) {
+        for (int k = 0; k < 2 + additionalColumns; k++) {
             incrementConstraintRow(k);
         }
 
         keyValueComponentMap.put(key, valuePanel);
-        keySettingsMap.put(key, extraComponents);
+        keyExtraComponentsMap.put(key, extraComponents);
 
-        setMoreVisibility(this.isShowingMore);
+        setMoreVisibility(showingMore);
     }
 
     public void setValue(String key, JComponent value) {
@@ -327,33 +326,43 @@ public class KeyValuePairPanel extends JPanel {
         p.getParent().repaint();
     }
 
-    public void setMaxValueLength(int max) {
-        maxValueLength = max;
+    /**
+     * Set the value for this key to be a <code>JLabel</code> displaying said value.  No attempt will be made to split a long
+     * tooltip containing comma-delimited values.
+     */
+    public void setValue(String key, String value) {
+        setValue(key, value, false);
     }
 
-    public void setValue(String key, String value) {
+    /**
+     * Set the value for this key to be a <code>JLabel</code> displaying said value.  If <code>splitCommas</code> is true, the
+     * value's tooltip will display comma-delimited values on separate rows.
+     */
+    public void setValue(String key, String value, boolean splitCommas) {
 
         if (value.equals(NULL_VALUE)) {
             setValue(key, getNullLabel());
             return;
         }
 
-
-        JLabel c = new JLabel(ViewUtil.ellipsize(value,maxValueLength)); // horizontal padding
+        JLabel c = new JLabel(value);
+        if (splitCommas && value.indexOf(',') > 0) {
+            // For comma-separated lists, we want the text to be multi-line HTML.
+            value = "<html>" + value.replace(",", "<br>") + "</html>";
+        }
         c.setToolTipText(value);
         setValue(key, c);
     }
 
     public void setToolTipForValue(String key, String toolTipText){
-        if (isKeysVisible) {
+        if (keysVisible) {
             keyKeyComponentMap.get(key).setToolTipText(toolTipText);
-        }
-        else{
+        } else {
             keyValueComponentMap.get(key).setToolTipText(toolTipText);
         }
     }
 
-    private JComponent getNullLabel() {
+    private JLabel getNullLabel() {
         //JPanel p = ViewUtil.getClearPanel();
         JLabel l = new JLabel("NULL");
         l.setForeground(Color.red);
@@ -363,8 +372,8 @@ public class KeyValuePairPanel extends JPanel {
     }
 
     public void setAdditionalColumn(String key, int additionalColumnIndex, Component c) {
-        keySettingsMap.get(key)[additionalColumnIndex].removeAll();
-        keySettingsMap.get(key)[additionalColumnIndex].add(c);
+        keyExtraComponentsMap.get(key)[additionalColumnIndex].removeAll();
+        keyExtraComponentsMap.get(key)[additionalColumnIndex].add(c);
     }
 
     public GridBagConstraints incrementConstraintRow(int col) {
@@ -392,19 +401,20 @@ public class KeyValuePairPanel extends JPanel {
     }
 
     public void setKeyColour(String keyName, Color c) {
-        this.keyKeyComponentMap.get(keyName).setForeground(c);
+        keyKeyComponentMap.get(keyName).setForeground(c);
     }
 
     //@pre: param key is key of the bottom-most row in kvp
     public void removeBottomRow(String key){
-        if(isKeysVisible)
+        if (keysVisible) {
             kvpPanel.remove(keyKeyComponentMap.remove(key));
+        }
         kvpPanel.remove(keyValueComponentMap.remove(key));
-        for (JComponent j: keySettingsMap.remove(key)){
+        for (JPanel j: keyExtraComponentsMap.remove(key)){
             kvpPanel.remove(j);
         }
         kvpPanel.remove(keyDetailComponentMap.remove(key));
-        for(GridBagConstraints c: columnConstraints){
+        for (GridBagConstraints c: columnConstraints){
             c.gridy--;
         }
         keyDetailConstraints.gridy--;
@@ -413,14 +423,18 @@ public class KeyValuePairPanel extends JPanel {
     }
 
     public boolean containsKey(String key) {
-        return this.keyKeyComponentMap.containsKey(key);
+        return keyKeyComponentMap.containsKey(key);
     }
 
     public JComponent getAdditionalColumn(String key, int index) {
-        return this.keySettingsMap.get(key)[index];
+        JPanel p = keyExtraComponentsMap.get(key)[index];
+        if (p.getComponentCount() > 0) {
+            return (JComponent)p.getComponent(0);
+        }
+        return null;
     }
 
-        public static Component getCopyButton(final String key, final KeyValuePairPanel p) {
+    public static Component getCopyButton(final String key, final KeyValuePairPanel p) {
         JButton button = ViewUtil.getTexturedButton(IconFactory.getInstance().getIcon(IconFactory.StandardIcon.COPY));
         button.setToolTipText("Copy " + key);
         button.addActionListener(new ActionListener() {
@@ -428,12 +442,57 @@ public class KeyValuePairPanel extends JPanel {
             public void actionPerformed(ActionEvent ae) {
                 String selection = p.getValue(key);
                 StringSelection data = new StringSelection(selection);
-                Clipboard clipboard =
-                        Toolkit.getDefaultToolkit().getSystemClipboard();
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(data, data);
                 DialogUtils.displayMessage("Copied \"" + selection + "\" to clipboard.");
             }
         });
         return button;
+    }
+    
+    public void ellipsifyValues(int width) {
+        int maxKeyWidth = 0;
+        for (JComponent keyComp: keyKeyComponentMap.values()) {
+            maxKeyWidth = Math.max(maxKeyWidth, keyComp.getPreferredSize().width);
+        }
+        width -= maxKeyWidth;
+        for (String k: keyValueComponentMap.keySet()) {
+            JComponent comp = getComponent(k);
+            if (comp != null) {
+                int avail = width;
+                for (int i = 0; i < additionalColumns; i++) {
+                    JComponent extraComp = getAdditionalColumn(k, i);
+                    if (extraComp != null) {
+                        avail -= extraComp.getPreferredSize().width;
+                    }
+                }
+
+                if (comp instanceof JLabel) {
+                    while (avail < comp.getPreferredSize().width) {
+                        String text = ((JLabel)comp).getText();
+                        if (text.endsWith("…")) {
+                            if (text.length() > 2) {
+                                // Already truncated.
+                                text = text.substring(0, text.length() - 2);
+                            } else {
+                                break; // As short as we can get.  Can't truncate any more.
+                            }
+                        } else {
+                            // Reasonable first truncation is to trim off the last word.
+                            int spacePos = text.lastIndexOf(' ');
+                            if (spacePos > 0) {
+                                text = text.substring(0, spacePos);
+                            } else {
+                                text = text.substring(0, text.length() - 1);
+                            }
+                        }
+                        ((JLabel)comp).setText(text + "…");
+                    }
+                } else {
+                    // Can't truncate, but we can force the preferred size.
+                    comp.setMaximumSize(new Dimension(avail, comp.getPreferredSize().height));
+                }
+            }
+        }
     }
 }

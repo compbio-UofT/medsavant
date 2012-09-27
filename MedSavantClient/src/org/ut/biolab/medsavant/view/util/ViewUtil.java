@@ -27,6 +27,7 @@ import javax.swing.border.MatteBorder;
 import com.jidesoft.plaf.basic.ThemePainter;
 import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideSplitButton;
+
 import org.ut.biolab.medsavant.util.MiscUtils;
 import org.ut.biolab.medsavant.view.component.KeyValuePairPanel;
 
@@ -777,43 +778,4 @@ public class ViewUtil {
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return b;
     }
-
-    private final static String NON_THIN = "[^iIl1\\.,']";
-
-    private static int textWidth(String str) {
-        return (int) (str.length() - str.replaceAll(NON_THIN, "").length() / 2);
-    }
-
-    public static String ellipsize(String text, int max) {
-
-        if (textWidth(text) <= max) {
-            return text;
-        }
-
-        // Start by chopping off at the word before max
-        // This is an over-approximation due to thin-characters...
-        int end = text.lastIndexOf(' ', max - 3);
-
-        // Just one long word. Chop it off.
-        if (end == -1) {
-            return text.substring(0, max - 3) + "...";
-        }
-
-        // Step forward as long as textWidth allows.
-        int newEnd = end;
-        do {
-            end = newEnd;
-            newEnd = text.indexOf(' ', end + 1);
-
-            // No more spaces.
-            if (newEnd == -1) {
-                newEnd = text.length();
-            }
-
-        } while (textWidth(text.substring(0, newEnd) + "...") < max);
-
-        return text.substring(0, end) + "...";
-    }
-
-
 }

@@ -15,32 +15,20 @@
  */
 package org.ut.biolab.medsavant.view.genetics.variantinfo;
 
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.event.*;
+import java.util.*;
+import javax.swing.*;
+
 import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
 import cytoscape.layout.CyLayoutAlgorithm;
 import cytoscape.layout.CyLayouts;
 import cytoscape.view.CyNetworkView;
-import cytoscape.view.NetworkViewManager;
-import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.event.*;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.*;
-import javax.swing.event.InternalFrameAdapter;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.genemania.plugin.cytoscape2.layout.FilteredLayout;
-import org.genemania.type.CombiningMethod;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import org.ut.biolab.medsavant.model.Gene;
 import org.ut.biolab.medsavant.model.RegionSet;
@@ -64,8 +52,8 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
     private static final Log LOG = LogFactory.getLog(GeneManiaInfoSubPanel.class);
     private final String name;
     private GenemaniaInfoRetriever genemania;
-    private JLabel l;
-    private JPanel p;
+    private JLabel label;
+    private JPanel panel;
     private javax.swing.JProgressBar progressBar;
     private JLabel progressMessage;
     private KeyValuePairPanel kvp;
@@ -93,16 +81,16 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
 
     @Override
     public JPanel getInfoPanel() {
-        l = new JLabel("Selected gene: ");
-        p = ViewUtil.getClearPanel();
+        label = new JLabel("Selected gene: ");
+        panel = ViewUtil.getClearPanel();
         try {
             genemania = new GenemaniaInfoRetriever();
             genemaniaSettings = new GeneManiaSettingsDialog(genemania);
         } catch (Exception ex) {
             progressMessage = new JLabel("<html><center>" + ex.getMessage() + "<br>Please try again after data has been downloaded.</center></html>", SwingConstants.CENTER);
-            p.add(progressMessage);
+            panel.add(progressMessage);
             dataPresent = false;
-            return p;
+            return panel;
         }
         kvp = new KeyValuePairPanel(2);
         kvp.setKeysVisible(false);
@@ -116,7 +104,7 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
         progressBar.setVisible(false);
         progressMessage = new JLabel();
         progressMessage.setVisible(false);
-        p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         settingsButton = new JButton("Settings");
         settingsButton.addActionListener(new java.awt.event.ActionListener() {
             @Override
@@ -127,30 +115,30 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                 }
             }
         });
-        l = new JLabel("Selected gene: ");
+        label = new JLabel("Selected gene: ");
         //currGenePanel.add(l);
         pMessagePanel.add(progressMessage);
         settingsPanel.setLayout(new BorderLayout());
         settingsPanel.add(settingsButton, BorderLayout.EAST);
         graph = ViewUtil.getClearPanel();
-        p.add(kvpPanel);
-        p.add(currGenePanel);
-        p.add(pMessagePanel);
-        p.add(progressBar);
+        panel.add(kvpPanel);
+        panel.add(currGenePanel);
+        panel.add(pMessagePanel);
+        panel.add(progressBar);
 
         //p.add(new javax.swing.JSeparator(JSeparator.HORIZONTAL));
-        p.add(settingsPanel);
-        p.add(graph);
-        return p;
+        panel.add(settingsPanel);
+        panel.add(graph);
+        return panel;
     }
 
     @Override
     public void geneSelectionChanged(Gene g) {
         if (g == null || !dataPresent) {
-            l.setText("None");
+            label.setText("None");
         } else {
             System.out.println("Received gene " + g.getName());
-            l.setText(g.getName());
+            label.setText(g.getName());
             if (gene == null || !g.getName().equals(gene.getName())) {
                 updateRelatedGenesPanel(g);
             }
@@ -167,14 +155,13 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                 final RegionSet finalRegionSet = s;
                 JMenuItem menuItem = new JMenuItem(s.getName());
                 menuItem.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent ae) {
                         try {
                             regionController.addToRegionSet(finalRegionSet, g.getChrom(), g.getStart(), g.getEnd(), g.getName());
                             DialogUtils.displayMessage(String.format("Successfully added %s to %s list", g.getName(), finalRegionSet.getName()));
-                        } catch (SQLException ex) {
-                            Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (RemoteException e) {
-                            Logger.getLogger(GeneManiaInfoSubPanel.class.getName()).log(Level.SEVERE, null, e);
+                        } catch (Exception ex) {
+                            ClientMiscUtils.reportError(String.format("Unable to add %s to %s list: %%s", g.getName(), finalRegionSet.getName()), ex);
                         }
                     }
                 });
@@ -346,13 +333,10 @@ public class GeneManiaInfoSubPanel extends SubInspector implements GeneSelection
                         if (setMsgOff) {
                             progressMessage.setVisible(false);
                         }
-                        System.out.println("got here");
                         graph.removeAll();
                         graph.add(buildGraph());
-                        System.out.println("got through");
                         graph.invalidate();
                         graph.updateUI();
-                        System.err.println("done finally" + System.currentTimeMillis());
                     }
 
                 }
