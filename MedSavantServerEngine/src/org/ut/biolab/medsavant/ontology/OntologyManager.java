@@ -400,12 +400,6 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     private void populateTable(String name, Map<String, OntologyTerm> terms) throws SQLException {
         String backupTableName = null;
         
-        // Move the old table out of the way in case something goes wrong.
-        if (!connection.tableExists("ontology")) {
-            connection.executeUpdate(MedSavantDatabase.OntologyTableSchema.getCreateQuery() + " ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_bin");
-            LOG.debug("Created ontology table.");
-        }
-        
         // Insert records for all the terms.  Different prepared statement used depending on whether we have parents or not.
         PreparedStatement prep4 = connection.prepareStatement(ontologySchema.preparedInsert(ONTOLOGY, ID, NAME, DEF).toString());
         PreparedStatement prep5a = connection.prepareStatement(ontologySchema.preparedInsert(ONTOLOGY, ID, NAME, DEF, ALT_IDS).toString());
@@ -454,5 +448,21 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
             }
         }
         return null;
+    }
+    
+    public void populate(final String sessID) {
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    LOG.info("dbname for connection: " + ConnectionController.getDBName(sessID));
+                    addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, GO_OBO_URL, GO_TO_GENES_URL);
+                    addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, HPO_OBO_URL, HPO_TO_GENES_URL);
+                    addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, OMIM_OBO_URL, OMIM_TO_HPO_URL);
+                } catch (Exception ex) {
+                    LOG.error("Error populating ontology tables.", ex);
+                }
+            }
+        }.start();
     }
 }

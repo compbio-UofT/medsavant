@@ -27,7 +27,6 @@ import org.ut.biolab.medsavant.db.Settings;
 import org.ut.biolab.medsavant.db.connection.ConnectionController;
 import org.ut.biolab.medsavant.db.connection.PooledConnection;
 import org.ut.biolab.medsavant.model.Chromosome;
-import org.ut.biolab.medsavant.model.OntologyType;
 import org.ut.biolab.medsavant.model.UserLevel;
 import org.ut.biolab.medsavant.ontology.OntologyManager;
 import org.ut.biolab.medsavant.server.SessionController;
@@ -56,7 +55,7 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     @Override
     public void createDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword, String versionString) throws IOException, SQLException, RemoteException {
 
-        String sessID = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
+        final String sessID = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
 
         Connection conn = ConnectionController.connectPooled(sessID);
         conn.createStatement().execute("CREATE DATABASE " + dbName);
@@ -77,11 +76,6 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         addDBSettings(sessID, versionString);
         populateGenes(sessID);
 
-        OntologyManager ontMgr = OntologyManager.getInstance();
-        ontMgr.addOntology(sessID, OntologyType.GO.toString(), OntologyType.GO, OntologyManagerAdapter.GO_OBO_URL, OntologyManagerAdapter.GO_TO_GENES_URL);
-        ontMgr.addOntology(sessID, OntologyType.HPO.toString(), OntologyType.HPO, OntologyManagerAdapter.HPO_OBO_URL, OntologyManagerAdapter.HPO_TO_GENES_URL);
-        ontMgr.addOntology(sessID, OntologyType.OMIM.toString(), OntologyType.OMIM, OntologyManagerAdapter.OMIM_OBO_URL, OntologyManagerAdapter.OMIM_TO_HPO_URL);
-
         // Grant permissions to everybody else.
         for (String user: userMgr.getUserNames(sessID)) {
             if (!user.equals(adminName)) {
@@ -90,6 +84,10 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         }
 
         conn.close();
+
+        // We populate the ontology tables on a separate thread because it can take a very long time, and users aren't going to be
+        // looking at ontologies any time soon.
+        OntologyManager.getInstance().populate(sessID);
     }
 
     @Override
