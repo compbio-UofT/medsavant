@@ -58,10 +58,9 @@ class OntologyDetailedListEditor extends DetailedListEditor {
 
         String caption, message;
         if (items.size() == 1) {
-            String name = (String)items.get(0)[0];
             caption = "Removing Ontology";
             message = "Removing ontology.  Please wait.";
-            result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This cannot be undone.</html>", name);
+            result = DialogUtils.askYesNo("Confirm", "<html>Are you sure you want to remove <i>%s</i>?<br>This cannot be undone.</html>", items.get(0)[0]);
         } else {
             caption = "Removing Ontologies";
             message = "Removing ontologies.  Please wait.";
@@ -75,12 +74,13 @@ class OntologyDetailedListEditor extends DetailedListEditor {
                 public void run() {
                     int numCouldntRemove = 0;
 
-                    for (Object[] v : items) {
-                        String ontName = (String)v[0];
+                    for (int i = 0; i < items.size(); i++) {
+                        String ontName = items.get(i)[0].toString();
                         try {
                             MedSavantClient.OntologyManager.removeOntology(LoginController.sessionId, ontName);
                         } catch (Throwable ex) {
                             numCouldntRemove++;
+                            setVisible(false);
                             ClientMiscUtils.reportError("Could not remove " + ontName + ": %s", ex);
                         }
                     }
