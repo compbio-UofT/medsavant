@@ -243,6 +243,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         Map<String, OntologyTerm> terms = new OBOParser(OntologyType.GO).load(oboData);
         
         connection = ConnectionController.connectPooled(sessID);
+        LOG.info("Session " + sessID + " made connection for " + connection.pool.getDBName());
         try {
             populateTable(name, terms);
         

@@ -147,7 +147,7 @@ public class AddPatientsForm extends JDialog {
 
     private void generateTemplate() throws SQLException, RemoteException {
 
-        File file = DialogUtils.chooseFileForSave("Export Individuals", "template.csv", ExtensionFileFilter.createFilters(new String[]{"csv"}), null);
+        File file = DialogUtils.chooseFileForSave("Export Individuals", "individuals.csv", ExtensionFileFilter.createFilters(new String[]{"csv"}), null);
         if (file == null) return;
 
         progressBar.setIndeterminate(true);
@@ -236,7 +236,7 @@ public class AddPatientsForm extends JDialog {
                             }
                         }
                         if (!found) {
-                            DialogUtils.displayError("<HTML>The headers in this file do not match those in the database.<BR>Please regenerate the template file.</HTML>");
+                            DialogUtils.displayError(String.format("<HTML>Column <i>%s</i> found in text file but not in database.<BR>Please regenerate the text file or modify the project.</HTML>", s));
                             progressMessage.setText("Error importing individuals");
                             progressBar.setIndeterminate(false);
                             progressBar.setValue(0);

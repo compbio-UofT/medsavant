@@ -36,6 +36,8 @@ import com.jidesoft.wizard.CompletionWizardPage;
 import com.jidesoft.wizard.DefaultWizardPage;
 import com.jidesoft.wizard.WizardDialog;
 import com.jidesoft.wizard.WizardStyle;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -111,7 +113,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     }
 
     private void setupWizard() {
-        setTitle("Project Wizard");
+        setTitle(modify ? "Modify Project" : "Create Project");
         WizardStyle.setStyle(WizardStyle.MACOSX_STYLE);
 
         //add pages
@@ -274,17 +276,20 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         page.addComponent(addFieldButton);
 
         JButton removeFieldButton = new JButton("Remove Field");
+        removeFieldButton.setEnabled(false);
         removeFieldButton.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 int row = table.getSelectedRow();
-                if (row >= BasicPatientColumns.REQUIRED_PATIENT_FIELDS.length) {
+                // Minus one because patient_id isn't in the table.
+                if (row >= BasicPatientColumns.REQUIRED_PATIENT_FIELDS.length - 1) {
                     patientFormatModel.removeRow(row);
                 }
                 table.setModel(patientFormatModel);
             }
         });
+        table.getSelectionModel().addListSelectionListener(new RemovalEnabler(BasicPatientColumns.REQUIRED_PATIENT_FIELDS.length - 1, removeFieldButton));
         page.addComponent(removeFieldButton);
 
         return page;
@@ -339,9 +344,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 for (CustomField f : fields) {
                     variantFormatModel.addRow(new Object[]{f.getColumnName().toUpperCase(), f.getTypeString(), f.isFilterable(), f.getAlias(), f.getDescription()});
                 }
-            } catch (SQLException ex) {
-                LOG.error("Error getting reference IDs for project.", ex);
-            } catch (RemoteException ex) {
+            } catch (Exception ex) {
                 LOG.error("Error getting reference IDs for project.", ex);
             }
         } else {
@@ -399,6 +402,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
         page.addComponent(addFieldButton);
 
         JButton removeFieldButton = new JButton("Remove Field");
+        removeFieldButton.setEnabled(false);
         removeFieldButton.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -411,6 +415,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
                 }
             }
         });
+        table.getSelectionModel().addListSelectionListener(new RemovalEnabler(0, removeFieldButton));
         page.addComponent(removeFieldButton);
 
         return page;
@@ -619,33 +624,29 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     private boolean validatePatientFormatModel() {
         // 8 is the number of standard patientFields
         List<CustomField> fields = new ArrayList<CustomField>();
-        if (validateFormatModel(fields, patientFormatModel, BasicPatientColumns.REQUIRED_PATIENT_FIELDS.length - 1)) {
+        String validationErr = validateFormatModel(fields, patientFormatModel, BasicPatientColumns.REQUIRED_PATIENT_FIELDS.length - 1);
+        if (validationErr == null) {
             customFields = fields.toArray(new CustomField[0]);
             return true;
         } else {
-            DialogUtils.displayError(
-                    "Individuals table format contains errors\n"
-                    + "Name cannot only contain letters, numbers and underscores. \n"
-                    + "Type must be in format: COLUMNTYPE(LENGTH)");
+            DialogUtils.displayError(String.format("Individuals table format contains errors\n%s", validationErr));
             return false;
         }
     }
 
     private boolean validateVariantFormatModel() {
         List<CustomField> fields = new ArrayList<CustomField>();
-        if (validateFormatModel(fields, variantFormatModel, 0)) {
+        String validationErr = validateFormatModel(fields, variantFormatModel, 0);
+        if (validationErr == null) {
             variantFields = fields.toArray(new CustomField[0]);
             return true;
         } else {
-            DialogUtils.displayError(
-                    "Variant table format contains errors\n"
-                    + "Name cannot only contain letters, numbers and underscores. \n"
-                    + "Type must be in format: COLUMNTYPE(LENGTH)");
+            DialogUtils.displayError(String.format("Variant table format contains errors.\n%s", validationErr));
             return false;
         }
     }
 
-    private boolean validateFormatModel(List<CustomField> fields, DefaultTableModel model, int firstRow) {
+    private String validateFormatModel(List<CustomField> fields, DefaultTableModel model, int firstRow) {
 
         for (int row = firstRow; row < model.getRowCount(); row++) {
             String fieldName = (String) model.getValueAt(row, 0);
@@ -660,7 +661,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
 
             if (!fieldName.matches("^([a-z]|[A-Z]|_|[0-9])+$")) {// ||
                 //!fieldType.matches("^([a-z]|[A-Z])+\\([0-9]+\\)$")) {
-                return false;
+                return "Field name can contain only letters, numbers, and underscores.";
             }
 
             if (!fieldName.equals("") && !fieldType.equals("")) {
@@ -677,7 +678,7 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
             }
         }
 
-        return true;
+        return null;
     }
 
     private void createNewProject() throws Exception {
@@ -868,4 +869,20 @@ public class ProjectWizard extends WizardDialog implements BasicPatientColumns, 
     public boolean isModified() {
         return isModified;
     }
+    
+    private class RemovalEnabler implements ListSelectionListener {
+        private final int lockedRows;
+        private final JButton button;
+
+        RemovalEnabler(int n, JButton b) {
+            lockedRows = n;
+            button = b;
+        }
+
+        @Override
+        public void valueChanged(ListSelectionEvent lse) {
+            int n = ((ListSelectionModel)lse.getSource()).getMinSelectionIndex();
+            button.setEnabled(n >= lockedRows);
+        }
+    };
 }
