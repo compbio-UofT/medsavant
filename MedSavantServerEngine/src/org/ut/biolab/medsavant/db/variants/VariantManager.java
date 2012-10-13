@@ -200,7 +200,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         LOG.info("Adding log and generating update id");
         int updateId = AnnotationLogManager.getInstance().addAnnotationLogEntry(sessID, projID, refID, org.ut.biolab.medsavant.model.AnnotationLog.Action.ADD_VARIANTS, user);
         fract += LOG_FRACTION;
-        
+
         try {
             ProjectManager projMgr = ProjectManager.getInstance();
 
@@ -280,7 +280,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             makeProgress(sessID, "Loading data into subset table...", fract);
             uploadFileToVariantTable(sessID, subFile, tableNameSub);
             fract += LOAD_TABLE_FRACTION;
-            
+
             //add entries to tablemap
             projMgr.addTableToMap(sessID, projID, refID, updateId, false, tableName, annotIDs, tableNameSub);
 
@@ -320,7 +320,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
         File[] vcfFiles = new File[transferIDs.length];
         String[] sourceNames = new String[transferIDs.length];
 
-        
+
         int i = 0;
         for (int id : transferIDs) {
             vcfFiles[i] = netMgr.getFileByTransferID(sessID, id);
@@ -407,7 +407,7 @@ public class VariantManager extends MedSavantServerUnicastRemoteObject implement
             //create the staging table
             LOG.info("Creating new variant table for resulting variants");
 
-            
+
             projMgr.setCustomVariantFields(
                     sessID, projID, refID, updateID,
                     projMgr.getCustomVariantFields(sessID, projID, refID, projMgr.getNewestUpdateID(sessID, projID, refID, false)));

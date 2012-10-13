@@ -59,7 +59,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
     private PooledConnection connection;
     private final TableSchema ontologySchema;
     private final TableSchema ontologyInfoSchema;
-    
+
     public static OntologyManager getInstance() throws RemoteException {
         if (instance == null) {
             instance = new OntologyManager();
@@ -89,7 +89,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                 populateOMIMTables(sessID, name, oboData, mappingData);
                 break;
         }
-        
+
         PooledConnection conn = ConnectionController.connectPooled(sessID);
         try {
             conn.executePreparedUpdate(ontologyInfoSchema.delete(ONTOLOGY_NAME, name).toString());
@@ -101,7 +101,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
 
     @Override
     public void removeOntology(String sessID, String ontName) throws IOException, SQLException, RemoteException {
-        PooledConnection conn = ConnectionController.connectPooled(sessID); 
+        PooledConnection conn = ConnectionController.connectPooled(sessID);
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -209,7 +209,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
      * @param sessID login session
      * @param ont ontology to be searched (pass null to search across all ontologies)
      * @param geneName name of the gene whose terms we want
-     * @throws SQLException 
+     * @throws SQLException
      */
     @Override
     public OntologyTerm[] getTermsForGene(String sessID, OntologyType ont, String geneName) throws SQLException {
@@ -237,16 +237,16 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
      * Populate the tables with Gene Ontology data
      * @param oboData an OBO file containing gene ontology terms
      * @param goToGeneData a gzipped GAF file (http://www.geneontology.org/GO.format.gaf-2_0.shtml)
-     * @throws IOException 
+     * @throws IOException
      */
     private void populateGOTables(String sessID, String name, URL oboData, URL goToGeneData) throws IOException, SQLException {
         Map<String, OntologyTerm> terms = new OBOParser(OntologyType.GO).load(oboData);
-        
+
         connection = ConnectionController.connectPooled(sessID);
-        LOG.info("Session " + sessID + " made connection for " + connection.pool.getDBName());
+        LOG.info("Session " + sessID + " made connection");
         try {
             populateTable(name, terms);
-        
+
             Map<String, Set<String>> allGenes = new HashMap<String, Set<String>>();
             // Expecting a GZIPped tab-delimited text file in GAF (GO Annotation File) format.
             // We are only interested in columns 2 (gene), 3 (qualifier), and 4 (GO term).
@@ -285,7 +285,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
             allGenes.put(term, termGenes);
         }
         termGenes.add(gene);
-        
+
         OntologyTerm term2 = allTerms.get(term);
         if (term2 != null) {
             for (String p: term2.getParentIDs()) {
@@ -320,7 +320,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
                             for (String g: genes) {
                                 geneString += g.substring(0, g.indexOf('(')) + "|";
                             }
-                            connection.executePreparedUpdate(updStmt, geneString, term);                            
+                            connection.executePreparedUpdate(updStmt, geneString, term);
                         }
                     }
                 }
@@ -397,10 +397,10 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
             connection.close();
         }
     }
-    
+
     private void populateTable(String name, Map<String, OntologyTerm> terms) throws SQLException {
         String backupTableName = null;
-        
+
         // Insert records for all the terms.  Different prepared statement used depending on whether we have parents or not.
         PreparedStatement prep4 = connection.prepareStatement(ontologySchema.preparedInsert(ONTOLOGY, ID, NAME, DEF).toString());
         PreparedStatement prep5a = connection.prepareStatement(ontologySchema.preparedInsert(ONTOLOGY, ID, NAME, DEF, ALT_IDS).toString());
@@ -434,14 +434,14 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
             prep.executeUpdate();
         }
         LOG.debug(String.format("Inserted %d records.", terms.size()));
-        
+
         // If we got here, drop the backup table.
         if (backupTableName != null) {
             connection.executeUpdate("DROP TABLE ontology_back");
             LOG.debug("Dropped ontology_back.");
         }
     }
-    
+
     private static OntologyTerm findTermByID(OntologyTerm[] terms, String termID) {
         for (OntologyTerm t: terms) {
             if (t.getID().equals(termID)) {
@@ -450,7 +450,7 @@ public class OntologyManager extends MedSavantServerUnicastRemoteObject implemen
         }
         return null;
     }
-    
+
     public void populate(final String sessID) {
         new Thread() {
             @Override
