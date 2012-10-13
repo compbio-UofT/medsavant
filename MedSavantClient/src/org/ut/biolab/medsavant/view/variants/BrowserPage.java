@@ -18,9 +18,13 @@ package org.ut.biolab.medsavant.view.variants;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.List;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import org.ut.biolab.medsavant.MedSavantClient;
@@ -33,6 +37,8 @@ import org.ut.biolab.medsavant.reference.ReferenceController;
 import org.ut.biolab.medsavant.reference.ReferenceEvent;
 import org.ut.biolab.medsavant.util.ClientMiscUtils;
 import org.ut.biolab.medsavant.util.ThreadController;
+import org.ut.biolab.medsavant.view.component.GenericStringChooser;
+import org.ut.biolab.medsavant.view.component.GenericStringChooser.ValueRetriever;
 import org.ut.biolab.medsavant.view.genetics.GenomeContainer;
 import org.ut.biolab.medsavant.view.subview.SectionView;
 import org.ut.biolab.medsavant.view.subview.SubSectionView;
@@ -118,9 +124,30 @@ public class BrowserPage extends SubSectionView {
     @Override
     public Component[] getSubSectionMenuComponents() {
         if (settingComponents == null) {
-            settingComponents = new Component[2];
+            settingComponents = new Component[3];
             settingComponents[0] = PeekingPanel.getCheckBoxForPanel(genomeView, "Genome");
             settingComponents[1] = PeekingPanel.getCheckBoxForPanel(variationPanel, "Variation");
+
+            JButton button = new JButton("DNA ID Chooser");
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+
+                    ValueRetriever vr = new ValueRetriever() {
+
+                        @Override
+                        public List<String> retrieveStringValues() {
+                            return null;
+                        }
+                    };
+
+                    GenericStringChooser gsc = new GenericStringChooser(vr, "Choose DNA IDs");
+                    gsc.setVisible(true);
+                }
+            });
+
+            settingComponents[2] = button;
+
         }
         return settingComponents;
     }

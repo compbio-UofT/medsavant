@@ -118,6 +118,7 @@ public class CohortWizard extends WizardDialog {
             try {
                 if (validateName()) {
                     MedSavantClient.CohortManager.addCohort(LoginController.sessionId, ProjectController.getInstance().getCurrentProjectID(), cohortName);
+
                     setVisible(false);
                 }
             } catch (Exception ex) {

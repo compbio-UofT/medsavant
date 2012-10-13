@@ -20,8 +20,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.healthmarketscience.sqlbuilder.dbspec.basic.DbColumn;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.ut.biolab.medsavant.MedSavantClient;
+import org.ut.biolab.medsavant.controller.ResultController;
 import org.ut.biolab.medsavant.db.ColumnType;
 import org.ut.biolab.medsavant.db.TableSchema;
 import org.ut.biolab.medsavant.filter.FilterController;
@@ -39,6 +42,9 @@ import org.ut.biolab.medsavant.settings.DirectorySettings;
  */
 public class ExportVCF implements BasicVariantColumns {
 
+    private static final Log LOG = LogFactory.getLog(ExportVCF.class);
+
+
     //important locations in intermediate file created pre-merge
     private static int INTERMEDIATE_INDEX_DNA_ID = 0;
     private static int INTERMEDIATE_INDEX_GENOTYPE = 1;
@@ -50,6 +56,28 @@ public class ExportVCF implements BasicVariantColumns {
     private static int INTERMEDIATE_INDEX_QUAL = 7;
     private static int INTERMEDIATE_INDEX_FILTER = 8;
     private static int INTERMEDIATE_INDEX_CUSTOM = 9; //and on
+
+
+    public static void exportTDF(File destFile, MedSavantWorker worker) throws Exception {
+
+
+        int fileID = MedSavantClient.VariantManager.exportVariants(
+                LoginController.sessionId,
+                ProjectController.getInstance().getCurrentProjectID(),
+                ReferenceController.getInstance().getCurrentReferenceID(),
+                FilterController.getInstance().getAllFilterConditions());
+        if (worker.isCancelled()) {
+            throw new InterruptedException();
+        }
+
+        worker.showProgress(0.5);
+
+        ClientNetworkUtils.copyFileFromServer(fileID, destFile);
+
+        worker.showProgress(1);
+    }
+
+
 
     public static void exportVCF(File destFile, MedSavantWorker worker) throws Exception {
 
@@ -63,7 +91,10 @@ public class ExportVCF implements BasicVariantColumns {
         }
         worker.showProgress(0.5);
 
+        LOG.info("Copying file " + fileID + " from sever to " + destFile.getAbsolutePath());
         ClientNetworkUtils.copyFileFromServer(fileID, destFile);
+        LOG.info("Done copying file to " + destFile);
+
 
         //maintain lists of chrs, dnaids, ...
         Map<String, BufferedWriter> out = new HashMap<String, BufferedWriter>();

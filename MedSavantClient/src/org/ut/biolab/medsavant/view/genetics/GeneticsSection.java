@@ -15,6 +15,7 @@
  */
 package org.ut.biolab.medsavant.view.genetics;
 
+import org.ut.biolab.medsavant.view.genetics.family.FamilyMattersPage;
 import org.ut.biolab.medsavant.aggregate.AggregatePage;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -67,6 +68,7 @@ public class GeneticsSection extends SectionView {
             new BrowserPage(this),
             new GeneticsChartPage(this),
             new AggregatePage(this),
+            new FamilyMattersPage(this),
             variantCollectionPlugins
         };
     }

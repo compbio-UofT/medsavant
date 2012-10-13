@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package org.ut.biolab.medsavant.filter;
+package org.ut.biolab.medsavant.view.component;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -43,9 +43,9 @@ import org.ut.biolab.medsavant.view.util.ViewUtil;
  *
  * @author tarkvara
  */
-public abstract class TabularFilterView<T> extends FilterView {
+public class SelectableListView<T> extends JPanel {
 
-    private static final Log LOG = LogFactory.getLog(TabularFilterView.class);
+    private static final Log LOG = LogFactory.getLog(SelectableListView.class);
     private static final int FIELD_WIDTH = 260;
 
     protected List<T> availableValues;
@@ -53,11 +53,9 @@ public abstract class TabularFilterView<T> extends FilterView {
 
     private QuickListFilterField field;
     protected FilterableCheckBoxList filterableList;
-    protected JButton applyButton;
     private JButton selectAll;
 
-    protected TabularFilterView(String name, int queryID) {
-        super(name, queryID);
+    protected SelectableListView() {
     }
 
     protected final void initContentPanel() {
@@ -79,10 +77,7 @@ public abstract class TabularFilterView<T> extends FilterView {
             return;
         }
 
-        applyButton = new JButton("Apply");
-        applyButton.setEnabled(false);
-
-        AbstractListModel model = new SimpleListModel();
+        AbstractListModel model = new SelectableListView.SimpleListModel();
 
         field = new QuickListFilterField(model);
         field.setHintText("Type here to filter options");
@@ -111,29 +106,14 @@ public abstract class TabularFilterView<T> extends FilterView {
 
         SearchableUtils.installSearchable(filterableList);
 
-        filterableList.getCheckBoxListSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    applyButton.setEnabled(true);
-                }
-            }
-        });
 
         setAllSelected(true);
-
-        applyButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                applyFilter();
-            }
-        });
 
         JScrollPane jsp = new JScrollPane(filterableList) {
             @Override
             public Dimension getPreferredSize() {
                 Dimension result = super.getPreferredSize();
-                result = new Dimension(Math.min(result.width, TabularFilterView.this.getWidth() - 20), result.height);
+                result = new Dimension(Math.min(result.width, SelectableListView.this.getWidth() - 20), result.height);
                 return result;
             }
         };
@@ -143,7 +123,6 @@ public abstract class TabularFilterView<T> extends FilterView {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setAllSelected(true);
-                applyButton.setEnabled(true);
             }
         });
 
@@ -153,7 +132,6 @@ public abstract class TabularFilterView<T> extends FilterView {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setAllSelected(false);
-                applyButton.setEnabled(true);
             }
         });
 
@@ -175,9 +153,6 @@ public abstract class TabularFilterView<T> extends FilterView {
         add(selectAll, gbc);
         add(selectNone, gbc);
 
-        gbc.weightx = 1.0;
-        gbc.anchor = GridBagConstraints.EAST;
-        add(applyButton, gbc);
     }
 
     public final void setFilterValues(Collection<String> list) {
@@ -194,22 +169,17 @@ public abstract class TabularFilterView<T> extends FilterView {
             selectedIndices[i++] = j;   // If element is not in availableValues, j will be > availableValues.size()
         }
         filterableList.setCheckBoxListSelectedIndices(selectedIndices);
-        applyFilter();
     }
-
-    protected abstract void applyFilter();
 
     /**
      * Shared code which derived classes can call to set things up properly in their <code>applyFilter</code> calls.
      */
     protected void preapplyFilter() {
-        applyButton.setEnabled(false);
-
         appliedValues = new ArrayList<T>();
 
         int[] indices = filterableList.getCheckBoxListSelectedIndices();
         for (int i: indices) {
-            appliedValues.add(availableValues.get(i));
+            appliedValues.add((T)filterableList.getModel().getElementAt(i));
         }
     }
 
@@ -232,12 +202,12 @@ public abstract class TabularFilterView<T> extends FilterView {
      * the whole model, but I couldn't get it to update correctly, hence the brute force approach.
      */
     protected void updateModel() {
-        field.setListModel(new SimpleListModel());
+        field.setListModel(new SelectableListView.SimpleListModel());
         filterableList.setModel(field.getDisplayListModel());
         LOG.info("Model updated, " + field.getDisplayListModel().getSize() + " of " + field.getListModel().getSize() + "(" + availableValues.size() + ") rows visible.");
     }
 
-    protected class SimpleListModel extends AbstractListModel {
+    public class SimpleListModel extends AbstractListModel {
 
         @Override
         public int getSize() {
@@ -246,11 +216,7 @@ public abstract class TabularFilterView<T> extends FilterView {
 
         @Override
         public Object getElementAt(int i) {
-            T val = availableValues.get(i);
-            if (val instanceof String && ((String)val).length() == 0) {
-                return "(null)";
-            }
-            return val;
+            return availableValues.get(i);
         }
     }
 }

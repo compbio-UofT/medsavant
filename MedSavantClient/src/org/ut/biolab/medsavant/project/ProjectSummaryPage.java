@@ -59,6 +59,7 @@ public class ProjectSummaryPage extends SubSectionView {
     @Override
     public JPanel getView(boolean update) {
         JPanel view = new JPanel();
+        
         ViewUtil.applyVerticalBoxLayout(view);
         //view.setLayout(new GridBagLayout());
 
