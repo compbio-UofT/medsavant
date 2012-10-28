@@ -55,7 +55,8 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
     @Override
     public void createDatabase(String dbHost, int port, String dbName, String adminName, char[] rootPassword, String versionString) throws IOException, SQLException, RemoteException {
 
-        final String sessID = SessionController.getInstance().registerNewSession(adminName, new String(rootPassword), "");
+        SessionController sessController = SessionController.getInstance();
+        String sessID = sessController.registerNewSession(adminName, new String(rootPassword), "");
 
         Connection conn = ConnectionController.connectPooled(sessID);
         conn.createStatement().execute("CREATE DATABASE " + dbName);
@@ -86,7 +87,10 @@ public class SetupMedSavantDatabase extends MedSavantServerUnicastRemoteObject i
         conn.close();
 
         // We populate the ontology tables on a separate thread because it can take a very long time, and users aren't going to be
-        // looking at ontologies any time soon.
+        // looking at ontologies any time soon.  The initial session has no associated database, so we need to reregister with
+        // our newly created database.
+        sessController.unregisterSession(sessID);
+        sessID = sessController.registerNewSession(adminName, new String(rootPassword), dbName);
         OntologyManager.getInstance().populate(sessID);
     }
 
