@@ -25,6 +25,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 /**
  * All the information contained in a single record from a gene-set.  In it's current incarnation, these correspond to transcripts
  * rather than genes.
@@ -89,7 +90,7 @@ public class Gene implements Serializable, Comparable<Gene> {
     public String getTranscript() {
         return transcript;
     }
-    
+
     public String getDescription() throws MalformedURLException, IOException{
         String baseURLp1 = "http://www.genenames.org/cgi-bin/quick_search.pl?.cgifields=type&type=equal&num=50&search=";
         String baseURLp2 = "&submit=Submit";
@@ -123,7 +124,7 @@ public class Gene implements Serializable, Comparable<Gene> {
         }
         return result;
     }
-    
+
     @Override
     public boolean equals(Object that) {
         if (that instanceof Gene) {
@@ -142,5 +143,6 @@ public class Gene implements Serializable, Comparable<Gene> {
         hash = 11 * hash + (this.transcript != null ? this.transcript.hashCode() : 0);
         return hash;
     }
+
 
 }
